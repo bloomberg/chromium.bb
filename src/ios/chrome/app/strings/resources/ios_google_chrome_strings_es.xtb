@@ -22,7 +22,6 @@
 <translation id="3196546062792660320">Chrome te permite llevar tus cuentas a la Web para ahorrar tiempo. Puedes añadirlas o quitarlas en los ajustes.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
-<translation id="3678774398092457402">¿Quieres que Chrome guarde tu contraseña para este sitio web?</translation>
 <translation id="384394811301901750">Google Chrome no puede usar la cámara en este momento</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Estás cambiando las cuentas de sincronización de <ph name="USER_EMAIL1" /> a <ph name="USER_EMAIL2" />. Tus datos actuales de Chrome están administrados por <ph name="DOMAIN" />. Se van a eliminar tus datos de este dispositivo, pero van a permanecer en <ph name="USER_EMAIL1" />.</translation>
@@ -48,6 +47,7 @@
 <translation id="690638524486313356">Condiciones de Servicio de Google Chrome</translation>
 <translation id="7165736900384873061">Empezar a usar el escáner de QR de Google Chrome</translation>
 <translation id="7172660552945675509">Consejo: <ph name="BEGIN_LINK" />Mueve Chrome a tu Dock<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">Chrome usa Face ID para garantizar el acceso autorizado a tus contraseñas.</translation>
 <translation id="7265369419224458312">Accede a las pestañas que tengas abiertas en tu ordenador desde aquí. Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar Iniciar sesión en Chrome…</translation>
 <translation id="728488472449859922">Activar el escáner de QR de Google Chrome</translation>
 <translation id="7400722733683201933">Información de Google Chrome</translation>

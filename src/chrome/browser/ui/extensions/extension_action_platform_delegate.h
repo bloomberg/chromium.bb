@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_H_
 
-#include "build/build_config.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 
 namespace extensions {
@@ -20,12 +19,6 @@ class ExtensionActionPlatformDelegate {
   // platform-specific implementation for the class.
   static std::unique_ptr<ExtensionActionPlatformDelegate> Create(
       ExtensionActionViewController* controller);
-#if defined(OS_MACOSX)
-  // Temporary shim for Polychrome. See bottom of first comment in
-  // https://crbug.com/80495 for details.
-  static std::unique_ptr<ExtensionActionPlatformDelegate> CreateCocoa(
-      ExtensionActionViewController* controller);
-#endif
 
   // The following are forwarded from ToolbarActionViewController. See that
   // class for the definitions.
@@ -41,9 +34,6 @@ class ExtensionActionPlatformDelegate {
       std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) = 0;
-
-  // Closes the overflow menu, if it was open.
-  virtual void CloseOverflowMenu() = 0;
 
   // Shows the context menu for the extension.
   virtual void ShowContextMenu() = 0;

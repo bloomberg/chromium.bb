@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="detail_view.html">
@@ -19,7 +20,6 @@
 <link rel="import" href="service.html">
 <link rel="import" href="sidebar.html">
 <link rel="import" href="toolbar.html">
-<link rel="import" href="view_manager.html">
 
 <if expr="chromeos">
 <link rel="import" href="kiosk_browser_proxy.html">
@@ -78,7 +78,7 @@
         </div>
       </cr-drawer>
     </template>
-    <extensions-view-manager id="viewManager" role="main">
+    <cr-view-manager id="viewManager" role="main">
       <extensions-item-list id="items-list" delegate="[[delegate]]"
           in-dev-mode="[[inDevMode]]" filter="[[filter]]"
           hidden$="[[!didInitPage_]]" slot="view" apps="[[apps_]]"
@@ -108,7 +108,7 @@
           </extensions-error-page>
         </template>
       </cr-lazy-render>
-    </extensions-view-manager>
+    </cr-view-manager>
     <template is="dom-if" if="[[showOptionsDialog_]]" restamp>
       <extensions-options-dialog id="options-dialog"
           on-close="onOptionsDialogClose_">

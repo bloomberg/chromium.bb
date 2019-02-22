@@ -116,14 +116,39 @@ function assertDeepEquals(expected, observed, opt_message) {
 }
 
 /**
- * Defines runTests.
+ * Decorates |window| with runTests() and endTests().
+ *
+ * @param {{
+ *   runTests: (function(Object=):void|undefined),
+ *   endTests: (function(boolean):void|undefined)
+ * }} exports
  */
 (function(exports) {
+
+/**
+ * Optional setup and teardown hooks that can be defined in a test scope.
+ * |setUpPage| is invoked once. |setUp|/|tearDown| are invoked before/after each
+ * test*() declared in the test scope.
+ *
+ * @typedef {{
+ *   setUpPage: (function(): void|undefined),
+ *   setUp: (function(): void|undefined),
+ *   tearDown: (function(): void|undefined),
+ * }}
+ */
+var WebUiTestHarness;
+
 /**
  * Scope containing testXXX functions.
  * @type {!Object}
  */
 var testScope = {};
+
+/**
+ * Test harness entrypoints on |testScope|.
+ * @type {!WebUiTestHarness}
+ */
+var testHarness = {};
 
 /**
  * List of test cases.
@@ -170,6 +195,7 @@ var runnerStartTime = 0;
 function runTests(opt_testScope) {
   runnerStartTime = performance.now();
   testScope = opt_testScope || window;
+  testHarness = /** @type{!WebUiTestHarness} */ (testScope);
   for (var name in testScope) {
     // To avoid unnecessary getting properties, test name first.
     if (/^test/.test(name) && typeof testScope[name] == 'function')
@@ -180,10 +206,21 @@ function runTests(opt_testScope) {
     cleanTestRun = false;
   }
   try {
-    if (testScope.setUpPage)
-      testScope.setUpPage();
+    if (testHarness.setUpPage)
+      testHarness.setUpPage();
   } catch (err) {
     cleanTestRun = false;
+  }
+  startTesting();
+}
+
+/**
+ * @suppress {missingProperties}
+ */
+function startTesting() {
+  if (window.waitUser) {
+    setTimeout(startTesting, 1000);
+    return;
   }
   continueTesting();
 }
@@ -216,9 +253,9 @@ function continueTesting(opt_asyncTestFailure) {
     var isAsyncTest = testScope[testName].length;
     var testError = false;
     try {
-      if (testScope.setUp)
-        testScope.setUp();
-      pendingTearDown = testScope.tearDown || null;
+      if (testHarness.setUp)
+        testHarness.setUp();
+      pendingTearDown = testHarness.tearDown || null;
       testScope[testName](continueTesting);
     } catch (err) {
       console.error('Failure in test ' + testName + '\n' + err);
@@ -256,6 +293,16 @@ function endTests(success) {
 exports.runTests = runTests;
 exports.endTests = endTests;
 })(window);
+
+/**
+ * @type {!function(Object=):void}
+ */
+window.runTests;
+
+/**
+ * @type {!function(boolean):void}
+ */
+window.endTests;
 
 window.onerror = function() {
   window.endTests(false);

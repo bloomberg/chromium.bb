@@ -48,6 +48,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
+// Enables new message list view. https://crbug.com/769219
+ASH_PUBLIC_EXPORT extern const base::Feature kNewMessageListView;
+
 // Enables the new wallpaper picker.
 // TODO(wzang): Remove this after the feature is fully launched.
 // https://crbug.com/777293.
@@ -70,8 +73,14 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 
+// Enables running an external binary which provides lock screen authentication.
+ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
+
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
+
+// Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
+ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
@@ -84,6 +93,8 @@ ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
+
+ASH_PUBLIC_EXPORT bool IsNewMessageListViewEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
 

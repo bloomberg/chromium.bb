@@ -1328,10 +1328,6 @@ TEST_P(SamplerArrayAsFunctionParameterTest, SamplerArrayAsFunctionParameter)
 // Copy of a test in conformance/textures/texture-mips, to test generate mipmaps
 TEST_P(Texture2DTestWithDrawScale, MipmapsTwice)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2653
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     int px = getWindowWidth() / 2;
     int py = getWindowHeight() / 2;
 
@@ -1374,11 +1370,7 @@ TEST_P(Texture2DTestWithDrawScale, MipmapsTwice)
 // https://code.google.com/p/angleproject/issues/detail?id=849
 TEST_P(TextureCubeTest, CubeMapFBO)
 {
-    // TODO(jmadill): Cube map render targets. http://anglebug.com/2470
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
-    GLuint fbo;
-    glGenFramebuffers(1, &fbo);
+    GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
@@ -1386,10 +1378,74 @@ TEST_P(TextureCubeTest, CubeMapFBO)
                            mTextureCube, 0);
 
     EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    glDeleteFramebuffers(1, &fbo);
-
     EXPECT_GL_NO_ERROR();
+
+    // Test clearing the six mip faces individually.
+    std::array<GLColor, 6> faceColors = {{GLColor::red, GLColor::green, GLColor::blue,
+                                          GLColor::yellow, GLColor::cyan, GLColor::magenta}};
+
+    for (size_t faceIndex = 0; faceIndex < 6; ++faceIndex)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, mTextureCube, 0);
+
+        Vector4 clearColorF = faceColors[faceIndex].toNormalizedVector();
+        glClearColor(clearColorF.x(), clearColorF.y(), clearColorF.z(), clearColorF.w());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        EXPECT_PIXEL_COLOR_EQ(0, 0, faceColors[faceIndex]);
+    }
+
+    // Iterate the faces again to make sure the colors haven't changed.
+    for (size_t faceIndex = 0; faceIndex < 6; ++faceIndex)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, mTextureCube, 0);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, faceColors[faceIndex])
+            << "face color " << faceIndex << " shouldn't change";
+    }
+}
+
+// Tests clearing a cube map with a scissor enabled.
+TEST_P(TextureCubeTest, CubeMapFBOScissoredClear)
+{
+    // TODO(jie.a.chen): Diagnose and fix. http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel() && IsWindows());
+
+    constexpr size_t kSize = 16;
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glViewport(0, 0, kSize, kSize);
+
+    GLTexture texcube;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texcube);
+    for (GLenum face = 0; face < 6; face++)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, nullptr);
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                           texcube, 0);
+
+    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    ASSERT_GL_NO_ERROR();
+
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(kSize / 2, 0, kSize / 2, kSize);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(kSize / 2 + 1, 0, GLColor::green);
+
+    ASSERT_GL_NO_ERROR();
 }
 
 // Test that glTexSubImage2D works properly when glTexStorage2DEXT has initialized the image with a
@@ -2714,7 +2770,18 @@ class TextureLimitsTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    ~TextureLimitsTest()
+    void SetUp() override
+    {
+        ANGLETest::SetUp();
+
+        glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &mMaxVertexTextures);
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &mMaxFragmentTextures);
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxCombinedTextures);
+
+        ASSERT_GL_NO_ERROR();
+    }
+
+    void TearDown() override
     {
         if (mProgram != 0)
         {
@@ -2726,17 +2793,8 @@ class TextureLimitsTest : public ANGLETest
                 glDeleteTextures(static_cast<GLsizei>(mTextures.size()), &mTextures[0]);
             }
         }
-    }
 
-    void SetUp() override
-    {
-        ANGLETest::SetUp();
-
-        glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &mMaxVertexTextures);
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &mMaxFragmentTextures);
-        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxCombinedTextures);
-
-        ASSERT_GL_NO_ERROR();
+        ANGLETest::TearDown();
     }
 
     void compileProgramWithTextureCounts(const std::string &vertexPrefix,
@@ -2928,10 +2986,6 @@ TEST_P(TextureLimitsTest, MaxFragmentTextures)
 // Test rendering with maximum combined texture units.
 TEST_P(TextureLimitsTest, MaxCombinedTextures)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2654
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     GLint vertexTextures = mMaxVertexTextures;
 
     if (vertexTextures + mMaxFragmentTextures > mMaxCombinedTextures)
@@ -2966,10 +3020,6 @@ TEST_P(TextureLimitsTest, ExcessiveFragmentTextures)
 // Test active vertex textures under the limit, but excessive textures specified.
 TEST_P(TextureLimitsTest, MaxActiveVertexTextures)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2654
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     compileProgramWithTextureCounts("tex", mMaxVertexTextures + 4, mMaxVertexTextures, "tex", 0, 0);
     ASSERT_NE(0u, mProgram);
     ASSERT_GL_NO_ERROR();
@@ -2980,10 +3030,6 @@ TEST_P(TextureLimitsTest, MaxActiveVertexTextures)
 // Test active fragment textures under the limit, but excessive textures specified.
 TEST_P(TextureLimitsTest, MaxActiveFragmentTextures)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2654
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     compileProgramWithTextureCounts("tex", 0, 0, "tex", mMaxFragmentTextures + 4,
                                     mMaxFragmentTextures);
     ASSERT_NE(0u, mProgram);
@@ -3172,8 +3218,6 @@ TEST_P(Texture2DNorm16TestES3, TextureNorm16Test)
 // GLES 3.0.4 section 3.8.3.
 TEST_P(Texture2DTestES3, UnpackSkipImages2D)
 {
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsDesktopOpenGL());
-
     // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1429 is fixed
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
@@ -3301,8 +3345,8 @@ TEST_P(Texture2DTestES3, DepthTexturesWithMipmaps)
 {
     // TODO(cwallez) this is failing on Intel Win7 OpenGL.
     // TODO(zmo) this is faling on Win Intel HD 530 Debug.
-    // http://anglebugs.com/1706
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows());
+    // http://anglebug.com/1706
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsOpenGL());
 
     const int size = getWindowWidth();
 

@@ -28,6 +28,7 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -38,8 +39,6 @@
 #if defined(OS_ANDROID)
 #error This file needs to be updated to run on Android.
 #endif
-
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace {
 
@@ -83,13 +82,13 @@ const char kTypeErrorResult[] = "TypeError";
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Expectations for Widevine.
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 #define EXPECT_WV_SUCCESS EXPECT_SUCCESS
 #define EXPECT_WV_PROPRIETARY EXPECT_PROPRIETARY
-#else  // defined(WIDEVINE_CDM_AVAILABLE)
+#else
 #define EXPECT_WV_SUCCESS EXPECT_UNSUPPORTED
 #define EXPECT_WV_PROPRIETARY EXPECT_UNSUPPORTED
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
 };  // namespace
 

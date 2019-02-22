@@ -31,6 +31,7 @@
 #include "src/traced/probes/ftrace/ftrace_controller.h"
 #include "src/traced/probes/ftrace/ftrace_metadata.h"
 #include "src/traced/probes/ps/process_stats_data_source.h"
+#include "src/traced/probes/sys_stats/sys_stats_data_source.h"
 
 #include "perfetto/trace/filesystem/inode_file_map.pbzero.h"
 
@@ -48,9 +49,9 @@ class ProbesProducer : public Producer, public FtraceController::Observer {
   // Producer Impl:
   void OnConnect() override;
   void OnDisconnect() override;
-  void CreateDataSourceInstance(DataSourceInstanceID,
-                                const DataSourceConfig&) override;
-  void TearDownDataSourceInstance(DataSourceInstanceID) override;
+  void SetupDataSource(DataSourceInstanceID, const DataSourceConfig&) override;
+  void StartDataSource(DataSourceInstanceID, const DataSourceConfig&) override;
+  void StopDataSource(DataSourceInstanceID) override;
   void OnTracingSetup() override;
   void Flush(FlushRequestID,
              const DataSourceInstanceID* data_source_ids,
@@ -74,6 +75,10 @@ class ProbesProducer : public Producer, public FtraceController::Observer {
       TracingSessionID session_id,
       DataSourceInstanceID id,
       DataSourceConfig config);
+  std::unique_ptr<SysStatsDataSource> CreateSysStatsDataSource(
+      TracingSessionID session_id,
+      DataSourceInstanceID id,
+      const DataSourceConfig& config);
 
  private:
   enum State {

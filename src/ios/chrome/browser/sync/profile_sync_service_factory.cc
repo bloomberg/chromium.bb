@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
@@ -23,7 +25,7 @@
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
+#include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -33,9 +35,11 @@
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
+#include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -55,8 +59,8 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
       base::Bind(&UpdateNetworkTimeOnUIThread, network_time, resolution,
                  latency, base::TimeTicks::Now()));
 }
@@ -108,9 +112,11 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
-  DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(
+      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
+  DependsOn(SessionSyncServiceFactory::GetInstance());
 }
 
 ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {}
@@ -140,12 +146,20 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
+  init_params.network_connection_tracker =
+      GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
 
-  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
+  auto* deprecated_invalidation_provider =
+      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state);
+  if (deprecated_invalidation_provider) {
+    init_params.invalidations_identity_providers.push_back(
+        deprecated_invalidation_provider->GetIdentityProvider());
+  }
 
-  // Will also initialize the sync client.
+  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();
   return pss;
 }

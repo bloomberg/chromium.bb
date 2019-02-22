@@ -7,8 +7,11 @@
 #include <set>
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_environment_content.h"
@@ -58,6 +61,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -263,7 +267,8 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
   chromeos::DeviceSettingsService::Initialize();
-  chromeos::CrosSettings::Initialize();
+  chromeos::CrosSettings::Initialize(
+      TestingBrowserProcess::GetGlobal()->local_state());
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
   AshTestBase::SetUp();
   profile_manager_.reset(
@@ -1489,6 +1494,58 @@ TEST_F(MultiUserWindowManagerChromeOSTest, FindBrowserWithActiveWindow) {
   EXPECT_EQ(browser.get(), BrowserList::GetInstance()->GetLastActive());
   EXPECT_FALSE(browser->window()->IsActive());
   EXPECT_EQ(nullptr, chrome::FindBrowserWithActiveWindow());
+}
+
+// Tests that a window's bounds get restored to their pre tablet mode bounds,
+// even on a secondary user and with display rotations.
+TEST_F(MultiUserWindowManagerChromeOSTest, WindowBoundsAfterTabletMode) {
+  UpdateDisplay("400x200");
+  display::test::ScopedSetInternalDisplayId set_internal(
+      Shell::Get()->display_manager(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+
+  // Add two windows, one to each user and set their initial bounds.
+  SetUpForThisManyWindows(2);
+  const AccountId user1(AccountId::FromUserEmail("A"));
+  const AccountId user2(AccountId::FromUserEmail("B"));
+  AddTestUser(user1);
+  AddTestUser(user2);
+  user_manager()->SwitchActiveUser(user1);
+  multi_user_window_manager()->ActiveUserChanged(
+      user_manager()->FindUser(user1));
+  multi_user_window_manager()->SetWindowOwner(window(0), user1);
+  multi_user_window_manager()->SetWindowOwner(window(1), user2);
+  const gfx::Rect bounds(20, 20, 360, 100);
+  window(0)->SetBounds(bounds);
+  window(1)->SetBounds(bounds);
+
+  // Enter tablet mode. Manually call OnTabletModeToggled because
+  // TabletModeClient is null during tests.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  multi_user_window_manager()->OnTabletModeToggled(true);
+  // Tests that bounds of both windows are maximized.
+  const gfx::Rect maximized_bounds(0, 0, 400,
+                                   200 - ShelfConstants::shelf_size());
+  EXPECT_EQ(maximized_bounds, window(0)->bounds());
+  EXPECT_EQ(maximized_bounds, window(1)->bounds());
+
+  // Rotate to portrait and back to trigger some display changes.
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  multi_user_window_manager()->OnTabletModeToggled(false);
+
+  // Tests that both windows have the same bounds as when they entered tablet
+  // mode.
+  user_manager()->SwitchActiveUser(user2);
+  multi_user_window_manager()->ActiveUserChanged(
+      user_manager()->FindUser(user2));
+  EXPECT_EQ(bounds, window(0)->bounds());
+  EXPECT_EQ(bounds, window(1)->bounds());
 }
 
 }  // namespace ash

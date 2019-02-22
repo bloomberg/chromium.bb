@@ -1,9 +1,5 @@
 #app {
-  max-width: 120em;
-  max-height: 10000000em;
-  height: 10000000px;
   margin-top: +10px;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -20,11 +16,37 @@
   margin-left: 2em;
 }
 
+.regression {
+  color: red;
+}
+
+.improvement {
+  color: green;
+}
+
+.link {
+  text-decoration: underline;
+}
+
+.link:hover {
+  cursor: pointer;
+}
+
+
 #radioBoxes {
   margin-top: +10px;
   margin-left: +10px;
   padding: 10px;
   padding: 3px;
+}
+
+text {
+  font-size: 14px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 #select_run {
@@ -37,29 +59,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 #apply_button{
-  background-color: rgb(245, 250, 245);
-  border: 2px solid #ade0c8;
-  border-radius: 13px;
   margin-left:300px;
   margin-top:7px;
-  padding: 5px;
 }
 
 #reset_button{
   margin-left:740px;
   margin-top: 7px;
-  padding: 5px;
+}
+
+button {
   background-color: rgb(245, 250, 245);
   border: 2px solid #ade0c8;
   border-radius: 13px;
+  padding: 5px;
 }
-
 #subcomponentBox {
   background-color: rgb(229, 245, 229);
   border: 2px solid #c6ddc6;
   border-radius: 10px;
   margin-left: 20px;
+  margin-bottom: 1px;
 }
 
 #subcomponentBox_ {
@@ -67,6 +89,7 @@
   border: 1px solid #c6ddd2;
   border-radius: 10px;
   margin-left: 45px;
+  margin-bottom: 1 px;
 }
 
 .label-wrapper {
@@ -92,8 +115,9 @@
 
 #filterBox {
   background-color: rgb(245, 252, 245);
-  border: 1px solid #d9dfdc;
+  border: 1px solid #42b983;
   border-radius: 10px;
+  margin-bottom: 1px;
 }
 
 
@@ -104,6 +128,7 @@
   border: 1px solid #bdd3c9;
   border-radius: 8px;
 }
+
 #teaxtarea {
   margin-top: 30px;
   border-radius: 10px;
@@ -111,7 +136,7 @@
 
 #story-story{
   border-left-width: 10px;
-  border: 1px solid #a0d1bb;
+  border: 1px solid  #bdd3c9;
   border-radius: 3px;
   background-color: #f1f5f2;
 }
@@ -146,11 +171,13 @@
 }
 
 .openedMetric {
-  background-color: darkgray;
+  background-color: rgb(138, 216, 168);
+  border-radius: 7px;
 }
 
 .openedStory {
-  background-color: darkseagreen;
+  background-color: rgb(184, 235, 184);
+  border-radius: 7px;
 }
 
 .openedDiagnostic {
@@ -177,22 +204,22 @@
   margin-bottom: 10px;
 }
 
-#globalDiagnostic {
+#globalTypeOfPlot {
   float: right;
   width: 20em;
   background-color: rgb(245, 250, 245);
-  border: 2px solid #ade0c8;
+  border: 2px solid #42b983;
   border-radius: 13px;
   margin-bottom: 10px;
 }
 
 #reset_table {
-  float: right;
   margin-left: 15px;
   padding: 5px;
   background-color: rgb(245, 250, 245);
-  border: 2px solid #ade0c8;
-  border-radius: 13px;
+  border: 1.5px solid  #42b983;
+  border-radius: 10px;
+  margin-top: 3px;
 }
 
 body {
@@ -203,19 +230,20 @@ body {
 
 table {
   border: 2px solid #42b983;
-  border-radius: 3px;
+  border-radius: 10px;
   background-color: #fff;
   margin-top: +20px; 
 }
 
 th {
   background-color: #42b983;
-  color: rgba(255,255,255,0.66);
+  color: rgba(255,255,255,10);
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  border-radius: 10px;
 }
 
 td {
@@ -238,10 +266,9 @@ th.active .arrow {
 .arrow {
   display: inline-block;
   vertical-align: middle;
-  width: 0;
-  height: 0;
+  width: 0.1em;
+  height: 0.1em;
   margin-left: 5px;
-  opacity: 0.66;
 }
 
 .arrow.asc {
@@ -277,19 +304,18 @@ th.active .arrow {
 .checkbox-story {
   width: 1.3em;
   height: 1.3em;
-  background-color: white;
   border-radius: 50%;
   vertical-align: middle;
-  border: 1px solid #92d195;
   -webkit-appearance: none;
   outline: none;
   cursor: pointer;
+  background-color: #ffffff;
+  border: 2px solid #66bb6a;
 }
 
 .checkbox-story:checked {
-  background-color: #66bb6a;
-  border: 3px solid #ffffff;
-  opacity: 1;
+  background-color: #92d195;
+  opacity: 4;
 }
 
 .checkbox-head {
@@ -305,7 +331,7 @@ th.active .arrow {
 }
 
 .checkbox-head:checked {
-  background-color: #9fdfa2;
+  background-color: #08290a;
   border: 3px solid  #ffffffff;
   opacity: 1;
 }

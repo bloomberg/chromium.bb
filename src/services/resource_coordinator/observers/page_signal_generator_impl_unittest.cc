@@ -63,8 +63,9 @@ class MockPageSignalReceiverImpl : public mojom::PageSignalReceiver {
                void(const PageNavigationIdentity& page_navigation_id));
   MOCK_METHOD1(NotifyRendererIsBloated,
                void(const PageNavigationIdentity& page_navigation_id));
-  MOCK_METHOD3(OnLoadTimePerformanceEstimate,
+  MOCK_METHOD4(OnLoadTimePerformanceEstimate,
                void(const PageNavigationIdentity& page_navigation_id,
+                    base::TimeDelta load_duration,
                     base::TimeDelta cpu_usage_estimate,
                     uint64_t private_footprint_kb_estimate));
 
@@ -308,7 +309,8 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // Post a navigation. The state should reset.
-  page_cu->OnMainFrameNavigationCommitted(1, "https://www.example.org");
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          1, "https://www.example.org");
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 }
@@ -426,7 +428,10 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   PageSignalGeneratorImpl::PageData* page_data = psg->GetPageData(page_cu);
   page_data->idling_timer.SetTaskRunner(task_env().GetMainThreadTaskRunner());
 
-  page_cu->OnMainFrameNavigationCommitted(1, "https://www.google.com/");
+  base::TimeTicks navigation_committed_time =
+      ResourceCoordinatorClock::NowTicks();
+  page_cu->OnMainFrameNavigationCommitted(navigation_committed_time, 1,
+                                          "https://www.google.com/");
   DrivePageToLoadedAndIdle(&cu_graph);
 
   base::TimeTicks event_time = ResourceCoordinatorClock::NowTicks();
@@ -449,6 +454,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
     EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
                                    IdentityMatches(cu_graph.page->id(), 1u,
                                                    "https://www.google.com/"),
+                                   event_time - navigation_committed_time,
                                    base::TimeDelta::FromMicroseconds(15), 150))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
@@ -459,7 +465,9 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 
   // Make sure a second run around the state machine generates a second event.
-  page_cu->OnMainFrameNavigationCommitted(2, "https://example.org/bobcat");
+  navigation_committed_time = ResourceCoordinatorClock::NowTicks();
+  page_cu->OnMainFrameNavigationCommitted(navigation_committed_time, 2,
+                                          "https://example.org/bobcat");
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_NE(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
 
@@ -477,6 +485,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
                 OnLoadTimePerformanceEstimate(
                     IdentityMatches(cu_graph.page->id(), 2u,
                                     "https://example.org/bobcat"),
+                    event_time - navigation_committed_time,
                     base::TimeDelta::FromMicroseconds(25), 250))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));

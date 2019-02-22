@@ -19,8 +19,6 @@ function ExtensionOptionsImpl(extensionoptionsElement) {
 
 ExtensionOptionsImpl.prototype.__proto__ = GuestViewContainer.prototype;
 
-ExtensionOptionsImpl.VIEW_TYPE = 'ExtensionOptions';
-
 ExtensionOptionsImpl.prototype.onElementAttached = function() {
   this.createGuest();
 };
@@ -55,4 +53,5 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
   }, this));
 };
 
-GuestViewContainer.registerElement(ExtensionOptionsImpl);
+// Exports.
+exports.$set('ExtensionOptionsImpl', ExtensionOptionsImpl);

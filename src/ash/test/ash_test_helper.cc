@@ -30,6 +30,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -39,6 +41,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
@@ -64,6 +68,41 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
+
+// An implementation of GpuInterfaceProvider that queues up requests for
+// interfaces. The requests are never actually bound, but are kept alive to
+// ensure the requestor doesn't detect a close and try to exit.
+class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
+ public:
+  TestGpuInterfaceProvider() = default;
+  ~TestGpuInterfaceProvider() override = default;
+
+  // ws::GpuInterfaceProvider:
+  void RegisterGpuInterfaces(
+      service_manager::BinderRegistry* registry) override {
+    registry->AddInterface(base::BindRepeating(
+        &TestGpuInterfaceProvider::BindDiscardableSharedMemoryManager,
+        base::Unretained(this)));
+    registry->AddInterface(base::BindRepeating(
+        &TestGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
+  }
+  void RegisterOzoneGpuInterfaces(
+      service_manager::BinderRegistry* registry) override {}
+
+ private:
+  void BindDiscardableSharedMemoryManager(
+      discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
+          request) {
+    request_handles_.push_back(request.PassMessagePipe());
+  }
+  void BindGpuRequest(ws::mojom::GpuRequest request) {
+    request_handles_.push_back(request.PassMessagePipe());
+  }
+
+  std::vector<mojo::ScopedMessagePipeHandle> request_handles_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGpuInterfaceProvider);
+};
 
 // TODO(sky): refactor and move to services.
 class TestConnector : public service_manager::mojom::Connector {
@@ -194,6 +233,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         switches::kAshDisableSmoothScreenRotation);
   }
 
+  statistics_provider_ =
+      std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
+
   ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
       &aura::test::EventGeneratorDelegateAura::Create, nullptr));
 
@@ -217,9 +259,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   }
 
   if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::Initialize(
-        chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    bluez::BluezDBusManager::Initialize();
     bluez_dbus_manager_initialized_ = true;
   }
 
@@ -268,9 +308,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       new TestSessionControllerClient(shell->session_controller()));
   session_controller_client_->InitializeAndBind();
 
-  if (start_session) {
+  if (start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
-  }
 
   // Tests that change the display configuration generally don't care about
   // the notifications and the popup UI can interfere with things like
@@ -321,6 +360,15 @@ void AshTestHelper::TearDown() {
 
   ui::TerminateContextFactoryForTests();
 
+  // ui::TerminateContextFactoryForTests() destroyed the context factory (and
+  // context factory private) referenced by Env. Reset Env's members in case
+  // some other test tries to use it. This matters if someone else created Env
+  // (such as the test suite) and is long lived.
+  if (aura::Env::HasInstance()) {
+    aura::Env::GetInstance()->set_context_factory(nullptr);
+    aura::Env::GetInstance()->set_context_factory_private(nullptr);
+  }
+
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 
@@ -339,6 +387,8 @@ void AshTestHelper::TearDown() {
 
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
+
+  statistics_provider_.reset();
 }
 
 void AshTestHelper::SetRunningOutsideAsh() {
@@ -392,6 +442,8 @@ void AshTestHelper::CreateShell() {
   init_params.delegate.reset(test_shell_delegate_);
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
+  init_params.gpu_interface_provider =
+      std::make_unique<TestGpuInterfaceProvider>();
   Shell::CreateInstance(std::move(init_params));
 }
 

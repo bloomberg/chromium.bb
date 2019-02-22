@@ -9,6 +9,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client.h"
@@ -67,8 +68,6 @@ void SetSinkIdResolver::StartAsync() {
 
 void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   ExecutionContext* context = GetExecutionContext();
-  DCHECK(context);
-  DCHECK(context->IsDocument());
   std::unique_ptr<SetSinkIdCallbacks> callbacks =
       std::make_unique<SetSinkIdCallbacks>(this, *element_, sink_id_);
   WebMediaPlayer* web_media_player = element_->GetWebMediaPlayer();
@@ -78,9 +77,10 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
     web_media_player->SetSinkId(sink_id_,
                                 callbacks.release());
   } else {
+    auto& document = *To<Document>(context);
     if (AudioOutputDeviceClient* client =
-            AudioOutputDeviceClient::From(context)) {
-      client->CheckIfAudioSinkExistsAndIsAuthorized(context, sink_id_,
+            AudioOutputDeviceClient::From(document)) {
+      client->CheckIfAudioSinkExistsAndIsAuthorized(document, sink_id_,
                                                     std::move(callbacks));
     } else {
       // The context has been detached. Impossible to get a security origin to

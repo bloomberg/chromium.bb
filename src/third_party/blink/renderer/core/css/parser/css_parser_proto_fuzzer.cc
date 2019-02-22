@@ -45,6 +45,11 @@ DEFINE_BINARY_PROTO_FUZZER(const Input& input) {
     selector_profile = blink::CSSParserContext::kLiveProfile;
   else
     selector_profile = blink::CSSParserContext::kSnapshotProfile;
+  blink::CSSDeferPropertyParsing defer_property_parsing;
+  if (input.defer_property_parsing())
+    defer_property_parsing = blink::CSSDeferPropertyParsing::kYes;
+  else
+    defer_property_parsing = blink::CSSDeferPropertyParsing::kNo;
   blink::CSSParserContext* context = blink::CSSParserContext::Create(
       mode, secure_context_mode, selector_profile);
 
@@ -55,5 +60,5 @@ DEFINE_BINARY_PROTO_FUZZER(const Input& input) {
       converter.Convert(input.style_sheet()).c_str());
 
   blink::CSSParser::ParseSheet(context, style_sheet, style_sheet_string,
-                               input.defer_property_parsing());
+                               defer_property_parsing);
 }

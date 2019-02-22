@@ -24,6 +24,7 @@
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
 #include <corecrt_io.h>
+typedef int mode_t;
 #else
 #include <dirent.h>
 #include <unistd.h>
@@ -35,6 +36,8 @@
 
 namespace perfetto {
 namespace base {
+
+constexpr mode_t kInvalidMode = static_cast<mode_t>(-1);
 
 // RAII classes for auto-releasing fds and dirs.
 template <typename T,
@@ -79,12 +82,15 @@ class ScopedResource {
 };
 
 using ScopedFile = ScopedResource<int, close, -1>;
-inline static ScopedFile OpenFile(const std::string& path, int flags) {
+inline static ScopedFile OpenFile(const std::string& path,
+                                  int flags,
+                                  mode_t mode = kInvalidMode) {
+  PERFETTO_DCHECK((flags & O_CREAT) == 0 || mode != kInvalidMode);
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-  ScopedFile fd(open(path.c_str(), flags));
+  ScopedFile fd(open(path.c_str(), flags, mode));
 #else
   // Always open a ScopedFile with O_CLOEXEC so we can safely fork and exec.
-  ScopedFile fd(open(path.c_str(), flags | O_CLOEXEC));
+  ScopedFile fd(open(path.c_str(), flags | O_CLOEXEC, mode));
 #endif
   return fd;
 }

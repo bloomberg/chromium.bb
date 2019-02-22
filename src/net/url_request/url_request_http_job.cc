@@ -131,7 +131,7 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
   UMA_HISTOGRAM_ENUMERATION(
       "Net.CertificateTransparency.RequestComplianceStatus",
       ssl_info.ct_policy_compliance,
-      net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+      net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   // Record the CT compliance of each request which was required to be CT
   // compliant. This gives a picture of the sites that are supposed to be
   // compliant and how well they do at actually being compliant.
@@ -139,7 +139,7 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.CertificateTransparency.CTRequiredRequestComplianceStatus",
         ssl_info.ct_policy_compliance,
-        net::ct::CTPolicyCompliance::CT_POLICY_MAX);
+        net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 }
 
@@ -440,8 +440,6 @@ void URLRequestHttpJob::Start() {
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
                                           referrer.spec());
   }
-
-  request_info_.token_binding_referrer = request_->token_binding_referrer();
 
   // This should be kept in sync with the corresponding code in
   // URLRequest::GetUserAgent.
@@ -1215,9 +1213,7 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
     }
   }
 
-  for (std::vector<SourceStream::SourceType>::reverse_iterator r_iter =
-           types.rbegin();
-       r_iter != types.rend(); ++r_iter) {
+  for (auto r_iter = types.rbegin(); r_iter != types.rend(); ++r_iter) {
     std::unique_ptr<FilterSourceStream> downstream;
     SourceStream::SourceType type = *r_iter;
     switch (type) {

@@ -17,6 +17,20 @@ let ExceptionEntryEntryEvent;
 (function() {
 'use strict';
 
+/**
+ * Checks if an HTML element is an editable. An editable is either a text
+ * input or a text area.
+ * @param {!Element} element
+ * @return {boolean}
+ */
+function isEditable(element) {
+  const nodeName = element.nodeName.toLowerCase();
+  return element.nodeType === Node.ELEMENT_NODE &&
+      (nodeName === 'textarea' ||
+       (nodeName === 'input' &&
+        /^(?:text|search|email|number|tel|url|password)$/i.test(element.type)));
+}
+
 Polymer({
   is: 'passwords-section',
 
@@ -72,7 +86,6 @@ Polymer({
      * @private {?PasswordListItemElement}
      */
     activePassword: Object,
-
 
     /** The target of the key bindings defined below. */
     keyEventTarget: {
@@ -277,12 +290,20 @@ Polymer({
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 
+  /**
+   * Handle the undo shortcut.
+   * @param {!Event} event
+   * @private
+   */
   onUndoKeyBinding_: function(event) {
-    this.passwordManager_.undoRemoveSavedPasswordOrException();
-    this.$.undoToast.hide();
-    // Preventing the default is necessary to not conflict with a possible
-    // search action.
-    event.preventDefault();
+    const activeElement = getDeepActiveElement();
+    if (!activeElement || !isEditable(activeElement)) {
+      this.passwordManager_.undoRemoveSavedPasswordOrException();
+      this.$.undoToast.hide();
+      // Preventing the default is necessary to not conflict with a possible
+      // search action.
+      event.preventDefault();
+    }
   },
 
   onUndoButtonTap_: function() {
@@ -324,10 +345,6 @@ Polymer({
 
     menu.showAt(target);
     this.activeDialogAnchor_ = target;
-  },
-
-  undoRemoveSavedPasswordOrException_: function(event) {
-    this.passwordManager_.undoRemoveSavedPasswordOrException();
   },
 
   /**

@@ -9,6 +9,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

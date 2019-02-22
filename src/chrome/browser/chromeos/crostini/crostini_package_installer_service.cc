@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -34,7 +35,10 @@ class CrostiniPackageInstallerServiceFactory
   CrostiniPackageInstallerServiceFactory()
       : BrowserContextKeyedServiceFactory(
             "CrostiniPackageInstallerService",
-            BrowserContextDependencyManager::GetInstance()) {}
+            BrowserContextDependencyManager::GetInstance()) {
+    DependsOn(CrostiniManagerFactory::GetInstance());
+  }
+
   ~CrostiniPackageInstallerServiceFactory() override = default;
 
   // BrowserContextKeyedServiceFactory:
@@ -55,13 +59,15 @@ CrostiniPackageInstallerService* CrostiniPackageInstallerService::GetForProfile(
 CrostiniPackageInstallerService::CrostiniPackageInstallerService(
     Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
-  CrostiniManager::GetInstance()->AddInstallLinuxPackageProgressObserver(
-      profile, this);
+  CrostiniManager::GetForProfile(profile)
+      ->AddInstallLinuxPackageProgressObserver(this);
 }
 
-CrostiniPackageInstallerService::~CrostiniPackageInstallerService() {
-  CrostiniManager::GetInstance()->RemoveInstallLinuxPackageProgressObserver(
-      profile_, this);
+CrostiniPackageInstallerService::~CrostiniPackageInstallerService() = default;
+
+void CrostiniPackageInstallerService::Shutdown() {
+  CrostiniManager::GetForProfile(profile_)
+      ->RemoveInstallLinuxPackageProgressObserver(this);
 }
 
 void CrostiniPackageInstallerService::NotificationClosed(
@@ -90,8 +96,8 @@ void CrostiniPackageInstallerService::InstallLinuxPackage(
     const std::string& container_name,
     const std::string& package_path,
     CrostiniManager::InstallLinuxPackageCallback callback) {
-  CrostiniManager::GetInstance()->InstallLinuxPackage(
-      profile_, vm_name, container_name, package_path,
+  CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
+      vm_name, container_name, package_path,
       base::BindOnce(&CrostiniPackageInstallerService::OnInstallLinuxPackage,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
                      std::move(callback)));

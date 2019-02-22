@@ -15,7 +15,6 @@
 #include "GrResourceProvider.h"
 #include "GrSurfaceProxy.h"
 #include "GrTexture.h"
-#include "GrTest.h"
 #include "SkGr.h"
 #include "SkSurface.h"
 #include "Test.h"
@@ -79,7 +78,7 @@ void basic_transfer_test(skiatest::Reporter* reporter, GrContext* context, GrCol
 
     // create and fill transfer buffer
     size_t size = rowBytes*kBufferHeight;
-    uint32_t bufferFlags = GrResourceProvider::kNoPendingIO_Flag;
+    auto bufferFlags = GrResourceProvider::Flags::kNoPendingIO;
     sk_sp<GrBuffer> buffer(resourceProvider->createBuffer(size,
                                                           kXferCpuToGpu_GrBufferType,
                                                           kDynamic_GrAccessPattern,

@@ -7,6 +7,9 @@
       "provides": {
         "service_manager:service_factory": [
           "service_manager.mojom.ServiceFactory"
+        ],
+        "test": [
+          "test_ws.mojom.TestWs"
         ]
       }
     }

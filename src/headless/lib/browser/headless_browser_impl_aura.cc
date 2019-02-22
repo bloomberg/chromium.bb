@@ -10,6 +10,8 @@
 #include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_clipboard.h"
 #include "headless/lib/browser/headless_screen.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/lib/browser/headless_window_tree_host.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"

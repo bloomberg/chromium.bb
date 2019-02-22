@@ -33,14 +33,19 @@ class FeedContentBridge {
   void LoadContent(JNIEnv* j_env,
                    const base::android::JavaRef<jobject>& j_this,
                    const base::android::JavaRef<jobjectArray>& j_keys,
-                   const base::android::JavaRef<jobject>& j_callback);
-  void LoadContentByPrefix(JNIEnv* j_env,
-                           const base::android::JavaRef<jobject>& j_this,
-                           const base::android::JavaRef<jstring>& j_prefix,
-                           const base::android::JavaRef<jobject>& j_callback);
-  void LoadAllContentKeys(JNIEnv* j_env,
-                          const base::android::JavaRef<jobject>& j_this,
-                          const base::android::JavaRef<jobject>& j_callback);
+                   const base::android::JavaRef<jobject>& j_success_callback,
+                   const base::android::JavaRef<jobject>& j_failure_callback);
+  void LoadContentByPrefix(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jstring>& j_prefix,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
+  void LoadAllContentKeys(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
   void CommitContentMutation(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this,
                              const base::android::JavaRef<jobject>& j_callback);
@@ -64,14 +69,6 @@ class FeedContentBridge {
                                 const base::android::JavaRef<jobject>& j_this);
 
  private:
-  void OnLoadContentDone(base::android::ScopedJavaGlobalRef<jobject> callback,
-                         std::vector<FeedContentDatabase::KeyAndData> pairs);
-  void OnLoadAllContentKeysDone(
-      base::android::ScopedJavaGlobalRef<jobject> callback,
-      std::vector<std::string> keys);
-  void OnStorageCommitDone(base::android::ScopedJavaGlobalRef<jobject> callback,
-                           bool success);
-
   // This unique_ptr will hold a list of ContentOperations which are not
   // committed yet. After commit to database, this unique_ptr will be reset.
   std::unique_ptr<ContentMutation> content_mutation_;

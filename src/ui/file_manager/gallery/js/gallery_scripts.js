@@ -13,6 +13,7 @@
 // <include src="../../file_manager/foreground/js/metrics_start.js">
 
 // <include src="../../file_manager/common/js/lru_cache.js">
+// <include src="../../image_loader/load_image_request.js">
 // <include src="../../image_loader/image_loader_client.js">
 
 // <include src="../../../webui/resources/js/cr.js">
@@ -54,13 +55,11 @@
 // <include src="../../file_manager/foreground/js/metadata/metadata_model.js">
 // <include src="../../file_manager/foreground/js/metadata/multi_metadata_provider.js">
 // <include src="../../file_manager/foreground/js/metadata/thumbnail_model.js">
-// <include src="../../file_manager/foreground/js/share_client.js">
 // <include src="../../file_manager/foreground/js/thumbnail_loader.js">
 // <include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
 // <include src="../../file_manager/foreground/js/ui/files_alert_dialog.js">
 // <include src="../../file_manager/foreground/js/ui/files_confirm_dialog.js">
-// <include src="../../file_manager/foreground/js/ui/share_dialog.js">
-// <include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
+// <include src="../../base/js/filtered_volume_manager.js">
 
 // <include src="image_editor/image_util.js">
 // <include src="image_editor/viewport.js">
@@ -95,8 +94,5 @@
 window.ImageUtil = ImageUtil;
 window.metrics = metrics;
 window.Gallery = Gallery;
-
-window.reload = reload;  // will be called by the background.
-window.gallery = gallery;  // for debug.
 
 })();

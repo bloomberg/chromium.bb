@@ -18,11 +18,11 @@ layer at (8,44) size 402x202
     LayoutText {#text} at (197,32) size 4x19
       text run at (197,32) width 4: " "
     LayoutText {#text} at (0,0) size 0x0
-layer at (27,63) size 160x160
+layer at (231,63) size 160x160
   LayoutNGBlockFlow (relative positioned) {DIV} at (19,19) size 160x160 [bgcolor=#808080]
     LayoutText {#text} at (48,0) size 64x36
       text run at (48,0) width 64: "box1"
-layer at (227,63) size 160x160
+layer at (31,63) size 160x160
   LayoutNGBlockFlow (relative positioned) {DIV} at (219,19) size 160x160 [bgcolor=#808080]
     LayoutText {#text} at (48,0) size 64x36
       text run at (48,0) width 64: "box2"

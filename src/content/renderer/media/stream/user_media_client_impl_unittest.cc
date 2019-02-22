@@ -884,8 +884,6 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
             MediaStreamVideoSource::kDefaultFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
 
@@ -945,8 +943,6 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
@@ -1006,8 +1002,6 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::ANY_WITHIN_LIMIT);
-  EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
-            media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
@@ -1337,6 +1331,21 @@ TEST_F(UserMediaClientImplTest,
   MediaStreamAudioSource* source =
       MediaStreamAudioSource::From(web_track.Source());
   EXPECT_FALSE(source->device().matched_output_device_id);
+}
+
+TEST_F(UserMediaClientImplTest, IsCapturing) {
+  EXPECT_FALSE(user_media_client_impl_->IsCapturing());
+  EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
+  blink::WebMediaStream stream = RequestLocalMediaStream();
+  EXPECT_TRUE(user_media_client_impl_->IsCapturing());
+
+  user_media_client_impl_->StopTrack(stream.AudioTracks()[0]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(user_media_client_impl_->IsCapturing());
+
+  user_media_client_impl_->StopTrack(stream.VideoTracks()[0]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(user_media_client_impl_->IsCapturing());
 }
 
 }  // namespace content

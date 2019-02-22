@@ -59,7 +59,7 @@ struct PixelsAndPercent {
 class CalculationValue;
 
 class PLATFORM_EXPORT Length {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   Length() : int_value_(0), quirk_(false), type_(kAuto), is_float_(false) {}

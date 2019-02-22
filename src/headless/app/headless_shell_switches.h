@@ -6,35 +6,36 @@
 #define HEADLESS_APP_HEADLESS_SHELL_SWITCHES_H_
 
 #include "content/public/common/content_switches.h"
+#include "headless/public/headless_export.h"
 
 namespace headless {
 namespace switches {
 
-extern const char kCrashDumpsDir[];
-extern const char kDefaultBackgroundColor[];
-extern const char kDeterministicMode[];
-extern const char kDisableCrashReporter[];
-extern const char kDumpDom[];
-extern const char kEnableBeginFrameControl[];
-extern const char kEnableCrashReporter[];
-extern const char kHideScrollbars[];
-extern const char kPasswordStore[];
-extern const char kPrintToPDF[];
-extern const char kProxyBypassList[];
-extern const char kProxyServer[];
-extern const char kRemoteDebuggingAddress[];
-extern const char kRepl[];
-extern const char kScreenshot[];
-extern const char kSSLKeyLogFile[];
-extern const char kTimeout[];
-extern const char kUseGL[];
-extern const char kUserAgent[];
-extern const char kUserDataDir[];
-extern const char kVirtualTimeBudget[];
-extern const char kWindowSize[];
-extern const char kAuthServerWhitelist[];
-extern const char kFontRenderHinting[];
-extern const char kBlockNewWebContents[];
+HEADLESS_EXPORT extern const char kCrashDumpsDir[];
+HEADLESS_EXPORT extern const char kDefaultBackgroundColor[];
+HEADLESS_EXPORT extern const char kDeterministicMode[];
+HEADLESS_EXPORT extern const char kDisableCrashReporter[];
+HEADLESS_EXPORT extern const char kDumpDom[];
+HEADLESS_EXPORT extern const char kEnableBeginFrameControl[];
+HEADLESS_EXPORT extern const char kEnableCrashReporter[];
+HEADLESS_EXPORT extern const char kHideScrollbars[];
+HEADLESS_EXPORT extern const char kPasswordStore[];
+HEADLESS_EXPORT extern const char kPrintToPDF[];
+HEADLESS_EXPORT extern const char kProxyBypassList[];
+HEADLESS_EXPORT extern const char kProxyServer[];
+HEADLESS_EXPORT extern const char kRemoteDebuggingAddress[];
+HEADLESS_EXPORT extern const char kRepl[];
+HEADLESS_EXPORT extern const char kScreenshot[];
+HEADLESS_EXPORT extern const char kSSLKeyLogFile[];
+HEADLESS_EXPORT extern const char kTimeout[];
+HEADLESS_EXPORT extern const char kUseGL[];
+HEADLESS_EXPORT extern const char kUserAgent[];
+HEADLESS_EXPORT extern const char kUserDataDir[];
+HEADLESS_EXPORT extern const char kVirtualTimeBudget[];
+HEADLESS_EXPORT extern const char kWindowSize[];
+HEADLESS_EXPORT extern const char kAuthServerWhitelist[];
+HEADLESS_EXPORT extern const char kFontRenderHinting[];
+HEADLESS_EXPORT extern const char kBlockNewWebContents[];
 
 // Switches which are replicated from content.
 using ::switches::kRemoteDebuggingPort;

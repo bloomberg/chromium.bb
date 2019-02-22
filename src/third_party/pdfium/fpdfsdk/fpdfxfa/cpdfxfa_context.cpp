@@ -12,14 +12,12 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "fpdfsdk/cpdfsdk_interform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
 #include "fpdfsdk/fpdfxfa/cxfa_fwladaptertimermgr.h"
 #include "fxjs/cjs_runtime.h"
 #include "fxjs/ijs_runtime.h"
 #include "public/fpdf_formfill.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fgas/font/cfgas_defaultfontmanager.h"
@@ -30,11 +28,6 @@
 #include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/cxfa_ffwidgethandler.h"
 #include "xfa/fxfa/cxfa_fontmgr.h"
-
-#ifndef _WIN32
-extern void SetLastError(int err);
-extern int GetLastError();
-#endif
 
 namespace {
 
@@ -58,7 +51,9 @@ bool IsValidAlertIcon(int type) {
 CPDFXFA_Context::CPDFXFA_Context(CPDF_Document* pPDFDoc)
     : m_pPDFDoc(pPDFDoc),
       m_pXFAApp(pdfium::MakeUnique<CXFA_FFApp>(this)),
-      m_DocEnv(this) {}
+      m_DocEnv(this) {
+  ASSERT(m_pPDFDoc);
+}
 
 CPDFXFA_Context::~CPDFXFA_Context() {
   m_nLoadStatus = FXFA_LOADSTATUS_CLOSING;
@@ -109,9 +104,6 @@ bool CPDFXFA_Context::LoadXFADoc() {
   m_nLoadStatus = FXFA_LOADSTATUS_LOADING;
   m_XFAPageList.clear();
 
-  if (!m_pPDFDoc)
-    return false;
-
   CXFA_FFApp* pApp = GetXFAApp();
   if (!pApp)
     return false;
@@ -148,21 +140,15 @@ bool CPDFXFA_Context::LoadXFADoc() {
 }
 
 int CPDFXFA_Context::GetPageCount() const {
-  if (!m_pPDFDoc && !m_pXFADoc)
-    return 0;
-
   switch (m_FormType) {
     case FormType::kNone:
     case FormType::kAcroForm:
     case FormType::kXFAForeground:
-      if (m_pPDFDoc)
-        return m_pPDFDoc->GetPageCount();
-      FALLTHROUGH;
+      return m_pPDFDoc->GetPageCount();
     case FormType::kXFAFull:
-      if (m_pXFADoc)
-        return m_pXFADocView->CountPageViews();
-      break;
+      return m_pXFADoc ? m_pXFADocView->CountPageViews() : 0;
   }
+  NOTREACHED();
   return 0;
 }
 
@@ -214,8 +200,7 @@ void CPDFXFA_Context::DeletePage(int page_index) {
   // Delete from the document first because, if GetPage was never called for
   // this |page_index| then |m_XFAPageList| may have size < |page_index| even
   // if it's a valid page in the document.
-  if (m_pPDFDoc)
-    m_pPDFDoc->DeletePage(page_index);
+  m_pPDFDoc->DeletePage(page_index);
 
   if (pdfium::IndexInBounds(m_XFAPageList, page_index))
     m_XFAPageList[page_index].Reset();

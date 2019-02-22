@@ -27,11 +27,10 @@
 #ifndef HB_OT_HMTX_TABLE_HH
 #define HB_OT_HMTX_TABLE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-open-type.hh"
 #include "hb-ot-hhea-table.hh"
 #include "hb-ot-os2-table.hh"
 #include "hb-ot-var-hvar-table.hh"
-#include "hb-subset-plan.hh"
 
 /*
  * hmtx -- Horizontal Metrics
@@ -263,7 +262,7 @@ struct hmtxvmtx
           return default_advance;
       }
 
-      return table->longMetric[MIN (glyph, (uint32_t) num_advances - 1)].advance;
+      return table->longMetricZ[MIN (glyph, (uint32_t) num_advances - 1)].advance;
     }
 
     inline unsigned int get_advance (hb_codepoint_t  glyph,
@@ -296,7 +295,7 @@ struct hmtxvmtx
   };
 
   protected:
-  LongMetric	longMetric[VAR];	/* Paired advance width and leading
+  UnsizedArrayOf<LongMetric>longMetricZ;/* Paired advance width and leading
 					 * bearing values for each glyph. The
 					 * value numOfHMetrics comes from
 					 * the 'hhea' table. If the font is
@@ -304,7 +303,7 @@ struct hmtxvmtx
 					 * be in the array, but that entry is
 					 * required. The last entry applies to
 					 * all subsequent glyphs. */
-/*FWORD		leadingBearingX[VAR];*/	/* Here the advance is assumed
+/*UnsizedArrayOf<FWORD>	leadingBearingX;*//* Here the advance is assumed
 					 * to be the same as the advance
 					 * for the last entry above. The
 					 * number of entries in this array is
@@ -318,7 +317,7 @@ struct hmtxvmtx
 					 * font to vary the side bearing
 					 * values for each glyph. */
   public:
-  DEFINE_SIZE_ARRAY (0, longMetric);
+  DEFINE_SIZE_ARRAY (0, longMetricZ);
 };
 
 struct hmtx : hmtxvmtx<hmtx, hhea> {
@@ -331,6 +330,9 @@ struct vmtx : hmtxvmtx<vmtx, vhea> {
   static const hb_tag_t variationsTag	= HB_OT_TAG_VVAR;
   static const hb_tag_t os2Tag		= HB_TAG_NONE;
 };
+
+struct hmtx_accelerator_t : hmtx::accelerator_t {};
+struct vmtx_accelerator_t : vmtx::accelerator_t {};
 
 } /* namespace OT */
 

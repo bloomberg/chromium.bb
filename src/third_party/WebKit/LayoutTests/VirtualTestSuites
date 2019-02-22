@@ -26,7 +26,7 @@
   },
   {
     "prefix": "threaded",
-    "base": "fast/animationworklet",
+    "base": "animations/animationworklet",
     "args": ["--enable-threaded-compositing"]
   },
   {
@@ -105,7 +105,8 @@
   {
     "prefix": "exotic-color-space",
     "base": "images",
-    "args": ["--force-color-profile=color-spin-gamma24"]
+    "args": ["--force-color-profile=srgb",
+             "--force-raster-color-profile=color-spin-gamma24"]
   },
   {
     "prefix": "stable",
@@ -326,26 +327,6 @@
     "args": ["--force-device-scale-factor=1.5"]
   },
   {
-    "prefix": "enable_wasm",
-    "base": "http/tests/wasm",
-    "args": ["--enable-features=WebAssembly"]
-  },
-  {
-    "prefix": "enable_wasm",
-    "base": "external/wpt/wasm",
-    "args": ["--enable-features=WebAssembly"]
-  },
-  {
-    "prefix": "enable_wasm_streaming",
-    "base": "http/tests/wasm_streaming",
-    "args": ["--enable-features=WebAssemblyStreaming"]
-  },
-  {
-    "prefix": "enable_asmjs",
-    "base": "http/tests/asmjs",
-    "args": ["--enable-features=AsmJsToWebAssembly"]
-  },
-  {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
     "args": ["--enable-blink-features=LayoutNG"]
@@ -441,6 +422,16 @@
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "fast/forms/fieldset",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]
@@ -512,6 +503,16 @@
   },
   {
     "prefix": "outofblink-cors",
+    "base": "http/tests/navigation",
+    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "http/tests/security",
+    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+  },
+  {
+    "prefix": "outofblink-cors",
     "base": "http/tests/xmlhttprequest",
     "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
   },
@@ -543,6 +544,16 @@
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/fetch",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/navigation",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/security",
     "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
   },
   {
@@ -607,6 +618,11 @@
     "args": ["--enable-blink-features=FractionalMouseEvent"]
   },
   {
+    "prefix": "speech-with-unified-autoplay",
+    "base": "external/wpt/speech-api",
+    "args": ["--autoplay-policy=document-user-activation-required"]
+  },
+  {
     "prefix": "unified-autoplay",
     "base": "external/wpt/feature-policy",
     "args": ["--autoplay-policy=document-user-activation-required"]
@@ -666,7 +682,7 @@
   {
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
-    "args": ["--enable-blink-features=RTCUnifiedPlanByDefault"]
+    "args": ["--enable-features=RTCUnifiedPlanByDefault"]
   },
   {
     "prefix": "video-surface-layer",
@@ -683,6 +699,12 @@
   {
     "prefix": "video-surface-layer",
     "base": "external/wpt/feature-policy",
+    "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-display-compositor-pixel-dump"]
+  },
+  {
+    "prefix": "video-surface-layer",
+    "base": "http/tests/devtools/sources/debugger-breakpoints",
     "args": ["--enable-features=UseSurfaceLayerForVideo",
              "--enable-display-compositor-pixel-dump"]
   },
@@ -734,7 +756,42 @@
   },
   {
     "prefix": "intersection-observer-v2",
-    "base": "http/tests/intersection-observer",
+    "base": "intersection-observer/v2",
     "args": ["--enable-blink-features=IntersectionObserverV2"]
+  },
+  {
+    "prefix": "intersection-observer-v2",
+    "base": "http/tests/intersection-observer/v2",
+    "args": ["--enable-blink-features=IntersectionObserverV2"]
+  },
+  {
+    "prefix" : "lazyload-policy",
+    "base": "external/wpt/feature-policy/experimental-features/lazyload",
+    "args": ["--enable-blink-features=LazyFrameLoading"]
+  },
+  {
+    "prefix": "display-lock",
+    "base": "display-lock",
+    "args": ["--enable-blink-features=DisplayLocking"]
+  },
+  {
+    "prefix" : "autoupgrade-optionally-blockable-mixed-content",
+    "base": "http/tests/mixed-autoupgrade/optionally",
+    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
+  },
+  {
+    "prefix" : "autoupgrade-blockable-mixed-content",
+    "base": "http/tests/mixed-autoupgrade/blockable",
+    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/blockable"]
+  },
+  {
+    "prefix" : "autoupgrade-all-mixed-content",
+    "base": "http/tests/mixed-autoupgrade/all",
+    "args": ["--enable-features=AutoupgradeMixedContent"]
+  },
+  {
+    "prefix": "webgl-extra-video-texture-metadata",
+    "base": "fast/webgl/video-metadata",
+    "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   }
 ]

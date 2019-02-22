@@ -510,7 +510,7 @@ FieldTrialList::FieldTrialList(
 FieldTrialList::~FieldTrialList() {
   AutoLock auto_lock(lock_);
   while (!registered_.empty()) {
-    RegistrationMap::iterator it = registered_.begin();
+    auto it = registered_.begin();
     it->second->Release();
     registered_.erase(it->first);
   }
@@ -728,8 +728,8 @@ void FieldTrialList::GetActiveFieldTrialGroups(
     return;
   AutoLock auto_lock(global_->lock_);
 
-  for (RegistrationMap::iterator it = global_->registered_.begin();
-       it != global_->registered_.end(); ++it) {
+  for (auto it = global_->registered_.begin(); it != global_->registered_.end();
+       ++it) {
     FieldTrial::ActiveGroup active_group;
     if (it->second->GetActiveGroup(&active_group))
       active_groups->push_back(active_group);
@@ -1497,7 +1497,7 @@ const FieldTrial::EntropyProvider*
 }
 
 FieldTrial* FieldTrialList::PreLockedFind(const std::string& name) {
-  RegistrationMap::iterator it = registered_.find(name);
+  auto it = registered_.find(name);
   if (registered_.end() == it)
     return nullptr;
   return it->second;

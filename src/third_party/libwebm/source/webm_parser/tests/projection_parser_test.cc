@@ -15,8 +15,8 @@
 using webm::ElementParserTest;
 using webm::Id;
 using webm::Projection;
-using webm::ProjectionType;
 using webm::ProjectionParser;
+using webm::ProjectionType;
 
 namespace {
 

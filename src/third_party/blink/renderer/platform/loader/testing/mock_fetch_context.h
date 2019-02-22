@@ -32,10 +32,12 @@ class MockFetchContext : public FetchContext {
     kShouldLoadNewResource,
     kShouldNotLoadNewResource,
   };
-  static MockFetchContext* Create(LoadPolicy load_policy,
-                                  scoped_refptr<base::SingleThreadTaskRunner>
-                                      loading_task_runner = nullptr) {
-    return new MockFetchContext(load_policy, std::move(loading_task_runner));
+  static MockFetchContext* Create(
+      LoadPolicy load_policy,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr) {
+    return new MockFetchContext(load_policy, std::move(loading_task_runner),
+                                std::move(url_loader_factory));
   }
 
   ~MockFetchContext() override = default;
@@ -61,7 +63,7 @@ class MockFetchContext : public FetchContext {
       unsigned long identifier,
       ResourceRequest& request,
       const ResourceResponse& redirect_response,
-      Resource::Type,
+      ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override {
     will_send_request_ = request;
   }
@@ -69,7 +71,7 @@ class MockFetchContext : public FetchContext {
     return true;
   }
   base::Optional<ResourceRequestBlockedReason> CanRequest(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
@@ -78,14 +80,14 @@ class MockFetchContext : public FetchContext {
     return base::nullopt;
   }
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL& url,
       const ResourceLoaderOptions& options,
       SecurityViolationReportingPolicy reporting_policy,
       ResourceRequest::RedirectStatus redirect_status) const override {
     return base::nullopt;
   }
-  bool ShouldLoadNewResource(Resource::Type) const override {
+  bool ShouldLoadNewResource(ResourceType) const override {
     return load_policy_ == kShouldLoadNewResource;
   }
   bool IsLoadComplete() const override { return complete_; }
@@ -115,10 +117,6 @@ class MockFetchContext : public FetchContext {
     return frame_scheduler_.get();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override {
-    return frame_scheduler_->GetTaskRunner(TaskType::kInternalTest);
-  }
-
   std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
   CreateResourceLoadingTaskRunnerHandle() override {
     return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
@@ -142,18 +140,19 @@ class MockFetchContext : public FetchContext {
 
   MockFetchContext(
       LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
-      : load_policy_(load_policy),
-        runner_(loading_task_runner
-                    ? std::move(loading_task_runner)
-                    : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
+      : FetchContext(loading_task_runner
+                         ? std::move(loading_task_runner)
+                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+        load_policy_(load_policy),
         security_origin_(SecurityOrigin::CreateUniqueOpaque()),
-        frame_scheduler_(new MockFrameScheduler(runner_)),
+        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
+        url_loader_factory_(std::move(url_loader_factory)),
         complete_(false),
         transfer_size_(-1) {}
 
   enum LoadPolicy load_policy_;
-  scoped_refptr<base::SingleThreadTaskRunner> runner_;
   scoped_refptr<const SecurityOrigin> security_origin_;
   std::unique_ptr<FrameScheduler> frame_scheduler_;
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

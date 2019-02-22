@@ -83,12 +83,10 @@
 namespace content {
 
 PopupWindowMac::PopupWindowMac(const gfx::Rect& content_rect,
-                               blink::WebPopupType popup_type,
                                RenderWidgetHostViewCocoa* cocoa_view)
     : cocoa_view_(cocoa_view) {
-  bool activatable = popup_type == blink::kWebPopupTypeNone;
   [cocoa_view_ setCloseOnDeactivate:YES];
-  [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
+  [cocoa_view_ setCanBeKeyView:NO];
 
   popup_window_.reset([[RenderWidgetPopupWindow alloc]
       initWithContentRect:gfx::ScreenRectToNSRect(content_rect)

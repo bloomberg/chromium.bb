@@ -33,23 +33,10 @@
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_unicodeencodingex.h"
 #include "fxbarcode/BC_Writer.h"
-#include "third_party/base/ptr_util.h"
 
-CBC_OneDimWriter::CBC_OneDimWriter() {
-  m_locTextLoc = BC_TEXT_LOC_BELOWEMBED;
-  m_bPrintChecksum = true;
-  m_iDataLenth = 0;
-  m_bCalcChecksum = false;
-  m_pFont = nullptr;
-  m_fFontSize = 10;
-  m_iFontStyle = 0;
-  m_fontColor = 0xff000000;
-  m_iContentLen = 0;
-  m_bLeftPadding = false;
-  m_bRightPadding = false;
-}
+CBC_OneDimWriter::CBC_OneDimWriter() = default;
 
-CBC_OneDimWriter::~CBC_OneDimWriter() {}
+CBC_OneDimWriter::~CBC_OneDimWriter() = default;
 
 void CBC_OneDimWriter::SetPrintChecksum(bool checksum) {
   m_bPrintChecksum = checksum;
@@ -135,7 +122,7 @@ void CBC_OneDimWriter::CalcTextInfo(const ByteString& text,
                                     int32_t fontSize,
                                     float& charsLen) {
   std::unique_ptr<CFX_UnicodeEncodingEx> encoding =
-      FX_CreateFontEncodingEx(cFont, FXFM_ENCODING_NONE);
+      FX_CreateFontEncodingEx(cFont);
 
   size_t length = text.GetLength();
   uint32_t* pCharCode = FX_Alloc(uint32_t, text.GetLength());

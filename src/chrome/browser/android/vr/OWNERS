@@ -4,7 +4,7 @@ mthiesse@chromium.org
 tiborg@chromium.org
 vollick@chromium.org
 
-# WebXR-related, including VrShellGl.
+# WebXR-related, including GvrSchedulerDelegate.
 klausw@chromium.org
 
 # TEAM: xr-dev@chromium.org

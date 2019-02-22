@@ -43,7 +43,7 @@ public class CronetTestRule implements TestRule {
 
     // {@code true} when test is being run against system HttpURLConnection implementation.
     private boolean mTestingSystemHttpURLConnection;
-    private boolean mTestingJavaImpl = false;
+    private boolean mTestingJavaImpl;
     private StrictMode.VmPolicy mOldVmPolicy;
 
     /**

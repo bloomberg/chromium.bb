@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
+#include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
@@ -22,7 +22,6 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/client_image_registry.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -56,6 +55,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -64,7 +64,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_controller.h"
-#include "ash/message_center/message_center_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
@@ -74,7 +73,6 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -92,13 +90,15 @@
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
-#include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper_experimental.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper_legacy.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_notification_controller.h"
+#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
@@ -135,7 +135,7 @@
 #include "ash/wm/immersive_handler_factory_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/native_cursor_manager_ash_classic.h"
+#include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -172,11 +172,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "mash/public/mojom/launchable.mojom.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -200,10 +199,6 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
-#include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -393,11 +388,6 @@ bool Shell::HasRemoteClient(aura::Window* window) {
 }
 
 // static
-Config Shell::GetAshConfig() {
-  return Config::CLASSIC;
-}
-
-// static
 void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
                                     bool for_test) {
   PaletteTray::RegisterLocalStatePrefs(registry);
@@ -429,9 +419,21 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
 void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
   wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
       std::move(file_helper), aura_env_);
+  if (wayland_server_controller_) {
+    system_tray_model()
+        ->virtual_keyboard()
+        ->SetInputMethodSurfaceManagerObserver(
+            wayland_server_controller_->arc_input_method_surface_manager());
+  }
 }
 
 void Shell::DestroyWaylandServer() {
+  if (wayland_server_controller_) {
+    system_tray_model()
+        ->virtual_keyboard()
+        ->RemoveInputMethodSurfaceManagerObserver(
+            wayland_server_controller_->arc_input_method_surface_manager());
+  }
   wayland_server_controller_.reset();
 }
 
@@ -468,42 +470,13 @@ void Shell::OnDictationEnded() {
 }
 
 void Shell::EnableKeyboard() {
-  if (!keyboard::IsKeyboardEnabled())
-    return;
-
-  if (keyboard_controller_->enabled()) {
-    // Disable and re-enable the keyboard, as some callers expect the keyboard
-    // to be reloaded.
-    // TODO(https://crbug.com/731537): Add a separate function for reloading the
-    // keyboard.
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
-
-  // TODO(crbug.com/646565): The keyboard UI uses a WebContents that is
-  // created by chrome code but parented to an ash-created container window.
-  // See ChromeKeyboardUI and keyboard::KeyboardController. This needs to be
-  // fixed for both SingleProcessMash and MultiProcessMash.
-  if (::features::IsUsingWindowService())
-    return;
-
-  auto keyboard_ui = shell_delegate_->CreateKeyboardUI();
-  DCHECK(keyboard_ui);
-  keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
-                                       virtual_keyboard_controller_.get());
-  for (auto& observer : shell_observers_)
-    observer.OnKeyboardControllerCreated();
-  GetPrimaryRootWindowController()->ActivateKeyboard(
-      keyboard_controller_.get());
+  // The keyboard controller is persistent; this will create or recreate the
+  // keyboard window as necessary.
+  ash_keyboard_controller_->EnableKeyboard();
 }
 
 void Shell::DisableKeyboard() {
-  if (keyboard_controller_->enabled()) {
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
-
-  keyboard_controller_->DisableKeyboard();
+  ash_keyboard_controller_->DisableKeyboard();
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
@@ -561,16 +534,13 @@ void Shell::UpdateCursorCompositingEnabled() {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  if (GetAshConfig() != Config::MASH_DEPRECATED) {
-    // TODO: needs to work in mash. http://crbug.com/705592.
-    CursorWindowController* cursor_window_controller =
-        window_tree_host_manager_->cursor_window_controller();
+  CursorWindowController* cursor_window_controller =
+      window_tree_host_manager_->cursor_window_controller();
 
-    if (cursor_window_controller->is_cursor_compositing_enabled() == enabled)
-      return;
-    cursor_window_controller->SetCursorCompositingEnabled(enabled);
-    native_cursor_manager_->SetNativeCursorEnabled(!enabled);
-  }
+  if (cursor_window_controller->is_cursor_compositing_enabled() == enabled)
+    return;
+  cursor_window_controller->SetCursorCompositingEnabled(enabled);
+  native_cursor_manager_->SetNativeCursorEnabled(!enabled);
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
@@ -625,6 +595,11 @@ void Shell::NotifyOverviewModeStarting() {
     observer.OnOverviewModeStarting();
 }
 
+void Shell::NotifyOverviewModeStartingAnimationComplete(bool canceled) {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeStartingAnimationComplete(canceled);
+}
+
 void Shell::NotifyOverviewModeEnding() {
   for (auto& observer : shell_observers_)
     observer.OnOverviewModeEnding();
@@ -635,9 +610,9 @@ void Shell::NotifyOverviewModeEnded() {
     observer.OnOverviewModeEnded();
 }
 
-void Shell::NotifyOverviewModeEndingAnimationComplete() {
+void Shell::NotifyOverviewModeEndingAnimationComplete(bool canceled) {
   for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEndingAnimationComplete();
+    observer.OnOverviewModeEndingAnimationComplete(canceled);
 }
 
 void Shell::NotifySplitViewModeStarting() {
@@ -708,7 +683,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
-      keyboard_controller_(std::make_unique<keyboard::KeyboardController>()),
       locale_notification_controller_(
           std::make_unique<LocaleNotificationController>()),
       login_screen_controller_(std::make_unique<LoginScreenController>()),
@@ -723,7 +697,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       window_selector_controller_(std::make_unique<WindowSelectorController>()),
-      tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
       display_configurator_(std::make_unique<display::DisplayConfigurator>()),
       display_output_protection_(std::make_unique<DisplayOutputProtection>(
           display_configurator_.get())),
@@ -732,6 +705,15 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
+  ash_keyboard_controller_ =
+      std::make_unique<AshKeyboardController>(session_controller_.get());
+
+  if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
+    tray_bluetooth_helper_ =
+        std::make_unique<TrayBluetoothHelperExperimental>();
+  } else {
+    tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
+  }
 
   PowerStatus::Initialize();
 
@@ -951,6 +933,8 @@ Shell::~Shell() {
   display_change_observer_.reset();
   display_shutdown_observer_.reset();
 
+  ash_keyboard_controller_.reset();
+
   PowerStatus::Shutdown();
   // Depends on SessionController.
   power_event_observer_.reset();
@@ -1055,7 +1039,7 @@ void Shell::Init(
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
-  native_cursor_manager_ = new NativeCursorManagerAshClassic;
+  native_cursor_manager_ = new NativeCursorManagerAsh;
   cursor_manager_ =
       std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
 
@@ -1113,7 +1097,7 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_ = std::make_unique<AcceleratorController>(nullptr);
+  accelerator_controller_ = std::make_unique<AcceleratorController>();
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
@@ -1141,7 +1125,7 @@ void Shell::Init(
   AddPreTargetHandler(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
-      std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
+      std::make_unique<PreTargetAcceleratorHandler>(),
       accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
@@ -1174,9 +1158,6 @@ void Shell::Init(
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 
-  if (::features::IsUsingWindowService())
-    client_image_registry_ = std::make_unique<ClientImageRegistry>();
-
   drag_drop_controller_ = std::make_unique<DragDropController>();
 
   // |screenshot_controller_| needs to be created (and prepended as a
@@ -1197,10 +1178,6 @@ void Shell::Init(
   laser_pointer_controller_.reset(new LaserPointerController());
   partial_magnification_controller_.reset(new PartialMagnificationController());
   highlighter_controller_.reset(new HighlighterController());
-
-  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
-                              ? std::make_unique<AssistantController>()
-                              : nullptr;
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
@@ -1262,6 +1239,12 @@ void Shell::Init(
 
   window_tree_host_manager_->InitHosts();
 
+  // |assistant_controller_| needs to be created after InitHosts() since its
+  // keyboard observer function result has dependency on workspace change.
+  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
+                              ? std::make_unique<AssistantController>()
+                              : nullptr;
+
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
@@ -1271,8 +1254,9 @@ void Shell::Init(
 
   peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>();
   power_event_observer_.reset(new PowerEventObserver());
-  user_activity_notifier_.reset(
-      new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
+  user_activity_notifier_ =
+      std::make_unique<ui::UserActivityPowerManagerNotifier>(
+          user_activity_detector_.get(), connector_);
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
@@ -1454,39 +1438,15 @@ void Shell::OnFirstSessionStarted() {
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {
+  const bool is_session_active = state == session_manager::SessionState::ACTIVE;
   // Initialize the |shelf_window_watcher_| when a session becomes active.
   // Shelf itself is initialized in RootWindowController.
-  if (state == session_manager::SessionState::ACTIVE) {
-    if (!shelf_window_watcher_) {
-      shelf_window_watcher_ =
-          std::make_unique<ShelfWindowWatcher>(shelf_model());
-    }
-  }
+  if (is_session_active && !shelf_window_watcher_)
+    shelf_window_watcher_ = std::make_unique<ShelfWindowWatcher>(shelf_model());
 
-  // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in
-  // unit tests. crbug.com/646565.
-  if (keyboard::IsKeyboardEnabled()) {
-    switch (state) {
-      case session_manager::SessionState::OOBE:
-      case session_manager::SessionState::LOGIN_PRIMARY:
-        // Ensure that the keyboard controller is activated for the primary
-        // window.
-        GetPrimaryRootWindowController()->ActivateKeyboard(
-            keyboard_controller_.get());
-        break;
-      case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-      case session_manager::SessionState::ACTIVE:
-        // Reload the keyboard on user profile change to refresh keyboard
-        // extensions with the new profile and ensure the extensions call the
-        // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
-        // keyboard works on supervised user creation, http://crbug.com/712873.
-        // |ACTIVE| is also needed for guest user workflow.
-        EnableKeyboard();
-        break;
-      default:
-        break;
-    }
-  }
+  // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
+  // the controller when the session is active. https://crbug.com/464118
+  drag_drop_controller_->set_enabled(is_session_active);
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {

@@ -20,17 +20,13 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 // Contains map of default pre-installed apps and packages.
 class ArcDefaultAppList {
  public:
-  class Delegate {
-   public:
-    virtual void OnDefaultAppsReady() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   struct AppInfo {
     AppInfo(const std::string& name,
                    const std::string& package_name,
@@ -60,9 +56,10 @@ class ArcDefaultAppList {
   // Defines App id to default AppInfo mapping.
   using AppInfoMap = std::map<std::string, std::unique_ptr<AppInfo>>;
 
-  ArcDefaultAppList(Delegate* delegate, Profile* profile);
+  ArcDefaultAppList(Profile* profile, base::OnceClosure ready_callback);
   ~ArcDefaultAppList();
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void UseTestAppsDirectory();
 
   // Returns default app info if it is found in defaults and its package is not
@@ -74,37 +71,37 @@ class ArcDefaultAppList {
   // Returns true if package exists in default packages list. Note it may be
   // marked as uninstalled.
   bool HasPackage(const std::string& package_name) const;
-  // Sets uninstalled flag for default package if it exists in default packages
-  // list.
-  void MaybeMarkPackageUninstalled(const std::string& package_name,
-                                   bool uninstalled);
+  // Marks default app |app_id| as hidden in case |hidden| is true.
+  void SetAppHidden(const std::string& app_id, bool hidden);
+  // Marks all default apps from the package |package_name| as hidden.
+  void SetAppsHiddenForPackage(const std::string& package_name);
 
-  // Returns set of packages which are marked not as uninstalled.
+  // Returns map of apps that are visible and not filtered.
+  std::map<std::string, const AppInfo*> GetActiveApps() const;
+  // Returns set of packages that covers active apps.
   std::unordered_set<std::string> GetActivePackages() const;
-
-  const AppInfoMap& app_map() const { return apps_; }
 
   void set_filter_level(FilterLevel filter_level) {
     filter_level_ = filter_level;
   }
 
  private:
-  // Defines mapping package name to uninstalled state.
-  using PackageMap = std::map<std::string, bool>;
-
   // Called when default apps are read from the provided source.
   void OnAppsRead(std::unique_ptr<AppInfoMap> apps);
   // Called when default apps from all sources are read.
   void OnAppsReady();
 
   // Unowned pointer.
-  Delegate* const delegate_;
-  Profile* const profile_;
+  Profile* profile_;
+
+  base::OnceClosure ready_callback_;
+
   FilterLevel filter_level_ = FilterLevel::ALL;
 
-  AppInfoMap apps_;
-  PackageMap packages_;
-
+  // Keeps visible apps.
+  AppInfoMap visible_apps_;
+  // Keeps hidden apps.
+  AppInfoMap hidden_apps_;
   // To wait until all sources with apps are loaded.
   base::RepeatingClosure barrier_closure_;
 

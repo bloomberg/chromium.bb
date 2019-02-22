@@ -40,6 +40,7 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
+class ScopedDeferCommits;
 }  // namespace cc
 
 namespace gfx {
@@ -136,9 +137,11 @@ class CONTENT_EXPORT LayerTreeView
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void SynchronouslyCompositeNoRasterForTesting() override;
-  void CompositeWithRasterForTesting() override;
-  void SetDeferCommits(bool defer_commits) override;
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state, optionally including
+  // rasterization.
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
+  std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
@@ -177,12 +180,8 @@ class CONTENT_EXPORT LayerTreeView
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
-  void UpdateLayerTreeHost(VisualStateUpdate requested_update) override;
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override;
+  void UpdateLayerTreeHost() override;
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
   void RequestNewLayerTreeFrameSink() override;
@@ -191,11 +190,12 @@ class CONTENT_EXPORT LayerTreeView
   void WillCommit() override;
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
-  void DidReceiveCompositorFrameAck() override;
+  void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;

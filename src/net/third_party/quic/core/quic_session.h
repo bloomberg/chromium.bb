@@ -12,7 +12,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_control_frame_manager.h"
@@ -93,6 +92,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   void OnRstStream(const QuicRstStreamFrame& frame) override;
   void OnGoAway(const QuicGoAwayFrame& frame) override;
+  void OnMessageReceived(QuicStringPiece message) override;
   void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   void OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnConnectionClosed(QuicErrorCode error,
@@ -121,10 +121,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void OnForwardProgressConfirmed() override;
 
   // QuicStreamFrameDataProducer
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override;
+  WriteStreamDataResult WriteStreamData(QuicStreamId id,
+                                        QuicStreamOffset offset,
+                                        QuicByteCount data_length,
+                                        QuicDataWriter* writer) override;
 
   // SessionNotifierInterface methods:
   bool OnFrameAcked(const QuicFrame& frame,
@@ -134,7 +134,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
-  bool HasPendingCryptoData() const override;
+  bool HasUnackedCryptoData() const override;
 
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const QuicSocketAddress& self_address,
@@ -151,6 +151,22 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                                       size_t write_length,
                                       QuicStreamOffset offset,
                                       StreamSendingState state);
+
+  // Called by application to send |message|. Returns the message result which
+  // includes the message status and message ID (valid if the write succeeds).
+  // SendMessage flushes a message packet even it is not full. If the
+  // application wants to bundle other data in the same packet, please consider
+  // adding a packet flusher around the SendMessage and/or WritevData calls. If
+  // a packet flusher is added, ensure the |message|'s buffer is not modified or
+  // deleted before exiting the flusher's scope. OnMessageAcked and
+  // OnMessageLost are called when a particular message gets acked or lost.
+  MessageResult SendMessage(QuicStringPiece message);
+
+  // Called when message with |message_id| gets acked.
+  virtual void OnMessageAcked(QuicMessageId message_id);
+
+  // Called when message with |message_id| is considered as lost.
+  virtual void OnMessageLost(QuicMessageId message_id);
 
   // Called by control frame manager when it wants to write control frames to
   // the peer. Returns true if |frame| is consumed, false otherwise.
@@ -273,6 +289,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // connection, or in a write-blocked stream.
   bool HasDataToWrite() const;
 
+  // Returns the largest payload that will fit into a single MESSAGE frame.
+  // Because overhead can vary during a connection, this method should be
+  // checked for every message.
+  QuicPacketLength GetLargestMessagePayload() const;
+
   bool goaway_sent() const { return goaway_sent_; }
 
   bool goaway_received() const { return goaway_received_; }
@@ -314,7 +335,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Clean up closed_streams_.
+  void CleanUpClosedStreams();
+
   bool session_decides_what_to_write() const;
+
+  bool deprecate_post_process_after_data() const;
 
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
@@ -332,10 +358,15 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns nullptr and does error handling if the stream can not be created.
   virtual QuicStream* CreateIncomingDynamicStream(QuicStreamId id) = 0;
 
-  // Create a new stream to handle a locally-initiated stream.
+  // Create a new stream to handle a locally-initiated bidirectional stream.
   // Caller does not own the returned stream.
   // Returns nullptr if max streams have already been opened.
-  virtual QuicStream* CreateOutgoingDynamicStream() = 0;
+  virtual QuicStream* CreateOutgoingBidirectionalStream() = 0;
+
+  // Create a new stream to handle a locally-initiated write unidirectional
+  // stream. Caller does not own the returned stream. Returns nullptr if max
+  // streams have already been opened.
+  virtual QuicStream* CreateOutgoingUnidirectionalStream() = 0;
 
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetMutableCryptoStream() = 0;
@@ -349,6 +380,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns the stream ID for a new outgoing stream, and increments the
   // underlying counter.
   QuicStreamId GetNextOutgoingStreamId();
+
+  // Indicates whether the next outgoing stream ID can be allocated or not.
+  bool CanOpenNextOutgoingStream();
 
   // Returns existing stream with id = |stream_id|. If no such stream exists,
   // and |stream_id| is a peer-created id, then a new stream is created and
@@ -557,10 +591,16 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   QuicControlFrameManager control_frame_manager_;
 
+  // Id of latest successfully sent message.
+  QuicMessageId last_message_id_;
+
   // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
   // is not used here.
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
+
+  // Clean up closed_streams_ when this alarm fires.
+  std::unique_ptr<QuicAlarm> closed_streams_clean_up_alarm_;
 };
 
 }  // namespace quic

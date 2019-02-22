@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
@@ -38,7 +39,7 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
 
   int64_t result = 0;
 
-  if (Frame::HasTransientUserActivation(frame, false))
+  if (LocalFrame::HasTransientUserActivation(frame, false))
     result |= 0x01;
   if (frame->HasBeenActivated())
     result |= 0x02;

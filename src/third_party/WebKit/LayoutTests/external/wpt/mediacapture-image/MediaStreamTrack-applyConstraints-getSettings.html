@@ -17,13 +17,15 @@ image_capture_test(async t => {
   context.fillRect(0, 0, 10, 10);
 
   const constraints = { advanced : [{ whiteBalanceMode : 'single-shot',
-                                      exposureMode     : 'continuous',
+                                      exposureMode     : 'manual',
                                       focusMode        : 'single-shot',
 
                                       pointsOfInterest : [{x : 0.1, y : 0.2},
                                                           {x : 0.3, y : 0.4}],
 
                                       exposureCompensation : 133.77,
+                                      // in nano-seconds.
+                                      exposureTime         : 10000,
                                       colorTemperature     : 6000,
                                       iso                  : 120.0,
 
@@ -31,6 +33,7 @@ image_capture_test(async t => {
                                       contrast             : 4,
                                       saturation           : 5,
                                       sharpness            : 6,
+                                      focusDistance        : 7,
 
                                       zoom                 : 3.141592,
 
@@ -69,6 +72,8 @@ image_capture_test(async t => {
 
   assert_equals(constraints.advanced[0].exposureCompensation,
                 settings.exposureCompensation, 'exposureCompensation');
+  assert_equals(constraints.advanced[0].exposureTime,
+                settings.exposureTime, 'exposureTime');
   assert_equals(constraints.advanced[0].colorTemperature,
                 settings.colorTemperature, 'colorTemperature');
   assert_equals(constraints.advanced[0].iso, settings.iso, 'iso');
@@ -82,6 +87,8 @@ image_capture_test(async t => {
   assert_equals(constraints.advanced[0].sharpness, settings.sharpness,
                 'sharpness');
 
+  assert_equals(constraints.advanced[0].focusDistance, settings.focusDistance,
+                'focusDistance');
   assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
 
   assert_equals(constraints.advanced[0].torch, settings.torch, 'torch');

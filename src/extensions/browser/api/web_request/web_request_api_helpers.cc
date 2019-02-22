@@ -17,9 +17,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -51,24 +53,6 @@ namespace extension_web_request_api_helpers {
 namespace {
 
 using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
-
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
-enum class WebRequestSpecialHeaderRemoval {
-  kNeither,
-  kAcceptLanguage,
-  kUserAgent,
-  kBoth,
-  kMaxValue = kBoth,
-};
-
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
-enum class WebRequestResponseHeaderType {
-  kNone,
-  kSetCookie,
-  kMaxValue = kSetCookie,
-};
 
 // Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
 // CHANGE THEIR MEANING.
@@ -123,6 +107,18 @@ bool NullableEquals(const std::string* a, const std::string* b) {
   if ((a && !b) || (!a && b))
     return false;
   return (!a) || (*a == *b);
+}
+
+void RecordSpecialRequestHeadersRemoved(
+    WebRequestSpecialRequestHeaderModification type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.SpecialRequestHeadersRemoved", type);
+}
+
+void RecordSpecialRequestHeadersChanged(
+    WebRequestSpecialRequestHeaderModification type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.SpecialRequestHeadersChanged", type);
 }
 
 }  // namespace
@@ -257,10 +253,8 @@ std::unique_ptr<base::Value> MakeHeaderModificationLogValue(
   dict->Set("modified_headers", std::move(modified_headers));
 
   auto deleted_headers = std::make_unique<base::ListValue>();
-  for (std::vector<std::string>::const_iterator key =
-           delta->deleted_request_headers.begin();
-       key != delta->deleted_request_headers.end();
-       ++key) {
+  for (auto key = delta->deleted_request_headers.cbegin();
+       key != delta->deleted_request_headers.cend(); ++key) {
     deleted_headers->AppendString(*key);
   }
   dict->Set("deleted_headers", std::move(deleted_headers));
@@ -426,8 +420,7 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
 void MergeCancelOfResponses(const EventResponseDeltas& deltas,
                             bool* canceled,
                             extensions::WebRequestInfo::Logger* logger) {
-  for (EventResponseDeltas::const_iterator i = deltas.begin();
-       i != deltas.end(); ++i) {
+  for (auto i = deltas.cbegin(); i != deltas.cend(); ++i) {
     if ((*i)->cancel) {
       *canceled = true;
       logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_ABORTED_REQUEST,
@@ -532,8 +525,8 @@ static bool MergeAddRequestCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const RequestCookieModifications& modifications =
         (*delta)->request_cookie_modifications;
-    for (RequestCookieModifications::const_iterator mod = modifications.begin();
-         mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != ADD || !(*mod)->modification.get())
         continue;
       std::string* new_name = (*mod)->modification->name.get();
@@ -542,7 +535,7 @@ static bool MergeAddRequestCookieModifications(
         continue;
 
       bool cookie_with_same_name_found = false;
-      for (ParsedRequestCookies::iterator cookie = cookies->begin();
+      for (auto cookie = cookies->begin();
            cookie != cookies->end() && !cookie_with_same_name_found; ++cookie) {
         if (cookie->first == *new_name) {
           if (cookie->second != *new_value) {
@@ -574,15 +567,14 @@ static bool MergeEditRequestCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const RequestCookieModifications& modifications =
         (*delta)->request_cookie_modifications;
-    for (RequestCookieModifications::const_iterator mod = modifications.begin();
-         mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != EDIT || !(*mod)->modification.get())
         continue;
 
       std::string* new_value = (*mod)->modification->value.get();
       RequestCookie* filter = (*mod)->filter.get();
-      for (ParsedRequestCookies::iterator cookie = cookies->begin();
-           cookie != cookies->end(); ++cookie) {
+      for (auto cookie = cookies->begin(); cookie != cookies->end(); ++cookie) {
         if (!DoesRequestCookieMatchFilter(*cookie, filter))
           continue;
         // If the edit operation tries to modify the cookie name, we just ignore
@@ -609,13 +601,13 @@ static bool MergeRemoveRequestCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const RequestCookieModifications& modifications =
         (*delta)->request_cookie_modifications;
-    for (RequestCookieModifications::const_iterator mod = modifications.begin();
-         mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != REMOVE)
         continue;
 
       RequestCookie* filter = (*mod)->filter.get();
-      ParsedRequestCookies::iterator i = cookies->begin();
+      auto i = cookies->begin();
       while (i != cookies->end()) {
         if (DoesRequestCookieMatchFilter(*i, filter)) {
           i = cookies->erase(i);
@@ -872,18 +864,49 @@ void MergeOnBeforeSendHeadersResponses(
     }
   }
 
-  // See https://crbug.com/827582
-  auto removal = WebRequestSpecialHeaderRemoval::kNeither;
-  bool removed_accept_language = removed_headers.count("Accept-Language");
-  bool removed_user_agent = removed_headers.count("User-Agent");
-  if (removed_accept_language && removed_user_agent)
-    removal = WebRequestSpecialHeaderRemoval::kBoth;
-  else if (removed_accept_language)
-    removal = WebRequestSpecialHeaderRemoval::kAcceptLanguage;
-  else if (removed_user_agent)
-    removal = WebRequestSpecialHeaderRemoval::kUserAgent;
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.SpecialHeadersRemoved",
-                            removal);
+  // TODO(https://crbug.com/827582): Remove once data is gathered.
+  static const std::map<std::string, WebRequestSpecialRequestHeaderModification>
+      kHeaderMap{
+          {"accept-language",
+           WebRequestSpecialRequestHeaderModification::kAcceptLanguage},
+          {"accept-encoding",
+           WebRequestSpecialRequestHeaderModification::kAcceptEncoding},
+          {"user-agent",
+           WebRequestSpecialRequestHeaderModification::kUserAgent},
+          {"cookie", WebRequestSpecialRequestHeaderModification::kCookie},
+          {"referer", WebRequestSpecialRequestHeaderModification::kReferer},
+      };
+  int special_headers_removed = 0;
+  for (const auto& header : removed_headers) {
+    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    if (it != kHeaderMap.end()) {
+      special_headers_removed++;
+      RecordSpecialRequestHeadersRemoved(it->second);
+    }
+  }
+  if (special_headers_removed == 0) {
+    RecordSpecialRequestHeadersRemoved(
+        WebRequestSpecialRequestHeaderModification::kNone);
+  } else if (special_headers_removed > 1) {
+    RecordSpecialRequestHeadersRemoved(
+        WebRequestSpecialRequestHeaderModification::kMultiple);
+  }
+
+  int special_headers_changed = 0;
+  for (const auto& header : set_headers) {
+    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    if (it != kHeaderMap.end()) {
+      special_headers_changed++;
+      RecordSpecialRequestHeadersChanged(it->second);
+    }
+  }
+  if (special_headers_changed == 0) {
+    RecordSpecialRequestHeadersChanged(
+        WebRequestSpecialRequestHeaderModification::kNone);
+  } else if (special_headers_changed > 1) {
+    RecordSpecialRequestHeadersChanged(
+        WebRequestSpecialRequestHeaderModification::kMultiple);
+  }
 
   if (url.SchemeIsWSOrWSS()) {
     WebSocketRequestHeaderModificationStatusReporter().Report(removed_headers,
@@ -1006,8 +1029,8 @@ static bool MergeAddResponseCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const ResponseCookieModifications& modifications =
         (*delta)->response_cookie_modifications;
-    for (ResponseCookieModifications::const_iterator mod =
-             modifications.begin(); mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != ADD || !(*mod)->modification.get())
         continue;
       // Cookie names are not unique in response cookies so we always append
@@ -1033,8 +1056,8 @@ static bool MergeEditResponseCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const ResponseCookieModifications& modifications =
         (*delta)->response_cookie_modifications;
-    for (ResponseCookieModifications::const_iterator mod =
-             modifications.begin(); mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != EDIT || !(*mod)->modification.get())
         continue;
 
@@ -1061,12 +1084,12 @@ static bool MergeRemoveResponseCookieModifications(
   for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
     const ResponseCookieModifications& modifications =
         (*delta)->response_cookie_modifications;
-    for (ResponseCookieModifications::const_iterator mod =
-             modifications.begin(); mod != modifications.end(); ++mod) {
+    for (auto mod = modifications.cbegin(); mod != modifications.cend();
+         ++mod) {
       if ((*mod)->type != REMOVE)
         continue;
 
-      ParsedResponseCookies::iterator i = cookies->begin();
+      auto i = cookies->begin();
       while (i != cookies->end()) {
         if (DoesResponseCookieMatchFilter(i->get(),
                                           (*mod)->filter.get())) {
@@ -1094,11 +1117,6 @@ void MergeCookiesInOnHeadersReceivedResponses(
     cookie_modifications_exist |=
         !(*delta)->response_cookie_modifications.empty();
   }
-  // See https://crbug.com/827582
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ModifiedResponseHeaders",
-                            cookie_modifications_exist
-                                ? WebRequestResponseHeaderType::kSetCookie
-                                : WebRequestResponseHeaderType::kNone);
 
   if (!cookie_modifications_exist)
     return;
@@ -1120,12 +1138,6 @@ void MergeCookiesInOnHeadersReceivedResponses(
   // Store new value.
   if (modified)
     StoreResponseCookies(cookies, *override_response_headers);
-
-  if (url.SchemeIsWSOrWSS()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Extensions.WebRequest.WS_CookiesAreModifiedOnHeadersReceived",
-        modified);
-  }
 }
 
 // Converts the key of the (key, value) pair to lower case.
@@ -1238,7 +1250,31 @@ void MergeOnHeadersReceivedResponses(
     *allowed_unsafe_redirect_url = new_url;
   }
 
+  // TODO(https://crbug.com/827582): Remove once data is gathered.
+  bool set_cookie_modified = false;
+  for (const auto& header : added_headers) {
+    if (header.first == "set-cookie") {
+      set_cookie_modified = true;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderChanged",
+                        set_cookie_modified);
+
+  bool set_cookie_removed = false;
+  for (const auto& header : removed_headers) {
+    if (header.first == "set-cookie") {
+      set_cookie_removed = true;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderRemoved",
+                        set_cookie_removed && !set_cookie_modified);
+
   if (url.SchemeIsWSOrWSS()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.WebRequest.WS_CookiesAreModifiedOnHeadersReceived",
+        set_cookie_removed || set_cookie_modified);
     UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_ResponseHeadersAreModified",
                           !added_headers.empty() || !removed_headers.empty());
   }
@@ -1251,9 +1287,7 @@ bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
   CHECK(auth_credentials);
   bool credentials_set = false;
 
-  for (EventResponseDeltas::const_iterator delta = deltas.begin();
-       delta != deltas.end();
-       ++delta) {
+  for (auto delta = deltas.cbegin(); delta != deltas.cend(); ++delta) {
     if (!(*delta)->auth_credentials.get())
       continue;
     bool different =
@@ -1282,8 +1316,8 @@ void ClearCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearCacheOnNavigationOnUI();
   } else {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&ClearCacheOnNavigationOnUI));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::Bind(&ClearCacheOnNavigationOnUI));
   }
 }
 

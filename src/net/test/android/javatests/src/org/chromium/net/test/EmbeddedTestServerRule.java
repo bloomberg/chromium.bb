@@ -14,13 +14,12 @@ import org.junit.runner.Description;
  * finishes.
  */
 public class EmbeddedTestServerRule extends TestWatcher {
-    EmbeddedTestServer mServer = new EmbeddedTestServer();
+    EmbeddedTestServer mServer;
 
     @Override
     protected void starting(Description description) {
         try {
-            EmbeddedTestServer.initializeAndStartServer(
-                    mServer, InstrumentationRegistry.getContext());
+            mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         } catch (InterruptedException e) {
             throw new EmbeddedTestServer.EmbeddedTestServerFailure("Test server didn't start");
         }

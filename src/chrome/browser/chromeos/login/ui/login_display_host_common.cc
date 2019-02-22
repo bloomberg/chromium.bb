@@ -20,7 +20,6 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/wm/public/scoped_drag_drop_disabler.h"
 
 namespace chromeos {
 namespace {
@@ -47,16 +46,6 @@ LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
       new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
                           KeepAliveRestartOption::DISABLED));
 
-  // Disable Drag'n'Drop for the login session.
-  // ash::Shell may be null in tests.
-  // TODO(crbug.com/854328): Mash support.
-  if (ash::Shell::HasInstance() && !features::IsUsingWindowService()) {
-    scoped_drag_drop_disabler_.reset(
-        new wm::ScopedDragDropDisabler(ash::Shell::GetPrimaryRootWindow()));
-  } else {
-    NOTIMPLEMENTED();
-  }
-
   // Close the login screen on NOTIFICATION_APP_TERMINATING.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -76,6 +65,11 @@ void LoginDisplayHostCommon::BeforeSessionStart() {
 }
 
 void LoginDisplayHostCommon::Finalize(base::OnceClosure completion_callback) {
+  // If finalize is called twice the LoginDisplayHost instance will be deleted
+  // multiple times.
+  CHECK(!is_finalizing_);
+  is_finalizing_ = true;
+
   completion_callbacks_.push_back(std::move(completion_callback));
   OnFinalize();
 }

@@ -207,34 +207,8 @@ void PseudoElement::DidRecalcStyle(StyleRecalcChange change) {
   }
 }
 
-// With PseudoElements the DOM tree and Layout tree can differ. When you attach
-// a, first-letter for example, into the DOM we walk down the Layout
-// tree to find the correct insertion point for the LayoutObject. But, this
-// means if we ask for the parentOrShadowHost Node from the first-letter
-// pseudo element we will get some arbitrary ancestor of the LayoutObject.
-//
-// For hit testing, we need the parent Node of the LayoutObject for the
-// first-letter pseudo element. So, by walking up the Layout tree we know
-// we will get the parent and not some other ancestor.
-Node* PseudoElement::FindAssociatedNode() const {
-  // The ::backdrop element is parented to the LayoutView, not to the node
-  // that it's associated with. We need to make sure ::backdrop sends the
-  // events to the parent node correctly.
-  if (GetPseudoId() == kPseudoIdBackdrop)
-    return ParentOrShadowHostNode();
-
-  DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->Parent());
-
-  // We can have any number of anonymous layout objects inserted between
-  // us and our parent so make sure we skip over them.
-  LayoutObject* ancestor = GetLayoutObject()->Parent();
-  while (ancestor->IsAnonymous() ||
-         (ancestor->GetNode() && ancestor->GetNode()->IsPseudoElement())) {
-    DCHECK(ancestor->Parent());
-    ancestor = ancestor->Parent();
-  }
-  return ancestor->GetNode();
+Node* PseudoElement::InnerNodeForHitTesting() const {
+  return ParentOrShadowHostNode();
 }
 
 const ComputedStyle* PseudoElement::VirtualEnsureComputedStyle(

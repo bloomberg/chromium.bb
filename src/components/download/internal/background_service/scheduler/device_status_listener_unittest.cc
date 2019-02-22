@@ -70,8 +70,7 @@ class TestDeviceStatusListener : public DeviceStatusListener {
 
 class DeviceStatusListenerTest : public testing::Test {
  public:
-  DeviceStatusListenerTest()
-      : network_connection_tracker_(true, ConnectionType::CONNECTION_UNKNOWN) {}
+  DeviceStatusListenerTest() {}
 
   void SetUp() override {
     auto power_source = std::make_unique<base::PowerMonitorTestSource>();
@@ -83,7 +82,7 @@ class DeviceStatusListenerTest : public testing::Test {
     test_battery_listener_ = battery_listener.get();
 
     auto network_listener = std::make_unique<NetworkStatusListenerImpl>(
-        &network_connection_tracker_);
+        network::TestNetworkConnectionTracker::GetInstance());
 
     listener_ = std::make_unique<TestDeviceStatusListener>(
         std::move(battery_listener), std::move(network_listener));
@@ -108,7 +107,8 @@ class DeviceStatusListenerTest : public testing::Test {
   // Simulates a network change call, the event will be broadcasted
   // asynchronously.
   void ChangeNetworkType(ConnectionType type) {
-    network_connection_tracker_.SetConnectionType(type);
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        type);
   }
 
   // Simulates a network change call, the event will be sent to client
@@ -133,7 +133,6 @@ class DeviceStatusListenerTest : public testing::Test {
 
   // Needed for network change notifier and power monitor.
   base::MessageLoop message_loop_;
-  network::TestNetworkConnectionTracker network_connection_tracker_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   base::PowerMonitorTestSource* power_source_;
   TestBatteryStatusListener* test_battery_listener_;

@@ -34,6 +34,8 @@ std::string UIElement::GetTypeName() const {
       return "View";
     case UIElementType::FRAMESINK:
       return "FrameSink";
+    case UIElementType::SURFACE:
+      return "Surface";
   }
   NOTREACHED();
   return std::string();

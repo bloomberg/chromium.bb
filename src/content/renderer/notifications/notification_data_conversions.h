@@ -6,14 +6,14 @@
 #define CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 
 namespace content {
 
-// Converts PlatformNotificationData to Blink WebNotificationData.
+// Converts blink::PlatformNotificationData to Blink WebNotificationData.
 CONTENT_EXPORT blink::WebNotificationData ToWebNotificationData(
-    const PlatformNotificationData& platform_data);
+    const blink::PlatformNotificationData& platform_data);
 
 }  // namespace content
 

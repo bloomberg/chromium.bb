@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -69,6 +68,9 @@ class ChromeUserManagerImpl
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Resets platform specific delegates that were set for public accounts.
+  static void ResetPublicAccountDelegatesForTesting();
+
   // UserManagerInterface implementation:
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const AccountId& account_id) override;
@@ -100,12 +102,6 @@ class ChromeUserManagerImpl
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const user_manager::User& user) const override;
   bool IsUserAllowed(const user_manager::User& user) const override;
-  void UpdateLoginState(const user_manager::User* active_user,
-                        const user_manager::User* primary_user,
-                        bool is_current_user_owner) const override;
-  bool GetPlatformKnownUserId(const std::string& user_email,
-                              const std::string& gaia_id,
-                              AccountId* out_account_id) const override;
   const AccountId& GetGuestAccountId() const override;
   bool IsFirstExecAfterBoot() const override;
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
@@ -194,7 +190,8 @@ class ChromeUserManagerImpl
   friend class WallpaperManager;
   friend class WallpaperManagerTest;
 
-  using UserImageManagerMap = std::map<AccountId, linked_ptr<UserImageManager>>;
+  using UserImageManagerMap =
+      std::map<AccountId, std::unique_ptr<UserImageManager>>;
 
   ChromeUserManagerImpl();
 

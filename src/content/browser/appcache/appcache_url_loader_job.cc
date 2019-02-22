@@ -22,8 +22,8 @@ AppCacheURLLoaderJob::~AppCacheURLLoaderJob() {
 }
 
 bool AppCacheURLLoaderJob::IsStarted() const {
-  return delivery_type_ != AWAITING_DELIVERY_ORDERS &&
-         delivery_type_ != NETWORK_DELIVERY;
+  return delivery_type_ != DeliveryType::kAwaitingDeliverCall &&
+         delivery_type_ != DeliveryType::kNetwork;
 }
 
 void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
@@ -35,7 +35,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
     return;
   }
 
-  delivery_type_ = APPCACHED_DELIVERY;
+  delivery_type_ = DeliveryType::kAppCached;
 
   // In tests we only care about the delivery_type_ state.
   if (AppCacheRequestHandler::IsRunningInTests())
@@ -57,7 +57,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
 }
 
 void AppCacheURLLoaderJob::DeliverNetworkResponse() {
-  delivery_type_ = NETWORK_DELIVERY;
+  delivery_type_ = DeliveryType::kNetwork;
 
   // In tests we only care about the delivery_type_ state.
   if (AppCacheRequestHandler::IsRunningInTests())
@@ -71,7 +71,7 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
 }
 
 void AppCacheURLLoaderJob::DeliverErrorResponse() {
-  delivery_type_ = ERROR_DELIVERY;
+  delivery_type_ = DeliveryType::kError;
 
   // In tests we only care about the delivery_type_ state.
   if (AppCacheRequestHandler::IsRunningInTests())
@@ -190,8 +190,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     }
 
     info_ = response_info;
-    reader_.reset(
-        storage_->CreateResponseReader(manifest_url_, entry_.response_id()));
+    reader_ =
+        storage_->CreateResponseReader(manifest_url_, entry_.response_id());
 
     if (is_range_request())
       SetupRangeResponse();
@@ -353,7 +353,7 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
   }
   client_->OnComplete(status);
 
-  if (delivery_type_ == APPCACHED_DELIVERY) {
+  if (delivery_type_ == DeliveryType::kAppCached) {
     AppCacheHistograms::CountResponseRetrieval(
         error_code == 0, is_main_resource_load_,
         url::Origin::Create(manifest_url_));

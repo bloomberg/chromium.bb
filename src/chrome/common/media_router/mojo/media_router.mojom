@@ -389,12 +389,11 @@ interface MediaRouteProvider {
 
   // Sends |message| via the media route |media_route_id|.
   // If the operation was successful, |sent| is true; otherwise it is false.
-  SendRouteMessage(string media_route_id, string message) => (bool sent);
+  SendRouteMessage(string media_route_id, string message);
 
   // Sends |data| via the media route |media_route_id|.
   // If the operation was successful, |sent| is true; otherwise it is false.
-  SendRouteBinaryMessage(string media_route_id, array<uint8> data)
-      => (bool sent);
+  SendRouteBinaryMessage(string media_route_id, array<uint8> data);
 
   // Starts querying for sinks capable of displaying |media_source|.
   StartObservingMediaSinks(string media_source);
@@ -591,5 +590,9 @@ interface MediaRouter {
   GetMirroringServiceHostForDesktop(
       int32 initiator_tab_id,  // The tab used to register the stream.
       string desktop_stream_id,
+      mirroring.mojom.MirroringServiceHost& request);
+  GetMirroringServiceHostForOffscreenTab(
+      url.mojom.Url presentation_url,
+      string presentation_id,
       mirroring.mojom.MirroringServiceHost& request);
 };

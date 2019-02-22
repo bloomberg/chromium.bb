@@ -15,7 +15,7 @@ namespace blink {
 
 Animator::Animator(v8::Isolate* isolate,
                    AnimatorDefinition* definition,
-                   v8::Local<v8::Object> instance)
+                   v8::Local<v8::Value> instance)
     : definition_(definition),
       instance_(isolate, instance),
       effect_(new EffectProxy()) {}
@@ -25,15 +25,16 @@ Animator::~Animator() = default;
 void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
   visitor->Trace(effect_);
-  visitor->Trace(instance_.Cast<v8::Value>());
+  visitor->Trace(instance_);
 }
 
-bool Animator::Animate(ScriptState* script_state,
-                       double current_time,
-                       CompositorMutatorOutputState::AnimationState* output) {
+bool Animator::Animate(
+    ScriptState* script_state,
+    double current_time,
+    AnimationWorkletDispatcherOutput::AnimationState* output) {
   v8::Isolate* isolate = script_state->GetIsolate();
 
-  v8::Local<v8::Object> instance = instance_.NewLocal(isolate);
+  v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
   v8::Local<v8::Function> animate = definition_->AnimateLocal(isolate);
 
   if (IsUndefinedOrNull(instance) || IsUndefinedOrNull(animate))

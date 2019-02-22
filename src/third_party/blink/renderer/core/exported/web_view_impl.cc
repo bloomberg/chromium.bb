@@ -145,8 +145,8 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -332,7 +332,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       should_dispatch_first_layout_after_finished_loading_(false),
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
-      mutator_(nullptr),
+      mutator_dispatcher_(nullptr),
       override_compositor_visibility_(false) {
   DCHECK_EQ(!!client_, !!widget_client_);
   Page::PageClients page_clients;
@@ -343,7 +343,16 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
   SetVisibilityState(visibility_state, true);
 
-  InitializeLayerTreeView();
+  // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
+  // but for various reasons, that's not the case... WebView plugin, printing,
+  // workers, and tests don't use a compositor in their WebViews. Sometimes
+  // they avoid the compositor by using a null client, and sometimes by having
+  // the client return a null compositor. We should make things more consistent
+  // and clear.
+  // For some reason this was not set when WidgetClient() is not provided,
+  // even though there will be no LayerTreeView in that case either.
+  if (WidgetClient() && WidgetClient()->AllowsBrokenNullLayerTreeView())
+    page_->GetSettings().SetAcceleratedCompositingEnabled(false);
 
   dev_tools_emulator_ = DevToolsEmulator::Create(this);
 
@@ -413,6 +422,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
         hit_node->GetLayoutObject()->IsEmbeddedObject()) {
       mouse_capture_node_ = hit_node;
+      page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(true);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
   }
@@ -529,9 +539,6 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         AnimateDoubleTapZoom(
             FlooredIntPoint(scaled_event.PositionInRootFrame()));
       }
-      // GestureDoubleTap is currently only used by Android for zooming. For
-      // WebCore, GestureTap with tap count = 2 is used instead. So we drop
-      // GestureDoubleTap here.
       event_result = WebInputEventResult::kHandledSystem;
       WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
@@ -1243,15 +1250,12 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
 
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
       client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
-  WebWidget* popup_widget = client_->CreatePopup(frame, kWebPopupTypePage);
+  WebWidget* popup_widget = client_->CreatePopup(frame);
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
   page_popup_ = ToWebPagePopupImpl(popup_widget);
-  if (!page_popup_->Initialize(this, client)) {
-    page_popup_->ClosePopup();
-    page_popup_ = nullptr;
-  }
+  page_popup_->Initialize(this, client);
   EnablePopupMouseWheelEventListener(frame);
   return page_popup_.get();
 }
@@ -1562,6 +1566,14 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   PageWidgetDelegate::Animate(*page_, last_frame_time);
 }
 
+void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  if (!MainFrameImpl())
+    return;
+
+  MainFrameImpl()->GetFrame()->View()->RecordEndOfFrameMetrics(
+      frame_begin_time);
+}
+
 void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
   if (!MainFrameImpl())
@@ -1607,14 +1619,11 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   }
 }
 
-void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (layer_tree_view_)
-    layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
-}
-
-void WebViewImpl::CompositeWithRasterForTesting() {
-  // This should not be called directly on WebViewImpl.
-  NOTREACHED();
+void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  if (layer_tree_view_) {
+    layer_tree_view_->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
+  }
 }
 
 void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
@@ -1761,55 +1770,69 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     return WebInputEventResult::kHandledSystem;
 
   if (mouse_capture_node_ &&
-      WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    TRACE_EVENT1("input", "captured mouse event", "type",
-                 input_event.GetType());
-    // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-    Node* node = mouse_capture_node_;
+      WebInputEvent::IsMouseEventType(input_event.GetType()))
+    return HandleCapturedMouseEvent(coalesced_event);
 
-    // Not all platforms call mouseCaptureLost() directly.
-    if (input_event.GetType() == WebInputEvent::kMouseUp)
-      MouseCaptureLost();
-
-    std::unique_ptr<UserGestureIndicator> gesture_indicator;
-
-    AtomicString event_type;
-    switch (input_event.GetType()) {
-      case WebInputEvent::kMouseEnter:
-        event_type = EventTypeNames::mouseover;
-        break;
-      case WebInputEvent::kMouseMove:
-        event_type = EventTypeNames::mousemove;
-        break;
-      case WebInputEvent::kMouseLeave:
-        event_type = EventTypeNames::mouseout;
-        break;
-      case WebInputEvent::kMouseDown:
-        event_type = EventTypeNames::mousedown;
-        gesture_indicator = Frame::NotifyUserActivation(
-            node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
-        mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
-        break;
-      case WebInputEvent::kMouseUp:
-        event_type = EventTypeNames::mouseup;
-        gesture_indicator = std::make_unique<UserGestureIndicator>(
-            std::move(mouse_capture_gesture_token_));
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    WebMouseEvent transformed_event =
-        TransformWebMouseEvent(MainFrameImpl()->GetFrameView(),
-                               static_cast<const WebMouseEvent&>(input_event));
-    node->DispatchMouseEvent(transformed_event, event_type,
-                             transformed_event.click_count);
-    return WebInputEventResult::kHandledSystem;
-  }
-
-  // FIXME: This should take in the intended frame, not the local frame root.
+  // FIXME: This should take in the intended frame, not the local frame
+  // root.
   return PageWidgetDelegate::HandleInputEvent(*this, coalesced_event,
                                               MainFrameImpl()->GetFrame());
+}
+
+WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  const WebInputEvent& input_event = coalesced_event.Event();
+  TRACE_EVENT1("input", "captured mouse event", "type", input_event.GetType());
+  // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
+  Node* node = mouse_capture_node_;
+
+  // Not all platforms call mouseCaptureLost() directly.
+  if (input_event.GetType() == WebInputEvent::kMouseUp)
+    MouseCaptureLost();
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+
+  AtomicString event_type;
+  switch (input_event.GetType()) {
+    case WebInputEvent::kMouseEnter:
+      event_type = EventTypeNames::mouseover;
+      break;
+    case WebInputEvent::kMouseMove:
+      event_type = EventTypeNames::mousemove;
+      break;
+    case WebInputEvent::kPointerRawMove:
+      // There will be no mouse event for raw move events.
+      event_type = EventTypeNames::pointerrawmove;
+      break;
+    case WebInputEvent::kMouseLeave:
+      event_type = EventTypeNames::mouseout;
+      break;
+    case WebInputEvent::kMouseDown:
+      event_type = EventTypeNames::mousedown;
+      gesture_indicator = LocalFrame::NotifyUserActivation(
+          node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
+      mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
+      break;
+    case WebInputEvent::kMouseUp:
+      event_type = EventTypeNames::mouseup;
+      gesture_indicator = std::make_unique<UserGestureIndicator>(
+          std::move(mouse_capture_gesture_token_));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  WebMouseEvent transformed_event =
+      TransformWebMouseEvent(MainFrameImpl()->GetFrameView(),
+                             static_cast<const WebMouseEvent&>(input_event));
+  if (LocalFrame* frame = node->GetDocument().GetFrame()) {
+    frame->GetEventHandler().HandleTargetedMouseEvent(
+        node, transformed_event, event_type,
+        TransformWebMouseEventVector(
+            MainFrameImpl()->GetFrameView(),
+            coalesced_event.GetCoalescedEventsPointers()));
+  }
+  return WebInputEventResult::kHandledSystem;
 }
 
 void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
@@ -1820,6 +1843,8 @@ void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
 void WebViewImpl::MouseCaptureLost() {
   TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
   mouse_capture_node_ = nullptr;
+  if (page_->DeprecatedLocalMainFrame())
+    page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);
 }
 
 void WebViewImpl::SetFocus(bool enable) {
@@ -1938,7 +1963,7 @@ void WebViewImpl::WillCloseLayerTreeView() {
   SetRootLayer(nullptr);
   animation_host_ = nullptr;
 
-  mutator_ = nullptr;
+  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
 }
 
@@ -2506,27 +2531,34 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       !GetPage()->MainFrame()->IsLocalFrame())
     return;
 
-  if (!GetSettings()->ViewportEnabled()) {
-    GetPageScaleConstraintsSet().ClearPageDefinedConstraints();
-    UpdateMainFrameLayoutSize();
-
-    // If we don't support mobile viewports, allow GPU rasterization.
-    matches_heuristics_for_gpu_rasterization_ = true;
-    if (layer_tree_view_) {
-      layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
-          matches_heuristics_for_gpu_rasterization_);
-    }
-    return;
-  }
-
-  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
-
+  // When viewport is disabled (non-mobile), we always use gpu rasterization.
+  // Otherwise, on platforms that do support viewport tags, we only enable it
+  // when they are present. But Why? Historically this was used to gate usage of
+  // gpu rasterization to a smaller set of less complex cases to avoid driver
+  // bugs dealing with websites designed for desktop. The concern is that on
+  // older android devices (<L according to https://crbug.com/419521#c9),
+  // drivers are more likely to encounter bugs with gpu raster when encountering
+  // the full possibility of desktop web content. Further, Adreno devices <=L
+  // have encountered problems that look like driver bugs when enabling
+  // OOP-Raster which is gpu-based. Thus likely a blacklist would be required
+  // for non-viewport-specified pages in order to avoid crashes or other
+  // problems on mobile devices with gpu rasterization.
+  bool viewport_enabled = GetSettings()->ViewportEnabled();
   matches_heuristics_for_gpu_rasterization_ =
-      description.MatchesHeuristicsForGpuRasterization();
+      viewport_enabled ? description.MatchesHeuristicsForGpuRasterization()
+                       : true;
   if (layer_tree_view_) {
     layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
         matches_heuristics_for_gpu_rasterization_);
   }
+
+  if (!viewport_enabled) {
+    GetPageScaleConstraintsSet().ClearPageDefinedConstraints();
+    UpdateMainFrameLayoutSize();
+    return;
+  }
+
+  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
 
   Length default_min_width =
       document->GetViewportData().ViewportDefaultMinWidth();
@@ -2581,11 +2613,8 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
   }
 
-  if (LocalFrame* frame = GetPage()->DeprecatedLocalMainFrame()) {
-    if (TextAutosizer* text_autosizer =
-            frame->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
+  if (TextAutosizer* text_autosizer = document->GetTextAutosizer())
+    text_autosizer->UpdatePageInfoInAllFrames();
 
   UpdateMainFrameLayoutSize();
 }
@@ -2823,6 +2852,17 @@ void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
   MainFrameImpl()->FrameWidget()->ShowContextMenu(source_type);
 }
 
+WebURL WebViewImpl::GetURLForDebugTrace() {
+  WebFrame* main_frame = MainFrame();
+  // TODO(crbug.com/896836): Avoid a crash in minimal way for merge. But we'll
+  // avoid it properly in a followup.
+  if (!main_frame)
+    return {};
+  if (main_frame->IsWebLocalFrame())
+    return main_frame->ToWebLocalFrame()->GetDocument().Url();
+  return {};
+}
+
 void WebViewImpl::DidCloseContextMenu() {
   LocalFrame* frame = page_->GetFocusController().FocusedFrame();
   if (frame)
@@ -2981,7 +3021,6 @@ void WebViewImpl::MainFrameLayoutUpdated() {
   if (!client_)
     return;
 
-  fullscreen_controller_->DidUpdateMainFrameLayout();
   client_->DidUpdateMainFrameLayout();
 }
 
@@ -3173,7 +3212,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    layer_tree_view_->SetDeferCommits(true);
+    scoped_defer_commits_ = layer_tree_view_->DeferCommits();
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
   }
@@ -3192,7 +3231,7 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    layer_tree_view_->SetDeferCommits(true);
+    scoped_defer_commits_ = layer_tree_view_->DeferCommits();
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
   }
@@ -3232,41 +3271,21 @@ void WebViewImpl::ScheduleAnimationForWidget() {
     client_->WidgetClient()->ScheduleAnimation();
 }
 
-void WebViewImpl::InitializeLayerTreeView() {
-  if (WidgetClient()) {
-    layer_tree_view_ = WidgetClient()->InitializeLayerTreeView();
-    // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
-    // but for various reasons, that's not the case...
-    page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
-    if (layer_tree_view_) {
-      if (Platform::Current()->IsThreadedAnimationEnabled()) {
-        animation_host_ = std::make_unique<CompositorAnimationHost>(
-            layer_tree_view_->CompositorAnimationHost());
-      }
-
-      page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
-      // We don't yet have a page loaded at this point of the initialization of
-      // WebViewImpl, so don't allow cc to commit any frames Blink might
-      // try to create in the meantime.
-      layer_tree_view_->SetDeferCommits(true);
-    }
+void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+  layer_tree_view_ = layer_tree_view;
+  if (Platform::Current()->IsThreadedAnimationEnabled()) {
+    animation_host_ = std::make_unique<CompositorAnimationHost>(
+        layer_tree_view_->CompositorAnimationHost());
   }
 
-  // FIXME: only unittests, click to play, Android printing, and printing (for
-  // headers and footers) make this assert necessary. We should make them not
-  // hit this code and then delete allowsBrokenNullLayerTreeView.
-  DCHECK(layer_tree_view_ || !client_ ||
-         client_->WidgetClient()->AllowsBrokenNullLayerTreeView());
+  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
+  // We don't yet have a page loaded at this point of the initialization of
+  // WebViewImpl, so don't allow cc to commit any frames Blink might
+  // try to create in the meantime.
+  scoped_defer_commits_ = layer_tree_view_->DeferCommits();
 }
 
-void WebViewImpl::ApplyViewportDeltas(
-    const WebFloatSize& visual_viewport_delta,
-    // TODO(bokan): This parameter is to be removed but requires adjusting many
-    // callsites.
-    const WebFloatSize&,
-    const WebFloatSize& elastic_overscroll_delta,
-    float page_scale_delta,
-    float browser_controls_shown_ratio_delta) {
+void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
   // Store the desired offsets the visual viewport before setting the top
@@ -3274,21 +3293,21 @@ void WebViewImpl::ApplyViewportDeltas(
   // viewports to keep the offsets valid. The compositor may have already
   // done that so we don't want to double apply the deltas here.
   FloatPoint visual_viewport_offset = visual_viewport.VisibleRect().Location();
-  visual_viewport_offset.Move(visual_viewport_delta.width,
-                              visual_viewport_delta.height);
+  visual_viewport_offset.Move(args.inner_delta.x(), args.inner_delta.y());
 
   GetBrowserControls().SetShownRatio(GetBrowserControls().ShownRatio() +
-                                     browser_controls_shown_ratio_delta);
+                                     args.browser_controls_delta);
 
-  SetPageScaleFactorAndLocation(PageScaleFactor() * page_scale_delta,
+  SetPageScaleFactorAndLocation(PageScaleFactor() * args.page_scale_delta,
                                 visual_viewport_offset);
 
-  if (page_scale_delta != 1) {
+  if (args.page_scale_delta != 1) {
     double_tap_zoom_pending_ = false;
     visual_viewport.UserDidChangeScale();
   }
 
-  elastic_overscroll_ += elastic_overscroll_delta;
+  elastic_overscroll_ += FloatSize(args.elastic_overscroll_delta.x(),
+                                   args.elastic_overscroll_delta.y());
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(
@@ -3362,16 +3381,18 @@ void WebViewImpl::ForceNextDrawingBufferCreationToFail() {
   DrawingBuffer::ForceNextDrawingBufferCreationToFail();
 }
 
-base::WeakPtr<CompositorMutatorImpl> WebViewImpl::EnsureCompositorMutator(
+base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+WebViewImpl::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
     layer_tree_view_->SetMutatorClient(
-        CompositorMutatorImpl::CreateClient(&mutator_, &mutator_task_runner_));
+        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
+            &mutator_dispatcher_, &mutator_task_runner_));
   }
 
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
-  return mutator_;
+  return mutator_dispatcher_;
 }
 
 float WebViewImpl::DeviceScaleFactor() const {
@@ -3412,6 +3433,10 @@ void WebViewImpl::ClearAutoplayFlags() {
 
 int32_t WebViewImpl::AutoplayFlagsForTest() {
   return page_->AutoplayFlags();
+}
+
+void WebViewImpl::DeferCommitsForTesting() {
+  scoped_defer_commits_ = layer_tree_view_->DeferCommits();
 }
 
 }  // namespace blink

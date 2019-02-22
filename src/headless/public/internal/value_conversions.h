@@ -12,8 +12,8 @@
 namespace headless {
 namespace internal {
 
-// Generic conversion from a type to a base::Value. Implemented in
-// types_DOMAIN.cc after all type-specific ToValueImpls have been defined.
+// Generic conversion from a type to a base::Value. Implemented below
+// (for composite and low level types) and and in types_DOMAIN.cc.
 template <typename T>
 std::unique_ptr<base::Value> ToValue(const T& value);
 
@@ -26,47 +26,50 @@ struct FromValue {
                                   ErrorReporter* errors);
 };
 
-// ToValueImpl is a helper used by the ToValue template for dispatching into
-// type-specific serializers. It uses a dummy |T*| argument as a way to
-// partially specialize vector types.
-template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(int value, T*) {
+template <>
+inline std::unique_ptr<base::Value> ToValue(const int& value) {
   return std::make_unique<base::Value>(value);
 }
 
-template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(double value, T*) {
+template <>
+inline std::unique_ptr<base::Value> ToValue(const double& value) {
   return std::make_unique<base::Value>(value);
 }
 
-template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(bool value, T*) {
+template <>
+inline std::unique_ptr<base::Value> ToValue(const bool& value) {
   return std::make_unique<base::Value>(value);
 }
 
-template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(const std::string& value, T*) {
+template <>
+inline std::unique_ptr<base::Value> ToValue(const std::string& value) {
   return std::make_unique<base::Value>(value);
 }
 
-template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(const base::Value& value, T*) {
+template <>
+inline std::unique_ptr<base::Value> ToValue(const base::Value& value) {
   return value.CreateDeepCopy();
 }
 
+template <>
+inline std::unique_ptr<base::Value> ToValue(
+    const base::DictionaryValue& value) {
+  return ToValue(static_cast<const base::Value&>(value));
+}
+
+// Note: Order of the two templates below is important to handle
+// vectors of unique_ptr.
 template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(const std::vector<T>& vector,
-                                         const std::vector<T>*) {
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (const auto& it : vector)
-    result->Append(ToValue(it));
-  return std::move(result);
+std::unique_ptr<base::Value> ToValue(const std::unique_ptr<T>& value) {
+  return ToValue(*value);
 }
 
 template <typename T>
-std::unique_ptr<base::Value> ToValueImpl(const std::unique_ptr<T>& value,
-                                         std::unique_ptr<T>*) {
-  return ToValue(*value);
+std::unique_ptr<base::Value> ToValue(const std::vector<T>& vector_of_values) {
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
+  for (const T& value : vector_of_values)
+    result->Append(ToValue(value));
+  return std::move(result);
 }
 
 // FromValue specializations for basic types.

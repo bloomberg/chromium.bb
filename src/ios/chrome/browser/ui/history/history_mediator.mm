@@ -44,7 +44,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
                          completion:(void (^)(FaviconAttributes*))completion {
   FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
       URL, kFaviconMinWidthHeight, kFaviconWidthHeight,
-      ^(FaviconAttributes* attributes) {
+      /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
         completion(attributes);
       });
   DCHECK(cachedAttributes);

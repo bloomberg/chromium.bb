@@ -17,10 +17,10 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
@@ -57,7 +57,6 @@ class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
 class NetworkQualityProvider;
-class ProxyDelegate;
 class ProxyResolutionService;
 }  // namespace net
 namespace quic {
@@ -80,7 +79,7 @@ const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
 const uint32_t kSpdyMaxConcurrentPushedStreams = 1000;
 
 // This class holds session objects used by HttpNetworkTransaction objects.
-class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
+class NET_EXPORT HttpNetworkSession {
  public:
   // Self-contained structure with all the simple configuration options
   // supported by the HttpNetworkSession.
@@ -113,7 +112,18 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     size_t spdy_session_max_recv_window_size;
     // HTTP/2 connection settings.
     // Unknown settings will still be sent to the server.
+    // Might contain unknown setting identifiers from a predefined set that
+    // servers are supposed to ignore, see
+    // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+    // The same setting will be sent on every connection to prevent the retry
+    // logic from hiding broken servers.
     spdy::SettingsMap http2_settings;
+    // If set, an HTTP/2 frame with a reserved frame type will be sent after
+    // every HEADERS and SETTINGS frame.  See
+    // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+    // The same frame will be sent out on all connections to prevent the retry
+    // logic from hiding broken servers.
+    base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
     // Whether to enable HTTP/2 Alt-Svc entries.
@@ -181,6 +191,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // If true, a new connection may be kicked off on an alternate network when
     // a connection fails on the default network before handshake is confirmed.
     bool quic_retry_on_alternate_network_before_handshake;
+    // If true, the quic stream factory may race connection from stale dns
+    // result with the original dns resolution
+    bool quic_race_stale_dns_on_connection;
     // If true, the quic session may mark itself as GOAWAY on path degrading.
     bool quic_go_away_on_path_degrading;
     // Maximum time the session could be on the non-default network before
@@ -213,8 +226,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 
-    // Enable support for Token Binding.
-    bool enable_token_binding;
     // Enable Channel ID. Channel ID is being deprecated.
     bool enable_channel_id;
 
@@ -254,8 +265,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     quic::QuicRandom* quic_random;
     // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
-
-    ProxyDelegate* proxy_delegate;
   };
 
   enum SocketPoolType {
@@ -265,7 +274,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   };
 
   HttpNetworkSession(const Params& params, const Context& context);
-  ~HttpNetworkSession() override;
+  ~HttpNetworkSession();
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
   SSLClientAuthCache* ssl_client_auth_cache() {
@@ -362,9 +371,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   // Flush sockets on low memory notifications callback.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  // base::MemoryCoordinatorClient implementation:
-  void OnPurgeMemory() override;
 
   NetLog* const net_log_;
   HttpServerProperties* const http_server_properties_;

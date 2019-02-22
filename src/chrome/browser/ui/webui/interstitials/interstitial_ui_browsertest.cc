@@ -124,6 +124,12 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, UnwantedSoftwareInterstitialQuiet) {
       "Security error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, BillingInterstitialQuiet) {
+  TestInterstitial(
+      GURL("chrome://interstitials/quietsafebrowsing?type=billing"),
+      "Security error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsideMalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_malware"),

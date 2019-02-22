@@ -26,7 +26,7 @@ bool ArCoreJavaUtils::EnsureLoaded() {
   return LoadArCoreSdk();
 }
 
-ArCoreJavaUtils::ArCoreJavaUtils(device::ARCoreDevice* arcore_device)
+ArCoreJavaUtils::ArCoreJavaUtils(device::ArCoreDevice* arcore_device)
     : arcore_device_(arcore_device) {
   DCHECK(arcore_device_);
 
@@ -48,7 +48,16 @@ ArCoreJavaUtils::~ArCoreJavaUtils() {
 void ArCoreJavaUtils::OnRequestInstallSupportedArCoreCanceled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  arcore_device_->OnRequestInstallSupportedARCoreCanceled();
+  arcore_device_->OnRequestInstallSupportedArCoreCanceled();
+}
+
+bool ArCoreJavaUtils::ShouldRequestInstallArModule() {
+  // TODO(crbug.com/863068): Check whether AR module is already installed.
+  return false;
+}
+
+void ArCoreJavaUtils::RequestInstallArModule() {
+  // TODO(crbug.com/863068): On-demand install AR module.
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallSupportedArCore() {

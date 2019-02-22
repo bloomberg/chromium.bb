@@ -88,13 +88,6 @@ LayoutObject& InlineTextBoxPainter::InlineLayoutObject() const {
       inline_text_box_.GetLineLayoutItem());
 }
 
-bool InlineTextBoxPainter::PaintsMarkerHighlights(
-    const LayoutObject& layout_object) {
-  return layout_object.GetNode() &&
-         layout_object.GetDocument().Markers().HasMarkers(
-             layout_object.GetNode());
-}
-
 static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
                                         LayoutPoint& local_origin,
                                         LayoutUnit& width) {
@@ -194,13 +187,15 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     // capitalizing letters can change the length of the backing string.
     // That needs to be taken into account when computing the size of the box
     // or its painting.
-    length = std::min(length, first_line_string.length());
+    length = std::min(length, first_line_string.length() -
+                                  std::min(inline_text_box_.Start(),
+                                           first_line_string.length()));
 
     // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
-    CHECK(inline_text_box_.Start() + length <= first_line_string.length());
+    CHECK_LE(inline_text_box_.Start() + length, first_line_string.length());
   } else {
     // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
-    CHECK(inline_text_box_.Start() + length <= layout_item_string.length());
+    CHECK_LE(inline_text_box_.Start() + length, layout_item_string.length());
   }
   StringView string =
       StringView(inline_text_box_.IsFirstLineStyle() ? first_line_string

@@ -12,16 +12,16 @@ var element = document.getElementById('element');
 test(function() {
     var keyframes = [
         {offsetPath: 'inherit'},
-        {offsetPath: "path('M 0 0 H 200')"}
+        {offsetPath: 'path("M 0 0 H 200")'}
     ];
 
-    container.style.offsetPath = "path('M 0 0 H 100')";
+    container.style.offsetPath = 'path("M 0 0 H 100")';
     var player = element.animate(keyframes, 10);
 
     player.pause();
     player.currentTime = 5;
-    container.style.offsetPath = "path('M 0 0 H 400')";
-    assert_equals(getComputedStyle(element).offsetPath, "path('M 0 0 H 300')");
+    container.style.offsetPath = 'path("M 0 0 H 400")';
+    assert_equals(getComputedStyle(element).offsetPath, 'path("M 0 0 H 300")');
 }, 'offset-path responsive to inherited offset-path changes');
 
 </script>

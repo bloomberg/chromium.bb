@@ -48,6 +48,8 @@ class APIBindingsSystem {
       const GetAPISchemaMethod& get_api_schema,
       const BindingAccessChecker::AvailabilityCallback& is_available,
       const APIRequestHandler::SendRequestMethod& send_request,
+      const APIRequestHandler::GetUserActivationState&
+          get_user_activation_state_callback,
       const APIEventListeners::ListenersUpdated& event_listeners_changed,
       const APIEventHandler::ContextOwnerIdGetter& context_owner_getter,
       const APIBinding::OnSilentRequest& on_silent_request,

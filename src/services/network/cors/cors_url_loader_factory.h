@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -31,18 +32,21 @@ namespace cors {
 class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
+  // |origin_access_list| should always outlive this factory instance.
   // Used by network::NetworkContext.
   CORSURLLoaderFactory(
       NetworkContext* context,
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-      mojom::URLLoaderFactoryRequest request);
+      mojom::URLLoaderFactoryRequest request,
+      const OriginAccessList* origin_access_list);
   // Used by content::ResourceMessageFilter.
   // TODO(yhirano): Remove this once when the network service is fully enabled.
   CORSURLLoaderFactory(
       bool disable_web_security,
       std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
-      const base::RepeatingCallback<void(int)>& preflight_finalizer);
+      const base::RepeatingCallback<void(int)>& preflight_finalizer,
+      const OriginAccessList* origin_access_list);
   ~CORSURLLoaderFactory() override;
 
   void OnLoaderCreated(std::unique_ptr<mojom::URLLoader> loader);
@@ -82,6 +86,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
 
   // Used when constructed by ResourceMessageFilter.
   base::RepeatingCallback<void(int)> preflight_finalizer_;
+
+  // Accessed by instances in |loaders_| too. Since the factory outlives them,
+  // it's safe.
+  const OriginAccessList* const origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderFactory);
 };

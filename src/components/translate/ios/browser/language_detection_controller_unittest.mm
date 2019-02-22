@@ -86,7 +86,8 @@ TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
   command.SetString("htmlLang", kRootLanguage);
   command.SetString("httpContentLanguage", kContentLanguage);
   controller()->OnTextCaptured(command, GURL("http://google.com"),
-                               /*interacting=*/false, /*is_main_frame=*/true);
+                               /*interacting=*/false, /*is_main_frame=*/true,
+                               /*sender_frame=*/nullptr);
 
   const LanguageDetectionDetails* const details = this->details();
   EXPECT_NE(nullptr, details);
@@ -114,7 +115,8 @@ TEST_F(LanguageDetectionControllerTest, MissingHttpContentLanguage) {
   command.SetString("htmlLang", "");
   command.SetString("httpContentLanguage", "");
   controller()->OnTextCaptured(command, GURL("http://google.com"),
-                               /*interacting=*/false, /*is_main_frame=*/true);
+                               /*interacting=*/false, /*is_main_frame=*/true,
+                               /*sender_frame=*/nullptr);
 
   const LanguageDetectionDetails* const details = this->details();
   EXPECT_NE(nullptr, details);

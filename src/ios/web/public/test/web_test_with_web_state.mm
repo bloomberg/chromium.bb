@@ -116,18 +116,19 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     GURL placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
-    base::test::ios::WaitUntilCondition(^{
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
       return web_controller.loadPhase == PAGE_LOADED;
-    });
+    }));
   }
 
   [web_controller loadHTML:html forURL:url];
   ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
 
   // Wait until the page is loaded.
-  base::test::ios::WaitUntilCondition(^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
     return web_controller.loadPhase == PAGE_LOADED;
-  });
+  }));
 
   // Wait until the script execution is possible. Script execution will fail if
   // WKUserScript was not jet injected by WKWebView.

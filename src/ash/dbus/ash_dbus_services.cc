@@ -7,7 +7,6 @@
 #include "ash/dbus/display_service_provider.h"
 #include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"

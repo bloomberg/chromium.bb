@@ -42,6 +42,10 @@ extern NSString* const kBookmarkHomeCenterButtonIdentifier;
 extern NSString* const kBookmarkHomeTrailingButtonIdentifier;
 // Accessibility identifier of the BookmarkHomeVC UIToolbar.
 extern NSString* const kBookmarkHomeUIToolbarIdentifier;
+// Accessibility identifier of the BookmarkHomeVC search bar.
+extern NSString* const kBookmarkHomeSearchBarIdentifier;
+// Accessibility identifier of the search scrim.
+extern NSString* const kBookmarkHomeSearchScrimIdentifier;
 
 // Cell Layout constants:
 // The space between UIViews inside the cell.

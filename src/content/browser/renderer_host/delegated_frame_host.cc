@@ -45,7 +45,8 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
-      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
+      weak_factory_(this) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);
@@ -95,6 +96,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  DCHECK(CanCopyFromCompositingSurface());
+
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
@@ -110,23 +113,11 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
   if (!output_size.IsEmpty())
     request->set_result_selection(gfx::Rect(output_size));
 
-  // If there is enough information to populate the copy output request fields,
-  // then process it now. Otherwise, wait until the information becomes
-  // available.
-  if (CanCopyFromCompositingSurface() &&
-      active_local_surface_id_ == pending_local_surface_id_)
-    ProcessCopyOutputRequest(std::move(request));
-  else
-    pending_first_frame_requests_.push_back(std::move(request));
-}
-
-void DelegatedFrameHost::ProcessCopyOutputRequest(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
   if (!request->has_area())
     request->set_area(gfx::Rect(pending_surface_dip_size_));
 
-  request->set_area(
-      gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
+  request->set_area(gfx::ScaleToRoundedRect(request->area(),
+                                            client_->GetDeviceScaleFactor()));
 
   if (request->has_result_selection()) {
     const gfx::Rect& area = request->area();
@@ -148,7 +139,7 @@ void DelegatedFrameHost::ProcessCopyOutputRequest(
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return HasFallbackSurface() && active_device_scale_factor_ != 0.f;
+  return pending_local_surface_id_.is_valid();
 }
 
 bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
@@ -219,15 +210,18 @@ void DelegatedFrameHost::EmbedSurface(
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_dip_size_ = new_pending_dip_size;
 
+  viz::SurfaceId new_primary_surface_id(frame_sink_id_,
+                                        pending_local_surface_id_);
+
   if (!client_->DelegatedFrameHostIsVisible()) {
-    // If the tab is resized while hidden, reset the fallback so that the next
+    // If the tab is resized while hidden, advance the fallback so that the next
     // time user switches back to it the page is blank. This is preferred to
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (pending_surface_dip_size_ != current_frame_size_in_dip_ &&
-        HasFallbackSurface()) {
+        HasPrimarySurface()) {
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-          viz::SurfaceId());
+          new_primary_surface_id);
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
     // renderers that do not submit CompositorFrames. Next time the renderer
@@ -237,7 +231,6 @@ void DelegatedFrameHost::EmbedSurface(
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != pending_local_surface_id_) {
-    viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
 #if defined(OS_WIN) || defined(USE_X11)
     // On Windows and Linux, we would like to produce new content as soon as
     // possible or the OS will create an additional black gutter. Until we can
@@ -254,7 +247,7 @@ void DelegatedFrameHost::EmbedSurface(
 #endif
     current_frame_size_in_dip_ = pending_surface_dip_size_;
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_id, current_frame_size_in_dip_, GetGutterColor(),
+        new_primary_surface_id, current_frame_size_in_dip_, GetGutterColor(),
         deadline_policy, false /* stretch_content_to_fill_bounds */);
     if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                            switches::kDisableResizeLock)) {
@@ -319,33 +312,13 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // If there's no primary surface, then we don't wish to display content at
-  // this time (e.g. the view is hidden) and so we don't need a fallback
-  // surface either. Since we won't use the fallback surface, we drop the
-  // temporary reference here to save resources.
-  if (!HasPrimarySurface()) {
-    DCHECK(host_frame_sink_manager_);
-    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
-    return;
-  }
-
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-      surface_info.id());
   active_local_surface_id_ = surface_info.id().local_surface_id();
-  active_device_scale_factor_ = surface_info.device_scale_factor();
 
   // This is used by macOS' unique resize path.
   client_->OnFirstSurfaceActivation(surface_info);
 
   frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
-
-  if (!pending_first_frame_requests_.empty()) {
-    DCHECK(CanCopyFromCompositingSurface());
-    for (auto& request : pending_first_frame_requests_)
-      ProcessCopyOutputRequest(std::move(request));
-    pending_first_frame_requests_.clear();
-  }
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
@@ -359,18 +332,27 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(viz::SurfaceId(
-        frame_sink_id_, first_local_surface_id_after_navigation_));
+  if (!HasPrimarySurface())
+    return;
+
+  const viz::SurfaceId* fallback_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+
+  // Don't update the fallback if it's already newer than the first id after
+  // navigation.
+  if (fallback_surface_id &&
+      fallback_surface_id->frame_sink_id() == frame_sink_id_ &&
+      fallback_surface_id->local_surface_id().IsSameOrNewerThan(
+          first_local_surface_id_after_navigation_)) {
+    return;
   }
+
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+      viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  // Reset fallback and primary surfaces.
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-        viz::SurfaceId());
-  }
+  // Reset primary surface.
   if (HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         viz::SurfaceId(), current_frame_size_in_dip_, GetGutterColor(),
@@ -411,14 +393,6 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 void DelegatedFrameHost::OnLostSharedContext() {}
 
 void DelegatedFrameHost::OnLostVizProcess() {
-  // With OOP-D renderer surface was destroyed if the GPU process crashed. Reset
-  // the fallback Surface but leave the primary so we embed the renderer surface
-  // again.
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-        viz::SurfaceId());
-  }
-
   if (HasSavedFrame())
     frame_evictor_->DiscardedFrame();
 }
@@ -482,7 +456,6 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
 
 void DelegatedFrameHost::DidNavigate() {
   first_local_surface_id_after_navigation_ = pending_local_surface_id_;
-  received_frame_after_navigation_ = false;
 }
 
 bool DelegatedFrameHost::IsPrimarySurfaceEvicted() const {
@@ -496,20 +469,45 @@ void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
 }
 
 void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
-  if (!other->HasFallbackSurface() || HasFallbackSurface())
+  // If the other view is not showing anything, we can't obtain a fallback.
+  if (!other->HasPrimarySurface())
     return;
+
+  // This method should not overwrite the existing fallback. This method is only
+  // supposed to be called when the view was just created and there is no
+  // existing fallback.
+  if (HasFallbackSurface())
+    return;
+
+  const viz::SurfaceId* other_primary =
+      other->client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+
+  const viz::SurfaceId* other_fallback =
+      other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+
+  // In two cases we need to obtain a new fallback from the primary id of the
+  // other view instead of using its fallback:
+  // - When the other view has no fallback,
+  // - When a fallback exists but has a different FrameSinkId or embed token
+  // than the primary. If we use the fallback, then the resulting SurfaceRange
+  // in this view will not cover any surface with the FrameSinkId / embed token
+  // of the old view's primary.
+  viz::SurfaceId desired_fallback;
+  if (!other_fallback || !other_primary->IsSameOrNewerThan(*other_fallback)) {
+    desired_fallback = other_primary->ToSmallestId();
+  } else {
+    desired_fallback = *other_fallback;
+  }
 
   if (!HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId(),
-        other->client_->DelegatedFrameHostGetLayer()->size(),
+        desired_fallback, other->client_->DelegatedFrameHostGetLayer()->size(),
         other->client_->DelegatedFrameHostGetLayer()->background_color(),
         cc::DeadlinePolicy::UseDefaultDeadline(),
         false /* stretch_content_to_fill_bounds */);
   }
 
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-      *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId());
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(desired_fallback);
 }
 
 }  // namespace content

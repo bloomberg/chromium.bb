@@ -112,6 +112,52 @@ static void write_name_escaped(SkWStream* o, const char* name) {
     }
 }
 
+static void write_string(SkWStream* wStream, const char* cin, size_t len) {
+    SkDEBUGCODE(static const size_t kMaxLen = 65535;)
+    SkASSERT(len <= kMaxLen);
+
+    size_t extraCharacterCount = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (cin[i] > '~' || cin[i] < ' ') {
+            extraCharacterCount += 3;
+        } else if (cin[i] == '\\' || cin[i] == '(' || cin[i] == ')') {
+            ++extraCharacterCount;
+        }
+    }
+    if (extraCharacterCount <= len) {
+        wStream->writeText("(");
+        for (size_t i = 0; i < len; i++) {
+            if (cin[i] > '~' || cin[i] < ' ') {
+                uint8_t c = static_cast<uint8_t>(cin[i]);
+                uint8_t octal[4] = { '\\',
+                                     (uint8_t)('0' | ( c >> 6        )),
+                                     (uint8_t)('0' | ((c >> 3) & 0x07)),
+                                     (uint8_t)('0' | ( c       & 0x07)) };
+                wStream->write(octal, 4);
+            } else {
+                if (cin[i] == '\\' || cin[i] == '(' || cin[i] == ')') {
+                    wStream->writeText("\\");
+                }
+                wStream->write(&cin[i], 1);
+            }
+        }
+        wStream->writeText(")");
+    } else {
+        wStream->writeText("<");
+        for (size_t i = 0; i < len; i++) {
+            uint8_t c = static_cast<uint8_t>(cin[i]);
+            char hexValue[2] = { SkHexadecimalDigits::gUpper[c >> 4],
+                                 SkHexadecimalDigits::gUpper[c & 0xF] };
+            wStream->write(hexValue, 2);
+        }
+        wStream->writeText(">");
+    }
+}
+
+void SkPDFWriteString(SkWStream* wStream, const char* cin, size_t len) {
+    write_string(wStream, cin, len);
+}
+
 void SkPDFUnion::emitObject(SkWStream* stream,
                             const SkPDFObjNumMap& objNumMap) const {
     switch (fType) {
@@ -134,15 +180,14 @@ void SkPDFUnion::emitObject(SkWStream* stream,
             return;
         case Type::kString:
             SkASSERT(fStaticString);
-            SkPDFUtils::WriteString(stream, fStaticString,
-                                    strlen(fStaticString));
+            write_string(stream, fStaticString, strlen(fStaticString));
             return;
         case Type::kNameSkS:
             stream->writeText("/");
             write_name_escaped(stream, fSkString.get().c_str());
             return;
         case Type::kStringSkS:
-            SkPDFUtils::WriteString(stream, fSkString.get().c_str(), fSkString.get().size());
+            write_string(stream, fSkString.get().c_str(), fSkString.get().size());
             return;
         case Type::kObjRef:
             stream->writeDecAsText(objNumMap.getObjectNumber(fObject));
@@ -262,11 +307,11 @@ SkPDFArray::SkPDFArray() { SkDEBUGCODE(fDumped = false;) }
 SkPDFArray::~SkPDFArray() { this->drop(); }
 
 void SkPDFArray::drop() {
-    fValues.reset();
+    fValues = std::vector<SkPDFUnion>();
     SkDEBUGCODE(fDumped = true;)
 }
 
-int SkPDFArray::size() const { return fValues.count(); }
+size_t SkPDFArray::size() const { return fValues.size(); }
 
 void SkPDFArray::reserve(int length) {
     fValues.reserve(length);
@@ -276,9 +321,9 @@ void SkPDFArray::emitObject(SkWStream* stream,
                             const SkPDFObjNumMap& objNumMap) const {
     SkASSERT(!fDumped);
     stream->writeText("[");
-    for (int i = 0; i < fValues.count(); i++) {
+    for (size_t i = 0; i < fValues.size(); i++) {
         fValues[i].emitObject(stream, objNumMap);
-        if (i + 1 < fValues.count()) {
+        if (i + 1 < fValues.size()) {
             stream->writeText(" ");
         }
     }
@@ -341,7 +386,7 @@ void SkPDFArray::appendObjRef(sk_sp<SkPDFObject> objSp) {
 SkPDFDict::~SkPDFDict() { this->drop(); }
 
 void SkPDFDict::drop() {
-    fRecords.reset();
+    fRecords = std::vector<SkPDFDict::Record>();
     SkDEBUGCODE(fDumped = true;)
 }
 
@@ -362,11 +407,11 @@ void SkPDFDict::emitObject(SkWStream* stream,
 void SkPDFDict::emitAll(SkWStream* stream,
                         const SkPDFObjNumMap& objNumMap) const {
     SkASSERT(!fDumped);
-    for (int i = 0; i < fRecords.count(); i++) {
+    for (size_t i = 0; i < fRecords.size(); i++) {
         fRecords[i].fKey.emitObject(stream, objNumMap);
         stream->writeText(" ");
         fRecords[i].fValue.emitObject(stream, objNumMap);
-        if (i + 1 < fRecords.count()) {
+        if (i + 1 < fRecords.size()) {
             stream->writeText("\n");
         }
     }
@@ -374,13 +419,13 @@ void SkPDFDict::emitAll(SkWStream* stream,
 
 void SkPDFDict::addResources(SkPDFObjNumMap* catalog) const {
     SkASSERT(!fDumped);
-    for (int i = 0; i < fRecords.count(); i++) {
+    for (size_t i = 0; i < fRecords.size(); i++) {
         fRecords[i].fKey.addResources(catalog);
         fRecords[i].fValue.addResources(catalog);
     }
 }
 
-int SkPDFDict::size() const { return fRecords.count(); }
+size_t SkPDFDict::size() const { return fRecords.size(); }
 
 void SkPDFDict::reserve(int n) {
     fRecords.reserve(n);

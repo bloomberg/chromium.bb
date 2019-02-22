@@ -18,7 +18,6 @@
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/session/session_controller.h"
@@ -975,6 +974,17 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   controller->FlushMojoForTesting();
   EXPECT_EQ(4, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
+
+  // 5. Press M, Press Alt, Press Search, Release Alt. After that CapsLock
+  // should not be triggered. https://crbug.com/789283
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_M, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_LWIN, ui::EF_ALT_DOWN);
+  generator->ReleaseKey(ui::VKEY_MENU, ui::EF_COMMAND_DOWN);
+  controller->FlushMojoForTesting();
+  EXPECT_FALSE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
 }
 

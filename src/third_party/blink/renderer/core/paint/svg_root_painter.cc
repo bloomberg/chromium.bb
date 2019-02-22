@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {
@@ -50,12 +50,12 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
   if (svg->HasEmptyViewBox())
     return;
 
-  SVGPaintContext paint_context(layout_svg_root_, paint_info);
-  if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground &&
-      !paint_context.ApplyClipMaskAndFilterIfNecessary())
+  ScopedSVGPaintState paint_state(layout_svg_root_, paint_info);
+  if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground &&
+      !paint_state.ApplyClipMaskAndFilterIfNecessary())
     return;
 
-  BoxPainter(layout_svg_root_).PaintChildren(paint_context.GetPaintInfo());
+  BoxPainter(layout_svg_root_).PaintChildren(paint_state.GetPaintInfo());
 
   PaintTiming& timing = PaintTiming::From(
       layout_svg_root_.GetNode()->GetDocument().TopDocument());

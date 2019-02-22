@@ -53,6 +53,8 @@ HpackEntry& HpackEntry::operator=(const HpackEntry& other) {
   insertion_index_ = other.insertion_index_;
   type_ = other.type_;
   if (type_ == LOOKUP) {
+    name_.clear();
+    value_.clear();
     name_ref_ = other.name_ref_;
     value_ref_ = other.value_ref_;
     return *this;
@@ -76,10 +78,10 @@ size_t HpackEntry::Size() const {
 }
 
 SpdyString HpackEntry::GetDebugString() const {
-  return SpdyStringPrintf(
-      "{ name: \"%.*s\", value: \"%.*s\", index: %d %s }", name_ref_.size(),
-      name_ref_.data(), value_ref_.size(), value_ref_.data(), insertion_index_,
-      (IsStatic() ? " static" : (IsLookup() ? " lookup" : " dynamic")));
+  return SpdyStrCat(
+      "{ name: \"", name_ref_, "\", value: \"", value_ref_,
+      "\", index: ", insertion_index_, " ",
+      (IsStatic() ? " static" : (IsLookup() ? " lookup" : " dynamic")), " }");
 }
 
 size_t HpackEntry::EstimateMemoryUsage() const {

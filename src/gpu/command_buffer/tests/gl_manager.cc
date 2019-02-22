@@ -353,7 +353,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
         translator_cache_.get(), &completeness_cache_, feature_info,
         options.bind_generates_resource, &image_manager_, options.image_factory,
         nullptr /* progress_reporter */, gpu_feature_info,
-        &discardable_manager_);
+        &discardable_manager_, &shared_image_manager_);
   }
 
   command_buffer_.reset(new CommandBufferCheckLostContext(

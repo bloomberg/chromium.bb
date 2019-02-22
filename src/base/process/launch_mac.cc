@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace base {
 
@@ -169,7 +169,7 @@ Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
   if (options.wait) {
     // While this isn't strictly disk IO, waiting for another process to
     // finish is the sort of thing ThreadRestrictions is trying to prevent.
-    base::AssertBlockingAllowed();
+    ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
     pid_t ret = HANDLE_EINTR(waitpid(pid, nullptr, 0));
     DPCHECK(ret > 0);
   }

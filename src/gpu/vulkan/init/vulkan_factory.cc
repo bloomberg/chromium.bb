@@ -12,7 +12,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "gpu/vulkan/x/vulkan_implementation_x11.h"
+#include "gpu/vulkan/x/vulkan_implementation_x11.h"  // nogncheck
 #endif
 
 #if defined(USE_OZONE)

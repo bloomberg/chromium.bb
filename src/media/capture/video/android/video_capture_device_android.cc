@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/VideoCapture_jni.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -385,6 +386,10 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
     NOTREACHED() << "|callback_id| not found.";
     return;
   }
+  if (result == nullptr) {
+    get_photo_state_callbacks_.erase(reference_it);
+    return;
+  }
 
   base::android::ScopedJavaLocalRef<jobject> scoped_photo_capabilities(env,
                                                                        result);
@@ -392,7 +397,7 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
 
   // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
   // PhotoCapabilities to mojom::PhotoStatePtr, https://crbug.com/622002.
-  mojom::PhotoStatePtr photo_capabilities = mojom::PhotoState::New();
+  mojom::PhotoStatePtr photo_capabilities = mojo::CreateEmptyPhotoState();
 
   const auto jni_white_balance_modes = caps.getWhiteBalanceModes();
   std::vector<mojom::MeteringMode> white_balance_modes;
@@ -418,6 +423,12 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
   photo_capabilities->current_focus_mode =
       ToMojomMeteringMode(caps.getFocusMode());
 
+  photo_capabilities->focus_distance = mojom::Range::New();
+  photo_capabilities->focus_distance->current = caps.getCurrentFocusDistance();
+  photo_capabilities->focus_distance->max = caps.getMaxFocusDistance();
+  photo_capabilities->focus_distance->min = caps.getMinFocusDistance();
+  photo_capabilities->focus_distance->step = caps.getStepFocusDistance();
+
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->exposure_compensation->current =
       caps.getCurrentExposureCompensation();
@@ -427,6 +438,13 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
       caps.getMinExposureCompensation();
   photo_capabilities->exposure_compensation->step =
       caps.getStepExposureCompensation();
+
+  photo_capabilities->exposure_time = mojom::Range::New();
+  photo_capabilities->exposure_time->current = caps.getCurrentExposureTime();
+  photo_capabilities->exposure_time->max = caps.getMaxExposureTime();
+  photo_capabilities->exposure_time->min = caps.getMinExposureTime();
+  photo_capabilities->exposure_time->step = caps.getStepExposureTime();
+
   photo_capabilities->color_temperature = mojom::Range::New();
   photo_capabilities->color_temperature->current =
       caps.getCurrentColorTemperature();
@@ -652,6 +670,9 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
 
   const double zoom = settings->has_zoom ? settings->zoom : 0.0;
 
+  const double focusDistance =
+      settings->has_focus_distance ? settings->focus_distance : 0.0;
+
   const PhotoCapabilities::AndroidMeteringMode focus_mode =
       settings->has_focus_mode
           ? ToAndroidMeteringMode(settings->focus_mode)
@@ -676,6 +697,8 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   const double exposure_compensation = settings->has_exposure_compensation
                                            ? settings->exposure_compensation
                                            : 0.0;
+  const double exposure_time =
+      settings->has_exposure_time ? settings->exposure_time : 0.0;
 
   const PhotoCapabilities::AndroidMeteringMode white_balance_mode =
       settings->has_white_balance_mode
@@ -693,9 +716,9 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
       settings->has_color_temperature ? settings->color_temperature : 0.0;
 
   Java_VideoCapture_setPhotoOptions(
-      env, j_capture_, zoom, static_cast<int>(focus_mode),
+      env, j_capture_, zoom, static_cast<int>(focus_mode), focusDistance,
       static_cast<int>(exposure_mode), width, height, points_of_interest,
-      settings->has_exposure_compensation, exposure_compensation,
+      settings->has_exposure_compensation, exposure_compensation, exposure_time,
       static_cast<int>(white_balance_mode), iso,
       settings->has_red_eye_reduction, settings->red_eye_reduction,
       static_cast<int>(fill_light_mode), settings->has_torch, settings->torch,

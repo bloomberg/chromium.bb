@@ -127,6 +127,14 @@ DOMException* ServiceWorkerError::Take(ScriptPromiseResolver*,
 }
 
 // static
+DOMException* ServiceWorkerError::GetException(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::ServiceWorkerErrorType error,
+    const String& error_msg) {
+  return Take(resolver, WebServiceWorkerError(error, error_msg));
+}
+
+// static
 v8::Local<v8::Value> ServiceWorkerErrorForUpdate::Take(
     ScriptPromiseResolver* resolver,
     const WebServiceWorkerError& web_error) {

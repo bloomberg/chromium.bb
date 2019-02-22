@@ -42,6 +42,7 @@ class HTMLAreaElement;
 class HTMLMediaElement;
 class Image;
 class KURL;
+class MediaStreamDescriptor;
 class Node;
 class LayoutObject;
 class Region;
@@ -53,7 +54,7 @@ class Scrollbar;
 enum ListBasedHitTestBehavior { kContinueHitTesting, kStopHitTesting };
 
 class CORE_EXPORT HitTestResult {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   typedef HeapListHashSet<Member<Node>> NodeSet;
@@ -136,6 +137,7 @@ class CORE_EXPORT HitTestResult {
   IntRect ImageRect() const;
   KURL AbsoluteImageURL() const;
   KURL AbsoluteMediaURL() const;
+  MediaStreamDescriptor* GetMediaStreamDescriptor() const;
   KURL AbsoluteLinkURL() const;
   String TextContent() const;
   bool IsLiveLink() const;

@@ -22,6 +22,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -111,6 +112,7 @@ void DateView::Update() {
   label_->SetText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
   SetAccessibleName(TimeFormatFriendlyDateAndTime(now));
+  label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
@@ -218,6 +220,9 @@ void BatteryView::Update() {
   percentage_->SetVisible(!percentage_text.empty());
   separator_->SetVisible(!percentage_text.empty() && !status_text.empty());
   status_->SetVisible(!status_text.empty());
+
+  percentage_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  status_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void BatteryView::ConfigureLabel(views::Label* label) {

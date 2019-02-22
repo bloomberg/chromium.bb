@@ -45,12 +45,13 @@ struct PlatformWindowInitProperties;
 }
 
 namespace aura {
-class ScopedKeyboardHook;
 
 namespace test {
 class WindowTreeHostTestApi;
 }
 
+class Env;
+class ScopedKeyboardHook;
 class WindowEventDispatcher;
 class WindowTreeHostObserver;
 
@@ -64,9 +65,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
  public:
   ~WindowTreeHost() override;
 
-  // Creates a new WindowTreeHost with the specified |properties|.
+  // Creates a new WindowTreeHost with the specified |properties| and an
+  // optional |env|. If |env| is null, the default Env::GetInstance() is used.
   static std::unique_ptr<WindowTreeHost> Create(
-      ui::PlatformWindowInitProperties properties);
+      ui::PlatformWindowInitProperties properties,
+      Env* env = nullptr);
 
   // Returns the WindowTreeHost for the specified accelerated widget, or NULL
   // if there is none associated.
@@ -168,7 +171,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void SetSharedInputMethod(ui::InputMethod* input_method);
 
   // Overridden from ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) final;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event,
+      base::OnceCallback<void(bool)> ack_callback) final;
 
   // Returns the id of the display. Default implementation queries Screen.
   virtual int64_t GetDisplayId();
@@ -224,6 +229,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   explicit WindowTreeHost(std::unique_ptr<Window> window = nullptr);
 
+  // Set the cached display device scale factor. This should only be called
+  // during subclass initialization, when the value is needed before InitHost().
+  void IntializeDeviceScaleFactor(float device_scale_factor);
+
   void DestroyCompositor();
   void DestroyDispatcher();
 
@@ -273,8 +282,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   ui::EventSink* GetEventSink() override;
 
   // display::DisplayObserver implementation.
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 

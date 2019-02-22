@@ -174,11 +174,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     // Initialize PreconnectStats.
 
     // These two are hits.
-    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), false, true);
-    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), true, false);
+    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), true);
+    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), false);
     // And these two are misses.
-    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false, false);
-    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), true, true);
+    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false);
+    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), true);
 
     auto stats = std::make_unique<PreconnectStats>(GURL(main_frame_url));
     stats->requests_stats = {origin1, origin2, origin3, origin4};
@@ -257,11 +257,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
     // Initialize PreconnectStats.
 
     // These two are hits.
-    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), false, false);
-    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), true, false);
+    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), false);
+    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), false);
     // And these two are misses.
-    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false, false);
-    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), true, false);
+    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false);
+    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), false);
 
     auto stats = std::make_unique<PreconnectStats>(GURL(main_frame_url));
     stats->requests_stats = {origin1, origin2, origin3, origin4};

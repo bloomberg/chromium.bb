@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/proxy_config_monitor.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/proxy_service_factory.h"
@@ -16,9 +17,19 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/proxy/proxy_api.h"
+#endif
+
+using content::BrowserThread;
+
 ProxyConfigMonitor::ProxyConfigMonitor(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  profile_ = profile;
+#endif
 
 // If this is the ChromeOS sign-in profile, just create the tracker from global
 // state.
@@ -42,12 +53,13 @@ ProxyConfigMonitor::ProxyConfigMonitor(Profile* profile) {
   proxy_config_service_->AddObserver(this);
 }
 
-ProxyConfigMonitor::ProxyConfigMonitor() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+ProxyConfigMonitor::ProxyConfigMonitor(PrefService* local_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
-          g_browser_process->local_state()));
+          local_state));
 
   proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
       pref_proxy_config_tracker_.get());
@@ -56,7 +68,8 @@ ProxyConfigMonitor::ProxyConfigMonitor() {
 }
 
 ProxyConfigMonitor::~ProxyConfigMonitor() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   proxy_config_service_->RemoveObserver(this);
   pref_proxy_config_tracker_->DetachFromPrefService();
 }
@@ -68,9 +81,15 @@ void ProxyConfigMonitor::AddToNetworkContextParams(
       mojo::MakeRequest(&proxy_config_client);
   proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
 
-  binding_set_.AddBinding(
+  poller_binding_set_.AddBinding(
       this,
       mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  error_binding_set_.AddBinding(
+      this, mojo::MakeRequest(&network_context_params->proxy_error_client));
+#endif
+
   net::ProxyConfigWithAnnotation proxy_config;
   net::ProxyConfigService::ConfigAvailability availability =
       proxy_config_service_->GetLatestProxyConfig(&proxy_config);
@@ -85,7 +104,8 @@ void ProxyConfigMonitor::FlushForTesting() {
 void ProxyConfigMonitor::OnProxyConfigChanged(
     const net::ProxyConfigWithAnnotation& config,
     net::ProxyConfigService::ConfigAvailability availability) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   proxy_config_client_set_.ForAllPtrs(
       [config,
        availability](network::mojom::ProxyConfigClient* proxy_config_client) {
@@ -107,3 +127,30 @@ void ProxyConfigMonitor::OnProxyConfigChanged(
 void ProxyConfigMonitor::OnLazyProxyConfigPoll() {
   proxy_config_service_->OnLazyPoll();
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ProxyConfigMonitor::OnPACScriptError(int32_t line_number,
+                                          const std::string& details) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  extensions::ProxyEventRouter::GetInstance()->OnPACScriptError(
+      g_browser_process->extension_event_router_forwarder(), profile_,
+      line_number, base::UTF8ToUTF16(details));
+}
+
+void ProxyConfigMonitor::OnRequestMaybeFailedDueToProxySettings(
+    int32_t net_error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
+  if (net_error >= 0) {
+    // If the error is obviously wrong, don't dispatch it to extensions. If the
+    // PAC executor process is compromised, then |net_error| could be attacker
+    // controlled.
+    return;
+  }
+
+  extensions::ProxyEventRouter::GetInstance()->OnProxyError(
+      g_browser_process->extension_event_router_forwarder(), profile_,
+      net_error);
+}
+#endif

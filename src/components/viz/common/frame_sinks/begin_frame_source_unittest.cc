@@ -431,33 +431,6 @@ TEST_F(DelayBasedBeginFrameSourceTest, VSyncChanges) {
   task_runner_->FastForwardTo(TicksFromMicroseconds(60000));
 }
 
-TEST_F(DelayBasedBeginFrameSourceTest, AuthoritativeVSyncChanges) {
-  source_->OnUpdateVSyncParameters(TicksFromMicroseconds(500),
-                                   base::TimeDelta::FromMicroseconds(10000));
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, source_->source_id(), 1, 500, 10500,
-                                 10000);
-  source_->AddObserver(obs_.get());
-
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 2, 10500, 20500, 10000);
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 3, 20500, 30500, 10000);
-  task_runner_->FastForwardTo(TicksFromMicroseconds(20501));
-
-  // This will keep the same timebase, so 500, 9999
-  source_->SetAuthoritativeVSyncInterval(
-      base::TimeDelta::FromMicroseconds(9999));
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 4, 30500, 40496, 9999);
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 5, 40496, 50495, 9999);
-  task_runner_->FastForwardTo(TicksFromMicroseconds(40497));
-
-  // Change the vsync params, but the new interval will be ignored.
-  source_->OnUpdateVSyncParameters(TicksFromMicroseconds(400),
-                                   base::TimeDelta::FromMicroseconds(1));
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 6, 50495, 60394, 9999);
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 7, 60394, 70393, 9999);
-  task_runner_->FastForwardTo(TicksFromMicroseconds(60395));
-}
-
 TEST_F(DelayBasedBeginFrameSourceTest, MultipleObservers) {
   NiceMock<MockBeginFrameObserver> obs1, obs2;
 

@@ -58,7 +58,7 @@ GalleryUtil.createEntrySet = function(originalEntries) {
 /**
  * Returns true if entry is on MTP volume.
  * @param {!Entry} entry An entry.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @return True if entry is on MTP volume.
  */
 GalleryUtil.isOnMTPVolume = function(entry, volumeManager) {

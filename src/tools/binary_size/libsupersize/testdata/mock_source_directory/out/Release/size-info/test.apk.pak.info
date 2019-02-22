@@ -1,3 +1,5 @@
+IDR_PDF_COMPOSITOR_MANIFEST,12035,../../chrome/browser/browser_resources.grd
+IDR_CHROME_RENDERER_SERVICE_MANIFEST,12036,../../chrome/browser/browser_resources.grd
 IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE,15046,../../components/app_modal_strings.grdp
 IDS_POLICY_TYPE_ERROR,15740,../../components/policy_strings.grdp
 IDS_POLICY_LIST_ENTRY_ERROR,15746,../../components/policy_strings.grdp

@@ -62,9 +62,9 @@ class CrashMetricsReporterTest : public testing::Test {
   }
 
  protected:
-  blink::OomInterventionMetrics InterventionMetrics(bool virtual_oom) {
+  blink::OomInterventionMetrics InterventionMetrics(bool allocation_failed) {
     blink::OomInterventionMetrics metrics;
-    metrics.virtual_memory_oom = virtual_oom;
+    metrics.allocation_failed = allocation_failed;
     metrics.current_private_footprint_kb = 100;
     metrics.current_swap_kb = 0;
     metrics.current_vm_size_kb = 0;
@@ -197,7 +197,7 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleModerateOOM) {
       "Tab.RendererDetailedExitStatus");
 }
 
-TEST_F(CrashMetricsReporterTest, RendererForegroundVisibleVirtualOOM) {
+TEST_F(CrashMetricsReporterTest, RendererForegroundVisibleAllocationFailure) {
   ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
@@ -210,14 +210,14 @@ TEST_F(CrashMetricsReporterTest, RendererForegroundVisibleVirtualOOM) {
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.renderer_has_visible_clients = true;
   termination_info.blink_oom_metrics = InterventionMetrics(true);
-  TestOomCrashProcessing(
-      termination_info,
-      {CrashMetricsReporter::ProcessedCrashCounts::
-           kRendererForegroundVisibleVirtualMemoryOom,
-       CrashMetricsReporter::ProcessedCrashCounts::kRendererVirtualMemoryOomAll,
-       CrashMetricsReporter::ProcessedCrashCounts::
-           kRendererForegroundVisibleOom},
-      "Tab.RendererDetailedExitStatus");
+  TestOomCrashProcessing(termination_info,
+                         {CrashMetricsReporter::ProcessedCrashCounts::
+                              kRendererForegroundVisibleAllocationFailure,
+                          CrashMetricsReporter::ProcessedCrashCounts::
+                              kRendererAllocationFailureAll,
+                          CrashMetricsReporter::ProcessedCrashCounts::
+                              kRendererForegroundVisibleOom},
+                         "Tab.RendererDetailedExitStatus");
 }
 
 TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {

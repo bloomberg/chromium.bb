@@ -23,9 +23,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
@@ -41,7 +41,7 @@ public class PopupZoomerTest {
 
     private static class CustomCanvasPopupZoomer extends PopupZoomer {
         Canvas mCanvas;
-        long mPendingDraws = 0;
+        long mPendingDraws;
 
         CustomCanvasPopupZoomer(Context context, ViewGroup containerView, Canvas c) {
             super(context, containerView, null, null);

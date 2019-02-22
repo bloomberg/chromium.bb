@@ -11,4 +11,8 @@ interface ShellTestApi {
 
   // Enables or disables the tablet mode window manager.
   EnableTabletModeWindowManager(bool enable);
+
+  // Enables the keyboard and associates it with the primary root window
+  // controller. In tablet mode, enables the virtual keyboard.
+  EnableVirtualKeyboard() => ();
 };

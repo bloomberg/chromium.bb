@@ -18,6 +18,8 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/signatures_util.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -126,11 +128,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       password_manager::PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
 
-  // Handles a manual request to save password.
-  void OnPasswordFormForceSaveRequested(
-      password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& password_form);
-
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
   void ShowManualFallbackForSaving(
@@ -177,6 +174,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   PasswordFormManagerInterface* GetSubmittedManagerForTest() const {
     return GetSubmittedManager();
   }
+
+  void set_skip_old_form_managers_in_tests(bool value) {
+    skip_old_form_managers_in_tests_ = value;
+  }
+
 #endif
 
   NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
@@ -220,8 +222,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void OnLoginSuccessful();
 
   // Helper function called inside OnLoginSuccessful() to save password hash
-  // data for password reuse detection purpose.
-  void MaybeSavePasswordHash();
+  // data from |submitted_manager| for password reuse detection purpose.
+  void MaybeSavePasswordHash(
+      const PasswordFormManagerInterface& submitted_manager);
 
   // Checks for every form in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.
@@ -337,6 +340,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // (to see if the login was a failure), and clears the vector.
   std::vector<autofill::PasswordForm> all_visible_forms_;
 
+  // Server predictions for the forms on the page.
+  std::map<autofill::FormSignature, FormPredictions> predictions_;
+
   // The user-visible URL from the last time a password was provisionally saved.
   GURL main_frame_url_;
 
@@ -347,6 +353,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       NavigationEntryToCheck::LAST_COMMITTED;
 
   const bool is_new_form_parsing_for_saving_enabled_;
+
+  // If true, it turns off using PasswordFormManager in PasswordManager. Now it
+  // is used only in tests and later the old PasswordFormManager will disappear
+  // and with it also this flag.
+  bool skip_old_form_managers_in_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

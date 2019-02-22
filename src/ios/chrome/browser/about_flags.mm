@@ -30,12 +30,14 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -43,15 +45,16 @@
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/mailto/features.h"
+#include "ios/chrome/browser/search_engines/feature_flags.h"
+#include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
-#import "ios/chrome/browser/ui/history/features.h"
-#include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -130,6 +133,24 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
+const FeatureEntry::FeatureParam kIconForSearchButtonGrey[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterGrey}};
+const FeatureEntry::FeatureParam kIconForSearchButtonColorful[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterColorful}};
+const FeatureEntry::FeatureParam kIconForSearchButtonMagnifying[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterMagnifying}};
+
+const FeatureEntry::FeatureVariation kIconForSearchButtonVariations[] = {
+    {"Grey search engine logo", kIconForSearchButtonGrey,
+     base::size(kIconForSearchButtonGrey), nullptr},
+    {"Colorful search engine logo", kIconForSearchButtonColorful,
+     base::size(kIconForSearchButtonColorful), nullptr},
+    {"Magnifying glass", kIconForSearchButtonMagnifying,
+     base::size(kIconForSearchButtonMagnifying), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -160,12 +181,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          security_state::features::kMarkHttpAsFeature,
          kMarkHttpAsFeatureVariations,
          "MarkHttpAs")},
-    {"web-payments", flag_descriptions::kWebPaymentsName,
-     flag_descriptions::kWebPaymentsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(payments::features::kWebPayments)},
-    {"web-payments-native-apps", flag_descriptions::kWebPaymentsNativeAppsName,
-     flag_descriptions::kWebPaymentsNativeAppsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsNativeApps)},
     {"ios-captive-portal-metrics", flag_descriptions::kCaptivePortalMetricsName,
      flag_descriptions::kCaptivePortalMetricsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCaptivePortalMetrics)},
@@ -184,22 +199,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},
-#endif
-    {"tab_switcher_presents_bvc",
-     flag_descriptions::kTabSwitcherPresentsBVCName,
-     flag_descriptions::kTabSwitcherPresentsBVCDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabSwitcherPresentsBVC)},
     {"external-search", flag_descriptions::kExternalSearchName,
      flag_descriptions::kExternalSearchDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kExternalSearch)},
-    {"history-batch-updates-filter",
-     flag_descriptions::kHistoryBatchUpdatesFilterName,
-     flag_descriptions::kHistoryBatchUpdatesFilterDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kHistoryBatchUpdatesFilter)},
     {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
      flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
@@ -209,9 +214,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
      flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
-    {"PasswordExport", flag_descriptions::kPasswordExportName,
-     flag_descriptions::kPasswordExportDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
     {"wk-http-system-cookie-store",
      flag_descriptions::kWKHTTPSystemCookieStoreName,
      flag_descriptions::kWKHTTPSystemCookieStoreName, flags_ui::kOsIos,
@@ -233,14 +235,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
-    {"enable-autofill-credit-card-upload-update-prompt-explanation",
+    {"enable-autofill-save-credit-card-uses-strike-system",
+     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemName,
      flag_descriptions::
-         kEnableAutofillCreditCardUploadUpdatePromptExplanationName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription,
+         kEnableAutofillSaveCreditCardUsesStrikeSystemDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamUpdatePromptExplanation)},
+         autofill::features::kAutofillSaveCreditCardUsesStrikeSystem)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(
@@ -263,12 +264,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillIOSDelayBetweenFieldsName,
      flag_descriptions::kAutofillIOSDelayBetweenFieldsDescription,
      flags_ui::kOsIos, MULTI_VALUE_TYPE(kAutofillIOSDelayBetweenFieldsChoices)},
-    {"ui-refresh-phase-1", flag_descriptions::kUIRefreshPhase1Name,
-     flag_descriptions::kUIRefreshPhase1Description, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUIRefreshPhase1)},
-    {"infobars-ui-reboot", flag_descriptions::kInfobarsUIRebootName,
-     flag_descriptions::kInfobarsUIRebootDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kInfobarsUIReboot)},
     {"mailto-handling-google-ui",
      flag_descriptions::kMailtoHandlingWithGoogleUIName,
      flag_descriptions::kMailtoHandlingWithGoogleUIDescription,
@@ -308,9 +303,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
-    {"ui-refresh-location-bar", flag_descriptions::kUIRefreshLocationBarName,
-     flag_descriptions::kUIRefreshLocationBarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUIRefreshLocationBar)},
     {"fullscreen-viewport-adjustment-experiment",
      flag_descriptions::kFullscreenViewportAdjustmentExperimentName,
      flag_descriptions::kFullscreenViewportAdjustmentExperimentDescription,
@@ -382,15 +374,53 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"out-of-web-fullscreen", flag_descriptions::kOutOfWebFullscreenName,
      flag_descriptions::kOutOfWebFullscreenDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kOutOfWebFullscreen)},
-    {"toolbar-container-custom-view",
-     flag_descriptions::kToolbarContainerCustomViewName,
-     flag_descriptions::kToolbarContainerCustomViewDescription,
+    {"autofill-manual-fallback-phase-two",
+     flag_descriptions::kAutofillManualFallbackPhaseTwoName,
+     flag_descriptions::kAutofillManualFallbackPhaseTwoDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerCustomViewEnabled)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillManualFallbackPhaseTwo)},
+    {"toolbar-container", flag_descriptions::kToolbarContainerName,
+     flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
+    {"omnibox-popup-shortcuts",
+     flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateName,
+     flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPopupShortcutIconsInZeroState)},
+    {"sso-with-wkwebview", flag_descriptions::kSSOWithWKWebViewName,
+     flag_descriptions::kSSOWithWKWebViewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSSOWithWKWebView)},
+    {"wk-web-view-snapshots", flag_descriptions::kWKWebViewSnapshotsName,
+     flag_descriptions::kWKWebViewSnapshotsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kWKWebViewSnapshots)},
+    {"custom-search-engines", flag_descriptions::kCustomSearchEnginesName,
+     flag_descriptions::kCustomSearchEnginesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCustomSearchEngines)},
+    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
+     flag_descriptions::kUseMultiloginEndpointDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
     {"closing-last-incognito-tab",
      flag_descriptions::kClosingLastIncognitoTabName,
      flag_descriptions::kClosingLastIncognitoTabDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kClosingLastIncognitoTab)},
+    {"omnibox-tab-switch-suggestions",
+     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
+     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
+     flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
+    {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
+     flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
+                                    kIconForSearchButtonVariations,
+                                    "ToggleSearchButtonIcon")},
+    {"enable-breakpad-upload-no-delay",
+     flag_descriptions::kBreakpadNoDelayInitialUploadName,
+     flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
 };
 
 // Add all switches from experimental flags to |command_line|.

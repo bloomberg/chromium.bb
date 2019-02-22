@@ -36,7 +36,7 @@ class CoalescingBuffer {
   void WriteType(DataType value) {
     ByteType<DataType> data;
     data.value = value;
-    size_t type_size = sizeof(ByteType<DataType>);
+    wtf_size_t type_size = sizeof(ByteType<DataType>);
     DCHECK_LE(current_offset_ + type_size, sizeof(bytes_));
     memcpy(bytes_ + current_offset_, data.bytes, type_size);
     current_offset_ += type_size;
@@ -55,7 +55,7 @@ class CoalescingBuffer {
  private:
   // Adjust size to fit the largest command (in serialized/byte-stream format).
   // Currently a cubic segment.
-  size_t current_offset_;
+  wtf_size_t current_offset_;
   unsigned char bytes_[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
   SVGPathByteStream& byte_stream_;
 };

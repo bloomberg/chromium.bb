@@ -229,6 +229,10 @@ void ArcNotificationManager::OpenMessageCenter() {
   delegate_->ShowMessageCenter();
 }
 
+void ArcNotificationManager::CloseMessageCenter() {
+  delegate_->HideMessageCenter();
+}
+
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
   auto it = items_.find(key);
   if (it == items_.end()) {
@@ -290,51 +294,6 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
 
   notifications_instance->SendNotificationEventToAndroid(
       key, ArcNotificationEvent::BODY_CLICKED);
-}
-
-void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
-    const std::string& key,
-    int button_index) {
-  if (items_.find(key) == items_.end()) {
-    VLOG(3) << "Chrome requests to fire a click event on notification (key: "
-            << key << "), but it is gone.";
-    return;
-  }
-
-  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      instance_owner_->holder(), SendNotificationEventToAndroid);
-
-  // On shutdown, the ARC channel may quit earlier than notifications.
-  if (!notifications_instance) {
-    VLOG(2) << "ARC Notification (key: " << key
-            << ")'s button is clicked, but the ARC channel has already gone.";
-    return;
-  }
-
-  ArcNotificationEvent command;
-  switch (button_index) {
-    case 0:
-      command = ArcNotificationEvent::BUTTON_1_CLICKED;
-      break;
-    case 1:
-      command = ArcNotificationEvent::BUTTON_2_CLICKED;
-      break;
-    case 2:
-      command = ArcNotificationEvent::BUTTON_3_CLICKED;
-      break;
-    case 3:
-      command = ArcNotificationEvent::BUTTON_4_CLICKED;
-      break;
-    case 4:
-      command = ArcNotificationEvent::BUTTON_5_CLICKED;
-      break;
-    default:
-      VLOG(3) << "Invalid button index (key: " << key
-              << ", index: " << button_index << ").";
-      return;
-  }
-
-  notifications_instance->SendNotificationEventToAndroid(key, command);
 }
 
 void ArcNotificationManager::CreateNotificationWindow(const std::string& key) {

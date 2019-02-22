@@ -29,6 +29,11 @@ bool ManagementPolicy::Provider::UserMayLoad(const Extension* extension,
   return true;
 }
 
+bool ManagementPolicy::Provider::UserMayInstall(const Extension* extension,
+                                                base::string16* error) const {
+  return UserMayLoad(extension, error);
+}
+
 bool ManagementPolicy::Provider::UserMayModifySettings(
     const Extension* extension, base::string16* error) const {
   return true;
@@ -80,6 +85,12 @@ bool ManagementPolicy::UserMayLoad(const Extension* extension,
       &Provider::UserMayLoad, "Installation", true, extension, error);
 }
 
+bool ManagementPolicy::UserMayInstall(const Extension* extension,
+                                      base::string16* error) const {
+  return ApplyToProviderList(&Provider::UserMayInstall, "Installation", true,
+                             extension, error);
+}
+
 bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
                                              base::string16* error) const {
   return ApplyToProviderList(
@@ -119,8 +130,7 @@ bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
     return true;
   }
 
-  for (ProviderList::const_iterator it = providers_.begin();
-       it != providers_.end(); ++it)
+  for (auto it = providers_.cbegin(); it != providers_.cend(); ++it)
     if ((*it)->MustRemainDisabled(extension, reason, error))
       return true;
 

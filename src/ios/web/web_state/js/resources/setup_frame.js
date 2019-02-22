@@ -12,7 +12,7 @@
 
 goog.provide('__crWeb.setupFrame');
 
-// Requires __crWeb.common and __crWeb.frameMessaging provided by
+// Requires __crWeb.common and __crWeb.message provided by
 // __crWeb.allFramesWebBundle.
 
 /* Beginning of anonymous object. */
@@ -20,7 +20,7 @@ goog.provide('__crWeb.setupFrame');
 
 window.addEventListener('unload', function(event) {
   __gCrWeb.common.sendWebKitMessage('FrameBecameUnavailable',
-      __gCrWeb.frameMessaging.getFrameId());
+      __gCrWeb.message.getFrameId());
 });
 
 /**
@@ -29,15 +29,18 @@ window.addEventListener('unload', function(event) {
  */
 window.addEventListener('message', function(message) {
   var payload = message.data;
+  if (typeof payload !== 'object') {
+    return;
+  }
   if (payload.hasOwnProperty('type') &&
     payload.type == 'org.chromium.registerForFrameMessaging') {
-    __gCrWeb.frameMessaging['getExistingFrames']();
+    __gCrWeb.message['getExistingFrames']();
   } else if (payload.hasOwnProperty('type') &&
       payload.type == 'org.chromium.encryptedMessage') {
     if (payload.hasOwnProperty('payload') &&
         payload.hasOwnProperty('iv') &&
         payload.hasOwnProperty('target_frame_id')) {
-      __gCrWeb.frameMessaging['routeMessage'](
+      __gCrWeb.message['routeMessage'](
         payload['payload'],
         payload['iv'],
         payload['target_frame_id']
@@ -47,9 +50,9 @@ window.addEventListener('message', function(message) {
 });
 
 // Frame registration must be delayed until Document End script injection time.
-// (This file is injected at that time, but the frameMessaging API is defined at
+// (This file is injected at that time, but the message API is defined at
 // Document Start time.)
 // TODO(crbug.com/873730): Stop exposing registerFrame API.
-__gCrWeb.frameMessaging['registerFrame']();
+__gCrWeb.message['registerFrame']();
 
 }());  // End of anonymous object

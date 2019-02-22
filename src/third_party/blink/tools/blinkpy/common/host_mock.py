@@ -121,5 +121,6 @@ class MockHost(MockSystemHost):
         external_dir = path_finder.path_from_layout_tests('external')
         filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
 
-        manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST.json')
+        # This filename should match the constant BASE_MANIFEST_NAME.
+        manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST_5.json')
         filesystem.files[manifest_base_path] = '{"manifest": "base"}'

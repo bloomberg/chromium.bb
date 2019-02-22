@@ -38,9 +38,6 @@ extern const base::Feature kForeignSessionsSuggestionsFeature;
 ////////////////////////////////////////////////////////////////////////////////
 // Independent features. Treat as normal
 
-// Feature to allow show/hide article suggestions by clicking the header.
-extern const base::Feature kArticleSuggestionsExpandableHeader;
-
 extern const base::Feature kArticleSuggestionsFeature;
 
 // Feature to allow UI as specified here: https://crbug.com/660837.

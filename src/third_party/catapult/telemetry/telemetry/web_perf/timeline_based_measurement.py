@@ -160,9 +160,11 @@ class Options(object):
 
 
   def ExtendTraceCategoryFilter(self, filters):
-    category_filter = self._config.chrome_trace_config.category_filter
-    for new_category_filter in filters:
-      category_filter.AddIncludedCategory(new_category_filter)
+    for category_filter in filters:
+      self.AddTraceCategoryFilter(category_filter)
+
+  def AddTraceCategoryFilter(self, category_filter):
+    self._config.chrome_trace_config.category_filter.AddFilter(category_filter)
 
   @property
   def category_filter(self):
@@ -171,6 +173,10 @@ class Options(object):
   @property
   def config(self):
     return self._config
+
+  def ExtendTimelineBasedMetric(self, metrics):
+    for metric in metrics:
+      self.AddTimelineBasedMetric(metric)
 
   def AddTimelineBasedMetric(self, metric):
     assert isinstance(metric, basestring)
@@ -245,13 +251,15 @@ class TimelineBasedMeasurement(story_test.StoryTest):
     if not platform.tracing_controller.IsChromeTracingSupported():
       raise Exception('Not supported')
     if self._tbm_options.config.enable_chrome_trace:
-      # Always enable 'blink.console' category for:
-      # 1) Backward compat of chrome clock sync (crbug.com/646925)
+      # Always enable 'blink.console' and 'v8.console' categories for:
+      # 1) Backward compat of chrome clock sync (https://crbug.com/646925).
       # 2) Allows users to add trace event through javascript.
-      # Note that blink.console is extremely low-overhead, so this doesn't
+      # 3) For the console error metric (https://crbug.com/880432).
+      # Note that these categories are extremely low-overhead, so this doesn't
       # affect the tracing overhead budget much.
       chrome_config = self._tbm_options.config.chrome_trace_config
       chrome_config.category_filter.AddIncludedCategory('blink.console')
+      chrome_config.category_filter.AddIncludedCategory('v8.console')
     platform.tracing_controller.StartTracing(self._tbm_options.config)
 
   def Measure(self, platform, results):

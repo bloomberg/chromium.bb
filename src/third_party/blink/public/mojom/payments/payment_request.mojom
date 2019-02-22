@@ -22,9 +22,13 @@ struct PaymentResponse {
 
   PaymentAddress? shipping_address;
   string? shipping_option;
-  string? payer_name;
-  string? payer_email;
-  string? payer_phone;
+  PayerDetail payer;
+};
+
+struct PayerDetail {
+  string? email;
+  string? name;
+  string? phone;
 };
 
 enum PaymentErrorReason {
@@ -48,6 +52,7 @@ enum CanMakePaymentQueryResult {
 interface PaymentRequestClient {
   OnShippingAddressChange(PaymentAddress address);
   OnShippingOptionChange(string shipping_option_id);
+  OnPayerDetailChange(PayerDetail detail);
   OnPaymentResponse(PaymentResponse response);
   OnError(PaymentErrorReason error);
   OnComplete();
@@ -153,6 +158,7 @@ struct PaymentDetails {
   array<PaymentShippingOption> shipping_options;
   array<PaymentDetailsModifier> modifiers;
   string error = "";
+  AddressErrors? shipping_address_errors;
   // Identifier identifying the payment request, to be exposed
   // to payment apps. It is optional since this structure is used
   // by PaymentDetailsUpdate (next to PaymentDetailsInit) but

@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -22,16 +23,17 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/notification_resources.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -47,9 +49,7 @@
 
 using content::BrowserThread;
 using content::NotificationDatabaseData;
-using content::NotificationResources;
 using content::PlatformNotificationContext;
-using content::PlatformNotificationData;
 using content::PushMessagingService;
 using content::ServiceWorkerContext;
 using content::WebContents;
@@ -67,11 +67,11 @@ content::StoragePartition* GetStoragePartition(Profile* profile,
 NotificationDatabaseData CreateDatabaseData(
     const GURL& origin,
     int64_t service_worker_registration_id) {
-  PlatformNotificationData notification_data;
+  blink::PlatformNotificationData notification_data;
   notification_data.title = url_formatter::FormatUrlForSecurityDisplay(
       origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
   notification_data.direction =
-      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+      blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   notification_data.body =
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag = kPushMessagingForcedNotificationTag;
@@ -103,8 +103,8 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &PlatformNotificationContext::
               ReadAllNotificationDataForServiceWorkerRegistration,
@@ -124,8 +124,8 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabaseIOProxy(
     bool success,
     const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
           ui_weak_ptr, origin, service_worker_registration_id,
@@ -269,8 +269,8 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   int64_t next_persistent_notification_id =
       PlatformNotificationServiceImpl::GetInstance()
           ->ReadNextPersistentNotificationId(profile_);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PlatformNotificationContext::WriteNotificationData,
                      notification_context, next_persistent_notification_id,
                      service_worker_registration_id, origin, database_data,
@@ -285,13 +285,13 @@ void PushMessagingNotificationManager::ProcessSilentPush(
 void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
     const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
     const GURL& origin,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
           ui_weak_ptr, origin, notification_data, message_handled_closure,
@@ -300,7 +300,7 @@ void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
     const GURL& origin,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
     const std::string& notification_id) {
@@ -317,7 +317,7 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
   // rarely.
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
       profile_, notification_id, GURL() /* service_worker_scope */, origin,
-      notification_data, NotificationResources());
+      notification_data, blink::NotificationResources());
 
   message_handled_closure.Run();
 }

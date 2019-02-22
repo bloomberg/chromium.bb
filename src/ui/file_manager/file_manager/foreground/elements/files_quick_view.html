@@ -3,7 +3,7 @@
   -- found in the LICENSE file.
 -->
 
-<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="files_icon_button.html">
@@ -40,7 +40,7 @@
             </template>
             <!-- document/HTML -->
             <template is="dom-if" if="[[isHtml_(type, subtype)]]">
-              <files-safe-media hidden="[[!contentUrl]]" type="html" class="content" src="[[contentUrl]]"></files-safe-media>
+              <files-safe-media hidden="[[!contentUrl]]" type="html" class="content text-content" src="[[contentUrl]]"></files-safe-media>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="[[type]]"></div>
                 <div class="no-preview">[[noPreviewText]]</div>

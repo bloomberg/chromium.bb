@@ -16,6 +16,7 @@
 #include "compiler/translator/Compiler.h"
 #include "compiler/translator/FlagStd140Structs.h"
 #include "compiler/translator/ImmutableString.h"
+#include "compiler/translator/ShaderStorageBlockOutputHLSL.h"
 #include "compiler/translator/tree_util/IntermTraverse.h"
 
 class BuiltInFunctionEmulator;
@@ -30,16 +31,6 @@ class TSymbolTable;
 class TVariable;
 class UnfoldShortCircuit;
 
-struct TReferencedBlock : angle::NonCopyable
-{
-    POOL_ALLOCATOR_NEW_DELETE();
-    TReferencedBlock(const TInterfaceBlock *block, const TVariable *instanceVariable);
-    const TInterfaceBlock *block;
-    const TVariable *instanceVariable;  // May be nullptr if the block is not instanced.
-};
-
-// Maps from uniqueId to a variable.
-using ReferencedInterfaceBlocks = std::map<int, const TReferencedBlock *>;
 using ReferencedVariables       = std::map<int, const TVariable *>;
 
 class OutputHLSL : public TIntermTraverser
@@ -61,6 +52,7 @@ class OutputHLSL : public TIntermTraverser
 
     void output(TIntermNode *treeRoot, TInfoSinkBase &objSink);
 
+    const std::map<std::string, unsigned int> &getShaderStorageBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformRegisterMap() const;
 
@@ -73,6 +65,8 @@ class OutputHLSL : public TIntermTraverser
     }
 
   protected:
+    friend class ShaderStorageBlockOutputHLSL;
+
     void writeReferencedAttributes(TInfoSinkBase &out) const;
     void writeReferencedVaryings(TInfoSinkBase &out) const;
     void header(TInfoSinkBase &out,
@@ -263,6 +257,7 @@ class OutputHLSL : public TIntermTraverser
     TString generateStructMapping(const std::vector<MappedStruct> &std140Structs) const;
     ImmutableString samplerNamePrefixFromStruct(TIntermTyped *node);
     bool ancestorEvaluatesToSamplerInStruct();
+    ShaderStorageBlockOutputHLSL *mSSBOOutputHLSL;
 };
 }
 

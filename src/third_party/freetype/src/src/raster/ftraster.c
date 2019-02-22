@@ -99,7 +99,7 @@
    *   built from the bottom of the render pool, used as a stack.  The
    *   following graphics shows the profile list under construction:
    *
-   *     __________________________________________________________ _ _
+   *    __________________________________________________________ _ _
    *   |         |                 |         |                 |
    *   | profile | coordinates for | profile | coordinates for |-->
    *   |    1    |  profile 1      |    2    |  profile 2      |-->
@@ -125,8 +125,8 @@
    *
    *     _ _ _______________________________________
    *                           |                    |
-   *                         <--| sorted list of     |
-   *                         <--|  extrema scanlines |
+   *                        <--| sorted list of     |
+   *                        <--|  extrema scanlines |
    *     _ _ __________________|____________________|
    *
    *                           ^                    ^
@@ -169,7 +169,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_raster
+#define FT_COMPONENT  raster
 
 
 #ifdef STANDALONE_
@@ -2246,13 +2246,18 @@
 
     /* Drop-out control */
 
-    e1 = TRUNC( CEILING( x1 ) );
+    e1 = CEILING( x1 );
+    e2 = FLOOR( x2 );
 
+    /* take care of the special case where both the left */
+    /* and right contour lie exactly on pixel centers    */
     if ( dropOutControl != 2                             &&
-         x2 - x1 - ras.precision <= ras.precision_jitter )
+         x2 - x1 - ras.precision <= ras.precision_jitter &&
+         e1 != x1 && e2 != x2                            )
       e2 = e1;
-    else
-      e2 = TRUNC( FLOOR( x2 ) );
+
+    e1 = TRUNC( e1 );
+    e2 = TRUNC( e2 );
 
     if ( e2 >= 0 && e1 < ras.bWidth )
     {

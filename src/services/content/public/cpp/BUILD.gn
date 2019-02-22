@@ -14,6 +14,7 @@ component("cpp") {
 
   public = [
     "navigable_contents.h",
+    "navigable_contents_observer.h",
     "navigable_contents_view.h",
   ]
 
@@ -22,12 +23,17 @@ component("cpp") {
     "navigable_contents_view.cc",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   defines = [ "IS_CONTENT_SERVICE_CPP_IMPL" ]
 
   public_deps = [
     ":buildflags",
     "//base",
+    "//net",
     "//services/content/public/mojom",
+    "//ui/gfx:native_widget_types",
+    "//ui/gfx/geometry",
     "//url",
   ]
 
@@ -44,5 +50,9 @@ component("cpp") {
         "//ui/views/mus/remote_view:remote_view_host",
       ]
     }
+  }
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
   }
 }

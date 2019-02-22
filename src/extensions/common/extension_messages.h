@@ -18,14 +18,13 @@
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/common_param_traits.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/host_id.h"
-#include "extensions/common/permissions/media_galleries_permission_data.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
@@ -262,10 +261,6 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::UsbDevicePermissionData)
   IPC_STRUCT_TRAITS_MEMBER(vendor_id())
   IPC_STRUCT_TRAITS_MEMBER(product_id())
   IPC_STRUCT_TRAITS_MEMBER(interface_class())
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(extensions::MediaGalleriesPermissionData)
-  IPC_STRUCT_TRAITS_MEMBER(permission())
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::Message)
@@ -692,6 +687,10 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetWebViewPartitionID,
                      std::string /* webview_partition_id */)
 
+// Enable or disable spatial navigation.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_SetSpatialNavigationEnabled,
+                    bool /* spatial_nav_enabled */)
+
 // Messages sent from the renderer to the browser:
 
 // A renderer sends this message when an extension process starts an API
@@ -1001,5 +1000,34 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DecrementServiceWorkerActivity,
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_EventAckWorker,
                      int64_t /* service_worker_version_id */,
                      int /* event_id */)
+
+// Tells the browser that an extension service worker context has started and
+// finished executing its top-level JavaScript.
+// Start corresponds to EmbeddedWorkerInstance::OnStarted notification.
+//
+// TODO(lazyboy): This is a workaround: ideally this IPC should be redundant
+// because it directly corresponds to EmbeddedWorkerInstance::OnStarted message.
+// However, because OnStarted message is on different mojo IPC pipe, and most
+// extension IPCs are on legacy IPC pipe, this IPC is necessary to ensure FIFO
+// ordering of this message with rest of the extension IPCs.
+// Two possible solutions to this:
+//   - Associate extension IPCs with Service Worker IPCs. This can be done (and
+//     will be a requirement) when extension IPCs are moved to mojo, but
+//     requires resolving or defining ordering dependencies amongst the
+//     extension messages, and any additional messages in Chrome.
+//   - Make Service Worker IPCs channel-associated so that there's FIFO
+//     guarantee between extension IPCs and Service Worker IPCs. This isn't
+//     straightforward as it changes SW IPC ordering with respect of rest of
+//     Chrome.
+// See https://crbug.com/879015#c4 for details.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DidStartServiceWorkerContext,
+                     std::string /* extension_id */,
+                     int64_t /* service_worker_version_id */)
+
+// Tells the browser that an extension service worker context has been
+// destroyed.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DidStopServiceWorkerContext,
+                     std::string /* extension_id */,
+                     int64_t /* service_worker_version_id */)
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
@@ -25,10 +26,11 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/gpu_stream_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_stream_constants.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -69,12 +71,15 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
 
+  gpu::SharedMemoryLimits memory_limits =
+      gpu::SharedMemoryLimits::ForDisplayCompositor();
+
   GURL url("chrome://gpu/VizProcessTransportFactory::CreateContextProvider");
   return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       std::move(url), kAutomaticFlushes, support_locking, support_grcontext,
-      gpu::SharedMemoryLimits(), attributes, type);
+      memory_limits, attributes, type);
 }
 
 bool IsContextLost(viz::ContextProvider* context_provider) {
@@ -170,8 +175,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
                 std::move(request), std::move(client));
           }
         };
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(connect_on_io_thread,
                        std::move(frame_sink_manager_request),
                        frame_sink_manager_client.PassInterface()));
@@ -204,6 +209,10 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSink(
       compositor->widget());
 #endif
 
+  // Create the data map entry so that we can set properties like output secure
+  // while we are waiting for the GpuChannel to be established.
+  AddCompositor(compositor.get());
+
   if (is_gpu_compositing_disabled() ||
       compositor->force_software_compositor()) {
     OnEstablishedGpuChannel(compositor, nullptr);
@@ -225,10 +234,11 @@ VizProcessTransportFactory::SharedMainThreadContextProvider() {
       context_result = TryCreateContextsForGpuCompositing(
           gpu_channel_establish_factory_->EstablishGpuChannelSync());
 
-      if (context_result == gpu::ContextResult::kFatalFailure)
+      if (gpu::IsFatalOrSurfaceFailure(context_result))
         DisableGpuCompositing(nullptr);
     }
-    // On kFatalFailure |main_context_provider_| will be null.
+    // On kFatalFailure or kSurfaceFailure, |main_context_provider_| will be
+    // null.
   }
 
   return main_context_provider_;
@@ -367,7 +377,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
           base::BindOnce(&VizProcessTransportFactory::OnEstablishedGpuChannel,
                          weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
       return;
-    } else if (context_result == gpu::ContextResult::kFatalFailure) {
+    } else if (gpu::IsFatalOrSurfaceFailure(context_result)) {
       DisableGpuCompositing(compositor);
       gpu_compositing = false;
     }
@@ -380,7 +390,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
     compositor_context = main_context_provider_;
     worker_context = worker_context_provider_;
   }
-  ConfigureCompositor(compositor_weak_ptr, std::move(compositor_context),
+  ConfigureCompositor(compositor, std::move(compositor_context),
                       std::move(worker_context));
 }
 

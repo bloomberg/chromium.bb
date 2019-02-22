@@ -7,7 +7,7 @@
 #ifndef CORE_FPDFAPI_PAGE_CPDF_PAGEOBJECT_H_
 #define CORE_FPDFAPI_PAGE_CPDF_PAGEOBJECT_H_
 
-#include "core/fpdfapi/page/cpdf_contentmark.h"
+#include "core/fpdfapi/page/cpdf_contentmarks.h"
 #include "core/fpdfapi/page/cpdf_graphicstates.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
@@ -54,13 +54,13 @@ class CPDF_PageObject : public CPDF_GraphicStates {
 
   void SetDirty(bool value) { m_bDirty = value; }
   bool IsDirty() const { return m_bDirty; }
-  void TransformClipPath(CFX_Matrix& matrix);
-  void TransformGeneralState(CFX_Matrix& matrix);
+  void TransformClipPath(const CFX_Matrix& matrix);
+  void TransformGeneralState(const CFX_Matrix& matrix);
 
-  CFX_FloatRect GetRect() const {
-    return CFX_FloatRect(m_Left, m_Bottom, m_Right, m_Top);
-  }
-  FX_RECT GetBBox(const CFX_Matrix* pMatrix) const;
+  void SetRect(const CFX_FloatRect& rect) { m_Rect = rect; }
+  const CFX_FloatRect& GetRect() const { return m_Rect; }
+  FX_RECT GetBBox() const;
+  FX_RECT GetTransformedBBox(const CFX_Matrix& matrix) const;
 
   // Get what content stream the object was parsed from in its page. This number
   // is the index of the content stream in the "Contents" array, or 0 if there
@@ -74,20 +74,18 @@ class CPDF_PageObject : public CPDF_GraphicStates {
     m_ContentStream = new_content_stream;
   }
 
-  float m_Left;
-  float m_Right;
-  float m_Top;
-  float m_Bottom;
-  CPDF_ContentMark m_ContentMark;
+  CPDF_ContentMarks m_ContentMarks;
 
  protected:
   void CopyData(const CPDF_PageObject* pSrcObject);
+
+  CFX_FloatRect m_Rect;
 
  private:
   CPDF_PageObject(const CPDF_PageObject& src) = delete;
   void operator=(const CPDF_PageObject& src) = delete;
 
-  bool m_bDirty;
+  bool m_bDirty = false;
   int32_t m_ContentStream;
 };
 

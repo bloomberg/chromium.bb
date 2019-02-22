@@ -9,9 +9,11 @@ from __future__ import print_function
 
 import argparse
 import distutils.version
+import errno
 import multiprocessing
 import os
 import re
+import socket
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
@@ -47,6 +49,7 @@ class VM(object):
       opts: command line options.
     """
     self.qemu_path = opts.qemu_path
+    self.qemu_img_path = opts.qemu_img_path
     self.qemu_bios_path = opts.qemu_bios_path
     self.qemu_m = opts.qemu_m
     self.qemu_cpu = opts.qemu_cpu
@@ -54,6 +57,7 @@ class VM(object):
     if self.qemu_smp == 0:
       self.qemu_smp = min(8, multiprocessing.cpu_count)
     self.enable_kvm = opts.enable_kvm
+    self.copy_on_write = opts.copy_on_write
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
     self.use_sudo = self.enable_kvm and not os.access('/dev/kvm', os.W_OK)
@@ -110,15 +114,33 @@ class VM(object):
 
   def _CreateVMDir(self):
     """Safely create vm_dir."""
-    if not osutils.SafeMakedirs(self.vm_dir, sudo=self.use_sudo):
-      # For security, ensure that vm_dir is not a symlink, and is owned by us or
-      # by root.
+    if not osutils.SafeMakedirs(self.vm_dir):
+      # For security, ensure that vm_dir is not a symlink, and is owned by us.
       error_str = ('VM state dir is misconfigured; please recreate: %s'
                    % self.vm_dir)
       assert os.path.isdir(self.vm_dir), error_str
       assert not os.path.islink(self.vm_dir), error_str
-      st_uid = os.stat(self.vm_dir).st_uid
-      assert st_uid == 0 or st_uid == os.getuid(), error_str
+      assert os.stat(self.vm_dir).st_uid == os.getuid(), error_str
+
+  def _CreateQcow2Image(self):
+    """Creates a qcow2-formatted image in the temporary VM dir.
+
+    This image will get removed on VM shutdown.
+    """
+    cow_image_path = os.path.join(self.vm_dir, 'qcow2.img')
+    qemu_img_args = [
+        self.qemu_img_path,
+        'create', '-f', 'qcow2',
+        '-o', 'backing_file=%s' % self.image_path,
+        cow_image_path,
+    ]
+    if not self.dry_run:
+      self._RunCommand(qemu_img_args)
+      logging.info('qcow2 image created at %s.', cow_image_path)
+    else:
+      logging.info(cros_build_lib.CmdToStr(qemu_img_args))
+    self.image_path = cow_image_path
+    self.image_format = 'qcow2'
 
   def _RmVMDir(self):
     """Cleanup vm_dir."""
@@ -228,6 +250,15 @@ class VM(object):
 
     if not self.qemu_path or not os.path.isfile(self.qemu_path):
       raise VMError('QEMU not found.')
+
+    if self.copy_on_write:
+      if not self.qemu_img_path:
+        # Look for qemu-img right next to qemu-system-x86_64.
+        self.qemu_img_path = os.path.join(
+            os.path.dirname(self.qemu_path), 'qemu-img')
+      if not os.path.isfile(self.qemu_img_path):
+        raise VMError('qemu-img not found. (Needed to create qcow2 image).')
+
     logging.debug('QEMU path: %s', self.qemu_path)
     self._CheckQemuMinVersion()
 
@@ -258,6 +289,31 @@ class VM(object):
       raise VMError('VM image does not exist: %s' % self.image_path)
     logging.debug('VM image path: %s', self.image_path)
 
+  def _WaitForSSHPort(self):
+    """Wait for SSH port to become available."""
+    class _SSHPortInUseError(Exception):
+      """Exception for _CheckSSHPortBusy to throw."""
+
+    def _CheckSSHPortBusy(ssh_port):
+      """Check if the SSH port is in use."""
+      sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      try:
+        sock.bind((remote_access.LOCALHOST_IP, ssh_port))
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          logging.info('SSH port %d in use...', self.ssh_port)
+          raise _SSHPortInUseError()
+      sock.close()
+
+    try:
+      retry_util.RetryException(
+          exception=_SSHPortInUseError,
+          max_retry=7,
+          functor=lambda: _CheckSSHPortBusy(self.ssh_port),
+          sleep=1)
+    except _SSHPortInUseError:
+      raise VMError('SSH port %d in use' % self.ssh_port)
+
   def Run(self):
     """Performs an action, one of start, stop, or run a command in the VM."""
     if not self.start and not self.stop and not self.cmd:
@@ -276,6 +332,7 @@ class VM(object):
     """Start the VM."""
 
     self.Stop()
+    self._WaitForSSHPort()
 
     logging.debug('Start VM')
     self._SetQemuPath()
@@ -283,6 +340,8 @@ class VM(object):
 
     self._RmVMDir()
     self._CreateVMDir()
+    if self.copy_on_write:
+      self._CreateQcow2Image()
     # Make sure we can read these files later on by creating them as ourselves.
     osutils.Touch(self.kvm_serial)
     for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
@@ -305,8 +364,8 @@ class VM(object):
         # Append 'check' to warn if the requested CPU is not fully supported.
         '-cpu', self.qemu_cpu + ',check',
         '-device', 'virtio-net,netdev=eth0',
-        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:127.0.0.1:%d-:22'
-        % self.ssh_port,
+        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:22'
+        % (remote_access.LOCALHOST_IP, self.ssh_port),
         '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=%s'
         % (self.image_path, self.image_format),
     ]
@@ -382,7 +441,7 @@ class VM(object):
       try:
         retry_util.RetryException(
             exception=_TooFewPidsException,
-            max_retry=20,
+            max_retry=5,
             functor=lambda: _GetRunningPids(exe, numpids),
             sleep=2)
       except _TooFewPidsException:
@@ -454,11 +513,11 @@ class VM(object):
                         help='Start the VM.')
     parser.add_argument('--stop', action='store_true', default=False,
                         help='Stop the VM.')
-    parser.add_argument('--image-path', type=str,
+    parser.add_argument('--image-path', type='path',
                         help='Path to VM image to launch with --start.')
     parser.add_argument('--image-format', default=VM.IMAGE_FORMAT,
                         help='Format of the VM image (raw, qcow2, ...).')
-    parser.add_argument('--qemu-path', type=str,
+    parser.add_argument('--qemu-path', type='path',
                         help='Path of qemu binary to launch with --start.')
     parser.add_argument('--qemu-m', type=str, default='8G',
                         help='Memory argument that will be passed to qemu.')
@@ -470,8 +529,16 @@ class VM(object):
     parser.add_argument('--qemu-cpu', type=str,
                         default='SandyBridge,-invpcid,-tsc-deadline',
                         help='CPU argument that will be passed to qemu.')
-    parser.add_argument('--qemu-bios-path', type=str,
+    parser.add_argument('--qemu-bios-path', type='path',
                         help='Path of directory with qemu bios files.')
+    parser.add_argument('--copy-on-write', action='store_true', default=False,
+                        help='Generates a temporary copy-on-write image backed '
+                             'by the normal boot image. All filesystem changes '
+                             'will instead be reflected in the temporary '
+                             'image.')
+    parser.add_argument('--qemu-img-path', type='path',
+                        help='Path to qemu-img binary used to create temporary '
+                             'copy-on-write images.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
                         action='store_false', default=True,
                         help='Disable KVM, use software emulation.')
@@ -483,10 +550,10 @@ class VM(object):
     parser.add_argument('--private-key', help='Path to ssh private key.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
-    parser.add_argument('--cache-dir', type=str,
+    parser.add_argument('--cache-dir', type='path',
                         default=path_util.GetCacheDir(),
                         help='Cache directory to use.')
-    parser.add_argument('--vm-dir', type=str,
+    parser.add_argument('--vm-dir', type='path',
                         help='Temp VM directory to use.')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='dry run for debugging.')

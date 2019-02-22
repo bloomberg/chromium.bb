@@ -14,11 +14,6 @@ namespace media_router {
 
 namespace {
 
-void OnMessageReceivedByRenderer(bool success) {
-  DLOG_IF(ERROR, !success)
-      << "Renderer PresentationConnection failed to process message!";
-}
-
 void LogMojoPipeError() {
   DVLOG(1) << "BrowserPresentationConnectionProxy mojo pipe error!";
 }
@@ -52,18 +47,22 @@ BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
 BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}
 
 void BrowserPresentationConnectionProxy::OnMessage(
-    blink::mojom::PresentationConnectionMessagePtr message,
-    OnMessageCallback on_message_callback) {
+    blink::mojom::PresentationConnectionMessagePtr message) {
   DVLOG(2) << "BrowserPresentationConnectionProxy::OnMessage";
   if (message->is_data()) {
     router_->SendRouteBinaryMessage(
         route_id_,
-        std::make_unique<std::vector<uint8_t>>(std::move(message->get_data())),
-        std::move(on_message_callback));
+        std::make_unique<std::vector<uint8_t>>(std::move(message->get_data())));
   } else {
-    router_->SendRouteMessage(route_id_, message->get_message(),
-                              std::move(on_message_callback));
+    router_->SendRouteMessage(route_id_, message->get_message());
   }
+}
+
+void BrowserPresentationConnectionProxy::DidClose(
+    blink::mojom::PresentationConnectionCloseReason reason) {
+  // Closing PresentationConnection is handled by
+  // PresentationService::CloseConnection or PresentationConnection implemented
+  // by a Media Route Provider.
 }
 
 void BrowserPresentationConnectionProxy::OnMessagesReceived(
@@ -74,8 +73,7 @@ void BrowserPresentationConnectionProxy::OnMessagesReceived(
   for (auto& message : messages) {
     target_connection_ptr_->OnMessage(
         message_util::PresentationConnectionFromRouteMessage(
-            std::move(message)),
-        base::BindOnce(&OnMessageReceivedByRenderer));
+            std::move(message)));
   }
 }
 }  // namespace media_router

@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -38,11 +38,11 @@ void TextControlSingleLinePainter::Paint(const PaintInfo& paint_info) {
   }
 
   // Convert the rect into the coords used for painting the content.
-  PaintInfoWithOffset paint_info_with_offset(text_control_, paint_info);
-  contents_rect.MoveBy(paint_info_with_offset.PaintOffset());
+  ScopedPaintState paint_state(text_control_, paint_info);
+  contents_rect.MoveBy(paint_state.PaintOffset());
   IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
   LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(
-      text_control_, paint_info_with_offset.GetPaintInfo(), snapped_rect);
+      text_control_, paint_state.GetPaintInfo(), snapped_rect);
 }
 
 }  // namespace blink

@@ -88,15 +88,13 @@ class AddHistogramsProcessHandler(request_handler.RequestHandler):
 
       ProcessHistogramSet(histogram_dicts)
     except Exception as e: # pylint: disable=broad-except
-      logging.error(e.message)
+      logging.error('Error processing histograms: %r', e.message)
       self.response.out.write(json.dumps({'error': e.message}))
 
 
 class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
 
-  def AuthorizedPost(self):
-    datastore_hooks.SetPrivilegedRequest()
-
+  def PrivilegedPost(self):
     with timing.WallTimeLogger('decompress'):
       try:
         data_str = self.request.body
@@ -104,6 +102,9 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
         logging.info('Recieved compressed data.')
       except zlib.error:
         data_str = self.request.get('data')
+        if not data_str:
+          raise api_request_handler.BadRequestError(
+              'Missing or uncompressed data.')
         data_str = zlib.compress(data_str)
         logging.info('Recieved uncompressed data.')
 
@@ -138,9 +139,18 @@ def _LogDebugInfo(histograms):
   log_urls = hist.diagnostics.get(reserved_infos.LOG_URLS.name)
   if log_urls:
     log_urls = list(log_urls)
-    logging.info('Buildbot URL: %s', str(log_urls))
+    msg = 'Buildbot URL: %s' % str(log_urls)
+    logging.info(msg)
   else:
     logging.info('No LOG_URLS in data.')
+
+  build_urls = hist.diagnostics.get(reserved_infos.BUILD_URLS.name)
+  if build_urls:
+    build_urls = list(build_urls)
+    msg = 'Build URL: %s' % str(build_urls)
+    logging.info(msg)
+  else:
+    logging.info('No BUILD_URLS in data.')
 
 
 def ProcessHistogramSet(histogram_dicts):
@@ -385,7 +395,15 @@ def ComputeRevision(histograms):
   if rev is None:
     rev = _GetDiagnosticValue(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
-        histograms.GetFirstHistogram())
+        histograms.GetFirstHistogram(), optional=True)
+
+  if rev is None:
+    revision_timestamps = histograms.GetFirstHistogram().diagnostics.get(
+        reserved_infos.REVISION_TIMESTAMPS.name)
+    _CheckRequest(revision_timestamps is not None,
+                  'Must specify REVISION_TIMESTAMPS, CHROMIUM_COMMIT_POSITIONS,'
+                  ' or POINT_ID')
+    rev = revision_timestamps.max_timestamp
 
   if not isinstance(rev, (long, int)):
     raise api_request_handler.BadRequestError(

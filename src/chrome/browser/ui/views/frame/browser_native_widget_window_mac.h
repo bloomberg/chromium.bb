@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NATIVE_WIDGET_WINDOW_MAC_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NATIVE_WIDGET_WINDOW_MAC_H_
 
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 @interface BrowserNativeWidgetWindow : NativeWidgetMacNSWindow
 @end

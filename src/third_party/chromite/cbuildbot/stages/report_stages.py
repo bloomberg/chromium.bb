@@ -273,7 +273,8 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_id=d['master_build_id'],
               timeout_seconds=self._GetBuildTimeoutSeconds(),
               important=d['important'],
-              buildbucket_id=self._run.options.buildbucket_id)
+              buildbucket_id=self._run.options.buildbucket_id,
+              branch=self._run.manifest_branch)
         except Exception as e:
           logging.error('Error: %s\n If the buildbucket_id to insert is '
                         'duplicated to the buildbucket_id of an old build and '
@@ -935,7 +936,7 @@ class ReportStage(generic_stages.BuilderStage,
         try:
           upload_urls = self._GetUploadUrls(
               'LATEST-*', builder_run=builder_run)
-        except portage_util.MissingOverlayException as e:
+        except portage_util.MissingOverlayError as e:
           # If the build failed prematurely, some overlays might be
           # missing. Ignore them in this stage.
           logging.warning(e)

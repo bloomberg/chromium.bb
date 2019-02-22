@@ -23,6 +23,9 @@ LazyInstance<ThreadLocalBoolean>::Leaky
 LazyInstance<ThreadLocalBoolean>::Leaky g_base_sync_primitives_disallowed =
     LAZY_INSTANCE_INITIALIZER;
 
+LazyInstance<ThreadLocalBoolean>::Leaky g_cpu_intensive_work_disallowed =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 void AssertBlockingAllowed() {
@@ -114,9 +117,22 @@ void ResetThreadRestrictionsForTesting() {
   g_blocking_disallowed.Get().Set(false);
   g_singleton_disallowed.Get().Set(false);
   g_base_sync_primitives_disallowed.Get().Set(false);
+  g_cpu_intensive_work_disallowed.Get().Set(false);
 }
 
 }  // namespace internal
+
+void AssertLongCPUWorkAllowed() {
+  DCHECK(!g_cpu_intensive_work_disallowed.Get().Get())
+      << "Function marked as CPU intensive was called from a scope that "
+         "disallows this kind of work! Consider making this work asynchronous.";
+}
+
+void DisallowUnresponsiveTasks() {
+  DisallowBlocking();
+  DisallowBaseSyncPrimitives();
+  g_cpu_intensive_work_disallowed.Get().Set(true);
+}
 
 ThreadRestrictions::ScopedAllowIO::ScopedAllowIO()
     : was_allowed_(SetIOAllowed(true)) {}

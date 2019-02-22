@@ -60,7 +60,7 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     ShowCrostiniUninstallerView(browser()->profile(),
-                                CrostiniUISurface::kSettings);
+                                crostini::CrostiniUISurface::kSettings);
   }
 
   CrostiniUninstallerView* ActiveView() {
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, UninstallFlow) {
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UninstallResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniUninstallerView::UninstallResult::kSuccess),
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstalledUninstallerViewBrowserTest,
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UninstallResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniUninstallerView::UninstallResult::kSuccess),
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, Cancel) {
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UninstallResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniUninstallerView::UninstallResult::kCancelled),
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, ErrorThenCancel) {
   ActiveView()->GetDialogClientView()->CancelWindow();
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UninstallResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniUninstallerView::UninstallResult::kError),

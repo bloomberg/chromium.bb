@@ -50,8 +50,9 @@ void SVGScriptElement::ParseAttribute(
   if (params.name == HTMLNames::onerrorAttr) {
     SetAttributeEventListener(
         EventTypeNames::error,
-        CreateAttributeEventListener(this, params.name, params.new_value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(
+            this, params.name, params.new_value,
+            JSEventHandler::HandlerType::kOnErrorEventHandler));
   } else {
     SVGElement::ParseAttribute(params);
   }

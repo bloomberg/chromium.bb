@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -45,10 +46,28 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_Normal) {
       std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   EXPECT_EQ(123456,
-            GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+            GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                 /*should_log_validity=*/true));
 
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", true, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::VALID, 1);
+}
+
+TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_Garbage) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUsePaymentsCustomerData);
+  base::HistogramTester histogram_tester;
+
+  personal_data_manager_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"garbage"));
+
+  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                    /*should_log_validity=*/true));
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::PARSE_ERROR, 1);
 }
 
 TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
@@ -58,9 +77,11 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
 
   // Explictly do not set PaymentsCustomerData. Nothing crashes and the returned
   // customer ID is 0.
-  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                    /*should_log_validity=*/true));
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", false, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::MISSING, 1);
 }
 
 TEST_F(PaymentsUtilTest,
@@ -75,9 +96,11 @@ TEST_F(PaymentsUtilTest,
   // We got the data from prefs and log that the PaymentsCustomerData is
   // invalid.
   EXPECT_EQ(123456,
-            GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+            GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                 /*should_log_validity=*/true));
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", false, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::MISSING, 1);
 }
 
 TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_Normal) {
@@ -87,7 +110,8 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_Normal) {
   pref_service_.SetDouble(prefs::kAutofillBillingCustomerNumber, 123456.0);
 
   EXPECT_EQ(123456,
-            GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+            GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                 /*should_log_validity=*/true));
 }
 
 TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_NoData) {
@@ -96,7 +120,8 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_NoData) {
 
   // Explictly do not set Prefs data. Nothing crashes and the returned customer
   // ID is 0.
-  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_,
+                                    /*should_log_validity=*/true));
 }
 
 }  // namespace payments

@@ -146,7 +146,8 @@ class PendingStartElementNSCallback final
       // name, prefix, uri, value and an end pointer.
       for (int j = 0; j < 3; ++j)
         attributes_[i * 5 + j] = xmlStrdup(attributes[i * 5 + j]);
-      int length = attributes[i * 5 + 4] - attributes[i * 5 + 3];
+      int length =
+          static_cast<int>(attributes[i * 5 + 4] - attributes[i * 5 + 3]);
       attributes_[i * 5 + 3] = xmlStrndup(attributes[i * 5 + 3], length);
       attributes_[i * 5 + 4] = attributes_[i * 5 + 3] + length;
     }
@@ -1408,7 +1409,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
   DCHECK_LE(entity_length_in_utf8, kSharedXhtmlEntityResultLength);
 
   xmlEntityPtr entity = SharedXHTMLEntity();
-  entity->length = entity_length_in_utf8;
+  entity->length = SafeCast<int>(entity_length_in_utf8);
   entity->name = name;
   return entity;
 }

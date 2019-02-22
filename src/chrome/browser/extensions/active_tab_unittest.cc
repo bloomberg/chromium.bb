@@ -46,6 +46,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
@@ -463,17 +464,17 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
 
 class ActiveTabDelegateTest : public ActiveTabTest {
  protected:
-  ActiveTabDelegateTest()
-      : test_delegate_(
-            std::make_unique<ActiveTabPermissionGranterTestDelegate>()) {
-    ActiveTabPermissionGranter::SetPlatformDelegate(test_delegate_.get());
+  ActiveTabDelegateTest() {
+    auto delegate = std::make_unique<ActiveTabPermissionGranterTestDelegate>();
+    test_delegate_ = delegate.get();
+    ActiveTabPermissionGranter::SetPlatformDelegate(std::move(delegate));
   }
 
   ~ActiveTabDelegateTest() override {
     ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
   }
 
-  std::unique_ptr<ActiveTabPermissionGranterTestDelegate> test_delegate_;
+  ActiveTabPermissionGranterTestDelegate* test_delegate_;
 };
 
 // Test that the custom platform delegate works as expected.
@@ -500,7 +501,79 @@ TEST_F(ActiveTabDelegateTest, DelegateUsedOnlyWhenNeeded) {
 }
 
 #if defined(OS_CHROMEOS)
-// Keep the unique_ptr around until callback has been run.
+class ActiveTabManagedSessionTest : public ActiveTabTest {
+ protected:
+  ActiveTabManagedSessionTest() {}
+
+  void SetUp() override {
+    ActiveTabTest::SetUp();
+
+    // Necessary to prevent instantiation of ProfileSyncService, which messes
+    // with our signin state below.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableSync);
+    // Necessary because no ProfileManager instance exists in this test.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+
+    // Setup, login a public account user.
+    const std::string user_id = "public@account.user";
+    const std::string user_email = user_id;
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(user_email, user_id);
+    const std::string user_id_hash =
+        chromeos::ProfileHelper::Get()->GetUserIdHashByUserIdForTesting(
+            user_id);
+
+    local_state_ = std::make_unique<ScopedTestingLocalState>(
+        TestingBrowserProcess::GetGlobal());
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
+    g_browser_process->local_state()->SetString(
+        "PublicAccountPendingDataRemoval", user_email);
+    user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                   true /* browser_restart */,
+                                                   false /* is_child */);
+    // Finish initialization - some things are run as separate tasks.
+    base::RunLoop().RunUntilIdle();
+
+    google_ = GURL("http://www.google.com");
+    NavigateAndCommit(google_);
+  }
+
+  void TearDown() override {
+    // This one needs to be destructed here so it deregisters itself from
+    // CrosSettings before that is destructed down the line inside
+    // ChromeRenderViewHostTestHarness::TearDown.
+    wallpaper_controller_client_.reset();
+
+    chromeos::ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting();
+    chromeos::ChromeUserManager::Get()->Shutdown();
+
+    ActiveTabTest::TearDown();
+  }
+
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
+  TestWallpaperController test_wallpaper_controller_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  GURL google_;
+};
+
+// Test that there's no permission prompt in Managed Sessions (Public Sessions
+// v2) for activeTab.
+TEST_F(ActiveTabManagedSessionTest, NoPromptInManagedSession) {
+  chromeos::ScopedTestPublicSessionLoginState login_state(
+      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED);
+
+  active_tab_permission_granter()->GrantIfRequested(
+      extension_with_tab_capture.get());
+  EXPECT_TRUE(IsAllowed(extension_with_tab_capture, google_));
+}
+
+// Keep the unique_ptr around until callback has been run and don't forget to
+// unset the ActiveTabPermissionGranterDelegateChromeOS.
 std::unique_ptr<permission_helper::RequestResolvedCallback>
 QuitRunLoopOnRequestResolved(base::RunLoop* run_loop) {
   auto callback = std::make_unique<permission_helper::RequestResolvedCallback>(
@@ -512,57 +585,30 @@ QuitRunLoopOnRequestResolved(base::RunLoop* run_loop) {
   return callback;
 }
 
-// Test that the platform delegate is being set and the permission is prompted
-// for.
-TEST_F(ActiveTabTest, DelegateIsSet) {
-  // Necessary to prevent instantiation of ProfileSyncService, which messes with
-  // our signin state below.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-  // Necessary because no ProfileManager instance exists in this test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kIgnoreUserProfileMappingForTests);
-
-  // Setup, login a public account user.
-  chromeos::ScopedTestPublicSessionLoginState login_state;
-  std::string user_id = "public@account.user";
-  std::string user_email = user_id;
-  AccountId account_id = AccountId::FromUserEmailGaiaId(user_email, user_id);
-  std::string user_id_hash = chromeos::ProfileHelper::Get()->
-      GetUserIdHashByUserIdForTesting(user_id);
-  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_ =
-      std::make_unique<WallpaperControllerClient>();
-  TestWallpaperController test_wallpaper_controller_;
-  wallpaper_controller_client_->InitForTesting(
-      test_wallpaper_controller_.CreateInterfacePtr());
-  g_browser_process->local_state()->SetString(
-      "PublicAccountPendingDataRemoval", user_email);
-  user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
-                                                 true /* browser_restart */,
-                                                 false /* is_child */);
-
-  GURL google("http://www.google.com");
-  NavigateAndCommit(google);
-
+// Test that the platform delegate is being set and the activeTab permission is
+// prompted for in Public Sessions.
+TEST_F(ActiveTabManagedSessionTest,
+       DelegateIsSetAndPromptIsShownInPublicSession) {
+  chromeos::ScopedTestPublicSessionLoginState login_state(
+      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
   // Grant and verify.
   {
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::ACCEPT);
 
+    // RunLoop needed to resolve the permission dialog.
     base::RunLoop run_loop;
     auto cb = QuitRunLoopOnRequestResolved(&run_loop);
     active_tab_permission_granter()->GrantIfRequested(extension.get());
     run_loop.Run();
-    EXPECT_TRUE(IsBlocked(extension, google));
+    EXPECT_TRUE(IsBlocked(extension, google_));
 
-    base::RunLoop run_loop2;
-    cb = QuitRunLoopOnRequestResolved(&run_loop2);
     active_tab_permission_granter()->GrantIfRequested(extension.get());
-    run_loop2.Run();
-    EXPECT_TRUE(IsAllowed(extension, google));
+    EXPECT_TRUE(IsAllowed(extension, google_));
   }
 
-  // Deny and verify. Use a different extension so it doesn't trigger the cache.
+  // Deny and verify. Use a different extension so it doesn't trigger the
+  // cache.
   {
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::CANCEL);
@@ -571,20 +617,15 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
     auto cb = QuitRunLoopOnRequestResolved(&run_loop);
     active_tab_permission_granter()->GrantIfRequested(another_extension.get());
     run_loop.Run();
-    EXPECT_TRUE(IsBlocked(another_extension, google));
+    EXPECT_TRUE(IsBlocked(another_extension, google_));
 
-    base::RunLoop run_loop2;
-    cb = QuitRunLoopOnRequestResolved(&run_loop2);
     active_tab_permission_granter()->GrantIfRequested(another_extension.get());
-    run_loop2.Run();
-    EXPECT_TRUE(IsBlocked(another_extension, google));
+    EXPECT_TRUE(IsBlocked(another_extension, google_));
   }
 
   // Cleanup.
   ActiveTabPermissionGranterDelegateChromeOS::
       SetRequestResolvedCallbackForTesting(nullptr);
-  delete ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
-  chromeos::ChromeUserManager::Get()->Shutdown();
 }
 #endif  // defined(OS_CHROMEOS)
 

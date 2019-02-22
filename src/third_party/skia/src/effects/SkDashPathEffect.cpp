@@ -374,8 +374,8 @@ void SkDashImpl::flatten(SkWriteBuffer& buffer) const {
 }
 
 sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
-#ifdef WEB_ASSEMBLY
-    // Should not be reachable by WebAssembly Code.
+#ifdef SK_DISABLE_READBUFFER
+    // Should not be reachable by PathKit WebAssembly Code.
     SkASSERT(false);
     return nullptr;
 #else

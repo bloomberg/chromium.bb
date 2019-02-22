@@ -401,6 +401,10 @@ void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
 }
 
+float BrowserCompositorMac::GetDeviceScaleFactor() const {
+  return dfh_display_.device_scale_factor();
+}
+
 void BrowserCompositorMac::DidNavigate() {
   // The first navigation does not need a new LocalSurfaceID. The renderer can
   // use the ID that was already provided.

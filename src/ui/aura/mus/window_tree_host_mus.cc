@@ -146,10 +146,6 @@ void WindowTreeHostMus::StackAtTop() {
   delegate_->OnWindowTreeHostStackAtTop(this);
 }
 
-void WindowTreeHostMus::PerformWmAction(const std::string& action) {
-  delegate_->OnWindowTreeHostPerformWmAction(this, action);
-}
-
 void WindowTreeHostMus::PerformWindowMove(
     ws::mojom::MoveLoopSource mus_source,
     const gfx::Point& cursor_location,

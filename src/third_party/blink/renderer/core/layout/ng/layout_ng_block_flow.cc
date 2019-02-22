@@ -59,11 +59,11 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
     return;
   }
 
-  scoped_refptr<NGConstraintSpace> constraint_space =
+  NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
   scoped_refptr<NGLayoutResult> result =
-      NGBlockNode(this).Layout(*constraint_space);
+      NGBlockNode(this).Layout(constraint_space);
 
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
@@ -91,17 +91,19 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
                                          containing_block->Size().Height());
     NGLogicalOffset logical_offset(LogicalLeft(), LogicalTop());
     physical_offset = logical_offset.ConvertToPhysical(
-        constraint_space->GetWritingMode(), constraint_space->Direction(),
+        constraint_space.GetWritingMode(), constraint_space.Direction(),
         containing_block_size, fragment->Size());
   }
   result->SetOffset(physical_offset);
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
-  LayoutBlock* container = ContainingBlock();
+  LayoutBoxModelObject* css_container = ToLayoutBoxModelObject(Container());
+  LayoutBox* container =
+      css_container->IsBox() ? ToLayoutBox(css_container) : ContainingBlock();
   const ComputedStyle* container_style = container->Style();
   const ComputedStyle* parent_style = Parent()->Style();
-  scoped_refptr<NGConstraintSpace> constraint_space =
+  NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
   NGFragmentBuilder container_builder(
       container, scoped_refptr<const ComputedStyle>(container_style),
@@ -112,7 +114,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // layout. Override sizes are padding box size, not border box, so we must add
   // borders and scrollbars to compensate.
   NGBoxStrut borders_and_scrollbars =
-      ComputeBorders(*constraint_space, *container_style) +
+      ComputeBorders(constraint_space, *container_style) +
       NGBlockNode(container).GetScrollbarSizes();
 
   // Calculate the border-box size of the object that's the containing block of
@@ -142,13 +144,12 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   container_builder.SetInlineSize(container_border_box_logical_width);
   container_builder.SetBlockSize(container_border_box_logical_height);
   container_builder.SetBorders(
-      ComputeBorders(*constraint_space, *container_style));
+      ComputeBorders(constraint_space, *container_style));
   container_builder.SetPadding(
-      ComputePadding(*constraint_space, *container_style));
+      ComputePadding(constraint_space, *container_style));
 
   // Calculate the actual size of the containing block for this out-of-flow
   // descendant. This is what's used to size and position us.
-  LayoutBoxModelObject* css_container = ToLayoutBoxModelObject(Container());
   LayoutUnit containing_block_logical_width =
       ContainingBlockLogicalWidthForPositioned(css_container);
   LayoutUnit containing_block_logical_height =
@@ -232,7 +233,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   NGOutOfFlowLayoutPart(
       &container_builder, css_container->CanContainAbsolutePositionObjects(),
       css_container->CanContainFixedPositionObjects(), borders_and_scrollbars,
-      *constraint_space, *container_style)
+      constraint_space, *container_style)
       .Run(/* only_layout */ this);
   scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.

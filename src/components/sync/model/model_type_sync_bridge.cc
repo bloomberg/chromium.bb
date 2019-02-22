@@ -24,6 +24,10 @@ ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
 void ModelTypeSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {}
 
+bool ModelTypeSyncBridge::SupportsGetClientTag() const {
+  return true;
+}
+
 bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
   return true;
 }
@@ -50,6 +54,10 @@ ModelTypeSyncBridge::StopSyncResponse ModelTypeSyncBridge::ApplyStopSyncChanges(
                      EntityChangeList());
   }
   return StopSyncResponse::kModelStillReadyToSync;
+}
+
+size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {
+  return 0U;
 }
 
 ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() {

@@ -5,8 +5,8 @@
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
 
 #include "core/fpdfdoc/cpvt_wordinfo.h"
+
 #include "core/fxcrt/fx_codepage.h"
-#include "third_party/base/ptr_util.h"
 
 CPVT_WordInfo::CPVT_WordInfo()
     : Word(0),

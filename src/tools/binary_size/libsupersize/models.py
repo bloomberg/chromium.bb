@@ -142,6 +142,9 @@ FLAG_HOT = 128
 # Relevant for .text symbols. If a method has this flag, then it was run
 # according to the code coverage.
 FLAG_COVERED = 256
+# Relevant for non-locale .pak symbols. Indicates a pak entry is stored
+# uncompressed.
+FLAG_UNCOMPRESSED = 512
 
 
 DIFF_STATUS_UNCHANGED = 0
@@ -149,6 +152,7 @@ DIFF_STATUS_CHANGED = 1
 DIFF_STATUS_ADDED = 2
 DIFF_STATUS_REMOVED = 3
 DIFF_PREFIX_BY_STATUS = ['= ', '~ ', '+ ', '- ']
+DIFF_COUNT_DELTA = [0, 0, 1, -1]
 
 
 STRING_LITERAL_NAME = 'string literal'
@@ -309,6 +313,10 @@ class BaseSymbol(object):
       parts.append('clone')
     if flags & FLAG_HOT:
       parts.append('hot')
+    if flags & FLAG_COVERED:
+      parts.append('covered')
+    if flags & FLAG_UNCOMPRESSED:
+      parts.append('uncompressed')
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):
@@ -873,7 +881,7 @@ class SymbolGroup(BaseSymbol):
     """
     return self._CreateTransformed(
         self._filtered_symbols, filtered_symbols=self._symbols,
-        section_name=SECTION_MULTIPLE, is_default_sorted=False)
+        section_name=SECTION_MULTIPLE)
 
   def GroupedBy(self, func, min_count=0, group_factory=None):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.

@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
+#include "components/offline_pages/core/background/request_queue_task_test_base.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -20,14 +22,12 @@ const GURL kUrl1("http://example.com");
 const GURL kUrl2("http://otherexample.com");
 const ClientId kClientId1("download", "1234");
 const ClientId kClientId2("download", "5678");
-}  // namespace
 
-class AddRequestTaskTest : public testing::Test {
+class AddRequestTaskTest : public RequestQueueTaskTestBase {
  public:
   AddRequestTaskTest();
-  ~AddRequestTaskTest() override;
+  ~AddRequestTaskTest() override {}
 
-  void PumpLoop();
   void ClearResults();
 
   void InitializeStore(RequestQueueStore* store);
@@ -46,27 +46,16 @@ class AddRequestTaskTest : public testing::Test {
     return requests_;
   }
 
- private:
+ protected:
   void InitializeStoreDone(bool success);
 
   bool callback_called_;
   ItemActionStatus status_;
   std::vector<std::unique_ptr<SavePageRequest>> requests_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
 AddRequestTaskTest::AddRequestTaskTest()
-    : callback_called_(false),
-      status_(ItemActionStatus::NOT_FOUND),
-      task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
-
-AddRequestTaskTest::~AddRequestTaskTest() {}
-
-void AddRequestTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
+    : callback_called_(false), status_(ItemActionStatus::NOT_FOUND) {}
 
 void AddRequestTaskTest::ClearResults() {
   callback_called_ = false;
@@ -96,12 +85,11 @@ void AddRequestTaskTest::InitializeStoreDone(bool success) {
 }
 
 TEST_F(AddRequestTaskTest, AddSingleRequest) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore(&store_);
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  AddRequestTask task(&store, request_1,
+  AddRequestTask task(&store_, request_1,
                       base::BindOnce(&AddRequestTaskTest::AddRequestDone,
                                      base::Unretained(this)));
   task.Run();
@@ -109,8 +97,8 @@ TEST_F(AddRequestTaskTest, AddSingleRequest) {
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::SUCCESS, last_status());
 
-  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
-                                   base::Unretained(this)));
+  store_.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                    base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_requests().size());
   EXPECT_EQ(kRequestId1, last_requests().at(0)->request_id());
@@ -121,12 +109,11 @@ TEST_F(AddRequestTaskTest, AddSingleRequest) {
 }
 
 TEST_F(AddRequestTaskTest, AddMultipleRequests) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore(&store_);
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);
-  AddRequestTask task(&store, request_1,
+  AddRequestTask task(&store_, request_1,
                       base::BindOnce(&AddRequestTaskTest::AddRequestDone,
                                      base::Unretained(this)));
   task.Run();
@@ -138,7 +125,7 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
   base::Time creation_time_2 = base::Time::Now();
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time_2,
                             true);
-  AddRequestTask task_2(&store, request_2,
+  AddRequestTask task_2(&store_, request_2,
                         base::BindOnce(&AddRequestTaskTest::AddRequestDone,
                                        base::Unretained(this)));
   task_2.Run();
@@ -146,8 +133,8 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::SUCCESS, last_status());
 
-  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
-                                   base::Unretained(this)));
+  store_.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                    base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(2ul, last_requests().size());
   int request_2_index =
@@ -161,12 +148,11 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
 }
 
 TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore(&store_);
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);
-  AddRequestTask task(&store, request_1,
+  AddRequestTask task(&store_, request_1,
                       base::BindOnce(&AddRequestTaskTest::AddRequestDone,
                                      base::Unretained(this)));
   task.Run();
@@ -179,7 +165,7 @@ TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
   // This was has the same request ID.
   SavePageRequest request_2(kRequestId1, kUrl2, kClientId2, creation_time_2,
                             true);
-  AddRequestTask task_2(&store, request_2,
+  AddRequestTask task_2(&store_, request_2,
                         base::BindOnce(&AddRequestTaskTest::AddRequestDone,
                                        base::Unretained(this)));
   task_2.Run();
@@ -187,10 +173,11 @@ TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::ALREADY_EXISTS, last_status());
 
-  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
-                                   base::Unretained(this)));
+  store_.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                    base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_requests().size());
 }
 
+}  // namespace
 }  // namespace offline_pages

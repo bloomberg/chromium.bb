@@ -157,8 +157,8 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
     }
   }
 
-  UMA_HISTOGRAM_COUNTS("EnterpriseCheck.InvalidPoliciesDetected",
-                       invalid_policies);
+  UMA_HISTOGRAM_COUNTS_1M("EnterpriseCheck.InvalidPoliciesDetected",
+                          invalid_policies);
 }
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy

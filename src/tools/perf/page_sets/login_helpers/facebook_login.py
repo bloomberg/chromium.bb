@@ -43,6 +43,11 @@ def LoginWithMobileSite(
 def LoginWithDesktopSite(
     action_runner, credential,
     credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
-  # Currently we use the mobile login page also on Desktop because the
-  # Desktop version requires enabled cookies and rejects the login.
-  return LoginWithMobileSite(action_runner, credential, credentials_path)
+  account_name, password = login_utils.GetAccountNameAndPassword(
+      credential, credentials_path=credentials_path)
+
+  action_runner.Navigate('https://facebook.com/login')
+  login_utils.InputWithSelector(action_runner, account_name, '[name=email]')
+  login_utils.InputWithSelector(action_runner, password, '[name=pass]')
+  action_runner.ClickElement(selector='[name=login]')
+  action_runner.WaitForNavigate()

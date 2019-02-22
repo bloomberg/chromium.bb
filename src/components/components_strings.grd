@@ -196,8 +196,6 @@
       <part file="history_strings.grdp" />
       <part file="login_dialog_strings.grdp" />
       <part file="new_or_sad_tab_strings.grdp" />
-      <part file="nux_google_apps_strings.grdp" />
-      <part file="nux_email_strings.grdp" />
       <part file="ntp_snippets_strings.grdp" />
       <part file="omnibox_strings.grdp" />
       <part file="page_info_strings.grdp" />
@@ -216,6 +214,10 @@
       <part file="translate_strings.grdp" />
       <part file="undo_strings.grdp" />
       <part file="version_ui_strings.grdp" />
+
+      <if expr="not is_android and not is_ios">
+        <part file="management_strings.grdp" />
+      </if>
 
       <!-- Generic terms -->
       <message name="IDS_CANCEL" desc="Used for Cancel on buttons">

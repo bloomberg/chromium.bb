@@ -85,6 +85,14 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // Cancel any touches, for example, when focus is lost.
   void CancelTouch();
 
+  // This is needed because SyntheticGestureSmoothDrag doesn't support setting
+  // key-modifiers on the drag sequence.
+  // https://crbug.com/901374.
+  void SetPinchGestureModeForTesting(bool pinch_gesture_mode);
+  bool suppress_next_fling_cancel_for_testing() const {
+    return suppress_next_fling_cancel_;
+  }
+
  private:
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -147,6 +155,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
 
   bool mouse_pressed_;
   bool shift_pressed_;
+  bool pinch_gesture_mode_for_testing_;
 
   blink::WebTouchEvent touch_event_;
   int emulated_stream_active_sequence_count_;

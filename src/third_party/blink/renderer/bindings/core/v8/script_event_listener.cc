@@ -30,26 +30,22 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_lazy_event_listener.h"
-#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-EventListener* CreateAttributeEventListener(
-    Node* node,
-    const QualifiedName& name,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name) {
+// TODO(yukiy): make this method receive |Document*| instead of |Node*|, which
+// is no longer necessary.
+EventListener* CreateAttributeEventListener(Node* node,
+                                            const QualifiedName& name,
+                                            const AtomicString& value,
+                                            JSEventHandler::HandlerType type) {
   DCHECK(node);
   if (value.IsNull())
     return nullptr;
@@ -60,6 +56,8 @@ EventListener* CreateAttributeEventListener(
   String source_url;
 
   v8::Isolate* isolate = ToIsolate(&node->GetDocument());
+  v8::HandleScope scope(isolate);
+
   if (LocalFrame* frame = node->GetDocument().GetFrame()) {
     ScriptController& script_controller = frame->GetScriptController();
     if (!node->GetDocument().CanExecuteScripts(kAboutToExecuteScript))
@@ -68,16 +66,22 @@ EventListener* CreateAttributeEventListener(
     source_url = node->GetDocument().Url().GetString();
   }
 
-  return V8LazyEventListener::Create(name.LocalName(), event_parameter_name,
-                                     value, source_url, position, node,
-                                     isolate);
+  // |v8_context| can be an empty handle when this listener is added as content
+  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
+  // when parsing HTML. In that case we should assume the main world.
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  return JSEventHandlerForContentAttribute::Create(
+      name.LocalName(), value, source_url, position, isolate,
+      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
+                           : ScriptState::From(v8_context)->World(),
+      type);
 }
 
-EventListener* CreateAttributeEventListener(
-    LocalFrame* frame,
-    const QualifiedName& name,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name) {
+EventListener* CreateAttributeEventListener(LocalFrame* frame,
+                                            const QualifiedName& name,
+                                            const AtomicString& value,
+                                            JSEventHandler::HandlerType type) {
   if (!frame)
     return nullptr;
 
@@ -90,69 +94,19 @@ EventListener* CreateAttributeEventListener(
   TextPosition position = frame->GetScriptController().EventHandlerPosition();
   String source_url = frame->GetDocument()->Url().GetString();
 
-  return V8LazyEventListener::Create(name.LocalName(), event_parameter_name,
-                                     value, source_url, position, nullptr,
-                                     ToIsolate(frame));
-}
+  v8::Isolate* isolate = ToIsolate(frame);
+  v8::HandleScope scope(isolate);
 
-v8::Local<v8::Object> EventListenerHandler(ExecutionContext* execution_context,
-                                           EventListener* listener) {
-  if (listener->GetType() != EventListener::kJSEventListenerType)
-    return v8::Local<v8::Object>();
-  V8AbstractEventListener* v8_listener =
-      static_cast<V8AbstractEventListener*>(listener);
-  return v8_listener->GetListenerObject(execution_context);
-}
+  // |v8_context| can be an empty handle when this listener is added as content
+  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
+  // when parsing HTML. In that case we should assume the main world.
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
 
-v8::Local<v8::Function> EventListenerEffectiveFunction(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> handler) {
-  v8::Local<v8::Function> function;
-  if (handler->IsFunction()) {
-    function = handler.As<v8::Function>();
-  } else if (handler->IsObject()) {
-    v8::Local<v8::Value> property;
-    // Try the "handleEvent" method (EventListener interface).
-    if (handler
-            ->Get(handler->CreationContext(),
-                  V8AtomicString(isolate, "handleEvent"))
-            .ToLocal(&property) &&
-        property->IsFunction())
-      function = property.As<v8::Function>();
-    // Fall back to the "constructor" property.
-    else if (handler
-                 ->Get(handler->CreationContext(),
-                       V8AtomicString(isolate, "constructor"))
-                 .ToLocal(&property) &&
-             property->IsFunction())
-      function = property.As<v8::Function>();
-  }
-  if (!function.IsEmpty())
-    return GetBoundFunction(function);
-  return v8::Local<v8::Function>();
-}
-
-void GetFunctionLocation(v8::Local<v8::Function> function,
-                         String& script_id,
-                         int& line_number,
-                         int& column_number) {
-  int script_id_value = function->ScriptId();
-  script_id = String::Number(script_id_value);
-  line_number = function->GetScriptLineNumber();
-  column_number = function->GetScriptColumnNumber();
-}
-
-std::unique_ptr<SourceLocation> GetFunctionLocation(
-    ExecutionContext* execution_context,
-    EventListener* listener) {
-  v8::Isolate* isolate = ToIsolate(execution_context);
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> handler =
-      EventListenerHandler(execution_context, listener);
-  if (handler.IsEmpty())
-    return nullptr;
-  return SourceLocation::FromFunction(
-      EventListenerEffectiveFunction(isolate, handler));
+  return JSEventHandlerForContentAttribute::Create(
+      name.LocalName(), value, source_url, position, isolate,
+      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
+                           : ScriptState::From(v8_context)->World(),
+      type);
 }
 
 }  // namespace blink

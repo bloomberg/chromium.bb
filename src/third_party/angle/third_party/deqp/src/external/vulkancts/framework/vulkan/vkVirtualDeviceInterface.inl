@@ -157,6 +157,10 @@ virtual VkResult			importSemaphoreFdKHR						(VkDevice device, const VkImportSem
 virtual VkResult			getSemaphoreFdKHR							(VkDevice device, const VkSemaphoreGetFdInfoKHR* pGetFdInfo, int* pFd) const = 0;
 virtual void				cmdPushDescriptorSetKHR						(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, deUint32 set, deUint32 descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites) const = 0;
 virtual void				cmdPushDescriptorSetWithTemplateKHR			(VkCommandBuffer commandBuffer, VkDescriptorUpdateTemplate descriptorUpdateTemplate, VkPipelineLayout layout, deUint32 set, const void* pData) const = 0;
+virtual VkResult			createRenderPass2KHR						(VkDevice device, const VkRenderPassCreateInfo2KHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) const = 0;
+virtual void				cmdBeginRenderPass2KHR						(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfoKHR* pSubpassBeginInfo) const = 0;
+virtual void				cmdNextSubpass2KHR							(VkCommandBuffer commandBuffer, const VkSubpassBeginInfoKHR* pSubpassBeginInfo, const VkSubpassEndInfoKHR* pSubpassEndInfo) const = 0;
+virtual void				cmdEndRenderPass2KHR						(VkCommandBuffer commandBuffer, const VkSubpassEndInfoKHR* pSubpassEndInfo) const = 0;
 virtual VkResult			getSwapchainStatusKHR						(VkDevice device, VkSwapchainKHR swapchain) const = 0;
 virtual VkResult			importFenceWin32HandleKHR					(VkDevice device, const VkImportFenceWin32HandleInfoKHR* pImportFenceWin32HandleInfo) const = 0;
 virtual VkResult			getFenceWin32HandleKHR						(VkDevice device, const VkFenceGetWin32HandleInfoKHR* pGetWin32HandleInfo, pt::Win32Handle* pHandle) const = 0;
@@ -194,5 +198,6 @@ virtual VkResult			createValidationCacheEXT					(VkDevice device, const VkValida
 virtual void				destroyValidationCacheEXT					(VkDevice device, VkValidationCacheEXT validationCache, const VkAllocationCallbacks* pAllocator) const = 0;
 virtual VkResult			mergeValidationCachesEXT					(VkDevice device, VkValidationCacheEXT dstCache, deUint32 srcCacheCount, const VkValidationCacheEXT* pSrcCaches) const = 0;
 virtual VkResult			getValidationCacheDataEXT					(VkDevice device, VkValidationCacheEXT validationCache, deUintptr* pDataSize, void* pData) const = 0;
+virtual VkResult			getMemoryHostPointerPropertiesEXT			(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties) const = 0;
 virtual VkResult			getAndroidHardwareBufferPropertiesANDROID	(VkDevice device, const struct pt::AndroidHardwareBufferPtr buffer, VkAndroidHardwareBufferPropertiesANDROID* pProperties) const = 0;
 virtual VkResult			getMemoryAndroidHardwareBufferANDROID		(VkDevice device, const VkMemoryGetAndroidHardwareBufferInfoANDROID* pInfo, struct pt::AndroidHardwareBufferPtr* pBuffer) const = 0;

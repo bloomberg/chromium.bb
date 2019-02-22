@@ -33,10 +33,13 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -70,8 +73,6 @@ constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 constexpr SkColor kDisabledAuthMessageBubbleColor =
     SkColorSetRGB(0x20, 0x21, 0x24);
 
-constexpr SkColor kFingerprintTextColor =
-    SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
 constexpr int kFingerprintIconSizeDp = 32;
 constexpr int kResetToDefaultIconDelayMs = 1300;
 constexpr int kFingerprintIconTopSpacingDp = 20;
@@ -94,8 +95,8 @@ constexpr int kDisabledAuthMessageRoundedCornerRadiusDp = 8;
 constexpr int kNonEmptyWidthDp = 1;
 
 // Returns an observer that will hide |view| when it fires. The observer will
-// delete itself after firing. Make sure to call |observer->SetReady()| after
-// attaching it.
+// delete itself after firing (by returning true). Make sure to call
+// |observer->SetActive()| after attaching it.
 ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
   return new ui::CallbackLayerAnimationObserver(base::Bind(
       [](views::View* view,
@@ -111,24 +112,26 @@ ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
       view));
 }
 
-// Clears the password for the given |LoginPasswordView| instance and then
-// deletes itself.
-class ClearPasswordAnimationObserver : public ui::ImplicitAnimationObserver {
+// Clears the password for the given |LoginPasswordView| instance, hides it, and
+// then deletes itself.
+class ClearPasswordAndHideAnimationObserver
+    : public ui::ImplicitAnimationObserver {
  public:
-  explicit ClearPasswordAnimationObserver(LoginPasswordView* view)
-      : view_(view) {}
-  ~ClearPasswordAnimationObserver() override = default;
+  explicit ClearPasswordAndHideAnimationObserver(LoginPasswordView* view)
+      : password_view_(view) {}
+  ~ClearPasswordAndHideAnimationObserver() override = default;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    view_->Clear();
+    password_view_->Clear();
+    password_view_->SetVisible(false);
     delete this;
   }
 
  private:
-  LoginPasswordView* view_;
+  LoginPasswordView* const password_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAnimationObserver);
+  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAndHideAnimationObserver);
 };
 
 void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
@@ -174,7 +177,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE));
     label_->SetSubpixelRenderingEnabled(false);
     label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(kFingerprintTextColor);
+    label_->SetEnabledColor(login_constants::kAuthMethodsTextColor);
     AddChildView(label_);
   }
 
@@ -184,10 +187,15 @@ class LoginAuthUserView::FingerprintView : public views::View {
     switch (state) {
       case mojom::FingerprintUnlockState::UNAVAILABLE:
       case mojom::FingerprintUnlockState::AVAILABLE:
-      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+      case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(
             kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
-        return;
+        break;
+      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+        icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
+                                              kFingerprintIconSizeDp,
+                                              gfx::kGoogleGreenDark500));
+        break;
       case mojom::FingerprintUnlockState::AUTH_FAILED:
       case mojom::FingerprintUnlockState::AUTH_DISABLED:
         icon_->SetAnimationDecoder(
@@ -198,7 +206,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
                     kFingerprintFailedAnimationDurationMs),
                 kFingerprintFailedAnimationNumFrames),
             AnimatedRoundedImageView::Playback::kSingle);
-        return;
+        break;
     }
   }
 
@@ -207,11 +215,13 @@ class LoginAuthUserView::FingerprintView : public views::View {
       switch (state) {
         case mojom::FingerprintUnlockState::UNAVAILABLE:
         case mojom::FingerprintUnlockState::AVAILABLE:
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE;
+        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS;
         case mojom::FingerprintUnlockState::AUTH_FAILED:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE;
         case mojom::FingerprintUnlockState::AUTH_DISABLED:
+        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE;
       }
     };
@@ -224,7 +234,9 @@ class LoginAuthUserView::FingerprintView : public views::View {
       return;
 
     state_ = state;
-    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE);
+    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE &&
+               state !=
+                   mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT);
     SetIcon(state);
     SetText(state);
 
@@ -441,11 +453,20 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
   fingerprint_view_ = new FingerprintView();
 
+  // TODO(jdufault): Implement real UI.
+  external_binary_auth_button_ = views::MdTextButton::Create(
+      this, base::ASCIIToUTF16("Authenticate with external binary"));
+
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
-  auto* wrapped_password_view =
-      login_views_utils::WrapViewForPreferredSize(password_view_);
+  // Wrap the password view with a fill layout so that it always consumes space,
+  // ie, when the password view is hidden the wrapped view will still consume
+  // the same amount of space. This prevents the user view from shrinking.
+  auto* wrapped_password_view = new NonAccessibleView();
+  wrapped_password_view->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  wrapped_password_view->AddChildView(password_view_);
   auto* wrapped_online_sign_in_message_view =
       login_views_utils::WrapViewForPreferredSize(online_sign_in_message_);
   auto* wrapped_disabled_auth_message_view =
@@ -456,6 +477,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       login_views_utils::WrapViewForPreferredSize(pin_view_);
   auto* wrapped_fingerprint_view =
       login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
+  auto* wrapped_external_binary_view =
+      login_views_utils::WrapViewForPreferredSize(external_binary_auth_button_);
   auto* wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(padding_below_password_view_);
 
@@ -465,6 +488,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   AddChildView(wrapped_disabled_auth_message_view);
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_fingerprint_view);
+  AddChildView(wrapped_external_binary_view);
   AddChildView(wrapped_user_view);
   AddChildView(wrapped_padding_below_password_view);
 
@@ -494,6 +518,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_view(wrapped_padding_below_password_view);
   add_view(wrapped_pin_view);
   add_view(wrapped_fingerprint_view);
+  add_view(wrapped_external_binary_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -514,6 +539,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
+  bool has_external_binary = HasAuthMethod(AUTH_EXTERNAL_BINARY);
   bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
   bool hide_auth = auth_disabled || force_online_sign_in;
 
@@ -530,7 +556,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
   password_view_->SetFocusEnabledForChildViews(has_password);
-  password_view_->SetVisible(!hide_auth);
+  password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
   if (!had_password && has_password)
@@ -538,6 +564,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
+  external_binary_auth_button_->SetVisible(has_external_binary);
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
@@ -578,17 +605,23 @@ void LoginAuthUserView::SetEasyUnlockIcon(
 }
 
 void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
+  auto stop_animation = [](views::View* view) {
+    if (view->layer()->GetAnimator()->is_animating())
+      view->layer()->GetAnimator()->StopAnimating();
+  };
+
+  // Stop any running animation scheduled in ApplyAnimationPostLayout.
+  stop_animation(this);
+  stop_animation(password_view_);
+  stop_animation(pin_view_);
+  stop_animation(fingerprint_view_);
+
   DCHECK(!cached_animation_state_);
   cached_animation_state_ = std::make_unique<AnimationState>(this);
 }
 
 void LoginAuthUserView::ApplyAnimationPostLayout() {
   DCHECK(cached_animation_state_);
-
-  // Cancel any running animations.
-  pin_view_->layer()->GetAnimator()->AbortAllAnimations();
-  password_view_->layer()->GetAnimator()->AbortAllAnimations();
-  layer()->GetAnimator()->AbortAllAnimations();
 
   bool has_password = (auth_methods() & AUTH_PASSWORD) != 0;
   bool has_pin = (auth_methods() & AUTH_PIN) != 0;
@@ -624,6 +657,9 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     if (!has_password)
       std::swap(opacity_start, opacity_end);
 
+    if (cached_animation_state_->had_password)
+      password_view_->SetVisible(true);
+
     password_view_->layer()->SetOpacity(opacity_start);
 
     {
@@ -634,7 +670,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
       if (cached_animation_state_->had_password && !has_password) {
         settings.AddObserver(
-            new ClearPasswordAnimationObserver(password_view_));
+            new ClearPasswordAndHideAnimationObserver(password_view_));
       }
 
       password_view_->layer()->SetOpacity(opacity_end);
@@ -688,7 +724,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 
     {
       ui::ScopedLayerAnimationSettings settings(
-          password_view_->layer()->GetAnimator());
+          fingerprint_view_->layer()->GetAnimator());
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
           login_constants::kChangeUserAnimationDurationMs));
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
@@ -735,21 +771,30 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  DCHECK_EQ(online_sign_in_message_, sender);
-  OnOnlineSignInMessageTap();
+  DCHECK(sender == online_sign_in_message_ ||
+         sender == external_binary_auth_button_);
+  if (sender == online_sign_in_message_) {
+    OnOnlineSignInMessageTap();
+  } else if (sender == external_binary_auth_button_) {
+    password_view_->SetReadOnly(true);
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
+        current_user()->basic_user_info->account_id,
+        base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   // Pressing enter when the password field is empty and tap-to-unlock is
   // enabled should attempt unlock.
   if (HasAuthMethod(AUTH_TAP) && password.empty()) {
-    Shell::Get()->login_screen_controller()->AttemptUnlock(
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithEasyUnlock(
         current_user()->basic_user_info->account_id);
     return;
   }
 
   password_view_->SetReadOnly(true);
-  Shell::Get()->login_screen_controller()->AuthenticateUser(
+  Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
       can_use_pin_,
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
@@ -774,7 +819,7 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
 
 void LoginAuthUserView::OnUserViewTap() {
   if (HasAuthMethod(AUTH_TAP)) {
-    Shell::Get()->login_screen_controller()->AttemptUnlock(
+    Shell::Get()->login_screen_controller()->AuthenticateUserWithEasyUnlock(
         current_user()->basic_user_info->account_id);
   } else if (HasAuthMethod(AUTH_ONLINE_SIGN_IN)) {
     // Tapping anywhere in the user view is the same with tapping the message.

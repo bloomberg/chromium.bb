@@ -32,11 +32,12 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
     Document& element_document,
     const ScriptFetchOptions& options,
+    CrossOriginAttributeValue cross_origin,
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
     FetchParameters::DeferOption defer) {
   FetchParameters params = options.CreateFetchParameters(
-      url, element_document.GetSecurityOrigin(), encoding, defer);
+      url, element_document.GetSecurityOrigin(), cross_origin, encoding, defer);
 
   ClassicPendingScript* pending_script = new ClassicPendingScript(
       element, TextPosition(), ScriptSourceLocationType::kExternalFile, options,
@@ -100,7 +101,6 @@ ClassicPendingScript::~ClassicPendingScript() {}
 
 NOINLINE void ClassicPendingScript::CheckState() const {
   // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
-  CHECK(!prefinalizer_called_);
   CHECK(GetElement());
   CHECK_EQ(is_external_, !!GetResource());
   CHECK(GetResource() || !streamer_);
@@ -185,13 +185,6 @@ void ClassicPendingScript::RecordStreamingHistogram(
     DCHECK_NE(ScriptStreamer::kInvalid, reason);
     RecordNotStreamingReasonHistogram(type, reason);
   }
-}
-
-void ClassicPendingScript::Prefinalize() {
-  // TODO(hiroshige): Consider moving this to ScriptStreamer's prefinalizer.
-  // https://crbug.com/715309
-  CancelStreaming();
-  prefinalizer_called_ = true;
 }
 
 void ClassicPendingScript::DisposeInternal() {
@@ -285,8 +278,10 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   }
 
   if (intervened_) {
+    CrossOriginAttributeValue cross_origin =
+        GetCrossOriginAttributeValue(element->CrossOriginAttributeValue());
     PossiblyFetchBlockedDocWriteScript(resource, element->GetDocument(),
-                                       options_);
+                                       options_, cross_origin);
   }
 
   // We are now waiting for script streaming to finish.
@@ -540,9 +535,8 @@ bool ClassicPendingScript::StartStreamingIfPossible(
   DCHECK(!streamer_);
   DCHECK(!IsCurrentlyStreaming());
   DCHECK(!streamer_done_);
-  ScriptStreamer::StartStreaming(
-      this, document->GetFrame()->GetSettings(), script_state,
-      document->GetTaskRunner(task_type), &not_streamed_reason_);
+  ScriptStreamer::StartStreaming(this, document->GetTaskRunner(task_type),
+                                 &not_streamed_reason_);
   DCHECK(streamer_ || not_streamed_reason_ != ScriptStreamer::kInvalid);
   bool success = streamer_ && !streamer_->IsStreamingFinished();
 

@@ -28,7 +28,7 @@ def main(argv):
   robo_configuration.chdir_to_ffmpeg_home();
 
   parsed, remaining = getopt.getopt(argv, "",
-          ["setup", "test", "build", "auto-merge", "auto-merge-test"])
+          ["setup", "test", "build", "auto-merge"])
 
   for opt, arg in parsed:
     if opt == "--setup":
@@ -41,28 +41,59 @@ def main(argv):
     elif opt == "--build":
       # Unconditionally build all the configs and import them.
       robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-    elif opt == "--auto-merge" or opt == "--auto-merge-test":
+    elif opt == "--auto-merge":
       # Start a branch (if needed), merge (if needed), and try to verify it.
       # TODO: Verify that the working directory is clean.
       robo_branch.CreateAndCheckoutDatedSushiBranchIfNeeded(robo_configuration)
+
       robo_branch.MergeUpstreamToSushiBranchIfNeeded(robo_configuration)
       # We want to push the merge and make the local branch track it, so that
       # future 'git cl upload's don't try to review the merge commit, and spam
       # the ffmpeg committers.
-      robo_branch.PushToOriginWithoutReviewAndTrack(robo_configuration)
+      robo_branch.PushToOriginWithoutReviewAndTrackIfNeeded(robo_configuration)
 
-      # Try to get everything to build.
-      # auto-merge-test is just to make this quicker while i'm developing it
-      # TODO: Make it skip these if they're already done.
-      if opt == "--auto-merge-test":
-        robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
-      else:
+      # Try to get everything to build if we haven't committed the configs yet.
+      # Note that the only time we need to do this again is if some change makes
+      # different files added / deleted to the build, or if ffmpeg configure
+      # changes.  We don't need to do this if you just edit ffmpeg sources;
+      # those will be built with the tests if they've changed since last time.
+      #
+      # So, if you're just editing ffmpeg sources to get tests to pass, then you
+      # probably don't need to do this step again.
+      #
+      # TODO: Add a way to override this.  I guess just edit out the config
+      # commit with a rebase for now.
+      if not robo_branch.IsCommitOnThisBranch(robo_configuration,
+                                          robo_configuration.gn_commit_title()):
         robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-      robo_branch.HandleAutorename(robo_configuration)
-      robo_branch.AddAndCommit(robo_configuration, "GN Configuration")
-      robo_branch.CheckMerge(robo_configuration)
-      robo_branch.WritePatchesReadme(robo_configuration)
-      robo_branch.AddAndCommit(robo_configuration, "Chromium patches file")
+        robo_branch.HandleAutorename(robo_configuration)
+        # Run sanity checks on the merge before we commit.
+        robo_branch.CheckMerge(robo_configuration)
+        robo_branch.AddAndCommit(robo_configuration,
+                                 robo_configuration.gn_commit_title())
+      else:
+        log("Skipping config build since already committed")
+
+      # Update the patches file.
+      if not robo_branch.IsCommitOnThisBranch(robo_configuration,
+                                     robo_configuration.patches_commit_title()):
+        robo_branch.WritePatchesReadme(robo_configuration)
+        robo_branch.AddAndCommit(robo_configuration,
+                                      robo_configuration.patches_commit_title())
+      else:
+        log("Skipping patches file since already committed")
+
+      # Make a summary of build changes to help the manual review of the merge.
+      if not robo_branch.IsCommitOnThisBranch(robo_configuration,
+                               robo_configuration.build_changes_commit_title()):
+        robo_branch.WriteConfigChangesFile(robo_configuration)
+        robo_branch.AddAndCommit(robo_configuration,
+                                robo_configuration.build_changes_commit_title())
+      else:
+        log("Skipping build config changes file since already committed")
+
+      # Run the tests.  Note that this will re-run ninja from chromium/src,
+      # which will rebuild any changed ffmpeg sources as it normally would.
       robo_build.RunTests(robo_configuration)
 
       # TODO: Start a fake deps roll.  To do this, we would:

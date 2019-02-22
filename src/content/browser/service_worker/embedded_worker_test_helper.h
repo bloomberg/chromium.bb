@@ -33,6 +33,10 @@
 
 class GURL;
 
+namespace blink {
+struct PlatformNotificationData;
+}
+
 namespace content {
 
 struct BackgroundFetchRegistration;
@@ -42,7 +46,6 @@ class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
-struct PlatformNotificationData;
 
 // In-Process EmbeddedWorker test helper.
 //
@@ -80,7 +83,8 @@ class EmbeddedWorkerTestHelper {
     void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                              const std::string& message) override;
     void BindDevToolsAgent(
-        blink::mojom::DevToolsAgentAssociatedRequest request) override {}
+        blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
+        blink::mojom::DevToolsAgentAssociatedRequest) override {}
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
@@ -196,13 +200,13 @@ class EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   virtual void OnNotificationClickEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
       mojom::ServiceWorker::DispatchNotificationClickEventCallback callback);
   virtual void OnNotificationCloseEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
   virtual void OnPushEvent(
       base::Optional<std::string> payload,
@@ -290,13 +294,13 @@ class EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   void OnNotificationClickEventStub(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
       mojom::ServiceWorker::DispatchNotificationClickEventCallback callback);
   void OnNotificationCloseEventStub(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
   void OnPushEventStub(
       base::Optional<std::string> payload,

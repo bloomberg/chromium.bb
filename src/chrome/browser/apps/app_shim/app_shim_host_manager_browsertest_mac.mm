@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "chrome/common/mac/app_shim_messages.h"
+#include "chrome/common/mac/app_shim_param_traits.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
@@ -49,6 +49,11 @@ class TestShimClient : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation (not used in testing, but can be).
   void LaunchAppDone(apps::AppShimLaunchResult result) override {}
+  void CreateViewsBridgeFactory(
+      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request)
+      override {}
+  void CreateContentNSViewBridgeFactory(
+      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}

@@ -342,9 +342,6 @@ class BaseTestServer {
 
     // If true, disables extended master secret tls extension.
     bool disable_extended_master_secret = false;
-
-    // List of token binding params that the server supports and will negotiate.
-    std::vector<int> supported_token_binding_params;
   };
 
   // Initialize a TestServer.

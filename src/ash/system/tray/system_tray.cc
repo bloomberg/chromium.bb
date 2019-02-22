@@ -14,7 +14,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -82,8 +81,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
-
-using views::TrayBubbleView;
 
 namespace ash {
 
@@ -462,8 +459,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 
     system_bubble_ = std::make_unique<SystemBubbleWrapper>();
     system_bubble_->InitView(
-        this, shelf()->GetSystemTrayAnchor()->GetBubbleAnchor(),
-        shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets(), items,
+        this, shelf()->GetSystemTrayAnchorView()->GetBubbleAnchor(),
+        shelf()->GetSystemTrayAnchorView()->GetBubbleAnchorInsets(), items,
         system_tray_type, &init_params, persistent);
 
     // Record metrics for the system menu when the default view is invoked.
@@ -593,7 +590,7 @@ void SystemTray::ShowBubble(bool show_by_click) {
   ShowDefaultView(BUBBLE_CREATE_NEW, show_by_click);
 }
 
-views::TrayBubbleView* SystemTray::GetBubbleView() {
+TrayBubbleView* SystemTray::GetBubbleView() {
   // Only return the bubble view when it's showing the main system tray bubble,
   // not the volume or brightness bubbles etc., to avoid client confusion.
   return system_bubble_ && full_system_tray_menu_

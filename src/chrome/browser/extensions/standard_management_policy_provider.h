@@ -28,6 +28,8 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const Extension* extension,
                    base::string16* error) const override;
+  bool UserMayInstall(const Extension* extension,
+                      base::string16* error) const override;
   bool UserMayModifySettings(const Extension* extension,
                              base::string16* error) const override;
   bool ExtensionMayModifySettings(const Extension* source_extension,

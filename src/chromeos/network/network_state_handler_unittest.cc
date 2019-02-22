@@ -333,6 +333,18 @@ class NetworkStateHandlerTest : public testing::Test {
         base::Bind(&ErrorCallbackFunction));
   }
 
+  void SetProperties(NetworkState* network, const base::Value& properties) {
+    // UpdateNetworkStateProperties expects 'Type' and 'WiFi.HexSSID' to always
+    // be set.
+    base::Value properties_to_set(properties.Clone());
+    properties_to_set.SetKey(shill::kTypeProperty,
+                             base::Value(network->type()));
+    properties_to_set.SetKey(shill::kWifiHexSsid,
+                             base::Value(network->GetHexSsid()));
+    network_state_handler_->UpdateNetworkStateProperties(network,
+                                                         properties_to_set);
+  }
+
   void GetTetherNetworkList(int limit,
                             NetworkStateHandler::NetworkStateList* list) {
     network_state_handler_->GetNetworkListByType(
@@ -692,11 +704,11 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  // Run the message loop. An additional notification will be received when
-  // Shill updates the enabled technologies. The state should remain AVAILABLE.
+  // Run the message loop. No additional notification should be received when
+  // Shill updates the enabled technologies since the state remains AVAILABLE.
   test_observer_->reset_change_counts();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(0u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
@@ -1911,10 +1923,10 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlacklisted) {
   // Emulate 'wifi1' being a managed network.
   std::unique_ptr<NetworkUIData> ui_data =
       NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_USER_POLICY);
-  base::DictionaryValue properties;
+  base::Value properties(base::Value::Type::DICTIONARY);
   properties.SetKey(shill::kProfileProperty, base::Value(kProfilePath));
   properties.SetKey(shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
-  network_state_handler_->UpdateNetworkStateProperties(wifi1, properties);
+  SetProperties(wifi1, properties);
 
   EXPECT_FALSE(network_state_handler_->OnlyManagedWifiNetworksAllowed());
   EXPECT_EQ(blacklist, network_state_handler_->blacklisted_hex_ssids_);
@@ -1946,10 +1958,10 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged) {
   // Emulate 'wifi1' being a managed network.
   std::unique_ptr<NetworkUIData> ui_data =
       NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_USER_POLICY);
-  base::DictionaryValue properties;
+  base::Value properties(base::Value::Type::DICTIONARY);
   properties.SetKey(shill::kProfileProperty, base::Value(kProfilePath));
   properties.SetKey(shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
-  network_state_handler_->UpdateNetworkStateProperties(wifi1, properties);
+  SetProperties(wifi1, properties);
 
   EXPECT_TRUE(network_state_handler_->OnlyManagedWifiNetworksAllowed());
   EXPECT_TRUE(wifi1->IsManagedByPolicy());
@@ -1981,10 +1993,10 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManagedIfAvailable) {
   // Emulate 'wifi1' being a managed network.
   std::unique_ptr<NetworkUIData> ui_data =
       NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_USER_POLICY);
-  base::DictionaryValue properties;
+  base::Value properties(base::Value::Type::DICTIONARY);
   properties.SetKey(shill::kProfileProperty, base::Value(kProfilePath));
   properties.SetKey(shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
-  network_state_handler_->UpdateNetworkStateProperties(wifi1, properties);
+  SetProperties(wifi1, properties);
   network_state_handler_->UpdateManagedWifiNetworkAvailable();
 
   EXPECT_EQ(wifi1, network_state_handler_->GetAvailableManagedWifiNetwork());

@@ -13,6 +13,9 @@
 // not add it as a subview yet. This method must be overriden in subclasses.
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)bounds;
 
+// Returns whether user interaction with the infobar should be ignored.
+- (BOOL)shouldIgnoreUserInteraction;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_CONTROLLER_PROTECTED_H_

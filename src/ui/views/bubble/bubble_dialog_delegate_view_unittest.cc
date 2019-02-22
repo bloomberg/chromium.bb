@@ -11,7 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/test/test_views.h"
@@ -21,6 +24,8 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
+
+using test::TestInkDrop;
 
 namespace {
 
@@ -362,6 +367,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseMethods) {
         BubbleDialogDelegateView::CreateBubble(bubble_delegate);
     bubble_widget->Show();
     BubbleFrameView* frame_view = bubble_delegate->GetBubbleFrameView();
+    frame_view->ResetViewShownTimeStampForTesting();
     Button* close_button = frame_view->close_;
     ASSERT_TRUE(close_button);
     frame_view->ButtonPressed(
@@ -475,6 +481,62 @@ TEST_F(BubbleDialogDelegateViewTest, StyledLabelTitle) {
             bubble_widget->GetWindowBoundsInScreen().width());
   EXPECT_LT(size_before_new_title.height(),
             bubble_widget->GetWindowBoundsInScreen().height());
+}
+
+// Ensure associated buttons are highlighted or unhighlighted when the bubble
+// widget is shown or hidden respectively.
+TEST_F(BubbleDialogDelegateViewTest, AttachedWidgetShowsInkDropWhenVisible) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  LabelButton* button = new LabelButton(nullptr, base::string16());
+  anchor_widget->GetContentsView()->AddChildView(button);
+  TestInkDrop* ink_drop = new TestInkDrop();
+  test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_delegate->SetHighlightedButton(button);
+  bubble_widget->Show();
+  // Explicitly calling OnWidgetVisibilityChanging to test functionality for
+  // OS_WIN. Outside of the test environment this happens automatically by way
+  // of HWNDMessageHandler.
+  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, true);
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
+
+  bubble_widget->Close();
+  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, false);
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop->GetTargetInkDropState());
+}
+
+// Ensure associated buttons are highlighted or unhighlighted when the bubble
+// widget is shown or hidden respectively when highlighted button is set after
+// widget is shown.
+TEST_F(BubbleDialogDelegateViewTest, VisibleWidgetShowsInkDropOnAttaching) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  LabelButton* button = new LabelButton(nullptr, base::string16());
+  anchor_widget->GetContentsView()->AddChildView(button);
+  TestInkDrop* ink_drop = new TestInkDrop();
+  test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+  // Explicitly calling OnWidgetVisibilityChanging to test functionality for
+  // OS_WIN. Outside of the test environment this happens automatically by way
+  // of HWNDMessageHandler.
+  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, true);
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
+  bubble_delegate->SetHighlightedButton(button);
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
+
+  bubble_widget->Close();
+  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, false);
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop->GetTargetInkDropState());
 }
 
 TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {

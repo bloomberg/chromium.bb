@@ -64,6 +64,7 @@ struct AutocompleteMatchType {
     TAB_SEARCH_DEPRECATED       = 23,  // A suggested open tab, based on its
                                        // URL or title, via HQP (deprecated).
     DOCUMENT_SUGGESTION         = 24,  // A suggested document.
+    PEDAL                       = 25,  // An omnibox pedal suggestion.
     NUM_TYPES,
   };
   // clang-format on
@@ -82,11 +83,13 @@ struct AutocompleteMatchType {
       const base::string16& match_text,
       size_t match_index,
       size_t total_matches,
+      bool is_tab_switch_button_focused,
       int* label_prefix_length = nullptr);
   // This version returns a plain label without ", n of m" positional info:
   static base::string16 ToAccessibilityLabel(
       const AutocompleteMatch& match,
       const base::string16& match_text,
+      bool is_tab_switch_button_focused,
       int* label_prefix_length = nullptr);
 };
 

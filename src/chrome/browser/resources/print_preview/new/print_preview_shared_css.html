@@ -1,46 +1,39 @@
-<!-- Most styles copied from resources/css/widgets.css. -->
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
 <dom-module id="print-preview-shared">
   <template>
-    <style>
-      h1 {
-        line-height: 1;
-        user-select: none;
+    <style include="cr-shared-style">
+      /* Shared variables *****************************************************/
+      :host {
+        --cr-input-row-container: {
+          min-height: 38px;
+        };
+        --cr-radio-button-size: 16px;
+        --md-select-width: calc(100% - 17px);
+        --print-preview-settings-border: 1px solid rgb(232, 234, 237);
+        --print-preview-dialog-margin: 34px;
+        --cr-form-field-label-height: 1.5rem;
+        --cr-form-field-label-line-height: .75rem;
+        --destination-item-height: 32px;
       }
 
       /* Default state ********************************************************/
-
-      button,
-      select,
       input[type='checkbox'],
       input[type='radio'] {
-        -webkit-appearance: none;
-        border: 1px solid rgba(0, 0, 0, 0.25);
-        border-radius: 2px;
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
-            inset 0 1px 2px rgba(255, 255, 255, 0.75);
-        color: #444;
-        font: inherit;
         margin-bottom: 0;
         margin-inline-end: 1px;
         margin-inline-start: 0;
         margin-top: 0;
-        outline: none;
-        text-shadow: 0 1px 0 rgb(240, 240, 240);
         user-select: none;
       }
 
-      button,
-      input[type='checkbox'],
-      input[type='radio'] {
-        background-image: linear-gradient(#ededed, #ededed 38%, #dedede);
-      }
-
-      button,
-      select {
-        min-height: 2em;
-        min-width: 4em;
+      select.md-select,
+      select.md-select {
+        margin: 2px;
+        min-height: 32px;
         padding-bottom: 1px;
       <if expr="is_win or is_macosx">
         /* The following platform-specific rule is necessary to get adjacent
@@ -49,91 +42,60 @@
         padding-bottom: 2px;
       </if>
         padding-top: 1px;
+        user-select: none;
       }
 
-      input[type='number'],
-      input[type='search'],
-      input[type='text'],
-      input:not([type]),
-      textarea {
-        border: 1px solid #bfbfbf;
-        border-radius: 2px;
-        box-sizing: border-box;
-        color: #444;
-        font: inherit;
-        margin: 0;
-        /* Use min-height to accommodate addditional padding for touch as
-         * needed. */
-        min-height: 2em;
-        outline: none;
-        padding: 3px;
-      <if expr="is_win or is_macosx">
-        /* For better alignment between adjacent buttons and inputs. */
-        padding-bottom: 4px;
-      </if>
-      }
-
-      :host {
-        /* Hover **************************************************************/
-        --print-preview-hover: {
-          border-color: rgba(0, 0, 0, 0.3);
-          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
-              inset 0 1px 2px rgba(255, 255, 255, 0.95);
-          color: black;
-        };
-
-        /* Active *************************************************************/
-        --print-preview-active: {
-          box-shadow: none;
-          text-shadow: none;
+      .checkbox cr-checkbox,
+      .radio cr-radio-button {
+        min-height: 38px;
+        --cr-checkbox-ripple-size: 38px;
+        --cr-radio-button-ink-size: 38px;
+        --cr-checkbox-label-container: {
+          overflow: hidden;
+          padding-inline-start: 15px;
         };
       }
 
-      /* Disabled *************************************************************/
-
-      :disabled:-webkit-any(
-          button,
-          select) {
-        background-image: linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
-        border-color: rgba(80, 80, 80, 0.2);
-        box-shadow: 0 1px 0 rgba(80, 80, 80, 0.08),
-            inset 0 1px 2px rgba(255, 255, 255, 0.75);
-        color: #aaa;
+      cr-input {
+        line-height: 20px;
       }
 
-      input:disabled:-webkit-any([type='search'],
-                                 [type='text'],
-                                 :not([type])) {
-        color: #999;
+      a[href],
+      a[is='action-link'] {
+        color: var(--google-blue-600);
+        text-decoration: none;
       }
 
-      /* Focus ****************************************************************/
-      :host {
-        --print-preview-focus-border: {
-          /* We use border color because it follows the border radius (unlike
-           * outline). This is particularly noticeable on mac. */
-          border-color: rgb(77, 144, 254);
-          outline: none;
-          /* OVERRIDE */
-          transition: border-color 200ms;
+      print-preview-settings-section [slot=controls] > * {
+        margin-inline-start: 15px;
+      }
+
+      /* Default print preview dialog styles. */
+      cr-dialog {
+        --cr-dialog-wrapper: {
+          max-height: calc(100vh - 68px);
+          width:  calc(100vw - 68px);
+          max-width: 100%;
+        };
+        --cr-dialog-body: {
+          box-sizing: border-box;
+          padding-inline-end: 20px;
+          padding-inline-start: 20px;
+          padding-bottom: 0;
+          padding-top: 0;
         };
       }
 
-      :enabled:focus:-webkit-any(
-          select,
-          input[type='number'],
-          input[type='search'],
-          input[type='text'],
-          input:not([type])) {
-        @apply --print-preview-focus-border;
+      #dialog div[slot='title'] {
+        padding-bottom: 0;
       }
 
-      :host-context(.focus-outline-visible)
-      :enabled:focus:-webkit-any(
-          input[type='checkbox'],
-          input[type='radio'],
-          button) {
-        @apply --print-preview-focus-border;
+      #dialog div[slot='button-container'] {
+        align-items: center;
+        box-shadow: 0 -1px 1px 0 rgba(60, 64, 67, 0.3);
+        min-height: 64px;
+        padding-bottom: 0;
+        padding-top: 0;
       }
     </style>
   </template>

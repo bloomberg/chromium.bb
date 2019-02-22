@@ -133,7 +133,8 @@ class UpdateSieve {
 }  // namespace
 
 LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
-    : version_(0),
+    : strong_consistency_model_enabled_(false),
+      version_(0),
       store_birthday_(0),
       persistent_file_(persistent_file),
       observer_for_tests_(nullptr) {
@@ -271,6 +272,10 @@ void LoopbackServer::HandleCommand(
   SaveStateToFile(persistent_file_);
 }
 
+void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
+  strong_consistency_model_enabled_ = true;
+}
+
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
     sync_pb::GetUpdatesResponse* response) {
@@ -321,6 +326,20 @@ string LoopbackServer::CommitEntity(
     const string& parent_id) {
   if (client_entity.version() == 0 && client_entity.deleted()) {
     return string();
+  }
+
+  // If strong consistency model is enabled (usually on a per-datatype level,
+  // but implemented here as a global state), the server detects version
+  // mismatches and responds with CONFLICT.
+  if (strong_consistency_model_enabled_) {
+    EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
+    if (iter != entities_.end()) {
+      const LoopbackServerEntity* server_entity = iter->second.get();
+      if (server_entity->GetVersion() != client_entity.version()) {
+        entry_response->set_response_type(sync_pb::CommitResponse::CONFLICT);
+        return client_entity.id_string();
+      }
+    }
   }
 
   std::unique_ptr<LoopbackServerEntity> entity;

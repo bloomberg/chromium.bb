@@ -89,23 +89,24 @@ FakeAudioWorker::Worker::Worker(
 }
 
 FakeAudioWorker::Worker::~Worker() {
-  DCHECK(worker_cb_.is_null());
+  DCHECK(!worker_cb_);
 }
 
 bool FakeAudioWorker::Worker::IsStopped() {
   base::AutoLock scoped_lock(worker_cb_lock_);
-  return worker_cb_.is_null();
+  return !worker_cb_;
 }
 
 void FakeAudioWorker::Worker::Start(const base::Closure& worker_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!worker_cb.is_null());
+  DCHECK(worker_cb);
   {
     base::AutoLock scoped_lock(worker_cb_lock_);
-    DCHECK(worker_cb_.is_null());
+    DCHECK(!worker_cb_);
     worker_cb_ = worker_cb;
   }
-  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoStart, this));
+  worker_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(&Worker::DoStart, this));
 }
 
 void FakeAudioWorker::Worker::DoStart() {
@@ -119,11 +120,12 @@ void FakeAudioWorker::Worker::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
     base::AutoLock scoped_lock(worker_cb_lock_);
-    if (worker_cb_.is_null())
+    if (!worker_cb_)
       return;
     worker_cb_.Reset();
   }
-  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoCancel, this));
+  worker_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(&Worker::DoCancel, this));
 }
 
 void FakeAudioWorker::Worker::DoCancel() {
@@ -136,7 +138,7 @@ void FakeAudioWorker::Worker::DoRead() {
 
   {
     base::AutoLock scoped_lock(worker_cb_lock_);
-    if (!worker_cb_.is_null())
+    if (worker_cb_)
       worker_cb_.Run();
   }
 

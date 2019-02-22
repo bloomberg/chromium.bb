@@ -25,6 +25,12 @@ tr.exportTo('cp', () => {
     // Based on dot-prop-immutable:
     // https://github.com/debitoor/dot-prop-immutable/blob/master/index.js
     root = Array.isArray(root) ? [...root] : {...root};
+    if (path.length === 0) {
+      if (typeof value === 'function') {
+        return value(root);
+      }
+      return value;
+    }
     let node = root;
     const maxDepth = path.length - 1;
     for (let depth = 0; depth < maxDepth; ++depth) {
@@ -56,10 +62,17 @@ tr.exportTo('cp', () => {
   }
 
   function isElementChildOf(el, potentialParent) {
+    if (!el) return false;
     if (el === potentialParent) return false;
-    while (Polymer.dom(el).parentNode) {
+    while (el) {
       if (el === potentialParent) return true;
-      el = Polymer.dom(el).parentNode;
+      if (el.parentNode) {
+        el = el.parentNode;
+      } else if (el.host) {
+        el = el.host;
+      } else {
+        return false;
+      }
     }
     return false;
   }
@@ -90,6 +103,79 @@ tr.exportTo('cp', () => {
 
   function idle() {
     new Promise(resolve => requestIdleCallback(resolve));
+  }
+
+  async function sha(s) {
+    s = new TextEncoder('utf-8').encode(s);
+    const hash = await crypto.subtle.digest('SHA-256', s);
+    const view = new DataView(hash);
+    let hex = '';
+    for (let i = 0; i < view.byteLength; i += 4) {
+      hex += ('00000000' + view.getUint32(i).toString(16)).slice(-8);
+    }
+    return hex;
+  }
+
+  /*
+   * Returns the bounding rect of the given element.
+   */
+  async function measureElement(element) {
+    if (!measureElement.READY) {
+      measureElement.READY = cp.animationFrame().then(() => {
+        measureElement.READY = undefined;
+      });
+    }
+    await measureElement.READY;
+    return element.getBoundingClientRect();
+  }
+
+  // measureText() below takes a string and optional style options, renders the
+  // text in this div, and returns the size of the text. This div helps
+  // measureText() render its arguments invisibly.
+  const MEASURE_TEXT_HOST = document.createElement('div');
+  MEASURE_TEXT_HOST.style.position = 'fixed';
+  MEASURE_TEXT_HOST.style.visibility = 'hidden';
+  MEASURE_TEXT_HOST.style.zIndex = -1000;
+  window.addEventListener('load', () =>
+    document.body.appendChild(MEASURE_TEXT_HOST));
+
+  // Assuming the computed style of MEASURE_TEXT_HOST doesn't change, measuring
+  // a string with the same options should always return the same size, so the
+  // measurements can be memoized. Also, measuring text is asynchronous, so this
+  // cache can store promises in case callers try to measure the same text twice
+  // in the same frame.
+  const MEASURE_TEXT_CACHE = new Map();
+  const MAX_MEASURE_TEXT_CACHE_SIZE = 1000;
+
+  /*
+   * Returns the bounding rect of the given textContent after applying the given
+   * opt_options to a <span> containing textContent.
+   */
+  async function measureText(textContent, opt_options) {
+    let cacheKey = {textContent, ...opt_options};
+    cacheKey = JSON.stringify(cacheKey, Object.keys(cacheKey).sort());
+    if (MEASURE_TEXT_CACHE.has(cacheKey)) {
+      return await MEASURE_TEXT_CACHE.get(cacheKey);
+    }
+
+    const span = document.createElement('span');
+    span.style.whiteSpace = 'nowrap';
+    span.style.display = 'inline-block';
+    span.textContent = textContent;
+    Object.assign(span.style, opt_options);
+    MEASURE_TEXT_HOST.appendChild(span);
+
+    const promise = cp.measureElement(span).then(({width, height}) => {
+      return {width, height};
+    });
+    while (MEASURE_TEXT_CACHE.size > MAX_MEASURE_TEXT_CACHE_SIZE) {
+      MEASURE_TEXT_CACHE.delete(MEASURE_TEXT_CACHE.keys().next().value);
+    }
+    MEASURE_TEXT_CACHE.set(cacheKey, promise);
+    const rect = await promise;
+    MEASURE_TEXT_CACHE.set(cacheKey, rect);
+    MEASURE_TEXT_HOST.removeChild(span);
+    return rect;
   }
 
   function measureTrace() {
@@ -206,19 +292,60 @@ tr.exportTo('cp', () => {
     return state;
   }
 
+  /**
+   * Wrap Google Sign-in client library to build the Authorization header, if
+   * one is available. Automatically reloads the token if necessary.
+   */
+  async function authorizationHeaders() {
+    if (window.gapi === undefined) return [];
+    if (gapi.auth2 === undefined) return [];
+
+    const auth = gapi.auth2.getAuthInstance();
+    if (!auth) return [];
+    const user = auth.currentUser.get();
+    let response = user.getAuthResponse();
+
+    if (response.expires_at === undefined) {
+      // The user is not signed in.
+      return [];
+    }
+
+    if (response.expires_at < new Date()) {
+      // The token has expired, so reload it.
+      response = await user.reloadAuthResponse();
+    }
+
+    return [
+      ['Authorization', response.token_type + ' ' + response.access_token],
+    ];
+  }
+
+  function normalize(columns, cells) {
+    const dict = {};
+    for (let i = 0; i < columns.length; ++i) {
+      dict[columns[i]] = cells[i];
+    }
+    return dict;
+  }
+
   return {
     afterRender,
     animationFrame,
+    authorizationHeaders,
     buildProperties,
     buildState,
     deepFreeze,
     getActiveElement,
     idle,
     isElementChildOf,
+    measureElement,
     measureHistograms,
     measureTable,
+    measureText,
     measureTrace,
+    normalize,
     setImmutable,
+    sha,
     timeout,
   };
 });

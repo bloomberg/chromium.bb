@@ -11,7 +11,9 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/url_pattern_index/ngram_extractor.h"
@@ -35,49 +37,45 @@ using ElementTypeMap = base::flat_map<proto::ElementType, flat::ElementType>;
 
 // Maps proto::ActivationType to flat::ActivationType.
 const ActivationTypeMap& GetActivationTypeMap() {
-  CR_DEFINE_STATIC_LOCAL(
-      ActivationTypeMap, activation_type_map,
-      (
-          {
-              {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
-              {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
-              // ELEMHIDE is not supported.
-              {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
-              // GENERICHIDE is not supported.
-              {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
-              {proto::ACTIVATION_TYPE_GENERICBLOCK,
-               flat::ActivationType_GENERIC_BLOCK},
-          },
-          base::KEEP_FIRST_OF_DUPES));
-  return activation_type_map;
+  static base::NoDestructor<ActivationTypeMap> activation_type_map(
+      std::initializer_list<ActivationTypeMap::value_type>{
+          {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
+          {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
+          // ELEMHIDE is not supported.
+          {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
+          // GENERICHIDE is not supported.
+          {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
+          {proto::ACTIVATION_TYPE_GENERICBLOCK,
+           flat::ActivationType_GENERIC_BLOCK},
+      },
+      base::KEEP_FIRST_OF_DUPES);
+  return *activation_type_map;
 }
 
 // Maps proto::ElementType to flat::ElementType.
 const ElementTypeMap& GetElementTypeMap() {
-  CR_DEFINE_STATIC_LOCAL(
-      ElementTypeMap, element_type_map,
-      (
-          {
-              {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
-              {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
-              {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
-              {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
-              {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
-              {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
-              {proto::ELEMENT_TYPE_XMLHTTPREQUEST,
-               flat::ElementType_XMLHTTPREQUEST},
-              {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
-               flat::ElementType_OBJECT_SUBREQUEST},
-              {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
-              {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
-              {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
-              {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
-              // Filtering popups is not supported.
-              {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
-              {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
-          },
-          base::KEEP_FIRST_OF_DUPES));
-  return element_type_map;
+  static base::NoDestructor<ElementTypeMap> element_type_map(
+      std::initializer_list<ElementTypeMap::value_type>{
+          {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
+          {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
+          {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
+          {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
+          {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
+          {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
+          {proto::ELEMENT_TYPE_XMLHTTPREQUEST,
+           flat::ElementType_XMLHTTPREQUEST},
+          {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
+           flat::ElementType_OBJECT_SUBREQUEST},
+          {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
+          {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
+          {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
+          {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
+          // Filtering popups is not supported.
+          {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
+          {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
+      },
+      base::KEEP_FIRST_OF_DUPES);
+  return *element_type_map;
 }
 
 flat::ActivationType ProtoToFlatActivationType(proto::ActivationType type) {
@@ -98,8 +96,7 @@ base::StringPiece ToStringPiece(const flatbuffers::String* string) {
 }
 
 bool HasNoUpperAscii(base::StringPiece string) {
-  return std::none_of(string.begin(), string.end(),
-                      [](char c) { return base::IsAsciiUpper(c); });
+  return std::none_of(string.begin(), string.end(), base::IsAsciiUpper<char>);
 }
 
 // Comparator to sort UrlRule. Sorts rules by descending order of rule priority.
@@ -133,16 +130,16 @@ class UrlRuleFlatBufferConverter {
                       IsMeaningful();
   }
 
-  // Returns whether the |rule| can be converted to its FlatBuffers equivalent.
-  // The conversion is not possible if the rule has attributes not supported by
-  // this client version.
-  bool is_convertible() const { return is_convertible_; }
-
   // Writes the URL |rule| to the FlatBuffer using the |builder|, and returns
-  // the offset to the serialized rule.
+  // the offset to the serialized rule. Returns an empty offset in case the rule
+  // can't be converted. The conversion is not possible if the rule has
+  // attributes not supported by this client version.
   UrlRuleOffset SerializeConvertedRule(
       flatbuffers::FlatBufferBuilder* builder) const {
-    DCHECK(is_convertible());
+    if (!is_convertible_)
+      return UrlRuleOffset();
+
+    DCHECK_NE(rule_.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
 
     FlatDomainsOffset domains_included_offset;
     FlatDomainsOffset domains_excluded_offset;
@@ -155,12 +152,15 @@ class UrlRuleFlatBufferConverter {
       domains_included.reserve(rule_.domains_size());
 
       for (const auto& domain_list_item : rule_.domains()) {
-        // Note: The |domain| can have non-ASCII UTF-8 characters, but
-        // ToLowerASCII leaves these intact.
-        // TODO(pkalinnikov): Convert non-ASCII characters to lower case too.
-        // TODO(pkalinnikov): Possibly convert Punycode to IDN here or directly
-        // assume this is done in the proto::UrlRule.
         const std::string& domain = domain_list_item.domain();
+
+        // Non-ascii characters in domains are unsupported.
+        if (!base::IsStringASCII(domain))
+          return UrlRuleOffset();
+
+        // Note: This is not always correct. Chrome's URL parser uses upper-case
+        // for percent encoded hosts. E.g. https://,.com is encoded as
+        // https://%2C.com.
         auto offset = builder->CreateSharedString(
             HasNoUpperAscii(domain) ? domain : base::ToLowerASCII(domain));
 
@@ -190,6 +190,12 @@ class UrlRuleFlatBufferConverter {
       }
     }
 
+    // Non-ascii characters in patterns are unsupported.
+    if (!base::IsStringASCII(rule_.url_pattern()))
+      return UrlRuleOffset();
+
+    // TODO(crbug.com/884063): Lower case case-insensitive patterns here if we
+    // want to support case-insensitive rules for subresource filter.
     auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
 
     return flat::CreateUrlRule(
@@ -242,9 +248,8 @@ class UrlRuleFlatBufferConverter {
         return false;  // Unsupported source type.
     }
 
-    if (rule_.match_case())
-      options_ |= flat::OptionFlag_IS_MATCH_CASE;
-
+    // TODO(crbug.com/884063): Consider setting IS_CASE_INSENSITIVE here if we
+    // want to support case insensitive rules for subresource_filter.
     return true;
   }
 
@@ -349,9 +354,6 @@ UrlRuleOffset SerializeUrlRule(const proto::UrlRule& rule,
                                flatbuffers::FlatBufferBuilder* builder) {
   DCHECK(builder);
   UrlRuleFlatBufferConverter converter(rule);
-  if (!converter.is_convertible())
-    return UrlRuleOffset();
-  DCHECK_NE(rule.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
   return converter.SerializeConvertedRule(builder);
 }
 
@@ -376,6 +378,24 @@ void UrlPatternIndexBuilder::IndexUrlRule(UrlRuleOffset offset) {
 
   const auto* rule = flatbuffers::GetTemporaryPointer(*flat_builder_, offset);
   DCHECK(rule);
+
+#if DCHECK_IS_ON()
+  // Sanity check that the rule does not have fields with non-ascii characters.
+  DCHECK(base::IsStringASCII(ToStringPiece(rule->url_pattern())));
+  if (rule->domains_included()) {
+    for (auto* domain : *rule->domains_included())
+      DCHECK(base::IsStringASCII(ToStringPiece(domain)));
+  }
+  if (rule->domains_excluded()) {
+    for (auto* domain : *rule->domains_excluded())
+      DCHECK(base::IsStringASCII(ToStringPiece(domain)));
+  }
+
+  // Case-insensitive patterns should be lower-cased.
+  if (rule->options() & flat::OptionFlag_IS_CASE_INSENSITIVE)
+    DCHECK(HasNoUpperAscii(ToStringPiece(rule->url_pattern())));
+#endif
+
   NGram ngram = GetMostDistinctiveNGram(ToStringPiece(rule->url_pattern()));
 
   if (ngram) {
@@ -432,8 +452,12 @@ NGram UrlPatternIndexBuilder::GetMostDistinctiveNGram(
   size_t min_list_size = std::numeric_limits<size_t>::max();
   NGram best_ngram = 0;
 
-  auto ngrams = CreateNGramExtractor<kNGramSize, NGram>(
-      pattern, [](char c) { return c == '*' || c == '^'; });
+  // To support case-insensitive matching, make sure the n-grams for |pattern|
+  // are lower-cased.
+  DCHECK(base::IsStringASCII(pattern));
+  auto ngrams =
+      CreateNGramExtractor<kNGramSize, NGram, NGramCaseExtraction::kLowerCase>(
+          pattern, [](char c) { return c == '*' || c == '^'; });
 
   for (uint64_t ngram : ngrams) {
     const MutableUrlRuleList* rules = ngram_index_.Get(ngram);
@@ -475,7 +499,7 @@ size_t GetLongestMatchingSubdomain(const url::Origin& origin,
   }
   // Otherwise look for each subdomain of the |origin| using binary search.
 
-  DCHECK(!origin.unique());
+  DCHECK(!origin.opaque());
   base::StringPiece canonicalized_host(origin.host());
   if (canonicalized_host.empty())
     return 0;
@@ -532,7 +556,7 @@ bool DoesOriginMatchDomainList(const url::Origin& origin,
     return false;
 
   // Unique |origin| matches lists of exception domains only.
-  if (origin.unique())
+  if (origin.opaque())
     return is_generic;
 
   size_t longest_matching_included_domain_length = 1;
@@ -585,7 +609,7 @@ bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
 // |sorted_candidates| or null if no rule matches.
 const flat::UrlRule* FindMatchAmongCandidates(
     const FlatUrlRuleList* sorted_candidates,
-    const GURL& url,
+    const UrlPattern::UrlInfo& url,
     const url::Origin& document_origin,
     flat::ElementType element_type,
     flat::ActivationType activation_type,
@@ -621,7 +645,7 @@ const flat::UrlRule* FindMatchAmongCandidates(
 // between |url| and |document_origin|.
 const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
     const flat::UrlPatternIndex& index,
-    const GURL& url,
+    const UrlPattern::UrlInfo& url,
     const url::Origin& document_origin,
     flat::ElementType element_type,
     flat::ActivationType activation_type,
@@ -636,7 +660,10 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
 
   NGramHashTableProber prober;
 
-  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
+  // |hash_table| contains lower-cased n-grams. Use lower-cased extraction to
+  // find prospective matches.
+  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t,
+                                     NGramCaseExtraction::kLowerCase>(
       url.spec(), [](char) { return false; });
 
   auto get_max_priority_rule = [](const flat::UrlRule* lhs,
@@ -739,8 +766,8 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
   }
 
   return FindMatchInFlatUrlPatternIndex(
-      *flat_index_, url, first_party_origin, element_type, activation_type,
-      is_third_party, disable_generic_rules, strategy);
+      *flat_index_, UrlPattern::UrlInfo(url), first_party_origin, element_type,
+      activation_type, is_third_party, disable_generic_rules, strategy);
 }
 
 }  // namespace url_pattern_index

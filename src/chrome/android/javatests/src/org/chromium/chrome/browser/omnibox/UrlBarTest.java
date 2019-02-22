@@ -44,10 +44,10 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.StubAutocompleteController;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.KeyUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.KeyUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -129,8 +129,8 @@ public class UrlBarTest {
                 LocationBarLayout locationBar =
                         (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                                 R.id.location_bar);
-                locationBar.cancelPendingAutocompleteStart();
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().cancelPendingAutocompleteStart();
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             }
         });
     }

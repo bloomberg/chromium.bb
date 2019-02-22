@@ -26,9 +26,9 @@ namespace webrtc {
 // Class simulating a network link. This is a simple and naive solution just
 // faking capacity and adding an extra transport delay in addition to the
 // capacity introduced delay.
-class SimulatedNetwork : public NetworkSimulationInterface {
+class SimulatedNetwork : public NetworkBehaviorInterface {
  public:
-  using Config = DefaultNetworkSimulationConfig;
+  using Config = BuiltInNetworkBehaviorConfig;
   explicit SimulatedNetwork(Config config, uint64_t random_seed = 1);
   ~SimulatedNetwork() override;
 
@@ -36,7 +36,7 @@ class SimulatedNetwork : public NetworkSimulationInterface {
   void SetConfig(const Config& config);
   void PauseTransmissionUntil(int64_t until_us);
 
-  // NetworkSimulationInterface
+  // NetworkBehaviorInterface
   bool EnqueuePacket(PacketInFlightInfo packet) override;
   std::vector<PacketDeliveryInfo> DequeueDeliverablePackets(
       int64_t receive_time_us) override;

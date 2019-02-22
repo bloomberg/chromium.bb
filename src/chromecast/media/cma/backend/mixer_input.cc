@@ -81,6 +81,11 @@ MixerInput::MixerInput(Source* source,
                              input_samples_per_second_);
   }
 
+  if (output_samples_per_second_ != 0) {
+    // If output_samples_per_second_ is 0, this stream will be unusable.
+    // OnError() will be called shortly.
+    slew_volume_.SetSampleRate(output_samples_per_second_);
+  }
   source_->InitializeAudioPlayback(source_read_size, initial_rendering_delay);
 
   SetFilterGroup(filter_group);
@@ -169,11 +174,11 @@ int MixerInput::FillAudioData(int num_frames,
       filled = 0;
     } else {
       // Smoothly fade in from previous silence.
-      AudioFader::FadeInHelper(dest, filled, filled, filled);
+      AudioFader::FadeInHelper(dest, filled, 0, filled, filled);
     }
   } else if (redirected) {
     // Smoothly fade out to silence, since output is now being redirected.
-    AudioFader::FadeOutHelper(dest, filled, filled, filled);
+    AudioFader::FadeOutHelper(dest, filled, 0, filled, filled);
   }
   previous_ended_in_silence_ = redirected;
   first_buffer_ = false;

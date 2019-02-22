@@ -407,6 +407,7 @@ if (internal_gles2_conform_tests) {
     ]
     configs += [
       "//build/config/compiler:no_incompatible_pointer_warnings",
+      "//build/config/compiler:no_shorten_64_warnings",
 
       # Must be done this way for warning flags to be ordered correctly.
       ":gles2_conform_test_warnings",
@@ -436,7 +437,6 @@ if (internal_gles2_conform_tests) {
         "/wd4706",  # assignment within conditional expression
         "/wd4715",  # not all control paths return a value
         "/wd4716",  # function must return a value
-        "/wd4267",  # size_t/unsigned int conversion
       ]
     }
     if (is_mac) {

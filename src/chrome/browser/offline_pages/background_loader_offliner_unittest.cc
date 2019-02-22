@@ -404,6 +404,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
   PumpLoop();
   offliner()->OnNetworkBytesChanged(15LL);
   EXPECT_TRUE(cancel_callback_called());
+  EXPECT_FALSE(completion_callback_called());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.
   EXPECT_EQ(progress(), 0LL);  // network bytes not recorded when not busy.
 }

@@ -19,6 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/macros.h"
+#include "base/scoped_clear_last_error.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
@@ -1019,25 +1020,10 @@ class BASE_EXPORT LogMessage {
   const char* file_;
   const int line_;
 
-#if defined(OS_WIN)
-  // Stores the current value of GetLastError in the constructor and restores
-  // it in the destructor by calling SetLastError.
   // This is useful since the LogMessage class uses a lot of Win32 calls
   // that will lose the value of GLE and the code that called the log function
   // will have lost the thread error value when the log call returns.
-  class SaveLastError {
-   public:
-    SaveLastError();
-    ~SaveLastError();
-
-    unsigned long get_error() const { return last_error_; }
-
-   protected:
-    unsigned long last_error_;
-  };
-
-  SaveLastError last_error_;
-#endif
+  base::internal::ScopedClearLastError last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(LogMessage);
 };

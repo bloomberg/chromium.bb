@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -523,7 +524,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
   EXPECT_TRUE(print_render_thread_->printer());
-  for (size_t i = 0; i < arraysize(kTestPages); ++i) {
+  for (size_t i = 0; i < base::size(kTestPages); ++i) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
     OnPrintPages();
@@ -617,9 +618,10 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
     if (got_preview_msg) {
       PrintHostMsg_MetafileReadyForPrinting::Param preview_param;
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
-      EXPECT_NE(0, std::get<0>(preview_param).document_cookie);
-      EXPECT_NE(0, std::get<0>(preview_param).expected_pages_count);
-      EXPECT_NE(0U, std::get<0>(preview_param).content.data_size);
+      const auto& param = std::get<0>(preview_param);
+      EXPECT_NE(0, param.document_cookie);
+      EXPECT_NE(0, param.expected_pages_count);
+      EXPECT_NE(0U, param.content.metafile_data_region.GetSize());
     }
   }
 

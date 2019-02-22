@@ -24,27 +24,35 @@ FormActivityObserverBridge::~FormActivityObserverBridge() {
       ->RemoveObserver(this);
 }
 
-void FormActivityObserverBridge::OnFormActivity(
+void FormActivityObserverBridge::FormActivityRegistered(
     web::WebState* web_state,
-    const web::FormActivityParams& params) {
+    web::WebFrame* sender_frame,
+    const FormActivityParams& params) {
   DCHECK_EQ(web_state, web_state_);
-  if ([owner_ respondsToSelector:@selector(webState:registeredFormActivity:)]) {
-    [owner_ webState:web_state registeredFormActivity:params];
+  if ([owner_ respondsToSelector:@selector
+              (webState:didRegisterFormActivity:inFrame:)]) {
+    [owner_ webState:web_state
+        didRegisterFormActivity:params
+                        inFrame:sender_frame];
   }
 }
 
-void FormActivityObserverBridge::DidSubmitDocument(web::WebState* web_state,
+void FormActivityObserverBridge::DocumentSubmitted(web::WebState* web_state,
+                                                   web::WebFrame* sender_frame,
                                                    const std::string& form_name,
+                                                   const std::string& form_data,
                                                    bool has_user_gesture,
                                                    bool form_in_main_frame) {
   DCHECK_EQ(web_state, web_state_);
   if ([owner_ respondsToSelector:@selector
-              (webState:submittedDocumentWithFormNamed:hasUserGesture
-                          :formInMainFrame:)]) {
+              (webState:didSubmitDocumentWithFormNamed:withData:hasUserGesture
+                          :formInMainFrame:inFrame:)]) {
     [owner_ webState:web_state
-        submittedDocumentWithFormNamed:form_name
+        didSubmitDocumentWithFormNamed:form_name
+                              withData:form_data
                         hasUserGesture:has_user_gesture
-                       formInMainFrame:form_in_main_frame];
+                       formInMainFrame:form_in_main_frame
+                               inFrame:sender_frame];
   }
 }
 }  // namespace autofill

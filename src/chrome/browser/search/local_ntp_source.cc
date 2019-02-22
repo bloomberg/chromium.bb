@@ -267,13 +267,11 @@ std::string GetThemeCSS(Profile* profile) {
                             SkColorGetB(background_color));
 }
 
-std::string ReadBackgroundImageData() {
+std::string ReadBackgroundImageData(const base::FilePath& profile_path) {
   std::string data_string;
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::ReadFileToString(user_data_dir.AppendASCII(
-                             chrome::kChromeSearchLocalNtpBackgroundFilename),
-                         &data_string);
+  base::ReadFileToString(
+      profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename),
+      &data_string);
   return data_string;
 }
 
@@ -507,10 +505,6 @@ class LocalNtpSource::SearchConfigurationProvider
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
 
-    bool is_voice_search_enabled =
-        base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
-    config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
-
     config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
 
     config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
@@ -722,7 +716,7 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(&ReadBackgroundImageData),
+        base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
         base::BindOnce(&ServeBackgroundImageData, callback));
     return;
   }

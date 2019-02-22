@@ -89,7 +89,7 @@ void DisplayAndroidManager::UpdateDisplay(
   display::Display display(sdkDisplayId, bounds_in_dip);
   if (!Display::HasForceDeviceScaleFactor())
     display.set_device_scale_factor(dipScale);
-  if (!Display::HasForceColorProfile()) {
+  if (!Display::HasForceDisplayColorProfile()) {
     // TODO(ccameron): Use CreateDisplayP3D65 if isWideColorGamut is true, once
     // the feature is ready to use.
     display.set_color_space(gfx::ColorSpace::CreateSRGB());

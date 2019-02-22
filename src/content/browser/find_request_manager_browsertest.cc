@@ -17,7 +17,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/blink/public/web/web_find_options.h"
 
 namespace content {
 
@@ -86,11 +85,10 @@ class FindRequestManagerTest : public ContentBrowserTest,
   }
 
   void Find(const std::string& search_text,
-            const blink::WebFindOptions& options) {
+            blink::mojom::FindOptionsPtr options) {
     delegate()->UpdateLastRequest(++last_request_id_);
-    contents()->Find(last_request_id_,
-                     base::UTF8ToUTF16(search_text),
-                     options);
+    contents()->Find(last_request_id_, base::UTF8ToUTF16(search_text),
+                     std::move(options));
   }
 
   WebContentsImpl* contents() const {
@@ -167,9 +165,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   if (GetParam())
     MakeChildFrameCrossProcess();
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options->Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -177,9 +175,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   EXPECT_EQ(19, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
 
-  options.find_next = true;
+  options->find_next = true;
   for (int i = 2; i <= 10; ++i) {
-    Find("result", options);
+    Find("result", options->Clone());
     delegate()->WaitForFinalReply();
 
     results = delegate()->GetFindResults();
@@ -188,9 +186,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
     EXPECT_EQ(i, results.active_match_ordinal);
   }
 
-  options.forward = false;
+  options->forward = false;
   for (int i = 9; i >= 5; --i) {
-    Find("result", options);
+    Find("result", options->Clone());
     delegate()->WaitForFinalReply();
 
     results = delegate()->GetFindResults();
@@ -251,9 +249,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
   ASSERT_TRUE(ExecuteScript(root, "window.scrollTo(3500, 1500);"));
 
   // Search for a result further down in the iframe.
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result 17", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result 17", options->Clone());
   delegate()->WaitForFinalReply();
 
   // gBCR of result box in iframe.
@@ -313,14 +311,14 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(CharacterByCharacter)) {
   if (GetParam())
     MakeChildFrameCrossProcess();
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("r", default_options);
-  Find("re", default_options);
-  Find("res", default_options);
-  Find("resu", default_options);
-  Find("resul", default_options);
-  Find("result", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("r", default_options->Clone());
+  Find("re", default_options->Clone());
+  Find("res", default_options->Clone());
+  Find("resu", default_options->Clone());
+  Find("resul", default_options->Clone());
+  Find("result", default_options->Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -338,13 +336,13 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RapidFire) {
   if (GetParam())
     MakeChildFrameCrossProcess();
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options.Clone());
 
-  options.find_next = true;
+  options->find_next = true;
   for (int i = 2; i <= 1000; ++i)
-    Find("result", options);
+    Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -359,17 +357,17 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RapidFire) {
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options->Clone());
   delegate()->WaitForFinalReply();
-  options.find_next = true;
-  options.forward = false;
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
+  options->find_next = true;
+  options->forward = false;
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -379,7 +377,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
 
   // Remove a frame.
   FrameTreeNode* root = contents()->GetFrameTree()->root();
-  root->RemoveChild(root->child_at(0));
+  root->current_frame_host()->RemoveChild(root->child_at(0));
 
   // The number of matches and active match ordinal should update automatically
   // to exclude the matches from the removed frame.
@@ -393,14 +391,14 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
-  options.find_next = true;
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options.Clone());
+  options->find_next = true;
+  Find("result", options.Clone());
+  Find("result", options.Clone());
+  Find("result", options.Clone());
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -433,9 +431,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(AddFrameAfterNoMatches)) {
   NavigateToURL(shell(), GURL("about:blank"));
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("result", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
 
   // Initially, there are no matches on the page.
@@ -466,14 +464,14 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(AddFrameAfterNoMatches)) {
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(NavigateFrame)) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
-  options.find_next = true;
-  options.forward = false;
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options.Clone());
+  options->find_next = true;
+  options->forward = false;
+  Find("result", options.Clone());
+  Find("result", options.Clone());
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -515,9 +513,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(NavigateFrame)) {
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(HiddenFrame)) {
   LoadAndWait("/find_in_hidden_frame.html");
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("hello", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("hello", default_options.Clone());
   delegate()->WaitForFinalReply();
   FindResults results = delegate()->GetFindResults();
 
@@ -530,12 +528,12 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(HiddenFrame)) {
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
   LoadAndWait("/find_in_dynamic_page.html");
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
-  options.find_next = true;
-  Find("result", options);
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options.Clone());
+  options->find_next = true;
+  Find("result", options.Clone());
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -547,7 +545,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
   // "result".
   ASSERT_TRUE(ExecuteScript(contents()->GetMainFrame(), "addNewText()"));
 
-  Find("result", options);
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   results = delegate()->GetFindResults();
@@ -568,9 +566,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   LoadAndWait("/find_in_long_page.html");
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("42", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("42", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -579,9 +577,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   EXPECT_EQ(1, results.active_match_ordinal);
 
   delegate()->StartReplyRecord();
-  options.find_next = true;
-  options.forward = false;
-  Find("42", options);
+  options->find_next = true;
+  options->forward = false;
+  Find("42", options.Clone());
   delegate()->WaitForFinalReply();
 
   // This is the crux of the issue that this test guards against. Searching
@@ -600,9 +598,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   NavigateToURL(shell(), GURL("about:blank"));
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("result", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
 
   // Initially, there are no matches on the page.
@@ -614,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   // Load a page with matches.
   LoadAndWait("/find_in_simple_page.html");
 
-  Find("result", default_options);
+  Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
 
   // There should now be matches found. When the bug was present, there were
@@ -629,9 +627,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
   LoadAndWait("/find_in_page.html");
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("result", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
   EXPECT_EQ(19, delegate()->GetFindResults().number_of_matches);
 
@@ -712,9 +710,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
                        MAYBE(ActivateNearestFindMatch)) {
   LoadAndWait("/find_in_page.html");
 
-  blink::WebFindOptions default_options;
-  default_options.run_synchronously_for_testing = true;
-  Find("result", default_options);
+  auto default_options = blink::mojom::FindOptions::New();
+  default_options->run_synchronously_for_testing = true;
+  Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
   EXPECT_EQ(19, delegate()->GetFindResults().number_of_matches);
 

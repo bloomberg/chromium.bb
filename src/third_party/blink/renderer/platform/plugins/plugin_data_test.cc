@@ -10,8 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-blink.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "url/url_util.h"
 
 using testing::Eq;
 using testing::Property;
@@ -31,9 +33,12 @@ class MockPluginRegistry : public mojom::blink::PluginRegistry {
   MOCK_METHOD2(DidGetPlugins, void(bool, const SecurityOrigin&));
 };
 
-// This behavior may be temporary, as it's odd for such origins to be treated as
-// non-unique in Blink and unique in the browser. https://crbug.com/862282
+// Regression test for https://crbug.com/862282
 TEST(PluginDataTest, NonStandardUrlSchemeRequestsPluginsWithUniqueOrigin) {
+  // Create a scheme that's local but nonstandard, as in bug 862282.
+  url::AddLocalScheme("nonstandard-862282");
+  SchemeRegistry::RegisterURLSchemeAsLocal("nonstandard-862282");
+
   base::test::ScopedTaskEnvironment scoped_task_environment;
   MockPluginRegistry mock_plugin_registry;
   mojo::Binding<mojom::blink::PluginRegistry> registry_binding(
@@ -52,10 +57,10 @@ TEST(PluginDataTest, NonStandardUrlSchemeRequestsPluginsWithUniqueOrigin) {
 
   EXPECT_CALL(
       mock_plugin_registry,
-      DidGetPlugins(false, Property(&SecurityOrigin::IsOpaque, Eq(true))));
+      DidGetPlugins(false, Property(&SecurityOrigin::IsOpaque, Eq(false))));
 
   scoped_refptr<SecurityOrigin> non_standard_origin =
-      SecurityOrigin::CreateFromString("nonstandard:foo/bar");
+      SecurityOrigin::CreateFromString("nonstandard-862282:foo/bar");
   EXPECT_FALSE(non_standard_origin->IsOpaque());
   auto* plugin_data = PluginData::Create();
   plugin_data->UpdatePluginList(non_standard_origin.get());

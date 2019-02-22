@@ -32,14 +32,8 @@ NSString* const kSaveCardInfobarViewUploadAccessibilityID =
 
 namespace {
 
-// Returns whether the UI Refresh Infobar will be used.
-using ::IsRefreshInfobarEnabled;
-
 // Returns the image for the infobar close button.
 UIImage* InfoBarCloseImage() {
-  if (!IsRefreshInfobarEnabled()) {
-    return [UIImage imageNamed:@"infobar_close"];
-  }
   ui::ResourceBundle& resourceBundle = ui::ResourceBundle::GetSharedInstance();
   return resourceBundle.GetNativeImageNamed(IDR_IOS_INFOBAR_CLOSE).ToUIImage();
 }
@@ -57,8 +51,9 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
 
 @interface SaveCardInfoBarController ()<SaveCardInfoBarViewDelegate>
 
+// Overrides superclass property.
 @property(nonatomic, assign)
-    autofill::AutofillSaveCardInfoBarDelegateMobile* saveCardInfobarDelegate;
+    autofill::AutofillSaveCardInfoBarDelegateMobile* infoBarDelegate;
 
 @property(nonatomic, weak) SaveCardInfoBarView* infoBarView;
 
@@ -66,16 +61,12 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
 
 @implementation SaveCardInfoBarController
 
-@synthesize saveCardInfobarDelegate = _saveCardInfobarDelegate;
+@dynamic infoBarDelegate;
 @synthesize infoBarView = _infoBarView;
 
 - (instancetype)initWithInfoBarDelegate:
-    (autofill::AutofillSaveCardInfoBarDelegateMobile*)delegate {
-  self = [super init];
-  if (self) {
-    self.saveCardInfobarDelegate = delegate;
-  }
-  return self;
+    (autofill::AutofillSaveCardInfoBarDelegateMobile*)infoBarDelegate {
+  return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
@@ -83,28 +74,27 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
       [[SaveCardInfoBarView alloc] initWithFrame:frame];
   self.infoBarView = infoBarView;
   self.infoBarView.accessibilityIdentifier =
-      self.saveCardInfobarDelegate->upload()
-          ? kSaveCardInfobarViewUploadAccessibilityID
-          : kSaveCardInfobarViewLocalAccessibilityID;
+      self.infoBarDelegate->upload() ? kSaveCardInfobarViewUploadAccessibilityID
+                                     : kSaveCardInfobarViewLocalAccessibilityID;
   self.infoBarView.delegate = self;
 
   // Close button.
   [self.infoBarView setCloseButtonImage:InfoBarCloseImage()];
 
   // Icon.
-  gfx::Image icon = self.saveCardInfobarDelegate->GetIcon();
+  gfx::Image icon = self.infoBarDelegate->GetIcon();
   DCHECK(!icon.IsEmpty());
-  if (self.saveCardInfobarDelegate->IsGooglePayBrandingEnabled())
+  if (self.infoBarDelegate->IsGooglePayBrandingEnabled())
     [self.infoBarView setGooglePayIcon:icon.ToUIImage()];
   else
     [self.infoBarView setIcon:icon.ToUIImage()];
 
   // Message, if any.
-  base::string16 messageText = self.saveCardInfobarDelegate->GetMessageText();
+  base::string16 messageText = self.infoBarDelegate->GetMessageText();
   if (!messageText.empty()) {
     MessageWithLinks* message = [[MessageWithLinks alloc] init];
-    const base::string16 linkText = self.saveCardInfobarDelegate->GetLinkText();
-    GURL linkURL = self.saveCardInfobarDelegate->GetLinkURL();
+    const base::string16 linkText = self.infoBarDelegate->GetLinkText();
+    GURL linkURL = self.infoBarDelegate->GetLinkURL();
 
     if (!linkText.empty() && !linkURL.is_empty()) {
       std::vector<GURL> linkURLs;
@@ -123,27 +113,24 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   }
 
   // Description, if any.
-  const base::string16 description =
-      self.saveCardInfobarDelegate->GetDescriptionText();
+  const base::string16 description = self.infoBarDelegate->GetDescriptionText();
   if (!description.empty()) {
     [self.infoBarView setDescription:base::SysUTF16ToNSString(description)];
   }
 
   // Card details.
   [self.infoBarView
-      setCardIssuerIcon:NativeImage(
-                            self.saveCardInfobarDelegate->issuer_icon_id())];
-  [self.infoBarView
-      setCardLabel:base::SysUTF16ToNSString(
-                       self.saveCardInfobarDelegate->card_label())];
+      setCardIssuerIcon:NativeImage(self.infoBarDelegate->issuer_icon_id())];
+  [self.infoBarView setCardLabel:base::SysUTF16ToNSString(
+                                     self.infoBarDelegate->card_label())];
   [self.infoBarView
       setCardSublabel:base::SysUTF16ToNSString(
-                          self.saveCardInfobarDelegate->card_sub_label())];
+                          self.infoBarDelegate->card_sub_label())];
 
   // Legal messages, if any.
-  if (!self.saveCardInfobarDelegate->legal_messages().empty()) {
+  if (!self.infoBarDelegate->legal_messages().empty()) {
     NSMutableArray* legalMessages = [[NSMutableArray alloc] init];
-    for (const auto& line : self.saveCardInfobarDelegate->legal_messages()) {
+    for (const auto& line : self.infoBarDelegate->legal_messages()) {
       MessageWithLinks* message = [[MessageWithLinks alloc] init];
       message.messageText = base::SysUTF16ToNSString(line.text());
       NSMutableArray* linkRanges = [[NSMutableArray alloc] init];
@@ -161,13 +148,13 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
 
   // Cancel button.
   const base::string16 cancelButtonTitle = GetTitleForButton(
-      self.saveCardInfobarDelegate, ConfirmInfoBarDelegate::BUTTON_CANCEL);
+      self.infoBarDelegate, ConfirmInfoBarDelegate::BUTTON_CANCEL);
   [self.infoBarView
       setCancelButtonTitle:base::SysUTF16ToNSString(cancelButtonTitle)];
 
   // Confirm button.
   const base::string16 confirmButtonTitle = GetTitleForButton(
-      self.saveCardInfobarDelegate, ConfirmInfoBarDelegate::BUTTON_OK);
+      self.infoBarDelegate, ConfirmInfoBarDelegate::BUTTON_OK);
   [self.infoBarView
       setConfirmButtonTitle:base::SysUTF16ToNSString(confirmButtonTitle)];
 
@@ -177,53 +164,42 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
 #pragma mark - SaveCardInfoBarViewDelegate
 
 - (void)saveCardInfoBarViewDidTapLink:(SaveCardInfoBarView*)sender {
-  // Ignore this tap if the view has been detached from the delegate.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
-  self.saveCardInfobarDelegate->LinkClicked(
-      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  self.infoBarDelegate->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 - (void)saveCardInfoBarView:(SaveCardInfoBarView*)sender
          didTapLegalLinkURL:(const GURL&)linkURL {
-  // Ignore this tap if the view has been detached from the delegate.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
-  self.saveCardInfobarDelegate->OnLegalMessageLinkClicked(linkURL);
+  self.infoBarDelegate->OnLegalMessageLinkClicked(linkURL);
 }
 
 - (void)saveCardInfoBarViewDidTapClose:(SaveCardInfoBarView*)sender {
-  // Ignore this tap if the view has been detached from the delegate.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
-  self.saveCardInfobarDelegate->InfoBarDismissed();
+  self.infoBarDelegate->InfoBarDismissed();
   self.delegate->RemoveInfoBar();
 }
 
 - (void)saveCardInfoBarViewDidTapCancel:(SaveCardInfoBarView*)sender {
-  // Ignore this tap if the view has been detached from the delegate.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
-  if (self.saveCardInfobarDelegate->Cancel()) {
+  if (self.infoBarDelegate->Cancel()) {
     self.delegate->RemoveInfoBar();
   }
 }
 
 - (void)saveCardInfoBarViewDidTapConfirm:(SaveCardInfoBarView*)sender {
-  // Ignore this tap if the view has been detached from the delegate.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
-  if (self.saveCardInfobarDelegate->Accept()) {
+  if (self.infoBarDelegate->Accept()) {
     self.delegate->RemoveInfoBar();
   }
 }

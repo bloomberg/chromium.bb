@@ -39,11 +39,10 @@ KeyedService* LoadingPredictorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  LoadingPredictorConfig config;
-  if (!IsLoadingPredictorEnabled(profile, &config))
+  if (!IsLoadingPredictorEnabled(profile))
     return nullptr;
 
-  return new LoadingPredictor(config, profile);
+  return new LoadingPredictor(LoadingPredictorConfig(), profile);
 }
 
 }  // namespace predictors

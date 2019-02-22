@@ -12,8 +12,8 @@ void InterpolationEffect::GetActiveInterpolations(
     double fraction,
     double iteration_duration,
     HeapVector<Member<Interpolation>>& result) const {
-  size_t existing_size = result.size();
-  size_t result_index = 0;
+  wtf_size_t existing_size = result.size();
+  wtf_size_t result_index = 0;
 
   for (const auto& record : interpolations_) {
     if (fraction >= record->apply_from_ && fraction < record->apply_to_) {

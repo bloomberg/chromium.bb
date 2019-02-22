@@ -20,7 +20,6 @@ namespace installer {
 class InstallationState;
 class InstallerState;
 class MasterPreferences;
-class Product;
 
 enum InstallShortcutOperation {
   // Create all shortcuts (potentially skipping those explicitly stated not to
@@ -64,7 +63,6 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 // taskbar.
 void CreateOrUpdateShortcuts(
     const base::FilePath& target,
-    const Product& product,
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,
     InstallShortcutOperation install_operation);
@@ -74,7 +72,6 @@ void CreateOrUpdateShortcuts(
 // requires no more user interaction than a UAC prompt. In practice, this means
 // on versions of Windows prior to Windows 8.
 void RegisterChromeOnMachine(const InstallerState& installer_state,
-                             const Product& product,
                              bool make_chrome_default);
 
 // This function installs or updates a new version of Chrome. It returns
@@ -115,7 +112,6 @@ void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
 // |chrome| The installed product (must be a browser).
 // |installed_version| the current version of this install.
 void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
-                               const Product& chrome,
                                const base::Version& installed_version);
 
 // Performs per-user installation-related tasks on Active Setup (ran on first

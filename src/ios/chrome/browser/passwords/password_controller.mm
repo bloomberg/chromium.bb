@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -38,6 +39,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
@@ -52,6 +54,8 @@
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -126,20 +130,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)didFinishPasswordFormExtraction:
     (const std::vector<autofill::PasswordForm>&)forms;
 
-// Autofills |username| and |password| into the form specified by |formData|,
-// invoking |completionHandler| when finished with YES if successful and
-// NO otherwise. |completionHandler| may be nil.
-- (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
-            withUsername:(const base::string16&)username
-                password:(const base::string16&)password
-       completionHandler:(void (^)(BOOL))completionHandler;
-
-// Autofills credentials into the page. Credentials and input fields are
-// specified by |fillData|. Invoking |completionHandler| when finished with YES
-// if successful and NO otherwise. |completionHandler| may be nil.
-- (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
-                   completionHandler:(void (^)(BOOL))completionHandler;
-
 // Finds all password forms in DOM and sends them to the password store for
 // fetching stored credentials.
 - (void)findPasswordFormsAndSendThemToPasswordStore;
@@ -149,6 +139,11 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // to save the password.
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
                infoBarType:(PasswordInfoBarType)type;
+
+// Hides auto sign-in notification. Removes the view from superview and destroys
+// the controller.
+// TODO(crbug.com/435048): Animate disappearance.
+- (void)hideAutosigninNotification;
 
 @end
 
@@ -189,14 +184,19 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     }
   }
 
-  // Add "Show all".
-  NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
-  [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
-                                          displayDescription:nil
-                                                        icon:nil
-                                                  identifier:1]];
-  LogSuggestionShown(suggestion_type);
-
+  // Once Manual Fallback is enabled the access to settings will exist as an
+  // option in the new passwords UI.
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    // Add "Show all".
+    NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
+    [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
+                                            displayDescription:nil
+                                                          icon:nil
+                                                    identifier:1]];
+  }
+  if (suggestions.count) {
+    LogSuggestionShown(suggestion_type);
+  }
   return [suggestions copy];
 }
 
@@ -284,21 +284,15 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   }
 }
 
-- (ios::ChromeBrowserState*)browserState {
-  return _webState ? ios::ChromeBrowserState::FromBrowserState(
-                         _webState->GetBrowserState())
-                   : nullptr;
-}
-
-- (const GURL&)lastCommittedURL {
-  return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
-}
-
-#pragma mark -
-#pragma mark Properties
+#pragma mark - Properties
 
 - (id<PasswordFormFiller>)passwordFormFiller {
   return self;
+}
+
+- (ukm::SourceId)ukmSourceId {
+  return _webState ? ukm::GetSourceIdForWebStateDocument(_webState)
+                   : ukm::kInvalidSourceId;
 }
 
 - (PasswordManagerClient*)passwordManagerClient {
@@ -309,37 +303,17 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   return _passwordManagerDriver.get();
 }
 
-- (PasswordManager*)passwordManager {
-  return _passwordManager.get();
-}
-
-#pragma mark -
-#pragma mark PasswordFormFiller
+#pragma mark - PasswordFormFiller
 
 - (void)findAndFillPasswordForms:(NSString*)username
                         password:(NSString*)password
                completionHandler:(void (^)(BOOL))completionHandler {
-  [self.helper findPasswordFormsWithCompletionHandler:^(
-                   const std::vector<autofill::PasswordForm>& forms) {
-    for (const auto& form : forms) {
-      autofill::PasswordFormFillData formData;
-      std::map<base::string16, const autofill::PasswordForm*> matches;
-      // Initialize |matches| to satisfy the expectation from
-      // InitPasswordFormFillData() that the preferred match (3rd parameter)
-      // should be one of the |matches|.
-      matches.insert(std::make_pair(form.username_value, &form));
-      autofill::InitPasswordFormFillData(form, matches, &form, false,
-                                         &formData);
-      [self fillPasswordForm:formData
-                withUsername:base::SysNSStringToUTF16(username)
-                    password:base::SysNSStringToUTF16(password)
-           completionHandler:completionHandler];
-    }
-  }];
+  [self.helper findAndFillPasswordFormsWithUserName:username
+                                           password:password
+                                  completionHandler:completionHandler];
 }
 
-#pragma mark -
-#pragma mark CRWWebStateObserver
+#pragma mark - CRWWebStateObserver
 
 // If Tab was shown, and there is a pending PasswordForm, display autosign-in
 // notification.
@@ -399,52 +373,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   _credentialManager.reset();
 }
 
-#pragma mark - Private methods
-
-- (void)findPasswordFormsAndSendThemToPasswordStore {
-  // Read all password forms from the page and send them to the password
-  // manager.
-  __weak PasswordController* weakSelf = self;
-  [self.helper findPasswordFormsWithCompletionHandler:^(
-                   const std::vector<autofill::PasswordForm>& forms) {
-    [weakSelf didFinishPasswordFormExtraction:forms];
-  }];
-}
-
-- (void)didFinishPasswordFormExtraction:
-    (const std::vector<autofill::PasswordForm>&)forms {
-  // Do nothing if |self| has been detached.
-  if (!self.passwordManager)
-    return;
-
-  if (!forms.empty()) {
-    // Notify web_state about password forms, so that this can be taken into
-    // account for the security state.
-    if (_webState && !web::IsOriginSecure(_webState->GetLastCommittedURL())) {
-      InsecureInputTabHelper::GetOrCreateForWebState(_webState)
-          ->DidShowPasswordFieldInInsecureContext();
-    }
-
-    _sentRequestToStore = YES;
-    // Invoke the password manager callback to autofill password forms
-    // on the loaded page.
-    self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
-                                                forms);
-  } else {
-    [self onNoSavedCredentials];
-  }
-  // Invoke the password manager callback to check if password was
-  // accepted or rejected. If accepted, infobar is presented. If
-  // rejected, the provisionally saved password is deleted. On Chrome
-  // w/ a renderer, it is the renderer who calls OnPasswordFormsParsed()
-  // and OnPasswordFormsRendered(). Bling has to improvised a bit on the
-  // ordering of these two calls.
-  self.passwordManager->OnPasswordFormsRendered(self.passwordManagerDriver,
-                                                forms, true);
-}
-
-#pragma mark -
-#pragma mark FormSuggestionProvider
+#pragma mark - FormSuggestionProvider
 
 - (id<FormSuggestionProvider>)suggestionProvider {
   return self;
@@ -456,14 +385,22 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                                   frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr)) {
-    completion(NO);
-    return;
+  if (!isMainFrame) {
+    web::WebFrame* frame =
+        web::GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
+    if (!frame || webState->GetLastCommittedURL().GetOrigin() !=
+                      frame->GetSecurityOrigin()) {
+      // Passwords is only supported on main frame and iframes with the same
+      // origin.
+      completion(NO);
+      return;
+    }
   }
 
   bool should_send_request_to_store =
@@ -501,6 +438,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
+                           frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
@@ -512,6 +450,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                   fieldName:(NSString*)fieldName2
             fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+                    frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   if (suggestion.identifier == 1) {
     // Navigate to the settings list.
@@ -529,13 +468,27 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   if (!fillData)
     completion();
 
-  [self fillPasswordFormWithFillData:*fillData
-                   completionHandler:^(BOOL success) {
-                     completion();
-                   }];
+  [self.helper fillPasswordFormWithFillData:*fillData
+                          completionHandler:^(BOOL success) {
+                            completion();
+                          }];
 }
 
 #pragma mark - PasswordManagerClientDelegate
+
+- (ios::ChromeBrowserState*)browserState {
+  return _webState ? ios::ChromeBrowserState::FromBrowserState(
+                         _webState->GetBrowserState())
+                   : nullptr;
+}
+
+- (PasswordManager*)passwordManager {
+  return _passwordManager.get();
+}
+
+- (const GURL&)lastCommittedURL {
+  return self.helper.lastCommittedURL;
+}
 
 - (void)showSavePasswordInfoBar:
     (std::unique_ptr<PasswordFormManagerForUI>)formToSave {
@@ -547,16 +500,6 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     (std::unique_ptr<PasswordFormManagerForUI>)formToUpdate {
   [self showInfoBarForForm:std::move(formToUpdate)
                infoBarType:PasswordInfoBarType::UPDATE];
-}
-
-// Hides auto sign-in notification. Removes the view from superview and destroys
-// the controller.
-// TODO(crbug.com/435048): Animate disappearance.
-- (void)hideAutosigninNotification {
-  [self.notifyAutoSigninViewController willMoveToParentViewController:nil];
-  [self.notifyAutoSigninViewController.view removeFromSuperview];
-  [self.notifyAutoSigninViewController removeFromParentViewController];
-  self.notifyAutoSigninViewController = nil;
 }
 
 // Shows auto sign-in notification and schedules hiding it after 3 seconds.
@@ -599,29 +542,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
       }));
 }
 
-#pragma mark -
-#pragma mark WebPasswordFormData Adaptation
-
-- (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
-            withUsername:(const base::string16&)username
-                password:(const base::string16&)password
-       completionHandler:(void (^)(BOOL))completionHandler {
-  if (formData.origin.GetOrigin() != self.lastCommittedURL.GetOrigin()) {
-    if (completionHandler)
-      completionHandler(NO);
-    return;
-  }
-
-  // Send JSON over to the web view.
-  [self.helper.jsPasswordManager
-       fillPasswordForm:SerializePasswordFormFillData(formData)
-           withUsername:base::SysUTF16ToNSString(username)
-               password:base::SysUTF16ToNSString(password)
-      completionHandler:^(BOOL result) {
-        if (completionHandler)
-          completionHandler(result);
-      }];
-}
+#pragma mark - PasswordManagerDriverDelegate
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler {
@@ -632,36 +553,13 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     _suggestionsAvailableCompletion = nil;
   }
 
-  // Don't fill immediately if waiting for the user to type a username.
-  if (formData.wait_for_username) {
-    if (completionHandler)
-      completionHandler(NO);
-    return;
-  }
-
-  [self fillPasswordForm:formData
-            withUsername:formData.username_field.value
-                password:formData.password_field.value
-       completionHandler:completionHandler];
+  [self.helper fillPasswordForm:formData completionHandler:completionHandler];
 }
 
 - (void)onNoSavedCredentials {
   if (_suggestionsAvailableCompletion)
     _suggestionsAvailableCompletion(nullptr);
   _suggestionsAvailableCompletion = nil;
-}
-
-- (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
-                   completionHandler:(void (^)(BOOL))completionHandler {
-  // Send JSON over to the web view.
-  [self.helper.jsPasswordManager
-       fillPasswordForm:SerializeFillData(fillData)
-           withUsername:base::SysUTF16ToNSString(fillData.username_value)
-               password:base::SysUTF16ToNSString(fillData.password_value)
-      completionHandler:^(BOOL result) {
-        if (completionHandler)
-          completionHandler(result);
-      }];
 }
 
 #pragma mark - PasswordControllerHelperDelegate
@@ -682,17 +580,58 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 #pragma mark - Private methods
 
+- (void)didFinishPasswordFormExtraction:
+    (const std::vector<autofill::PasswordForm>&)forms {
+  // Do nothing if |self| has been detached.
+  if (!self.passwordManager)
+    return;
+
+  if (!forms.empty()) {
+    // Notify web_state about password forms, so that this can be taken into
+    // account for the security state.
+    if (_webState && !web::IsOriginSecure(_webState->GetLastCommittedURL())) {
+      InsecureInputTabHelper::GetOrCreateForWebState(_webState)
+          ->DidShowPasswordFieldInInsecureContext();
+    }
+
+    _sentRequestToStore = YES;
+    // Invoke the password manager callback to autofill password forms
+    // on the loaded page.
+    self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
+                                                forms);
+  } else {
+    [self onNoSavedCredentials];
+  }
+  // Invoke the password manager callback to check if password was
+  // accepted or rejected. If accepted, infobar is presented. If
+  // rejected, the provisionally saved password is deleted. On Chrome
+  // w/ a renderer, it is the renderer who calls OnPasswordFormsParsed()
+  // and OnPasswordFormsRendered(). Bling has to improvised a bit on the
+  // ordering of these two calls.
+  self.passwordManager->OnPasswordFormsRendered(self.passwordManagerDriver,
+                                                forms, true);
+}
+
+- (void)findPasswordFormsAndSendThemToPasswordStore {
+  // Read all password forms from the page and send them to the password
+  // manager.
+  __weak PasswordController* weakSelf = self;
+  [self.helper findPasswordFormsWithCompletionHandler:^(
+                   const std::vector<autofill::PasswordForm>& forms) {
+    [weakSelf didFinishPasswordFormExtraction:forms];
+  }];
+}
+
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
                infoBarType:(PasswordInfoBarType)type {
   if (!_webState)
     return;
 
-  bool isSmartLockBrandingEnabled = false;
+  bool isSyncUser = false;
   if (self.browserState) {
     syncer::SyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
-    isSmartLockBrandingEnabled =
-        password_bubble_experiment::IsSmartLockUser(sync_service);
+    isSyncUser = password_bubble_experiment::IsSmartLockUser(sync_service);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -700,16 +639,22 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   switch (type) {
     case PasswordInfoBarType::SAVE:
       IOSChromeSavePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
-          self.dispatcher);
+          isSyncUser, infoBarManager, std::move(form), self.dispatcher);
       break;
 
     case PasswordInfoBarType::UPDATE:
       IOSChromeUpdatePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
-          self.baseViewController, self.dispatcher);
+          isSyncUser, infoBarManager, std::move(form), self.baseViewController,
+          self.dispatcher);
       break;
   }
+}
+
+- (void)hideAutosigninNotification {
+  [self.notifyAutoSigninViewController willMoveToParentViewController:nil];
+  [self.notifyAutoSigninViewController.view removeFromSuperview];
+  [self.notifyAutoSigninViewController removeFromParentViewController];
+  self.notifyAutoSigninViewController = nil;
 }
 
 @end

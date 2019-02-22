@@ -187,8 +187,8 @@ template("css_properties") {
   process_json5_files(target_name) {
     script = invoker.script
     in_files = [
-      "css/CSSProperties.json5",
-      "css/ComputedStyleFieldAliases.json5",
+      "css/css_properties.json5",
+      "css/computed_style_field_aliases.json5",
     ]
     if (defined(invoker.in_files)) {
       in_files += invoker.in_files

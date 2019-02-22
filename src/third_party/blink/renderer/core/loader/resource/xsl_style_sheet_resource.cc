@@ -34,7 +34,7 @@
 namespace blink {
 
 static void ApplyXSLRequestProperties(FetchParameters& params) {
-  params.SetRequestContext(WebURLRequest::kRequestContextXSLT);
+  params.SetRequestContext(mojom::RequestContextType::XSLT);
   // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
   // the browser process, and... here. The browser process can't tell the
   // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
@@ -72,8 +72,10 @@ XSLStyleSheetResource::XSLStyleSheetResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const TextResourceDecoderOptions& decoder_options)
-    : TextResource(resource_request, kXSLStyleSheet, options, decoder_options) {
-}
+    : TextResource(resource_request,
+                   ResourceType::kXSLStyleSheet,
+                   options,
+                   decoder_options) {}
 
 void XSLStyleSheetResource::NotifyFinished() {
   if (Data())

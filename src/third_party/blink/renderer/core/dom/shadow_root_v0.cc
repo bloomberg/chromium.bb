@@ -70,7 +70,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
 
     if (IsActiveV0InsertionPoint(*child)) {
       V0InsertionPoint* insertion_point = ToV0InsertionPoint(child);
-      for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
+      for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
         nodes_.push_back(insertion_point->DistributedNodeAt(i));
     } else {
       nodes_.push_back(child);
@@ -84,7 +84,7 @@ void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
                                     ShadowRoot* shadow_root) {
   DistributedNodes distributed_nodes;
 
-  for (size_t i = 0; i < nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < nodes_.size(); ++i) {
     if (distributed_[i])
       continue;
 
@@ -115,7 +115,7 @@ inline DistributionPool::~DistributionPool() {
 }
 
 inline void DistributionPool::DetachNonDistributedNodes() {
-  for (size_t i = 0; i < nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < nodes_.size(); ++i) {
     if (distributed_[i])
       continue;
     if (nodes_[i]->GetLayoutObject())
@@ -125,15 +125,15 @@ inline void DistributionPool::DetachNonDistributedNodes() {
 
 const HeapVector<Member<V0InsertionPoint>>&
 ShadowRootV0::DescendantInsertionPoints() {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<V0InsertionPoint>>, empty_list,
-                      (new HeapVector<Member<V0InsertionPoint>>));
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<V0InsertionPoint>>>,
+                      empty_list, (new HeapVector<Member<V0InsertionPoint>>));
   if (descendant_insertion_points_is_valid_)
     return descendant_insertion_points_;
 
   descendant_insertion_points_is_valid_ = true;
 
   if (!ContainsInsertionPoints())
-    return empty_list;
+    return *empty_list;
 
   HeapVector<Member<V0InsertionPoint>> insertion_points;
   for (V0InsertionPoint& insertion_point :
@@ -176,8 +176,7 @@ void ShadowRootV0::Distribute() {
       pool.DistributeTo(point, &GetShadowRoot());
       if (ShadowRoot* shadow_root =
               ShadowRootWhereNodeCanBeDistributedForV0(*point)) {
-        if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
-              shadow_root->IsV1()))
+        if (!shadow_root->IsV1())
           shadow_root->SetNeedsDistributionRecalc();
       }
     }

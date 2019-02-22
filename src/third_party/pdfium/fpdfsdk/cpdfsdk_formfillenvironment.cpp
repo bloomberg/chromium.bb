@@ -10,10 +10,11 @@
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfdoc/cpdf_docjsactions.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_annothandlermgr.h"
-#include "fpdfsdk/cpdfsdk_interform.h"
+#include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
@@ -44,8 +45,8 @@ CPDFSDK_FormFillEnvironment::~CPDFSDK_FormFillEnvironment() {
   m_bBeingDestroyed = true;
   ClearAllFocusedAnnots();
 
-  // |m_PageMap| will try to access |m_pInterForm| when it cleans itself up.
-  // Make sure it is deleted before |m_pInterForm|.
+  // |m_PageMap| will try to access |m_pInteractiveForm| when it cleans itself
+  // up. Make sure it is deleted before |m_pInteractiveForm|.
   m_PageMap.clear();
 
   // |m_pAnnotHandlerMgr| will try to access |m_pFormFiller| when it cleans
@@ -622,17 +623,10 @@ IPDF_Page* CPDFSDK_FormFillEnvironment::GetPage(int nIndex) {
       m_pInfo, FPDFDocumentFromCPDFDocument(m_pCPDFDoc.Get()), nIndex));
 }
 
-CPDFSDK_InterForm* CPDFSDK_FormFillEnvironment::GetInterForm() {
-  if (!m_pInterForm)
-    m_pInterForm = pdfium::MakeUnique<CPDFSDK_InterForm>(this);
-  return m_pInterForm.get();
-}
-
-void CPDFSDK_FormFillEnvironment::SaveCalled() {
-  if (!m_pInfo || !m_SaveCalled)
-    return;
-
-  m_SaveCalled(m_pInfo);
+CPDFSDK_InteractiveForm* CPDFSDK_FormFillEnvironment::GetInteractiveForm() {
+  if (!m_pInteractiveForm)
+    m_pInteractiveForm = pdfium::MakeUnique<CPDFSDK_InteractiveForm>(this);
+  return m_pInteractiveForm.get();
 }
 
 void CPDFSDK_FormFillEnvironment::UpdateAllViews(CPDFSDK_PageView* pSender,
@@ -652,7 +646,7 @@ bool CPDFSDK_FormFillEnvironment::SetFocusAnnot(
     return true;
   if (m_pFocusAnnot && !KillFocusAnnot(0))
     return false;
-  if (!*pAnnot)
+  if (!pAnnot->HasObservable())
     return false;
 
   CPDFSDK_PageView* pPageView = (*pAnnot)->GetPageView();

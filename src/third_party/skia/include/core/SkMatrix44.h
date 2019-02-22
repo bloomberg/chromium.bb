@@ -145,7 +145,7 @@ public:
         kIdentity_Constructor
     };
 
-    SkMatrix44(Uninitialized_Constructor) {}
+    SkMatrix44(Uninitialized_Constructor) {}  // ironically, cannot be constexpr
 
     constexpr SkMatrix44(Identity_Constructor)
         : fMat{{ 1, 0, 0, 0, },
@@ -155,8 +155,7 @@ public:
         , fTypeMask(kIdentity_Mask)
     {}
 
-    SK_ATTR_DEPRECATED("use the constructors that take an enum")
-    SkMatrix44() { this->setIdentity(); }
+    constexpr SkMatrix44() : SkMatrix44{kIdentity_Constructor} {}
 
     SkMatrix44(const SkMatrix44& src) {
         memcpy(fMat, src.fMat, sizeof(fMat));
@@ -401,16 +400,6 @@ public:
         this->mapScalars(vec, vec);
     }
 
-    SK_ATTR_DEPRECATED("use mapScalars")
-    void map(const SkScalar src[4], SkScalar dst[4]) const {
-        this->mapScalars(src, dst);
-    }
-
-    SK_ATTR_DEPRECATED("use mapScalars")
-    void map(SkScalar vec[4]) const {
-        this->mapScalars(vec, vec);
-    }
-
 #ifdef SK_MSCALAR_IS_DOUBLE
     void mapMScalars(const SkMScalar src[4], SkMScalar dst[4]) const;
 #elif defined SK_MSCALAR_IS_FLOAT
@@ -501,7 +490,6 @@ private:
     inline const SkMScalar* values() const { return &fMat[0][0]; }
 
     friend class SkColorSpace;
-    friend class SkColorSpace_XYZ;
 };
 
 #endif

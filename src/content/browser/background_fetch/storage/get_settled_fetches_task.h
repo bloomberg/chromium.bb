@@ -25,7 +25,7 @@ class GetSettledFetchesTask : public DatabaseTask {
   // TODO(nator): Remove BlobDataHandle since we're not using them.
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
-      bool,
+      blink::mojom::BackgroundFetchFailureReason,
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
 
@@ -81,7 +81,8 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   // SettledFetchesCallback params.
   std::vector<BackgroundFetchSettledFetch> settled_fetches_;
-  bool background_fetch_succeeded_ = true;
+  blink::mojom::BackgroundFetchFailureReason failure_reason_ =
+      blink::mojom::BackgroundFetchFailureReason::NONE;
 
   // Storage params.
   CacheStorageCacheHandle handle_;

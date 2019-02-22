@@ -53,6 +53,8 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
 
   String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);
+  void SetInitial(unsigned);
+  static constexpr int kInitialValueBits = SVGInteger::kInitialValueBits;
 
   void Add(SVGPropertyBase*, SVGElement*) override;
   void CalculateAnimatedValue(SVGAnimationElement*,

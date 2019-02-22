@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/video_util.h"
 
 namespace media {
 
@@ -188,12 +189,15 @@ class PictureBufferManagerImpl : public PictureBufferManager {
       return nullptr;
     }
 
-    // Verify that the picture buffer is large enough.
+    // Ensure that the picture buffer is large enough.
     if (!gfx::Rect(picture_buffer_data.texture_size).Contains(visible_rect)) {
-      DLOG(ERROR) << "visible_rect " << visible_rect.ToString()
-                  << " exceeds coded_size "
-                  << picture_buffer_data.texture_size.ToString();
-      return nullptr;
+      DLOG(WARNING) << "visible_rect " << visible_rect.ToString()
+                    << " exceeds coded_size "
+                    << picture_buffer_data.texture_size.ToString();
+      double pixel_aspect_ratio =
+          GetPixelAspectRatio(visible_rect, natural_size);
+      visible_rect.Intersect(gfx::Rect(picture_buffer_data.texture_size));
+      natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio);
     }
 
     // Mark the picture as an output.

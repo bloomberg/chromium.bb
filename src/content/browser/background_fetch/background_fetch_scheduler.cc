@@ -23,16 +23,18 @@ BackgroundFetchScheduler::Controller::Controller(
 BackgroundFetchScheduler::Controller::~Controller() = default;
 
 void BackgroundFetchScheduler::Controller::Finish(
-    BackgroundFetchReasonToAbort reason_to_abort) {
-  DCHECK(reason_to_abort != BackgroundFetchReasonToAbort::NONE ||
+    blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
+  DCHECK(reason_to_abort != blink::mojom::BackgroundFetchFailureReason::NONE ||
          !HasMoreRequests());
 
   scheduler_->RemoveJobController(this);
 
   // Developer-initiated abortions will have already marked the registration for
   // deletion, so make sure that we don't execute the same code-path twice.
-  if (reason_to_abort == BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER)
+  if (reason_to_abort ==
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER) {
     return;
+  }
 
   // Race conditions make it possible for a controller to finish twice. This
   // should be removed when the scheduler starts owning the controllers.
@@ -50,8 +52,25 @@ BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 
 void BackgroundFetchScheduler::AddJobController(Controller* controller) {
   DCHECK(controller);
-
   controller_queue_.push_back(controller);
+
+  std::vector<scoped_refptr<content::BackgroundFetchRequestInfo>>
+      outstanding_requests = controller->TakeOutstandingRequests();
+  // There are active downloads from the previous session.
+  if (!outstanding_requests.empty()) {
+    // The current assumption is that there can be at most one active fetch
+    // at any given time.
+    DCHECK(!active_controller_);
+    DCHECK_EQ(outstanding_requests.size(), 1u);
+
+    active_controller_ = controller;
+    for (auto& request_info : outstanding_requests) {
+      active_controller_->StartRequest(
+          std::move(request_info),
+          base::BindOnce(&BackgroundFetchScheduler::MarkRequestAsComplete,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
 
   if (!active_controller_)
     ScheduleDownload();
@@ -88,6 +107,7 @@ void BackgroundFetchScheduler::ScheduleDownload() {
 }
 
 void BackgroundFetchScheduler::DidPopNextRequest(
+    blink::mojom::BackgroundFetchError error,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
   // It's possible for the |active_controller_| to have been aborted while the
   // next request was being retrieved. Bail out when that happens.
@@ -96,15 +116,12 @@ void BackgroundFetchScheduler::DidPopNextRequest(
     return;
   }
 
-  // There might've been a storage error when |request_info| could not be loaded
-  // from the database. Bail out in this case as well.
-  if (!request_info) {
-    // TODO(peter): Should we abort the |active_controller_| in this case?
-    active_controller_ = nullptr;
-
-    ScheduleDownload();
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    // This fetch is being abandoned, after which something will be scheduled.
     return;
   }
+
+  DCHECK(request_info);
 
   // Otherwise start the |request_info| through the live Job Controller.
   active_controller_->StartRequest(
@@ -126,11 +143,18 @@ void BackgroundFetchScheduler::MarkRequestAsComplete(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BackgroundFetchScheduler::DidMarkRequestAsComplete() {
+void BackgroundFetchScheduler::DidMarkRequestAsComplete(
+    blink::mojom::BackgroundFetchError error) {
   // It's possible for the |active_controller_| to have been aborted while the
   // request was being marked as completed. Bail out in that case.
   if (!active_controller_)
     return;
+
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    // This fetch is being abandoned, after which something will be scheduled.
+    DCHECK_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    return;
+  }
 
   // Continue with the |active_controller_| while there are files pending.
   if (active_controller_->HasMoreRequests()) {
@@ -141,7 +165,7 @@ void BackgroundFetchScheduler::DidMarkRequestAsComplete() {
     return;
   }
 
-  active_controller_->Finish(BackgroundFetchReasonToAbort::NONE);
+  active_controller_->Finish(blink::mojom::BackgroundFetchFailureReason::NONE);
 }
 
 }  // namespace content

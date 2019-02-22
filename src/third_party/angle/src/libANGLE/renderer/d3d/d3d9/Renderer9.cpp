@@ -388,7 +388,7 @@ egl::Error Renderer9::initializeDevice()
     mBlit = new Blit9(this);
 
     ASSERT(!mVertexDataManager && !mIndexDataManager);
-    mIndexDataManager  = new IndexDataManager(this);
+    mIndexDataManager = new IndexDataManager(this);
 
     mTranslatedAttribCache.resize(getNativeCaps().maxVertexAttributes);
 
@@ -942,26 +942,26 @@ angle::Result Renderer9::setSamplerState(const gl::Context *context,
         int d3dSampler       = index + d3dSamplerOffset;
 
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_ADDRESSU,
-                                 gl_d3d9::ConvertTextureWrap(samplerState.wrapS));
+                                 gl_d3d9::ConvertTextureWrap(samplerState.getWrapS()));
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_ADDRESSV,
-                                 gl_d3d9::ConvertTextureWrap(samplerState.wrapT));
+                                 gl_d3d9::ConvertTextureWrap(samplerState.getWrapT()));
 
-        mDevice->SetSamplerState(
-            d3dSampler, D3DSAMP_MAGFILTER,
-            gl_d3d9::ConvertMagFilter(samplerState.magFilter, samplerState.maxAnisotropy));
+        mDevice->SetSamplerState(d3dSampler, D3DSAMP_MAGFILTER,
+                                 gl_d3d9::ConvertMagFilter(samplerState.getMagFilter(),
+                                                           samplerState.getMaxAnisotropy()));
 
         D3DTEXTUREFILTERTYPE d3dMinFilter, d3dMipFilter;
         float lodBias;
-        gl_d3d9::ConvertMinFilter(samplerState.minFilter, &d3dMinFilter, &d3dMipFilter, &lodBias,
-                                  samplerState.maxAnisotropy, baseLevel);
+        gl_d3d9::ConvertMinFilter(samplerState.getMinFilter(), &d3dMinFilter, &d3dMipFilter,
+                                  &lodBias, samplerState.getMaxAnisotropy(), baseLevel);
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_MINFILTER, d3dMinFilter);
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_MIPFILTER, d3dMipFilter);
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_MAXMIPLEVEL, baseLevel);
         mDevice->SetSamplerState(d3dSampler, D3DSAMP_MIPMAPLODBIAS, static_cast<DWORD>(lodBias));
         if (getNativeExtensions().textureFilterAnisotropic)
         {
-            DWORD maxAnisotropy =
-                std::min(mDeviceCaps.MaxAnisotropy, static_cast<DWORD>(samplerState.maxAnisotropy));
+            DWORD maxAnisotropy = std::min(mDeviceCaps.MaxAnisotropy,
+                                           static_cast<DWORD>(samplerState.getMaxAnisotropy()));
             mDevice->SetSamplerState(d3dSampler, D3DSAMP_MAXANISOTROPY, maxAnisotropy);
         }
     }
@@ -1440,12 +1440,12 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
         // Checked by Renderer9::applyPrimitiveType
         ASSERT(count >= 0);
 
-        ANGLE_CHECK_HR(context9,
-                       static_cast<unsigned int>(count) + 1 <=
-                           (std::numeric_limits<unsigned int>::max() / sizeof(unsigned int)),
-                       "Failed to create a 32-bit looping index buffer for "
-                       "GL_LINE_LOOP, too many indices required.",
-                       E_OUTOFMEMORY);
+        ANGLE_CHECK(context9,
+                    static_cast<unsigned int>(count) + 1 <=
+                        (std::numeric_limits<unsigned int>::max() / sizeof(unsigned int)),
+                    "Failed to create a 32-bit looping index buffer for "
+                    "GL_LINE_LOOP, too many indices required.",
+                    E_OUTOFMEMORY);
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned int);
@@ -1506,12 +1506,12 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
         // Checked by Renderer9::applyPrimitiveType
         ASSERT(count >= 0);
 
-        ANGLE_CHECK_HR(context9,
-                       static_cast<unsigned int>(count) + 1 <=
-                           (std::numeric_limits<unsigned short>::max() / sizeof(unsigned short)),
-                       "Failed to create a 16-bit looping index buffer for "
-                       "GL_LINE_LOOP, too many indices required.",
-                       E_OUTOFMEMORY);
+        ANGLE_CHECK(context9,
+                    static_cast<unsigned int>(count) + 1 <=
+                        (std::numeric_limits<unsigned short>::max() / sizeof(unsigned short)),
+                    "Failed to create a 16-bit looping index buffer for "
+                    "GL_LINE_LOOP, too many indices required.",
+                    E_OUTOFMEMORY);
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned short);
@@ -1674,21 +1674,23 @@ angle::Result Renderer9::getCountingIB(const gl::Context *context,
 angle::Result Renderer9::applyShaders(const gl::Context *context, gl::PrimitiveMode drawMode)
 {
     const gl::State &state = context->getContextState().getState();
+    d3d::Context *contextD3D = GetImplAs<ContextD3D>(context);
+
     // This method is called single-threaded.
-    ANGLE_TRY(ensureHLSLCompilerInitialized(context));
+    ANGLE_TRY(ensureHLSLCompilerInitialized(contextD3D));
 
     ProgramD3D *programD3D = GetImplAs<ProgramD3D>(state.getProgram());
     VertexArray9 *vao      = GetImplAs<VertexArray9>(state.getVertexArray());
     programD3D->updateCachedInputLayout(vao->getCurrentStateSerial(), state);
 
     ShaderExecutableD3D *vertexExe = nullptr;
-    ANGLE_TRY(programD3D->getVertexExecutableForCachedInputLayout(context, &vertexExe, nullptr));
+    ANGLE_TRY(programD3D->getVertexExecutableForCachedInputLayout(contextD3D, &vertexExe, nullptr));
 
     const gl::Framebuffer *drawFramebuffer = state.getDrawFramebuffer();
     programD3D->updateCachedOutputLayout(context, drawFramebuffer);
 
     ShaderExecutableD3D *pixelExe = nullptr;
-    ANGLE_TRY(programD3D->getPixelExecutableForCachedOutputLayout(context, &pixelExe, nullptr));
+    ANGLE_TRY(programD3D->getPixelExecutableForCachedOutputLayout(contextD3D, &pixelExe, nullptr));
 
     IDirect3DVertexShader9 *vertexShader =
         (vertexExe ? GetAs<ShaderExecutable9>(vertexExe)->getVertexShader() : nullptr);
@@ -2428,7 +2430,8 @@ angle::Result Renderer9::copyImage2DArray(const gl::Context *context,
 angle::Result Renderer9::copyTexture(const gl::Context *context,
                                      const gl::Texture *source,
                                      GLint sourceLevel,
-                                     const gl::Rectangle &sourceRect,
+                                     gl::TextureTarget srcTarget,
+                                     const gl::Box &sourceBox,
                                      GLenum destFormat,
                                      GLenum destType,
                                      const gl::Offset &destOffset,
@@ -2440,10 +2443,10 @@ angle::Result Renderer9::copyTexture(const gl::Context *context,
                                      bool unpackUnmultiplyAlpha)
 {
     RECT rect;
-    rect.left   = sourceRect.x;
-    rect.top    = sourceRect.y;
-    rect.right  = sourceRect.x + sourceRect.width;
-    rect.bottom = sourceRect.y + sourceRect.height;
+    rect.left   = sourceBox.x;
+    rect.top    = sourceBox.y;
+    rect.right  = sourceBox.x + sourceBox.width;
+    rect.bottom = sourceBox.y + sourceBox.height;
 
     return mBlit->copyTexture(context, source, sourceLevel, rect, destFormat, destOffset, storage,
                               destTarget, destLevel, unpackFlipY, unpackPremultiplyAlpha,
@@ -2548,7 +2551,7 @@ angle::Result Renderer9::createRenderTargetCopy(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-angle::Result Renderer9::loadExecutable(const gl::Context *context,
+angle::Result Renderer9::loadExecutable(d3d::Context *context,
                                         const uint8_t *function,
                                         size_t length,
                                         gl::ShaderType type,
@@ -2559,7 +2562,7 @@ angle::Result Renderer9::loadExecutable(const gl::Context *context,
     // Transform feedback is not supported in ES2 or D3D9
     ASSERT(streamOutVaryings.empty());
 
-    Context9 *context9 = GetImplAs<Context9>(context);
+    Context9 *context9 = static_cast<Context9 *>(context);
 
     switch (type)
     {
@@ -2578,13 +2581,13 @@ angle::Result Renderer9::loadExecutable(const gl::Context *context,
         }
         break;
         default:
-            ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
+            ANGLE_HR_UNREACHABLE(context);
     }
 
     return angle::Result::Continue();
 }
 
-angle::Result Renderer9::compileToExecutable(const gl::Context *context,
+angle::Result Renderer9::compileToExecutable(d3d::Context *context,
                                              gl::InfoLog &infoLog,
                                              const std::string &shaderHLSL,
                                              gl::ShaderType type,
@@ -2607,7 +2610,7 @@ angle::Result Renderer9::compileToExecutable(const gl::Context *context,
             profileStream << "ps";
             break;
         default:
-            ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
+            ANGLE_HR_UNREACHABLE(context);
     }
 
     profileStream << "_" << ((getMajorShaderModel() >= 3) ? 3 : 2);
@@ -2674,7 +2677,7 @@ angle::Result Renderer9::compileToExecutable(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-angle::Result Renderer9::ensureHLSLCompilerInitialized(const gl::Context *context)
+angle::Result Renderer9::ensureHLSLCompilerInitialized(d3d::Context *context)
 {
     return mCompiler.ensureInitialized(context);
 }
@@ -2773,7 +2776,7 @@ angle::Result Renderer9::generateMipmapUsingD3D(const gl::Context *context,
 angle::Result Renderer9::copyImage(const gl::Context *context,
                                    ImageD3D *dest,
                                    ImageD3D *source,
-                                   const gl::Rectangle &sourceRect,
+                                   const gl::Box &sourceBox,
                                    const gl::Offset &destOffset,
                                    bool unpackFlipY,
                                    bool unpackPremultiplyAlpha,
@@ -2781,7 +2784,7 @@ angle::Result Renderer9::copyImage(const gl::Context *context,
 {
     Image9 *dest9 = GetAs<Image9>(dest);
     Image9 *src9  = GetAs<Image9>(source);
-    return Image9::CopyImage(context, dest9, src9, sourceRect, destOffset, unpackFlipY,
+    return Image9::CopyImage(context, dest9, src9, sourceBox.toRect(), destOffset, unpackFlipY,
                              unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
@@ -2864,6 +2867,20 @@ TextureStorage *Renderer9::createTextureStorage2DMultisample(GLenum internalform
     return nullptr;
 }
 
+TextureStorage *Renderer9::createTextureStorage2DMultisampleArray(GLenum internalformat,
+                                                                  GLsizei width,
+                                                                  GLsizei height,
+                                                                  GLsizei depth,
+                                                                  int levels,
+                                                                  int samples,
+                                                                  bool fixedSampleLocations)
+{
+    // 2D multisampled textures are not supported by the D3D9 backend.
+    UNREACHABLE();
+
+    return nullptr;
+}
+
 bool Renderer9::getLUID(LUID *adapterLuid) const
 {
     adapterLuid->HighPart = 0;
@@ -2919,8 +2936,8 @@ angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
 
     bool check = (d3d9VertexInfo.outputElementSize >
                   std::numeric_limits<unsigned int>::max() / elementCount);
-    ANGLE_CHECK_HR(GetImplAs<Context9>(context), !check,
-                   "New vertex buffer size would result in an overflow.", E_OUTOFMEMORY);
+    ANGLE_CHECK(GetImplAs<Context9>(context), !check,
+                "New vertex buffer size would result in an overflow.", E_OUTOFMEMORY);
 
     *bytesRequiredOut = static_cast<unsigned int>(d3d9VertexInfo.outputElementSize) * elementCount;
     return angle::Result::Continue();

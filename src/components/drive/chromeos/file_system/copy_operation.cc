@@ -178,9 +178,10 @@ FileError UpdateLocalStateForServerSideOperation(
   DCHECK(file_resource);
 
   std::string parent_resource_id;
-  if (!ConvertFileResourceToResourceEntry(
-          *file_resource, entry, &parent_resource_id) ||
-      parent_resource_id.empty())
+  ConvertFileResourceToResourceEntry(*file_resource, entry,
+                                     &parent_resource_id);
+
+  if (parent_resource_id.empty())
     return FILE_ERROR_NOT_A_FILE;
 
   std::string parent_local_id;

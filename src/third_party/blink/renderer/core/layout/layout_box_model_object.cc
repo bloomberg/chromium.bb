@@ -309,14 +309,18 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   if (old_style &&
       (old_style->CanContainFixedPositionObjects(IsDocumentElement()) !=
            StyleRef().CanContainFixedPositionObjects(IsDocumentElement()) ||
-       old_style->GetPosition() != StyleRef().GetPosition() ||
-       had_layer != HasLayer())) {
-    // This may affect paint properties of the current object, and descendants
-    // even if paint properties of the current object won't change. E.g. the
-    // stacking context and/or containing block of descendants may change.
-    SetSubtreeNeedsPaintPropertyUpdate();
-  } else if (had_transform_related_property != HasTransformRelatedProperty()) {
-    // This affects whether to create transform node.
+       old_style->CanContainAbsolutePositionObjects() !=
+           StyleRef().CanContainAbsolutePositionObjects())) {
+    // If out of flow element containment changed, then we need to force a
+    // subtree paint property update, since the children elements may now be
+    // referencing a different container.
+    AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kContainerChainMayChange);
+  } else if (had_layer == HasLayer() &&
+             had_transform_related_property != HasTransformRelatedProperty()) {
+    // This affects whether to create transform node. Note that if the
+    // HasLayer() value changed, then all of this was already set in
+    // CreateLayerAfterStyleChange() or DestroyLayer().
     SetNeedsPaintPropertyUpdate();
     if (Layer())
       Layer()->SetNeedsCompositingInputsUpdate();
@@ -473,6 +477,8 @@ void LayoutBoxModelObject::CreateLayerAfterStyleChange() {
       std::make_unique<PaintLayer>(*this));
   SetHasLayer(true);
   Layer()->InsertOnlyThisLayerAfterStyleChange();
+  // Creating a layer may affect existence of the LocalBorderBoxProperties, so
+  // we need to ensure that we update paint properties.
   SetNeedsPaintPropertyUpdate();
 }
 
@@ -480,6 +486,8 @@ void LayoutBoxModelObject::DestroyLayer() {
   DCHECK(HasLayer() && Layer());
   SetHasLayer(false);
   GetMutableForPainting().FirstFragment().SetLayer(nullptr);
+  // Removing a layer may affect existence of the LocalBorderBoxProperties, so
+  // we need to ensure that we update paint properties.
   SetNeedsPaintPropertyUpdate();
 }
 
@@ -522,7 +530,7 @@ void LayoutBoxModelObject::AddLayerHitTestRects(
 void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
     // Outlines of out-of-flow positioned descendants are handled in
@@ -547,7 +555,7 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
     const LayoutObject& descendant,
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   if (descendant.IsText() || descendant.IsListMarker())
     return;
 
@@ -688,6 +696,11 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
   if (this_box && this_box->IsGridItem() &&
       this_box->HasOverrideContainingBlockContentLogicalHeight())
     return false;
+  if (this_box && this_box->IsCustomItem() &&
+      (this_box->HasOverrideContainingBlockContentLogicalHeight() ||
+       this_box->HasOverrideContainingBlockPercentageResolutionLogicalHeight()))
+    return false;
+
   if (logical_height_length.IsAuto() &&
       !IsOutOfFlowPositionedWithImplicitHeight(this))
     return true;
@@ -714,15 +727,19 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // don't use containingBlockLogicalWidthForContent() here, but instead
   // explicitly call availableWidth on our containing block.
   // https://drafts.csswg.org/css-position-3/#rel-pos
+  // However for grid items the containing block is the grid area, so offsets
+  // should be resolved against that:
+  // https://drafts.csswg.org/css-grid/#grid-item-sizing
   base::Optional<LayoutUnit> left;
   base::Optional<LayoutUnit> right;
-  if (!StyleRef().Left().IsAuto()) {
-    left =
-        ValueForLength(StyleRef().Left(), containing_block->AvailableWidth());
-  }
-  if (!StyleRef().Right().IsAuto()) {
-    right =
-        ValueForLength(StyleRef().Right(), containing_block->AvailableWidth());
+  if (!StyleRef().Left().IsAuto() || !StyleRef().Right().IsAuto()) {
+    LayoutUnit available_width = HasOverrideContainingBlockContentWidth()
+                                     ? OverrideContainingBlockContentWidth()
+                                     : containing_block->AvailableWidth();
+    if (!StyleRef().Left().IsAuto())
+      left = ValueForLength(StyleRef().Left(), available_width);
+    if (!StyleRef().Right().IsAuto())
+      right = ValueForLength(StyleRef().Right(), available_width);
   }
   if (!left && !right) {
     left = LayoutUnit();
@@ -758,21 +775,37 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // <html> and <body> assume the size of the viewport. In this case, calculate
   // the percent offset based on this height.
   // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
+  // Another exception is a grid item, as the containing block is the grid area:
+  // https://drafts.csswg.org/css-grid/#grid-item-sizing
 
   base::Optional<LayoutUnit> top;
   base::Optional<LayoutUnit> bottom;
+  bool has_override_containing_block_content_height =
+      HasOverrideContainingBlockContentHeight();
   if (!StyleRef().Top().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Top().IsPercentOrCalc() ||
-       containing_block->StretchesToViewport())) {
-    top = ValueForLength(StyleRef().Top(), containing_block->AvailableHeight());
+       containing_block->StretchesToViewport() ||
+       has_override_containing_block_content_height)) {
+    // TODO(rego): The computation of the available height is repeated later for
+    // "bottom". We could refactor this and move it to some common code for both
+    // ifs, however moving it outside of the ifs is not possible as it'd cause
+    // performance regressions (see crbug.com/893884).
+    top = ValueForLength(StyleRef().Top(),
+                         has_override_containing_block_content_height
+                             ? OverrideContainingBlockContentHeight()
+                             : containing_block->AvailableHeight());
   }
   if (!StyleRef().Bottom().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Bottom().IsPercentOrCalc() ||
-       containing_block->StretchesToViewport())) {
+       containing_block->StretchesToViewport() ||
+       has_override_containing_block_content_height)) {
+    // TODO(rego): Check comment above for "top", it applies here too.
     bottom = ValueForLength(StyleRef().Bottom(),
-                            containing_block->AvailableHeight());
+                            has_override_containing_block_content_height
+                                ? OverrideContainingBlockContentHeight()
+                                : containing_block->AvailableHeight());
   }
   if (!top && !bottom) {
     top = LayoutUnit();

@@ -71,8 +71,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
       ui::Compositor* compositor,
       const gfx::ColorSpace& blending_color_space,
       const gfx::ColorSpace& output_color_space) override {}
-  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
-                                     base::TimeDelta interval) override {}
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}

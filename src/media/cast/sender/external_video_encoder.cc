@@ -438,8 +438,8 @@ class ExternalVideoEncoder::VEAClientImpl
 
   void OnCreateInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VEAClientImpl::OnReceivedInputSharedMemory, this,
-                              base::Passed(&memory)));
+        FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory,
+                                  this, base::Passed(&memory)));
   }
 
   void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
@@ -624,9 +624,9 @@ ExternalVideoEncoder::ExternalVideoEncoder(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK_GT(video_config.max_frame_rate, 0);
   DCHECK(!frame_size_.IsEmpty());
-  DCHECK(!status_change_cb.is_null());
-  DCHECK(!create_vea_cb.is_null());
-  DCHECK(!create_video_encode_memory_cb_.is_null());
+  DCHECK(status_change_cb);
+  DCHECK(create_vea_cb);
+  DCHECK(create_video_encode_memory_cb_);
   DCHECK_GT(bit_rate_, 0);
 
   create_vea_cb.Run(
@@ -682,7 +682,8 @@ void ExternalVideoEncoder::SetBitRate(int new_bit_rate) {
   if (!client_)
     return;
   client_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VEAClientImpl::SetBitRate, client_, bit_rate_));
+      FROM_HERE,
+      base::BindOnce(&VEAClientImpl::SetBitRate, client_, bit_rate_));
 }
 
 void ExternalVideoEncoder::GenerateKeyFrame() {

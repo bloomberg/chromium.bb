@@ -111,7 +111,7 @@ class DrmCursor : public CursorDelegateEvdev {
   // The bounds that the cursor is confined to in |window|.
   gfx::Rect confined_bounds_;
 
-  DrmWindowHostManager* window_manager_;  // Not owned.
+  DrmWindowHostManager* const window_manager_;  // Not owned.
 
   std::unique_ptr<DrmCursorProxy> proxy_;
 

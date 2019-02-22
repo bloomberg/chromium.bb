@@ -256,6 +256,9 @@ void AvPipelineImpl::ProcessPendingBuffer() {
 }
 
 void AvPipelineImpl::PushAllReadyBuffers() {
+  if (state_ != kPlaying)
+    return;
+
   DCHECK(!ready_buffers_.empty());
 
   scoped_refptr<DecoderBufferBase> ready_buffer =

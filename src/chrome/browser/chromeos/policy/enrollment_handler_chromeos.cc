@@ -34,6 +34,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -156,7 +157,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
-    const std::string& auth_token,
+    std::unique_ptr<DMAuth> dm_auth,
     const std::string& client_id,
     const std::string& requisition,
     const EnrollmentCallback& completion_callback)
@@ -168,17 +169,17 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       background_task_runner_(background_task_runner),
       ad_join_delegate_(ad_join_delegate),
       enrollment_config_(enrollment_config),
-      auth_token_(auth_token),
       client_id_(client_id),
       requisition_(requisition),
       completion_callback_(completion_callback),
       enrollment_step_(STEP_PENDING),
       weak_ptr_factory_(this) {
+  dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   CHECK((enrollment_config_.is_mode_attestation() ||
          enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) ==
-        auth_token_.empty());
+        dm_auth_->empty());
   CHECK_NE(enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO,
            enrollment_config.offline_policy_path.empty());
   CHECK(enrollment_config_.auth_mechanism !=
@@ -200,7 +201,7 @@ void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   available_licenses_callback_ = license_callback;
   client_->RequestAvailableLicenses(
-      auth_token_,
+      dm_auth_->Clone(),
       base::Bind(&EnrollmentHandlerChromeOS::HandleAvailableLicensesResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -250,6 +251,14 @@ void EnrollmentHandlerChromeOS::StartEnrollmentWithLicense(
 
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
+
+  if (enrollment_config_.skip_state_keys_request()) {
+    VLOG(1) << "Skipping state keys request.";
+    SetStep(STEP_LOADING_STORE);
+    StartRegistration();
+    return;
+  }
+
   SetStep(STEP_STATE_KEYS);
 
   if (client_->machine_id().empty()) {
@@ -331,6 +340,8 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
             EnrollmentStatus::REGISTRATION_BAD_MODE));
         return;
     }
+    // Only use DMToken from now on.
+    dm_auth_ = DMAuth::FromDMToken(client_->dm_token());
     SetStep(STEP_POLICY_FETCH);
     client_->FetchPolicy();
   } else {
@@ -408,7 +419,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        auth_token_, client_id_, requisition_, current_state_key_);
+        dm_auth_->Clone(), client_id_, requisition_, current_state_key_);
   }
 }
 
@@ -540,7 +551,10 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     } else {
       domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
       SetStep(STEP_ROBOT_AUTH_FETCH);
-      client_->FetchRobotAuthCodes(auth_token_);
+      client_->FetchRobotAuthCodes(
+          dm_auth_->Clone(),
+          base::BindOnce(&EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     ReportResult(EnrollmentStatus::ForValidationError(validator->status()));
@@ -548,11 +562,14 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
 }
 
 void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
-    CloudPolicyClient* client) {
-  DCHECK_EQ(client_.get(), client);
+    DeviceManagementStatus status,
+    const std::string& auth_code) {
   CHECK_EQ(STEP_ROBOT_AUTH_FETCH, enrollment_step_);
-
-  if (client->robot_api_auth_code().empty()) {
+  if (status != DM_STATUS_SUCCESS) {
+    OnClientError(client_.get());
+    return;
+  }
+  if (auth_code.empty()) {
     // If the server doesn't provide an auth code, skip the robot auth setup.
     // This allows clients running against the test server to transparently skip
     // robot auth.
@@ -572,8 +589,8 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
   // Use the system request context to avoid sending user cookies.
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
       g_browser_process->shared_url_loader_factory()));
-  gaia_oauth_client_->GetTokensFromAuthCode(
-      client_info, client->robot_api_auth_code(), 0 /* max_retries */, this);
+  gaia_oauth_client_->GetTokensFromAuthCode(client_info, auth_code,
+                                            0 /* max_retries */, this);
 }
 
 // GaiaOAuthClient::Delegate callback for OAuth2 refresh token fetched.

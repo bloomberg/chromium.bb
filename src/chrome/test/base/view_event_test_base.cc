@@ -20,6 +20,14 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/test/ui_controls_factory_ash.h"
+#include "ui/aura/test/ui_controls_factory_aura.h"
+#include "ui/aura/window.h"
+#include "ui/base/test/ui_controls_aura.h"
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace {
 
 // View subclass that allows you to specify the preferred size.
@@ -94,6 +102,13 @@ void ViewEventTestBase::SetUp() {
   gfx::NativeWindow context = platform_part_->GetContext();
   window_ = views::Widget::CreateWindowWithContext(this, context);
   window_->Show();
+#if defined(OS_CHROMEOS)
+  ui_controls::InstallUIControlsAura(
+      features::IsUsingWindowService()
+          ? aura::test::CreateUIControlsAura(
+                window_->GetNativeWindow()->GetHost())
+          : ash::test::CreateAshUIControls());
+#endif
 }
 
 void ViewEventTestBase::TearDown() {

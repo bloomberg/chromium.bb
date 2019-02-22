@@ -39,9 +39,9 @@ typedef enum {
 
 // End of Life status used in the GetEolStatus() D-Bus method.
 typedef enum {
-   kSupported = 0,
-   kSecurityOnly = 1,
-   kEol = 2,
+  kSupported = 0,
+  kSecurityOnly = 1,
+  kEol = 2,
 } EndOfLifeStatus;
 
 // Operations contained in StatusUpdate signals.

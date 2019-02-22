@@ -39,20 +39,26 @@ enum class PrefetchBackgroundTaskRescheduleType {
 // in enums.xml which must be adjusted if we add any new values here.
 enum class PrefetchRequestStatus {
   // Request completed successfully.
-  SUCCESS = 0,
+  kSuccess = 0,
   // Request failed due to to local network problem, unrelated to server load
   // levels. The caller will simply reschedule the retry in the next available
   // WiFi window after 15 minutes have passed.
-  SHOULD_RETRY_WITHOUT_BACKOFF = 1,
+  kShouldRetryWithoutBackoff = 1,
   // Request failed probably related to transient server problems. The caller
   // will reschedule the retry with backoff included.
-  SHOULD_RETRY_WITH_BACKOFF = 2,
+  kShouldRetryWithBackoff = 2,
   // Request failed with error indicating that the server no longer knows how
   // to service a request. The caller will prevent network requests for the
   // period of 1 day.
-  SHOULD_SUSPEND = 3,
-  // MAX should always be the last type
-  COUNT = SHOULD_SUSPEND + 1
+  kShouldSuspendNotImplemented = 3,
+  // Request failed with error indicating that the client is forbidden. The
+  // caller will prevent network requests for the period of 1 day.
+  kShouldSuspendForbidden = 4,
+  // The request was blocked by a URL blacklist configured by the domain
+  // administrator.
+  kShouldSuspendBlockedByAdministrator = 5,
+  // kMaxValue should always be the last type.
+  kMaxValue = kShouldSuspendBlockedByAdministrator
 };
 
 // Status indicating the page rendering status in the server.

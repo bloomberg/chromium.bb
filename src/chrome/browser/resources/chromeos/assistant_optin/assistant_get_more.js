@@ -52,15 +52,20 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
     var hotword = this.$$('#toggle0').hasAttribute('checked');
     var screenContext = this.$$('#toggle1').hasAttribute('checked');
     var toggle2 = this.$$('#toggle2');
     var emailOptedIn = toggle2 != null && toggle2.hasAttribute('checked');
 
     // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
-    chrome.send('assistantOptInFlow.hotwordResult', [hotword]);
+    chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
     chrome.send(
-        'assistant.GetMoreScreen.userActed', [screenContext, emailOptedIn]);
+        'login.AssistantOptInFlowScreen.GetMoreScreen.userActed',
+        [screenContext, emailOptedIn]);
   },
 
   /**
@@ -139,7 +144,7 @@ Polymer({
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
     if (!this.hidden && !this.screenShown_) {
-      chrome.send('assistant.GetMoreScreen.screenShown');
+      chrome.send('login.AssistantOptInFlowScreen.GetMoreScreen.screenShown');
       this.screenShown_ = true;
     }
   },
@@ -152,7 +157,7 @@ Polymer({
       this.reloadPage();
     } else {
       this.$['next-button'].focus();
-      chrome.send('assistant.GetMoreScreen.screenShown');
+      chrome.send('login.AssistantOptInFlowScreen.GetMoreScreen.screenShown');
       this.screenShown_ = true;
     }
   },

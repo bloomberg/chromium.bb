@@ -28,6 +28,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
               ['android'])
     self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
+    self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
     # Tests running with SwiftShader are skipped on platforms where SwiftShader
     # isn't supported.
@@ -99,7 +100,7 @@ class PixelExpectations(GpuTestExpectations):
     # self.Fail('Pixel_Video_VP9',
     #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774809)
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
         ['highsierra', ('intel', 0xa2e)], bug=857578)
 
@@ -117,7 +118,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(fserb): temporarily suppress this test.
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['linux', 'mac'], bug=840394)
-    self.Fail('Pixel_WorkerRAF_OOPD', ['android', 'nvidia'], bug=833902)
 
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['linux', 'win'], bug=575305)
@@ -131,3 +131,14 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
+
+    # Fails on Nexus 5, 6 and 6P
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
+
+    # TODO(yiyix): remove expectation after rebaseline.
+    self.Fail("Pixel_CSS3DBlueBox", bug=879379)

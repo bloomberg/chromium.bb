@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/mock_download_item.h"
@@ -21,6 +22,7 @@
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -52,8 +54,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void QueryDownloads(
       const history::HistoryService::DownloadQueryCallback& callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
                        base::Unretained(this), callback));
   }
@@ -95,8 +97,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void RemoveDownloads(const IdSet& ids) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    for (IdSet::const_iterator it = ids.begin();
-         it != ids.end(); ++it) {
+    for (auto it = ids.begin(); it != ids.end(); ++it) {
       remove_downloads_.insert(*it);
     }
   }
@@ -156,8 +157,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
-    for (IdSet::const_iterator different = differences.begin();
-         different != differences.end(); ++different) {
+    for (auto different = differences.begin(); different != differences.end();
+         ++different) {
       EXPECT_TRUE(false) << *different;
     }
     remove_downloads_.clear();

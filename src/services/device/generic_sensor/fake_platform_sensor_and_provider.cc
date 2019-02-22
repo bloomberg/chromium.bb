@@ -80,7 +80,8 @@ void FakePlatformSensorProvider::CreateSensorInternal(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback) {
-  DCHECK(type >= mojom::SensorType::FIRST && type <= mojom::SensorType::LAST);
+  DCHECK(type >= mojom::SensorType::kMinValue &&
+         type <= mojom::SensorType::kMaxValue);
   auto sensor =
       base::MakeRefCounted<FakePlatformSensor>(type, reading_buffer, this);
   DoCreateSensorInternal(type, std::move(sensor), callback);

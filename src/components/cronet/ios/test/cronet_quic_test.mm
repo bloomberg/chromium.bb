@@ -100,7 +100,7 @@ TEST_F(QuicTest, RequestWithSocketOptimizationEnabled) {
   EXPECT_EQ(nil, [delegate_ error]);
   EXPECT_EQ(net::QuicSimpleTestServer::GetSimpleBodyValue(),
             base::SysNSStringToUTF8(delegate_.responseBody));
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURLSessionTaskTransactionMetrics* metrics =
         delegate_.taskMetrics.transactionMetrics[0];
     EXPECT_TRUE([metrics.networkProtocolName containsString:@"quic"])

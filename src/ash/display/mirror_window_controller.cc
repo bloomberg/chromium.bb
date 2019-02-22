@@ -13,7 +13,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/window_factory.h"

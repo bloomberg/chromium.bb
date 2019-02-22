@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
@@ -34,6 +35,7 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
+#include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
@@ -42,10 +44,12 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -54,6 +58,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
@@ -86,6 +91,7 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
+#include "media/mojo/services/android_mojo_media_client.h"
 #if !BUILDFLAG(USE_CHROMECAST_CDMS)
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "url/origin.h"
@@ -120,6 +126,10 @@ namespace {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 static std::unique_ptr<service_manager::Service> CreateMediaService(
     CastContentBrowserClient* browser_client) {
+#if defined(OS_ANDROID)
+  return std::make_unique<::media::MediaService>(
+      std::make_unique<::media::AndroidMojoMediaClient>());
+#else
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
@@ -128,6 +138,7 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
       browser_client->GetVideoResolutionPolicy(),
       browser_client->media_resource_tracker());
   return std::make_unique<::media::MediaService>(std::move(mojo_media_client));
+#endif  // defined(OS_ANDROID)
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
@@ -157,6 +168,8 @@ CastContentBrowserClient::CastContentBrowserClient()
       url_request_context_factory_(new URLRequestContextFactory()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
+  DCHECK(!media_resource_tracker_)
+      << "ResetMediaResourceTracker was not called";
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                      url_request_context_factory_.release());
 }
@@ -175,16 +188,31 @@ media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+CastContentBrowserClient::GetMediaTaskRunner() {
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  if (!media_thread_) {
+    media_thread_.reset(new base::Thread("CastMediaThread"));
+    base::Thread::Options options;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    CHECK(media_thread_->StartWithOptions(options));
+    // Start the media_resource_tracker as soon as the media thread is created.
+    // There are services that run on the media thread that depend on it,
+    // and we want to initialize it with the correct task runner before any
+    // tasks that might use it are posted to the media thread.
+    media_resource_tracker_ = new media::MediaResourceTracker(
+        base::ThreadTaskRunnerHandle::Get(), media_thread_->task_runner());
+  }
+  return media_thread_->task_runner();
+#else
+  return nullptr;
+#endif
+}
+
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::VideoResolutionPolicy*
 CastContentBrowserClient::GetVideoResolutionPolicy() {
   return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-CastContentBrowserClient::GetMediaTaskRunner() {
-  DCHECK(cast_browser_main_parts_);
-  return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
 media::CmaBackendFactory* CastContentBrowserClient::GetCmaBackendFactory() {
@@ -198,7 +226,13 @@ media::CmaBackendFactory* CastContentBrowserClient::GetCmaBackendFactory() {
 
 media::MediaResourceTracker*
 CastContentBrowserClient::media_resource_tracker() {
-  return cast_browser_main_parts_->media_resource_tracker();
+  DCHECK(media_thread_);
+  return media_resource_tracker_;
+}
+
+void CastContentBrowserClient::ResetMediaResourceTracker() {
+  media_resource_tracker_->FinalizeAndDestroy();
+  media_resource_tracker_ = nullptr;
 }
 
 media::MediaPipelineBackendManager*
@@ -224,8 +258,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       use_mixer);
@@ -234,8 +268,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       use_mixer);
@@ -286,7 +320,7 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
   auto main_parts = CastBrowserMainParts::Create(
-      parameters, url_request_context_factory_.get());
+      parameters, url_request_context_factory_.get(), this);
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
 
@@ -300,8 +334,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     service_manager::mojom::ServiceRequest* service_request) {
   // Forcibly trigger I/O-thread URLRequestContext initialization before
   // getting HostResolver.
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::IO},
       base::Bind(
           &net::URLRequestContextGetter::GetURLRequestContext,
           base::Unretained(url_request_context_factory_->GetSystemGetter())),
@@ -346,8 +380,7 @@ void CastContentBrowserClient::AddNetworkHintsMessageFilter(
     return;
 
   scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
-      new network_hints::NetworkHintsMessageFilter(
-          url_request_context_factory_->host_resolver()));
+      new network_hints::NetworkHintsMessageFilter(render_process_id));
   host->AddFilter(network_hints_message_filter.get());
 }
 
@@ -394,8 +427,8 @@ void CastContentBrowserClient::SiteInstanceGotProcess(
       ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
                      extension_system->info_map(), extension->id(),
                      site_instance->GetProcess()->GetID(),
@@ -574,8 +607,8 @@ void CastContentBrowserClient::SelectClientCertificate(
   std::string session_id =
       CastNavigationUIData::GetSessionIdForWebContents(web_contents);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
           base::Unretained(this), requesting_url, session_id,
@@ -657,7 +690,7 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
-#endif
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
   std::string application_session_id =
       CastNavigationUIData::GetSessionIdForWebContents(
@@ -791,6 +824,28 @@ CastContentBrowserClient::CreateCrashHandlerHost(
   return crash_handler;
 }
 #endif  // !defined(OS_ANDROID)
+
+std::vector<std::unique_ptr<content::NavigationThrottle>>
+CastContentBrowserClient::CreateThrottlesForNavigation(
+    content::NavigationHandle* handle) {
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  // If this isn't an extension renderer there's nothing to do.
+  content::SiteInstance* site_instance = handle->GetStartingSiteInstance();
+  if (site_instance) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext());
+    const extensions::Extension* extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(
+            site_instance->GetSiteURL());
+    if (extension) {
+      throttles.push_back(std::make_unique<DefaultNavigationThrottle>(
+          handle, content::NavigationThrottle::CANCEL_AND_IGNORE));
+    }
+  }
+#endif
+  return throttles;
+}
 
 }  // namespace shell
 }  // namespace chromecast

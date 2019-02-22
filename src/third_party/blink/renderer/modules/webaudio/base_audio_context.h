@@ -49,6 +49,10 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 class AnalyserNode;
@@ -67,12 +71,7 @@ class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
 class GainNode;
-class HTMLMediaElement;
 class IIRFilterNode;
-class MediaElementAudioSourceNode;
-class MediaStream;
-class MediaStreamAudioDestinationNode;
-class MediaStreamAudioSourceNode;
 class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
@@ -175,12 +174,6 @@ class MODULES_EXPORT BaseAudioContext
   // JavaScript).
   AudioBufferSourceNode* createBufferSource(ExceptionState&);
   ConstantSourceNode* createConstantSource(ExceptionState&);
-  MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*,
-                                                        ExceptionState&);
-  MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*,
-                                                      ExceptionState&);
-  MediaStreamAudioDestinationNode* createMediaStreamDestination(
-      ExceptionState&);
   GainNode* createGain(ExceptionState&);
   BiquadFilterNode* createBiquadFilter(ExceptionState&);
   WaveShaperNode* createWaveShaper(ExceptionState&);
@@ -215,12 +208,6 @@ class MODULES_EXPORT BaseAudioContext
                                    const Vector<float>& imag,
                                    const PeriodicWaveConstraints&,
                                    ExceptionState&);
-
-  // Suspend
-  virtual ScriptPromise suspendContext(ScriptState*) = 0;
-
-  // Resume
-  virtual ScriptPromise resumeContext(ScriptState*) = 0;
 
   // IIRFilter
   IIRFilterNode* createIIRFilter(Vector<double> feedforward_coef,
@@ -309,13 +296,6 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
-  // Returns true if the URL would taint the origin so that we shouldn't be
-  // allowing media to played through webaudio.
-  // TODO(crbug.com/845913): This should really be on an AudioContext.  Move
-  // this when we move the media stuff from BaseAudioContext to AudioContext, as
-  // requried by the spec.
-  bool WouldTaintOrigin(const KURL& url) const;
-
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -348,6 +328,16 @@ class MODULES_EXPORT BaseAudioContext
   Document* GetDocument() const;
 
   const String& Uuid() const { return uuid_; }
+
+  // The audio thread relies on the main thread to perform some operations
+  // over the objects that it owns and controls; |ScheduleMainThreadCleanup()|
+  // posts the task to initiate those.
+  void ScheduleMainThreadCleanup();
+
+  // Handles promise resolving, stopping and finishing up of audio source nodes
+  // etc. Actions that should happen, but can happen asynchronously to the
+  // audio thread making rendering progress.
+  void PerformCleanupOnMainThread();
 
  private:
   friend class AudioContextAutoplayTest;
@@ -387,18 +377,6 @@ class MODULES_EXPORT BaseAudioContext
   // TODO(dominicc): Move to AudioContext because only it creates
   // these Promises.
   void ResolvePromisesForUnpause();
-
-  // The audio thread relies on the main thread to perform some operations
-  // over the objects that it owns and controls; |ScheduleMainThreadCleanup()|
-  // posts the task to initiate those.
-  //
-  // That is, we combine all those sub-tasks into one task action for
-  // convenience and performance, |PerformCleanupOnMainThread()|. It handles
-  // promise resolving, stopping and finishing up of audio source nodes etc.
-  // Actions that should happen, but can happen asynchronously to the
-  // audio thread making rendering progress.
-  void ScheduleMainThreadCleanup();
-  void PerformCleanupOnMainThread();
 
   // When the context is going away, reject any pending script promise
   // resolvers.
@@ -466,6 +444,8 @@ class MODULES_EXPORT BaseAudioContext
   // determine audibility on render quantum boundaries, so counting quanta is
   // all that's needed.
   size_t total_audible_renders_ = 0;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

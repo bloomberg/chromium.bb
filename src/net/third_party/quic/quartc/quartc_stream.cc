@@ -9,10 +9,20 @@
 namespace quic {
 
 QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
-    : QuicStream(id, session, /*is_static=*/false) {}
+    : QuicStream(id, session, /*is_static=*/false, BIDIRECTIONAL) {
+  sequencer()->set_level_triggered(true);
+}
+
 QuartcStream::~QuartcStream() {}
 
 void QuartcStream::OnDataAvailable() {
+  // Do not deliver data until the entire stream's data is available.
+  if (deliver_on_complete_ &&
+      sequencer()->ReadableBytes() + sequencer()->NumBytesConsumed() <
+          sequencer()->close_offset()) {
+    return;
+  }
+
   struct iovec iov;
   while (sequencer()->GetReadableRegion(&iov)) {
     DCHECK(delegate_);
@@ -50,6 +60,25 @@ void QuartcStream::OnDataBuffered(
   delegate_->OnBufferChanged(this);
 }
 
+void QuartcStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
+                                              QuicByteCount data_length,
+                                              bool fin_retransmitted) {
+  QuicStream::OnStreamFrameRetransmitted(offset, data_length,
+                                         fin_retransmitted);
+
+  DCHECK(delegate_);
+  delegate_->OnBufferChanged(this);
+}
+
+void QuartcStream::OnStreamFrameLost(QuicStreamOffset offset,
+                                     QuicByteCount data_length,
+                                     bool fin_lost) {
+  QuicStream::OnStreamFrameLost(offset, data_length, fin_lost);
+
+  DCHECK(delegate_);
+  delegate_->OnBufferChanged(this);
+}
+
 void QuartcStream::OnCanWrite() {
   if (cancel_on_loss_ && HasPendingRetransmission()) {
     Reset(QUIC_STREAM_CANCELLED);
@@ -64,6 +93,25 @@ bool QuartcStream::cancel_on_loss() {
 
 void QuartcStream::set_cancel_on_loss(bool cancel_on_loss) {
   cancel_on_loss_ = cancel_on_loss;
+}
+
+bool QuartcStream::deliver_on_complete() {
+  return deliver_on_complete_;
+}
+
+void QuartcStream::set_deliver_on_complete(bool deliver_on_complete) {
+  deliver_on_complete_ = deliver_on_complete;
+}
+
+QuicByteCount QuartcStream::BytesPendingRetransmission() {
+  if (cancel_on_loss_) {
+    return 0;  // Lost bytes will never be retransmitted.
+  }
+  QuicByteCount bytes = 0;
+  for (const auto& interval : send_buffer().pending_retransmissions()) {
+    bytes += interval.Length();
+  }
+  return bytes;
 }
 
 void QuartcStream::FinishWriting() {

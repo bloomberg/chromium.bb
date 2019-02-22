@@ -114,8 +114,10 @@ void GeoLanguageProvider::BindIpGeolocationService() {
           }
           policy {
             setting:
-              "Users can control this feature via the translation settings "
-              "'Languages', 'Language', 'Offer to translate'."
+              "Users can disable this feature for translation requests in "
+              "settings 'Languages', 'Language', 'Offer to translate'. Note "
+              "that users can still manually trigger this feature via the "
+              "right-click menu."
             chrome_policy {
               DefaultGeolocationSetting {
                 DefaultGeolocationSetting: 2

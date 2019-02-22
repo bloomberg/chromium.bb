@@ -5,6 +5,7 @@
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@ namespace {
 class SuggestionsSourceWrapper : public content::URLDataSource {
  public:
   explicit SuggestionsSourceWrapper(SuggestionsService* suggestions_service);
+  ~SuggestionsSourceWrapper() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -31,8 +33,6 @@ class SuggestionsSourceWrapper : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
 
  private:
-  ~SuggestionsSourceWrapper() override;
-
   SuggestionsSource suggestions_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceWrapper);
@@ -67,7 +67,7 @@ SuggestionsUI::SuggestionsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
-      profile, new SuggestionsSourceWrapper(
+      profile, std::make_unique<SuggestionsSourceWrapper>(
                    SuggestionsServiceFactory::GetForProfile(profile)));
 }
 

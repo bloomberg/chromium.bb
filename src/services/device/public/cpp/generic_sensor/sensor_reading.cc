@@ -40,9 +40,7 @@ SensorReading& SensorReading::operator=(const SensorReading& other) {
 
 // static
 uint64_t SensorReadingSharedBuffer::GetOffset(mojom::SensorType type) {
-  return (static_cast<uint64_t>(mojom::SensorType::LAST) -
-          static_cast<uint64_t>(type)) *
-         sizeof(SensorReadingSharedBuffer);
+  return static_cast<uint64_t>(type) * sizeof(SensorReadingSharedBuffer);
 }
 
 }  // namespace device

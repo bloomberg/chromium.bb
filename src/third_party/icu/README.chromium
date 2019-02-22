@@ -207,7 +207,8 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Oct 18, 2018, the latest version is 2018f.
+  As of Oct 27, 2018, the latest version is 2018g and the above files
+  are available at the ICU github repos.
 
 4. Build-related changes
 
@@ -266,8 +267,49 @@ D. Local Modifications
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20039
 
-12. Align memory buffer used in UnicodeSet on ARM.
+12. Cherry-pick an upstream CL for quarter support in RelativeDate format
+
+  - patches/reldate_quarter.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20022
+  - fix: https://github.com/unicode-org/icu/pull/77
+
+13. Cherry-pick an upstream CL for BCP47 language tag validation
+
+  - patches/langtag_bcp47.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20098
+  - fix: https://github.com/unicode-org/icu/pull/102
+
+14. Another cherry-pick of upstream CL for duplicate U-extension
+    handling.
+
+  - patches/langtag_uext.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20140
+  - fix: https://github.com/unicode-org/icu/pull/136
+
+15. Cherry pick an upstream patch for Windows timezone detection
+
+  - patches/wintz_detection.patch
+  - upstream bugs:
+    https://unicode-org.atlassian.net/browse/ICU-13842
+    https://unicode-org.atlassian.net/browse/ICU-13827
+  - fixes:
+      https://github.com/unicode-org/icu/pull/55
+      https://github.com/unicode-org/icu/pull/129
+
+16. Align memory buffer used in UnicodeSet on ARM.
 
   - patches/arm_align.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20001
+
+17. Windows 7 timezone detection fix
+
+  - patches/win7_tz.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20302
+  - Fix:
+    https://github.com/unicode-org/icu/pull/315
+    https://github.com/unicode-org/icu/pull/318

@@ -33,7 +33,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter failureReason
 [Worker]     getter id
 [Worker]     getter onprogress
-[Worker]     getter state
+[Worker]     getter recordsAvailable
+[Worker]     getter result
 [Worker]     getter uploadTotal
 [Worker]     getter uploaded
 [Worker]     method abort
@@ -1040,6 +1041,21 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
+[Worker] interface Serial : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onconnect
+[Worker]     getter ondisconnect
+[Worker]     method constructor
+[Worker]     method getPorts
+[Worker]     setter onconnect
+[Worker]     setter ondisconnect
+[Worker] interface SerialPort
+[Worker]     attribute @@toStringTag
+[Worker]     getter in
+[Worker]     getter out
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method open
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
@@ -1091,6 +1107,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter ignoreBOM
 [Worker]     method constructor
 [Worker]     method decode
+[Worker] interface TextDecoderStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter encoding
+[Worker]     getter fatal
+[Worker]     getter ignoreBOM
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface TextDetector
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -1100,31 +1124,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter encoding
 [Worker]     method constructor
 [Worker]     method encode
+[Worker] interface TextEncoderStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter encoding
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface TransformStream
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
-[Worker] interface TrustedHTML
-[Worker]     static method escape
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedScript
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedScriptURL
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedURL
-[Worker]     static method create
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
@@ -1142,6 +1151,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter searchParams
 [Worker]     getter username
 [Worker]     method constructor
+[Worker]     method toJSON
 [Worker]     method toString
 [Worker]     setter hash
 [Worker]     setter host
@@ -3386,10 +3396,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface WebGLTexture
 [Worker]     attribute @@toStringTag
-[Worker]     getter lastUploadedVideoFrameWasSkipped
-[Worker]     getter lastUploadedVideoHeight
-[Worker]     getter lastUploadedVideoTimestamp
-[Worker]     getter lastUploadedVideoWidth
 [Worker]     method constructor
 [Worker] interface WebGLTransformFeedback
 [Worker]     attribute @@toStringTag
@@ -3457,6 +3463,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method createImageBitmap
 [Worker]     method fetch
 [Worker]     method importScripts
+[Worker]     method queueMicrotask
 [Worker]     method requestAnimationFrame
 [Worker]     method setInterval
 [Worker]     method setTimeout
@@ -3490,6 +3497,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter serial
 [Worker]     getter storage
 [Worker]     getter usb
 [Worker]     getter userAgent
@@ -3552,6 +3560,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
+[Worker]     attribute globalThis
 [Worker]     attribute internals
 [Worker]     getter name
 [Worker]     getter onmessage

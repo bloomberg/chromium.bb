@@ -23,7 +23,6 @@ from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
-from chromite.lib.workqueue import throttle
 
 
 _path = os.path.dirname(os.path.realpath(__file__))
@@ -814,7 +813,7 @@ class RemoteDevice(object):
     Args:
       src: Local path as a string.
       dest: rsync/scp path of the form <host>:/<path> as a string.
-      mode: can be either 'rsync' or 'scp', 'throttled', 'parallel'.
+      mode: must be one of 'rsync', 'scp', or 'parallel'.
         * Use rsync --compress when copying compressible (factor > 2, text/log)
         files. This uses a quite a bit of CPU but preserves bandwidth.
         * Use rsync without compression when delta transfering a whole directory
@@ -824,17 +823,12 @@ class RemoteDevice(object):
         copy (which must exist at the destination) needing minor updates.
         * Use scp when we have incompressible files (say already compressed),
         especially if we know no previous version exist at the destination.
-        * Use throttled when we want to transfer files from devserver in lab
-        with centralized throttling mode.
         * Use parallel when we want to transfer a large file with chunks
         and transfer them in degree of parallelism for speed especially for
         slow network (congested, long haul, worse SNR).
     """
-    assert mode in ['rsync', 'scp', 'throttled', 'parallel']
+    assert mode in ['rsync', 'scp', 'parallel']
     logging.info('[mode:%s] copy: %s -> %s:%s', mode, src, self.hostname, dest)
-    if mode == 'throttled':
-      throttle.ThrottledCopy(self.hostname, src, dest, **kwargs)
-      return
     if mode == 'parallel':
       # Chop and send chunks in parallel only if the file size is larger than
       # CHUNK_SIZE.

@@ -87,6 +87,9 @@ void QuicTraceVisitor::OnPacketSent(const SerializedPacket& serialized_packet,
       case PATH_RESPONSE_FRAME:
       case PATH_CHALLENGE_FRAME:
       case STOP_SENDING_FRAME:
+      case MESSAGE_FRAME:
+      case CRYPTO_FRAME:
+      case NEW_TOKEN_FRAME:
         break;
 
       // Ignore gQUIC-specific frames.
@@ -211,6 +214,9 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
     case PATH_RESPONSE_FRAME:
     case PATH_CHALLENGE_FRAME:
     case STOP_SENDING_FRAME:
+    case MESSAGE_FRAME:
+    case CRYPTO_FRAME:
+    case NEW_TOKEN_FRAME:
       break;
 
     case NUM_FRAME_TYPES:
@@ -265,6 +271,30 @@ void QuicTraceVisitor::OnSuccessfulVersionNegotiation(
   uint32_t tag = QuicEndian::HostToNet32(CreateQuicVersionLabel(version));
   QuicString binary_tag(reinterpret_cast<const char*>(&tag), sizeof(tag));
   trace_.set_protocol_version(binary_tag);
+}
+
+void QuicTraceVisitor::OnApplicationLimited() {
+  quic_trace::Event* event = trace_.add_events();
+  event->set_time_us(
+      ConvertTimestampToRecordedFormat(connection_->clock()->ApproximateNow()));
+  event->set_event_type(quic_trace::APPLICATION_LIMITED);
+}
+
+void QuicTraceVisitor::OnAdjustNetworkParameters(QuicBandwidth bandwidth,
+                                                 QuicTime::Delta rtt) {
+  quic_trace::Event* event = trace_.add_events();
+  event->set_time_us(
+      ConvertTimestampToRecordedFormat(connection_->clock()->ApproximateNow()));
+  event->set_event_type(quic_trace::EXTERNAL_PARAMETERS);
+
+  quic_trace::ExternalNetworkParameters* parameters =
+      event->mutable_external_network_parameters();
+  if (!bandwidth.IsZero()) {
+    parameters->set_bandwidth_bps(bandwidth.ToBitsPerSecond());
+  }
+  if (!rtt.IsZero()) {
+    parameters->set_rtt_us(rtt.ToMicroseconds());
+  }
 }
 
 uint64_t QuicTraceVisitor::ConvertTimestampToRecordedFormat(

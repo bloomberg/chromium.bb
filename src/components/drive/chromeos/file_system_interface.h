@@ -134,13 +134,9 @@ typedef base::OnceCallback<void(FileError error,
     OpenFileCallback;
 
 // Used to get available space for the account from Drive.
-typedef base::Callback<void(FileError error,
-                            int64_t bytes_total,
-                            int64_t bytes_used)> GetAvailableSpaceCallback;
-
-// Used to get the url to the sharing dialog.
-typedef base::Callback<void(FileError error,
-                            const GURL& share_url)> GetShareUrlCallback;
+typedef base::OnceCallback<
+    void(FileError error, int64_t bytes_total, int64_t bytes_used)>
+    GetAvailableSpaceCallback;
 
 // Used to get filesystem metadata.
 typedef base::OnceCallback<void(
@@ -149,12 +145,12 @@ typedef base::OnceCallback<void(
     GetFilesystemMetadataCallback;
 
 // Used to mark cached files mounted.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& file_path)>
+typedef base::OnceCallback<void(FileError error,
+                                const base::FilePath& file_path)>
     MarkMountedCallback;
 
 // Used to check if a cached file is mounted.
-typedef base::Callback<void(FileError error, bool is_mounted)>
+typedef base::OnceCallback<void(FileError error, bool is_mounted)>
     IsMountedCallback;
 
 // Used to get file path.
@@ -435,14 +431,7 @@ class FileSystemInterface {
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
-  virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
-
-  // Fetches the url to the sharing dialog to be embedded in |embed_origin|,
-  // for the specified file or directory. |callback| must not be null.
-  virtual void GetShareUrl(
-      const base::FilePath& file_path,
-      const GURL& embed_origin,
-      const GetShareUrlCallback& callback) = 0;
+  virtual void GetAvailableSpace(GetAvailableSpaceCallback callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals. |callback| must not be null.
@@ -452,14 +441,13 @@ class FileSystemInterface {
   // If succeeded, the cached file path will be passed to the |callback|.
   // |callback| must not be null.
   virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                                      const MarkMountedCallback& callback) = 0;
+                                      MarkMountedCallback callback) = 0;
 
   // Checks if the cached file is marked as mounted, and passes the result to
   // |callback| upon completion. If the file was not found in the cache, the
   // result is false. |callback| must not be null.
-  virtual void IsCacheFileMarkedAsMounted(
-      const base::FilePath& drive_file_path,
-      const IsMountedCallback& callback) = 0;
+  virtual void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
+                                          IsMountedCallback callback) = 0;
 
   // Marks the cached file as unmounted, and runs |callback| upon completion.
   // Note that this method expects that the |cached_file_path| is the path

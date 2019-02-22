@@ -108,8 +108,7 @@ void TestAutofillManager::UploadFormDataAsyncCallback(
           submitted_form->field(i)->possible_types();
       EXPECT_EQ(expected_submitted_field_types_[i].size(),
                 possible_types.size());
-      for (ServerFieldTypeSet::const_iterator it =
-               expected_submitted_field_types_[i].begin();
+      for (auto it = expected_submitted_field_types_[i].begin();
            it != expected_submitted_field_types_[i].end(); ++it) {
         EXPECT_TRUE(possible_types.count(*it))
             << "Expected type: " << AutofillType(*it).ToString();
@@ -143,8 +142,7 @@ void TestAutofillManager::AddSeenForm(
   form_structure->SetFieldTypes(heuristic_types, server_types);
   AddSeenFormStructure(std::move(form_structure));
 
-  form_interactions_ukm_logger()->OnFormsParsed(form.main_frame_origin.GetURL(),
-                                                client_->GetUkmSourceId());
+  form_interactions_ukm_logger()->OnFormsParsed(client_->GetUkmSourceId());
 }
 
 void TestAutofillManager::AddSeenFormStructure(

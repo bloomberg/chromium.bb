@@ -7,7 +7,6 @@
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -89,10 +88,14 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
             base::Unretained(this)));
   }
 
-  // DialogBrowserTest:
+  // CrostiniDialogBrowserTest:
   void ShowUi(const std::string& name) override {
     ShowCrostiniInstallerView(browser()->profile(),
-                              CrostiniUISurface::kSettings);
+                              crostini::CrostiniUISurface::kSettings);
+  }
+
+  void SetUpOnMainThread() override {
+    CrostiniDialogBrowserTest::SetUpOnMainThread();
   }
 
   CrostiniInstallerView* ActiveView() {
@@ -157,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kSuccess),
@@ -188,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kErrorOffline),
@@ -205,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kNotStarted),
@@ -217,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());
   vm_tools::concierge::StartVmResponse response;
-  response.set_success(false);
+  response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
   waiting_fake_concierge_client_->set_start_vm_response(std::move(response));
 
   ActiveView()->GetDialogClientView()->AcceptWindow();
@@ -227,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kErrorStartingTermina),

@@ -63,6 +63,14 @@ spv = {
         'Fragment' : 4,
         'GLCompute' : 5,
         'Kernel' : 6,
+        'TaskNV' : 5267,
+        'MeshNV' : 5268,
+        'RayGenerationNVX' : 5313,
+        'IntersectionNVX' : 5314,
+        'AnyHitNVX' : 5315,
+        'ClosestHitNVX' : 5316,
+        'MissNVX' : 5317,
+        'CallableNVX' : 5318,
     },
 
     'AddressingModel' : {
@@ -75,6 +83,7 @@ spv = {
         'Simple' : 0,
         'GLSL450' : 1,
         'OpenCL' : 2,
+        'VulkanKHR' : 3,
     },
 
     'ExecutionMode' : {
@@ -118,6 +127,11 @@ spv = {
         'LocalSizeHintId' : 39,
         'PostDepthCoverage' : 4446,
         'StencilRefReplacingEXT' : 5027,
+        'OutputLinesNV' : 5269,
+        'OutputPrimitivesNV' : 5270,
+        'DerivativeGroupQuadsNV' : 5289,
+        'DerivativeGroupLinearNV' : 5290,
+        'OutputTrianglesNV' : 5298,
     },
 
     'StorageClass' : {
@@ -134,6 +148,10 @@ spv = {
         'AtomicCounter' : 10,
         'Image' : 11,
         'StorageBuffer' : 12,
+        'RayPayloadNVX' : 5338,
+        'HitAttributeNVX' : 5339,
+        'IncomingRayPayloadNVX' : 5342,
+        'ShaderRecordBufferNVX' : 5343,
     },
 
     'Dim' : {
@@ -254,6 +272,10 @@ spv = {
         'ConstOffsets' : 5,
         'Sample' : 6,
         'MinLod' : 7,
+        'MakeTexelAvailableKHR' : 8,
+        'MakeTexelVisibleKHR' : 9,
+        'NonPrivateTexelKHR' : 10,
+        'VolatileTexelKHR' : 11,
     },
 
     'ImageOperandsMask' : {
@@ -266,6 +288,10 @@ spv = {
         'ConstOffsets' : 0x00000020,
         'Sample' : 0x00000040,
         'MinLod' : 0x00000080,
+        'MakeTexelAvailableKHR' : 0x00000100,
+        'MakeTexelVisibleKHR' : 0x00000200,
+        'NonPrivateTexelKHR' : 0x00000400,
+        'VolatileTexelKHR' : 0x00000800,
     },
 
     'FPFastMathModeShift' : {
@@ -366,6 +392,10 @@ spv = {
         'PassthroughNV' : 5250,
         'ViewportRelativeNV' : 5252,
         'SecondaryViewportRelativeNV' : 5256,
+        'PerPrimitiveNV' : 5271,
+        'PerViewNV' : 5272,
+        'PerTaskNV' : 5273,
+        'PerVertexNV' : 5285,
         'NonUniformEXT' : 5300,
         'HlslCounterBufferGOOGLE' : 5634,
         'HlslSemanticGOOGLE' : 5635,
@@ -442,6 +472,31 @@ spv = {
         'PositionPerViewNV' : 5261,
         'ViewportMaskPerViewNV' : 5262,
         'FullyCoveredEXT' : 5264,
+        'TaskCountNV' : 5274,
+        'PrimitiveCountNV' : 5275,
+        'PrimitiveIndicesNV' : 5276,
+        'ClipDistancePerViewNV' : 5277,
+        'CullDistancePerViewNV' : 5278,
+        'LayerPerViewNV' : 5279,
+        'MeshViewCountNV' : 5280,
+        'MeshViewIndicesNV' : 5281,
+        'BaryCoordNV' : 5286,
+        'BaryCoordNoPerspNV' : 5287,
+        'FragmentSizeNV' : 5292,
+        'InvocationsPerPixelNV' : 5293,
+        'LaunchIdNVX' : 5319,
+        'LaunchSizeNVX' : 5320,
+        'WorldRayOriginNVX' : 5321,
+        'WorldRayDirectionNVX' : 5322,
+        'ObjectRayOriginNVX' : 5323,
+        'ObjectRayDirectionNVX' : 5324,
+        'RayTminNVX' : 5325,
+        'RayTmaxNVX' : 5326,
+        'InstanceCustomIndexNVX' : 5327,
+        'ObjectToWorldNVX' : 5330,
+        'WorldToObjectNVX' : 5331,
+        'HitTNVX' : 5332,
+        'HitKindNVX' : 5333,
     },
 
     'SelectionControlShift' : {
@@ -496,6 +551,9 @@ spv = {
         'CrossWorkgroupMemory' : 9,
         'AtomicCounterMemory' : 10,
         'ImageMemory' : 11,
+        'OutputMemoryKHR' : 12,
+        'MakeAvailableKHR' : 13,
+        'MakeVisibleKHR' : 14,
     },
 
     'MemorySemanticsMask' : {
@@ -510,12 +568,18 @@ spv = {
         'CrossWorkgroupMemory' : 0x00000200,
         'AtomicCounterMemory' : 0x00000400,
         'ImageMemory' : 0x00000800,
+        'OutputMemoryKHR' : 0x00001000,
+        'MakeAvailableKHR' : 0x00002000,
+        'MakeVisibleKHR' : 0x00004000,
     },
 
     'MemoryAccessShift' : {
         'Volatile' : 0,
         'Aligned' : 1,
         'Nontemporal' : 2,
+        'MakePointerAvailableKHR' : 3,
+        'MakePointerVisibleKHR' : 4,
+        'NonPrivatePointerKHR' : 5,
     },
 
     'MemoryAccessMask' : {
@@ -523,6 +587,9 @@ spv = {
         'Volatile' : 0x00000001,
         'Aligned' : 0x00000002,
         'Nontemporal' : 0x00000004,
+        'MakePointerAvailableKHR' : 0x00000008,
+        'MakePointerVisibleKHR' : 0x00000010,
+        'NonPrivatePointerKHR' : 0x00000020,
     },
 
     'Scope' : {
@@ -531,6 +598,7 @@ spv = {
         'Workgroup' : 2,
         'Subgroup' : 3,
         'Invocation' : 4,
+        'QueueFamilyKHR' : 5,
     },
 
     'GroupOperation' : {
@@ -657,6 +725,11 @@ spv = {
         'ShaderStereoViewNV' : 5259,
         'PerViewAttributesNV' : 5260,
         'FragmentFullyCoveredEXT' : 5265,
+        'MeshShadingNV' : 5266,
+        'ImageFootprintNV' : 5282,
+        'FragmentBarycentricNV' : 5284,
+        'ComputeDerivativeGroupQuadsNV' : 5288,
+        'ShadingRateNV' : 5291,
         'GroupNonUniformPartitionedNV' : 5297,
         'ShaderNonUniformEXT' : 5301,
         'RuntimeDescriptorArrayEXT' : 5302,
@@ -670,6 +743,10 @@ spv = {
         'InputAttachmentArrayNonUniformIndexingEXT' : 5310,
         'UniformTexelBufferArrayNonUniformIndexingEXT' : 5311,
         'StorageTexelBufferArrayNonUniformIndexingEXT' : 5312,
+        'RaytracingNVX' : 5340,
+        'VulkanMemoryModelKHR' : 5345,
+        'VulkanMemoryModelDeviceScopeKHR' : 5346,
+        'ComputeDerivativeGroupLinearNV' : 5350,
         'SubgroupShuffleINTEL' : 5568,
         'SubgroupBufferBlockIOINTEL' : 5569,
         'SubgroupImageBlockIOINTEL' : 5570,
@@ -1032,7 +1109,14 @@ spv = {
         'OpGroupSMaxNonUniformAMD' : 5007,
         'OpFragmentMaskFetchAMD' : 5011,
         'OpFragmentFetchAMD' : 5012,
+        'OpImageSampleFootprintNV' : 5283,
         'OpGroupNonUniformPartitionNV' : 5296,
+        'OpWritePackedPrimitiveIndices4x8NV' : 5299,
+        'OpReportIntersectionNVX' : 5334,
+        'OpIgnoreIntersectionNVX' : 5335,
+        'OpTerminateRayNVX' : 5336,
+        'OpTraceNVX' : 5337,
+        'OpTypeAccelerationStructureNVX' : 5341,
         'OpSubgroupShuffleINTEL' : 5571,
         'OpSubgroupShuffleDownINTEL' : 5572,
         'OpSubgroupShuffleUpINTEL' : 5573,

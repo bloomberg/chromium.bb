@@ -15,6 +15,12 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Leak ]
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
 
+# FIXME: rootscroller/set-root-scroller.html on WebKit Linux Trusty
+crbug.com/891575 rootscroller/set-root-scroller.html [ Leak ]
+crbug.com/891575 virtual/android/rootscroller/remove-rootscroller-crash.html [ Leak Pass ]
+crbug.com/891575 virtual/android/rootscroller/set-root-scroller.html [ Leak ]
+crbug.com/891575 virtual/android/fullscreen/video-overlay-scroll.html [ Leak Pass ]
+
 # -----------------------------------------------------------------
 # Untriaged but known leaks of PausableObject (fast).
 # -----------------------------------------------------------------
@@ -28,6 +34,10 @@ crbug.com/506754 http/tests/serviceworker/window-close-during-registration.html 
 
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
+crbug.com/672740 virtual/outofblink-cors/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
+crbug.com/672740 virtual/outofblink-cors/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
+crbug.com/672740 virtual/outofblink-cors-ns/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
+crbug.com/672740 virtual/outofblink-cors-ns/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Leak Pass ]
 crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Leak Pass ]
@@ -52,6 +62,8 @@ crbug.com/860117 [ Linux ] editing/pasteboard/drag-drop-iframe-refresh-crash.htm
 # Not revert suspected CL as jam@ request, expected to be fixed soon.
 # -----------------------------------------------------------------
 crbug.com/765721 [ Linux ] http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
+crbug.com/765721 [ Linux ] virtual/outofblink-cors/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
+crbug.com/765721 [ Linux ] virtual/outofblink-cors-ns/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 
 crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
@@ -73,9 +85,6 @@ crbug.com/874442 [ Linux ] svg/animations/mpath-remove-from-dependents-on-delete
 # Sheriff 2018-08-17
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-
-# Sheriff 2018-08-27
-crbug.com/878032 [ Linux ] svg/animations/additive-type-by-animation.html [ Pass Leak ]
 
 # Sheriff 2018-08-29
 crbug.com/878724 [ Linux ] editing/selection/modify_extend/extend_by_character.html [ Pass Leak ]

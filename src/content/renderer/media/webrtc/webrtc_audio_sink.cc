@@ -18,9 +18,13 @@ namespace content {
 WebRtcAudioSink::WebRtcAudioSink(
     const std::string& label,
     scoped_refptr<webrtc::AudioSourceInterface> track_source,
-    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner)
-    : adapter_(new rtc::RefCountedObject<Adapter>(
-          label, std::move(track_source), std::move(signaling_task_runner))),
+    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    : adapter_(
+          new rtc::RefCountedObject<Adapter>(label,
+                                             std::move(track_source),
+                                             std::move(signaling_task_runner),
+                                             std::move(main_task_runner))),
       fifo_(base::Bind(&WebRtcAudioSink::DeliverRebufferedAudio,
                        base::Unretained(this))) {
   DVLOG(1) << "WebRtcAudioSink::WebRtcAudioSink()";
@@ -100,12 +104,14 @@ void DereferenceOnMainThread(
 WebRtcAudioSink::Adapter::Adapter(
     const std::string& label,
     scoped_refptr<webrtc::AudioSourceInterface> source,
-    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       source_(std::move(source)),
       signaling_task_runner_(std::move(signaling_task_runner)),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_task_runner_(std::move(main_task_runner)) {
   DCHECK(signaling_task_runner_);
+  DCHECK(main_task_runner_);
 }
 
 WebRtcAudioSink::Adapter::~Adapter() {

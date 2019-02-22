@@ -38,17 +38,20 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   void OnDecryptedPacket(EncryptionLevel level) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range) override;
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
+  bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
   bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
   bool OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override;
   bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
   bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
@@ -58,6 +61,7 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override {}
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -116,7 +120,7 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
       QuicTextUtils::StartsWith(data, "CHLO")) {
     CryptoFramer crypto_framer;
     crypto_framer.set_visitor(this);
-    if (!crypto_framer.ProcessInput(data, Perspective::IS_SERVER)) {
+    if (!crypto_framer.ProcessInput(data)) {
       return false;
     }
     // Interrogate the crypto framer and see if there are any
@@ -139,14 +143,27 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
   return true;
 }
 
+bool ChloFramerVisitor::OnCryptoFrame(const QuicCryptoFrame& frame) {
+  // TODO(nharper): Implement.
+  return false;
+}
+
 bool ChloFramerVisitor::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
                                         QuicTime::Delta /*ack_delay_time*/) {
   return true;
 }
 
 bool ChloFramerVisitor::OnAckRange(QuicPacketNumber /*start*/,
-                                   QuicPacketNumber /*end*/,
-                                   bool /*last_range*/) {
+                                   QuicPacketNumber /*end*/) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnAckTimestamp(QuicPacketNumber /*packet_number*/,
+                                       QuicTime /*timestamp*/) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnAckFrameEnd(QuicPacketNumber /*start*/) {
   return true;
 }
 
@@ -204,7 +221,15 @@ bool ChloFramerVisitor::OnNewConnectionIdFrame(
   return true;
 }
 
+bool ChloFramerVisitor::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
+  return true;
+}
+
 bool ChloFramerVisitor::OnPaddingFrame(const QuicPaddingFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnMessageFrame(const QuicMessageFrame& frame) {
   return true;
 }
 

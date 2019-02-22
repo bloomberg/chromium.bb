@@ -19,10 +19,10 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEventStorageTestFeatureFoo{
+    "test_foo", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEventStorageTestFeatureBar{
+    "test_bar", base::FEATURE_DISABLED_BY_DEFAULT};
 
 FeatureConfig kNeverStored;
 FeatureConfig kStoredInUsed1Day;
@@ -105,22 +105,23 @@ class FeatureConfigEventStorageValidatorTest : public ::testing::Test {
   }
 
   void UseConfig(const FeatureConfig& foo_config) {
-    FeatureVector features = {&kTestFeatureFoo};
+    FeatureVector features = {&kEventStorageTestFeatureFoo};
 
     validator_.ClearForTesting();
     EditableConfiguration configuration;
-    configuration.SetConfiguration(&kTestFeatureFoo, foo_config);
+    configuration.SetConfiguration(&kEventStorageTestFeatureFoo, foo_config);
     validator_.InitializeFeatures(features, configuration);
   }
 
   void UseConfigs(const FeatureConfig& foo_config,
                   const FeatureConfig& bar_config) {
-    FeatureVector features = {&kTestFeatureFoo, &kTestFeatureBar};
+    FeatureVector features = {&kEventStorageTestFeatureFoo,
+                              &kEventStorageTestFeatureBar};
 
     validator_.ClearForTesting();
     EditableConfiguration configuration;
-    configuration.SetConfiguration(&kTestFeatureFoo, foo_config);
-    configuration.SetConfiguration(&kTestFeatureBar, bar_config);
+    configuration.SetConfiguration(&kEventStorageTestFeatureFoo, foo_config);
+    configuration.SetConfiguration(&kEventStorageTestFeatureBar, bar_config);
     validator_.InitializeFeatures(features, configuration);
   }
 
@@ -181,7 +182,8 @@ class FeatureConfigEventStorageValidatorTest : public ::testing::Test {
 
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldOnlyUseConfigFromEnabledFeatures) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
+  scoped_feature_list_.InitWithFeatures({kEventStorageTestFeatureFoo},
+                                        {kEventStorageTestFeatureBar});
 
   FeatureConfig foo_config = kNeverStored;
   foo_config.used = EventConfig("fooevent", Comparator(ANY, 0), 0, 1);
@@ -196,7 +198,7 @@ TEST_F(FeatureConfigEventStorageValidatorTest,
 
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldStoreIfSingleConfigHasMinimum1DayStorage) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
+  scoped_feature_list_.InitWithFeatures({kEventStorageTestFeatureFoo}, {});
 
   UseConfig(kNeverStored);
   EXPECT_FALSE(validator_.ShouldStore("myevent"));
@@ -215,7 +217,8 @@ TEST_F(FeatureConfigEventStorageValidatorTest,
 
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldStoreIfAnyConfigHasMinimum1DayStorage) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+  scoped_feature_list_.InitWithFeatures(
+      {kEventStorageTestFeatureFoo, kEventStorageTestFeatureBar}, {});
 
   UseConfigs(kNeverStored, kNeverStored);
   EXPECT_FALSE(validator_.ShouldStore("myevent"));
@@ -234,7 +237,7 @@ TEST_F(FeatureConfigEventStorageValidatorTest,
 
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldKeepIfSingleConfigMeetsEventAge) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
+  scoped_feature_list_.InitWithFeatures({kEventStorageTestFeatureFoo}, {});
 
   UseConfig(kNeverStored);
   VerifyNeverKeep();
@@ -264,7 +267,8 @@ TEST_F(FeatureConfigEventStorageValidatorTest,
 
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldKeepIfAnyConfigMeetsEventAge) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+  scoped_feature_list_.InitWithFeatures(
+      {kEventStorageTestFeatureFoo, kEventStorageTestFeatureBar}, {});
 
   UseConfigs(kNeverStored, kNeverStored);
   VerifyNeverKeep();

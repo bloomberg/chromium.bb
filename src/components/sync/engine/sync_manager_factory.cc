@@ -8,13 +8,15 @@
 
 namespace syncer {
 
-SyncManagerFactory::SyncManagerFactory() {}
+SyncManagerFactory::SyncManagerFactory(
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : network_connection_tracker_(network_connection_tracker) {}
 
 SyncManagerFactory::~SyncManagerFactory() {}
 
 std::unique_ptr<SyncManager> SyncManagerFactory::CreateSyncManager(
     const std::string& name) {
-  return std::unique_ptr<SyncManager>(new SyncManagerImpl(name));
+  return std::make_unique<SyncManagerImpl>(name, network_connection_tracker_);
 }
 
 }  // namespace syncer

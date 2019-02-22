@@ -4,11 +4,13 @@
 
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_error.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -112,8 +114,8 @@ void SignedExchangeDevToolsProxy::ReportError(
     base::Optional<SignedExchangeError::FieldIndexPair> error_field) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   errors_.push_back(SignedExchangeError(message, std::move(error_field)));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&AddErrorMessageToConsoleOnUI, frame_tree_node_id_getter_,
                      std::move(message)));
 }
@@ -124,8 +126,8 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
   if (!devtools_enabled_)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CertificateRequestSentOnUI, frame_tree_node_id_getter_, request_id,
           devtools_navigation_token_ ? *devtools_navigation_token_ : request_id,
@@ -143,8 +145,8 @@ void SignedExchangeDevToolsProxy::CertificateResponseReceived(
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = head;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CertificateResponseReceivedOnUI, frame_tree_node_id_getter_,
           request_id,
@@ -157,8 +159,8 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
     const network::URLLoaderCompletionStatus& status) {
   if (!devtools_enabled_)
     return;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CertificateRequestCompletedOnUI,
                      frame_tree_node_id_getter_, request_id, status));
 }
@@ -178,8 +180,8 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = outer_response_;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
                      outer_request_url_, resource_response->DeepCopy(),
                      devtools_navigation_token_, envelope, certificate,

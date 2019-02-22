@@ -12,8 +12,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace media {
 

@@ -16,9 +16,19 @@ namespace smb_client {
 SmbShareFinder::SmbShareFinder(SmbProviderClient* client) : client_(client) {}
 SmbShareFinder::~SmbShareFinder() = default;
 
-void SmbShareFinder::GatherSharesInNetwork(GatherSharesResponse callback) {
-  scanner_.FindHostsInNetwork(base::BindOnce(&SmbShareFinder::OnHostsFound,
-                                             AsWeakPtr(), std::move(callback)));
+void SmbShareFinder::GatherSharesInNetwork(
+    HostDiscoveryResponse discovery_callback,
+    GatherSharesResponse shares_callback) {
+  scanner_.FindHostsInNetwork(base::BindOnce(
+      &SmbShareFinder::OnHostsFound, AsWeakPtr(), std::move(discovery_callback),
+      std::move(shares_callback)));
+}
+
+void SmbShareFinder::DiscoverHostsInNetwork(
+    HostDiscoveryResponse discovery_callback) {
+  scanner_.FindHostsInNetwork(base::BindOnce(&SmbShareFinder::OnHostsDiscovered,
+                                             AsWeakPtr(),
+                                             std::move(discovery_callback)));
 }
 
 void SmbShareFinder::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
@@ -36,17 +46,25 @@ std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   return url.ReplaceHost(ip_address);
 }
 
-void SmbShareFinder::OnHostsFound(GatherSharesResponse callback,
+void SmbShareFinder::OnHostsDiscovered(HostDiscoveryResponse discovery_callback,
+                                       bool success,
+                                       const HostMap& hosts) {
+  std::move(discovery_callback).Run();
+}
+
+void SmbShareFinder::OnHostsFound(HostDiscoveryResponse discovery_callback,
+                                  GatherSharesResponse shares_callback,
                                   bool success,
                                   const HostMap& hosts) {
+  std::move(discovery_callback).Run();
   if (!success) {
     LOG(ERROR) << "SmbShareFinder failed to find hosts";
-    callback.Run(std::vector<SmbUrl>());
+    shares_callback.Run(std::vector<SmbUrl>());
     return;
   }
 
   if (hosts.empty()) {
-    callback.Run(std::vector<SmbUrl>());
+    shares_callback.Run(std::vector<SmbUrl>());
     return;
   }
 
@@ -57,18 +75,18 @@ void SmbShareFinder::OnHostsFound(GatherSharesResponse callback,
 
     client_->GetShares(
         server_url, base::BindOnce(&SmbShareFinder::OnSharesFound, AsWeakPtr(),
-                                   host_name, callback));
+                                   host_name, shares_callback));
   }
 }
 
 void SmbShareFinder::OnSharesFound(
     const std::string& host_name,
-    GatherSharesResponse callback,
+    GatherSharesResponse shares_callback,
     smbprovider::ErrorType error,
     const smbprovider::DirectoryEntryListProto& entries) {
   if (error != smbprovider::ErrorType::ERROR_OK) {
     LOG(ERROR) << "Error finding shares: " << error;
-    callback.Run(std::vector<SmbUrl>());
+    shares_callback.Run(std::vector<SmbUrl>());
     return;
   }
 
@@ -82,7 +100,7 @@ void SmbShareFinder::OnSharesFound(
     }
   }
 
-  callback.Run(shares);
+  shares_callback.Run(shares);
 }
 
 }  // namespace smb_client

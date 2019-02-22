@@ -14,12 +14,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace {
 
 class SamplingHeapProfilerTest : public ::testing::Test {
+ public:
+  void SetUp() override {
 #if defined(OS_MACOSX)
-  void SetUp() override { allocator::InitializeAllocatorShim(); }
+    allocator::InitializeAllocatorShim();
 #endif
+    SamplingHeapProfiler::Init();
+  }
+
+  size_t GetNextSample(size_t mean_interval) {
+    return PoissonAllocationSampler::GetNextSampleInterval(mean_interval);
+  }
 };
 
 class SamplesCollector : public PoissonAllocationSampler::SamplesObserver {
@@ -51,7 +58,6 @@ class SamplesCollector : public PoissonAllocationSampler::SamplesObserver {
 };
 
 TEST_F(SamplingHeapProfilerTest, SampleObserver) {
-  PoissonAllocationSampler::Init();
   SamplesCollector collector(10000);
   auto* sampler = PoissonAllocationSampler::Get();
   sampler->SuppressRandomnessForTest(true);
@@ -67,7 +73,6 @@ TEST_F(SamplingHeapProfilerTest, SampleObserver) {
 }
 
 TEST_F(SamplingHeapProfilerTest, SampleObserverMuted) {
-  PoissonAllocationSampler::Init();
   SamplesCollector collector(10000);
   auto* sampler = PoissonAllocationSampler::Get();
   sampler->SuppressRandomnessForTest(true);
@@ -75,7 +80,7 @@ TEST_F(SamplingHeapProfilerTest, SampleObserverMuted) {
   sampler->Start();
   sampler->AddSamplesObserver(&collector);
   {
-    PoissonAllocationSampler::MuteThreadSamplesScope muted_scope;
+    PoissonAllocationSampler::ScopedMuteThreadSamples muted_scope;
     void* volatile p = malloc(10000);
     free(p);
   }
@@ -83,6 +88,22 @@ TEST_F(SamplingHeapProfilerTest, SampleObserverMuted) {
   sampler->RemoveSamplesObserver(&collector);
   EXPECT_FALSE(collector.sample_added);
   EXPECT_FALSE(collector.sample_removed);
+}
+
+TEST_F(SamplingHeapProfilerTest, IntervalRandomizationSanity) {
+  PoissonAllocationSampler::Get()->SuppressRandomnessForTest(false);
+  constexpr int iterations = 50;
+  constexpr size_t target = 10000000;
+  int sum = 0;
+  for (int i = 0; i < iterations; ++i) {
+    int samples = 0;
+    for (size_t value = 0; value < target; value += GetNextSample(10000))
+      ++samples;
+    // There are should be ~ target/10000 = 1000 samples.
+    sum += samples;
+  }
+  int mean_samples = sum / iterations;
+  EXPECT_NEAR(1000, mean_samples, 100);  // 10% tolerance.
 }
 
 const int kNumberOfAllocations = 10000;
@@ -121,7 +142,6 @@ class MyThread2 : public SimpleThread {
 };
 
 void CheckAllocationPattern(void (*allocate_callback)()) {
-  SamplingHeapProfiler::Init();
   auto* profiler = SamplingHeapProfiler::Get();
   PoissonAllocationSampler::Get()->SuppressRandomnessForTest(false);
   profiler->SetSamplingInterval(10240);
@@ -184,5 +204,4 @@ TEST_F(SamplingHeapProfilerTest, DISABLED_SequentialLargeSmallStats) {
   });
 }
 
-}  // namespace
 }  // namespace base

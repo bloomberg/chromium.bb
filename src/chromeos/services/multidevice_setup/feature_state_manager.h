@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_FEATURE_STATE_MANAGER_H_
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_FEATURE_STATE_MANAGER_H_
 
+#include <ostream>
+
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -57,6 +59,9 @@ class FeatureStateManager {
 
   DISALLOW_COPY_AND_ASSIGN(FeatureStateManager);
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const FeatureStateManager::FeatureStatesMap& map);
 
 }  // namespace multidevice_setup
 

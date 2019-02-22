@@ -36,6 +36,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/test/test_network_service_client.h"
@@ -763,7 +764,9 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
 
   base::File log_file(log_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  network_service_->StartNetLog(std::move(log_file), std::move(dict));
+  network_service_->StartNetLog(std::move(log_file),
+                                network::mojom::NetLogCaptureMode::DEFAULT,
+                                std::move(dict));
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
@@ -1111,105 +1114,11 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
 // The SpawnedTestServer does not work on iOS.
 #if !defined(OS_IOS)
 
-class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
- public:
-  explicit AllowBadCertsNetworkServiceClient(
-      mojom::NetworkServiceClientRequest network_service_client_request)
-      : binding_(this, std::move(network_service_client_request)) {}
-  ~AllowBadCertsNetworkServiceClient() override {}
-
-  // mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      const GURL& site_for_cookies,
-      bool first_auth_attempt,
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
-      int32_t resource_type,
-      const base::Optional<ResourceResponseHead>& head,
-      mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
-    NOTREACHED();
-  }
-
-  void OnCertificateRequested(
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
-      override {
-    NOTREACHED();
-  }
-
-  void OnSSLCertificateError(uint32_t process_id,
-                             uint32_t routing_id,
-                             uint32_t request_id,
-                             int32_t resource_type,
-                             const GURL& url,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override {
-    std::move(response).Run(net::OK);
-  }
-
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
-                            OnLoadingStateUpdateCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnClearSiteData(int process_id,
-                       int routing_id,
-                       const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override {
-    NOTREACHED();
-  }
-
- private:
-  mojo::Binding<mojom::NetworkServiceClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllowBadCertsNetworkServiceClient);
-};
-
 // Test |primary_network_context|, which is required by AIA fetching, among
 // other things.
 TEST_F(NetworkServiceTestWithService, AIAFetching) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  mojom::NetworkServiceClientPtr network_service_client;
   context_params->primary_network_context = true;
-
-  // Have to allow bad certs when using
-  // SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE.
-  AllowBadCertsNetworkServiceClient allow_bad_certs_client(
-      mojo::MakeRequest(&network_service_client));
 
   network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
                                          std::move(context_params));
@@ -1405,15 +1314,15 @@ TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
   manager_client.WaitForNotification(mojom::ConnectionType::CONNECTION_3G);
 }
 
-class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
+class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
  public:
-  NetworkServiceClearSiteDataTest() {
+  NetworkServiceNetworkDelegateTest() {
     // |NetworkServiceNetworkDelegate::HandleClearSiteDataHeader| requires
     // Network Service.
     scoped_feature_list_.InitAndEnableFeature(
         network::features::kNetworkService);
   }
-  ~NetworkServiceClearSiteDataTest() override = default;
+  ~NetworkServiceNetworkDelegateTest() override = default;
 
   void CreateNetworkContext() {
     mojom::NetworkContextParamsPtr context_params =
@@ -1459,7 +1368,7 @@ class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
         net::test_server::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_server_->RegisterRequestHandler(base::BindRepeating(
-        &NetworkServiceClearSiteDataTest::HandleHTTPSRequest,
+        &NetworkServiceNetworkDelegateTest::HandleHTTPSRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
   }
@@ -1494,7 +1403,7 @@ class NetworkServiceClearSiteDataTest : public NetworkServiceTest {
   mojom::URLLoaderPtr loader_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceClearSiteDataTest);
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
 class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
@@ -1547,7 +1456,7 @@ class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
 
 // Check that |NetworkServiceNetworkDelegate| handles Clear-Site-Data header
 // w/ and w/o |NetworkServiceCient|.
-TEST_F(NetworkServiceClearSiteDataTest, ClearSiteDataNetworkServiceCient) {
+TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkServiceCient) {
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();
 
@@ -1574,7 +1483,7 @@ TEST_F(NetworkServiceClearSiteDataTest, ClearSiteDataNetworkServiceCient) {
 }
 
 // Check that headers are handled and passed to the client correctly.
-TEST_F(NetworkServiceClearSiteDataTest, HandleClearSiteDataHeaders) {
+TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   const char kClearCookiesHeaderValue[] = "\"cookies\"";
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();

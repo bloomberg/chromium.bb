@@ -31,7 +31,6 @@
 #include "net/base/load_states.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -110,7 +109,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   WebPreferences GetWebkitPreferences() override;
   void UpdateWebkitPreferences(const WebPreferences& prefs) override;
   void OnWebkitPreferencesChanged() override;
-  void SelectWordAroundCaret() override;
 
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,
@@ -193,11 +191,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
     sudden_termination_allowed_ = enabled;
   }
 
-  // Creates a new RenderWidget with the given route id.  |popup_type| indicates
-  // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int32_t route_id,
-                       mojom::WidgetPtr widget,
-                       blink::WebPopupType popup_type);
+  // Creates a new RenderWidget with the given route id.
+  void CreateNewWidget(int32_t route_id, mojom::WidgetPtr widget);
 
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int32_t route_id, mojom::WidgetPtr widget);
@@ -239,19 +234,17 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) override;
   bool ShouldContributePriorityToProcess() override;
-  void RenderWidgetDidShutdown() override;
+  void RequestSetBounds(const gfx::Rect& bounds) override;
 
   // IPC message handlers.
   void OnShowView(int route_id,
                   WindowOpenDisposition disposition,
                   const gfx::Rect& initial_rect,
                   bool user_gesture);
-  void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
-  void OnShowFullscreenWidget(int route_id);
-  void OnRenderProcessGone(int status, int error_code);
+  void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
+  void OnShowFullscreenWidget(int widget_route_id);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
-  void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();

@@ -45,15 +45,13 @@
 #include "third_party/blink/renderer/core/html/html_shadow_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
 void ShadowRoot::Distribute() {
-  if (IsV1())
-    DistributeV1();
-  else
+  if (!IsV1())
     V0().Distribute();
 }
 
@@ -135,7 +133,7 @@ void ShadowRoot::SetInnerHTMLFromString(const String& markup,
 void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                               ExceptionState& exception_state) {
   String html =
-      TrustedHTML::GetString(stringOrHtml, &GetDocument(), exception_state);
+      GetStringFromTrustedHTML(stringOrHtml, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetInnerHTMLFromString(html, exception_state);
   }
@@ -188,13 +186,12 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
   if (!insertion_point.isConnected())
     return kInsertionDone;
 
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    GetDocument().GetSlotAssignmentEngine().Connected(*this);
+  GetDocument().GetSlotAssignmentEngine().Connected(*this);
 
-  // FIXME: When parsing <video controls>, insertedInto() is called many times
-  // without invoking removedFrom.  For now, we check
-  // m_registeredWithParentShadowroot. We would like to
-  // DCHECK(!m_registeredShadowRoot) here.
+  // FIXME: When parsing <video controls>, InsertedInto() is called many times
+  // without invoking RemovedFrom().  For now, we check
+  // registered_with_parent_shadow_root. We would like to
+  // DCHECK(!registered_with_parent_shadow_root) here.
   // https://bugs.webkit.org/show_bug.cig?id=101316
   if (registered_with_parent_shadow_root_)
     return kInsertionDone;
@@ -232,7 +229,6 @@ void ShadowRoot::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 void ShadowRoot::SetNeedsAssignmentRecalc() {
-  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(IsV1());
   if (!slot_assignment_)
     return;
@@ -262,24 +258,20 @@ StyleSheetList& ShadowRoot::StyleSheets() {
 }
 
 void ShadowRoot::SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc() {
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() && IsV1())
+  if (IsV1())
     SetNeedsAssignmentRecalc();
   else
     SetNeedsDistributionRecalc();
 }
 
 void ShadowRoot::SetNeedsDistributionRecalc() {
-  DCHECK(!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() && IsV1()));
+  DCHECK(!IsV1());
   if (needs_distribution_recalc_)
     return;
   needs_distribution_recalc_ = true;
   host().MarkAncestorsWithChildNeedsDistributionRecalc();
   if (!IsV1())
     V0().ClearDistribution();
-}
-
-void ShadowRoot::DistributeV1() {
-  EnsureSlotAssignment().RecalcDistribution();
 }
 
 void ShadowRoot::Trace(blink::Visitor* visitor) {

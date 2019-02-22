@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 
 namespace safe_browsing {
 
@@ -98,6 +99,13 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ExtendedReportingNotShownNotAllowExtendedReporting);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, BillingPage);
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTestDiceEnabled,
+                           ExtendedReportingNotShownUnifiedConsent);
+#else
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ExtendedReportingNotShownUnifiedConsent);
+#endif
 
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 

@@ -34,9 +34,6 @@ struct PasswordForm;
 }
 
 namespace importer {
-#if defined(OS_WIN)
-struct ImporterIE7PasswordInfo;
-#endif
 struct ImporterAutofillFormDataEntry;
 struct SearchEngineInfo;
 }
@@ -88,8 +85,6 @@ class ExternalProcessImporterClient
   void OnAutofillFormDataImportGroup(
       const std::vector<ImporterAutofillFormDataEntry>&
           autofill_form_data_entry_group) override;
-  void OnIE7PasswordReceived(
-      const importer::ImporterIE7PasswordInfo& importer_password_info) override;
 
  protected:
   ~ExternalProcessImporterClient() override;

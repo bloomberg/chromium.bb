@@ -12,6 +12,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,7 +26,8 @@ namespace identity {
 // Internal class that abstracts the dependencies out of the public interface.
 class IdentityTestEnvironmentInternal {
  public:
-  IdentityTestEnvironmentInternal();
+  IdentityTestEnvironmentInternal(
+      bool use_fake_url_loader_for_gaia_cookie_manager);
   ~IdentityTestEnvironmentInternal();
 
   // The IdentityManager instance created and owned by this instance.
@@ -36,6 +38,8 @@ class IdentityTestEnvironmentInternal {
   SigninManagerForTest* signin_manager();
 
   FakeProfileOAuth2TokenService* token_service();
+
+  FakeGaiaCookieManagerService* gaia_cookie_manager_service();
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -49,7 +53,8 @@ class IdentityTestEnvironmentInternal {
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironmentInternal);
 };
 
-IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
+IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal(
+    bool use_fake_url_loader_for_gaia_cookie_manager)
     : signin_client_(&pref_service_),
       token_service_(&pref_service_),
 #if defined(OS_CHROMEOS)
@@ -63,19 +68,19 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
       // NOTE: Some unittests set up their own TestURLFetcherFactory. In these
       // contexts FakeGaiaCookieManagerService can't set up its own
       // FakeURLFetcherFactory, as {Test, Fake}URLFetcherFactory allow only one
-      // instance to be alive at a time. If some users of
-      // IdentityTestEnvironment require that GaiaCookieManagerService have a
-      // FakeURLFetcherFactory, we'll need to pass a config param in to
-      // IdentityTestEnvironment to specify this. If some users want that
-      // behavior while *also* having their own FakeURLFetcherFactory, we'll
-      // need to pass the actual object in and have GaiaCookieManagerService
-      // have a reference to the object (or figure out the sharing some other
-      // way). Contact blundell@chromium.org if you come up against this issue.
-      gaia_cookie_manager_service_(&token_service_,
-                                   "identity_test_environment",
-                                   &signin_client_,
-                                   /*use_fake_url_fetcher=*/false) {
+      // instance to be alive at a time. If some users require that
+      // GaiaCookieManagerService have a FakeURLFetcherFactory while *also*
+      // having their own FakeURLFetcherFactory, we'll need to pass the actual
+      // object in and have GaiaCookieManagerService have a reference to the
+      // object (or figure out the sharing some other way). Contact
+      // blundell@chromium.org if you come up against this issue.
+      gaia_cookie_manager_service_(
+          &token_service_,
+          "identity_test_environment",
+          &signin_client_,
+          use_fake_url_loader_for_gaia_cookie_manager) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
@@ -106,8 +111,15 @@ IdentityTestEnvironmentInternal::token_service() {
   return &token_service_;
 }
 
-IdentityTestEnvironment::IdentityTestEnvironment()
-    : internals_(std::make_unique<IdentityTestEnvironmentInternal>()) {
+FakeGaiaCookieManagerService*
+IdentityTestEnvironmentInternal::gaia_cookie_manager_service() {
+  return &gaia_cookie_manager_service_;
+}
+
+IdentityTestEnvironment::IdentityTestEnvironment(
+    bool use_fake_url_loader_for_gaia_cookie_manager)
+    : internals_(std::make_unique<IdentityTestEnvironmentInternal>(
+          use_fake_url_loader_for_gaia_cookie_manager)) {
   internals_->identity_manager()->AddDiagnosticsObserver(this);
 }
 
@@ -178,6 +190,12 @@ void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
       internals_->token_service(), internals_->identity_manager(), account_id);
 }
 
+void IdentityTestEnvironment::SetCookieAccounts(
+    const std::vector<CookieParams>& cookie_accounts) {
+  identity::SetCookieAccounts(internals_->gaia_cookie_manager_service(),
+                              internals_->identity_manager(), cookie_accounts);
+}
+
 void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {
   internals_->token_service()->set_auto_post_fetch_response_on_message_loop(
       grant);
@@ -190,6 +208,16 @@ void IdentityTestEnvironment::
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
   internals_->token_service()->IssueTokenForAllPendingRequests(token,
                                                                expiration);
+}
+
+void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        const std::string& token,
+        const base::Time& expiration,
+        const std::string& id_token) {
+  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  internals_->token_service()->IssueTokenForAllPendingRequests(
+      OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
 
 void IdentityTestEnvironment::

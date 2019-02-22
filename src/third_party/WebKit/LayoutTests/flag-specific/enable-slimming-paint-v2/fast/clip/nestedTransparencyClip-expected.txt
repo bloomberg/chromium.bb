@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x60
         LayoutText {#text} at (0,0) size 741x39
           text run at (0,0) width 741: "This test is for a bug we had with clipping transparency layers. The bug is visual, so the pixel test is more worthwhile."
-          text run at (0,20) width 644: "Below, \"Peach,\" \"Plum,\" and \"Pear\" should appear. Before, we were clipping out \"Plum\" and \"Pear.\""
-        LayoutBR {BR} at (644,35) size 0x0
+          text run at (0,20) width 643: "Below, \"Peach,\" \"Plum,\" and \"Pear\" should appear. Before, we were clipping out \"Plum\" and \"Pear.\""
+        LayoutBR {BR} at (643,35) size 0x0
         LayoutBR {BR} at (0,40) size 0x19
 layer at (8,68) size 784x20 transparent
   LayoutBlockFlow {DIV} at (0,60) size 784x20

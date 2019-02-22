@@ -16,11 +16,13 @@
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -89,8 +91,8 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   CHECK(queued_task->task);
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(QueueTask, std::move(queued_task)));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
 
@@ -208,8 +210,8 @@ void StartupObserver::Start() {
   delay = base::TimeDelta::FromMinutes(kLongerDelayMins);
 #endif  // !defined(OS_ANDROID)
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&StartupObserver::OnFailsafeTimeout,
                      weak_factory_.GetWeakPtr()),
       delay);

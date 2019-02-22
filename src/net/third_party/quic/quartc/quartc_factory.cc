@@ -28,15 +28,24 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
       QuicMakeUnique<QuartcPacketWriter>(quartc_session_config.packet_transport,
                                          quartc_session_config.max_packet_size);
 
-  // ACK less aggressively when reordered packets are present.
-  // Must be set before the connection is created.
-  SetQuicReloadableFlag(quic_ack_reordered_packets, true);
+  // Fixes behavior of StopReading() with level-triggered stream sequencers.
+  SetQuicReloadableFlag(quic_stop_reading_when_level_triggered, true);
+
+  // Quartc uses zombie streams -- we close the stream for read as soon as we
+  // create a stream -- this makes the stream a zombie stream. b/115323618
+  // revealed that closing zombie streams is problematic, and enabling this flag
+  // fixes it.
+  SetQuicReloadableFlag(quic_fix_reset_zombie_streams, true);
 
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 
   QuicTagVector copt;
   copt.push_back(kNSTP);
+
+  // Enable and request QUIC to include receive timestamps in ACK frames.
+  SetQuicReloadableFlag(quic_send_timestamps, true);
+  copt.push_back(kSTMP);
 
   // Enable ACK_DECIMATION_WITH_REORDERING. It requires ack_decimation to be
   // false.
@@ -54,18 +63,19 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
   SetQuicReloadableFlag(quic_unified_iw_options, true);   // Enable IWXX opts.
   SetQuicReloadableFlag(quic_bbr_slower_startup3, true);  // Enable BBQX opts.
+  SetQuicReloadableFlag(quic_bbr_flexible_app_limited, true);  // Enable BBR9.
   copt.push_back(kBBR3);  // Stay in low-gain until in-flight < BDP.
   copt.push_back(kBBR5);  // 40 RTT ack aggregation.
   copt.push_back(kBBR6);  // Use a 0.75 * BDP cwnd during PROBE_RTT.
   copt.push_back(kBBR8);  // Skip PROBE_RTT if app-limited.
+  copt.push_back(kBBR9);  // Ignore app-limited if enough data is in flight.
   copt.push_back(kBBQ1);  // 2.773 pacing gain in STARTUP.
   copt.push_back(kBBQ2);  // 2.0 CWND gain in STARTUP.
   copt.push_back(kBBQ4);  // 0.75 pacing gain in DRAIN.
   copt.push_back(k1RTT);  // Exit STARTUP after 1 RTT with no gains.
   copt.push_back(kIW10);  // 10-packet (14600 byte) initial cwnd.
 
-  // TODO(b/112192494):  Enable pipe-filling once it no longer starves Quartc.
-  // quic_connection->set_fill_up_link_during_probing(true);
+  quic_connection->set_fill_up_link_during_probing(true);
 
   // TODO(b/112192153):  Test and possible enable slower startup when pipe
   // filling is ready to use.  Slower startup is kBBRS.

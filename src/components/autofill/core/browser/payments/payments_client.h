@@ -110,6 +110,18 @@ class PaymentsClient {
     std::string app_locale;
   };
 
+  // An enum set in the GetUploadDetailsRequest indicating the source of the
+  // request. It should stay consistent with the same enum in Google Payments
+  // server code.
+  enum MigrationSource {
+    // Source unknown or unnecessary (such as during single credit card upload).
+    UNKNOWN_MIGRATION_SOURCE,
+    // Migration request comes from the checkout flow.
+    CHECKOUT_FLOW,
+    // Migration request comes from settings page.
+    SETTINGS_PAGE,
+  };
+
   // |url_loader_factory| is reference counted so it has no lifetime or
   // ownership requirements. |pref_service| is used to get the registered
   // preference value, |identity_manager| and |account_info_getter|
@@ -141,26 +153,26 @@ class PaymentsClient {
   // Determine if the user meets the Payments service's conditions for upload.
   // The service uses |addresses| (from which names and phone numbers are
   // removed) and |app_locale| to determine which legal message to display.
-  // |pan_first_six| is the first six digits of the number of the credit card
-  // being considered for upload. |detected_values| is a bitmask of
-  // CreditCardSaveManager::DetectedValue values that relays what data is
-  // actually available for upload in order to make more informed upload
-  // decisions. |callback| is the callback function when get response from
-  // server. |billable_service_number| is used to set the billable service
-  // number in the GetUploadDetails request. If the conditions are met, the
-  // legal message will be returned via |callback|. |active_experiments| is used
-  // by Payments server to track requests that were triggered by enabled
-  // features.
+  // |detected_values| is a bitmask of CreditCardSaveManager::DetectedValue
+  // values that relays what data is actually available for upload in order to
+  // make more informed upload decisions. |callback| is the callback function
+  // when get response from server. |billable_service_number| is used to set the
+  // billable service number in the GetUploadDetails request. If the conditions
+  // are met, the legal message will be returned via |callback|.
+  // |active_experiments| is used by Payments server to track requests that were
+  // triggered by enabled features. |migration_source| is used by Payments
+  // server metrics to track the source of the request.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
-      const int billable_service_number);
+      const int billable_service_number,
+      MigrationSource migration_source =
+          MigrationSource::UNKNOWN_MIGRATION_SOURCE);
 
   // The user has indicated that they would like to upload a card with the given
   // cvc. This request will fail server-side if a successful call to

@@ -41,7 +41,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   ~LocalCardMigrationDialogView() override;
 
   // LocalCardMigrationDialog
-  void ShowDialog(base::OnceClosure user_accepted_migration_closure) override;
+  void ShowDialog() override;
   void CloseDialog() override;
   void OnMigrationFinished() override;
 
@@ -49,7 +49,6 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   void AddedToWidget() override;
-  views::View* CreateExtraView() override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
@@ -74,11 +73,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   int GetHeaderImageId() const;
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;
-  void OnSaveButtonClicked();
-  void OnCancelButtonClicked();
-  void OnViewCardsButtonClicked();
-  void SetMigrationIsPending(bool is_pending);
-  void ShowCloseButton();
+  const std::vector<std::string> GetSelectedCardGuids() const;
 
   LocalCardMigrationDialogController* controller_;
 
@@ -94,24 +89,9 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // Separates the card scroll bar view and the legal message.
   views::Separator* separator_ = nullptr;
 
-  // The button displays "Close". If clicked, will close the dialog
-  // in pending state.
-  views::View* close_migration_dialog_button_ = nullptr;
-
   // The view that contains legal message and handles legal message links
   // clicking.
   LegalMessageView* legal_message_container_ = nullptr;
-
-  // Timer that will call ShowCloseButton() after the migration process
-  // has started and is pending for acertain amount of time which can be
-  // configured through Finch.
-  base::OneShotTimer show_close_button_timer_;
-
-  // Whether the uploading is in progress and results are
-  // pending.
-  bool migration_pending_ = false;
-
-  base::OnceClosure user_accepted_migration_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogView);
 };

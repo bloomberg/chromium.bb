@@ -56,7 +56,7 @@
 <translation id="2221097377466213233">Користи десни тастер Ctrl као тастер Windows (⌘ на Mac-у)</translation>
 <translation id="2235518894410572517">Делите овај рачунар да би други корисник могао да га прегледа и контролише.</translation>
 <translation id="2246783206985865117">Овим подешавањем управљају смернице за домен.</translation>
-<translation id="2256115617011615191">Поново покрени одмах</translation>
+<translation id="2256115617011615191">Рестартуј одмах</translation>
 <translation id="225614027745146050">Добро дошли</translation>
 <translation id="228809120910082333">Потврдите налог и PIN у наставку да бисте омогућили да Chromoting приступа.</translation>
 <translation id="2314101195544969792">Сесија апликације <ph name="APPLICATION_NAME" /> је неактивна неко време и веза ће ускоро бити прекинута.</translation>
@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">Овај клијент не подржава уређај зато што је потребна потврда идентитета треће стране.</translation>
 <translation id="3194245623920924351">Chrome удаљени рачунар</translation>
 <translation id="3197730452537982411">Удаљени рачунар</translation>
-<translation id="3212472844831225214">• Додата је подршка за Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Пошаљи ова упутства имејлом</translation>
 <translation id="3258789396564295715">Овом рачунару можете безбедно да приступите помоћу Chrome удаљеног рачунара.</translation>
 <translation id="3286521253923406898">Контролер хоста за Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Цео екран</translation>
 <translation id="8548209692293300397">Претходно сте се пријавили као <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Да бисте приступили рачунарима преко тог налога, <ph name="LINK_BEGIN" />пријавите се у Google Chrome<ph name="LINK_END" /> помоћу тог налога и поново инсталирајте Chrome удаљени рачунар.</translation>
 <translation id="8642984861538780905">Задовољавајућа</translation>
+<translation id="8705151241155781642">• Додата је подршка за Android 9.0 Pie.
+• Подршка за промену величине резолуције удаљеног рачунара тако да се подудара са екраном Android уређаја.</translation>
 <translation id="8712909229180978490">Не могу да видим сачуване датотеке онлајн на Google диску.</translation>
 <translation id="8743328882720071828">Желите ли да дозволите да <ph name="CLIENT_USERNAME" /> види и контролише рачунар?</translation>
 <translation id="8747048596626351634">Сесија је прекинута или није успела да се покрене. Ако на удаљеном рачунару постоји ~/.chrome-remote-desktop-session, уверите се да покреће дуготрајне процесе у предњем плану, као што је рачунарско окружење или менаџер прозора.</translation>

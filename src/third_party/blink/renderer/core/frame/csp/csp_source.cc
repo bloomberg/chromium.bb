@@ -54,6 +54,38 @@ bool CSPSource::Matches(const KURL& url,
          ports_match != PortMatchingResult::kNotMatching && paths_match;
 }
 
+bool CSPSource::MatchesAsSelf(const KURL& url) {
+  // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression
+  // Step 4.
+  SchemeMatchingResult schemes_match = SchemeMatches(url.Protocol());
+  bool hosts_match = HostMatches(url.Host());
+  PortMatchingResult ports_match = PortMatches(url.Port(), url.Protocol());
+
+  // check if the origin is exactly matching
+  if (schemes_match == SchemeMatchingResult::kMatchingExact && hosts_match &&
+      (ports_match == PortMatchingResult::kMatchingExact ||
+       ports_match == PortMatchingResult::kMatchingWildcard)) {
+    return true;
+  }
+
+  String self_scheme =
+      (scheme_.IsEmpty() ? policy_->GetSelfProtocol() : scheme_);
+
+  bool ports_match_or_defaults =
+      (ports_match == PortMatchingResult::kMatchingExact ||
+       ((IsDefaultPortForProtocol(port_, self_scheme) || port_ == 0) &&
+        (IsDefaultPortForProtocol(url.Port(), url.Protocol()) ||
+         url.Port() == 0)));
+
+  if (hosts_match && ports_match_or_defaults &&
+      (url.Protocol() == "https" || url.Protocol() == "wss" ||
+       self_scheme == "http")) {
+    return true;
+  }
+
+  return false;
+}
+
 CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
     const String& protocol) const {
   DCHECK_EQ(protocol, protocol.DeprecatedLower());

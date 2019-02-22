@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/task/task_executor.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_task_traits.h"
@@ -47,14 +48,15 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
-    return WebThread::PostDelayedTask(id_, from_here, std::move(task), delay);
+    return base::PostDelayedTaskWithTraits(from_here, {id_}, std::move(task),
+                                           delay);
   }
 
   bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
-    return WebThread::PostNonNestableDelayedTask(id_, from_here,
-                                                 std::move(task), delay);
+    return base::PostDelayedTaskWithTraits(from_here, {id_, NonNestable()},
+                                           std::move(task), delay);
   }
 
   bool RunsTasksInCurrentSequence() const override {
@@ -159,8 +161,9 @@ class WebThreadTaskExecutor : public base::TaskExecutor {
                                  const base::TaskTraits& traits,
                                  base::OnceClosure task,
                                  base::TimeDelta delay) override {
-    return PostTaskHelper(GetWebThreadIdentifier(traits), from_here,
-                          std::move(task), delay, true);
+    return PostTaskHelper(
+        GetWebThreadIdentifier(traits), from_here, std::move(task), delay,
+        traits.GetExtension<WebTaskTraitsExtension>().nestable());
   }
 
   scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(
@@ -230,8 +233,7 @@ void WebThreadImpl::Init() {
     // Though this thread is called the "IO" thread, it actually just routes
     // messages around; it shouldn't be allowed to perform any blocking disk
     // I/O.
-    base::ThreadRestrictions::SetIOAllowed(false);
-    base::ThreadRestrictions::DisallowWaiting();
+    base::DisallowUnresponsiveTasks();
   }
 }
 
@@ -349,47 +351,6 @@ std::string WebThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
   result += actual_name;
   result += ".";
   return result;
-}
-
-// static
-bool WebThread::PostTask(ID identifier,
-                         const base::Location& from_here,
-                         base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), true);
-}
-
-// static
-bool WebThread::PostDelayedTask(ID identifier,
-                                const base::Location& from_here,
-                                base::OnceClosure task,
-                                base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, true);
-}
-
-// static
-bool WebThread::PostNonNestableTask(ID identifier,
-                                    const base::Location& from_here,
-                                    base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), false);
-}
-
-// static
-bool WebThread::PostNonNestableDelayedTask(ID identifier,
-                                           const base::Location& from_here,
-                                           base::OnceClosure task,
-                                           base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, false);
-}
-
-// static
-bool WebThread::PostTaskAndReply(ID identifier,
-                                 const base::Location& from_here,
-                                 base::OnceClosure task,
-                                 base::OnceClosure reply) {
-  return GetTaskRunnerForThread(identifier)
-      ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
 }
 
 // static

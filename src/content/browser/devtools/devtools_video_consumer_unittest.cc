@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/limits.h"
@@ -50,7 +50,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   // This is never called.
   MOCK_METHOD2(SetFormat,
                void(media::VideoPixelFormat format,
-                    media::ColorSpace color_space));
+                    const gfx::ColorSpace& color_space));
   void SetMinCapturePeriod(base::TimeDelta min_capture_period) final {
     min_capture_period_ = min_capture_period;
     MockSetMinCapturePeriod(min_capture_period_);
@@ -181,7 +181,8 @@ class DevToolsVideoConsumerTest : public testing::Test {
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New(
         base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
-        kResolution, gfx::Rect(kResolution));
+        kResolution, gfx::Rect(kResolution), gfx::ColorSpace::CreateREC709(),
+        nullptr);
 
     consumer_->OnFrameCaptured(std::move(data), std::move(info),
                                gfx::Rect(kResolution), gfx::Rect(kResolution),
@@ -230,7 +231,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
             weak_factory_.GetWeakPtr()));
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::WeakPtrFactory<DevToolsVideoConsumerTest> weak_factory_;
 };
 

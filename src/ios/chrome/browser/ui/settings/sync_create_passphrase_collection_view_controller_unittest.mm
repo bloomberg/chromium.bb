@@ -141,8 +141,6 @@ TEST_F(SyncCreatePassphraseCollectionViewControllerTest,
   // Mismatching text fields should not get to the point of trying to set the
   // passphrase and adding the sync observer.
   EXPECT_CALL(*fake_sync_service_, AddObserver(_)).Times(0);
-  // This method is called in PSS::ShutdownImpl().
-  EXPECT_CALL(*fake_sync_service_, RemoveObserver(_)).Times(1);
   EXPECT_CALL(*fake_sync_service_, SetEncryptionPassphrase(_, _)).Times(0);
   [[sync_controller passphrase] setText:@"decodeme"];
   [[sync_controller confirmPassphrase] setText:@"donothing"];

@@ -6,6 +6,7 @@
 #define DEVICE_VR_OPENVR_OPENVR_API_WRAPPER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "device/vr/vr_export.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 namespace base {
@@ -28,7 +29,7 @@ class OpenVRWrapper {
   vr::IVRCompositor* GetCompositor();
   vr::IVRSystem* GetSystem();
 
-  static void SetTestHook(OpenVRTestHook* hook);
+  static void DEVICE_VR_EXPORT SetTestHook(OpenVRTestHook* hook);
 
  private:
   bool Initialize(bool for_rendering);

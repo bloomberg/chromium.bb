@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "net/base/net_errors.h"
@@ -17,16 +18,62 @@
 
 namespace network {
 
+namespace {
+
+int ClampTCPBufferSize(int requested_buffer_size) {
+  return base::ClampToRange(requested_buffer_size, 0,
+                            TCPConnectedSocket::kMaxBufferSize);
+}
+
+// Sets the initial options on a fresh socket. Assumes |socket| is currently
+// configured using the default client socket options
+// (TCPSocket::SetDefaultOptionsForClient()).
+int ConfigureSocket(
+    net::TransportClientSocket* socket,
+    const mojom::TCPConnectedSocketOptions& tcp_connected_socket_options) {
+  int send_buffer_size =
+      ClampTCPBufferSize(tcp_connected_socket_options.send_buffer_size);
+  if (send_buffer_size > 0) {
+    int result = socket->SetSendBufferSize(send_buffer_size);
+    DCHECK_NE(net::ERR_IO_PENDING, result);
+    if (result != net::OK)
+      return result;
+  }
+
+  int receive_buffer_size =
+      ClampTCPBufferSize(tcp_connected_socket_options.receive_buffer_size);
+  if (receive_buffer_size > 0) {
+    int result = socket->SetReceiveBufferSize(receive_buffer_size);
+    DCHECK_NE(net::ERR_IO_PENDING, result);
+    if (result != net::OK)
+      return result;
+  }
+
+  // No delay is set by default, so only update the setting if it's false.
+  if (!tcp_connected_socket_options.no_delay) {
+    // Unlike the above calls, TcpSocket::SetNoDelay() returns a bool rather
+    // than a network error code.
+    if (!socket->SetNoDelay(false))
+      return net::ERR_FAILED;
+  }
+
+  return net::OK;
+}
+
+}  // namespace
+
+const int TCPConnectedSocket::kMaxBufferSize = 128 * 1024;
+
 TCPConnectedSocket::TCPConnectedSocket(
     mojom::SocketObserverPtr observer,
     net::NetLog* net_log,
-    Delegate* delegate,
+    TLSSocketFactory* tls_socket_factory,
     net::ClientSocketFactory* client_socket_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)),
       net_log_(net_log),
-      delegate_(delegate),
       client_socket_factory_(client_socket_factory),
+      tls_socket_factory_(tls_socket_factory),
       traffic_annotation_(traffic_annotation) {}
 
 TCPConnectedSocket::TCPConnectedSocket(
@@ -37,8 +84,8 @@ TCPConnectedSocket::TCPConnectedSocket(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)),
       net_log_(nullptr),
-      delegate_(nullptr),
       client_socket_factory_(nullptr),
+      tls_socket_factory_(nullptr),
       socket_(std::move(socket)),
       traffic_annotation_(traffic_annotation) {
   socket_data_pump_ = std::make_unique<SocketDataPump>(
@@ -60,24 +107,46 @@ TCPConnectedSocket::~TCPConnectedSocket() {
 void TCPConnectedSocket::Connect(
     const base::Optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   DCHECK(!socket_);
   DCHECK(callback);
 
-  auto socket = client_socket_factory_->CreateTransportClientSocket(
-      remote_addr_list, nullptr /*socket_performance_watcher*/, net_log_,
-      net::NetLogSource());
-  connect_callback_ = std::move(callback);
-  int result = net::OK;
-  if (local_addr)
-    result = socket->Bind(local_addr.value());
-  if (result == net::OK) {
-    result = socket->Connect(base::BindRepeating(
-        &TCPConnectedSocket::OnConnectCompleted, base::Unretained(this)));
+  std::unique_ptr<net::TransportClientSocket> socket =
+      client_socket_factory_->CreateTransportClientSocket(
+          remote_addr_list, nullptr /*socket_performance_watcher*/, net_log_,
+          net::NetLogSource());
+
+  if (local_addr) {
+    int result = socket->Bind(local_addr.value());
+    if (result != net::OK) {
+      OnConnectCompleted(result);
+      return;
+    }
   }
+
+  return ConnectWithSocket(std::move(socket),
+                           std::move(tcp_connected_socket_options),
+                           std::move(callback));
+}
+
+void TCPConnectedSocket::ConnectWithSocket(
+    std::unique_ptr<net::TransportClientSocket> socket,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
+    mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   socket_ = std::move(socket);
+  connect_callback_ = std::move(callback);
+
+  if (tcp_connected_socket_options) {
+    socket_->SetBeforeConnectCallback(base::BindRepeating(
+        &ConfigureSocket, socket_.get(), *tcp_connected_socket_options));
+  }
+  int result = socket_->Connect(base::BindRepeating(
+      &TCPConnectedSocket::OnConnectCompleted, base::Unretained(this)));
+
   if (result == net::ERR_IO_PENDING)
     return;
+
   OnConnectCompleted(result);
 }
 
@@ -87,7 +156,13 @@ void TCPConnectedSocket::UpgradeToTLS(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TLSClientSocketRequest request,
     mojom::SocketObserverPtr observer,
-    UpgradeToTLSCallback callback) {
+    mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
+  if (!tls_socket_factory_) {
+    std::move(callback).Run(
+        net::ERR_NOT_IMPLEMENTED, mojo::ScopedDataPipeConsumerHandle(),
+        mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info*/);
+    return;
+  }
   // Wait for data pipes to be closed by the client before doing the upgrade.
   if (socket_data_pump_) {
     pending_upgrade_to_tls_callback_ = base::BindOnce(
@@ -96,19 +171,33 @@ void TCPConnectedSocket::UpgradeToTLS(
         std::move(request), std::move(observer), std::move(callback));
     return;
   }
-  if (!socket_ || !socket_->IsConnected()) {
-    std::move(callback).Run(
-        net::ERR_SOCKET_NOT_CONNECTED, mojo::ScopedDataPipeConsumerHandle(),
-        mojo::ScopedDataPipeProducerHandle(), base::nullopt);
+  tls_socket_factory_->UpgradeToTLS(
+      this, host_port_pair, std::move(socket_options), traffic_annotation,
+      std::move(request), std::move(observer), std::move(callback));
+}
+
+void TCPConnectedSocket::SetSendBufferSize(int send_buffer_size,
+                                           SetSendBufferSizeCallback callback) {
+  if (!socket_) {
+    // Fail is this method was called after upgrading to TLS.
+    std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
-  auto socket_handle = std::make_unique<net::ClientSocketHandle>();
-  socket_handle->SetSocket(std::move(socket_));
-  delegate_->CreateTLSClientSocket(
-      host_port_pair, std::move(socket_options), std::move(request),
-      std::move(socket_handle), std::move(observer),
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(callback));
+  int result = socket_->SetSendBufferSize(ClampTCPBufferSize(send_buffer_size));
+  std::move(callback).Run(result);
+}
+
+void TCPConnectedSocket::SetReceiveBufferSize(
+    int send_buffer_size,
+    SetSendBufferSizeCallback callback) {
+  if (!socket_) {
+    // Fail is this method was called after upgrading to TLS.
+    std::move(callback).Run(net::ERR_UNEXPECTED);
+    return;
+  }
+  int result =
+      socket_->SetReceiveBufferSize(ClampTCPBufferSize(send_buffer_size));
+  std::move(callback).Run(result);
 }
 
 void TCPConnectedSocket::SetNoDelay(bool no_delay,
@@ -174,6 +263,14 @@ void TCPConnectedSocket::OnShutdown() {
   socket_data_pump_ = nullptr;
   if (!pending_upgrade_to_tls_callback_.is_null())
     std::move(pending_upgrade_to_tls_callback_).Run();
+}
+
+const net::StreamSocket* TCPConnectedSocket::BorrowSocket() {
+  return socket_.get();
+}
+
+std::unique_ptr<net::StreamSocket> TCPConnectedSocket::TakeSocket() {
+  return std::move(socket_);
 }
 
 }  // namespace network

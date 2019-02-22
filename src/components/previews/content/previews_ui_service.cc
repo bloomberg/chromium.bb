@@ -17,25 +17,35 @@ PreviewsUIService::PreviewsUIService(
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
     std::unique_ptr<PreviewsLogger> logger,
-    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews,
+    network::NetworkQualityTracker* network_quality_tracker)
     : io_task_runner_(io_task_runner),
       logger_(std::move(logger)),
+      network_quality_tracker_(network_quality_tracker),
       weak_factory_(this) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(logger_);
   previews_decider_impl->Initialize(
       weak_factory_.GetWeakPtr(), std::move(previews_opt_out_store),
       std::move(previews_opt_guide), is_enabled_callback,
       std::move(allowed_previews));
+  network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
 }
 
 PreviewsUIService::~PreviewsUIService() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  network_quality_tracker_->RemoveEffectiveConnectionTypeObserver(this);
 }
 
 void PreviewsUIService::SetIOData(
     base::WeakPtr<PreviewsDeciderImpl> previews_decider_impl) {
   DCHECK(thread_checker_.CalledOnValidThread());
   previews_decider_impl_ = previews_decider_impl;
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PreviewsDeciderImpl::SetEffectiveConnectionType,
+                     previews_decider_impl_,
+                     current_effective_connection_type_));
 }
 
 void PreviewsUIService::AddPreviewNavigation(const GURL& url,
@@ -124,12 +134,33 @@ PreviewsLogger* PreviewsUIService::previews_logger() const {
   return logger_.get();
 }
 
+// When triggering previews, prevent long term black list rules.
+void PreviewsUIService::SetIgnoreLongTermBlackListForServerPreviews(
+    bool ignore_long_term_black_list_rules_allowed) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &PreviewsDeciderImpl::SetIgnoreLongTermBlackListForServerPreviews,
+          previews_decider_impl_, ignore_long_term_black_list_rules_allowed));
+}
+
 void PreviewsUIService::ClearBlackList(base::Time begin_time,
                                        base::Time end_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PreviewsDeciderImpl::ClearBlackList,
                                 previews_decider_impl_, begin_time, end_time));
+}
+
+void PreviewsUIService::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  current_effective_connection_type_ = type;
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PreviewsDeciderImpl::SetEffectiveConnectionType,
+                     previews_decider_impl_, type));
 }
 
 }  // namespace previews

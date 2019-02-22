@@ -58,14 +58,6 @@ const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
 const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
-const char kReferrerChainSizeOfLowRepVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.LowReputation";
-const char kReferrerChainSizeOfPhishingVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Phishing";
-const char kReferrerChainSizeOfSafeVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Safe";
-const char kVerdictMigrationHistogram[] =
-    "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization";
 
 void LogPasswordEntryRequestOutcome(RequestOutcome outcome,
                                     ReusedPasswordType password_type,
@@ -240,36 +232,17 @@ void LogWarningAction(WarningUIType ui_type,
   }
 }
 
-void LogNumberOfVerdictMigrated(size_t verdicts_migrated) {
-  UMA_HISTOGRAM_COUNTS_100(kVerdictMigrationHistogram, verdicts_migrated);
-}
-
 void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count) {
   UMA_HISTOGRAM_COUNTS_100(
       "PasswordProtection.GaiaPasswordReusesBeforeGaiaPasswordChanged",
       reuse_count);
 }
 
-void LogReferrerChainSize(
-    LoginReputationClientResponse::VerdictType verdict_type,
-    int referrer_chain_size) {
-  switch (verdict_type) {
-    case LoginReputationClientResponse::SAFE:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfSafeVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::LOW_REPUTATION:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfLowRepVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::PHISHING:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfPhishingVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
-      break;
-  }
-  NOTREACHED();
+void LogContentsSize(const gfx::Size& size) {
+  if (size.width() <= 0 || size.height() <= 0)
+    return;
+  UMA_HISTOGRAM_COUNTS_10000("SafeBrowsing.ContentsSize.Width", size.width());
+  UMA_HISTOGRAM_COUNTS_10000("SafeBrowsing.ContentsSize.Height", size.height());
 }
 
 }  // namespace safe_browsing

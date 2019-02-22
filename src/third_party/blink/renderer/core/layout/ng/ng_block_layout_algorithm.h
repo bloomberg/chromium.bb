@@ -7,9 +7,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -53,7 +56,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @param break_token The break token from which the layout should start.
   NGBlockLayoutAlgorithm(NGBlockNode node,
                          const NGConstraintSpace& space,
-                         NGBlockBreakToken* break_token = nullptr);
+                         const NGBlockBreakToken* break_token = nullptr);
 
   ~NGBlockLayoutAlgorithm() override;
 
@@ -86,7 +89,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                               const NGBreakToken* child_break_token);
 
   // Creates a new constraint space for the current child.
-  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForChild(
+  NGConstraintSpace CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const NGLogicalSize child_available_size,
@@ -124,7 +127,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
                    NGBlockNode,
-                   NGBlockBreakToken*);
+                   const NGBlockBreakToken*);
 
   // This uses the NGLayoutOpporunityIterator to position the fragment.
   //
@@ -145,15 +148,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // block offset has now been resolved.
   bool HandleNewFormattingContext(
       NGLayoutInputNode child,
-      NGBreakToken* child_break_token,
+      const NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
-      scoped_refptr<NGBreakToken>* previous_inline_break_token);
+      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
   std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
   LayoutNewFormattingContext(NGLayoutInputNode child,
-                             NGBreakToken* child_break_token,
+                             const NGBreakToken* child_break_token,
                              const NGInflowChildData&,
                              NGBfcOffset origin_offset,
                              bool abort_if_cleared);
@@ -161,10 +164,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved. (Same as HandleNewFormattingContext).
-  bool HandleInflow(NGLayoutInputNode child,
-                    NGBreakToken* child_break_token,
-                    NGPreviousInflowPosition*,
-                    scoped_refptr<NGBreakToken>* previous_inline_break_token);
+  bool HandleInflow(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      NGPreviousInflowPosition*,
+      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.
@@ -243,7 +247,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
   // Adds a set of positioned floats as children to the current fragment.
-  void AddPositionedFloats(const Vector<NGPositionedFloat>& positioned_floats);
+  template <class Vec>
+  void AddPositionedFloats(const Vec& positioned_floats);
 
   // Positions a list marker for the specified block content.
   void PositionOrPropagateListMarker(const NGLayoutResult&, NGLogicalOffset*);
@@ -270,10 +275,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   NGLogicalSize child_available_size_;
   NGLogicalSize child_percentage_size_;
+  NGLogicalSize replaced_child_percentage_size_;
 
   NGBoxStrut border_padding_;
   NGBoxStrut border_scrollbar_padding_;
   LayoutUnit intrinsic_block_size_;
+
+  NGInlineChildLayoutContext inline_child_layout_context_;
 
   // The line box index at which we ran out of space. This where we'll actually
   // end up breaking, unless we determine that we should break earlier in order
@@ -299,7 +307,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   bool has_processed_first_child_ = false;
 
-  std::unique_ptr<NGExclusionSpace> exclusion_space_;
+  NGExclusionSpace exclusion_space_;
   NGUnpositionedFloatVector unpositioned_floats_;
 };
 

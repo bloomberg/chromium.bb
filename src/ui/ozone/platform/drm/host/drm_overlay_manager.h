@@ -70,8 +70,8 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // Whether we have DRM atomic capabilities and we can support HW overlays.
   bool supports_overlays_ = false;
 
-  GpuThreadAdapter* proxy_;               // Not owned.
-  DrmWindowHostManager* window_manager_;  // Not owned.
+  GpuThreadAdapter* const proxy_;               // Not owned.
+  DrmWindowHostManager* const window_manager_;  // Not owned.
 
   // List of all OverlaySurfaceCandidate instances which have been requested
   // for validation and/or validated.

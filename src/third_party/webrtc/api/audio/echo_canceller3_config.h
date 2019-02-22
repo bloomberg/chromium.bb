@@ -13,18 +13,31 @@
 
 #include <stddef.h>  // size_t
 
+#include "rtc_base/system/rtc_export.h"
+
 namespace webrtc {
 
 // Configuration struct for EchoCanceller3
-struct EchoCanceller3Config {
+struct RTC_EXPORT EchoCanceller3Config {
+  // Checks and updates the parameters in a config to lie within reasonable
+  // ranges. Returns true if and only of the config did not need to be changed.
+  static bool Validate(EchoCanceller3Config* config);
+
   EchoCanceller3Config();
   EchoCanceller3Config(const EchoCanceller3Config& e);
+
+  struct Buffering {
+    bool use_new_render_buffering = true;
+    size_t excess_render_detection_interval_blocks = 250;
+    size_t max_allowed_excess_render_blocks = 8;
+  } buffering;
+
   struct Delay {
     Delay();
     Delay(const Delay& e);
     size_t default_delay = 5;
     size_t down_sampling_factor = 4;
-    size_t num_filters = 6;
+    size_t num_filters = 5;
     size_t api_call_jitter_blocks = 26;
     size_t min_echo_path_delay_blocks = 0;
     size_t delay_headroom_blocks = 2;
@@ -32,6 +45,12 @@ struct EchoCanceller3Config {
     size_t hysteresis_limit_2_blocks = 1;
     size_t skew_hysteresis_blocks = 3;
     size_t fixed_capture_delay_samples = 0;
+    float delay_estimate_smoothing = 0.7f;
+    float delay_candidate_detection_threshold = 0.2f;
+    struct DelaySelectionThresholds {
+      int initial;
+      int converged;
+    } delay_selection_thresholds = {5, 20};
   } delay;
 
   struct Filter {
@@ -40,6 +59,7 @@ struct EchoCanceller3Config {
       float leakage_converged;
       float leakage_diverged;
       float error_floor;
+      float error_ceil;
       float noise_gate;
     };
 
@@ -49,15 +69,17 @@ struct EchoCanceller3Config {
       float noise_gate;
     };
 
-    MainConfiguration main = {13, 0.00005f, 0.01f, 0.1f, 20075344.f};
+    MainConfiguration main = {13, 0.00005f, 0.05f, 0.001f, 2.f, 20075344.f};
     ShadowConfiguration shadow = {13, 0.7f, 20075344.f};
 
-    MainConfiguration main_initial = {12, 0.005f, 0.5f, 0.001f, 20075344.f};
+    MainConfiguration main_initial = {12,     0.005f, 0.5f,
+                                      0.001f, 2.f,    20075344.f};
     ShadowConfiguration shadow_initial = {12, 0.9f, 20075344.f};
 
     size_t config_change_duration_blocks = 250;
     float initial_state_seconds = 2.5f;
     bool conservative_initial_phase = false;
+    bool enable_shadow_filter_output_usage = true;
   } filter;
 
   struct Erle {
@@ -71,7 +93,7 @@ struct EchoCanceller3Config {
     float lf = 1.f;
     float mf = 1.f;
     float hf = 1.f;
-    float default_len = 0.88f;
+    float default_len = 0.83f;
     bool reverb_based_on_render = true;
     bool echo_can_saturate = true;
     bool bounded_erl = false;
@@ -104,7 +126,8 @@ struct EchoCanceller3Config {
     float audibility_threshold_lf = 10;
     float audibility_threshold_mf = 10;
     float audibility_threshold_hf = 10;
-    bool use_stationary_properties = true;
+    bool use_stationary_properties = false;
+    bool use_stationarity_properties_at_init = false;
   } echo_audibility;
 
   struct RenderLevels {
@@ -168,20 +191,22 @@ struct EchoCanceller3Config {
       float max_dec_factor_lf;
     };
 
-    Tuning normal_tuning = Tuning(MaskingThresholds(.2f, .3f, .3f),
+    Tuning normal_tuning = Tuning(MaskingThresholds(.3f, .4f, .3f),
                                   MaskingThresholds(.07f, .1f, .3f),
                                   2.0f,
                                   0.25f);
-    Tuning nearend_tuning = Tuning(MaskingThresholds(.2f, .3f, .3f),
-                                   MaskingThresholds(.07f, .1f, .3f),
+    Tuning nearend_tuning = Tuning(MaskingThresholds(1.09f, 1.1f, .3f),
+                                   MaskingThresholds(.1f, .3f, .3f),
                                    2.0f,
                                    0.25f);
 
     struct DominantNearendDetection {
-      float enr_threshold = 10.f;
-      float snr_threshold = 10.f;
-      int hold_duration = 25;
-      int trigger_threshold = 15;
+      float enr_threshold = 4.f;
+      float enr_exit_threshold = .1f;
+      float snr_threshold = 30.f;
+      int hold_duration = 50;
+      int trigger_threshold = 12;
+      bool use_during_initial_phase = true;
     } dominant_nearend_detection;
 
     struct HighBandsSuppression {

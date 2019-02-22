@@ -9,9 +9,7 @@
 #include "base/bind.h"
 
 using google_apis::AboutResourceCallback;
-using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
-using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeListCallback;
 using google_apis::DownloadActionCallback;
@@ -19,7 +17,6 @@ using google_apis::EntryActionCallback;
 using google_apis::FileListCallback;
 using google_apis::FileResourceCallback;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
 using google_apis::TeamDriveListCallback;
@@ -110,11 +107,6 @@ CancelCallback DummyDriveService::GetFileResource(
     const std::string& resource_id,
     const FileResourceCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) { return CancelCallback(); }
-
 CancelCallback DummyDriveService::GetAboutResource(
     const AboutResourceCallback& callback) { return CancelCallback(); }
 
@@ -123,9 +115,6 @@ CancelCallback DummyDriveService::GetStartPageToken(
     const google_apis::StartPageTokenCallback& callback) {
   return CancelCallback();
 }
-
-CancelCallback DummyDriveService::GetAppList(
-    const AppListCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::DeleteResource(
     const std::string& resource_id,
@@ -237,15 +226,6 @@ CancelCallback DummyDriveService::MultipartUploadExistingFile(
     const ProgressCallback& progress_callback) {
   return CancelCallback();
 }
-
-CancelCallback DummyDriveService::AuthorizeApp(
-    const std::string& resource_id,
-    const std::string& app_id,
-    const AuthorizeAppCallback& callback) { return CancelCallback(); }
-
-CancelCallback DummyDriveService::UninstallApp(
-    const std::string& app_id,
-    const EntryActionCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::AddPermission(
     const std::string& resource_id,

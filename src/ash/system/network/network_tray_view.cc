@@ -45,6 +45,19 @@ const char* NetworkTrayView::GetClassName() const {
   return "NetworkTrayView";
 }
 
+views::View* NetworkTrayView::GetTooltipHandlerForPoint(
+    const gfx::Point& point) {
+  return GetLocalBounds().Contains(point) ? this : nullptr;
+}
+
+bool NetworkTrayView::GetTooltipText(const gfx::Point& p,
+                                     base::string16* tooltip) const {
+  if (connection_status_tooltip_.empty())
+    return false;
+  *tooltip = connection_status_tooltip_;
+  return true;
+}
+
 void NetworkTrayView::UpdateNetworkStateHandlerIcon() {
   gfx::ImageSkia image;
   base::string16 name;
@@ -117,11 +130,21 @@ void NetworkTrayView::UpdateConnectionStatus(
           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
           base::UTF8ToUTF16(connected_network->name()), signal_strength_string);
     }
+    connection_status_tooltip_ = new_connection_status_string;
+  } else {
+    new_connection_status_string = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
+    // Use shorter desription like "Disconnected" instead of "disconnected from
+    // netrowk" for the tooltip, because the visual icon tells that this is
+    // about the network status.
+    connection_status_tooltip_ = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
   }
   if (new_connection_status_string != connection_status_string_) {
     connection_status_string_ = new_connection_status_string;
     if (notify_a11y && !connection_status_string_.empty())
       NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+    image_view()->SetAccessibleName(connection_status_string_);
   }
 }
 

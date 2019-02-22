@@ -146,8 +146,6 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   void GetStats(uint32_t nicid, GetStatsCallback callback) override {}
   void GetAggregateStats(GetAggregateStatsCallback callback) override {}
   void SetInterfaceStatus(uint32_t nicid, bool enabled) override {}
-  void SetRouteTable(
-      ::fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> rt) override {}
   void SetInterfaceAddress(uint32_t nicid,
                            fuchsia::netstack::NetAddress addr,
                            uint8_t prefixLen,
@@ -167,6 +165,13 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   void GetFilterStatus(GetFilterStatusCallback callback) override {}
   void SetNameServers(
       ::fidl::VectorPtr<::fuchsia::netstack::NetAddress> servers) override {}
+  void AddEthernetDevice(
+      ::fidl::StringPtr topological_path,
+      ::fidl::InterfaceHandle<::zircon::ethernet::Device> device) override {}
+  void StartRouteTableTransaction(
+      ::fidl::InterfaceRequest<::fuchsia::netstack::RouteTableTransaction>
+          routeTableTransaction,
+      StartRouteTableTransactionCallback callback) override {}
 
   ::fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces_ =
       fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);

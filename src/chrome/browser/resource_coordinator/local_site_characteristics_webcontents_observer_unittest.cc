@@ -4,6 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
@@ -39,8 +40,8 @@ class LenientMockDataWriter : public SiteCharacteristicsDataWriter {
   MOCK_METHOD0(NotifyUpdatesTitleInBackground, void());
   MOCK_METHOD0(NotifyUsesAudioInBackground, void());
   MOCK_METHOD0(NotifyUsesNotificationsInBackground, void());
-  MOCK_METHOD2(NotifyLoadTimePerformanceMeasurement,
-               void(base::TimeDelta, uint64_t));
+  MOCK_METHOD3(NotifyLoadTimePerformanceMeasurement,
+               void(base::TimeDelta, base::TimeDelta, uint64_t));
 
   const url::Origin& Origin() const { return origin_; }
 
@@ -91,7 +92,7 @@ class LocalSiteCharacteristicsWebContentsObserverTest
     test_clock().Advance(base::TimeDelta::FromSeconds(1));
     // Set the testing factory for the test browser context.
     LocalSiteCharacteristicsDataStoreFactory::GetInstance()->SetTestingFactory(
-        browser_context(), &BuildMockDataStoreForContext);
+        browser_context(), base::BindRepeating(&BuildMockDataStoreForContext));
 
     TabLoadTracker::Get()->StartTracking(web_contents());
     LocalSiteCharacteristicsWebContentsObserver::
@@ -397,13 +398,17 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
 
+  constexpr base::TimeDelta kExpectedLoadDuration =
+      base::TimeDelta::FromMicroseconds(501);
   constexpr base::TimeDelta kExpectedCPUTime =
       base::TimeDelta::FromMicroseconds(1003);
   constexpr uint64_t kExpectedMemory = 123u;
   auto nav_id = GetNavIdForWebContents();
-  EXPECT_CALL(*mock_writer, NotifyLoadTimePerformanceMeasurement(
-                                kExpectedCPUTime, kExpectedMemory));
+  EXPECT_CALL(*mock_writer,
+              NotifyLoadTimePerformanceMeasurement(
+                  kExpectedLoadDuration, kExpectedCPUTime, kExpectedMemory));
   observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
+                                            kExpectedLoadDuration,
                                             kExpectedCPUTime, kExpectedMemory);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -412,6 +417,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   //     writer.
   nav_id.navigation_id++;
   observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
+                                            kExpectedLoadDuration,
                                             kExpectedCPUTime, kExpectedMemory);
   ::testing::Mock::VerifyAndClear(mock_writer);
 

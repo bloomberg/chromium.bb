@@ -12,8 +12,9 @@
 namespace compression {
 
 // Compresses the data in |input| using gzip, storing the result in |output|.
-// |input| and |output| are allowed to be the same string (in-place operation).
-bool GzipCompress(const std::string& input, std::string* output);
+// |input| and |output| are allowed to point to the same string (in-place
+// operation).
+bool GzipCompress(base::StringPiece input, std::string* output);
 
 // Uncompresses the data in |input| using gzip, storing the result in |output|.
 // |input| and |output| are allowed to be the same string (in-place operation).

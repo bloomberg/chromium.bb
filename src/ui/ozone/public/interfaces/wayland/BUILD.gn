@@ -11,6 +11,7 @@ mojom("wayland_interfaces") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]
 }

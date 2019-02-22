@@ -52,6 +52,16 @@ void InputDeviceClientTestApi::
   }
 }
 
+void InputDeviceClientTestApi::
+    NotifyObserversTouchpadDeviceConfigurationChanged() {
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_
+        ->NotifyObserversTouchpadDeviceConfigurationChanged();
+  } else {
+    GetInputDeviceClient()->NotifyObserversTouchpadDeviceConfigurationChanged();
+  }
+}
+
 void InputDeviceClientTestApi::OnDeviceListsComplete() {
   if (ui::DeviceDataManager::instance_)
     ui::DeviceDataManager::instance_->OnDeviceListsComplete();
@@ -85,6 +95,15 @@ void InputDeviceClientTestApi::SetTouchscreenDevices(
   } else {
     GetInputDeviceClient()->OnTouchscreenDeviceConfigurationChanged(
         devices, are_touchscreen_target_displays_valid);
+  }
+}
+
+void InputDeviceClientTestApi::SetTouchpadDevices(
+    const std::vector<ui::InputDevice>& devices) {
+  if (ui::DeviceDataManager::instance_) {
+    ui::DeviceDataManager::instance_->OnTouchpadDevicesUpdated(devices);
+  } else {
+    GetInputDeviceClient()->OnTouchpadDeviceConfigurationChanged(devices);
   }
 }
 

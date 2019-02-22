@@ -16,14 +16,18 @@ static constexpr int kMaxCacheCount = 1 << 16;
 GrCCPathCache::MaskTransform::MaskTransform(const SkMatrix& m, SkIVector* shift)
         : fMatrix2x2{m.getScaleX(), m.getSkewX(), m.getSkewY(), m.getScaleY()} {
     SkASSERT(!m.hasPerspective());
-#ifndef SK_BUILD_FOR_ANDROID_FRAMEWORK
     Sk2f translate = Sk2f(m.getTranslateX(), m.getTranslateY());
-    Sk2f floor = translate.floor();
-    (translate - floor).store(fSubpixelTranslate);
-    shift->set((int)floor[0], (int)floor[1]);
-    SkASSERT((float)shift->fX == floor[0]);
-    SkASSERT((float)shift->fY == floor[1]);
+    Sk2f transFloor;
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    // On Android framework we pre-round view matrix translates to integers for better caching.
+    transFloor = translate;
+#else
+    transFloor = translate.floor();
+    (translate - transFloor).store(fSubpixelTranslate);
 #endif
+    shift->set((int)transFloor[0], (int)transFloor[1]);
+    SkASSERT((float)shift->fX == transFloor[0]);  // Make sure transFloor had integer values.
+    SkASSERT((float)shift->fY == transFloor[1]);
 }
 
 inline static bool fuzzy_equals(const GrCCPathCache::MaskTransform& a,
@@ -45,27 +49,47 @@ namespace {
 // Produces a key that accounts both for a shape's path geometry, as well as any stroke/style.
 class WriteStyledKey {
 public:
-    WriteStyledKey(const GrShape& shape)
-        : fShapeUnstyledKeyCount(shape.unstyledKeySize())
-        , fStyleKeyCount(
-                GrStyle::KeySize(shape.style(), GrStyle::Apply::kPathEffectAndStrokeRec)) {}
+    static constexpr int kStyledKeySizeInBytesIdx = 0;
+    static constexpr int kStrokeWidthIdx = 1;
+    static constexpr int kStrokeMiterIdx = 2;
+    static constexpr int kStrokeCapJoinIdx = 3;
+    static constexpr int kShapeUnstyledKeyIdx = 4;
+
+    static constexpr int kStrokeKeyCount = 3;  // [width, miterLimit, cap|join].
+
+    WriteStyledKey(const GrShape& shape) : fShapeUnstyledKeyCount(shape.unstyledKeySize()) {}
 
     // Returns the total number of uint32_t's to allocate for the key.
-    int allocCountU32() const { return 2 + fShapeUnstyledKeyCount + fStyleKeyCount; }
+    int allocCountU32() const { return kShapeUnstyledKeyIdx + fShapeUnstyledKeyCount; }
 
     // Writes the key to out[].
     void write(const GrShape& shape, uint32_t* out) {
-        // How many bytes remain in the key, beginning on out[1]?
-        out[0] = (1 + fShapeUnstyledKeyCount + fStyleKeyCount)  * sizeof(uint32_t);
-        out[1] = fStyleKeyCount;
-        shape.writeUnstyledKey(&out[2]);
-        GrStyle::WriteKey(&out[2 + fShapeUnstyledKeyCount], shape.style(),
-                          GrStyle::Apply::kPathEffectAndStrokeRec, 1);
+        out[kStyledKeySizeInBytesIdx] =
+                (kStrokeKeyCount + fShapeUnstyledKeyCount) * sizeof(uint32_t);
+
+        // Stroke key.
+        // We don't use GrStyle::WriteKey() because it does not account for hairlines.
+        // http://skbug.com/8273
+        SkASSERT(!shape.style().hasPathEffect());
+        const SkStrokeRec& stroke = shape.style().strokeRec();
+        if (stroke.isFillStyle()) {
+            // Use a value for width that won't collide with a valid fp32 value >= 0.
+            out[kStrokeWidthIdx] = ~0;
+            out[kStrokeMiterIdx] = out[kStrokeCapJoinIdx] = 0;
+        } else {
+            float width = stroke.getWidth(), miterLimit = stroke.getMiter();
+            memcpy(&out[kStrokeWidthIdx], &width, sizeof(float));
+            memcpy(&out[kStrokeMiterIdx], &miterLimit, sizeof(float));
+            out[kStrokeCapJoinIdx] = (stroke.getCap() << 16) | stroke.getJoin();
+            GR_STATIC_ASSERT(sizeof(out[kStrokeWidthIdx]) == sizeof(float));
+        }
+
+        // Shape unstyled key.
+        shape.writeUnstyledKey(&out[kShapeUnstyledKeyIdx]);
     }
 
 private:
     int fShapeUnstyledKeyCount;
-    int fStyleKeyCount;
 };
 
 }
@@ -150,6 +174,7 @@ sk_sp<GrCCPathCacheEntry> GrCCPathCache::find(const GrShape& shape, const MaskTr
             this->evict(fLRU.tail());  // We've exceeded our limit.
         }
         entry = fHashTable.set(HashNode(this, m, shape))->entry();
+        shape.addGenIDChangeListener(sk_ref_sp(entry));
         SkASSERT(fHashTable.count() <= kMaxCacheCount);
     } else {
         fLRU.remove(entry);  // Will be re-added at head.

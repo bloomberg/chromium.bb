@@ -24,7 +24,7 @@ class Animation;
 class ComputedStyle;
 
 class NewCSSAnimation {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NewCSSAnimation(AtomicString name,
@@ -56,10 +56,10 @@ class NewCSSAnimation {
 };
 
 class UpdatedCSSAnimation {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
-  UpdatedCSSAnimation(size_t index,
+  UpdatedCSSAnimation(wtf_size_t index,
                       Animation* animation,
                       const InertEffect& effect,
                       Timing specified_timing,
@@ -79,7 +79,7 @@ class UpdatedCSSAnimation {
     visitor->Trace(style_rule);
   }
 
-  size_t index;
+  wtf_size_t index;
   Member<Animation> animation;
   Member<const InertEffect> effect;
   Timing specified_timing;
@@ -118,14 +118,14 @@ class CSSAnimationUpdate final {
                                               effect, timing, style_rule,
                                               play_state_list));
   }
-  void CancelAnimation(size_t index, const Animation& animation) {
+  void CancelAnimation(wtf_size_t index, const Animation& animation) {
     cancelled_animation_indices_.push_back(index);
     suppressed_animations_.insert(&animation);
   }
-  void ToggleAnimationIndexPaused(size_t index) {
+  void ToggleAnimationIndexPaused(wtf_size_t index) {
     animation_indices_with_pause_toggled_.push_back(index);
   }
-  void UpdateAnimation(size_t index,
+  void UpdateAnimation(wtf_size_t index,
                        Animation* animation,
                        const InertEffect& effect,
                        const Timing& specified_timing,
@@ -158,13 +158,13 @@ class CSSAnimationUpdate final {
   const HeapVector<NewCSSAnimation>& NewAnimations() const {
     return new_animations_;
   }
-  const Vector<size_t>& CancelledAnimationIndices() const {
+  const Vector<wtf_size_t>& CancelledAnimationIndices() const {
     return cancelled_animation_indices_;
   }
   const HeapHashSet<Member<const Animation>>& SuppressedAnimations() const {
     return suppressed_animations_;
   }
-  const Vector<size_t>& AnimationIndicesWithPauseToggled() const {
+  const Vector<wtf_size_t>& AnimationIndicesWithPauseToggled() const {
     return animation_indices_with_pause_toggled_;
   }
   const HeapVector<UpdatedCSSAnimation>& AnimationsWithUpdates() const {
@@ -175,7 +175,7 @@ class CSSAnimationUpdate final {
   }
 
   struct NewTransition {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     NewTransition();
@@ -270,9 +270,9 @@ class CSSAnimationUpdate final {
   // with the same name, due to the way in which we split up animations with
   // incomplete keyframes.
   HeapVector<NewCSSAnimation> new_animations_;
-  Vector<size_t> cancelled_animation_indices_;
+  Vector<wtf_size_t> cancelled_animation_indices_;
   HeapHashSet<Member<const Animation>> suppressed_animations_;
-  Vector<size_t> animation_indices_with_pause_toggled_;
+  Vector<wtf_size_t> animation_indices_with_pause_toggled_;
   HeapVector<UpdatedCSSAnimation> animations_with_updates_;
   HeapVector<Member<Animation>> updated_compositor_keyframes_;
 

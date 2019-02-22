@@ -7,6 +7,8 @@
 # non-component build. This needs to match the GYP build which was likely an
 # attempt to make larger components to help with loading.
 
+import("//build/config/jumbo.gni")
+
 group("common") {
   if (is_component_build) {
     public_deps = [
@@ -49,7 +51,7 @@ group("webgpu") {
   ]
 }
 
-source_set("common_sources") {
+jumbo_source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
@@ -68,6 +70,7 @@ source_set("common_sources") {
     "constants.h",
     "context_creation_attribs.cc",
     "context_creation_attribs.h",
+    "context_result.cc",
     "context_result.h",
     "debug_marker_manager.cc",
     "debug_marker_manager.h",
@@ -83,8 +86,12 @@ source_set("common_sources") {
     "mailbox.h",
     "mailbox_holder.cc",
     "mailbox_holder.h",
+    "presentation_feedback_utils.cc",
+    "presentation_feedback_utils.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
+    "shared_image_trace_utils.cc",
+    "shared_image_trace_utils.h",
     "shared_image_usage.h",
     "swap_buffers_complete_params.cc",
     "swap_buffers_complete_params.h",
@@ -124,7 +131,10 @@ source_set("gles2_sources") {
     "gles2_cmd_ids_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_gles2_implementation" ]
+  configs += [
+    "//gpu:gpu_gles2_implementation",
+    "//build/config/compiler:no_shorten_64_warnings",
+  ]
 
   deps = [
     ":gles2_utils",

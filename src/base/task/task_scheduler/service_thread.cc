@@ -91,11 +91,17 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
   // every set of traits in case PostTaskWithTraits() itself is slow.
   // Bonus: this appraoch also includes the overhead of Bind() in the reported
   // latency).
+  // TODO(jessemckenna): pass |profiled_traits| directly to
+  // RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms() once compiler
+  // error on NaCl is fixed
+  TaskPriority task_priority = profiled_traits.priority();
+  bool may_block = profiled_traits.may_block();
   base::PostTaskWithTraits(
       FROM_HERE, profiled_traits,
-      BindOnce(&TaskTracker::RecordLatencyHistogram, Unretained(task_tracker_),
-               TaskTracker::LatencyHistogramType::HEARTBEAT_LATENCY,
-               profiled_traits, TimeTicks::Now()));
+      BindOnce(
+          &TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms,
+          Unretained(task_tracker_), task_priority, may_block, TimeTicks::Now(),
+          task_tracker_->GetNumTasksRun()));
 }
 
 }  // namespace internal

@@ -38,9 +38,9 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
     page_expected_fields_.Set(field);
 }
 
-void PageLoadMetricsTestWaiter::AddCompleteResourcesExpectation(
-    int expected_num_complete_resources) {
-  expected_num_complete_resources_ = expected_num_complete_resources;
+void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
+    int expected_minimum_complete_resources) {
+  expected_minimum_complete_resources_ = expected_minimum_complete_resources;
 }
 
 void PageLoadMetricsTestWaiter::AddMinimumResourceBytesExpectation(
@@ -101,7 +101,6 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     page_expected_fields_.Clear(TimingField::kLoadTimingInfo);
     observed_page_fields_.Set(TimingField::kLoadTimingInfo);
   }
-
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
@@ -112,11 +111,11 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
   for (auto const& resource : resources) {
     auto it = page_resources_.find(resource->request_id);
     if (it != page_resources_.end()) {
-      it->second = resource.get();
+      it->second = resource.Clone();
     } else {
       page_resources_.emplace(std::piecewise_construct,
                               std::forward_as_tuple(resource->request_id),
-                              std::forward_as_tuple(resource.get()));
+                              std::forward_as_tuple(resource->Clone()));
     }
     if (resource->is_complete)
       current_complete_resources_++;
@@ -184,8 +183,9 @@ void PageLoadMetricsTestWaiter::OnCommit(
 }
 
 bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
-  return (expected_num_complete_resources_ == 0 ||
-          current_complete_resources_ == expected_num_complete_resources_) &&
+  return (expected_minimum_complete_resources_ == 0 ||
+          current_complete_resources_ >=
+              expected_minimum_complete_resources_) &&
          (expected_minimum_resource_bytes_ == 0 ||
           current_resource_bytes_ >= expected_minimum_resource_bytes_);
 }

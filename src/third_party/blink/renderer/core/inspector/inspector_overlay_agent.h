@@ -35,6 +35,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_host.h"
@@ -213,7 +214,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool swallow_next_mouse_up_;
   SearchMode inspect_mode_;
   std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
-  int backend_node_id_to_inspect_;
+  DOMNodeId backend_node_id_to_inspect_;
   bool screenshot_mode_ = false;
   IntPoint screenshot_anchor_;
   IntPoint screenshot_position_;

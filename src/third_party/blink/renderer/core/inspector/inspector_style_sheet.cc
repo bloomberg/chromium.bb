@@ -73,13 +73,13 @@ static const CSSParserContext* ParserContextForDocument(Document* document) {
 String FindMagicComment(const String& content, const String& name) {
   DCHECK(name.Find("=") == kNotFound);
 
-  unsigned length = content.length();
-  unsigned name_length = name.length();
+  wtf_size_t length = content.length();
+  wtf_size_t name_length = name.length();
   const bool kMultiline = true;
 
-  size_t pos = length;
-  size_t equal_sign_pos = 0;
-  size_t closing_comment_pos = 0;
+  wtf_size_t pos = length;
+  wtf_size_t equal_sign_pos = 0;
+  wtf_size_t closing_comment_pos = 0;
   while (true) {
     pos = content.ReverseFind(name, pos);
     if (pos == kNotFound)
@@ -112,18 +112,18 @@ String FindMagicComment(const String& content, const String& name) {
 
   DCHECK(equal_sign_pos);
   DCHECK(!kMultiline || closing_comment_pos);
-  size_t url_pos = equal_sign_pos + 1;
+  wtf_size_t url_pos = equal_sign_pos + 1;
   String match = kMultiline
                      ? content.Substring(url_pos, closing_comment_pos - url_pos)
                      : content.Substring(url_pos);
 
-  size_t new_line = match.Find("\n");
+  wtf_size_t new_line = match.Find("\n");
   if (new_line != kNotFound)
     match = match.Substring(0, new_line);
   match = match.StripWhiteSpace();
 
   String disallowed_chars("\"' \t");
-  for (unsigned i = 0; i < match.length(); ++i) {
+  for (uint32_t i = 0; i < match.length(); ++i) {
     if (disallowed_chars.find(match[i]) != kNotFound)
       return g_empty_string;
   }
@@ -280,7 +280,7 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
           .StripWhiteSpace();
   if (property_string.EndsWith(';'))
     property_string = property_string.Left(property_string.length() - 1);
-  size_t colon_index = property_string.find(':');
+  wtf_size_t colon_index = property_string.find(':');
   DCHECK_NE(colon_index, kNotFound);
 
   String name = property_string.Left(colon_index).StripWhiteSpace();
@@ -558,7 +558,7 @@ void Diff(const Vector<String>& list_a,
           IndexMap* a_to_b,
           IndexMap* b_to_a) {
   // Cut of common prefix.
-  size_t start_offset = 0;
+  wtf_size_t start_offset = 0;
   while (start_offset < list_a.size() && start_offset < list_b.size()) {
     if (list_a.at(start_offset) != list_b.at(start_offset))
       break;
@@ -568,11 +568,11 @@ void Diff(const Vector<String>& list_a,
   }
 
   // Cut of common suffix.
-  size_t end_offset = 0;
+  wtf_size_t end_offset = 0;
   while (end_offset < list_a.size() - start_offset &&
          end_offset < list_b.size() - start_offset) {
-    size_t index_a = list_a.size() - end_offset - 1;
-    size_t index_b = list_b.size() - end_offset - 1;
+    wtf_size_t index_a = list_a.size() - end_offset - 1;
+    wtf_size_t index_b = list_b.size() - end_offset - 1;
     if (list_a.at(index_a) != list_b.at(index_b))
       break;
     a_to_b->Set(index_a, index_b);
@@ -580,8 +580,8 @@ void Diff(const Vector<String>& list_a,
     ++end_offset;
   }
 
-  int n = list_a.size() - start_offset - end_offset;
-  int m = list_b.size() - start_offset - end_offset;
+  wtf_size_t n = list_a.size() - start_offset - end_offset;
+  wtf_size_t m = list_b.size() - start_offset - end_offset;
 
   // If we mapped either of arrays, we have no more work to do.
   if (n == 0 || m == 0)
@@ -589,14 +589,14 @@ void Diff(const Vector<String>& list_a,
 
   int** diff = new int*[n];
   int** backtrack = new int*[n];
-  for (int i = 0; i < n; ++i) {
+  for (wtf_size_t i = 0; i < n; ++i) {
     diff[i] = new int[m];
     backtrack[i] = new int[m];
   }
 
   // Compute longest common subsequence of two cssom models.
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
+  for (wtf_size_t i = 0; i < n; ++i) {
+    for (wtf_size_t j = 0; j < m; ++j) {
       int max = 0;
       int track = 0;
 
@@ -644,7 +644,7 @@ void Diff(const Vector<String>& list_a,
     }
   }
 
-  for (int i = 0; i < n; ++i) {
+  for (wtf_size_t i = 0; i < n; ++i) {
     delete[] diff[i];
     delete[] backtrack[i];
   }
@@ -1005,9 +1005,11 @@ String InspectorStyleSheet::FinalURL() {
   return url.IsEmpty() ? document_url_ : url;
 }
 
-bool InspectorStyleSheet::SetText(const String& text, ExceptionState&) {
+bool InspectorStyleSheet::SetText(const String& text,
+                                  ExceptionState& exception_state) {
   InnerSetText(text, true);
-  page_style_sheet_->SetText(text);
+  page_style_sheet_->SetText(text, true /* allow_import_rules */,
+                             exception_state);
   OnStyleSheetTextChanged();
   return true;
 }
@@ -1237,7 +1239,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleBySourceRange(
   DCHECK(source_data_);
 
   CSSRuleSourceData* containing_rule_source_data = nullptr;
-  for (size_t i = 0; i < source_data_->size(); ++i) {
+  for (wtf_size_t i = 0; i < source_data_->size(); ++i) {
     CSSRuleSourceData* rule_source_data = source_data_->at(i).Get();
     if (rule_source_data->rule_header_range.start < source_range.start &&
         source_range.start < rule_source_data->rule_body_range.start) {
@@ -1317,7 +1319,7 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
   // Find index of CSSRule that entirely belongs to the range.
   CSSRuleSourceData* found_data = nullptr;
 
-  for (size_t i = 0; i < source_data_->size(); ++i) {
+  for (wtf_size_t i = 0; i < source_data_->size(); ++i) {
     CSSRuleSourceData* rule_source_data = source_data_->at(i).Get();
     unsigned rule_start = rule_source_data->rule_header_range.start;
     unsigned rule_end = rule_source_data->rule_body_range.end + 1;
@@ -1354,14 +1356,14 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
       return false;
     }
     CSSMediaRule* parent_media_rule = ToCSSMediaRule(parent_rule);
-    size_t index = 0;
+    wtf_size_t index = 0;
     while (index < parent_media_rule->length() &&
            parent_media_rule->Item(index) != rule)
       ++index;
     DCHECK_LT(index, parent_media_rule->length());
     parent_media_rule->deleteRule(index, exception_state);
   } else {
-    size_t index = 0;
+    wtf_size_t index = 0;
     while (index < style_sheet->length() && style_sheet->item(index) != rule)
       ++index;
     DCHECK_LT(index, style_sheet->length());
@@ -1383,7 +1385,7 @@ InspectorStyleSheet::CollectClassNames() {
   std::unique_ptr<protocol::Array<String>> result =
       protocol::Array<String>::create();
 
-  for (size_t i = 0; i < parsed_flat_rules_.size(); ++i) {
+  for (wtf_size_t i = 0; i < parsed_flat_rules_.size(); ++i) {
     if (parsed_flat_rules_.at(i)->type() == CSSRule::kStyleRule)
       GetClassNamesFromRule(ToCSSStyleRule(parsed_flat_rules_.at(i)),
                             unique_names);
@@ -1474,8 +1476,10 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
   if (HasSourceURL())
     result->setHasSourceURL(true);
 
-  if (style_sheet->ownerNode())
-    result->setOwnerNode(DOMNodeIds::IdForNode(style_sheet->ownerNode()));
+  if (style_sheet->ownerNode()) {
+    result->setOwnerNode(
+        IdentifiersFactory::IntIdForNode(style_sheet->ownerNode()));
+  }
 
   String source_map_url_value = SourceMapURL();
   if (!source_map_url_value.IsEmpty())
@@ -1490,7 +1494,7 @@ InspectorStyleSheet::SelectorsFromSource(CSSRuleSourceData* source_data,
   std::unique_ptr<protocol::Array<protocol::CSS::Value>> result =
       protocol::Array<protocol::CSS::Value>::create();
   const Vector<SourceRange>& ranges = source_data->selector_ranges;
-  for (size_t i = 0, size = ranges.size(); i < size; ++i) {
+  for (wtf_size_t i = 0, size = ranges.size(); i < size; ++i) {
     const SourceRange& range = ranges.at(i);
     String selector = sheet_text.Substring(range.start, range.length());
 
@@ -1620,8 +1624,8 @@ InspectorStyleSheet::RuleHeaderSourceRange(CSSRule* rule) {
 std::unique_ptr<protocol::CSS::SourceRange>
 InspectorStyleSheet::MediaQueryExpValueSourceRange(
     CSSRule* rule,
-    size_t media_query_index,
-    size_t media_query_exp_index) {
+    wtf_size_t media_query_index,
+    wtf_size_t media_query_exp_index) {
   if (!source_data_)
     return nullptr;
   CSSRuleSourceData* source_data = SourceDataForRule(rule);
@@ -1715,7 +1719,7 @@ CSSRuleSourceData* InspectorStyleSheet::FindRuleByHeaderRange(
   if (!source_data_)
     return nullptr;
 
-  for (size_t i = 0; i < source_data_->size(); ++i) {
+  for (wtf_size_t i = 0; i < source_data_->size(); ++i) {
     CSSRuleSourceData* rule_source_data = source_data_->at(i).Get();
     if (rule_source_data->rule_header_range.start == source_range.start &&
         rule_source_data->rule_header_range.end == source_range.end) {
@@ -1730,7 +1734,7 @@ CSSRuleSourceData* InspectorStyleSheet::FindRuleByBodyRange(
   if (!source_data_)
     return nullptr;
 
-  for (size_t i = 0; i < source_data_->size(); ++i) {
+  for (wtf_size_t i = 0; i < source_data_->size(); ++i) {
     CSSRuleSourceData* rule_source_data = source_data_->at(i).Get();
     if (rule_source_data->rule_body_range.start == source_range.start &&
         rule_source_data->rule_body_range.end == source_range.end) {
@@ -1747,7 +1751,7 @@ CSSRule* InspectorStyleSheet::RuleForSourceData(
 
   RemapSourceDataToCSSOMIfNecessary();
 
-  size_t index = source_data_->Find(source_data);
+  wtf_size_t index = source_data_->Find(source_data);
   if (index == kNotFound)
     return nullptr;
   IndexMap::iterator it = source_data_to_rule_.find(index);
@@ -1770,7 +1774,7 @@ CSSRuleSourceData* InspectorStyleSheet::SourceDataForRule(CSSRule* rule) {
 
   RemapSourceDataToCSSOMIfNecessary();
 
-  size_t index = cssom_flat_rules_.Find(rule);
+  wtf_size_t index = cssom_flat_rules_.Find(rule);
   if (index == kNotFound)
     return nullptr;
   IndexMap::iterator it = rule_to_source_data_.find(index);
@@ -1795,7 +1799,7 @@ void InspectorStyleSheet::RemapSourceDataToCSSOMIfNecessary() {
     return;
   }
 
-  for (size_t i = 0; i < cssom_flat_rules_.size(); ++i) {
+  for (wtf_size_t i = 0; i < cssom_flat_rules_.size(); ++i) {
     if (cssom_flat_rules_.at(i) != cssom_rules.at(i)) {
       MapSourceDataToCSSOM();
       return;
@@ -1818,9 +1822,9 @@ void InspectorStyleSheet::MapSourceDataToCSSOM() {
 
   Vector<String> cssom_rules_text = Vector<String>();
   Vector<String> parsed_rules_text = Vector<String>();
-  for (size_t i = 0; i < cssom_rules.size(); ++i)
+  for (wtf_size_t i = 0; i < cssom_rules.size(); ++i)
     cssom_rules_text.push_back(CanonicalCSSText(cssom_rules.at(i)));
-  for (size_t j = 0; j < parsed_rules.size(); ++j)
+  for (wtf_size_t j = 0; j < parsed_rules.size(); ++j)
     parsed_rules_text.push_back(CanonicalCSSText(parsed_rules.at(j)));
 
   Diff(cssom_rules_text, parsed_rules_text, &rule_to_source_data_,

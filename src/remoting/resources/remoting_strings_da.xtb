@@ -102,7 +102,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="3171922709365450819">Denne enhed understøttes ikke af denne klient, fordi den kræver godkendelse fra tredjepart.</translation>
 <translation id="3194245623920924351">Chrome Fjernskrivebord</translation>
 <translation id="3197730452537982411">Fjernskrivebord</translation>
-<translation id="3212472844831225214">• Understøtter nu Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Send disse anvisninger i en mail</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="3286521253923406898">Administration af Chromoting-host</translation>
@@ -141,7 +140,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="4126409073460786861">Opdater denne side, når konfigurationen er fuldført. Du kan derefter få adgang til computeren ved at vælge din enhed og angive pinkoden.</translation>
 <translation id="4145029455188493639">Du er logget ind som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nogle obligatoriske komponenter mangler. Kontrollér, at du har installeret den nyeste version af softwaren, og prøv igen.</translation>
-<translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START" />mindst seks cifre<ph name="BOLD_END" />. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
+<translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START" />mindst seks cifre<ph name="BOLD_END" />. Denne pinkode skal angives, når du opretter forbindelse fra et andet sted.</translation>
 <translation id="4169432154993690151">Giv Chrome Fjernskrivebord adgang til dit kamera for at vælge et profilbillede</translation>
 <translation id="4176825807642096119">Adgangskode</translation>
 <translation id="4207623512727273241">Kør installationsprogrammet, før du fortsætter.</translation>
@@ -331,6 +330,8 @@ Pc</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="8548209692293300397">Du har tidligere logget ind som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). For at få adgang til dine computere på den pågældende konto skal du <ph name="LINK_BEGIN" />logge ind på Google Chrome<ph name="LINK_END" /> med denne konto og geninstallere Chrome Fjernskrivebord.</translation>
 <translation id="8642984861538780905">Rimelig</translation>
+<translation id="8705151241155781642">• Understøtter nu Android 9.0 Pie.
+• Understøtter tilpasning af fjernskrivebordets opløsning, så den matcher din Android-enheds skærm.</translation>
 <translation id="8712909229180978490">Jeg kan ikke se mine gemte filer online i Google Drev.</translation>
 <translation id="8743328882720071828">Vil du give <ph name="CLIENT_USERNAME" /> tilladelse til at se og styre din computer?</translation>
 <translation id="8747048596626351634">Sessionen gik ned eller kunne ikke startes. Hvis ~/.chrome-remote-desktop-session findes på fjerncomputeren, skal du sørge for, at den starter en proces, der er længe åben i forgrunden, f.eks. et computermiljø eller en vinduesadministrator.</translation>

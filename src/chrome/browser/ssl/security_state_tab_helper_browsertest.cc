@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -41,7 +42,9 @@
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -54,8 +57,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -79,6 +80,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -212,27 +214,27 @@ class FileChooserDelegate : public content::WebContentsDelegate {
   bool file_chosen() const { return file_chosen_; }
 
   // Copy of the params passed to RunFileChooser.
-  content::FileChooserParams params() const { return params_; }
+  const blink::mojom::FileChooserParams& params() const { return *params_; }
 
   // WebContentsDelegate:
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      const content::FileChooserParams& params) override {
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override {
     // Send the selected file to the renderer process.
-    content::FileChooserFileInfo file_info;
-    file_info.file_path = file_;
-    std::vector<content::FileChooserFileInfo> files;
-    files.push_back(file_info);
-    render_frame_host->FilesSelectedInChooser(files,
-                                              content::FileChooserParams::Open);
+    std::vector<blink::mojom::FileChooserFileInfoPtr> files;
+    files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
+        blink::mojom::NativeFileInfo::New(file_, base::string16())));
+    listener->FileSelected(std::move(files),
+                           blink::mojom::FileChooserParams::Mode::kOpen);
 
     file_chosen_ = true;
-    params_ = params;
+    params_ = params.Clone();
   }
 
  private:
   base::FilePath file_;
   bool file_chosen_;
-  content::FileChooserParams params_;
+  blink::mojom::FileChooserParamsPtr params_;
 
   DISALLOW_COPY_AND_ASSIGN(FileChooserDelegate);
 };
@@ -1344,8 +1346,8 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstallLoadingInterceptor,
                        embedded_test_server()->GetURL("/title1.html").host()));
   }

@@ -34,6 +34,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/view_properties.h"
 
 using views::LabelButtonBorder;
 
@@ -76,11 +77,6 @@ ToolbarActionView::ToolbarActionView(
 
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
   UpdateState();
 }
 
@@ -90,15 +86,15 @@ ToolbarActionView::~ToolbarActionView() {
 
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  if (focus_ring()) {
-    focus_ring()->SetPath(CreateToolbarFocusRingPath(this, gfx::Insets()));
-  }
+  SetProperty(views::kHighlightPathKey,
+              CreateToolbarHighlightPath(this, gfx::Insets()).release());
+
   MenuButton::OnBoundsChanged(previous_bounds);
 }
 
 gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  bounds.Inset(GetInkDropInsets(this, gfx::Insets()));
+  bounds.Inset(GetToolbarInkDropInsets(this, gfx::Insets()));
   return bounds;
 }
 
@@ -153,11 +149,6 @@ std::unique_ptr<views::InkDropHighlight>
 ToolbarActionView::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight<MenuButton>(
       this, GetMirroredRect(GetContentsBounds()).CenterPoint());
-}
-
-std::unique_ptr<views::InkDropMask> ToolbarActionView::CreateInkDropMask()
-    const {
-  return CreateToolbarInkDropMask<MenuButton>(this, gfx::Insets());
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {

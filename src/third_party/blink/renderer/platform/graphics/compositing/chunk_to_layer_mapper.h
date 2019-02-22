@@ -16,13 +16,13 @@ struct PaintChunk;
 // It provides higher performance than GeometryMapper by reusing computed
 // transforms and clips for unchanged states within or across paint chunks.
 class PLATFORM_EXPORT ChunkToLayerMapper {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   ChunkToLayerMapper(const PropertyTreeState& layer_state,
                      const gfx::Vector2dF& layer_offset,
                      const FloatSize& visual_rect_subpixel_offset = FloatSize())
-      : layer_state_(layer_state),
+      : layer_state_(layer_state.Unalias()),
         layer_offset_(layer_offset),
         visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
         chunk_state_(nullptr, nullptr, nullptr) {}

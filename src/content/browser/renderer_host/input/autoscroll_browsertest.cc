@@ -33,6 +33,52 @@ const std::string kAutoscrollDataURL = R"HTML(
 
 namespace content {
 
+// Waits for a GSB ack and checks that the acked event has none zero scroll
+// delta hints.
+class GestureScrollBeginWatcher : public RenderWidgetHost::InputEventObserver {
+ public:
+  GestureScrollBeginWatcher(RenderWidgetHost* rwh)
+      : rwh_(static_cast<RenderWidgetHostImpl*>(rwh)->GetWeakPtr()) {
+    rwh->AddInputEventObserver(this);
+    Reset();
+  }
+  ~GestureScrollBeginWatcher() override {
+    if (rwh_)
+      rwh_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEventAck(InputEventAckSource,
+                       InputEventAckState,
+                       const blink::WebInputEvent& event) override {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      blink::WebGestureEvent received_begin =
+          *static_cast<const blink::WebGestureEvent*>(&event);
+      DCHECK(received_begin.data.scroll_begin.delta_x_hint ||
+             received_begin.data.scroll_begin.delta_y_hint);
+      if (run_loop_)
+        run_loop_->Quit();
+      gesture_scroll_begin_seen_ = true;
+    }
+  }
+
+  void Wait() {
+    if (gesture_scroll_begin_seen_)
+      return;
+    DCHECK(run_loop_);
+    run_loop_->Run();
+  }
+
+  void Reset() {
+    gesture_scroll_begin_seen_ = false;
+    run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+ private:
+  base::WeakPtr<RenderWidgetHostImpl> rwh_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool gesture_scroll_begin_seen_;
+};
+
 class AutoscrollBrowserTest : public ContentBrowserTest {
  public:
   AutoscrollBrowserTest() {}
@@ -82,60 +128,75 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
     GetWidgetHost()->ForwardMouseEvent(up_event);
   }
 
+  void WaitForScroll(RenderFrameSubmissionObserver& observer) {
+    gfx::Vector2dF default_scroll_offset;
+    while (observer.LastRenderFrameMetadata()
+               .root_scroll_offset.value_or(default_scroll_offset)
+               .y() <= 0) {
+      observer.WaitForMetadataChange();
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoscrollBrowserTest);
 };
 
+// We don't plan on supporting middle click autoscroll on Android.
+// See https://crbug.com/686223
+#if !defined(OS_ANDROID)
 // TODO(sahel): This test is flaky https://crbug.com/838769
 IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest, DISABLED_AutoscrollFling) {
   LoadURL(kAutoscrollDataURL);
 
   // Start autoscroll with middle click.
-  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollBegin);
+  auto scroll_begin_watcher =
+      std::make_unique<GestureScrollBeginWatcher>(GetWidgetHost());
   SimulateMiddleClick(10, 10, blink::WebInputEvent::kNoModifiers);
-  input_msg_watcher->WaitForAck();
 
   // The page should start scrolling with mouse move.
   RenderFrameSubmissionObserver observer(
       GetWidgetHost()->render_frame_metadata_provider());
   blink::WebMouseEvent move_event = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseMove, 30, 30,
+      blink::WebInputEvent::kMouseMove, 50, 50,
       blink::WebInputEvent::kNoModifiers);
   move_event.SetTimeStamp(ui::EventTimeForNow());
-  move_event.SetPositionInScreen(30, 30);
+  move_event.SetPositionInScreen(50, 50);
   GetWidgetHost()->ForwardMouseEvent(move_event);
-  gfx::Vector2dF default_scroll_offset;
-  while (observer.LastRenderFrameMetadata()
-             .root_scroll_offset.value_or(default_scroll_offset)
-             .y() <= 0) {
-    observer.WaitForMetadataChange();
-  }
+  scroll_begin_watcher->Wait();
+  WaitForScroll(observer);
 }
 
-#if !defined(OS_ANDROID)
-#define MAYBE_WheelScrollingWorksAfterAutoscrollCancel \
-  WheelScrollingWorksAfterAutoscrollCancel
-#else
-#define MAYBE_WheelScrollingWorksAfterAutoscrollCancel \
-  DISABLED_WheelScrollingWorksAfterAutoscrollCancel
-#endif
-// Checks that wheel scrolling works after autoscroll cancelation.
-IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
-                       MAYBE_WheelScrollingWorksAfterAutoscrollCancel) {
+// Tests that the GSB sent in the beginning of a middle click autoscroll has
+// none-zero delta hints.
+IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest, AutoscrollFlingGSBDeltaHints) {
   LoadURL(kAutoscrollDataURL);
 
   // Start autoscroll with middle click.
-  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollBegin);
+  auto scroll_begin_watcher =
+      std::make_unique<GestureScrollBeginWatcher>(GetWidgetHost());
   SimulateMiddleClick(10, 10, blink::WebInputEvent::kNoModifiers);
-  input_msg_watcher->WaitForAck();
+
+  // A GSB will be sent on first mouse move.
+  blink::WebMouseEvent move_event = SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::kMouseMove, 50, 50,
+      blink::WebInputEvent::kNoModifiers);
+  move_event.SetTimeStamp(ui::EventTimeForNow());
+  move_event.SetPositionInScreen(50, 50);
+  GetWidgetHost()->ForwardMouseEvent(move_event);
+  // The test crashes if the received GSB has zero delta hints.
+  scroll_begin_watcher->Wait();
+}
+
+// Checks that wheel scrolling works after autoscroll cancelation.
+IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
+                       WheelScrollingWorksAfterAutoscrollCancel) {
+  LoadURL(kAutoscrollDataURL);
+
+  // Start autoscroll with middle click.
+  SimulateMiddleClick(10, 10, blink::WebInputEvent::kNoModifiers);
 
   // Without moving the mouse cancel the autoscroll fling with another click.
-  input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
   SimulateMiddleClick(10, 10, blink::WebInputEvent::kNoModifiers);
-  input_msg_watcher->WaitForAck();
 
   // The mouse wheel scrolling must work after autoscroll cancellation.
   RenderFrameSubmissionObserver observer(
@@ -144,12 +205,52 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
       SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetWidgetHost()->ForwardWheelEvent(wheel_event);
-  gfx::Vector2dF default_scroll_offset;
-  while (observer.LastRenderFrameMetadata()
-             .root_scroll_offset.value_or(default_scroll_offset)
-             .y() <= 0) {
-    observer.WaitForMetadataChange();
-  }
+  WaitForScroll(observer);
 }
+
+// Checks that autoscrolling still works after changing the scroll direction
+// when the element is fully scrolled.
+IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
+                       AutoscrollDirectionChangeAfterFullyScrolled) {
+  LoadURL(kAutoscrollDataURL);
+
+  // Start autoscroll with middle click.
+  auto scroll_begin_watcher =
+      std::make_unique<GestureScrollBeginWatcher>(GetWidgetHost());
+  SimulateMiddleClick(100, 100, blink::WebInputEvent::kNoModifiers);
+
+  // Move the mouse up, no scrolling happens since the page is at its extent.
+  auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
+  blink::WebMouseEvent move_up = SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::kMouseMove, 20, 20,
+      blink::WebInputEvent::kNoModifiers);
+  move_up.SetTimeStamp(ui::EventTimeForNow());
+  move_up.SetPositionInScreen(20, 20);
+  GetWidgetHost()->ForwardMouseEvent(move_up);
+  scroll_begin_watcher->Wait();
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+            scroll_update_watcher->WaitForAck());
+
+  // Wait for 300ms before changing the scroll direction.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMillisecondsD(300));
+  run_loop.Run();
+
+  // Now move the mouse down and wait for the page to scroll. The test will
+  // timeout if autoscrolling does not work after direction change.
+  RenderFrameSubmissionObserver observer(
+      GetWidgetHost()->render_frame_metadata_provider());
+  blink::WebMouseEvent move_down = SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::kMouseMove, 180, 180,
+      blink::WebInputEvent::kNoModifiers);
+  move_down.SetTimeStamp(ui::EventTimeForNow());
+  move_down.SetPositionInScreen(180, 180);
+  GetWidgetHost()->ForwardMouseEvent(move_down);
+  WaitForScroll(observer);
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace content

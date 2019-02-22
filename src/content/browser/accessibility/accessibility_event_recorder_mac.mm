@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/stringprintf.h"
@@ -20,15 +21,14 @@ namespace content {
 // watch for NSAccessibility events.
 class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
  public:
+  AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager,
+                                base::ProcessId pid);
   ~AccessibilityEventRecorderMac() override;
 
   // Callback executed every time we receive an event notification.
   void EventReceived(AXUIElementRef element, CFStringRef notification);
 
  private:
-  AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager,
-                                base::ProcessId pid);
-
   // Add one notification to the list of notifications monitored by our
   // observer.
   void AddNotification(NSString* notification);
@@ -45,7 +45,6 @@ class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
   base::ScopedCFTypeRef<AXObserverRef> observer_ref_;
   CFRunLoopSourceRef observer_run_loop_source_;
 
-  friend class base::NoDestructor<AccessibilityEventRecorderMac>;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorderMac);
 };
 
@@ -61,19 +60,23 @@ static void EventReceivedThunk(
 }
 
 // static
-AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
+std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid) {
-  static base::NoDestructor<AccessibilityEventRecorderMac> instance(manager,
-                                                                    pid);
-  return *instance;
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern) {
+  if (!application_name_match_pattern.empty()) {
+    LOG(ERROR) << "Recording accessibility events from an application name "
+                  "match pattern not supported on this platform yet.";
+    NOTREACHED();
+  }
+
+  return std::make_unique<AccessibilityEventRecorderMac>(manager, pid);
 }
 
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid)
-    : AccessibilityEventRecorder(manager, pid),
-      observer_run_loop_source_(NULL) {
+    : AccessibilityEventRecorder(manager), observer_run_loop_source_(NULL) {
   if (kAXErrorSuccess != AXObserverCreate(pid, EventReceivedThunk,
                                           observer_ref_.InitializeInto())) {
     LOG(FATAL) << "Failed to create AXObserverRef";

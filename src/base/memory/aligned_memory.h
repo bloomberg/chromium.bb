@@ -34,7 +34,9 @@
 
 namespace base {
 
-// This can be replaced with std::aligned_malloc when we have C++17.
+// This can be replaced with std::aligned_alloc when we have C++17.
+// Caveat: std::aligned_alloc requires the size parameter be an integral
+// multiple of alignment.
 BASE_EXPORT void* AlignedAlloc(size_t size, size_t alignment);
 
 inline void AlignedFree(void* ptr) {

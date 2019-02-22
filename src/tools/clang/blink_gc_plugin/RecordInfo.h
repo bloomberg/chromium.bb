@@ -75,7 +75,7 @@ class RecordInfo {
 
   struct FieldDeclCmp {
     bool operator()(clang::FieldDecl* a, clang::FieldDecl *b) const {
-      return a->getLocStart() < b->getLocStart();
+      return a->getBeginLoc() < b->getBeginLoc();
     }
   };
   typedef std::map<clang::FieldDecl*, FieldPoint, FieldDeclCmp> Fields;

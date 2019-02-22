@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_IMAGE_RETAINER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
@@ -28,7 +28,8 @@ class Image;
 // can potentially be large, this presents a problem because Chrome might then
 // be leaving chunks of dead bits lying around on user’s computers during
 // unclean shutdowns.
-class NotificationImageRetainer {
+class NotificationImageRetainer
+    : public base::SupportsWeakPtr<NotificationImageRetainer> {
  public:
   explicit NotificationImageRetainer(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -47,16 +48,10 @@ class NotificationImageRetainer {
   // Sets whether to override temp file destruction time. If set to |true|, the
   // temp files will be scheduled for deletion right after their creation. If
   // |false|, the standard deletion delay will apply.
-  static void OverrideTempFileLifespanForTesting(bool override);
+  static void OverrideTempFileLifespanForTesting(
+      bool override_file_destruction);
 
  private:
-  // Returns the temporary directory within the user data directory. The
-  // regular temporary directory is not used to minimize the risk of files
-  // getting deleted by accident. It is also not profile-bound because the
-  // notification bridge handles images for multiple profiles and the separation
-  // is handled by RegisterTemporaryImage.
-  base::FilePath DetermineImageDirectory();
-
   // The path to where to store the temporary files.
   base::FilePath image_directory_;
 

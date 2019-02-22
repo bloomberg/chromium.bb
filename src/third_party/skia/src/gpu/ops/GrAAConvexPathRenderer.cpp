@@ -147,7 +147,7 @@ static bool compute_vectors(SegmentArray* segments,
         for (int p = 0; p < n; ++p) {
             segb.fNorms[p] = segb.fPts[p] - *prevPt;
             segb.fNorms[p].normalize();
-            SkPointPriv::SetOrthog(&segb.fNorms[p], segb.fNorms[p], normSide);
+            segb.fNorms[p] = SkPointPriv::MakeOrthog(segb.fNorms[p], normSide);
             prevPt = &segb.fPts[p];
         }
         if (Segment::kLine == segb.fType) {
@@ -206,7 +206,7 @@ static void update_degenerate_test(DegenerateTestData* data, const SkPoint& pt) 
             if (SkPointPriv::DistanceToSqd(pt, data->fFirstPoint) > kCloseSqd) {
                 data->fLineNormal = pt - data->fFirstPoint;
                 data->fLineNormal.normalize();
-                SkPointPriv::SetOrthog(&data->fLineNormal, data->fLineNormal);
+                data->fLineNormal = SkPointPriv::MakeOrthog(data->fLineNormal);
                 data->fLineC = -data->fLineNormal.dot(data->fFirstPoint);
                 data->fStage = DegenerateTestData::kLine;
             }
@@ -653,9 +653,12 @@ private:
     const Attribute& onVertexAttribute(int i) const override {
         return IthAttribute(i, kInPosition, kInColor, kInQuadEdge);
     }
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInColor = {"inColor", kUByte4_norm_GrVertexAttribType};
-    static constexpr Attribute kInQuadEdge = {"inQuadEdge", kHalf4_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInColor =
+            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+    static constexpr Attribute kInQuadEdge =
+            {"inQuadEdge", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
     SkMatrix fLocalMatrix;
     bool fUsesLocalCoords;
 
@@ -938,7 +941,7 @@ private:
                 firstIndex += draw.fIndexCnt;
                 firstVertex += draw.fVertexCnt;
             }
-            target->draw(quadProcessor, pipe.fPipeline, pipe.fFixedDynamicState, meshes,
+            target->draw(quadProcessor, pipe.fPipeline, pipe.fFixedDynamicState, nullptr, meshes,
                          draws.count());
         }
     }

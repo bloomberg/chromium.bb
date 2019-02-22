@@ -13,9 +13,9 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -61,9 +62,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -248,7 +251,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
   app_window_controllers_.push_back(
       std::make_unique<ArcAppWindowLauncherController>(this));
-  if (IsCrostiniUIAllowedForProfile(profile)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
     std::unique_ptr<CrostiniAppWindowShelfController> crostini_controller =
         std::make_unique<CrostiniAppWindowShelfController>(this);
     crostini_app_window_shelf_controller_ = crostini_controller.get();
@@ -518,10 +521,17 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }
 
+  AppListClientImpl* app_list_client = AppListClientImpl::GetInstance();
   if (window->IsActive() && allow_minimize &&
-      !AppListClientImpl::GetInstance()->app_list_target_visibility()) {
+      !(app_list_client && app_list_client->app_list_target_visibility())) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
+  }
+
+  if (app_list_client && app_list_client->IsHomeLauncherEnabledInTabletMode()) {
+    // Run slide down animation to show the window.
+    wm::SetWindowVisibilityAnimationType(
+        native_window, ash::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);
   }
 
   window->Show();
@@ -1053,7 +1063,7 @@ void ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   browser_shortcut.type = ash::TYPE_BROWSER_SHORTCUT;
   browser_shortcut.id = ash::ShelfID(kChromeAppId);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
+  browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_CHROME_APP_ICON_192);
   browser_shortcut.title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   std::unique_ptr<BrowserShortcutLauncherItemController> item_delegate =
       std::make_unique<BrowserShortcutLauncherItemController>(model_);
@@ -1125,7 +1135,8 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // if the icon cache gets deleted upon user switch.
   std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
       std::make_unique<extensions::ChromeAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
+          profile_, extension_misc::EXTENSION_ICON_MEDIUM,
+          base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd), this);
   app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
 
   if (arc::IsArcAllowedForProfile(profile_)) {
@@ -1140,7 +1151,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
           profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
   app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
 
-  if (IsCrostiniUIAllowedForProfile(profile_)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
         std::make_unique<CrostiniAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
@@ -1174,7 +1185,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
     app_updaters_.push_back(std::move(arc_app_updater));
   }
 
-  if (IsCrostiniUIAllowedForProfile(profile())) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile())) {
     std::unique_ptr<LauncherAppUpdater> crostini_app_updater(
         new LauncherCrostiniAppUpdater(this, profile()));
     app_updaters_.push_back(std::move(crostini_app_updater));

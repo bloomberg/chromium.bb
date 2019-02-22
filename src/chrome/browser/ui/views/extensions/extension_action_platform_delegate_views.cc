@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,10 +15,8 @@
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/notification_details.h"
@@ -35,10 +32,6 @@ using extensions::ActionInfo;
 std::unique_ptr<ExtensionActionPlatformDelegate>
 ExtensionActionPlatformDelegate::Create(
     ExtensionActionViewController* controller) {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return CreateCocoa(controller);
-#endif
   return base::WrapUnique(new ExtensionActionPlatformDelegateViews(controller));
 }
 
@@ -93,17 +86,6 @@ void ExtensionActionPlatformDelegateViews::ShowPopup(
           ExtensionPopup::SHOW : ExtensionPopup::SHOW_AND_INSPECT;
   ExtensionPopup::ShowPopup(std::move(host), reference_view, arrow,
                             popup_show_action);
-}
-
-void ExtensionActionPlatformDelegateViews::CloseOverflowMenu() {
-  // TODO(mgiuca): Use button_provider() instead of toolbar(), so this also
-  // works for hosted app windows.
-  AppMenuButton* app_menu_button =
-      BrowserView::GetBrowserViewForBrowser(controller_->browser())
-          ->toolbar()
-          ->app_menu_button();
-  if (app_menu_button && app_menu_button->IsMenuShowing())
-    app_menu_button->CloseMenu();
 }
 
 void ExtensionActionPlatformDelegateViews::ShowContextMenu() {

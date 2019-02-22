@@ -21,6 +21,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
+#include "media/base/overlay_info.h"
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/api/video/video_frame.h"
@@ -28,6 +29,7 @@
 #include "third_party/webrtc/rtc_base/bind.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "ui/gfx/color_space.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -97,13 +99,18 @@ void FinishWait(base::WaitableEvent* waiter, bool* result_out, bool result) {
   waiter->Signal();
 }
 
+void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
+                          const media::ProvideOverlayInfoCB& overlay_info_cb) {
+  // Android overlays are not supported.
+  overlay_info_cb.Run(media::OverlayInfo());
+}
+
 }  // namespace
 
 // static
 std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
-    webrtc::VideoCodecType video_codec_type,
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    CreateVideoDecoderCB create_video_decoder_cb) {
+    webrtc::VideoCodecType video_codec_type) {
   DVLOG(1) << __func__ << "(" << video_codec_type << ")";
 
 #if defined(OS_WIN)
@@ -123,34 +130,24 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     return nullptr;
 
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
-      base::WrapUnique(new RTCVideoDecoderAdapter(
-          gpu_factories->GetTaskRunner(), std::move(create_video_decoder_cb),
-          video_codec_type));
+      base::WrapUnique(
+          new RTCVideoDecoderAdapter(gpu_factories, video_codec_type));
 
   // Synchronously verify that the decoder can be initialized.
   if (!rtc_video_decoder_adapter->InitializeSync()) {
-    DeleteSoonOnMediaThread(std::move(rtc_video_decoder_adapter),
-                            gpu_factories);
+    gpu_factories->GetTaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(rtc_video_decoder_adapter));
     return nullptr;
   }
 
   return rtc_video_decoder_adapter;
 }
 
-// static
-void RTCVideoDecoderAdapter::DeleteSoonOnMediaThread(
-    std::unique_ptr<webrtc::VideoDecoder> rtc_video_decoder_adapter,
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
-  gpu_factories->GetTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(rtc_video_decoder_adapter));
-}
-
 RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    CreateVideoDecoderCB create_video_decoder_cb,
+    media::GpuVideoAcceleratorFactories* gpu_factories,
     webrtc::VideoCodecType video_codec_type)
-    : media_task_runner_(std::move(media_task_runner)),
-      create_video_decoder_cb_(std::move(create_video_decoder_cb)),
+    : media_task_runner_(gpu_factories->GetTaskRunner()),
+      gpu_factories_(gpu_factories),
       video_codec_type_(video_codec_type),
       weak_this_factory_(this) {
   DVLOG(1) << __func__;
@@ -223,7 +220,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
   scoped_refptr<media::DecoderBuffer> buffer =
       media::DecoderBuffer::CopyFrom(input_image._buffer, input_image._length);
   buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(input_image._timeStamp));
+      base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 
   // Queue for decoding.
   {
@@ -234,12 +231,11 @@ int32_t RTCVideoDecoderAdapter::Decode(
       // We are severely behind. Drop pending buffers and request a keyframe to
       // catch up as quickly as possible.
       DVLOG(2) << "Pending buffers overflow";
+      pending_buffers_.clear();
       if (++consecutive_error_count_ > kMaxConsecutiveErrors) {
-        pending_buffers_.clear();
         decode_timestamps_.clear();
         return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
       }
-      pending_buffers_.clear();
       return WEBRTC_VIDEO_CODEC_ERROR;
     }
     pending_buffers_.push_back(std::move(buffer));
@@ -287,7 +283,9 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   // media-internals UI. The current log just discards all messages.
   media_log_ = std::make_unique<media::MediaLog>();
 
-  video_decoder_ = create_video_decoder_cb_.Run(media_log_.get());
+  video_decoder_ = gpu_factories_->CreateVideoDecoder(
+      media_log_.get(), base::BindRepeating(&OnRequestOverlayInfo),
+      gfx::ColorSpace());
   if (!video_decoder_) {
     media_task_runner_->PostTask(FROM_HERE,
                                  base::BindRepeating(init_cb, false));

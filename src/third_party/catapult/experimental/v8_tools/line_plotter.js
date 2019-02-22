@@ -18,8 +18,7 @@ class LinePlotter {
     this.scaleForYAxis_ = this.createYAxisScale_(graph, chartDimensions);
     this.xAxisGenerator_ = d3.axisBottom(this.scaleForXAxis_);
     this.yAxisGenerator_ = d3.axisLeft(this.scaleForYAxis_);
-    // Draw the x-axis.
-    chart.append('g')
+    this.xAxisDrawing_ = chart.append('g')
         .call(this.xAxisGenerator_)
         .attr('transform', `translate(0, ${chartDimensions.height})`);
     this.yAxisDrawing_ = chart.append('g')
@@ -27,17 +26,19 @@ class LinePlotter {
   }
 
   createXAxisScale_(graph, chartDimensions) {
-    const numDataPoints =
-      Math.max(...graph.dataSources.map(source => source.data.length));
+    const range = Math.round(graph.max(point => +point));
+    const defaultRange = 1;
     return d3.scaleLinear()
-        .domain([0, numDataPoints])
+        .domain([0, range || defaultRange]).nice()
         .range([0, chartDimensions.width]);
   }
 
   createYAxisScale_(graph, chartDimensions) {
+    const numDataPoints =
+      Math.max(...graph.dataSources.map(source => source.data.length));
     return d3.scaleLinear()
-        .domain([graph.max(point => point), 0])
-        .range([0, chartDimensions.height]);
+        .domain([0, numDataPoints])
+        .range([chartDimensions.height, 0]);
   }
 
   /**
@@ -53,23 +54,31 @@ class LinePlotter {
    */
   plot(graph, chart, legend, chartDimensions) {
     this.initChart_(graph, chart, chartDimensions);
+    const dotRadius = 4;
     const pathGenerator = d3.line()
         .x(datum => this.scaleForXAxis_(datum.x))
         .y(datum => this.scaleForYAxis_(datum.y))
         .curve(d3.curveMonotoneX);
-
-    const dots = graph.process(GraphData.computeCumulativeFrequencies);
-    dots.forEach(({ data, color, key }, index) => {
+    const getClassNameSuffix = GraphUtils.getClassNameSuffixFactory();
+    this.setUpZoom_(graph, chart, chartDimensions, getClassNameSuffix);
+    const data = graph.process(GraphData.computeCumulativeFrequencies);
+    data.forEach(({ data, color, key }, index) => {
+      const classNameForDots = `dot-${getClassNameSuffix(key)}`;
       chart.selectAll('.dot')
           .data(data)
           .enter()
           .append('circle')
           .attr('cx', datum => this.scaleForXAxis_(datum.x))
           .attr('cy', datum => this.scaleForYAxis_(datum.y))
-          .attr('r', 3)
+          .attr('r', dotRadius)
           .attr('fill', color)
-          .attr('class', 'line-dot')
-          .attr('clip-path', 'url(#plot-clip)');
+          .attr('class', `${classNameForDots}`)
+          .attr('clip-path', 'url(#plot-clip)')
+          .call(GraphUtils.useTraceCallback,
+              graph,
+              key,
+              dotRadius,
+              classNameForDots);
       chart.append('path')
           .datum(data)
           .attr('d', pathGenerator)
@@ -79,32 +88,48 @@ class LinePlotter {
           .attr('data-legend', key)
           .attr('class', 'line-plot')
           .attr('clip-path', 'url(#plot-clip)');
+      const lineLength = 10;
+      const offset = `${index}em`;
+      legend.append('line')
+          .attr('stroke', color)
+          .attr('stroke-width', 5)
+          .attr('y1', offset)
+          .attr('x1', 0)
+          .attr('x2', lineLength)
+          .attr('y2', offset);
       legend.append('text')
           .text(key)
-          .attr('y', index + 'em')
-          .attr('fill', color);
+          .attr('x', lineLength)
+          .attr('y', 5)
+          .attr('dy', offset)
+          .attr('text-anchor', 'start');
     });
-    const redraw = (xAxisScale, yAxisScale) => {
+  }
+
+  setUpZoom_(graph, chart, chartDimensions, getClassNameSuffix) {
+    const redraw = xAxisScale => {
       const pathGenerator = d3.line()
-          .x(d => this.scaleForXAxis_(d.x))
-          .y(d => yAxisScale(d.y))
+          .x(d => xAxisScale(d.x))
+          .y(d => this.scaleForYAxis_(d.y))
           .curve(d3.curveMonotoneX);
-      chart.selectAll('.line-dot')
-          .attr('cx', datum => this.scaleForXAxis_(datum.x))
-          .attr('cy', datum => yAxisScale(datum.y));
+      for (const key of graph.keys()) {
+        chart.selectAll(`.dot-${getClassNameSuffix(key)}`)
+            .attr('cx', datum => xAxisScale(datum.x))
+            .attr('cy', datum => this.scaleForYAxis_(datum.y));
+      }
       chart.selectAll('.line-plot')
           .attr('d', pathGenerator);
     };
     const axes = {
-      y: {
-        generator: this.yAxisGenerator_,
-        drawing: this.yAxisDrawing_,
-        scale: this.scaleForYAxis_,
+      x: {
+        generator: this.xAxisGenerator_,
+        drawing: this.xAxisDrawing_,
+        scale: this.scaleForXAxis_,
       },
     };
     const shouldScale = {
-      x: false,
-      y: true,
+      y: false,
+      x: true,
     };
     GraphUtils.createZoom(shouldScale, chart, chartDimensions, redraw, axes);
   }

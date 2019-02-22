@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 We pass if we don't crash under ASAN.
-<iframe id=iframe src="../navigation/resources/blank.txt"></iframe>
+<iframe id="iframe" src="../navigation/resources/blank.txt"></iframe>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
+var iframe = document.getElementById("iframe");
 var onload_completed = false;
 
 function runGC() {

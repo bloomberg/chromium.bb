@@ -33,4 +33,19 @@ enum RemovalStatus {
   // File deletion was requested, not performed due to non-executable file
   // extension, but reported as success.
   REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION = 9;
+  // There is an error in the archiver.
+  REMOVAL_STATUS_ERROR_IN_ARCHIVER = 10;
+}
+
+// Quarantine status for file.
+enum QuarantineStatus {
+  QUARANTINE_STATUS_UNSPECIFIED = 0;
+  // The quarantine feature is disabled.
+  QUARANTINE_STATUS_DISABLED = 1;
+  // The file is quarantined.
+  QUARANTINE_STATUS_QUARANTINED = 2;
+  // Removal of the file is done without quarantining.
+  QUARANTINE_STATUS_SKIPPED = 3;
+  // There is an error and the quarantine operation failed.
+  QUARANTINE_STATUS_ERROR = 4;
 }

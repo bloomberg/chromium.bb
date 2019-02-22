@@ -12,7 +12,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/format_macros.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -23,7 +22,10 @@
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -66,6 +68,21 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
 
 constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
 
+void ResourcePool::GpuBacking::InitOverlayCandidateAndTextureTarget(
+    const viz::ResourceFormat format,
+    const gpu::Capabilities& caps,
+    bool use_gpu_memory_buffer_resources) {
+  overlay_candidate = use_gpu_memory_buffer_resources &&
+                      caps.texture_storage_image &&
+                      IsGpuMemoryBufferFormatSupported(format);
+  if (overlay_candidate) {
+    texture_target = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
+                                                 BufferFormat(format), caps);
+  } else {
+    texture_target = GL_TEXTURE_2D;
+  }
+}
+
 ResourcePool::ResourcePool(
     viz::ClientResourceProvider* resource_provider,
     viz::ContextProvider* context_provider,
@@ -81,8 +98,6 @@ ResourcePool::ResourcePool(
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   memory_pressure_listener_.reset(
       new base::MemoryPressureListener(base::BindRepeating(
           &ResourcePool::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr())));
@@ -91,8 +106,6 @@ ResourcePool::ResourcePool(
 ResourcePool::~ResourcePool() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
   DCHECK_EQ(0u, in_use_resources_.size());
 
@@ -488,8 +501,11 @@ void ResourcePool::EvictExpiredResources() {
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
-    if (context_provider_)
-      context_provider_->ContextGL()->ShallowFlushCHROMIUM();
+    if (context_provider_) {
+      // Flush any ContextGL work as well as any SharedImageInterface work.
+      context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
+      context_provider_->ContextSupport()->FlushPendingWork();
+    }
     return;
   }
 
@@ -546,17 +562,6 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     }
   }
   return true;
-}
-
-void ResourcePool::OnPurgeMemory() {
-  // Release all resources, regardless of how recently they were used.
-  EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
-}
-
-void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
-  // While in a SUSPENDED state, we don't put resources back into the pool
-  // when they become available. Instead we free them immediately.
-  evict_busy_resources_when_unused_ = state == base::MemoryState::SUSPENDED;
 }
 
 void ResourcePool::OnMemoryPressure(

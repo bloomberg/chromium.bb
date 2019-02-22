@@ -1513,27 +1513,27 @@ main(int argc, char * argv[])
           break;
 
         case 'x':
-          hsg_config.thread.xtra   = atoi(optarg);
+          hsg_config.thread.xtra      = atoi(optarg);
           break;
 
         case 't':
-          hsg_config.type.words    = atoi(optarg);
+          hsg_config.type.words       = atoi(optarg);
           break;
 
         case 'f':
-          hsg_config.merge.flip.lo = atoi(optarg);
+          hsg_config.merge.flip.lo    = atoi(optarg);
           break;
 
         case 'F':
-          hsg_config.merge.flip.hi = atoi(optarg);
+          hsg_config.merge.flip.hi    = atoi(optarg);
           break;
 
         case 'c':
-          hsg_config.merge.half.lo = atoi(optarg);
+          hsg_config.merge.half.lo    = atoi(optarg);
           break;
 
         case 'C':
-          hsg_config.merge.half.hi = atoi(optarg);
+          hsg_config.merge.half.hi    = atoi(optarg);
           break;
 
         case 'p':
@@ -1559,7 +1559,7 @@ main(int argc, char * argv[])
   //
   uint32_t const warps_ru_pow2 = pow2_ru_u32(hsg_merge[0].warps);
 
-  for (uint32_t ii=1; ii<=MERGE_LEVELS_MAX_LOG2; ii++)
+  for (uint32_t ii=1; ii<MERGE_LEVELS_MAX_LOG2; ii++)
     {
       hsg_merge[ii].index = ii;
       hsg_merge[ii].warps = warps_ru_pow2 >> ii;

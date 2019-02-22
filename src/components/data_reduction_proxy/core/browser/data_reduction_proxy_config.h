@@ -43,10 +43,6 @@ class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
-namespace previews {
-class PreviewsDecider;
-}
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
@@ -111,11 +107,11 @@ class DataReductionProxyConfig
   // disables the use of alternative protocols and proxies.
   // |url_request_context_getter| is the default net::URLRequestContextGetter
   // used for making URL requests.
-  void InitializeOnIOThread(const scoped_refptr<net::URLRequestContextGetter>&
-                                basic_url_request_context_getter,
-                            const scoped_refptr<net::URLRequestContextGetter>&
-                                url_request_context_getter,
-                            NetworkPropertiesManager* manager);
+  void InitializeOnIOThread(
+      const scoped_refptr<net::URLRequestContextGetter>&
+          basic_url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      NetworkPropertiesManager* manager);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled|. If |restricted| is true, only enable the fallback
@@ -159,15 +155,6 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
-  // Returns whether the client should report to the data reduction proxy that
-  // it is willing to accept server previews for |request|.
-  // |previews_decider| is used to check if |request| is locally blacklisted.
-  // Should only be used if the kDataReductionProxyDecidesTransform feature is
-  // enabled.
-  bool ShouldAcceptServerPreview(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider) const;
-
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
   bool enabled_by_user_and_reachable() const;
@@ -202,18 +189,11 @@ class DataReductionProxyConfig
   // TODO(https://crbug.com/821607): Remove after the bug is resolved.
   void EnableGetNetworkIdAsynchronously();
 #endif  // defined(OS_CHROMEOS)
-
-  // When triggering previews, prevent long term black list rules.
-  void SetIgnoreLongTermBlackListRules(bool ignore_long_term_black_list_rules);
-
   // Called when there is a change in the HTTP RTT estimate.
   void OnRTTOrThroughputEstimatesComputed(base::TimeDelta http_rtt);
 
   // Returns the current HTTP RTT estimate.
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
-
-  // Returns the value set in SetIgnoreLongTermBlackListRules.
-  bool IgnoreBlackListLongTermRulesForTesting() const;
 
  protected:
   virtual base::TimeTicks GetTicksNow() const;
@@ -312,11 +292,6 @@ class DataReductionProxyConfig
                           bool is_https,
                           base::TimeDelta* min_retry_delay) const;
 
-  // Returns whether the request is blacklisted (or if Lo-Fi is disabled).
-  bool IsBlackListedOrDisabled(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider,
-      previews::PreviewsType previews_type) const;
 
   // Checks if the current network has captive portal, and handles the result.
   // If the captive portal probe was blocked on the current network, disables
@@ -377,9 +352,6 @@ class DataReductionProxyConfig
   // in-flight.
   bool warmup_url_fetch_in_flight_secure_proxy_;
   bool warmup_url_fetch_in_flight_core_proxy_;
-
-  // When triggerring previews, prevent long term black list rules.
-  bool ignore_long_term_black_list_rules_;
 
   // Should be accessed only on the IO thread. Guaranteed to be non-null during
   // the lifetime of |this| if accessed on the IO thread.

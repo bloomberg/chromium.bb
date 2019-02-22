@@ -8,8 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,6 +30,8 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -38,6 +42,8 @@ namespace chromeos {
 
 namespace {
 constexpr char kLockDisplay[] = "lock";
+constexpr char kExternalBinaryAuth[] = "external_binary_auth";
+constexpr char kWebCameraDeviceContext[] = "WebCamera: WebCamera";
 
 ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
     ScreenLocker::FingerprintState state) {
@@ -52,6 +58,33 @@ ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
       return ash::mojom::FingerprintUnlockState::AUTH_FAILED;
     case ScreenLocker::FingerprintState::kRemoved:
       return ash::mojom::FingerprintUnlockState::AUTH_DISABLED;
+    case ScreenLocker::FingerprintState::kTimeout:
+      return ash::mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT;
+  }
+}
+
+// Starts the graph specified by |configuration| if the current graph
+// is SUSPENDED or if the current configuration is different.
+void StartGraphIfNeeded(chromeos::MediaAnalyticsClient* client,
+                        const std::string& configuration,
+                        base::Optional<mri::State> maybe_state) {
+  if (!maybe_state)
+    return;
+
+  if (maybe_state->status() == mri::State::SUSPENDED) {
+    // Start the specified graph
+    mri::State new_state;
+    new_state.set_status(mri::State::RUNNING);
+    new_state.set_device_context(kWebCameraDeviceContext);
+    new_state.set_configuration(configuration);
+    client->SetState(new_state, base::DoNothing());
+  } else if (maybe_state->configuration() != configuration) {
+    // Suspend and restart with new graph
+    mri::State suspend_state;
+    suspend_state.set_status(mri::State::SUSPENDED);
+    suspend_state.set_configuration(configuration);
+    client->SetState(suspend_state, base::BindOnce(&StartGraphIfNeeded, client,
+                                                   configuration));
   }
 }
 
@@ -59,7 +92,9 @@ ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
-      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
+      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
+      media_analytics_client_(
+          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
   user_selection_screen_ =
@@ -71,6 +106,9 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
           kDeviceLoginScreenInputMethods,
           base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
                      base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(ash::features::kUnlockWithExternalBinary))
+    scoped_observer_.Add(media_analytics_client_);
 }
 
 ViewsScreenLocker::~ViewsScreenLocker() {
@@ -163,11 +201,11 @@ content::WebContents* ViewsScreenLocker::GetWebContents() {
   return nullptr;
 }
 
-void ViewsScreenLocker::HandleAuthenticateUser(
+void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserCallback callback) {
+    AuthenticateUserWithPasswordOrPinCallback callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
   const user_manager::User* const user =
@@ -191,7 +229,16 @@ void ViewsScreenLocker::HandleAuthenticateUser(
   UpdatePinKeyboardState(account_id);
 }
 
-void ViewsScreenLocker::HandleAttemptUnlock(const AccountId& account_id) {
+void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    AuthenticateUserWithExternalBinaryCallback callback) {
+  authenticate_with_external_binary_callback_ = std::move(callback);
+  media_analytics_client_->GetState(base::BindOnce(
+      &StartGraphIfNeeded, media_analytics_client_, kExternalBinaryAuth));
+}
+
+void ViewsScreenLocker::HandleAuthenticateUserWithEasyUnlock(
+    const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 
@@ -246,6 +293,10 @@ bool ViewsScreenLocker::HandleFocusLockScreenApps(bool reverse) {
   return true;
 }
 
+void ViewsScreenLocker::HandleFocusOobeDialog() {
+  NOTREACHED();
+}
+
 void ViewsScreenLocker::HandleLoginAsGuest() {
   NOTREACHED();
 }
@@ -276,6 +327,28 @@ void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
 void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
   LoginScreenClient::Get()->login_screen()->HandleFocusLeavingLockScreenApps(
       reverse);
+}
+
+void ViewsScreenLocker::OnDetectionSignal(
+    const mri::MediaPerception& media_perception) {
+  if (!authenticate_with_external_binary_callback_)
+    return;
+
+  const mri::FramePerception& frame = media_perception.frame_perception(0);
+  if (frame.frame_id() != 1) {
+    // TODO: implement some sort of auto-retry logic.
+    std::move(authenticate_with_external_binary_callback_)
+        .Run(false /*auth_success*/);
+    return;
+  }
+
+  mri::State new_state;
+  new_state.set_status(mri::State::SUSPENDED);
+  media_analytics_client_->SetState(new_state, base::DoNothing());
+
+  std::move(authenticate_with_external_binary_callback_)
+      .Run(true /*auth_success*/);
+  ScreenLocker::Hide();
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {

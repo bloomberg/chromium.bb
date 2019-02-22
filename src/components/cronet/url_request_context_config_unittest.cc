@@ -203,6 +203,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_FALSE(params->quic_allow_server_migration);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params->quic_migrate_sessions_early_v2);
+  EXPECT_FALSE(params->quic_retry_on_alternate_network_before_handshake);
 
   // Check race_cert_verification.
   EXPECT_TRUE(params->quic_race_cert_verification);
@@ -545,6 +546,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       // JSON encoded experimental options.
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
       "\"migrate_sessions_early_v2\":true,"
+      "\"retry_on_alternate_network_before_handshake\":true,"
       "\"max_time_on_non_default_network_seconds\":10,"
       "\"max_migrations_to_non_default_network_on_write_error\":3,"
       "\"max_migrations_to_non_default_network_on_path_degrading\":4}}",
@@ -570,6 +572,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
 
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
+  EXPECT_TRUE(params->quic_retry_on_alternate_network_before_handshake);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
             params->quic_max_time_on_non_default_network);
   EXPECT_EQ(3,

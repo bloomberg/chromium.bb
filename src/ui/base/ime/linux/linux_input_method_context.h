@@ -6,12 +6,13 @@
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 
 #include "base/strings/string16.h"
+#include "ui/base/ime/linux/ui_base_ime_linux_export.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace gfx {
 class Rect;
-}
+class Range;
+}  // namespace gfx
 
 namespace ui {
 
@@ -20,7 +21,7 @@ class KeyEvent;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
-class UI_BASE_IME_EXPORT LinuxInputMethodContext {
+class UI_BASE_IME_LINUX_EXPORT LinuxInputMethodContext {
  public:
   virtual ~LinuxInputMethodContext() {}
 
@@ -32,6 +33,10 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContext {
   // Tells the system IME for the cursor rect which is relative to the
   // client window rect.
   virtual void SetCursorLocation(const gfx::Rect& rect) = 0;
+
+  // Tells the system IME the surrounding text around the cursor location.
+  virtual void SetSurroundingText(const base::string16& text,
+                                  const gfx::Range& selection_range) = 0;
 
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().
@@ -45,12 +50,15 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContext {
 };
 
 // An interface of callback functions called from LinuxInputMethodContext.
-class UI_BASE_IME_EXPORT LinuxInputMethodContextDelegate {
+class UI_BASE_IME_LINUX_EXPORT LinuxInputMethodContextDelegate {
  public:
   virtual ~LinuxInputMethodContextDelegate() {}
 
   // Commits the |text| to the text input client.
   virtual void OnCommit(const base::string16& text) = 0;
+
+  // Deletes the surrounding text at |index| for given |length|.
+  virtual void OnDeleteSurroundingText(int32_t index, uint32_t length) = 0;
 
   // Sets the composition text to the text input client.
   virtual void OnPreeditChanged(const CompositionText& composition_text) = 0;

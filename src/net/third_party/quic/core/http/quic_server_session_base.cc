@@ -8,6 +8,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -216,12 +217,15 @@ bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
     QUIC_BUG << "Encryption not established so no outgoing stream created.";
     return false;
   }
-  if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
-    VLOG(1) << "No more streams should be created. "
-            << "Already " << GetNumOpenOutgoingStreams() << " open.";
-    return false;
+  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+    if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
+      VLOG(1) << "No more streams should be created. "
+              << "Already " << GetNumOpenOutgoingStreams() << " open.";
+      return false;
+    }
   }
-  return true;
+  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 2, 2);
+  return CanOpenNextOutgoingStream();
 }
 
 QuicCryptoServerStreamBase* QuicServerSessionBase::GetMutableCryptoStream() {

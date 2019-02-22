@@ -287,10 +287,11 @@ class StateManager11 final : angle::NonCopyable
 
     angle::Result syncFramebuffer(const gl::Context *context);
     angle::Result syncProgram(const gl::Context *context, gl::PrimitiveMode drawMode);
+    angle::Result syncProgramForCompute(const gl::Context *context);
 
     angle::Result syncTextures(const gl::Context *context);
-    angle::Result applyTexturesForSamplers(const gl::Context *context, gl::ShaderType shaderType);
-    angle::Result applyTexturesForImages(const gl::Context *context, gl::ShaderType shaderType);
+    angle::Result applyTexturesForSRVs(const gl::Context *context, gl::ShaderType shaderType);
+    angle::Result applyTexturesForUAVs(const gl::Context *context, gl::ShaderType shaderType);
     angle::Result syncTexturesForCompute(const gl::Context *context);
 
     angle::Result setSamplerState(const gl::Context *context,
@@ -328,9 +329,14 @@ class StateManager11 final : angle::NonCopyable
     angle::Result applyUniforms(const gl::Context *context);
     angle::Result applyUniformsForShader(const gl::Context *context, gl::ShaderType shaderType);
 
+    angle::Result syncShaderStorageBuffersForShader(const gl::Context *context,
+                                                    gl::ShaderType shaderType);
+
     angle::Result syncUniformBuffers(const gl::Context *context);
     angle::Result syncUniformBuffersForShader(const gl::Context *context,
                                               gl::ShaderType shaderType);
+    angle::Result syncAtomicCounterBuffers(const gl::Context *context);
+    angle::Result syncShaderStorageBuffers(const gl::Context *context);
     angle::Result syncTransformFeedbackBuffers(const gl::Context *context);
 
     // These are currently only called internally.
@@ -338,6 +344,8 @@ class StateManager11 final : angle::NonCopyable
     void invalidateDriverUniforms();
     void invalidateProgramUniforms();
     void invalidateConstantBuffer(unsigned int slot);
+    void invalidateProgramAtomicCounterBuffers();
+    void invalidateProgramShaderStorageBuffers();
 
     // Called by the Framebuffer11 directly.
     void processFramebufferInvalidation(const gl::Context *context);
@@ -375,6 +383,8 @@ class StateManager11 final : angle::NonCopyable
         DIRTY_BIT_PROGRAM_UNIFORMS,
         DIRTY_BIT_DRIVER_UNIFORMS,
         DIRTY_BIT_PROGRAM_UNIFORM_BUFFERS,
+        DIRTY_BIT_PROGRAM_ATOMIC_COUNTER_BUFFERS,
+        DIRTY_BIT_PROGRAM_SHADER_STORAGE_BUFFERS,
         DIRTY_BIT_SHADERS,
         DIRTY_BIT_CURRENT_VALUE_ATTRIBS,
         DIRTY_BIT_TRANSFORM_FEEDBACK,
@@ -390,6 +400,7 @@ class StateManager11 final : angle::NonCopyable
 
     // Internal dirty bits.
     DirtyBits mInternalDirtyBits;
+    DirtyBits mComputeDirtyBitsMask;
 
     // Blend State
     gl::BlendState mCurBlendState;
@@ -548,6 +559,14 @@ class StateManager11 final : angle::NonCopyable
     FragmentConstantBufferArray<ResourceSerial> mCurrentConstantBufferPS;
     FragmentConstantBufferArray<GLintptr> mCurrentConstantBufferPSOffset;
     FragmentConstantBufferArray<GLsizeiptr> mCurrentConstantBufferPSSize;
+
+    template <typename T>
+    using ComputeConstantBufferArray =
+        std::array<T, gl::IMPLEMENTATION_MAX_COMPUTE_SHADER_UNIFORM_BUFFERS>;
+
+    ComputeConstantBufferArray<ResourceSerial> mCurrentConstantBufferCS;
+    ComputeConstantBufferArray<GLintptr> mCurrentConstantBufferCSOffset;
+    ComputeConstantBufferArray<GLsizeiptr> mCurrentConstantBufferCSSize;
 
     // Currently applied transform feedback buffers
     Serial mAppliedTFSerial;

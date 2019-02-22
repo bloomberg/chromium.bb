@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
@@ -19,6 +18,7 @@
 #include "ash/system/message_center/arc/arc_notification_surface_manager_impl.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
+#include "ash/system/message_center/message_center_view.h"
 #include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -169,7 +169,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
   CreateNotificationView(const Notification& notification) {
     std::unique_ptr<ArcNotificationView> notification_view(
         static_cast<ArcNotificationView*>(
-            message_center::MessageViewFactory::Create(notification, true)));
+            message_center::MessageViewFactory::Create(notification)));
     notification_view->set_owned_by_client();
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

@@ -4,15 +4,15 @@
 
 package org.chromium.chrome.test.util;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;

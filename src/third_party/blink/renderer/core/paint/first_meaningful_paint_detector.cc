@@ -24,9 +24,6 @@ const int kBlankCharactersThreshold = 200;
 
 }  // namespace
 
-constexpr TimeDelta FirstMeaningfulPaintDetector::kNetwork2QuietWindowTimeout;
-constexpr TimeDelta FirstMeaningfulPaintDetector::kNetwork0QuietWindowTimeout;
-
 FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
     Document& document) {
   return PaintTiming::From(document).GetFirstMeaningfulPaintDetector();
@@ -67,7 +64,7 @@ void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
 
   // If the page has many blank characters, the significance value is
   // accumulated until the text become visible.
-  int approximate_blank_character_count =
+  size_t approximate_blank_character_count =
       FontFaceSetDocument::ApproximateBlankCharacterCount(*GetDocument());
   if (approximate_blank_character_count > kBlankCharactersThreshold) {
     accumulated_significance_while_having_blank_text_ += significance;

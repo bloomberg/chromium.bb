@@ -30,8 +30,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/public/cpp/system/buffer.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
@@ -70,9 +69,11 @@ namespace printing {
 
 namespace {
 
+#ifndef STATIC_ASSERT_ENUM
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
+#endif
 
 // Check blink and printing enums are kept in sync.
 STATIC_ASSERT_ENUM(blink::kWebUnknownDuplexMode, UNKNOWN_DUPLEX_MODE);
@@ -418,6 +419,11 @@ MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+gfx::Size GetPdfPageSize(const gfx::Size& page_size, int dpi) {
+  return gfx::Size(ConvertUnit(page_size.width(), dpi, kPointsPerInch),
+                   ConvertUnit(page_size.height(), dpi, kPointsPerInch));
+}
+
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
   bool fit_to_paper_size = false;
   if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_paper_size)) {
@@ -627,11 +633,19 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
    private:
     blink::WebLocalFrame* frame_;
   };
+
+  class NonCompositingWebWidgetClient : public blink::WebWidgetClient {
+   public:
+    // blink::WebWidgetClient implementation.
+    bool AllowsBrokenNullLayerTreeView() const override { return true; }
+  };
+
   HeaderAndFooterClient frame_client;
   blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, &frame_client, nullptr, nullptr);
-  blink::WebWidgetClient web_widget_client;
-  blink::WebFrameWidget::Create(&web_widget_client, frame);
+
+  NonCompositingWebWidgetClient web_widget_client;
+  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
 
   base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
@@ -713,8 +727,8 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
  private:
   // blink::WebViewClient:
   void DidStopLoading() override;
-  // TODO(ojan): Remove this override and have this class use a non-null
-  // layerTreeView.
+  // TODO(ojan): Remove this override and have this class give a LayerTreeView
+  // to the WebWidget.
   bool AllowsBrokenNullLayerTreeView() const override;
   WebWidgetClient* WidgetClient() override { return this; }
 
@@ -860,7 +874,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebLocalFrame* main_frame =
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   frame_.Reset(main_frame);
-  blink::WebFrameWidget::Create(this, main_frame);
+  blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
   node_to_print_.Reset();
 
   // When loading is done this will call didStopLoading() and that will do the
@@ -991,7 +1005,8 @@ bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
 }
 
 void PrintRenderFrameHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   is_loading_ = true;
 }
 
@@ -1261,6 +1276,9 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
 
   PrintHostMsg_DidStartPreview_Params params;
   params.page_count = print_preview_context_.total_page_count();
+  params.pages_to_render = print_preview_context_.pages_to_render();
+  params.pages_per_sheet = print_params.pages_per_sheet;
+  params.page_size = GetPdfPageSize(print_params.page_size, dpi);
   params.fit_to_page_scaling =
       GetFitToPageScaleFactor(printable_area_in_points);
   Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));
@@ -1669,7 +1687,8 @@ void PrintRenderFrameHelper::PrintPages() {
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.
     int printed_count = params.pages.empty() ? page_count : params.pages.size();
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
+    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
+                            printed_count);
   }
 
   bool is_pdf = PrintingNodeOrPdfFrame(prep_frame_view_->frame(),
@@ -2033,23 +2052,15 @@ bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
   if (buf_size == 0)
     return false;
 
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(buf_size);
-  if (!buffer.is_valid())
+  base::MappedReadOnlyRegion region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(buf_size);
+  if (!region_mapping.IsValid())
     return false;
 
-  mojo::ScopedSharedBufferMapping mapping = buffer->Map(buf_size);
-  if (!mapping)
+  if (!metafile.GetData(region_mapping.mapping.memory(), buf_size))
     return false;
 
-  if (!metafile.GetData(mapping.get(), buf_size))
-    return false;
-
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      buffer->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-      &params->metafile_data_handle, nullptr, nullptr);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-  params->data_size = metafile.GetDataSize();
+  params->metafile_data_region = std::move(region_mapping.region);
   params->subframe_content_info = metafile.GetSubframeContentInfo();
   return true;
 }
@@ -2375,6 +2386,12 @@ PrintRenderFrameHelper::PrintPreviewContext::prepared_node() const {
 int PrintRenderFrameHelper::PrintPreviewContext::total_page_count() const {
   DCHECK(state_ != UNINITIALIZED);
   return total_page_count_;
+}
+
+const std::vector<int>&
+PrintRenderFrameHelper::PrintPreviewContext::pages_to_render() const {
+  DCHECK_EQ(RENDERING, state_);
+  return pages_to_render_;
 }
 
 MetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {

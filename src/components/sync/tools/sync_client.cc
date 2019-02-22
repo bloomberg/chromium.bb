@@ -47,11 +47,12 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -143,8 +144,7 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
     LOG(INFO) << "Changes applied for " << ModelTypeToString(model_type);
     size_t i = 1;
     size_t change_count = changes.Get().size();
-    for (ChangeRecordList::const_iterator it = changes.Get().begin();
-         it != changes.Get().end(); ++it) {
+    for (auto it = changes.Get().begin(); it != changes.Get().end(); ++it) {
       std::unique_ptr<base::DictionaryValue> change_value(it->ToValue());
       LOG(INFO) << "Change (" << i << "/" << change_count
                 << "): " << ValueToString(*change_value);
@@ -226,8 +226,7 @@ class InvalidatorShim : public InvalidationHandler {
   void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) override {
     ObjectIdSet ids = invalidation_map.GetObjectIds();
-    for (ObjectIdSet::const_iterator ids_it = ids.begin(); ids_it != ids.end();
-         ++ids_it) {
+    for (auto ids_it = ids.begin(); ids_it != ids.end(); ++ids_it) {
       ModelType type;
       if (!NotificationTypeToRealModelType(ids_it->name(), &type)) {
         DLOG(WARNING) << "Notification has invalid id: "
@@ -235,8 +234,7 @@ class InvalidatorShim : public InvalidationHandler {
       } else {
         SingleObjectInvalidationSet invalidation_set =
             invalidation_map.ForObject(*ids_it);
-        for (SingleObjectInvalidationSet::const_iterator inv_it =
-                 invalidation_set.begin();
+        for (auto inv_it = invalidation_set.begin();
              inv_it != invalidation_set.end(); ++inv_it) {
           std::unique_ptr<InvalidationInterface> inv_adapter(
               new InvalidationAdapter(*inv_it));
@@ -325,10 +323,6 @@ int SyncClientMain(int argc, char* argv[]) {
     return -1;
   }
 
-  // Set up objects that monitor the network.
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
-
   // Set up sync notifier factory.
   const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
       new MyTestURLRequestContextGetter(io_thread.task_runner());
@@ -385,7 +379,10 @@ int SyncClientMain(int argc, char* argv[]) {
   workers.push_back(passive_model_safe_worker);
 
   // Set up sync manager.
-  SyncManagerFactory sync_manager_factory;
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker =
+          network::TestNetworkConnectionTracker::CreateInstance();
+  SyncManagerFactory sync_manager_factory(network_connection_tracker.get());
   std::unique_ptr<SyncManager> sync_manager =
       sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;
@@ -394,13 +391,14 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
-  auto url_loader_factory =
-      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+  auto url_loader_factory_owner =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          context_getter);
   CancelationSignal factory_cancelation_signal;
-  std::unique_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(url_loader_factory->Clone(),
-                            base::BindRepeating(&StubNetworkTimeUpdateCallback),
-                            &factory_cancelation_signal));
+  std::unique_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
+      url_loader_factory_owner->GetURLLoaderFactory()->Clone(),
+      base::BindRepeating(&StubNetworkTimeUpdateCallback),
+      &factory_cancelation_signal));
   post_factory->Init(kUserAgent, BindToTrackerCallback());
   // Used only when committing bookmarks, so it's okay to leave this as null.
   ExtensionsActivity* extensions_activity = nullptr;

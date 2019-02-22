@@ -46,8 +46,8 @@ enum OobeDialogState {
   HIDDEN,
 };
 
-// Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
-// screens.
+// Allows clients (e.g. the browser process) to send messages to the ash
+// login/lock/user-add screens.
 interface LoginScreen {
   // Sets the client interface.
   SetClient(LoginScreenClient client);
@@ -61,7 +61,7 @@ interface LoginScreen {
   ShowLoginScreen() => (bool did_show);
 
   // Requests to show error message in the ash lock screen.
-  // TODO(xiaoyinh): login_attempts is probabaly not needed from chrome,
+  // TODO(xiaoyinh): login_attempts is probably not needed from chrome,
   // remove it when we start to count the login attempts in ash lock screen.
   // |login_attempts|: The number of the login authentication attempts.
   // |error_text|:     The error text to be shown in lock screen.
@@ -198,12 +198,16 @@ interface LoginScreen {
   // Sets if the guest button on the login shelf can be shown during gaia
   // signin screen.
   SetShowGuestButtonForGaiaScreen(bool can_show);
+
+  // Transitions focus to the shelf area. If |reverse|, focuses the status area.
+  FocusLoginShelf(bool reverse);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
 // often involve preferences or talk to cryptohome that is not available to ash.
 interface LoginScreenClient {
-  // Request user authentication in chrome.
+  // Attempt to authenticate a user with a password or PIN.
+  //
   // If auth succeeds:
   // chrome will hide the lock screen and clear any displayed error messages.
   // If auth fails:
@@ -213,13 +217,25 @@ interface LoginScreenClient {
   // |authenticated_by_pin|: True if we are using pin to authenticate.
   //
   // The result will be set to true if auth was successful, false if not.
-  AuthenticateUser(signin.mojom.AccountId account_id,
-                   string password,
-                   bool authenticated_by_pin) => (bool auth_success);
+  //
+  // TODO(jdufault): Extract authenticated_by_pin into a separate mojom method,
+  //                 similar to the other Authenticate* methods
+  AuthenticateUserWithPasswordOrPin(
+      signin.mojom.AccountId account_id,
+      string password,
+      bool authenticated_by_pin) => (bool auth_success);
 
-  // Request to attempt easy unlock in chrome.
-  // |account_id|:   The account id of the user we are authenticating.
-  AttemptUnlock(signin.mojom.AccountId account_id);
+  // Attempt to authenticate the user with with an external binary.
+  AuthenticateUserWithExternalBinary(signin.mojom.AccountId account_id)
+      => (bool auth_success);
+
+  // Try to authenticate |account_id| using easy unlock. This can be used on the
+  // login or lock screen.
+  // |account_id|: The account id of the user we are authenticating.
+  //
+  // TODO(jdufault): Refactor this method to return an auth_success, similar to
+  // the other auth methods above.
+  AuthenticateUserWithEasyUnlock(signin.mojom.AccountId account_id);
 
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.
@@ -257,6 +273,9 @@ interface LoginScreenClient {
   // lock screen.
   // |reverse|:   Whether the tab order is reversed.
   FocusLockScreenApps(bool reverse);
+
+  // Passes focus to the OOBE dialog if it is showing. No-op otherwise.
+  FocusOobeDialog();
 
   // Show the gaia sign-in dialog. If |can_close| is true, the dialog can be
   // closed. The value in |prefilled_account| will be used to prefill the

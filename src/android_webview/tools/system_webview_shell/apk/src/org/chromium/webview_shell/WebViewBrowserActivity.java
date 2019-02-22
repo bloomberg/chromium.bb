@@ -110,7 +110,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     // Each time we make a request, store it here with an int key. onRequestPermissionsResult will
     // look up the request in order to grant the approprate permissions.
     private SparseArray<PermissionRequest> mPendingRequests = new SparseArray<PermissionRequest>();
-    private int mNextRequestKey = 0;
+    private int mNextRequestKey;
 
     // Work around our wonky API by wrapping a geo permission prompt inside a regular
     // PermissionRequest.
@@ -694,6 +694,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             return true;
         } catch (ActivityNotFoundException ex) {
             Log.w(TAG, "No application can handle %s", url);
+        } catch (SecurityException ex) {
+            // This can happen if the Activity is exported="true", guarded by a permission, and sets
+            // up an intent filter matching this intent. This is a valid configuration for an
+            // Activity, so instead of crashing, we catch the exception and do nothing. See
+            // https://crbug.com/808494 and https://crbug.com/889300.
+            Log.w(TAG, "SecurityException when starting intent for %s", url);
         }
         return false;
     }

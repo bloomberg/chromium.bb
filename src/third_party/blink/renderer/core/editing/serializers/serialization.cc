@@ -74,7 +74,7 @@ namespace blink {
 using namespace HTMLNames;
 
 class AttributeChange {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   AttributeChange() : name_(g_null_atom, g_null_atom, g_null_atom) {}
@@ -471,8 +471,8 @@ static void FillContainerFromString(ContainerNode* paragraph,
   string.Split('\t', true, tab_list);
   StringBuilder tab_text;
   bool first = true;
-  size_t num_entries = tab_list.size();
-  for (size_t i = 0; i < num_entries; ++i) {
+  wtf_size_t num_entries = tab_list.size();
+  for (wtf_size_t i = 0; i < num_entries; ++i) {
     const String& s = tab_list[i];
 
     // append the non-tab textual part
@@ -573,8 +573,8 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
 
   Vector<String> list;
   string.Split('\n', true, list);  // true gets us empty strings in the list
-  size_t num_lines = list.size();
-  for (size_t i = 0; i < num_lines; ++i) {
+  wtf_size_t num_lines = list.size();
+  for (wtf_size_t i = 0; i < num_lines; ++i) {
     const String& s = list[i];
 
     Element* element = nullptr;

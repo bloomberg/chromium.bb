@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -66,8 +67,7 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType direction)
       return;
 
     visible_node = image;
-    rect_in_root_frame =
-        VirtualRectForAreaElementAndDirection(*area, direction);
+    rect_in_root_frame = StartEdgeForAreaElement(*area, direction);
   } else {
     if (!node->GetLayoutObject())
       return;
@@ -77,8 +77,9 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType direction)
   }
 
   focusable_node = node;
-  is_offscreen = HasOffscreenRect(visible_node);
-  is_offscreen_after_scrolling = HasOffscreenRect(visible_node, direction);
+  is_offscreen = IsOffscreen(visible_node);
+  is_offscreen_after_scrolling =
+      IsOffscreenAfterFrameScroll(visible_node, direction);
 }
 
 bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
@@ -109,7 +110,7 @@ static bool RectsIntersectOnOrthogonalAxis(WebFocusType direction,
 
 // Return true if rect |a| is below |b|. False otherwise.
 // For overlapping rects, |a| is considered to be below |b|
-// if both edges of |a| are below the respective ones of |b|
+// if both edges of |a| are below the respective ones of |b|.
 static inline bool Below(const LayoutRect& a, const LayoutRect& b) {
   return a.Y() >= b.MaxY() || (a.Y() >= b.Y() && a.MaxY() > b.MaxY() &&
                                a.X() < b.MaxX() && a.MaxX() > b.X());
@@ -117,7 +118,7 @@ static inline bool Below(const LayoutRect& a, const LayoutRect& b) {
 
 // Return true if rect |a| is on the right of |b|. False otherwise.
 // For overlapping rects, |a| is considered to be on the right of |b|
-// if both edges of |a| are on the right of the respective ones of |b|
+// if both edges of |a| are on the right of the respective ones of |b|.
 static inline bool RightOf(const LayoutRect& a, const LayoutRect& b) {
   return a.X() >= b.MaxX() || (a.X() >= b.X() && a.MaxX() > b.MaxX() &&
                                a.Y() < b.MaxY() && a.MaxY() > b.Y());
@@ -141,47 +142,81 @@ static bool IsRectInDirection(WebFocusType direction,
   }
 }
 
-// Checks if |node| is offscreen the visible area (viewport) of its container
-// document. In case it is, one can scroll in direction or take any different
-// desired action later on.
-bool HasOffscreenRect(const Node* node, WebFocusType direction) {
-  // Get the LocalFrameView in which |node| is (which means the current viewport
-  // if |node| is not in an inner document), so we can check if its content rect
-  // is visible before we actually move the focus to it.
+// Answers true if |node| is completely outside the user's (visual) viewport.
+// This logic is used by spatnav to rule out offscreen focus candidates and an
+// offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
+// it as the search origin; the search will start at an edge of the visual
+// viewport instead.
+// TODO(crbug.com/889840): Fix VisibleBoundsInVisualViewport().
+// If VisibleBoundsInVisualViewport() would have taken "element-clips" into
+// account, spatnav could have called it directly; no need to check the
+// LayoutObject's VisibleContentRect.
+bool IsOffscreen(const Node* node) {
   LocalFrameView* frame_view = node->GetDocument().View();
   if (!frame_view)
     return true;
 
   DCHECK(!frame_view->NeedsLayout());
 
-  LayoutRect container_viewport_rect(
-      frame_view->LayoutViewport()->VisibleContentRect());
-  // We want to select a node if it is currently off screen, but will be
-  // exposed after we scroll. Adjust the viewport to post-scrolling position.
-  // If the container has overflow:hidden, we cannot scroll, so we do not pass
-  // direction and we do not adjust for scrolling.
+  LayoutRect frame_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return true;
+
+  LayoutRect rect(layout_object->VisualRectInDocument());
+  if (rect.IsEmpty())
+    return true;
+
+  if (!frame_viewport.Intersects(rect))
+    return true;
+
+  // Now we know that the node is visible in the its own frame's viewport (it is
+  // not clipped by a scrollable div). That is, we've taken "element-clipping"
+  // into account - now we only need to ensure that this node isn't clipped by
+  // a frame.
+  IntRect rect_in_root_frame;
+  if (auto* document = DynamicTo<Document>(node))
+    node = document->body();
+  if (node->IsElementNode())
+    rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
+  return rect_in_root_frame.IsEmpty();
+}
+
+// As IsOffscreen() but returns visibility through the |node|'s frame's viewport
+// after scrolling the frame in |direction|.
+bool IsOffscreenAfterFrameScroll(const Node* node, WebFocusType direction) {
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return true;
+
+  DCHECK(!frame_view->NeedsLayout());
+
+  // If |node| is in the root frame, VisibleContentRect() will include
+  // visual viewport transformation (pinch-zoom) if one exists.
+  LayoutRect frame_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
+  // |direction| extends the node's frame's viewport's rect (before doing the
+  // intersection-check) to also include content revealed by one scroll step in
+  // that |direction|.
   int pixels_per_line_step =
       ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
   switch (direction) {
     case kWebFocusTypeLeft:
-      container_viewport_rect.SetX(container_viewport_rect.X() -
-                                   pixels_per_line_step);
-      container_viewport_rect.SetWidth(container_viewport_rect.Width() +
-                                       pixels_per_line_step);
+      frame_viewport.SetX(frame_viewport.X() - pixels_per_line_step);
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeRight:
-      container_viewport_rect.SetWidth(container_viewport_rect.Width() +
-                                       pixels_per_line_step);
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeUp:
-      container_viewport_rect.SetY(container_viewport_rect.Y() -
-                                   pixels_per_line_step);
-      container_viewport_rect.SetHeight(container_viewport_rect.Height() +
-                                        pixels_per_line_step);
+      frame_viewport.SetY(frame_viewport.Y() - pixels_per_line_step);
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
       break;
     case kWebFocusTypeDown:
-      container_viewport_rect.SetHeight(container_viewport_rect.Height() +
-                                        pixels_per_line_step);
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
       break;
     default:
       break;
@@ -191,11 +226,20 @@ bool HasOffscreenRect(const Node* node, WebFocusType direction) {
   if (!layout_object)
     return true;
 
-  LayoutRect rect(layout_object->AbsoluteVisualRect());
+  LayoutRect rect(layout_object->VisualRectInDocument());
   if (rect.IsEmpty())
     return true;
 
-  return !container_viewport_rect.Intersects(rect);
+  return !frame_viewport.Intersects(rect);
+}
+
+bool HasRemoteFrame(const Node* node) {
+  if (!node)
+    return false;
+
+  return node->IsFrameOwnerElement() &&
+         ToHTMLFrameOwnerElement(node)->ContentFrame() &&
+         ToHTMLFrameOwnerElement(node)->ContentFrame()->IsRemoteFrame();
 }
 
 bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
@@ -224,8 +268,8 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
         return false;
     }
 
-    frame->View()->LayoutViewport()->ScrollBy(ScrollOffset(dx, dy),
-                                              kUserScroll);
+    frame->View()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
+                                                 kUserScroll);
     return true;
   }
   return false;
@@ -233,8 +277,8 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
 
 bool ScrollInDirection(Node* container, WebFocusType direction) {
   DCHECK(container);
-  if (container->IsDocumentNode())
-    return ScrollInDirection(ToDocument(container)->GetFrame(), direction);
+  if (auto* document = DynamicTo<Document>(container))
+    return ScrollInDirection(document->GetFrame(), direction);
 
   if (!container->GetLayoutBox())
     return false;
@@ -312,8 +356,8 @@ Node* ScrollableAreaOrDocumentOf(Node* node) {
   Node* parent = node;
   do {
     // FIXME: Spatial navigation is broken for OOPI.
-    if (parent->IsDocumentNode())
-      parent = ToDocument(parent)->GetFrame()->DeprecatedLocalOwner();
+    if (auto* document = DynamicTo<Document>(parent))
+      parent = document->GetFrame()->DeprecatedLocalOwner();
     else
       parent = parent->ParentOrShadowHostNode();
   } while (parent && !IsScrollableAreaOrDocument(parent));
@@ -343,8 +387,8 @@ bool IsNavigableContainer(const Node* node, WebFocusType direction) {
 
 bool CanScrollInDirection(const Node* container, WebFocusType direction) {
   DCHECK(container);
-  if (container->IsDocumentNode())
-    return CanScrollInDirection(ToDocument(container)->GetFrame(), direction);
+  if (auto* document = DynamicTo<Document>(container))
+    return CanScrollInDirection(document->GetFrame(), direction);
 
   if (!IsScrollableNode(container))
     return false;
@@ -391,7 +435,7 @@ bool CanScrollInDirection(const LocalFrame* frame, WebFocusType direction) {
   if ((direction == kWebFocusTypeUp || direction == kWebFocusTypeDown) &&
       kScrollbarAlwaysOff == vertical_mode)
     return false;
-  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
+  ScrollableArea* scrollable_area = frame->View()->GetScrollableArea();
   LayoutSize size(scrollable_area->ContentsSize());
   LayoutSize offset(scrollable_area->ScrollOffsetInt());
   LayoutRect rect(scrollable_area->VisibleContentRect(kIncludeScrollbars));
@@ -437,7 +481,7 @@ LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
 // This method calculates the exitPoint from the startingRect and the entryPoint
 // into the candidate rect.  The line between those 2 points is the closest
 // distance between the 2 rects.  Takes care of overlapping rects, defining
-// points so that the distance between them is zero where necessary
+// points so that the distance between them is zero where necessary.
 void EntryAndExitPointsForDirection(WebFocusType direction,
                                     const LayoutRect& starting_rect,
                                     const LayoutRect& potential_rect,
@@ -656,47 +700,44 @@ bool CanBeScrolledIntoView(WebFocusType direction,
   return true;
 }
 
-// The starting rect is the rect of the focused node, in document coordinates.
-// Compose a virtual starting rect if there is no focused node or if it is off
-// screen.  The virtual rect is the edge of the container or frame. We select
-// which edge depending on the direction of the navigation.
-LayoutRect VirtualRectForDirection(WebFocusType direction,
-                                   const LayoutRect& starting_rect,
-                                   LayoutUnit width) {
-  LayoutRect virtual_starting_rect = starting_rect;
-  switch (direction) {
+// Returns a thin rectangle that represents one of box's sides.
+LayoutRect OppositeEdge(WebFocusType side,
+                        const LayoutRect& box,
+                        LayoutUnit thickness) {
+  LayoutRect thin_rect = box;
+  switch (side) {
     case kWebFocusTypeLeft:
-      virtual_starting_rect.SetX(virtual_starting_rect.MaxX() - width);
-      virtual_starting_rect.SetWidth(width);
-      break;
-    case kWebFocusTypeUp:
-      virtual_starting_rect.SetY(virtual_starting_rect.MaxY() - width);
-      virtual_starting_rect.SetHeight(width);
+      thin_rect.SetX(thin_rect.MaxX() - thickness);
+      thin_rect.SetWidth(thickness);
       break;
     case kWebFocusTypeRight:
-      virtual_starting_rect.SetWidth(width);
+      thin_rect.SetWidth(thickness);
       break;
     case kWebFocusTypeDown:
-      virtual_starting_rect.SetHeight(width);
+      thin_rect.SetHeight(thickness);
+      break;
+    case kWebFocusTypeUp:
+      thin_rect.SetY(thin_rect.MaxY() - thickness);
+      thin_rect.SetHeight(thickness);
       break;
     default:
       NOTREACHED();
   }
 
-  return virtual_starting_rect;
+  return thin_rect;
 }
 
-LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement& area,
-                                                 WebFocusType direction) {
+LayoutRect StartEdgeForAreaElement(const HTMLAreaElement& area,
+                                   WebFocusType direction) {
   DCHECK(area.ImageElement());
   // Area elements tend to overlap more than other focusable elements. We
   // flatten the rect of the area elements to minimize the effect of overlapping
   // areas.
-  LayoutRect rect = VirtualRectForDirection(
+  LayoutRect rect = OppositeEdge(
       direction,
       area.GetDocument().GetFrame()->View()->ConvertToRootFrame(
           area.ComputeAbsoluteRect(area.ImageElement()->GetLayoutObject())),
-      LayoutUnit(1));
+      LayoutUnit(1) /* snav-imagemap-overlapped-areas.html */);
   return rect;
 }
 
@@ -706,26 +747,54 @@ HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate& candidate) {
              : nullptr;
 };
 
-LayoutRect FindSearchStartPoint(const LocalFrame* frame,
-                                WebFocusType direction) {
-  LayoutRect starting_rect = VirtualRectForDirection(
-      direction,
-      frame->View()->ConvertToRootFrame(frame->View()->DocumentToFrame(
-          LayoutRect(frame->View()->LayoutViewport()->VisibleContentRect()))));
+// The visual viewport's rect (given in the root frame's coordinate space).
+LayoutRect RootViewport(const LocalFrame* current_frame) {
+  return LayoutRect(
+      current_frame->GetPage()->GetVisualViewport().VisibleRect());
+}
 
-  const Element* focused_element = frame->GetDocument()->FocusedElement();
-  if (focused_element) {
-    auto* area_element = ToHTMLAreaElementOrNull(focused_element);
-    if (area_element)
-      focused_element = area_element->ImageElement();
-    if (!HasOffscreenRect(focused_element)) {
-      starting_rect = area_element ? VirtualRectForAreaElementAndDirection(
-                                         *area_element, direction)
-                                   : NodeRectInRootFrame(focused_element, true);
-    }
+// Spatnav uses this rectangle to measure distances to focus candidates.
+// The search origin is either activeElement F itself, if it's being at least
+// partially visible, or else, its first [partially] visible scroller. If both
+// F and its enclosing scroller are completely off-screen, we recurse to the
+// scroller’s scroller ... all the way up until the root frame's document.
+// The root frame's document is a good base case because it's, per definition,
+// a visible scrollable area.
+LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
+                        Node* focus_node,
+                        const WebFocusType direction) {
+  if (!focus_node) {
+    // Search from one of the visual viewport's edges towards the navigated
+    // direction. For example, UP makes spatnav search upwards, starting at the
+    // visual viewport's bottom.
+    return OppositeEdge(direction, viewport_rect_of_root_frame);
   }
 
-  return starting_rect;
+  auto* area_element = ToHTMLAreaElementOrNull(focus_node);
+  if (area_element)
+    focus_node = area_element->ImageElement();
+
+  if (!IsOffscreen(focus_node)) {
+    if (area_element)
+      return StartEdgeForAreaElement(*area_element, direction);
+
+    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node, true);
+    return Intersection(box_in_root_frame, viewport_rect_of_root_frame);
+  }
+
+  Node* container = ScrollableAreaOrDocumentOf(focus_node);
+  while (container) {
+    if (!IsOffscreen(container)) {
+      // The first scroller that encloses focus and is [partially] visible.
+      LayoutRect box_in_root_frame = NodeRectInRootFrame(container, true);
+      return OppositeEdge(direction, Intersection(box_in_root_frame,
+                                                  viewport_rect_of_root_frame));
+    }
+
+    container = ScrollableAreaOrDocumentOf(container);
+  }
+
+  return OppositeEdge(direction, viewport_rect_of_root_frame);
 }
 
 }  // namespace blink

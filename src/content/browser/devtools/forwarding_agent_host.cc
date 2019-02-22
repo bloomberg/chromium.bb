@@ -51,8 +51,9 @@ ForwardingAgentHost::ForwardingAgentHost(
 ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
-void ForwardingAgentHost::AttachClient(DevToolsAgentHostClient* client) {
+bool ForwardingAgentHost::AttachClient(DevToolsAgentHostClient* client) {
   session_proxies_[client].reset(new SessionProxy(this, client));
+  return true;
 }
 
 bool ForwardingAgentHost::DetachClient(DevToolsAgentHostClient* client) {

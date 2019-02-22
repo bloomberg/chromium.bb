@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/overlay_processor.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -29,7 +31,8 @@ class SendPromotionHintsBeforeReturning {
       : resource_provider_(resource_provider), candidates_(candidates) {}
   ~SendPromotionHintsBeforeReturning() {
     resource_provider_->SendPromotionHints(
-        candidates_->promotion_hint_info_map_);
+        candidates_->promotion_hint_info_map_,
+        candidates_->promotion_hint_requestor_set_);
   }
 
  private:
@@ -177,6 +180,9 @@ void OverlayProcessor::ProcessForOverlays(
                      previous_frame_underlay_was_unoccluded, damage_rect);
     break;
   }
+
+  if (!successful_strategy && !previous_frame_underlay_rect.IsEmpty())
+    damage_rect->Union(previous_frame_underlay_rect);
 
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             successful_strategy

@@ -15,7 +15,7 @@ class {{decl}};
 {% endfor %}
 
 class {{exported}}{{cpp_class}} final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   {{cpp_class}}();
   bool IsNull() const { return type_ == SpecificType::kNone; }

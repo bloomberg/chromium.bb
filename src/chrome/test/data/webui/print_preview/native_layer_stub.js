@@ -27,11 +27,16 @@ cr.define('print_preview', function() {
       this.initialSettings_ = null;
 
       /**
-       *
        * @private {!Array<!print_preview.LocalDestinationInfo>} Local
        *     destination list to be used for the response to |getPrinters|.
        */
       this.localDestinationInfos_ = [];
+
+      /**
+       * @private {!Array<!print_preview.ProvisionalDestinationInfo>} Local
+       *     destination list to be used for the response to |getPrinters|.
+       */
+      this.extensionDestinationInfos_ = [];
 
       /**
        * @private {!Map<string,
@@ -84,6 +89,11 @@ cr.define('print_preview', function() {
       if (type == print_preview.PrinterType.LOCAL_PRINTER) {
         cr.webUIListenerCallback(
             'printers-added', type, this.localDestinationInfos_);
+      } else if (
+          type == print_preview.PrinterType.EXTENSION_PRINTER &&
+          this.extensionDestinationInfos_.length > 0) {
+        cr.webUIListenerCallback(
+            'printers-added', type, this.extensionDestinationInfos_);
       }
       return Promise.resolve();
     }
@@ -182,9 +192,18 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * @param {!Array<!print_preview.ProvisionalDestinationInfo>}
+     *     extensionDestinations The extension destinations to return as a
+     *     response to |getPrinters|.
+     */
+    setExtensionDestinations(extensionDestinations) {
+      this.extensionDestinationInfos_ = extensionDestinations;
+    }
+
+    /**
      * @param {!print_preview.CapabilitiesResponse} response The
      *     response to send for the destination whose ID is in the response.
-     * @param {boolean?} opt_reject Whether to reject the callback for this
+     * @param {?boolean} opt_reject Whether to reject the callback for this
      *     destination. Defaults to false (will resolve callback) if not
      *     provided.
      */
@@ -195,12 +214,13 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {boolean} reject Whether printSetup requests should be rejected.
      * @param {!print_preview.PrinterSetupResponse} The response to send when
      *     |setupPrinter| is called.
+     * @param {?boolean} opt_reject Whether printSetup requests should be
+     *     rejected. Defaults to false (will resolve callback) if not provided.
      */
-    setSetupPrinterResponse(reject, response) {
-      this.shouldRejectPrinterSetup_ = reject;
+    setSetupPrinterResponse(response, opt_reject) {
+      this.shouldRejectPrinterSetup_ = opt_reject || false;
       this.setupPrinterResponse_ = response;
     }
 

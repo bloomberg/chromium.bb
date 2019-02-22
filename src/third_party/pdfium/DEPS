@@ -15,25 +15,25 @@ vars = {
 
   'android_ndk_revision': '5cd86312e794bdf542a3685c6f10cbb96072990b',
   'binutils_revision': '4110e09197116a9c5dedd4c827bbe95c224f87ac',
-  'build_revision': '4755315adacf22d0aa29ac7f27e131dacdb578f5',
+  'build_revision': 'a092193873452162c2288536cea2ac2ed82e159f',
   'buildtools_revision': '2dff9c9c74e9d732e6fe57c84ef7fd044cc45d96',
-  'catapult_revision': 'c61a0380486a3c952109d0024cf77dac8a05bbb5',
-  'clang_revision': '13b165992adfe43a7442fceb958626755ef4d066',
-  'code_coverage_revision': '64186cbaf924329bfa0d139c0a45946cc529af1f',
+  'catapult_revision': '9f36d9f788130761c3611060bc7a104772761d15',
+  'clang_revision': '7792d28b069af6dd3a86d1ba83b7f5c4ede605dc',
+  'code_coverage_revision': '4191ea0675c4c133cb506316b6b974f31e600576',
   'cygwin_revision': 'c89e446b273697fadf3a10ff1007a97c0b7de6df',
-  'depot_tools_revision': '02d53403125b2669236fd0db69f71f7e332c5767',
-  'freetype_revision': '96b5e500909cfce39ff78feabefd8063a229b951',
+  'depot_tools_revision': '71e3be7a50c21faeee91ed99a8d5addfb7594e7c',
+  'freetype_revision': 'abd997aa7cf2bc9219136782c7363d14d325199c',
   'gtest_revision': 'd5266326752f0a1dadbd310932d8f4fd8c3c5e7d',
-  'icu_revision': 'e4194dc7bbb3305d84cbb1b294274ca70d230721',
+  'icu_revision': 'c56c671998902fcc4fc9ace88c83daa99f980793',
   'instrumented_lib_revision': '323cf32193caecbf074d1a0cb5b02b905f163e0f',
   'jinja2_revision': '45571de473282bd1d8b63a8dfcb1fd268d0635d2',
-  'jpeg_turbo_revision': '7260e4d8b8e1e40b17f03fafdf1cd83296900f76',
+  'jpeg_turbo_revision': '61a2bbaa9aec89cb2c882d87ace6aba9aee49bb9',
   'markupsafe_revision': '8f45f5cfa0009d2a70589bcda0349b8cb2b72783',
-  'pdfium_tests_revision': 'e1005e0e78574669b9fb14f816f12cd7dc72677e',
+  'pdfium_tests_revision': '502691e08e178f28fe16bcf62296975d629178f5',
   'skia_revision': '588f879677d4f36e16a42dd96876534f104c2e2f',
   'tools_memory_revision': 'f7b00daf4df7f6c469f5fbc68d7f40f6bd15d6e6',
   'trace_event_revision': '211b3ed9d0481b4caddbee1322321b86a483ca1f',
-  'v8_revision': '19afaa1436ef38c86f7ea9a73a6ae9e43ec71ad1',
+  'v8_revision': '41562c7c52bd43c5729f07af697f431258578e59',
   'yasm_source_revision': '720b70524a4424b15fc57e82263568c8ba0496ad',
   'zlib_revision': 'dcf1d0f8c952f76cfceefb4ba61e004f93ad7287',
 }
@@ -106,11 +106,6 @@ deps = {
   "tools/code_coverage":
     Var('chromium_git') + "/chromium/src/tools/code_coverage.git@" +
         Var('code_coverage_revision'),
-
-  # TODO(GYP): Remove this when no tools rely on GYP anymore.
-  "tools/gyp":
-    Var('chromium_git') + '/external/gyp.git@' +
-        'eb296f67da078ec01f5e3a9ea9cdc6d26d680161',
 
   "tools/memory":
     Var('chromium_git') + "/chromium/src/tools/memory@" +

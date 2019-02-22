@@ -102,12 +102,11 @@
 <translation id="3171922709365450819">மூன்றாம் தரப்பு அங்கீகாரம் தேவைப்படுவதால், இந்தக் கிளையன்ட் இந்தச் சாதனத்தை ஆதரிக்கவில்லை.</translation>
 <translation id="3194245623920924351">Chrome தொலைநிலை டெஸ்க்டாப்</translation>
 <translation id="3197730452537982411">தொலைநிலை டெஸ்க்டாப்</translation>
-<translation id="3212472844831225214">• Android 9.0 Pieக்கான ஆதரவு சேர்க்கப்பட்டுள்ளது.</translation>
 <translation id="324272851072175193">இந்த வழிமுறைகளை மின்னஞ்சலில் அனுப்பு</translation>
 <translation id="3258789396564295715">Chrome தொலைநிலை டெஸ்க்டாப்பைப் பயன்படுத்தி இந்தக் கணினியை பாதுகாப்பாக அணுகலாம்.</translation>
 <translation id="3286521253923406898">Chromoting ஹோஸ்ட் கண்ட்ரோலர்</translation>
 <translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> மாற்றங்களைச் செய்ய விரும்புகிறது.</translation>
-<translation id="332624996707057614">கணினி பெயரைத் திருத்தவும்</translation>
+<translation id="332624996707057614">கம்ப்யூட்டர் பெயரைத் திருத்தவும்</translation>
 <translation id="3339299787263251426">இணையம் மூலம் உங்கள் கணினியைப் பாதுகாப்பாக அணுகலாம்</translation>
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3362124771485993931">PIN ஐ மீண்டும் தட்டச்சு செய்க</translation>
@@ -260,7 +259,7 @@ PC</translation>
 <translation id="6746493157771801606">வரலாற்றை அழி</translation>
 <translation id="6748108480210050150">அனுப்புநர்</translation>
 <translation id="677755392401385740">ஹோஸ்ட் தொடங்கிய பயனர்: <ph name="HOST_USERNAME" />.</translation>
-<translation id="6865175692670882333">பார்/திருத்து</translation>
+<translation id="6865175692670882333">காட்டு/திருத்து</translation>
 <translation id="6913710942997637770">சுயவிவரப் படத்தைத் தேர்வுசெய்ய, உங்கள் படங்களை அணுகுவதற்கு Chrome தொலைநிலை டெஸ்க்டாப்பை அனுமதிக்கவும்</translation>
 <translation id="6930242544192836755">மொத்த நேரம்</translation>
 <translation id="6939719207673461467">விசைப்பலகையைக் காட்டு/மறை.</translation>
@@ -332,6 +331,8 @@ PC</translation>
 <translation id="8525306231823319788">முழுத்திரை</translation>
 <translation id="8548209692293300397">நீங்கள் இதற்கு முன்பு <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) என உள்நுழைந்துள்ளீர்கள்.  அந்தக் கணக்கில் உங்கள் கணினிகளை அணுக, அந்தக் கணக்கினைக் கொண்டு <ph name="LINK_BEGIN" />Google Chrome இல் உள்நுழைக<ph name="LINK_END" /> மற்றும் Chrome தொலைநிலை டெஸ்க்டாப்பை மீண்டும் நிறுவுக.</translation>
 <translation id="8642984861538780905">மோசமில்லை</translation>
+<translation id="8705151241155781642">• Android 9.0 Pie பதிப்புக்கான ஆதரவு சேர்க்கப்பட்டுள்ளது.
+• உங்கள் Android சாதனத்தின் திரைக்கு ஏற்ப, தொலைநிலை டெஸ்க்டாப்பின் தெளிவுத்திறன் அளவை மாற்றுவதற்கான ஆதரவு.</translation>
 <translation id="8712909229180978490">Google இயக்ககத்தில் ஆன்லைனில் நான் சேமித்த கோப்புகள் இல்லை.</translation>
 <translation id="8743328882720071828">உங்கள் கணினியைப் பார்க்கவும் கட்டுப்படுத்தவும் <ph name="CLIENT_USERNAME" />ஐ அனுமதிக்கவா?</translation>
 <translation id="8747048596626351634">அமர்வு சிதைந்தது அல்லது தொடங்க முடியவில்லை. தொலைநிலைக் கணினியில் ~/.chrome-remote-desktop-session இருந்தால், டெஸ்க்டாப் சூழல் அல்லது சாளர நிர்வாகி போன்ற நீண்ட நேரம் இயங்கும் முன்புலச் செயல்முறையை அது தொடங்குவதை உறுதிப்படுத்தவும்.</translation>

@@ -34,146 +34,109 @@ namespace trace_processor {
 class SchedSliceTable : public Table {
  public:
   enum Column {
-    kQuantum = 0,
-    kTimestampLowerBound = 1,
-    kTimestamp = 2,
-    kCpu = 3,
-    kDuration = 4,
-    kQuantizedGroup = 5,
-    kUtid = 6
+    kTimestamp = 0,
+    kCpu = 1,
+    kDuration = 2,
+    kUtid = 3,
   };
 
-  SchedSliceTable(const TraceStorage* storage);
+  SchedSliceTable(sqlite3*, const TraceStorage* storage);
 
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
   // Table implementation.
-  std::unique_ptr<Table::Cursor> CreateCursor() override;
+  Table::Schema CreateSchema(int argc, const char* const* argv) override;
+  std::unique_ptr<Table::Cursor> CreateCursor(
+      const QueryConstraints& query_constraints,
+      sqlite3_value** argv) override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
-  int FindFunction(const char* name, FindFunctionFn fn, void** args) override;
 
  private:
-  // Transient filter state for each CPU of this trace.
-  class PerCpuState {
+  // Base class for other cursors, implementing column reporting.
+  class BaseCursor : public Table::Cursor {
    public:
-    void Initialize(uint32_t cpu,
-                    const TraceStorage* storage,
-                    uint64_t quantum,
-                    std::vector<uint32_t> sorted_row_ids);
-    void FindNextSlice();
-    bool IsNextRowIdIndexValid() const {
-      return next_row_id_index_ < sorted_row_ids_.size();
-    }
+    BaseCursor(const TraceStorage* storage);
+    virtual ~BaseCursor() override;
 
-    size_t next_row_id() const { return sorted_row_ids_[next_row_id_index_]; }
-    uint64_t next_timestamp() const { return next_timestamp_; }
+    virtual uint32_t RowIndex() = 0;
+    int Column(sqlite3_context*, int N) override final;
+
+   protected:
+    const TraceStorage* const storage_;
+  };
+
+  // Very fast cursor which which simply increments through indices.
+  class IncrementCursor : public BaseCursor {
+   public:
+    IncrementCursor(const TraceStorage*,
+                    uint32_t min_idx,
+                    uint32_t max_idx,
+                    bool desc);
+
+    int Next() override;
+    uint32_t RowIndex() override;
+    int Eof() override;
 
    private:
-    const TraceStorage::SlicesPerCpu& Slices() {
-      return storage_->SlicesForCpu(cpu_);
-    }
+    uint32_t const min_idx_;
+    uint32_t const max_idx_;
+    bool const desc_;
 
-    void UpdateNextTimestampForNextRow();
+    // In non-desc mode, this is an offset from min_idx while in desc mode, this
+    // is an offset from max_idx_.
+    uint32_t offset_ = 0;
+  };
 
-    // Vector of row ids sorted by the the given order by constraints.
-    std::vector<uint32_t> sorted_row_ids_;
+  // Reasonably fast cursor which stores a vector of booleans about whether
+  // a row should be returned.
+  class FilterCursor : public BaseCursor {
+   public:
+    FilterCursor(const TraceStorage*,
+                 uint32_t min_idx,
+                 uint32_t max_idx,
+                 std::vector<bool> filter,
+                 bool desc);
+
+    int Next() override;
+    uint32_t RowIndex() override;
+    int Eof() override;
+
+   private:
+    void FindNext();
+
+    uint32_t const min_idx_;
+    uint32_t const max_idx_;
+    std::vector<bool> filter_;
+    bool const desc_;
+
+    // In non-desc mode, this is an offset from min_idx while in desc mode, this
+    // is an offset from max_idx_.
+    uint32_t offset_ = 0;
+  };
+
+  // Slow path cursor which stores a sorted set of indices into storage.
+  class SortedCursor : public BaseCursor {
+   public:
+    SortedCursor(const TraceStorage* storage,
+                 uint32_t min_idx,
+                 uint32_t max_idx,
+                 const std::vector<QueryConstraints::OrderBy>&);
+    SortedCursor(const TraceStorage* storage,
+                 uint32_t min_idx,
+                 uint32_t max_idx,
+                 const std::vector<QueryConstraints::OrderBy>&,
+                 const std::vector<bool>& filter);
+
+    int Next() override;
+    uint32_t RowIndex() override;
+    int Eof() override;
+
+   private:
+    // Vector of row ids sorted by some order by constraints.
+    std::vector<uint32_t> sorted_rows_;
 
     // An offset into |sorted_row_ids_| indicating the next row to return.
-    uint32_t next_row_id_index_ = 0;
-
-    // The timestamp of the row to index. This is either the timestamp of
-    // the slice at |next_row_id_index_| or the timestamp of the next quantized
-    // group boundary.
-    uint64_t next_timestamp_ = 0;
-
-    // The CPU this state is associated with.
-    uint32_t cpu_ = 0;
-
-    // The quantum the output slices should fall within.
-    uint64_t quantum_ = 0;
-
-    const TraceStorage* storage_ = nullptr;
-  };
-
-  // Transient state for a filter operation on a Cursor.
-  class FilterState {
-   public:
-    FilterState(const TraceStorage* storage,
-                const QueryConstraints& query_constraints,
-                sqlite3_value** argv);
-
-    // Chooses the next CPU which should be returned according to the sorting
-    // citeria specified by |order_by_|.
-    void FindCpuWithNextSlice();
-
-    // Returns whether the next CPU to be returned by this filter operation is
-    // valid.
-    bool IsNextCpuValid() const { return next_cpu_ < per_cpu_state_.size(); }
-
-    // Returns the transient state associated with a single CPU.
-    PerCpuState* StateForCpu(uint32_t cpu) { return &per_cpu_state_[cpu]; }
-
-    uint32_t next_cpu() const { return next_cpu_; }
-    uint64_t quantum() const { return quantum_; }
-
-   private:
-    // Creates a vector of indices into the slices for the given |cpu| sorted
-    // by the order by criteria.
-    std::vector<uint32_t> CreateSortedIndexVectorForCpu(uint32_t cpu,
-                                                        uint64_t min_ts,
-                                                        uint64_t max_ts);
-
-    // Compares the next slice of the given |cpu| with the next slice of the
-    // |next_cpu_|. Return <0 if |cpu| is ordered before, >0 if ordered after,
-    // and 0 if they are equal.
-    int CompareCpuToNextCpu(uint32_t cpu);
-
-    // Compares the slice at index |f| in |f_slices| for CPU |f_cpu| with the
-    // slice at index |s| in |s_slices| for CPU |s_cpu| on all columns.
-    // Returns -1 if the first slice is before the second in the ordering, 1 if
-    // the first slice is after the second and 0 if they are equal.
-    int CompareSlices(uint32_t f_cpu, size_t f, uint32_t s_cpu, size_t s);
-
-    // Compares the slice at index |f| in |f_slices| for CPU |f_cpu| with the
-    // slice at index |s| in |s_slices| for CPU |s_cpu| on the criteria in
-    // |order_by|.
-    // Returns -1 if the first slice is before the second in the ordering, 1 if
-    // the first slice is after the second and 0 if they are equal.
-    int CompareSlicesOnColumn(uint32_t f_cpu,
-                              size_t f,
-                              uint32_t s_cpu,
-                              size_t s,
-                              const QueryConstraints::OrderBy& order_by);
-
-    // One entry for each cpu which is used in filtering.
-    std::array<PerCpuState, base::kMaxCpus> per_cpu_state_;
-
-    // The next CPU which should be returned to the user.
-    uint32_t next_cpu_ = 0;
-
-    // The quantum the output slices should fall within.
-    uint64_t quantum_ = 0;
-
-    // The sorting criteria for this filter operation.
-    std::vector<QueryConstraints::OrderBy> order_by_;
-
-    const TraceStorage* const storage_;
-  };
-
-  // Implementation of the SQLite cursor interface.
-  class Cursor : public Table::Cursor {
-   public:
-    Cursor(const TraceStorage* storage);
-
-    // Implementation of Table::Cursor.
-    int Filter(const QueryConstraints&, sqlite3_value**) override;
-    int Next() override;
-    int Eof() override;
-    int Column(sqlite3_context*, int N) override;
-
-   private:
-    const TraceStorage* const storage_;
-    std::unique_ptr<FilterState> filter_state_;
+    uint32_t next_row_idx_ = 0;
   };
 
   const TraceStorage* const storage_;

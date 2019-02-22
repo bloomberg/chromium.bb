@@ -11,7 +11,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/service_worker/web_service_worker_impl.h"
+#include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_navigation_preload_state.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
@@ -60,13 +60,13 @@ void DidGetNavigationPreloadState(
 
 WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
     QueuedTaskType type,
-    const scoped_refptr<WebServiceWorkerImpl>& worker)
-    : type(type), worker(worker) {}
+    blink::mojom::ServiceWorkerObjectInfoPtr info)
+    : type(type), info(std::move(info)) {}
 
-WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
-    const QueuedTask& other) = default;
+WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(QueuedTask&& other) =
+    default;
 
-WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() {}
+WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() = default;
 
 // static
 scoped_refptr<WebServiceWorkerRegistrationImpl>
@@ -106,11 +106,11 @@ void WebServiceWorkerRegistrationImpl::RunQueuedTasks() {
   DCHECK(proxy_);
   for (const QueuedTask& task : queued_tasks_) {
     if (task.type == INSTALLING)
-      proxy_->SetInstalling(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetInstalling(task.info.To<blink::WebServiceWorkerObjectInfo>());
     else if (task.type == WAITING)
-      proxy_->SetWaiting(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetWaiting(task.info.To<blink::WebServiceWorkerObjectInfo>());
     else if (task.type == ACTIVE)
-      proxy_->SetActive(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetActive(task.info.To<blink::WebServiceWorkerObjectInfo>());
     else if (task.type == UPDATE_FOUND)
       proxy_->DispatchUpdateFoundEvent();
   }
@@ -257,55 +257,32 @@ WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
 
 void WebServiceWorkerRegistrationImpl::SetInstalling(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  scoped_refptr<WebServiceWorkerImpl> service_worker =
-      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
-    proxy_->SetInstalling(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetInstalling(info.To<blink::WebServiceWorkerObjectInfo>());
   else
-    queued_tasks_.push_back(QueuedTask(INSTALLING, service_worker));
+    queued_tasks_.emplace_back(INSTALLING, std::move(info));
 }
 
 void WebServiceWorkerRegistrationImpl::SetWaiting(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  scoped_refptr<WebServiceWorkerImpl> service_worker =
-      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
-    proxy_->SetWaiting(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetWaiting(info.To<blink::WebServiceWorkerObjectInfo>());
   else
-    queued_tasks_.push_back(QueuedTask(WAITING, service_worker));
+    queued_tasks_.emplace_back(WAITING, std::move(info));
 }
 
 void WebServiceWorkerRegistrationImpl::SetActive(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  scoped_refptr<WebServiceWorkerImpl> service_worker =
-      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
-    proxy_->SetActive(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetActive(info.To<blink::WebServiceWorkerObjectInfo>());
   else
-    queued_tasks_.push_back(QueuedTask(ACTIVE, service_worker));
+    queued_tasks_.emplace_back(ACTIVE, std::move(info));
 }
 
 void WebServiceWorkerRegistrationImpl::RefreshVersionAttributes() {
   SetInstalling(std::move(info_->installing));
   SetWaiting(std::move(info_->waiting));
   SetActive(std::move(info_->active));
-}
-
-scoped_refptr<WebServiceWorkerImpl>
-WebServiceWorkerRegistrationImpl::GetOrCreateServiceWorkerObject(
-    blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  scoped_refptr<WebServiceWorkerImpl> service_worker;
-  if (is_for_client_) {
-    if (provider_context_for_client_) {
-      service_worker =
-          provider_context_for_client_->GetOrCreateServiceWorkerObject(
-              std::move(info));
-    }
-  } else if (ServiceWorkerContextClient::ThreadSpecificInstance()) {
-    service_worker = ServiceWorkerContextClient::ThreadSpecificInstance()
-                         ->GetOrCreateServiceWorkerObject(std::move(info));
-  }
-  return service_worker;
 }
 
 void WebServiceWorkerRegistrationImpl::OnUpdated(
@@ -321,22 +298,21 @@ void WebServiceWorkerRegistrationImpl::OnUpdated(
       base::WrapRefCounted(this)));
 }
 
-void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
-    int changed_mask,
+void WebServiceWorkerRegistrationImpl::SetServiceWorkerObjects(
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     blink::mojom::ServiceWorkerObjectInfoPtr installing,
     blink::mojom::ServiceWorkerObjectInfoPtr waiting,
     blink::mojom::ServiceWorkerObjectInfoPtr active) {
-  ChangedVersionAttributesMask mask(changed_mask);
-  DCHECK(mask.installing_changed() || !installing);
-  if (mask.installing_changed()) {
+  DCHECK(changed_mask->installing || !installing);
+  if (changed_mask->installing) {
     SetInstalling(std::move(installing));
   }
-  DCHECK(mask.waiting_changed() || !waiting);
-  if (mask.waiting_changed()) {
+  DCHECK(changed_mask->waiting || !waiting);
+  if (changed_mask->waiting) {
     SetWaiting(std::move(waiting));
   }
-  DCHECK(mask.active_changed() || !active);
-  if (mask.active_changed()) {
+  DCHECK(changed_mask->active || !active);
+  if (changed_mask->active) {
     SetActive(std::move(active));
   }
 }
@@ -350,7 +326,7 @@ void WebServiceWorkerRegistrationImpl::UpdateFound() {
   if (proxy_)
     proxy_->DispatchUpdateFoundEvent();
   else
-    queued_tasks_.push_back(QueuedTask(UPDATE_FOUND, nullptr));
+    queued_tasks_.emplace_back(UPDATE_FOUND, nullptr);
 }
 
 }  // namespace content

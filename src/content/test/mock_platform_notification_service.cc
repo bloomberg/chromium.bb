@@ -8,10 +8,12 @@
 #include "base/guid.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/common/persistent_notification_status.h"
-#include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
 namespace content {
 
@@ -23,8 +25,8 @@ void MockPlatformNotificationService::DisplayNotification(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    const PlatformNotificationData& notification_data,
-    const NotificationResources& notification_resources) {
+    const blink::PlatformNotificationData& notification_data,
+    const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ReplaceNotificationIfNeeded(notification_id);
@@ -41,8 +43,8 @@ void MockPlatformNotificationService::DisplayPersistentNotification(
     const std::string& notification_id,
     const GURL& service_worker_scope,
     const GURL& origin,
-    const PlatformNotificationData& notification_data,
-    const NotificationResources& notification_resources) {
+    const blink::PlatformNotificationData& notification_data,
+    const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ReplaceNotificationIfNeeded(notification_id);
@@ -89,8 +91,8 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
   for (const auto& notification_id : non_persistent_notifications_)
     displayed_notifications->insert(notification_id);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }

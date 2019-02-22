@@ -472,13 +472,6 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCompileShader(GLuint shader) {
 }
 
 void GL_BINDING_CALL
-MockGLInterface::Mock_glCompressedCopyTextureCHROMIUM(GLuint sourceId,
-                                                      GLuint destId) {
-  MakeGlMockFunctionUnique("glCompressedCopyTextureCHROMIUM");
-  interface_->CompressedCopyTextureCHROMIUM(sourceId, destId);
-}
-
-void GL_BINDING_CALL
 MockGLInterface::Mock_glCompressedTexImage2D(GLenum target,
                                              GLint level,
                                              GLenum internalformat,
@@ -2942,6 +2935,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMatrixLoadfEXT(GLenum matrixMode,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glMaxShaderCompilerThreadsKHR(GLuint count) {
+  MakeGlMockFunctionUnique("glMaxShaderCompilerThreadsKHR");
+  interface_->MaxShaderCompilerThreadsKHR(count);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glMemoryBarrier(GLbitfield barriers) {
   MakeGlMockFunctionUnique("glMemoryBarrier");
   interface_->MemoryBarrierEXT(barriers);
@@ -4926,9 +4925,6 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glColorMask);
   if (strcmp(name, "glCompileShader") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCompileShader);
-  if (strcmp(name, "glCompressedCopyTextureCHROMIUM") == 0)
-    return reinterpret_cast<GLFunctionPointerType>(
-        Mock_glCompressedCopyTextureCHROMIUM);
   if (strcmp(name, "glCompressedTexImage2D") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCompressedTexImage2D);
   if (strcmp(name, "glCompressedTexImage2DRobustANGLE") == 0)
@@ -5650,6 +5646,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfCHROMIUM);
   if (strcmp(name, "glMatrixLoadfEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfEXT);
+  if (strcmp(name, "glMaxShaderCompilerThreadsKHR") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMaxShaderCompilerThreadsKHR);
   if (strcmp(name, "glMemoryBarrier") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrier);
   if (strcmp(name, "glMemoryBarrierByRegion") == 0)

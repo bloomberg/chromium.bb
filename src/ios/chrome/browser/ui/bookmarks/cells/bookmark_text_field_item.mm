@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -28,11 +27,7 @@
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    self.cellClass = [BookmarkTextFieldCell class];
-  } else {
-    self.cellClass = [LegacyBookmarkTextFieldCell class];
-  }
+  self.cellClass = [BookmarkTextFieldCell class];
   return self;
 }
 
@@ -42,35 +37,20 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    BookmarkTextFieldCell* cell =
-        base::mac::ObjCCastStrict<BookmarkTextFieldCell>(tableCell);
-    cell.textField.text = self.text;
-    cell.titleLabel.text = self.placeholder;
-    cell.textField.placeholder = self.placeholder;
-    cell.textField.tag = self.type;
-    [cell.textField addTarget:self
-                       action:@selector(textFieldDidChange:)
-             forControlEvents:UIControlEventEditingChanged];
-    cell.textField.delegate = self.delegate;
-    cell.textField.accessibilityLabel = self.text;
-    cell.textField.accessibilityIdentifier = [NSString
-        stringWithFormat:@"%@_textField", self.accessibilityIdentifier];
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-  } else {
-    LegacyBookmarkTextFieldCell* cell =
-        base::mac::ObjCCastStrict<LegacyBookmarkTextFieldCell>(tableCell);
-    cell.textField.text = self.text;
-    cell.textField.placeholder = self.placeholder;
-    cell.textField.tag = self.type;
-    [cell.textField addTarget:self
-                       action:@selector(textFieldDidChange:)
-             forControlEvents:UIControlEventEditingChanged];
-    cell.textField.delegate = self.delegate;
-    cell.textField.accessibilityLabel = self.text;
-    cell.textField.accessibilityIdentifier = [NSString
-        stringWithFormat:@"%@_textField", self.accessibilityIdentifier];
-  }
+  BookmarkTextFieldCell* cell =
+      base::mac::ObjCCastStrict<BookmarkTextFieldCell>(tableCell);
+  cell.textField.text = self.text;
+  cell.titleLabel.text = self.placeholder;
+  cell.textField.placeholder = self.placeholder;
+  cell.textField.tag = self.type;
+  [cell.textField addTarget:self
+                     action:@selector(textFieldDidChange:)
+           forControlEvents:UIControlEventEditingChanged];
+  cell.textField.delegate = self.delegate;
+  cell.textField.accessibilityLabel = self.text;
+  cell.textField.accessibilityIdentifier =
+      [NSString stringWithFormat:@"%@_textField", self.accessibilityIdentifier];
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 #pragma mark UIControlEventEditingChanged
@@ -165,61 +145,6 @@
               forControlEvents:UIControlEventAllEvents];
   self.textField.delegate = nil;
   self.textField.text = nil;
-}
-
-@end
-
-#pragma mark - LegacyBookmarkTextFieldCell
-
-@interface LegacyBookmarkTextFieldCell ()
-@property(nonatomic, readwrite, strong)
-    UITextField<TextFieldStyling>* textField;
-@end
-
-@implementation LegacyBookmarkTextFieldCell
-
-@synthesize textField = _textField;
-
-- (instancetype)initWithStyle:(UITableViewCellStyle)style
-              reuseIdentifier:(NSString*)reuseIdentifier {
-  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-  if (self) {
-    _textField =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
-    _textField.translatesAutoresizingMaskIntoConstraints = NO;
-    _textField.textColor = bookmark_utils_ios::darkTextColor();
-    _textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    _textField.placeholderStyle =
-        TextFieldStylingPlaceholderFloatingPlaceholder;
-    [self.contentView addSubview:_textField];
-    const CGFloat kHorizontalPadding = 15;
-    const CGFloat kTopPadding = 8;
-    [NSLayoutConstraint activateConstraints:@[
-      [_textField.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kHorizontalPadding],
-      [_textField.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                           constant:kTopPadding],
-      [_textField.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kHorizontalPadding],
-      [_textField.bottomAnchor
-          constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTopPadding],
-    ]];
-  }
-  return self;
-}
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
-  [self.textField resignFirstResponder];
-  [self.textField removeTarget:nil
-                        action:NULL
-              forControlEvents:UIControlEventAllEvents];
-  self.textField.delegate = nil;
-  self.textField.text = nil;
-  self.textField.textValidator = nil;
 }
 
 @end

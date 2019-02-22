@@ -220,88 +220,57 @@ TEST(PlatformThreadTest, FunctionTimesTen) {
 
 namespace {
 
-constexpr ThreadPriority kAllThreadPriorities[] = {
-    ThreadPriority::REALTIME_AUDIO, ThreadPriority::DISPLAY,
-    ThreadPriority::NORMAL, ThreadPriority::BACKGROUND};
-
 class ThreadPriorityTestThread : public FunctionTestThread {
  public:
-  explicit ThreadPriorityTestThread() = default;
+  explicit ThreadPriorityTestThread(ThreadPriority from, ThreadPriority to)
+      : from_(from), to_(to) {}
   ~ThreadPriorityTestThread() override = default;
 
  private:
   void RunTest() override {
-#if !defined(OS_ANDROID)
-    // TODO(fdoray): PlatformThread::CanIncreaseCurrentThreadPriority()
-    // incorrectly returns false on Android. There should be a cross-POSIX
-    // implementation of this method that checks RLIMIT_NICE to determine
-    // whether it is possible to increase thread priority.
-    // https://crbug.com/872820
-    if (PlatformThread::CanIncreaseCurrentThreadPriority()) {
-#endif
-      // On platforms that support increasing thread priority, test transition
-      // between every possible pair of priorities.
-      for (auto first_priority : kAllThreadPriorities) {
-        for (auto second_priority : kAllThreadPriorities) {
-          PlatformThread::SetCurrentThreadPriority(first_priority);
-          EXPECT_EQ(first_priority, PlatformThread::GetCurrentThreadPriority());
+    EXPECT_EQ(PlatformThread::GetCurrentThreadPriority(),
+              ThreadPriority::NORMAL);
+    PlatformThread::SetCurrentThreadPriority(from_);
+    EXPECT_EQ(PlatformThread::GetCurrentThreadPriority(), from_);
+    PlatformThread::SetCurrentThreadPriority(to_);
 
-          PlatformThread::SetCurrentThreadPriority(second_priority);
-          EXPECT_EQ(second_priority,
-                    PlatformThread::GetCurrentThreadPriority());
-        }
-      }
-#if !defined(OS_ANDROID)
+    if (static_cast<int>(to_) <= static_cast<int>(from_) ||
+        PlatformThread::CanIncreaseThreadPriority(to_)) {
+      EXPECT_EQ(PlatformThread::GetCurrentThreadPriority(), to_);
     } else {
-      // On platforms that don't support increasing thread priority, the only
-      // valid transition is NORMAL -> BACKGROUND (it isn't possible to get a
-      // thread running with a higher priority than NORMAL).
-      EXPECT_EQ(ThreadPriority::NORMAL,
-                PlatformThread::GetCurrentThreadPriority());
-
-      // Verify that transition to DISPLAY or REALTIME_AUDIO is impossible.
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
-      EXPECT_EQ(ThreadPriority::NORMAL,
-                PlatformThread::GetCurrentThreadPriority());
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::REALTIME_AUDIO);
-      EXPECT_EQ(ThreadPriority::NORMAL,
-                PlatformThread::GetCurrentThreadPriority());
-
-      // Verify that transition to BACKGROUND is possible.
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::BACKGROUND);
-      EXPECT_EQ(ThreadPriority::BACKGROUND,
-                PlatformThread::GetCurrentThreadPriority());
-
-      // Verify that transition to NORMAL, DISPLAY or REALTIME_AUDIO is
-      // impossible.
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);
-      EXPECT_EQ(ThreadPriority::BACKGROUND,
-                PlatformThread::GetCurrentThreadPriority());
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
-      EXPECT_EQ(ThreadPriority::BACKGROUND,
-                PlatformThread::GetCurrentThreadPriority());
-      PlatformThread::SetCurrentThreadPriority(ThreadPriority::REALTIME_AUDIO);
-      EXPECT_EQ(ThreadPriority::BACKGROUND,
-                PlatformThread::GetCurrentThreadPriority());
+      EXPECT_NE(PlatformThread::GetCurrentThreadPriority(), to_);
     }
-#endif  // !defined(OS_ANDROID)
   }
+
+  const ThreadPriority from_;
+  const ThreadPriority to_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPriorityTestThread);
 };
 
 void TestSetCurrentThreadPriority() {
-  ThreadPriorityTestThread thread;
-  PlatformThreadHandle handle;
+  constexpr ThreadPriority kAllThreadPriorities[] = {
+      ThreadPriority::REALTIME_AUDIO, ThreadPriority::DISPLAY,
+      ThreadPriority::NORMAL, ThreadPriority::BACKGROUND};
 
-  ASSERT_FALSE(thread.IsRunning());
-  ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
-  thread.WaitForTerminationReady();
-  ASSERT_TRUE(thread.IsRunning());
+  for (auto from : kAllThreadPriorities) {
+    if (static_cast<int>(from) <= static_cast<int>(ThreadPriority::NORMAL) ||
+        PlatformThread::CanIncreaseThreadPriority(from)) {
+      for (auto to : kAllThreadPriorities) {
+        ThreadPriorityTestThread thread(from, to);
+        PlatformThreadHandle handle;
 
-  thread.MarkForTermination();
-  PlatformThread::Join(handle);
-  ASSERT_FALSE(thread.IsRunning());
+        ASSERT_FALSE(thread.IsRunning());
+        ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
+        thread.WaitForTerminationReady();
+        ASSERT_TRUE(thread.IsRunning());
+
+        thread.MarkForTermination();
+        PlatformThread::Join(handle);
+        ASSERT_FALSE(thread.IsRunning());
+      }
+    }
+  }
 }
 
 }  // namespace

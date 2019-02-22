@@ -340,11 +340,6 @@ void ScreenCaptureNotificationUIViews::NotifyStopped() {
 
 std::unique_ptr<ScreenCaptureNotificationUI>
 ScreenCaptureNotificationUI::Create(const base::string16& text) {
-#if defined(OS_MACOSX)
-  std::unique_ptr<ScreenCaptureNotificationUI> cocoa_ui = CreateCocoa(text);
-  if (cocoa_ui)
-    return cocoa_ui;
-#endif
   return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIViews(text));
 }

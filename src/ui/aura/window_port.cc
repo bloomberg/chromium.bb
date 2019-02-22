@@ -8,6 +8,8 @@
 
 namespace aura {
 
+WindowPort::WindowPort(Type type) : type_(type) {}
+
 // static
 WindowPort* WindowPort::Get(Window* window) {
   return window ? window->port_ : nullptr;

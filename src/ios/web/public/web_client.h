@@ -157,7 +157,8 @@ class WebClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-  // Informs the embedder that a certificate error has occurred. If
+  // Informs the embedder that a certificate error has occurred. |cert_error| is
+  // a network error code defined in //net/base/net_error_list.h. If
   // |overridable| is true, the user can ignore the error and continue. The
   // embedder can call the |callback| asynchronously (an argument of true means
   // that |cert_error| should be ignored and web// should load the page).

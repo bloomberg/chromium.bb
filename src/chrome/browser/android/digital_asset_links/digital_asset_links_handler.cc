@@ -14,8 +14,11 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 const char kDigitalAssetLinksBaseURL[] =
@@ -51,42 +54,41 @@ namespace digital_asset_links {
 const char kDigitalAssetLinksCheckResponseKeyLinked[] = "linked";
 
 DigitalAssetLinksHandler::DigitalAssetLinksHandler(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : request_context_(request_context), weak_ptr_factory_(this) {}
+    scoped_refptr<network::SharedURLLoaderFactory> factory)
+    : shared_url_loader_factory_(std::move(factory)), weak_ptr_factory_(this) {}
 
 DigitalAssetLinksHandler::~DigitalAssetLinksHandler() = default;
 
-void DigitalAssetLinksHandler::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void DigitalAssetLinksHandler::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
 
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) {
-    if (source->GetStatus().error() == net::ERR_INTERNET_DISCONNECTED
-        || source->GetStatus().error() == net::ERR_NAME_NOT_RESOLVED) {
+  if (!response_body || response_code != net::HTTP_OK) {
+    int net_error = url_loader_->NetError();
+    if (net_error == net::ERR_INTERNET_DISCONNECTED ||
+        net_error == net::ERR_NAME_NOT_RESOLVED) {
       LOG(WARNING) << "Digital Asset Links connection failed.";
       std::move(callback_).Run(RelationshipCheckResult::NO_CONNECTION);
       return;
     }
 
     LOG(WARNING) << base::StringPrintf(
-        "Digital Asset Links endpoint responded with code %d.",
-        source->GetResponseCode());
+        "Digital Asset Links endpoint responded with code %d.", response_code);
     std::move(callback_).Run(RelationshipCheckResult::FAILURE);
     return;
   }
 
-  std::string response_body;
-  source->GetResponseAsString(&response_body);
-
   data_decoder::SafeJsonParser::Parse(
       /* connector=*/nullptr,  // Connector is unused on Android.
-      response_body,
+      *response_body,
       base::Bind(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DigitalAssetLinksHandler::OnJSONParseFailed,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  url_fetcher_.reset(nullptr);
+  url_loader_.reset(nullptr);
 }
 
 void DigitalAssetLinksHandler::OnJSONParseSucceeded(
@@ -120,9 +122,10 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
   if (!request_url.is_valid())
     return false;
 
-  // Resetting both the callback and URLFetcher here to ensure that any previous
-  // requests will never get a OnUrlFetchComplete. This effectively cancels
-  // any checks that was done over this handler.
+  // Resetting both the callback and SimpleURLLoader here to ensure
+  // that any previous requests will never get a
+  // OnURLLoadComplete. This effectively cancels any checks that was
+  // done over this handler.
   callback_ = std::move(callback);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -149,11 +152,15 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
             "uploaded; this request merely downloads the resources on the web."
         })");
 
-  url_fetcher_ = net::URLFetcher::Create(0, request_url, net::URLFetcher::GET,
-                                         this, traffic_annotation);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetRequestContext(request_context_.get());
-  url_fetcher_->Start();
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = request_url;
+  url_loader_ =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      shared_url_loader_factory_.get(),
+      base::BindOnce(&DigitalAssetLinksHandler::OnURLLoadComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
+
   return true;
 }
 

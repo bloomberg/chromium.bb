@@ -27,7 +27,7 @@ class AccessibilityScrollingCodeSearchStory(_AccessibilityStory):
   """Tests scrolling an element within a page."""
   NAME = 'browse_accessibility:tech:codesearch'
   URL = 'https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node_mac.mm'
-  TAGS = [story_tags.ACCESSIBILITY, story_tags.SCROLL]
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.SCROLL, story_tags.YEAR_2016]
 
   def RunNavigateSteps(self, action_runner):
     super(AccessibilityScrollingCodeSearchStory, self).RunNavigateSteps(
@@ -36,25 +36,50 @@ class AccessibilityScrollingCodeSearchStory(_AccessibilityStory):
     action_runner.ScrollElement(selector='#file_scroller', distance=1000)
 
 
+class AccessibilityScrollingCodeSearchStory2018(_AccessibilityStory):
+  """Tests scrolling an element within a page."""
+  NAME = 'browse_accessibility:tech:codesearch:2018'
+  URL = 'https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node_mac.mm'
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.SCROLL, story_tags.YEAR_2018]
+
+  def RunNavigateSteps(self, action_runner):
+    super(AccessibilityScrollingCodeSearchStory2018, self).RunNavigateSteps(
+        action_runner)
+    action_runner.WaitForElement(text='// namespace ui')
+    for _ in range(6):
+      action_runner.ScrollElement(selector='#file_scroller', distance=1000)
+
+
 class AccessibilityWikipediaStory(_AccessibilityStory):
   """Wikipedia page on Accessibility. Long, but very simple, clean layout."""
   NAME = 'load_accessibility:media:wikipedia'
   URL = 'https://en.wikipedia.org/wiki/Accessibility'
-  TAGS = [story_tags.ACCESSIBILITY]
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.YEAR_2016]
 
+class AccessibilityWikipediaStory2018(_AccessibilityStory):
+  """Wikipedia page on Accessibility. Long, but very simple, clean layout."""
+  NAME = 'load_accessibility:media:wikipedia:2018'
+  URL = 'https://en.wikipedia.org/wiki/Accessibility'
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.YEAR_2018]
 
 class AccessibilityAmazonStory(_AccessibilityStory):
   """Amazon results page. Good example of a site with a data table."""
   NAME = 'load_accessibility:shopping:amazon'
   URL = 'https://www.amazon.com/gp/offer-listing/B01IENFJ14'
-  TAGS = [story_tags.ACCESSIBILITY]
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.YEAR_2016]
 
+class AccessibilityAmazonStory2018(_AccessibilityStory):
+  """Amazon results page. Good example of a site with a data table."""
+  NAME = 'load_accessibility:shopping:amazon:2018'
+  URL = 'https://www.amazon.com/gp/offer-listing/B01IENFJ14'
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.YEAR_2018]
 
 class AccessibilityYouTubeHomepageStory(_AccessibilityStory):
   """Tests interacting with the YouTube home page."""
   NAME = 'browse_accessibility:media:youtube'
   URL = 'https://www.youtube.com/'
-  TAGS = [story_tags.ACCESSIBILITY, story_tags.KEYBOARD_INPUT]
+  TAGS = [story_tags.ACCESSIBILITY, story_tags.KEYBOARD_INPUT,
+          story_tags.YEAR_2016]
 
   def RunNavigateSteps(self, action_runner):
     action_runner.Navigate('https://www.youtube.com/')

@@ -329,13 +329,14 @@ TEST_F(CbcsDecryptorTest, PartialPattern) {
   auto encrypted_block = Encrypt(Repeat(one_block_, 4), *key_, iv_);
   DCHECK_EQ(4 * kBlockSize, encrypted_block.size());
 
-  // 1 subsample, 4 blocks in (8,2) pattern. As there are not 8 blocks, the
-  // whole buffer will be considered unencrypted.
+  // 1 subsample, 4 blocks in (8,2) pattern. Even though there is not a full
+  // pattern (10 blocks), all 4 blocks should be decrypted.
+  auto expected_result = Repeat(one_block_, 4);
   std::vector<SubsampleEntry> subsamples = {{0, 4 * kBlockSize}};
 
   auto encrypted_buffer = CreateEncryptedBuffer(
       encrypted_block, iv_, subsamples, EncryptionPattern(8, 2));
-  EXPECT_EQ(encrypted_block, DecryptWithKey(encrypted_buffer, *key_));
+  EXPECT_EQ(expected_result, DecryptWithKey(encrypted_buffer, *key_));
 }
 
 TEST_F(CbcsDecryptorTest, SkipBlocks) {
@@ -348,14 +349,11 @@ TEST_F(CbcsDecryptorTest, SkipBlocks) {
   // data:       | clear | enc1 | enc2 | clear | enc3 | enc4 | clear | enc5 |
   // subsamples: |                  subsample#1                             |
   //             |uuuuuuu eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee|
-  // Note that the last part only contains one encrypted block. Since it
-  // doesn't contain a full 2 blocks, it will not be decrypted.
   auto input_data = Combine(
       {one_block_, GetBlock(1, encrypted_block), GetBlock(2, encrypted_block),
        one_block_, GetBlock(3, encrypted_block), GetBlock(4, encrypted_block),
        one_block_, GetBlock(5, encrypted_block)});
-  auto expected_result =
-      Combine({Repeat(one_block_, 7), GetBlock(5, encrypted_block)});
+  auto expected_result = Repeat(one_block_, 8);
   std::vector<SubsampleEntry> subsamples = {{kBlockSize, 7 * kBlockSize}};
 
   auto encrypted_buffer = CreateEncryptedBuffer(input_data, iv_, subsamples,

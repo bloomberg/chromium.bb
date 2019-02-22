@@ -2,24 +2,31 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
 <link rel="import" href="../data/user_info.html">
-<link rel="import" href="button_css.html">
 <link rel="import" href="destination_dialog.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
 <link rel="import" href="settings_section.html">
+<link rel="import" href="state.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-destination-settings">
   <template>
-    <style include="print-preview-shared button throbber cr-hidden-style">
-      :host button {
-        margin-top: 10px;
+    <style include="print-preview-shared paper-button-style throbber cr-hidden-style">
+      paper-button {
+        margin: 2px;
+        margin-top: 8px;
+        width: 89px;
       }
 
       .throbber {
@@ -30,23 +37,29 @@
       .throbber-container {
         align-items: center;
         display: flex;
-        min-height: 28px;
         overflow: hidden;
       }
 
-      .destination-icon {
-        height: 24px;
+      .destination-settings-box iron-icon {
+        fill: var(--google-grey-600);
+        flex: 0;
         margin-inline-end: 8px;
+        min-width: 20px;
         vertical-align: middle;
-        width: 24px;
       }
 
       .destination-info-wrapper {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
         overflow: hidden;
-        width: 100%;
+      }
+
+      .destination-name {
+        line-height: calc(20/13 * 1em);
+      }
+
+      .destination-location,
+      .destination-connection-status {
+        color: var(--google-grey-700);
+        font-size: calc(12/13 * 1em);
       }
 
       .destination-info-wrapper > div,
@@ -57,17 +70,11 @@
         white-space: nowrap;
       }
 
-      .destination-throbber-name,
-      .destination-name {
-        font-size: 110%;
-      }
-
-      .destination-location,
       :host([stale_]) .destination-info-wrapper {
         opacity: 0.4;
       }
     </style>
-    <print-preview-settings-section class="multirow-controls">
+    <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
         <div class="throbber-container" hidden="[[!loadingDestination_]]">
@@ -75,8 +82,7 @@
           <div class="destination-throbber-name"></div>
         </div>
         <div class="destination-settings-box" hidden="[[loadingDestination_]]">
-          <img class="destination-icon"
-             src="[[destination.iconUrl]]" alt="">
+          <iron-icon icon$="[[destination.icon]]"></iron-icon>
           <div class="destination-info-wrapper">
             <div class="destination-name">[[destination.displayName]]</div>
             <div class="destination-location">[[destination.hint]]</div>
@@ -86,12 +92,17 @@
             </div>
           </div>
         </div>
-        <button
+      </div>
+    </print-preview-settings-section>
+    <print-preview-settings-section>
+      <div slot="title"></div>
+      <div slot="controls">
+        <paper-button
           disabled$="[[shouldDisableButton_(destinationStore, disabled,
                                             state)]]"
           on-click="onChangeButtonClick_">
           $i18n{changeDestination}
-        </button>
+        </paper-button>
       </div>
     </print-preview-settings-section>
     <cr-lazy-render id="destinationDialog">

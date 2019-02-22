@@ -72,6 +72,7 @@ js_library("app") {
     "../data:invitation_store",
     "../data:measurement_system",
     "../data:user_info",
+    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js:webui_listener_tracker",
@@ -108,6 +109,7 @@ js_library("pages_settings") {
     ":input_behavior",
     ":settings_behavior",
     "../data:document_info",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:load_time_data",
   ]
 }
@@ -188,6 +190,7 @@ js_library("advanced_options_settings") {
 js_library("more_settings") {
   deps = [
     "..:metrics",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

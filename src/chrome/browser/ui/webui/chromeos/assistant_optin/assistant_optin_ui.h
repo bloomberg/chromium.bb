@@ -10,8 +10,8 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
+#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -26,15 +26,6 @@ class AssistantOptInUI : public ui::WebDialogUI {
   ~AssistantOptInUI() override;
 
  private:
-  // Add message handler for optin screens.
-  void AddScreenHandler(std::unique_ptr<BaseWebUIHandler> handler);
-
-  // Called by a screen when user's done with it.
-  void OnExit(AssistantOptInScreenExitCode exit_code);
-
-  AssistantOptInHandler* assistant_handler_ = nullptr;
-  std::unique_ptr<JSCallsContainer> js_calls_container_;
-  std::vector<BaseWebUIHandler*> screen_handlers_;
   base::WeakPtrFactory<AssistantOptInUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInUI);

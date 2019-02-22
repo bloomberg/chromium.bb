@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_fit_to_view_box.h"
 #include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -48,11 +48,12 @@ struct PatternData {
 LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
     : LayoutSVGResourcePaintServer(node),
       should_collect_pattern_attributes_(true),
-      attributes_wrapper_(PatternAttributesWrapper::Create()) {}
+      attributes_wrapper_(PatternAttributesWrapper::Create()),
+      pattern_map_(new PatternMap) {}
 
 void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {
-  pattern_map_.clear();
+  pattern_map_->clear();
   should_collect_pattern_attributes_ = true;
   MarkAllClientsForInvalidation(
       mark_for_invalidation ? SVGResourceClient::kPaintInvalidation
@@ -61,10 +62,10 @@ void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
 
 bool LayoutSVGResourcePattern::RemoveClientFromCache(
     SVGResourceClient& client) {
-  auto entry = pattern_map_.find(&client);
-  if (entry == pattern_map_.end())
+  auto entry = pattern_map_->find(&client);
+  if (entry == pattern_map_->end())
     return false;
-  pattern_map_.erase(entry);
+  pattern_map_->erase(entry);
   return true;
 }
 
@@ -77,10 +78,10 @@ PatternData* LayoutSVGResourcePattern::PatternForClient(
   // invalidation (painting animated images may trigger layout invals which
   // delete our map entry). Hopefully that will be addressed at some point, and
   // then we can optimize the lookup.
-  if (PatternData* current_data = pattern_map_.at(&client))
+  if (PatternData* current_data = pattern_map_->at(&client))
     return current_data;
 
-  return pattern_map_.Set(&client, BuildPatternData(object_bounding_box))
+  return pattern_map_->Set(&client, BuildPatternData(object_bounding_box))
       .stored_value->value.get();
 }
 
@@ -212,7 +213,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
   PaintRecordBuilder builder;
   for (LayoutObject* child = pattern_layout_object->FirstChild(); child;
        child = child->NextSibling())
-    SVGPaintContext::PaintResourceSubtree(builder.Context(), child);
+    SVGObjectPainter(*child).PaintResourceSubtree(builder.Context());
   PaintRecorder paint_recorder;
   cc::PaintCanvas* canvas = paint_recorder.beginRecording(bounds);
   canvas->save();

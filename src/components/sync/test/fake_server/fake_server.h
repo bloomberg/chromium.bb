@@ -28,6 +28,16 @@
 
 namespace fake_server {
 
+// This function only compares one part of the markers, the time-independent
+// hashes of the data served in the update. Apart from this, the progress
+// markers for fake wallet data also include information about fetch time. This
+// is in-line with the server behavior and -- as it keeps changing -- allows
+// integration tests to wait for a GetUpdates call to finish, even if they don't
+// contain data updates.
+bool AreWalletDataProgressMarkersEquivalent(
+    const sync_pb::DataTypeProgressMarker& marker1,
+    const sync_pb::DataTypeProgressMarker& marker2);
+
 // A fake version of the Sync server used for testing. This class is not thread
 // safe.
 class FakeServer : public syncer::LoopbackServer::ObserverForTests {
@@ -81,7 +91,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   void InjectEntity(std::unique_ptr<syncer::LoopbackServerEntity> entity);
 
   // Sets the Wallet card and address data to be served in following GetUpdates
-  // requests.
+  // requests (any further GetUpdates response will be empty, indicating no
+  // change, if the client already has received |wallet_entities|).
   void SetWalletData(const std::vector<sync_pb::SyncEntity>& wallet_entities);
 
   // Modifies the entity on the server with the given |id|. The entity's
@@ -153,6 +164,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // This can be used to trigger exponential backoff in the client.
   void DisableNetwork();
 
+  // Enables strong consistency model (i.e. server detects conflicts).
+  void EnableStrongConsistencyWithConflictDetectionModel();
+
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;
@@ -174,9 +188,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   bool ShouldSendTriggeredError() const;
   int SendToLoopbackServer(const std::string& request, std::string* response);
   void InjectClientCommand(std::string* response);
-  void HandleWalletRequest(const sync_pb::ClientToServerMessage& request,
-                           sync_pb::DataTypeProgressMarker* wallet_marker,
-                           std::string* response_string);
+  void HandleWalletRequest(
+      const sync_pb::ClientToServerMessage& request,
+      const sync_pb::DataTypeProgressMarker& old_wallet_marker,
+      std::string* response_string);
 
   // Whether the server should act as if incoming connections are properly
   // authenticated.

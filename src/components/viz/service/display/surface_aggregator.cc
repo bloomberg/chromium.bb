@@ -449,7 +449,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
                  remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
                  gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
-                 /*force_anti_aliasing_off=*/false);
+                 /*force_anti_aliasing_off=*/false,
+                 /* backdrop_filter_quality*/ 1.0f);
   }
 
   // Need to re-query since referenced_surfaces_ iterators are not stable.
@@ -558,7 +559,8 @@ void SurfaceAggregator::AddColorConversionPass() {
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
-               /*force_anti_aliasing_off=*/false);
+               /*force_anti_aliasing_off=*/false,
+               /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
 }
 
@@ -887,8 +889,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         render_pass->filters.HasFilterThatMovesPixels();
     if (has_pixel_moving_filter)
       moved_pixel_passes_.insert(remapped_pass_id);
-    bool in_moved_pixel_pass = has_pixel_moving_filter ||
-                               !!moved_pixel_passes_.count(remapped_pass_id);
+    bool in_moved_pixel_pass =
+        has_pixel_moving_filter ||
+        base::ContainsKey(moved_pixel_passes_, remapped_pass_id);
     for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
         const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
@@ -945,16 +948,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
-    if (will_draw) {
-      const SurfaceRange& surface_range = surface_info.surface_range;
-      damage_ranges_[surface_range.end().frame_sink_id()].push_back(
-          surface_range);
-      if (surface_range.HasDifferentFrameSinkIds()) {
-        damage_ranges_[surface_range.start()->frame_sink_id()].push_back(
-            surface_range);
-      }
-    }
-
     // TODO(fsamuel): Consider caching this value somewhere so that
     // HandleSurfaceQuad doesn't need to call it again.
     Surface* child_surface =
@@ -1019,6 +1012,15 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
   if (will_draw)
     surface->OnWillBeDrawn();
+
+  for (const SurfaceRange& surface_range : frame.metadata.referenced_surfaces) {
+    damage_ranges_[surface_range.end().frame_sink_id()].push_back(
+        surface_range);
+    if (surface_range.HasDifferentFrameSinkIds()) {
+      damage_ranges_[surface_range.start()->frame_sink_id()].push_back(
+          surface_range);
+    }
+  }
 
   for (const SurfaceId& surface_id : surface->active_referenced_surfaces()) {
     if (!contained_surfaces_.count(surface_id)) {
@@ -1109,7 +1111,7 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
 CompositorFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
     base::TimeTicks expected_display_time,
-    int32_t display_trace_id) {
+    int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
   uma_stats_.Reset();
@@ -1126,7 +1128,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   if (!surface->HasActiveFrame())
     return {};
 
-  base::AutoReset<int32_t> reset_display_trace_id(&display_trace_id_,
+  base::AutoReset<int64_t> reset_display_trace_id(&display_trace_id_,
                                                   display_trace_id);
   const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
   TRACE_EVENT_WITH_FLOW2(

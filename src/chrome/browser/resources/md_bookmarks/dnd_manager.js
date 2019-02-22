@@ -213,56 +213,6 @@ cr.define('bookmarks', function() {
   };
 
   /**
-   * Manages auto scrolling of elements on hover during internal drags. Native
-   * drags do this by themselves.
-   * @constructor
-   */
-  function AutoScroller() {
-    /** @const {number} */
-    this.SCROLL_ZONE_LENGTH = 20;
-    /** @const {number} */
-    this.SCROLL_DISTANCE = 10;
-    /** @const {number} */
-    this.SCROLL_INTERVAL = 100;
-    /** @private {?number} */
-    this.intervalId_ = null;
-  }
-
-  AutoScroller.prototype = {
-    /** @param {!Event} e */
-    update: function(e) {
-      this.reset();
-
-      const scrollParent = e.path.find((el) => {
-        return el.nodeType == Node.ELEMENT_NODE &&
-            window.getComputedStyle(el).overflowY == 'auto';
-      });
-
-      if (!scrollParent)
-        return;
-
-      const rect = scrollParent.getBoundingClientRect();
-      let yDelta = 0;
-      if (e.clientY < rect.top + this.SCROLL_ZONE_LENGTH)
-        yDelta = -this.SCROLL_DISTANCE;
-      else if (e.clientY > rect.bottom - this.SCROLL_ZONE_LENGTH)
-        yDelta = this.SCROLL_DISTANCE;
-
-      this.intervalId_ = window.setInterval(() => {
-        scrollParent.scrollTop += yDelta;
-      }, this.SCROLL_INTERVAL);
-    },
-
-    reset: function() {
-      if (this.intervalId_ == null)
-        return;
-
-      window.clearInterval(this.intervalId_);
-      this.intervalId_ = null;
-    },
-  };
-
-  /**
    * Encapsulates the behavior of the drag and drop indicator which puts a line
    * between items or highlights folders which are valid drop targets.
    * @constructor
@@ -357,22 +307,6 @@ cr.define('bookmarks', function() {
   /**
    * Manages drag and drop events for the bookmarks-app.
    *
-   * This class manages an internal drag and drop based on mouse events and then
-   * delegates to the native drag and drop in chrome.bookmarkManagerPrivate when
-   * the mouse leaves the web content area. This allows us to render a drag and
-   * drop chip UI for internal drags, while correctly handling and avoiding
-   * conflict with native drags.
-   *
-   * The event flows look like
-   *
-   * mousedown -> mousemove -> mouseup
-   *               |
-   *               v
-   *      dragstart/dragleave (if the drag leaves the browser window)
-   *               |
-   *               v
-   * external drag -> bookmarkManagerPrivate.onDragEnter -> dragover -> drop
-   *
    * @constructor
    */
   function DNDManager() {
@@ -388,9 +322,6 @@ cr.define('bookmarks', function() {
     /** @private {Object<string, function(!Event)>} */
     this.documentListeners_ = null;
 
-    /** @private {?bookmarks.AutoScroller} */
-    this.autoScroller_ = null;
-
     /** @private {?bookmarks.AutoExpander} */
     this.autoExpander_ = null;
 
@@ -399,25 +330,6 @@ cr.define('bookmarks', function() {
      * @private {!Object}
      */
     this.timerProxy_ = window;
-
-    /**
-     * The bookmark drag and drop indicator chip.
-     * @private {BookmarksDndChipElement}
-     */
-    this.chip_ = null;
-
-    /**
-     * The element that initiated an internal drag. Not used once native drag
-     * starts.
-     * @private {BookmarkElement}
-     */
-    this.internalDragElement_ = null;
-
-    /**
-     * Where the internal drag started.
-     * @private {?{x: number, y: number}}
-     */
-    this.mouseDownPos_ = null;
   }
 
   DNDManager.prototype = {
@@ -425,14 +337,8 @@ cr.define('bookmarks', function() {
       this.dragInfo_ = new DragInfo();
       this.dropIndicator_ = new DropIndicator();
       this.autoExpander_ = new AutoExpander();
-      this.autoScroller_ = new AutoScroller();
 
       this.documentListeners_ = {
-        'mousedown': this.onMousedown_.bind(this),
-        'mousemove': this.onMouseMove_.bind(this),
-        'mouseup': this.onMouseUp_.bind(this),
-        'mouseleave': this.onMouseLeave_.bind(this),
-
         'dragstart': this.onDragStart_.bind(this),
         'dragenter': this.onDragEnter_.bind(this),
         'dragover': this.onDragOver_.bind(this),
@@ -448,8 +354,6 @@ cr.define('bookmarks', function() {
           this.handleChromeDragEnter_.bind(this));
       chrome.bookmarkManagerPrivate.onDragLeave.addListener(
           this.clearDragData_.bind(this));
-      chrome.bookmarkManagerPrivate.onDrop.addListener(
-          this.clearDragData_.bind(this));
     },
 
     destroy: function() {
@@ -461,151 +365,33 @@ cr.define('bookmarks', function() {
     },
 
     ////////////////////////////////////////////////////////////////////////////
-    // MouseEvent handlers:
-
-    /**
-     * @private
-     * @param {Event} e
-     */
-    onMousedown_: function(e) {
-      const dragElement = getDragElement(e.path);
-      if (e.button != 0 || !dragElement)
-        return;
-
-      this.internalDragElement_ = dragElement;
-      this.mouseDownPos_ = {
-        x: e.clientX,
-        y: e.clientY,
-      };
-    },
-
-    /**
-     * @private
-     * @param {Event} e
-     */
-    onMouseMove_: function(e) {
-      // mousemove events still fire when dragged onto the the bookmarks bar.
-      // Once we are outside of the web contents, allow the native drag to
-      // start.
-      if (!this.internalDragElement_ || e.clientX < 0 ||
-          e.clientX > window.innerWidth || e.clientY < 0 ||
-          e.clientY > window.innerHeight) {
-        return;
-      }
-
-      this.dropDestination_ = null;
-
-      // Prevents a native drag from starting.
-      e.preventDefault();
-
-      this.autoScroller_.update(e);
-
-      // On the first mousemove after a mousedown, calculate the items to drag.
-      // This can't be done in mousedown because the user may be shift-clicking
-      // an item.
-      if (!this.dragInfo_.isDragValid()) {
-        // If the mouse hasn't been moved far enough, defer to next mousemove.
-        if (Math.abs(this.mouseDownPos_.x - e.clientX) < DRAG_THRESHOLD &&
-            Math.abs(this.mouseDownPos_.y - e.clientY) < DRAG_THRESHOLD) {
-          return;
-        }
-
-        const dragData = this.calculateDragData_();
-        if (!dragData) {
-          this.clearDragData_();
-          return;
-        }
-
-        this.dragInfo_.dragData = dragData;
-      }
-
-      const state = bookmarks.Store.getInstance().data;
-      const items = this.dragInfo_.dragData.elements;
-      this.dndChip.showForItems(
-          e.clientX, e.clientY, items,
-          this.internalDragElement_ ?
-              state.nodes[this.internalDragElement_.itemId] :
-              items[0]);
-
-      this.onDragOverCommon_(e);
-    },
-
-    /**
-     * This event fires when the mouse leaves the browser window (not the web
-     * content area).
-     * @private
-     */
-    onMouseLeave_: function() {
-      if (!this.internalDragElement_)
-        return;
-
-      this.startNativeDrag_();
-    },
-
-    /**
-     * @private
-     */
-    onMouseUp_: function() {
-      if (!this.internalDragElement_)
-        return;
-
-      if (this.dropDestination_) {
-        // Complete the drag by moving all dragged items to the drop
-        // destination.
-        const dropInfo = this.calculateDropInfo_(this.dropDestination_);
-        const shouldHighlight = this.shouldHighlight_(this.dropDestination_);
-
-        const movePromises = this.dragInfo_.dragData.elements.map((item) => {
-          return new Promise((resolve) => {
-            chrome.bookmarks.move(
-                item.id, {
-                  parentId: dropInfo.parentId,
-                  index: dropInfo.index == -1 ? undefined : dropInfo.index
-                },
-                resolve);
-          });
-        });
-
-        if (shouldHighlight) {
-          bookmarks.ApiListener.trackUpdatedItems();
-          Promise.all(movePromises)
-              .then(() => bookmarks.ApiListener.highlightUpdatedItems());
-        }
-      }
-
-      this.clearDragData_();
-    },
-
-    ////////////////////////////////////////////////////////////////////////////
     // DragEvent handlers:
 
     /**
-     * This should only fire when a mousemove goes from the content area to the
-     * browser chrome.
      * @private
      * @param {Event} e
      */
     onDragStart_: function(e) {
-      // |e| will be for the originally dragged bookmark item which dragstart
-      // was disabled for due to mousemove's preventDefault.
       const dragElement = getDragElement(e.path);
       if (!dragElement)
         return;
 
-      // Prevent normal drags of all bookmark items.
       e.preventDefault();
 
-      if (!this.startNativeDrag_())
+      const dragData = this.calculateDragData_(dragElement);
+      if (!dragData) {
+        this.clearDragData_();
         return;
-
-      // If we are dragging a single link, we can do the *Link* effect.
-      // Otherwise, we only allow copy and move.
-      if (e.dataTransfer) {
-        const draggedNodes = this.dragInfo_.dragData.elements;
-        e.dataTransfer.effectAllowed =
-            draggedNodes.length == 1 && draggedNodes[0].url ? 'copyLink' :
-                                                              'copyMove';
       }
+
+      const state = bookmarks.Store.getInstance().data;
+      const draggedNodes = dragData.elements.map((item) => item.id);
+      const dragNodeIndex = draggedNodes.indexOf(dragElement.itemId);
+      assert(dragNodeIndex != -1);
+
+      // TODO(calamity): account for touch.
+      chrome.bookmarkManagerPrivate.startDrag(
+          draggedNodes, dragNodeIndex, false);
     },
 
     /** @private */
@@ -618,9 +404,9 @@ cr.define('bookmarks', function() {
      * @param {!Event} e
      */
     onDrop_: function(e) {
-      if (this.dropDestination_) {
-        e.preventDefault();
+      e.preventDefault();
 
+      if (this.dropDestination_) {
         const dropInfo = this.calculateDropInfo_(this.dropDestination_);
         const index = dropInfo.index != -1 ? dropInfo.index : undefined;
         const shouldHighlight = this.shouldHighlight_(this.dropDestination_);
@@ -633,7 +419,6 @@ cr.define('bookmarks', function() {
             shouldHighlight ? bookmarks.ApiListener.highlightUpdatedItems :
                               undefined);
       }
-
       this.clearDragData_();
     },
 
@@ -650,28 +435,39 @@ cr.define('bookmarks', function() {
      * @param {Event} e
      */
     onDragOver_: function(e) {
-      this.dropDestination_ = null;
+      // The default operation is to allow dropping links etc to do
+      // navigation. We never want to do that for the bookmark manager.
+      e.preventDefault();
 
-      // This is necessary to actually trigger the 'none' effect, even though
-      // the event will have this set to 'none' already.
-      if (e.dataTransfer)
-        e.dataTransfer.dropEffect = 'none';
+      this.dropDestination_ = null;
 
       // Allow normal DND on text inputs.
       if (e.path[0].tagName == 'INPUT')
         return;
 
-      // The default operation is to allow dropping links etc to do
-      // navigation. We never want to do that for the bookmark manager.
-      e.preventDefault();
-
       if (!this.dragInfo_.isDragValid())
         return;
 
-      if (this.onDragOverCommon_(e) && e.dataTransfer) {
-        e.dataTransfer.dropEffect =
-            this.dragInfo_.isSameProfile() ? 'move' : 'copy';
+      const state = bookmarks.Store.getInstance().data;
+      const items = this.dragInfo_.dragData.elements;
+
+      const overElement = getBookmarkElement(e.path);
+      this.autoExpander_.update(e, overElement);
+      if (!overElement) {
+        this.dropIndicator_.finish();
+        return;
       }
+
+      // Now we know that we can drop. Determine if we will drop above, on or
+      // below based on mouse position etc.
+      this.dropDestination_ =
+          this.calculateDropDestination_(e.clientY, overElement);
+      if (!this.dropDestination_) {
+        this.dropIndicator_.finish();
+        return;
+      }
+
+      this.dropIndicator_.update(this.dropDestination_);
     },
 
     /**
@@ -683,14 +479,10 @@ cr.define('bookmarks', function() {
     },
 
     ////////////////////////////////////////////////////////////////////////////
-    // Common drag methods:
+    // Helper methods:
 
     /** @private */
     clearDragData_: function() {
-      this.dndChip.hide();
-      this.autoScroller_.reset();
-      this.internalDragElement_ = null;
-      this.mouseDownPos_ = null;
       this.autoExpander_.reset();
 
       // Defer the clearing of the data so that the bookmark manager API's drop
@@ -702,63 +494,6 @@ cr.define('bookmarks', function() {
         this.dropIndicator_.finish();
       }, 0);
     },
-
-    /**
-     * Starts a native drag by sending a message to the browser.
-     * @private
-     * @return {boolean}
-     */
-    startNativeDrag_: function() {
-      const state = bookmarks.Store.getInstance().data;
-
-      if (!this.dragInfo_.isDragValid())
-        return false;
-
-      const draggedNodes =
-          this.dragInfo_.dragData.elements.map((item) => item.id);
-
-      // Clear the drag data here so that the chip is hidden. The native drag
-      // will return after the clearing and set up its data.
-      this.clearDragData_();
-
-      // TODO(calamity): account for touch.
-      chrome.bookmarkManagerPrivate.startDrag(draggedNodes, false);
-
-      return true;
-    },
-
-    /**
-     * @private
-     * @param {Event} e
-     * @return {boolean}
-     */
-    onDragOverCommon_: function(e) {
-      const state = bookmarks.Store.getInstance().data;
-      const items = this.dragInfo_.dragData.elements;
-
-      const overElement = getBookmarkElement(e.path);
-      this.autoExpander_.update(e, overElement);
-      if (!overElement) {
-        this.dropIndicator_.finish();
-        return false;
-      }
-
-      // Now we know that we can drop. Determine if we will drop above, on or
-      // below based on mouse position etc.
-      this.dropDestination_ =
-          this.calculateDropDestination_(e.clientY, overElement);
-      if (!this.dropDestination_) {
-        this.dropIndicator_.finish();
-        return false;
-      }
-
-      this.dropIndicator_.update(this.dropDestination_);
-
-      return true;
-    },
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Other methods:
 
     /**
      * @param {DropDestination} dropDestination
@@ -798,10 +533,11 @@ cr.define('bookmarks', function() {
     /**
      * Calculates which items should be dragged based on the initial drag item
      * and the current selection. Dragged items will end up selected.
+     * @param {!BookmarkElement} dragElement
      * @private
      */
-    calculateDragData_: function() {
-      const dragId = this.internalDragElement_.itemId;
+    calculateDragData_: function(dragElement) {
+      const dragId = dragElement.itemId;
       const store = bookmarks.Store.getInstance();
       const state = store.data;
 
@@ -810,10 +546,10 @@ cr.define('bookmarks', function() {
 
       // Change selection to the dragged node if the node is not part of the
       // existing selection.
-      if (isBookmarkFolderNode(this.internalDragElement_) ||
+      if (isBookmarkFolderNode(dragElement) ||
           draggedNodes.indexOf(dragId) == -1) {
         store.dispatch(bookmarks.actions.deselectItems());
-        if (!isBookmarkFolderNode(this.internalDragElement_)) {
+        if (!isBookmarkFolderNode(dragElement)) {
           store.dispatch(bookmarks.actions.selectItem(dragId, state, {
             clear: false,
             range: false,
@@ -989,23 +725,10 @@ cr.define('bookmarks', function() {
       this.timerProxy_ = timerProxy;
       this.dropIndicator_.timerProxy = timerProxy;
     },
-
-    /** @return {BookmarksDndChipElement} */
-    get dndChip() {
-      if (!this.chip_) {
-        this.chip_ =
-            /** @type {BookmarksDndChipElement} */ (
-                document.createElement('bookmarks-dnd-chip'));
-        document.body.appendChild(this.chip_);
-      }
-
-      return this.chip_;
-    },
   };
 
   return {
     AutoExpander: AutoExpander,
-    AutoScroller: AutoScroller,
     DNDManager: DNDManager,
     DragInfo: DragInfo,
     DropIndicator: DropIndicator,

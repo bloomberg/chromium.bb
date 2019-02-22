@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -16,13 +17,6 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
-
-constexpr base::TimeDelta kOriginSlideInDuration =
-    base::TimeDelta::FromMilliseconds(800);
-constexpr base::TimeDelta kOriginPauseDuration =
-    base::TimeDelta::FromMilliseconds(2500);
-constexpr base::TimeDelta kOriginSlideOutDuration =
-    base::TimeDelta::FromMilliseconds(800);
 
 constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
@@ -62,7 +56,7 @@ void HostedAppOriginText::SetTextColor(SkColor color) {
   label_->SetEnabledColor(color);
 }
 
-void HostedAppOriginText::StartSlideAnimation() {
+void HostedAppOriginText::StartFadeAnimation() {
   ui::Layer* label_layer = label_->layer();
 
   // Current state will become the first animation keyframe.
@@ -70,19 +64,19 @@ void HostedAppOriginText::StartSlideAnimation() {
 
   auto opacity_sequence = std::make_unique<ui::LayerAnimationSequence>();
 
-  // Slide in.
+  // Fade in.
   auto opacity_keyframe = ui::LayerAnimationElement::CreateOpacityElement(
-      1, kOriginSlideInDuration);
+      1, HostedAppButtonContainer::kOriginFadeInDuration);
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
   // Pause.
-  opacity_sequence->AddElement(
-      ui::LayerAnimationElement::CreatePauseElement(0, kOriginPauseDuration));
+  opacity_sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
+      0, HostedAppButtonContainer::kOriginPauseDuration));
 
-  // Slide out.
+  // Fade out.
   opacity_keyframe = ui::LayerAnimationElement::CreateOpacityElement(
-      0, kOriginSlideOutDuration);
+      0, HostedAppButtonContainer::kOriginFadeOutDuration);
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
@@ -92,18 +86,13 @@ void HostedAppOriginText::StartSlideAnimation() {
       FROM_HERE,
       base::BindOnce(&HostedAppOriginText::AnimationComplete,
                      weak_factory_.GetWeakPtr()),
-      AnimationDuration());
+      HostedAppButtonContainer::kOriginTotalDuration);
 
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 void HostedAppOriginText::AnimationComplete() {
   SetVisible(false);
-}
-
-base::TimeDelta HostedAppOriginText::AnimationDuration() {
-  return kOriginSlideInDuration + kOriginPauseDuration +
-         kOriginSlideOutDuration;
 }
 
 void HostedAppOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {

@@ -179,6 +179,14 @@ inline void* FL_Pop(void** list) {
   return SLL_Pop(list);
 }
 
+inline void FL_SetPrevious(void* t, void* n) {
+  // Singly linked list has no previous element.
+}
+
+inline void FL_SetNext(void* t, void* n) {
+  SLL_SetNext(t, n);
+}
+
 // Removes |N| elements from a linked list to which |head| points.
 // |head| will be modified to point to the new |head|.  |start| and
 // |end| will point to the first and last nodes of the range.  Note

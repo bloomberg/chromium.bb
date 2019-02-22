@@ -186,6 +186,9 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // retried with this value.
   base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter_;
+  // awaiting_attestation_response_ is true if the embedder has been queried
+  // about an attestsation decision and the response is still pending.
+  bool awaiting_attestation_response_ = false;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::Binding<blink::mojom::Authenticator> binding_;

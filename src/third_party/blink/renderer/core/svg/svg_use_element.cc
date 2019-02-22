@@ -53,20 +53,22 @@ inline SVGUseElement::SVGUseElement(Document& document)
       SVGURIReference(this),
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyX)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyY)),
-      width_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      width_(SVGAnimatedLength::Create(this,
+                                       SVGNames::widthAttr,
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kUnitlessZero)),
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kUnitlessZero)),
       element_url_is_local_(true),
       have_fired_load_event_(false),
       needs_shadow_tree_recreation_(false) {
@@ -320,6 +322,9 @@ Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
 }
 
 void SVGUseElement::BuildPendingResource() {
+  // Do not build the shadow/instance tree for nested <use> elements
+  // because they will get expanded in a second pass -- see
+  // ExpandUseElementsInShadowTree().
   if (InUseShadowTree())
     return;
   // FIXME: We should try to optimize this, to at least allow partial reclones.
@@ -328,10 +333,10 @@ void SVGUseElement::BuildPendingResource() {
   CancelShadowTreeRecreation();
   if (!isConnected())
     return;
-  Element* target = ResolveTargetElement(kAddObserver);
+  SVGElement* target = ToSVGElementOrNull(ResolveTargetElement(kAddObserver));
   // TODO(fs): Why would the Element not be "connected" at this point?
-  if (target && target->isConnected() && target->IsSVGElement()) {
-    BuildShadowAndInstanceTree(ToSVGElement(*target));
+  if (target && target->isConnected()) {
+    BuildShadowAndInstanceTree(*target);
     InvalidateDependentShadowTrees();
   }
 
@@ -431,15 +436,10 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
 void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   DCHECK(!target_element_instance_);
   DCHECK(!needs_shadow_tree_recreation_);
-
-  // <use> creates a closed shadow root. Do not build the shadow/instance
-  // tree for <use> elements living in a closed tree because they
-  // will get expanded in a second pass -- see expandUseElementsInShadowTree().
-  if (InUseShadowTree())
-    return;
+  DCHECK(!InUseShadowTree());
 
   // Do not allow self-referencing.
-  if (&target == this || IsDisallowedElement(target))
+  if (IsDisallowedElement(target) || HasCycleUseReferencing(*this, target))
     return;
 
   // Set up root SVG element in shadow tree.
@@ -464,11 +464,7 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
 
   // Expand all <use> elements in the shadow tree.
   // Expand means: replace the actual <use> element by what it references.
-  if (!ExpandUseElementsInShadowTree()) {
-    shadow_root.RemoveChildren(kOmitSubtreeModifiedEvent);
-    ClearResourceReference();
-    return;
-  }
+  ExpandUseElementsInShadowTree();
 
   // If the instance root was a <use>, it could have been replaced now, so
   // reset |m_targetElementInstance|.
@@ -558,30 +554,20 @@ void SVGUseElement::CloneNonMarkupEventListeners() {
   }
 }
 
-bool SVGUseElement::HasCycleUseReferencing(SVGUseElement& use,
-                                           const ContainerNode& target_instance,
-                                           SVGElement*& new_target) const {
-  Element* target_element = use.ResolveTargetElement(kDontAddObserver);
-  new_target = nullptr;
-  if (target_element && target_element->IsSVGElement())
-    new_target = ToSVGElement(target_element);
-
-  if (!new_target)
-    return false;
-
+bool SVGUseElement::HasCycleUseReferencing(const ContainerNode& target_instance,
+                                           const SVGElement& target) const {
   // Shortcut for self-references
-  if (new_target == this)
+  if (&target == this)
     return true;
 
-  AtomicString target_id = new_target->GetIdAttribute();
-  ContainerNode* instance = target_instance.parentNode();
+  AtomicString target_id = target.GetIdAttribute();
+  ContainerNode* instance = target_instance.ParentOrShadowHostElement();
   while (instance && instance->IsSVGElement()) {
     SVGElement* element = ToSVGElement(instance);
     if (element->HasID() && element->GetIdAttribute() == target_id &&
-        element->GetDocument() == new_target->GetDocument())
+        element->GetDocument() == target.GetDocument())
       return true;
-
-    instance = instance->parentNode();
+    instance = instance->ParentOrShadowHostElement();
   }
   return false;
 }
@@ -599,7 +585,7 @@ static void RemoveAttributesFromReplacementElement(
   replacement_element.removeAttribute(XLinkNames::hrefAttr);
 }
 
-bool SVGUseElement::ExpandUseElementsInShadowTree() {
+void SVGUseElement::ExpandUseElementsInShadowTree() {
   // Why expand the <use> elements in the shadow tree here, and not just
   // do this directly in buildShadowTree, if we encounter a <use> element?
   //
@@ -613,12 +599,13 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
     DCHECK(!use->ResourceIsStillLoading());
 
     SVGUseElement& original_use = ToSVGUseElement(*use->CorrespondingElement());
-    SVGElement* target = nullptr;
-    if (HasCycleUseReferencing(original_use, *use, target))
-      return false;
+    SVGElement* target =
+        ToSVGElementOrNull(original_use.ResolveTargetElement(kDontAddObserver));
+    if (target) {
+      if (IsDisallowedElement(*target) || HasCycleUseReferencing(*use, *target))
+        return;
+    }
 
-    if (target && IsDisallowedElement(*target))
-      return false;
     // Don't DCHECK(target) here, it may be "pending", too.
     // Setup sub-shadow tree root node
     SVGGElement* clone_parent = SVGGElement::Create(original_use.GetDocument());
@@ -641,7 +628,6 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
 
     use = Traversal<SVGUseElement>::Next(*replacing_element, &shadow_root);
   }
-  return true;
 }
 
 void SVGUseElement::InvalidateShadowTree() {

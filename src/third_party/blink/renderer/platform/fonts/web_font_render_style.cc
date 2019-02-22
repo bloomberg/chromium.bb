@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_font.h"
+#include "third_party/blink/renderer/platform/fonts/paint_font.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {

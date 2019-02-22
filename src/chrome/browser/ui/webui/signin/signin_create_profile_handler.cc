@@ -28,7 +28,6 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -38,7 +37,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -232,9 +230,11 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
       base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
                  weak_ptr_factory_.GetWeakPtr()),
       false,  // Don't create a window if one already exists.
-      true,  // Create a first run window.
-      profile,
-      status);
+      true,   // Create a first run window.
+      false,  // There is no need to unblock all extensions because we only open
+              // browser window if the Profile is not locked. Hence there is no
+              // extension blocked.
+      profile, status);
 }
 
 void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {

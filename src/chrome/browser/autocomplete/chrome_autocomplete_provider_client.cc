@@ -36,6 +36,8 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -95,7 +97,11 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
               NewPersonalizedDataCollectionConsentHelper(
                   ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
                       profile_))),
-      storage_partition_(nullptr) {}
+      storage_partition_(nullptr) {
+  if (OmniboxFieldTrial::GetPedalSuggestionMode() !=
+      OmniboxFieldTrial::PedalSuggestionMode::NONE)
+    pedal_provider_ = std::make_unique<OmniboxPedalProvider>();
+}
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
 }
@@ -169,6 +175,15 @@ ChromeAutocompleteProviderClient::GetDocumentSuggestionsService(
                                                           create_if_necessary);
 }
 
+OmniboxPedalProvider* ChromeAutocompleteProviderClient::GetPedalProvider()
+    const {
+  // If Pedals are disabled, we should never get here to use the provider.
+  DCHECK_NE(OmniboxFieldTrial::GetPedalSuggestionMode(),
+            OmniboxFieldTrial::PedalSuggestionMode::NONE);
+  DCHECK(pedal_provider_);
+  return pedal_provider_.get();
+}
+
 scoped_refptr<ShortcutsBackend>
 ChromeAutocompleteProviderClient::GetShortcutsBackend() {
   return ShortcutsBackendFactory::GetForProfile(profile_);
@@ -208,8 +223,7 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
 
   std::vector<base::string16> builtins;
 
-  for (std::vector<std::string>::iterator i(chrome_builtins.begin());
-       i != chrome_builtins.end(); ++i)
+  for (auto i(chrome_builtins.begin()); i != chrome_builtins.end(); ++i)
     builtins.push_back(base::ASCIIToUTF16(*i));
 
 #if !defined(OS_ANDROID)
@@ -291,7 +305,7 @@ bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
           profile_);
-  return sync && sync->IsSyncActive();
+  return sync && sync->IsSyncFeatureActive();
 }
 
 void ChromeAutocompleteProviderClient::Classify(

@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
@@ -14,6 +15,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
+#include "ash/ws/ash_window_manager.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -29,6 +31,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -122,11 +125,15 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
       source == ws::mojom::MoveLoopSource::MOUSE
           ? ::wm::WINDOW_MOVE_SOURCE_MOUSE
           : ::wm::WINDOW_MOVE_SOURCE_TOUCH;
+
+  gfx::Point location_in_parent = cursor;
+  ::wm::ConvertPointFromScreen(window->parent(), &location_in_parent);
+
   Shell::Get()
       ->toplevel_window_event_handler()
       ->wm_toplevel_window_event_handler()
       ->AttemptToStartDrag(
-          window, cursor, HTCAPTION, aura_source,
+          window, location_in_parent, HTCAPTION, aura_source,
           base::BindOnce(&OnMoveLoopCompleted, std::move(callback)));
 }
 
@@ -223,6 +230,17 @@ aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const std::set<aura::Window*>& ignore,
     aura::Window** real_topmost) {
   return wm::GetTopmostWindowAtPoint(location_in_screen, ignore, real_topmost);
+}
+
+std::unique_ptr<ws::WindowManagerInterface>
+WindowServiceDelegateImpl::CreateWindowManagerInterface(
+    ws::WindowTree* tree,
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (name != mojom::AshWindowManager::Name_)
+    return nullptr;
+
+  return std::make_unique<AshWindowManager>(tree, std::move(handle));
 }
 
 }  // namespace ash

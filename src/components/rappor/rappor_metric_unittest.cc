@@ -12,7 +12,7 @@
 
 namespace rappor {
 
-const RapporParameters kTestRapporParameters = {
+const RapporParameters kRapporMetricTestParameters = {
     1 /* Num cohorts */,
     16 /* Bloom filter size bytes */,
     4 /* Bloom filter hash count */,
@@ -22,13 +22,13 @@ const RapporParameters kTestRapporParameters = {
 
 // Check for basic syntax and use.
 TEST(RapporMetricTest, BasicMetric) {
-  RapporMetric testMetric("MyRappor", kTestRapporParameters, 0);
+  RapporMetric testMetric("MyRappor", kRapporMetricTestParameters, 0);
   testMetric.AddSample("Bar");
   EXPECT_EQ(0x80, testMetric.bytes()[1]);
 }
 
 TEST(RapporMetricTest, GetReport) {
-  RapporMetric metric("MyRappor", kTestRapporParameters, 0);
+  RapporMetric metric("MyRappor", kRapporMetricTestParameters, 0);
 
   const ByteVector report = metric.GetReport(
       HmacByteVectorGenerator::GenerateEntropyInput());

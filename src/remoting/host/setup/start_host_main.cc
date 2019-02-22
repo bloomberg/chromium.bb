@@ -234,8 +234,7 @@ int StartHostMain(int argc, char** argv) {
   // Start the host.
   std::unique_ptr<HostStarter> host_starter(HostStarter::Create(
       remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
-      url_loader_factory_owner.GetURLLoaderFactory(),
-      url_request_context_getter.get()));
+      url_loader_factory_owner.GetURLLoaderFactory()));
   if (redirect_url.empty()) {
     redirect_url = remoting::GetDefaultOauthRedirectUrl();
   }

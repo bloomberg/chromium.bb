@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -86,6 +87,13 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
   if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
     custom_controls_fullscreen_detector_ =
         new MediaCustomControlsFullscreenDetector(*this);
+  }
+
+  if (MediaElementParserHelpers::IsMediaElement(this) &&
+      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+    is_default_overridden_intrinsic_size_ = true;
+    overridden_intrinsic_size_ =
+        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
   }
 }
 
@@ -182,8 +190,8 @@ void HTMLVideoElement::ParseAttribute(
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
-      // Force a poster recalc by setting m_displayMode to Unknown directly
-      // before calling updateDisplayState.
+      // Force a poster recalc by setting display_mode_ to kUnknown directly
+      // before calling UpdateDisplayState.
       HTMLMediaElement::SetDisplayMode(kUnknown);
       UpdateDisplayState();
     }
@@ -211,7 +219,19 @@ void HTMLVideoElement::ParseAttribute(
   } else if (params.name == intrinsicsizeAttr &&
              RuntimeEnabledFeatures::
                  ExperimentalProductivityFeaturesEnabled()) {
-    ParseIntrinsicSizeAttribute(params.new_value);
+    String message;
+    bool intrinsic_size_changed =
+        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+            params.new_value, this, &overridden_intrinsic_size_,
+            &is_default_overridden_intrinsic_size_, &message);
+    if (!message.IsEmpty()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, message));
+    }
+
+    if (intrinsic_size_changed && GetLayoutObject() &&
+        GetLayoutObject()->IsVideo())
+      ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }
@@ -240,31 +260,6 @@ IntSize HTMLVideoElement::videoVisibleSize() const {
 
 IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
   return overridden_intrinsic_size_;
-}
-
-void HTMLVideoElement::ParseIntrinsicSizeAttribute(const String& value) {
-  unsigned new_width = 0, new_height = 0;
-  Vector<String> size;
-  value.Split('x', size);
-  if (!value.IsEmpty() &&
-      (size.size() != 2 ||
-       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
-       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                               "Unable to parse intrinsicSize: expected "
-                               "[unsigned] x [unsigned], got " +
-                                   value));
-    new_width = 0;
-    new_height = 0;
-  }
-
-  IntSize new_size(new_width, new_height);
-  if (overridden_intrinsic_size_ != new_size) {
-    overridden_intrinsic_size_ = new_size;
-    if (GetLayoutObject() && GetLayoutObject()->IsVideo())
-      ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
-  }
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
@@ -459,7 +454,9 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
 
 void HTMLVideoElement::webkitEnterFullscreen() {
   if (!IsFullscreen()) {
-    Fullscreen::RequestFullscreen(*this, FullscreenOptions(),
+    FullscreenOptions options;
+    options.setNavigationUI("hide");
+    Fullscreen::RequestFullscreen(*this, options,
                                   Fullscreen::RequestType::kPrefixed);
   }
 }

@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -41,7 +45,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   // Composes a list of usable and supported pixel formats, in order of
   // preference, with MJPEG prioritised depending on |prefer_mjpeg|.
-  static std::list<uint32_t> GetListOfUsableFourCcs(bool prefer_mjpeg);
+  static std::vector<uint32_t> GetListOfUsableFourCcs(bool prefer_mjpeg);
 
   V4L2CaptureDelegate(
       V4L2CaptureDevice* v4l2,
@@ -72,11 +76,24 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   class BufferTracker;
 
-  bool RunIoctl(int fd, int request, void* argp);
-  mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id);
-  void ResetUserAndCameraControlsToDefault(int device_fd);
+  // Running DoIoctl() on some devices, especially shortly after (re)opening the
+  // device file descriptor or (re)starting streaming, can fail but works after
+  // retrying (https://crbug.com/670262). Returns false if the |request| ioctl
+  // fails too many times.
+  bool RunIoctl(int request, void* argp);
 
-  // void CloseDevice();
+  // Simple wrapper to do HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), ...)).
+  int DoIoctl(int request, void* argp);
+
+  // Creates a mojom::RangePtr with the (min, max, current, step) values of the
+  // control associated with |control_id|. Returns an empty Range otherwise.
+  mojom::RangePtr RetrieveUserControlRange(int control_id);
+
+  // Sets all user control to their default. Some controls are enabled by
+  // another flag, usually having the word "auto" in the name, see
+  // IsSpecialControl() in the .cc file. These flags are preset beforehand, then
+  // set to their defaults individually afterwards.
+  void ResetUserAndCameraControlsToDefault();
 
   // VIDIOC_QUERYBUFs a buffer from V4L2, creates a BufferTracker for it and
   // enqueues it (VIDIOC_QBUF) back into V4L2.

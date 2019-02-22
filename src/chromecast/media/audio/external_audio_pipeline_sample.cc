@@ -12,6 +12,9 @@
 #include "chromecast/public/media/external_audio_pipeline_shlib.h"
 #include "chromecast/public/media/mixer_output_stream.h"
 
+using ExternalMediaMetadataChangeObserver = chromecast::media::
+    ExternalAudioPipelineShlib::ExternalMediaMetadataChangeObserver;
+
 namespace chromecast {
 namespace media {
 
@@ -109,6 +112,12 @@ void ExternalAudioPipelineShlib::RemoveExternalLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
   g_test_loop_back.RemoveObserver(observer);
 }
+
+void ExternalAudioPipelineShlib::AddExternalMediaMetadataChangeObserver(
+    ExternalMediaMetadataChangeObserver* observer) {}
+
+void ExternalAudioPipelineShlib::RemoveExternalMediaMetadataChangeObserver(
+    ExternalMediaMetadataChangeObserver* observer) {}
 
 std::unique_ptr<MixerOutputStream>
 ExternalAudioPipelineShlib::CreateMixerOutputStream() {

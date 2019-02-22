@@ -17,9 +17,8 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
@@ -85,7 +84,7 @@ class SubframeNavigationFilteringThrottleTest
 
   void InitializeDocumentSubresourceFilter(
       const GURL& document_url,
-      ActivationLevel parent_level = ActivationLevel::ENABLED) {
+      mojom::ActivationLevel parent_level = mojom::ActivationLevel::kEnabled) {
     ASSERT_NO_FATAL_FAILURE(
         test_ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
             "disallowed.html", &test_ruleset_pair_));
@@ -102,7 +101,8 @@ class SubframeNavigationFilteringThrottleTest
         std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
 
     testing::TestActivationStateCallbackReceiver activation_state;
-    ActivationState parent_activation_state(parent_level);
+    mojom::ActivationState parent_activation_state;
+    parent_activation_state.activation_level = parent_level;
     parent_activation_state.enable_logging = true;
     parent_filter_ = std::make_unique<AsyncDocumentSubresourceFilter>(
         ruleset_handle_.get(),
@@ -158,10 +158,8 @@ class SubframeNavigationFilteringThrottleTest
   }
 
   std::string GetFilterConsoleMessage(const GURL& filtered_url) {
-    std::ostringstream oss(kDisallowSubframeConsoleMessagePrefix);
-    oss << filtered_url;
-    oss << kDisallowSubframeConsoleMessageSuffix;
-    return oss.str();
+    return base::StringPrintf(kDisallowSubframeConsoleMessageFormat,
+                              filtered_url.possibly_invalid_spec().c_str());
   }
 
  private:
@@ -203,7 +201,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnRedirect) {
 
 TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnStart) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"),
-                                      ActivationLevel::DRYRUN);
+                                      mojom::ActivationLevel::kDryRun);
   const GURL url("https://example.test/disallowed.html");
   CreateTestSubframeAndInitNavigation(url, main_rfh());
 
@@ -214,7 +212,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnStart) {
 
 TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnRedirect) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"),
-                                      ActivationLevel::DRYRUN);
+                                      mojom::ActivationLevel::kDryRun);
   CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
                                       main_rfh());
 

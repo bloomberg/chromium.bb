@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -18,6 +19,8 @@
 namespace network {
 
 namespace cors {
+
+class OriginAccessList;
 
 // Wrapper class that adds cross-origin resource sharing capabilities
 // (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
@@ -43,7 +46,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
-      const base::RepeatingCallback<void(int)>& request_finalizer);
+      const base::RepeatingCallback<void(int)>& request_finalizer,
+      const OriginAccessList* origin_access_list);
 
   ~CORSURLLoader() override;
 
@@ -77,8 +81,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
  private:
   void StartRequest();
-  void StartNetworkRequest(int net_error,
-                           base::Optional<CORSErrorStatus> status);
+  void StartNetworkRequest(
+      int net_error,
+      base::Optional<CORSErrorStatus> status,
+      base::Optional<PreflightTimingInfo> preflight_timing_info);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
@@ -88,6 +94,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   void HandleComplete(const URLLoaderCompletionStatus& status);
 
   void OnConnectionError();
+
+  void SetCORSFlagIfNeeded();
+
+  static base::Optional<std::string> GetHeaderString(
+      const ResourceResponseHead& response,
+      const std::string& header_name);
 
   mojo::Binding<mojom::URLLoader> binding_;
 
@@ -114,12 +126,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // different if redirects happen.
   GURL last_response_url_;
 
+  // https://fetch.spec.whatwg.org/#concept-request-response-tainting
+  // As "response tainting" is subset of "response type", we use
+  // mojom::FetchResponseType for convenience.
+  mojom::FetchResponseType response_tainting_ =
+      mojom::FetchResponseType::kBasic;
+
   // A flag to indicate that the instance is waiting for that forwarding_client_
   // calls FollowRedirect.
   bool is_waiting_follow_redirect_call_ = false;
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
-  bool fetch_cors_flag_;
+  bool fetch_cors_flag_ = false;
 
   net::RedirectInfo redirect_info_;
 
@@ -135,6 +153,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // We need to save this for redirect.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
+
+  // Holds timing info if a preflight was made.
+  std::vector<PreflightTimingInfo> preflight_timing_info_;
+
+  // Outlives |this|.
+  const OriginAccessList* const origin_access_list_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CORSURLLoader> weak_factory_;

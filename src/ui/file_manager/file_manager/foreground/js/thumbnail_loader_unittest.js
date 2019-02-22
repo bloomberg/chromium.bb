@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 function getLoadTarget(entry, metadata) {
-  return new ThumbnailLoader(entry, null, metadata).getLoadTarget();
+  return new ThumbnailLoader(entry, ThumbnailLoader.LoaderType.CANVAS, metadata)
+      .getLoadTarget();
 }
 
 /**
@@ -24,6 +25,17 @@ function generateSampleImageDataUrl(width, height) {
   context.fillRect(width / 2, height / 2, width / 2, height / 2);
 
   return canvas.toDataURL('image/png');
+}
+
+/**
+ * Installs a mock ImageLoader with a compatible load method.
+ *
+ * @param {function(!LoadImageRequest, function(!Object))} mockLoad
+ */
+function installMockLoad(mockLoad) {
+  ImageLoaderClient.getInstance = function() {
+    return /** @type {!ImageLoaderClient} */ ({load: mockLoad});
+  };
 }
 
 function testShouldUseMetadataThumbnail() {
@@ -55,14 +67,9 @@ function testShouldUseMetadataThumbnail() {
 }
 
 function testLoadAsDataUrlFromImageClient(callback) {
-  ImageLoaderClient.getInstance = function() {
-    return {
-      load: function(url, callback, opt_option) {
-        callback({
-          status: 'success', data: 'imageDataUrl', width: 32, height: 32});
-      }
-    };
-  };
+  installMockLoad(function(request, callback) {
+    callback({status: 'success', data: 'imageDataUrl', width: 32, height: 32});
+  });
 
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
@@ -75,15 +82,11 @@ function testLoadAsDataUrlFromImageClient(callback) {
 }
 
 function testLoadAsDataUrlFromExifThumbnail(callback) {
-  ImageLoaderClient.getInstance = function() {
-    return {
-      load: function(url, callback, opt_option) {
-        // Assert that data url is passed.
-        assertTrue(/^data:/i.test(url));
-        callback({status: 'success', data: url, width: 32, height: 32});
-      }
-    };
-  };
+  installMockLoad(function(request, callback) {
+    // Assert that data url is passed.
+    assertTrue(/^data:/i.test(request.url));
+    callback({status: 'success', data: request.url, width: 32, height: 32});
+  });
 
   var metadata = {
     thumbnail: {
@@ -102,17 +105,17 @@ function testLoadAsDataUrlFromExifThumbnail(callback) {
 }
 
 function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
-  ImageLoaderClient.getInstance = function() {
-    return {
-      load: function(url, callback, opt_option) {
-        // Assert that data url and transform info is passed.
-        assertTrue(/^data:/i.test(url));
-        assertEquals(1, opt_option.orientation.rotate90);
-        callback({status: 'success', data: generateSampleImageDataUrl(32, 64),
-            width: 32, height: 64});
-      }
-    };
-  };
+  installMockLoad(function(request, callback) {
+    // Assert that data url and transform info is passed.
+    assertTrue(/^data:/i.test(request.url));
+    assertEquals(1, request.orientation.rotate90);
+    callback({
+      status: 'success',
+      data: generateSampleImageDataUrl(32, 64),
+      width: 32,
+      height: 64
+    });
+  });
 
   var metadata = {
     thumbnail: {
@@ -142,15 +145,15 @@ function testLoadAsDataUrlFromExternal(callback) {
   var externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
   var externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
 
-  ImageLoaderClient.getInstance = function() {
-    return {
-      load: function(url, callback, opt_option) {
-        assertEquals(externalCroppedThumbnailUrl, url);
-        callback({status: 'success', data: externalThumbnailDataUrl,
-          width: 32, height: 32});
-      }
-    };
-  };
+  installMockLoad(function(request, callback) {
+    assertEquals(externalCroppedThumbnailUrl, request.url);
+    callback({
+      status: 'success',
+      data: externalThumbnailDataUrl,
+      width: 32,
+      height: 32
+    });
+  });
 
   var metadata = {
     external: {
@@ -170,19 +173,19 @@ function testLoadAsDataUrlFromExternal(callback) {
 }
 
 function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
-  ImageLoaderClient.getInstance = function() {
-    return {
-      load: function(url, callback, opt_option) {
-        // Assert that data url is passed.
-        assertTrue(/^data:/i.test(url));
-        // Assert that the rotation is propagated to ImageLoader.
-        assertEquals(1, opt_option.orientation.rotate90);
-        // ImageLoader returns rotated image.
-        callback({status: 'success', data: generateSampleImageDataUrl(32, 64),
-            width: 32, height: 64});
-      }
-    };
-  };
+  installMockLoad(function(request, callback) {
+    // Assert that data url is passed.
+    assertTrue(/^data:/i.test(request.url));
+    // Assert that the rotation is propagated to ImageLoader.
+    assertEquals(1, request.orientation.rotate90);
+    // ImageLoader returns rotated image.
+    callback({
+      status: 'success',
+      data: generateSampleImageDataUrl(32, 64),
+      width: 32,
+      height: 64
+    });
+  });
 
   var metadata = {
     thumbnail: {

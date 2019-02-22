@@ -340,13 +340,7 @@ enum VideoCodecType {
   kVideoCodecH264,
   kVideoCodecI420,
   kVideoCodecMultiplex,
-  // DEPRECATED. Do not use.
-  kVideoCodecUnknown,
 };
-
-// Translates from name of codec to codec type and vice versa.
-const char* CodecTypeToPayloadString(VideoCodecType type);
-VideoCodecType PayloadStringToCodecType(const std::string& name);
 
 struct SpatialLayer {
   bool operator==(const SpatialLayer& other) const;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_POLICY_TOOL_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_POLICY_TOOL_UI_HANDLER_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
 

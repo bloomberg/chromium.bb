@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -35,6 +36,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -92,6 +94,9 @@ void ForceGoogleSafeSearchCallbackWrapper(net::CompletionOnceCallback callback,
 
 bool IsAccessAllowedInternal(const base::FilePath& path,
                              const base::FilePath& profile_path) {
+  if (g_access_to_all_files_enabled)
+    return true;
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return true;
 #else
@@ -154,6 +159,20 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
       return true;
     }
   }
+
+#if defined(OS_CHROMEOS)
+  // Allow access to DriveFS logs. These reside in
+  // $PROFILE_PATH/GCache/v2/<opaque id>/Logs.
+  base::FilePath path_within_gcache_v2;
+  if (profile_path.Append("GCache/v2")
+          .AppendRelativePath(path, &path_within_gcache_v2)) {
+    std::vector<std::string> components;
+    path_within_gcache_v2.GetComponents(&components);
+    if (components.size() > 1 && components[1] == "Logs") {
+      return true;
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
 
   DVLOG(1) << "File access denied - " << path.value().c_str();
   return false;
@@ -278,17 +297,11 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   extensions_delegate_->NotifyCompleted(request, started, net_error);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
-  extensions_delegate_->ForwardProxyErrors(request, net_error);
   extensions_delegate_->ForwardDoneRequestStatus(request);
 }
 
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
   extensions_delegate_->NotifyURLRequestDestroyed(request);
-}
-
-void ChromeNetworkDelegate::OnPACScriptError(int line_number,
-                                             const base::string16& error) {
-  extensions_delegate_->NotifyPACScriptError(line_number, error);
 }
 
 net::NetworkDelegate::AuthRequiredResponse
@@ -300,56 +313,41 @@ ChromeNetworkDelegate::OnAuthRequired(net::URLRequest* request,
       request, auth_info, std::move(callback), credentials);
 }
 
-bool ChromeNetworkDelegate::OnCanGetCookies(
-    const net::URLRequest& request,
-    const net::CookieList& cookie_list) {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return true;
-
-  bool allow = cookie_settings_->IsCookieAccessAllowed(
-      request.url(), request.site_for_cookies());
-
+bool ChromeNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
+                                            const net::CookieList& cookie_list,
+                                            bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::CookiesRead,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie_list, !allow));
+                       request.site_for_cookies(), cookie_list,
+                       !allowed_from_caller));
   }
-
-  return allow;
+  return allowed_from_caller;
 }
 
 bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            const net::CanonicalCookie& cookie,
-                                           net::CookieOptions* options) {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return true;
-
-  bool allow = cookie_settings_->IsCookieAccessAllowed(
-      request.url(), request.site_for_cookies());
-
+                                           net::CookieOptions* options,
+                                           bool allowed_from_caller) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::CookieChanged,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie, !allow));
+                       request.site_for_cookies(), cookie,
+                       !allowed_from_caller));
   }
-
-  return allow;
+  return allowed_from_caller;
 }
 
 bool ChromeNetworkDelegate::OnCanAccessFile(
     const net::URLRequest& request,
     const base::FilePath& original_path,
     const base::FilePath& absolute_path) const {
-  if (g_access_to_all_files_enabled)
-    return true;
   return IsAccessAllowed(original_path, absolute_path, profile_path_);
 }
 
@@ -378,16 +376,6 @@ bool ChromeNetworkDelegate::IsAccessAllowed(
 // static
 void ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(bool enabled) {
   g_access_to_all_files_enabled = enabled;
-}
-
-bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
-    const GURL& url,
-    const GURL& site_for_cookies) const {
-  // nullptr during tests, or when we're running in the system context.
-  if (!cookie_settings_.get())
-    return false;
-
-  return !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 }
 
 bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {

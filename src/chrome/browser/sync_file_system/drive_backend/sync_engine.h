@@ -44,9 +44,6 @@ namespace leveldb {
 class Env;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -80,7 +77,6 @@ class SyncEngine
     virtual ~DriveServiceFactory() {}
     virtual std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
         OAuth2TokenService* oauth2_token_service,
-        net::URLRequestContextGetter* url_request_context_getter,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         base::SequencedTaskRunner* blocking_task_runner);
 
@@ -173,7 +169,6 @@ class SyncEngine
              extensions::ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager,
              OAuth2TokenService* token_service,
-             net::URLRequestContextGetter* request_context,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              std::unique_ptr<DriveServiceFactory> drive_service_factory,
              leveldb::Env* env_override);
@@ -206,7 +201,6 @@ class SyncEngine
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<DriveServiceFactory> drive_service_factory_;

@@ -59,20 +59,16 @@ AssistantFooterView::AssistantFooterView(
 
 AssistantFooterView::~AssistantFooterView() = default;
 
+const char* AssistantFooterView::GetClassName() const {
+  return "AssistantFooterView";
+}
+
 gfx::Size AssistantFooterView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
 
 int AssistantFooterView::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
-}
-
-void AssistantFooterView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
-void AssistantFooterView::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
 }
 
 void AssistantFooterView::InitLayout() {
@@ -130,6 +126,7 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
   StartLayerAnimationSequence(hide_view->layer()->GetAnimator(),
                               CreateLayerAnimationSequence(CreateOpacityElement(
                                   0.f, kAnimationFadeOutDuration)),
+                              // Observe the animation.
                               animation_observer_.get());
 
   // Show the view for the next consent state by fading to 100% opacity with

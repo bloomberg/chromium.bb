@@ -290,7 +290,7 @@ CPDF_StreamContentParser::CPDF_StreamContentParser(
   }
 
   // Add the sentinel.
-  m_ContentMarksStack.push(pdfium::MakeUnique<CPDF_ContentMark>());
+  m_ContentMarksStack.push(pdfium::MakeUnique<CPDF_ContentMarks>());
 }
 
 CPDF_StreamContentParser::~CPDF_StreamContentParser() {
@@ -318,27 +318,15 @@ int CPDF_StreamContentParser::GetNextParamPos() {
 
 void CPDF_StreamContentParser::AddNameParam(const ByteStringView& bsName) {
   ContentParam& param = m_ParamBuf[GetNextParamPos()];
-  if (bsName.GetLength() > 32) {
-    param.m_Type = ContentParam::OBJECT;
-    param.m_pObject = pdfium::MakeUnique<CPDF_Name>(
-        m_pDocument->GetByteStringPool(), PDF_NameDecode(bsName));
-  } else {
-    param.m_Type = ContentParam::NAME;
-    if (bsName.Contains('#')) {
-      ByteString str = PDF_NameDecode(bsName);
-      memcpy(param.m_Name.m_Buffer, str.c_str(), str.GetLength());
-      param.m_Name.m_Len = str.GetLength();
-    } else {
-      memcpy(param.m_Name.m_Buffer, bsName.raw_str(), bsName.GetLength());
-      param.m_Name.m_Len = bsName.GetLength();
-    }
-  }
+  param.m_Type = ContentParam::NAME;
+  param.m_Name =
+      bsName.Contains('#') ? PDF_NameDecode(bsName) : ByteString(bsName);
 }
 
 void CPDF_StreamContentParser::AddNumberParam(const ByteStringView& str) {
   ContentParam& param = m_ParamBuf[GetNextParamPos()];
   param.m_Type = ContentParam::NUMBER;
-  param.m_Number.m_bInteger = FX_atonum(str, &param.m_Number.m_Integer);
+  param.m_Number = FX_Number(str);
 }
 
 void CPDF_StreamContentParser::AddObjectParam(
@@ -373,16 +361,15 @@ CPDF_Object* CPDF_StreamContentParser::GetObject(uint32_t index) {
   if (param.m_Type == ContentParam::NUMBER) {
     param.m_Type = ContentParam::OBJECT;
     param.m_pObject =
-        param.m_Number.m_bInteger
-            ? pdfium::MakeUnique<CPDF_Number>(param.m_Number.m_Integer)
-            : pdfium::MakeUnique<CPDF_Number>(param.m_Number.m_Float);
+        param.m_Number.IsInteger()
+            ? pdfium::MakeUnique<CPDF_Number>(param.m_Number.GetSigned())
+            : pdfium::MakeUnique<CPDF_Number>(param.m_Number.GetFloat());
     return param.m_pObject.get();
   }
   if (param.m_Type == ContentParam::NAME) {
     param.m_Type = ContentParam::OBJECT;
     param.m_pObject = pdfium::MakeUnique<CPDF_Name>(
-        m_pDocument->GetByteStringPool(),
-        ByteString(param.m_Name.m_Buffer, param.m_Name.m_Len));
+        m_pDocument->GetByteStringPool(), param.m_Name);
     return param.m_pObject.get();
   }
   if (param.m_Type == ContentParam::OBJECT)
@@ -393,39 +380,38 @@ CPDF_Object* CPDF_StreamContentParser::GetObject(uint32_t index) {
 }
 
 ByteString CPDF_StreamContentParser::GetString(uint32_t index) const {
-  if (index >= m_ParamCount) {
+  if (index >= m_ParamCount)
     return ByteString();
-  }
+
   int real_index = m_ParamStartPos + m_ParamCount - index - 1;
-  if (real_index >= kParamBufSize) {
+  if (real_index >= kParamBufSize)
     real_index -= kParamBufSize;
-  }
+
   const ContentParam& param = m_ParamBuf[real_index];
-  if (param.m_Type == ContentParam::NAME) {
-    return ByteString(param.m_Name.m_Buffer, param.m_Name.m_Len);
-  }
-  if (param.m_Type == 0 && param.m_pObject) {
+  if (param.m_Type == ContentParam::NAME)
+    return param.m_Name;
+
+  if (param.m_Type == 0 && param.m_pObject)
     return param.m_pObject->GetString();
-  }
+
   return ByteString();
 }
 
 float CPDF_StreamContentParser::GetNumber(uint32_t index) const {
-  if (index >= m_ParamCount) {
+  if (index >= m_ParamCount)
     return 0;
-  }
+
   int real_index = m_ParamStartPos + m_ParamCount - index - 1;
-  if (real_index >= kParamBufSize) {
+  if (real_index >= kParamBufSize)
     real_index -= kParamBufSize;
-  }
+
   const ContentParam& param = m_ParamBuf[real_index];
-  if (param.m_Type == ContentParam::NUMBER) {
-    return param.m_Number.m_bInteger
-               ? static_cast<float>(param.m_Number.m_Integer)
-               : param.m_Number.m_Float;
-  }
+  if (param.m_Type == ContentParam::NUMBER)
+    return param.m_Number.GetFloat();
+
   if (param.m_Type == 0 && param.m_pObject)
     return param.m_pObject->GetNumber();
+
   return 0;
 }
 
@@ -442,7 +428,7 @@ void CPDF_StreamContentParser::SetGraphicStates(CPDF_PageObject* pObj,
                                                 bool bGraph) {
   pObj->m_GeneralState = m_pCurStates->m_GeneralState;
   pObj->m_ClipPath = m_pCurStates->m_ClipPath;
-  pObj->m_ContentMark = *m_ContentMarksStack.top();
+  pObj->m_ContentMarks = *m_ContentMarksStack.top();
   if (bColor) {
     pObj->m_ColorState = m_pCurStates->m_ColorState;
   }
@@ -616,7 +602,7 @@ void CPDF_StreamContentParser::Handle_BeginMarkedContent_Dictionary() {
       return;
   }
   if (CPDF_Dictionary* pDict = pProperty->AsDictionary()) {
-    std::unique_ptr<CPDF_ContentMark> new_marks =
+    std::unique_ptr<CPDF_ContentMarks> new_marks =
         m_ContentMarksStack.top()->Clone();
     if (bIndirect) {
       new_marks->AddMarkWithPropertiesDict(std::move(tag), pDict,
@@ -689,7 +675,7 @@ void CPDF_StreamContentParser::Handle_BeginImage() {
 }
 
 void CPDF_StreamContentParser::Handle_BeginMarkedContent() {
-  std::unique_ptr<CPDF_ContentMark> new_marks =
+  std::unique_ptr<CPDF_ContentMarks> new_marks =
       m_ContentMarksStack.top()->Clone();
   new_marks->AddMark(GetString(0));
   m_ContentMarksStack.push(std::move(new_marks));
@@ -1120,10 +1106,7 @@ void CPDF_StreamContentParser::Handle_ShadeFill() {
       pObj->m_ClipPath.HasRef() ? pObj->m_ClipPath.GetClipBox() : m_BBox;
   if (pShading->IsMeshShading())
     bbox.Intersect(GetShadingBBox(pShading, pObj->matrix()));
-  pObj->m_Left = bbox.left;
-  pObj->m_Right = bbox.right;
-  pObj->m_Top = bbox.top;
-  pObj->m_Bottom = bbox.bottom;
+  pObj->SetRect(bbox);
   m_pObjectHolder->AppendPageObject(std::move(pObj));
 }
 
@@ -1286,8 +1269,9 @@ float CPDF_StreamContentParser::GetVerticalTextSize(float fKerning) const {
 }
 
 int32_t CPDF_StreamContentParser::GetCurrentStreamIndex() {
-  auto it = std::upper_bound(m_StreamStartOffsets.begin(),
-                             m_StreamStartOffsets.end(), m_pSyntax->GetPos());
+  auto it =
+      std::upper_bound(m_StreamStartOffsets.begin(), m_StreamStartOffsets.end(),
+                       m_pSyntax->GetPos() + m_StartParseOffset);
   return (it - m_StreamStartOffsets.begin()) - 1;
 }
 
@@ -1508,19 +1492,29 @@ void CPDF_StreamContentParser::AddPathObject(int FillType, bool bStroke) {
 uint32_t CPDF_StreamContentParser::Parse(
     const uint8_t* pData,
     uint32_t dwSize,
+    uint32_t start_offset,
     uint32_t max_cost,
     const std::vector<uint32_t>& stream_start_offsets) {
+  ASSERT(start_offset < dwSize);
+
+  // Parsing will be done from |pDataStart|, for at most |size_left| bytes.
+  const uint8_t* pDataStart = pData + start_offset;
+  uint32_t size_left = dwSize - start_offset;
+
+  m_StartParseOffset = start_offset;
+
   if (m_ParsedSet->size() > kMaxFormLevel ||
-      pdfium::ContainsKey(*m_ParsedSet, pData))
-    return dwSize;
+      pdfium::ContainsKey(*m_ParsedSet, pDataStart)) {
+    return size_left;
+  }
 
   m_StreamStartOffsets = stream_start_offsets;
 
   pdfium::ScopedSetInsertion<const uint8_t*> scopedInsert(m_ParsedSet.Get(),
-                                                          pData);
+                                                          pDataStart);
 
   uint32_t init_obj_count = m_pObjectHolder->GetPageObjectList()->size();
-  CPDF_StreamParser syntax(pdfium::make_span(pData, dwSize),
+  CPDF_StreamParser syntax(pdfium::make_span(pDataStart, size_left),
                            m_pDocument->GetByteStringPool());
   CPDF_StreamParserAutoClearer auto_clearer(&m_pSyntax, &syntax);
   while (1) {
@@ -1621,10 +1615,8 @@ void CPDF_StreamContentParser::ParsePathObject() {
         if (nParams == 6)
           break;
 
-        int value;
-        bool bInteger = FX_atonum(m_pSyntax->GetWord(), &value);
-        params[nParams++] = bInteger ? static_cast<float>(value)
-                                     : *reinterpret_cast<float*>(&value);
+        FX_Number number(m_pSyntax->GetWord());
+        params[nParams++] = number.GetFloat();
         break;
       }
       default:

@@ -13,13 +13,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_network_session.h"
@@ -33,6 +36,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -104,12 +108,10 @@ class DataReductionProxyIODataTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
-  network::TestNetworkConnectionTracker network_connection_tracker(
-      true, network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-
   std::unique_ptr<DataReductionProxyIOData> io_data(
       new DataReductionProxyIOData(
-          Client::UNKNOWN, prefs(), net_log(), &network_connection_tracker,
+          Client::UNKNOWN, prefs(), net_log(),
+          network::TestNetworkConnectionTracker::GetInstance(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           false /* enabled */, std::string() /* user_agent */,
@@ -213,6 +215,138 @@ TEST_F(DataReductionProxyIODataTest, HoldbackConfiguresProxies) {
                    .front()
                    .proxy_server()
                    .is_direct());
+}
+
+class TestCustomProxyConfigClient
+    : public network::mojom::CustomProxyConfigClient {
+ public:
+  TestCustomProxyConfigClient(
+      network::mojom::CustomProxyConfigClientRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // network::mojom::CustomProxyConfigClient implementation:
+  void OnCustomProxyConfigUpdated(
+      network::mojom::CustomProxyConfigPtr proxy_config) override {
+    config = std::move(proxy_config);
+  }
+
+  network::mojom::CustomProxyConfigPtr config;
+
+ private:
+  mojo::Binding<network::mojom::CustomProxyConfigClient> binding_;
+};
+
+TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigClient) {
+  auto proxy_server = net::ProxyServer::FromPacString("PROXY foo");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyHttpProxies, proxy_server.ToURI());
+
+  net::TestURLRequestContext context(false);
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithURLRequestContext(&context)
+          .Build();
+  drp_test_context->SetDataReductionProxyEnabled(true);
+  drp_test_context->test_network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  DataReductionProxyIOData* io_data = drp_test_context->io_data();
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server);
+  EXPECT_TRUE(
+      client.config->post_cache_headers.HasHeader(chrome_proxy_header()));
+  EXPECT_TRUE(
+      client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
+}
+
+TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
+  net::TestURLRequestContext context(false);
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithURLRequestContext(&context)
+          .Build();
+  drp_test_context->SetDataReductionProxyEnabled(true);
+  drp_test_context->test_network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  DataReductionProxyIOData* io_data = drp_test_context->io_data();
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  std::string value;
+  EXPECT_TRUE(client.config->pre_cache_headers.GetHeader(
+      chrome_proxy_ect_header(), &value));
+  EXPECT_EQ(value, "4G");
+
+  drp_test_context->test_network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(client.config->pre_cache_headers.GetHeader(
+      chrome_proxy_ect_header(), &value));
+  EXPECT_EQ(value, "2G");
+}
+
+TEST_F(DataReductionProxyIODataTest,
+       TestCustomProxyConfigUpdatedOnHeaderChange) {
+  DataReductionProxyIOData io_data(
+      Client::UNKNOWN, prefs(), net_log(),
+      network::TestNetworkConnectionTracker::GetInstance(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
+      std::string() /* user_agent */, std::string() /* channel */);
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  std::string value;
+  EXPECT_TRUE(client.config->post_cache_headers.GetHeader(chrome_proxy_header(),
+                                                          &value));
+
+  io_data.request_options()->SetSecureSession("session_value");
+  base::RunLoop().RunUntilIdle();
+  std::string changed_value;
+  EXPECT_TRUE(client.config->post_cache_headers.GetHeader(chrome_proxy_header(),
+                                                          &changed_value));
+  EXPECT_NE(value, changed_value);
+}
+
+TEST_F(DataReductionProxyIODataTest,
+       TestCustomProxyConfigUpdatedOnProxyChange) {
+  DataReductionProxyIOData io_data(
+      Client::UNKNOWN, prefs(), net_log(),
+      network::TestNetworkConnectionTracker::GetInstance(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
+      std::string() /* user_agent */, std::string() /* channel */);
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), prefs(),
+      scoped_task_environment_.GetMainThreadTaskRunner());
+  auto proxy_server = net::ProxyServer::FromPacString("PROXY foo");
+  io_data.configurator()->Enable(
+      network_properties_manager,
+      {DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE)});
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server);
+
+  io_data.configurator()->Disable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(client.config->rules.proxies_for_http.IsEmpty());
 }
 
 }  // namespace data_reduction_proxy

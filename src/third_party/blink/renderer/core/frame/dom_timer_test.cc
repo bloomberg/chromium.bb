@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 using testing::DoubleNear;
@@ -55,7 +56,8 @@ class DOMTimerTest : public RenderingTest {
     return GetDocument()
         .GetFrame()
         ->GetScriptController()
-        .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(expr));
+        .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(expr), KURL(),
+                                                kOpaqueResource);
   }
 
   Vector<double> ToDoubleArray(v8::Local<v8::Value> value,
@@ -73,7 +75,7 @@ class DOMTimerTest : public RenderingTest {
   void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
     ScriptSourceCode script(script_text);
     GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-        script);
+        script, KURL(), kOpaqueResource);
     platform_->RunUntilIdle();
   }
 };

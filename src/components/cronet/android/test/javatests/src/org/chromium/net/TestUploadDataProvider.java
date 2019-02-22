@@ -37,7 +37,7 @@ class TestUploadDataProvider extends UploadDataProvider {
     private final SuccessCallbackMode mSuccessCallbackMode;
     private final Executor mExecutor;
 
-    private boolean mChunked = false;
+    private boolean mChunked;
 
     // Index of read to fail on.
     private int mReadFailIndex = -1;
@@ -48,15 +48,15 @@ class TestUploadDataProvider extends UploadDataProvider {
 
     private FailMode mLengthFailMode = FailMode.NONE;
 
-    private int mNumReadCalls = 0;
-    private int mNumRewindCalls = 0;
+    private int mNumReadCalls;
+    private int mNumRewindCalls;
 
-    private int mNextRead = 0;
-    private boolean mStarted = false;
-    private boolean mReadPending = false;
-    private boolean mRewindPending = false;
+    private int mNextRead;
+    private boolean mStarted;
+    private boolean mReadPending;
+    private boolean mRewindPending;
     // Used to ensure there are no read/rewind requests after a failure.
-    private boolean mFailed = false;
+    private boolean mFailed;
 
     private AtomicBoolean mClosed = new AtomicBoolean(false);
     private ConditionVariable mAwaitingClose = new ConditionVariable(false);

@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -290,15 +291,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
       [self recordActionSwitchingToPage:_currentPage];
-
-      // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
-      // does not notify observers when entries are removed. When close all tabs
-      // removes entries, the remote tabs page in the tab grid are not updated.
-      // This ensures that the table is updated whenever scrolling to it.
-      if (_currentPage == TabGridPageRemoteTabs) {
-        [self.remoteTabsViewController loadModel];
-        [self.remoteTabsViewController.tableView reloadData];
-      }
     }
   }
 }
@@ -309,21 +301,33 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // scrolling.
   self.topToolbar.pageControl.userInteractionEnabled = NO;
   self.pageChangeInteraction = PageChangeInteractionScrollDrag;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
   // Re-enable the page control since the user isn't dragging anymore.
   self.topToolbar.pageControl.userInteractionEnabled = YES;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
   // Mark the interaction as ended, so that scrolls that don't change page don't
   // cause other interactions to be mislabeled.
   self.pageChangeInteraction = PageChangeInteractionNone;
-  [self updatePageViewAccessibilityVisibility];
+
+  // Update _currentPage if scroll view has moved to a new page. Especially
+  // important here for 3-finger accessibility swipes since it's not registered
+  // as dragging in scrollViewDidScroll:
+  TabGridPage page = GetPageFromScrollView(scrollView);
+  if (page != _currentPage) {
+    // Original current page is about to not be visible. Disable it from being
+    // focused by VoiceOver.
+    self.currentPageViewController.view.accessibilityElementsHidden = YES;
+    _currentPage = page;
+    // Allow VoiceOver to focus on the new current page's elements.
+    self.currentPageViewController.view.accessibilityElementsHidden = NO;
+    [self broadcastIncognitoContentVisibility];
+    [self configureButtonsForActiveAndCurrentPage];
+  }
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
@@ -427,7 +431,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _incognitoTabsImageDataSource = incognitoTabsImageDataSource;
 }
 
-- (id<RecentTabsTableConsumer>)remoteTabsConsumer {
+- (id<RecentTabsConsumer>)remoteTabsConsumer {
   return self.remoteTabsViewController;
 }
 
@@ -536,9 +540,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // the ivar may have been set before the scroll view could be updated. Calling
   // this method should always update the scroll view's offset if possible.
 
+  // Original current page is about to not be visible. Disable it from being
+  // focused by VoiceOver.
+  self.currentPageViewController.view.accessibilityElementsHidden = YES;
+
   // If the view isn't loaded yet, just do bookkeeping on _currentPage.
   if (!self.viewLoaded) {
     _currentPage = currentPage;
+    // Allow VoiceOver to focus on the new current page's elements.
+    self.currentPageViewController.view.accessibilityElementsHidden = NO;
     return;
   }
   CGFloat pageWidth = self.scrollView.frame.size.width;
@@ -561,6 +571,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       _currentPage = currentPage;
     }
   }
+  // Allow VoiceOver to focus on the new current page's elements.
+  self.currentPageViewController.view.accessibilityElementsHidden = NO;
+
   // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
   // does not notify observers when entries are removed. When close all tabs
   // removes entries, the remote tabs page in the tab grid are not updated. This
@@ -587,7 +600,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (_scrollViewAnimatingContentOffset == scrollViewAnimatingContentOffset)
     return;
   _scrollViewAnimatingContentOffset = scrollViewAnimatingContentOffset;
-  [self updatePageViewAccessibilityVisibility];
 }
 
 // Adds the scroll view and sets constraints.
@@ -913,19 +925,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridCloseAllButtonIdentifier;
 }
 
-// Updates the visibility of the pages' accessibility elements.  When
-// |scrollView| is scrolling, all pages should be visible.  When stationary,
-// however, the accessibility elements of off-screen pages should be hidden.
-- (void)updatePageViewAccessibilityVisibility {
-  BOOL scrolling = self.scrollView.dragging || self.scrollView.decelerating ||
-                   self.scrollViewAnimatingContentOffset;
-  UIViewController* currentPageViewController = self.currentPageViewController;
-  for (UIViewController* pageViewController in self.pageViewControllers) {
-    pageViewController.view.accessibilityElementsHidden =
-        !scrolling && pageViewController != currentPageViewController;
-  }
-}
-
 // Shows the two toolbars and the floating button. Suitable for use in
 // animations.
 - (void)showToolbars {
@@ -1231,12 +1230,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
-  } else if (IsClosingLastIncognitoTabEnabled() &&
-             gridViewController == self.incognitoTabsViewController) {
+    breakpad_helper::SetRegularTabCount(count);
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    breakpad_helper::SetIncognitoTabCount(count);
+
     // No assumption is made as to the state of the UI. This method can be
     // called with an incognito view controller and a current page that is not
     // the incognito tabs.
-    if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
+    if (IsClosingLastIncognitoTabEnabled() && count == 0 &&
+        self.currentPage == TabGridPageIncognitoTabs) {
       // Show the regular tabs to the user if the last incognito tab is closed.
       if (self.viewLoaded && self.view.window) {
         // Visibly scroll to the regular tabs panel after a slight delay when

@@ -160,6 +160,8 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
             mapping.size(), info->timestamp);
     ASSERT_TRUE(frame);
     frame->metadata()->MergeInternalValuesFrom(info->metadata);
+    if (info->color_space.has_value())
+      frame->set_color_space(info->color_space.value());
     frame->AddDestructionObserver(base::BindOnce(
         [](base::ReadOnlySharedMemoryMapping mapping) {}, std::move(mapping)));
     OnFrameCapturedMock(frame, update_rect, callbacks.get());
@@ -345,9 +347,10 @@ class FrameSinkVideoCapturerTest : public testing::Test {
               capturer_.pixel_format_);
     ASSERT_EQ(FrameSinkVideoCapturerImpl::kDefaultColorSpace,
               capturer_.color_space_);
-    capturer_.SetFormat(media::PIXEL_FORMAT_I420, media::COLOR_SPACE_HD_REC709);
+    capturer_.SetFormat(media::PIXEL_FORMAT_I420,
+                        gfx::ColorSpace::CreateREC709());
     ASSERT_EQ(media::PIXEL_FORMAT_I420, capturer_.pixel_format_);
-    ASSERT_EQ(media::COLOR_SPACE_HD_REC709, capturer_.color_space_);
+    ASSERT_EQ(gfx::ColorSpace::CreateREC709(), capturer_.color_space_);
 
     // Set min capture period as small as possible so that the
     // media::VideoCapturerOracle used by the capturer will want to capture
@@ -560,10 +563,7 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
     EXPECT_TRUE(metadata->GetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
                                        &capture_end_time));
     EXPECT_EQ(expected_capture_end_time, capture_end_time);
-    int color_space = media::COLOR_SPACE_UNSPECIFIED;
-    EXPECT_TRUE(
-        metadata->GetInteger(VideoFrameMetadata::COLOR_SPACE, &color_space));
-    EXPECT_EQ(media::COLOR_SPACE_HD_REC709, color_space);
+    EXPECT_EQ(gfx::ColorSpace::CreateREC709(), frame->ColorSpace());
     EXPECT_TRUE(metadata->HasKey(VideoFrameMetadata::FRAME_DURATION));
     // FRAME_DURATION is an estimate computed by the VideoCaptureOracle, so it
     // its exact value is not being checked here.

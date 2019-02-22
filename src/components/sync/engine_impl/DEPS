@@ -6,6 +6,7 @@ include_rules = [
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",
-  "+net/base",
+  "+services/network/public",
+  "+services/network/test",
   "+third_party/protobuf",
 ]

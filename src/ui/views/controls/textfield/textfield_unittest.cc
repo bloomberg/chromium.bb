@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
@@ -27,6 +28,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -157,7 +159,7 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
 // which trigger the appropriate NSResponder action messages for composition.
 #if defined(OS_MACOSX)
   if (key->is_char())
-    return DispatchKeyEventPostIME(key);
+    return DispatchKeyEventPostIME(key, base::NullCallback());
 #endif
 
   // Checks whether the key event is from EventGenerator on Windows which will
@@ -177,9 +179,9 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
     ui::KeyEvent mock_key(ui::ET_KEY_PRESSED,
                           ui::VKEY_PROCESSKEY,
                           key->flags());
-    dispatch_details = DispatchKeyEventPostIME(&mock_key);
+    dispatch_details = DispatchKeyEventPostIME(&mock_key, base::NullCallback());
   } else {
-    dispatch_details = DispatchKeyEventPostIME(key);
+    dispatch_details = DispatchKeyEventPostIME(key, base::NullCallback());
   }
 
   if (key->handled() || dispatch_details.dispatcher_destroyed)
@@ -553,9 +555,13 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     SendKeyEvent(key_code, false, false);
   }
 
-  void SendKeyEvent(base::char16 ch) { SendKeyEvent(ch, ui::EF_NONE); }
+  void SendKeyEvent(base::char16 ch) { SendKeyEvent(ch, ui::EF_NONE, false); }
 
   void SendKeyEvent(base::char16 ch, int flags) {
+    SendKeyEvent(ch, flags, false);
+  }
+
+  void SendKeyEvent(base::char16 ch, int flags, bool from_vk) {
     if (ch < 0x80) {
       ui::KeyboardCode code =
           ch == ' ' ? ui::VKEY_SPACE :
@@ -567,6 +573,11 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       // Mac, key events don't pass through InputMethod. Hence they are
       // dispatched regularly.
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::DomCode::NONE, flags);
+      if (from_vk) {
+        ui::Event::Properties properties;
+        properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+        event.SetProperties(properties);
+      }
 #if defined(OS_MACOSX)
       event_generator_->Dispatch(&event);
 #else
@@ -1056,27 +1067,18 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
 
   textfield_->SetSelectionRange(gfx::Range(6));
 
-  // Shift+[Up/Down] on Mac should execute the command
-  // MOVE_[UP/DOWN]_AND_MODIFY_SELECTION. On other platforms, textfield won't
-  // handle these events.
+  // Shift+[Up/Down] should select the text to the beginning and end of the
+  // line, respectively.
   SendKeyEvent(ui::VKEY_UP, true /* shift */, false /* command */);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
   textfield_->clear();
 
   SendKeyEvent(ui::VKEY_DOWN, true /* shift */, false /* command */);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
   textfield_->clear();
 }
 
@@ -1292,8 +1294,15 @@ TEST_F(TextfieldTest, TextInputType_InsertionTest) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
 
   SendKeyEvent(ui::VKEY_A);
-  SendKeyEvent(kHebrewLetterSamekh);
+  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
+  SendKeyEvent(kHebrewLetterSamekh, ui::EF_NONE, true /* from_vk */);
+#if !defined(OS_MACOSX)
+  // Don't verifies the password character reveal on MacOS, because on MacOS,
+  // the text insertion is not done through TextInputClient::InsertChar().
+  EXPECT_EQ(1, textfield_->GetPasswordCharRevealIndex());
+#endif
   SendKeyEvent(ui::VKEY_B);
+  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
 
   EXPECT_EQ(WideToUTF16(L"a\x05E1"
                         L"b"),

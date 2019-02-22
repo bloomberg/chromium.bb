@@ -35,7 +35,7 @@ void AXVirtualObject::AddChildren() {
 
 void AXVirtualObject::ChildrenChanged() {
   ClearChildren();
-  AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
+  AXObjectCache().PostNotification(this, ax::mojom::Event::kChildrenChanged);
 }
 
 const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(
@@ -63,7 +63,7 @@ AccessibleNode* AXVirtualObject::GetAccessibleNode() const {
 String AXVirtualObject::TextAlternative(bool recursive,
                                         bool in_aria_labelled_by_traversal,
                                         AXObjectSet& visited,
-                                        AXNameFrom& name_from,
+                                        ax::mojom::NameFrom& name_from,
                                         AXRelatedObjectVector* related_objects,
                                         NameSources* name_sources) const {
   if (!accessible_node_)

@@ -217,7 +217,7 @@ int PerfettoCmd::Main(int argc, char** argv) {
   PERFETTO_DLOG("Parsing TraceConfig, %zu bytes", trace_config_raw.size());
   bool parsed = trace_config_proto.ParseFromString(trace_config_raw);
   if (!parsed) {
-    PERFETTO_ELOG("Could not parse TraceConfig proto from stdin");
+    PERFETTO_ELOG("Could not parse TraceConfig proto");
     return 1;
   }
   *trace_config_proto.mutable_statsd_metadata() = std::move(statsd_metadata);
@@ -333,7 +333,7 @@ void PerfettoCmd::FinalizeTraceAndExit() {
     // violation (about system_server ending up with a writable FD to our dir).
     char fdpath[64];
     sprintf(fdpath, "/proc/self/fd/%d", fileno(*trace_out_stream_));
-    base::ScopedFile read_only_fd(open(fdpath, O_RDONLY));
+    base::ScopedFile read_only_fd(base::OpenFile(fdpath, O_RDONLY));
     PERFETTO_CHECK(read_only_fd);
     trace_out_stream_.reset();
     android::binder::Status status =
@@ -359,7 +359,7 @@ bool PerfettoCmd::OpenOutputFile() {
     // If we are tracing to DropBox, there's no need to make a
     // filesystem-visible temporary file.
     // TODO(skyostil): Fall back to base::TempFile for older devices.
-    fd.reset(open(kTempDropBoxTraceDir, O_TMPFILE | O_RDWR, 0600));
+    fd = base::OpenFile(kTempDropBoxTraceDir, O_TMPFILE | O_RDWR, 0600);
     if (!fd) {
       PERFETTO_ELOG("Could not create a temporary trace file in %s",
                     kTempDropBoxTraceDir);
@@ -371,7 +371,7 @@ bool PerfettoCmd::OpenOutputFile() {
   } else if (trace_out_path_ == "-") {
     fd.reset(dup(STDOUT_FILENO));
   } else {
-    fd.reset(open(trace_out_path_.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0600));
+    fd = base::OpenFile(trace_out_path_, O_RDWR | O_CREAT | O_TRUNC, 0600);
   }
   trace_out_stream_.reset(fdopen(fd.release(), "wb"));
   PERFETTO_CHECK(trace_out_stream_);
@@ -396,8 +396,8 @@ void PerfettoCmd::SetupCtrlCSignalHandler() {
   sa.sa_handler = [](int) {
     PERFETTO_LOG("SIGINT received: disabling tracing");
     char one = '1';
-    PERFETTO_CHECK(PERFETTO_EINTR(write(g_consumer_cmd->ctrl_c_pipe_wr(), &one,
-                                        sizeof(one))) == 1);
+    PERFETTO_CHECK(base::WriteAll(g_consumer_cmd->ctrl_c_pipe_wr(), &one,
+                                  sizeof(one)) == 1);
   };
   sa.sa_flags = static_cast<decltype(sa.sa_flags)>(SA_RESETHAND | SA_RESTART);
 #pragma GCC diagnostic pop

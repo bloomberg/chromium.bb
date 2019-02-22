@@ -128,8 +128,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     return false;
   }
 
-  for (base::ListValue::const_iterator it = manif_patterns->begin();
-       it != manif_patterns->end(); ++it) {
+  for (auto it = manif_patterns->begin(); it != manif_patterns->end(); ++it) {
     std::string str_pattern;
     it->GetAsString(&str_pattern);
     // TODO(sergeygs): Limit this to non-top-level domains.
@@ -137,7 +136,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     // URL patterns claimed here belong to the app's author verified sites.
     URLPattern pattern(URLPattern::SCHEME_HTTP |
                        URLPattern::SCHEME_HTTPS);
-    if (pattern.Parse(str_pattern) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(str_pattern) != URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           merrors::kInvalidURLHandlerPatternElement, handler_id);
       return false;

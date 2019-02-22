@@ -21,9 +21,8 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
-#include "device/base/mock_device_client.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mock_usb_service.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -186,7 +185,6 @@ class PageInfoBubbleViewTest : public testing::Test {
   void TearDown() override { parent_window_->CloseNow(); }
 
  protected:
-  device::MockDeviceClient device_client_;
   ScopedWebContentsTestHelper web_contents_helper_;
   views::ScopedViewsTestHelper views_helper_;
 
@@ -301,12 +299,18 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
-  scoped_refptr<device::UsbDevice> device =
-      new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
-  device_client_.usb_service()->AddDevice(device);
+
+  // Connect the UsbChooserContext with FakeUsbDeviceManager.
+  device::FakeUsbDeviceManager usb_device_manager;
+  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
+  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
-  store->GrantDevicePermission(origin, origin, device->guid());
+  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+
+  auto device_info = usb_device_manager.CreateAndAddDevice(
+      0, 0, "Google", "Gizmo", "1234567890");
+  store->GrantDevicePermission(origin, origin, *device_info);
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
@@ -332,7 +336,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
 }
 
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {

@@ -4,48 +4,127 @@
 const app = new Vue({
   el: '#app',
   data: {
+    state: {
+      parsedMetrics: [],
+      gridData: [],
+      typesOfPlot: ['Cumulative frequency plot', 'Dot plot'],
+      chosenTypeOfPlot: null,
+      searchQuery: '',
+      currentState: true,
+    },
     sampleArr: [],
     guidValue: null,
-    selected_metric: null,
-    selected_story: null,
-    selected_diagnostic: null,
     graph: new GraphData(),
-    searchQuery: '',
-    gridColumns: ['id', 'metric', 'averageSampleValues'],
-    gridData: [],
-    parsedMetrics: null,
-    globalDiagnostic: null,
+    gridColumns: ['metric'],
     columnsForChosenDiagnostic: null,
-    resetDropDownMenu: false,
-    oldGridData: []
+    defaultGridData: [],
+    stateManager: new StateManager(),
   },
 
   methods: {
+    //  Reset the table content by returning to the
+    //  previous default way with all the components
+    //  available.
+    resetTableData() {
+      this.state.typesOfPlot = ['Cumulative frequency plot', 'Dot plot'];
+      this.state.gridData = this.defaultGridData;
+    },
+
+    //  Get all stories for a specific metric.
+    getStoriesByMetric(entry) {
+      const stories = [];
+      for (const e of this.sampleArr) {
+        if (e.name !== entry) {
+          continue;
+        }
+        let nameOfStory = this.guidValue.get(e.diagnostics.stories);
+        if (nameOfStory === undefined) {
+          continue;
+        }
+        if (typeof nameOfStory !== 'number') {
+          nameOfStory = nameOfStory[0];
+        }
+        stories.push(nameOfStory);
+      }
+      return _.uniq(stories);
+    },
+
+    //  Extract a diagnostic from a specific
+    //  element (like metric). This should be 'parsed' because
+    //  sometimes it might be either a number or a
+    //  single element array.
+    getDiagnostic(elem, diagnostic) {
+      let currentDiagnostic = this.guidValue.
+          get(elem.diagnostics[diagnostic]);
+      if (currentDiagnostic === undefined) {
+        return undefined;
+      }
+      if (currentDiagnostic !== 'number') {
+        currentDiagnostic = currentDiagnostic[0];
+      }
+      return currentDiagnostic;
+    },
+
+    //  This method creates an object for multiple metrics,
+    //  multiple stories and some diagnostics:
+    //  {labelName: {storyName: { metricName: sampleValuesArray}}}
+    computeDataForStackPlot(metricsDependingOnGrid,
+        storiesName, labelsName) {
+      const obj = {};
+      for (const elem of metricsDependingOnGrid) {
+        const currentDiagnostic = this.getDiagnostic(elem, 'labels');
+        if (currentDiagnostic === undefined) {
+          continue;
+        }
+        const nameOfStory = this.getDiagnostic(elem, 'stories');
+        if (nameOfStory === undefined) {
+          continue;
+        }
+
+        if (storiesName.includes(nameOfStory) &&
+          labelsName.includes(currentDiagnostic)) {
+          let storyToMetricValues = {};
+          if (obj.hasOwnProperty(currentDiagnostic)) {
+            storyToMetricValues = obj[currentDiagnostic];
+          }
+
+          let metricToSampleValues = {};
+          if (storyToMetricValues.hasOwnProperty(nameOfStory)) {
+            metricToSampleValues = storyToMetricValues[nameOfStory];
+          }
+
+          let array = [];
+          if (metricToSampleValues.hasOwnProperty(elem.name)) {
+            array = metricToSampleValues[elem.name];
+          }
+          array = array.concat(average(elem.sampleValues));
+          metricToSampleValues[elem.name] = array;
+          storyToMetricValues[nameOfStory] = metricToSampleValues;
+          obj[currentDiagnostic] = storyToMetricValues;
+        }
+      }
+      return obj;
+    },
+
+    //  Draw a bar chart.
     plotBarChart(data) {
+      this.pushCurrentState();
       this.graph.xAxis('Story')
           .yAxis('Memory used (MiB)')
-          .title(this.globalDiagnostic
-              .charAt(0).toUpperCase() + this.globalDiagnostic.slice(1))
-          .setData(data)
+          .title('Labels')
+          .setData(data, story => app.$emit('bar_clicked', story))
           .plotBar();
-    },
-    //  Draw a cumulative frequency plot depending on the target value.
-    //  This is for displaying results for the selected parameters
-    // from the drop-down menu.
-    plotCumulativeFrequency() {
-      this
-          .plotCumulativeFrequencyPlot(JSON
-              .parse(JSON.stringify((this.filteredData))),
-          this.selected_story);
     },
 
     //  Draw a dot plot depending on the target value.
     //  This is mainly for results from the table.
     plotDotPlot(target, story, traces) {
+      this.pushCurrentState();
       const openTrace = (label, index) => {
         window.open(traces[label][index]);
       };
       this.graph
+          .yAxis('')
           .xAxis('Memory used (MiB)')
           .title(story)
           .setData(target, openTrace)
@@ -54,17 +133,84 @@ const app = new Vue({
 
     //  Draw a cumulative frequency plot depending on the target value.
     //  This is mainly for the results from the table.
-    plotCumulativeFrequencyPlot(target, story) {
-      this.graph.xAxis('Cumulative frequency')
-          .yAxis('Memory used (MiB)')
+    plotCumulativeFrequencyPlot(target, story, traces) {
+      const openTrace = (label, index) => {
+        window.open(traces[label][index]);
+      };
+      this.pushCurrentState();
+      this.graph.yAxis('Cumulative frequency')
+          .xAxis('Memory used (MiB)')
           .title(story)
-          .setData(target)
+          .setData(target, openTrace)
           .plotCumulativeFrequency();
     },
 
+    plotStackBar(obj, title) {
+      this.pushCurrentState();
+      this.graph.xAxis('Stories')
+          .yAxis('Memory used (MiB)')
+          .title(title)
+          .setData(obj, metric => app.$emit('stack_clicked', metric))
+          .plotStackedBar();
+    },
+
+    /**
+     * Pushes the current state of data being displayed onto a stack to
+     * be retrieved when an undo occurs.
+     */
+    pushCurrentState() {
+      // Only states just popped of the stack have current state set to
+      // false and should not be pushed back on.
+      if (this.state.currentState) {
+        // The state that is pushed is not current and should be marked
+        // as such so that it is not pushed back onto the stack when an
+        // undo occurs and the graph is plotted.
+        this.state.currentState = false;
+        // Deep clone the state objects so that their state is saved
+        // and not mutated by future changes in Vue's state object.
+        const clone = obj => JSON.parse(JSON.stringify(obj));
+        this.stateManager.pushState({
+          app: clone(this.state),
+          menu: clone(menu.state),
+          table: clone(this.$refs.tableComponent.state),
+        });
+      }
+      this.state.currentState = true;
+    },
+
+    /**
+     * Pops the previous state from the top of the stack and amends the
+     * state objects of the vue components. This will trigger the
+     * affected watchers and cause the graph to be plotted again based
+     * on the retrieved data.
+     */
+    undo() {
+      const savedState = this.stateManager.popState();
+      this.replaceState(this.state, savedState.app);
+      this.replaceState(menu.state, savedState.menu);
+      this.replaceState(this.$refs.tableComponent.state, savedState.table);
+    },
+
+    /**
+     * Checks if the state manager has any state saved onto the stack.
+     */
+    hasHistory() {
+      return this.stateManager.hasHistory();
+    },
+
+    replaceState(oldState, newState) {
+      Object.keys(oldState).forEach((key) => {
+        // Only replace properties which have actually changed to
+        // avoid triggering watchers for data which has not really
+        // changed.
+        if (!_.isEqual(oldState[key], newState[key])) {
+          oldState[key] = newState[key];
+        }
+      });
+    },
     //  Being given a metric, a story, a diagnostic and a set of
-    //  subdiagnostics (for example, 3 labels from the total available
-    //  ones), the method return the sample values for each subdiagnostic.
+    //  subdiagnostics (i.e. 3 labels from the total of 4), the
+    //  method return the sample values for each subdiagnostic.
     getSubdiagnostics(
         getTargetValueFromSample, metric, story, diagnostic, diagnostics) {
       const result = this.sampleArr
@@ -109,12 +255,19 @@ const app = new Vue({
       const values = sample.sampleValues;
       return values.map(value => toMiB(value));
     },
+
+    getTraceLinks(sample) {
+      const traceId = sample.diagnostics.traceUrls;
+      return this.guidValue.get(traceId);
+    },
     //  Draw a plot by default with all the sub-diagnostics
     //  in the same plot;
     plotSingleMetricWithAllSubdiagnostics(metric, story, diagnostic) {
       const obj = this.getSubdiagnostics(
           this.getSampleValues, metric, story, diagnostic);
-      this.plotCumulativeFrequencyPlot(obj, story);
+      const traces = this.targetForMultipleDiagnostics(
+          this.getTraceLinks, metric, story, diagnostic);
+      this.plotCumulativeFrequencyPlot(obj, story, traces);
     },
 
     //  Draw a plot depending on the target value which is made
@@ -122,18 +275,15 @@ const app = new Vue({
     //  and the chosen type of plot. All are chosen from the table.
     plotSingleMetric(metric, story, diagnostic,
         diagnostics, chosenPlot) {
+      this.state.chosenTypeOfPlot = chosenPlot;
       const target = this.targetForMultipleDiagnostics(
           this.getSampleValues, metric, story, diagnostic, diagnostics);
+      const traces = this.targetForMultipleDiagnostics(
+          this.getTraceLinks, metric, story, diagnostic, diagnostics);
       if (chosenPlot === 'Dot plot') {
-        const getTraceLinks = (sample) => {
-          const traceId = sample.diagnostics.traceUrls;
-          return this.guidValue.get(traceId);
-        };
-        const traces = this.targetForMultipleDiagnostics(
-            getTraceLinks, metric, story, diagnostic, diagnostics);
         this.plotDotPlot(target, story, traces);
       } else {
-        this.plotCumulativeFrequencyPlot(target, story);
+        this.plotCumulativeFrequencyPlot(target, story, traces);
       }
     },
 
@@ -154,178 +304,69 @@ const app = new Vue({
 
   computed: {
     gridDataLoaded() {
-      return this.gridData.length > 0;
+      return this.state.gridData.length > 0;
     },
     data_loaded() {
       return this.sampleArr.length > 0;
-    },
-
-    seen_stories() {
-      return this.stories && this.stories.length > 0;
-    },
-
-    seen_diagnostics() {
-      return this.diagnostics && this.diagnostics.length > 0;
-    },
-
-    //  Compute the metrics for the drop-down menu;
-    //  The user will chose one of them.
-    metrics() {
-      if (this.parsedMetrics === null ||
-        this.resetDropDownMenu === true) {
-        const metricsNames = [];
-        this.sampleArr.map(el => metricsNames.push(el.name));
-        return _.uniq(metricsNames);
-      }
-      return this.parsedMetrics;
-    },
-    //  Compute the stories depending on the chosen metric.
-    //  The user should chose one of them.
-    stories() {
-      const reqMetrics = this.sampleArr
-          .filter(elem => elem.name === this.selected_metric);
-      const storiesByGuid = [];
-      for (const elem of reqMetrics) {
-        let storyName = this.guidValue.get(elem.diagnostics.stories);
-        if (storyName === undefined) {
-          continue;
-        }
-        if (typeof storyName !== 'number') {
-          storyName = storyName[0];
-        }
-        storiesByGuid.push(storyName);
-      }
-      return _.uniq(storiesByGuid);
-    },
-
-    //  Compute all diagnostic elements; the final result will actually
-    //  depend on the metric, the story and this diagnostic.
-    diagnostics() {
-      if (this.selected_story !== null && this.selected_metric !== null) {
-        const result = this.sampleArr
-            .filter(value => value.name === this.selected_metric &&
-                    this.guidValue
-                        .get(value.diagnostics.stories)[0] ===
-                        this.selected_story);
-        const allDiagnostics = result.map(val => Object.keys(val.diagnostics));
-        return _.union.apply(this, allDiagnostics);
-      }
-    },
-
-    //  Compute the final result with the chosen metric, story and diagnostics.
-    //  These are chosen from the drop-down menu.
-    filteredData() {
-      if (this.selected_story === null ||
-        this.selected_metric === null ||
-        this.selected_diagnostic === null) {
-        return undefined;
-      }
-      return this
-          .getSubdiagnostics(this.selected_metric,
-              this.selected_story,
-              this.selected_diagnostic);
-    },
-
-    //  Extract all diagnostic names from all elements.
-    allDiagnostics() {
-      if (this.sampleArr === undefined) {
-        return undefined;
-      }
-      const allDiagnostics = this.sampleArr
-          .map(val => Object.keys(val.diagnostics));
-      return _.union.apply(this, allDiagnostics);
-    },
+    }
   },
 
   watch: {
-    //  Whenever a new metric/ story/ diagnostic is chosen
-    //  this function will run for drawing a new type of plot.
-    //  These items are chosen from the drop-down menu.
-    filteredData() {
-      this.plotCumulativeFrequency();
-    },
-
-    metrics() {
-      this.selected_metric = null;
-      this.selected_story = null;
-      this.selected_diagnostic = null;
-    },
-    //  Compute the data for the columns after the user has chosen a
-    //  particular global diagnostic that has to be split in
-    //  multiple subdiagnostics.
-    globalDiagnostic() {
-      if (this.globalDiagnostic === null) {
-        return undefined;
-      }
-      this.gridColumns = ['id', 'metric', 'averageSampleValues'];
-      const newDiagnostics = new Set();
-      const metricTodiagnoticValuesMap = new Map();
-      for (const elem of this.sampleArr) {
-        let currentDiagnostic = this.guidValue.
-            get(elem.diagnostics[this.globalDiagnostic]);
-        if (currentDiagnostic === undefined) {
-          continue;
-        }
-        if (currentDiagnostic !== 'number') {
-          currentDiagnostic = currentDiagnostic[0];
-        }
-        newDiagnostics.add(currentDiagnostic);
-
-        if (!metricTodiagnoticValuesMap.has(elem.name)) {
-          const map = new Map();
-          map.set(currentDiagnostic, [average(elem.sampleValues)]);
-          metricTodiagnoticValuesMap.set(elem.name, map);
-        } else {
-          const map = metricTodiagnoticValuesMap.get(elem.name);
-          if (map.has(currentDiagnostic)) {
-            const array = map.get(currentDiagnostic);
-            array.push(average(elem.sampleValues));
-            map.set(currentDiagnostic, array);
-            metricTodiagnoticValuesMap.set(elem.name, map);
-          } else {
-            map.set(currentDiagnostic, [average(elem.sampleValues)]);
-            metricTodiagnoticValuesMap.set(elem.name, map);
-          }
-        }
-      }
-      this.columnsForChosenDiagnostic = Array.from(newDiagnostics);
-      for (const elem of this.gridData) {
-        if (metricTodiagnoticValuesMap.get(elem.metric) === undefined) {
-          continue;
-        }
-        for (const diagnostic of Array.from(newDiagnostics)) {
-          elem[diagnostic] = average(metricTodiagnoticValuesMap
-              .get(elem.metric).get(diagnostic));
-        }
-      }
-    },
 
     //  Whenever we have new inputs from the menu (parsed inputs that
     //  where obtained by choosing from the tree) these should be
-    //  added in the table (adding the average sample value)
-    parsedMetrics() {
-      const metricAverage = new Map();
-      for (const e of this.sampleArr) {
-        if (this.parsedMetrics.includes(e.name)) {
-          if (metricAverage.has(e.name)) {
-            const aux = metricAverage.get(e.name);
-            aux.push(average(e.sampleValues));
-            metricAverage.set(e.name, aux);
-          } else {
-            metricAverage.set(e.name, [average(e.sampleValues)]);
+    //  added in the table (adding the average sample value).
+    //  Also it creates by default a stack plot for all the metrics
+    //  obtained from the tree-menu, all the stories from the top-level
+    //  metric and all available labels.
+    'state.parsedMetrics'() {
+      if (this.state.parsedMetrics.length === 0) {
+        // The menu has no metrics selected (the default state) so show
+        // the entire table.
+        this.resetTableData();
+        return;
+      }
+      const newGridData = [];
+      for (const metric of this.state.parsedMetrics) {
+        for (const elem of this.defaultGridData) {
+          if (elem.metric === metric) {
+            newGridData.push(elem);
           }
         }
       }
-      const tableElems = [];
-      let id = 1;
-      for (const [key, value] of metricAverage.entries()) {
-        tableElems.push({
-          id: id++,
-          metric: key,
-          averageSampleValues: average(value)
-        });
+      this.state.gridData = newGridData;
+
+      //  We select from sampleValues all the metrics thath
+      //  corespond to the result from tree menu (gridData)
+      const metricsDependingOnGrid = [];
+      const gridMetricsName = [];
+
+      for (const metric of this.state.gridData) {
+        gridMetricsName.push(metric.metric);
       }
-      this.gridData = tableElems;
+
+      for (const metric of this.sampleArr) {
+        if (gridMetricsName.includes(metric.name)) {
+          metricsDependingOnGrid.push(metric);
+        }
+      }
+      //  The top level metric is taken as source in
+      //  computing stories.
+      const storiesName =
+          this.getStoriesByMetric(this.state.gridData[0].metric);
+      const labelsName = this.columnsForChosenDiagnostic;
+      const obj = this.computeDataForStackPlot(metricsDependingOnGrid,
+          storiesName, labelsName);
+      this.plotStackBar(obj, newGridData[0].metric);
+      //  From now on the user will be able to switch between
+      //  this 2 types of plot (taking into consideration that
+      //  the scope of the tree-menu is to analyse using the
+      //  the stacked plot and bar plot, we avoid for the moment
+      //  other types of plot that should be actually used without
+      //  using the tree menu)
+      this.state.typesOfPlot = ['Bar chart plot', 'Stacked bar plot',
+        'Cumulative frequency plot', 'Dot plot'];
+      this.state.chosenTypeOfPlot = 'Stacked bar plot';
     }
   }
 });

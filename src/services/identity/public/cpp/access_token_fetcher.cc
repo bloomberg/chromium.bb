@@ -81,9 +81,10 @@ void AccessTokenFetcher::OnGetTokenSuccess(
   std::unique_ptr<OAuth2TokenService::Request> request_deleter(
       std::move(access_token_request_));
 
-  RunCallbackAndMaybeDie(GoogleServiceAuthError::AuthErrorNone(),
-                         AccessTokenInfo(token_response.access_token,
-                                         token_response.expiration_time));
+  RunCallbackAndMaybeDie(
+      GoogleServiceAuthError::AuthErrorNone(),
+      AccessTokenInfo(token_response.access_token,
+                      token_response.expiration_time, token_response.id_token));
 
   // Potentially dead after the above invocation; nothing to do except return.
 }

@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/gfx/favicon_size.h"
@@ -89,8 +89,8 @@ void ImageDownloaderBase::FetchImage(const GURL& image_url,
   image_fetchers_.push_back(
       std::make_unique<MultiResolutionImageResourceFetcher>(
           image_url, frame, 0,
-          is_favicon ? WebURLRequest::kRequestContextFavicon
-                     : WebURLRequest::kRequestContextImage,
+          is_favicon ? blink::mojom::RequestContextType::FAVICON
+                     : blink::mojom::RequestContextType::IMAGE,
           bypass_cache ? blink::mojom::FetchCacheMode::kBypassCache
                        : blink::mojom::FetchCacheMode::kDefault,
           base::BindOnce(&ImageDownloaderBase::DidFetchImage,

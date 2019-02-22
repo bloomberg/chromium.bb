@@ -227,7 +227,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   // that was cloned (i.e. the clone of either ancestors.last()
   // or clonedBlockquote if ancestors is empty).
   Element* cloned_ancestor = cloned_blockquote;
-  for (size_t i = ancestors.size(); i != 0; --i) {
+  for (wtf_size_t i = ancestors.size(); i != 0; --i) {
     Element* cloned_child = ancestors[i - 1]->CloneWithoutChildren();
     // Preserve list item numbering in cloned lists.
     if (IsHTMLOListElement(*cloned_child)) {

@@ -38,7 +38,7 @@
 
 namespace blink {
 
-using namespace XPath;
+using namespace xpath;
 
 Parser* Parser::current_parser_ = nullptr;
 
@@ -455,7 +455,7 @@ int Parser::Lex(void* data) {
 bool Parser::ExpandQName(const String& q_name,
                          AtomicString& local_name,
                          AtomicString& namespace_uri) {
-  size_t colon = q_name.find(':');
+  wtf_size_t colon = q_name.find(':');
   if (colon != kNotFound) {
     if (!resolver_)
       return false;

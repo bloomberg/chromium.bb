@@ -375,6 +375,8 @@ GLenum GLVariableType(const TType &type)
             return GL_SAMPLER_2D_ARRAY;
         case EbtSampler2DMS:
             return GL_SAMPLER_2D_MULTISAMPLE;
+        case EbtSampler2DMSArray:
+            return GL_SAMPLER_2D_MULTISAMPLE_ARRAY;
         case EbtISampler2D:
             return GL_INT_SAMPLER_2D;
         case EbtISampler3D:
@@ -385,6 +387,8 @@ GLenum GLVariableType(const TType &type)
             return GL_INT_SAMPLER_2D_ARRAY;
         case EbtISampler2DMS:
             return GL_INT_SAMPLER_2D_MULTISAMPLE;
+        case EbtISampler2DMSArray:
+            return GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY;
         case EbtUSampler2D:
             return GL_UNSIGNED_INT_SAMPLER_2D;
         case EbtUSampler3D:
@@ -395,6 +399,8 @@ GLenum GLVariableType(const TType &type)
             return GL_UNSIGNED_INT_SAMPLER_2D_ARRAY;
         case EbtUSampler2DMS:
             return GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE;
+        case EbtUSampler2DMSArray:
+            return GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY;
         case EbtSampler2DShadow:
             return GL_SAMPLER_2D_SHADOW;
         case EbtSamplerCubeShadow:
@@ -743,6 +749,35 @@ bool IsOutputHLSL(ShShaderOutput output)
 bool IsOutputVulkan(ShShaderOutput output)
 {
     return output == SH_GLSL_VULKAN_OUTPUT;
+}
+
+bool IsInShaderStorageBlock(TIntermTyped *node)
+{
+    TIntermBinary *binaryNode   = nullptr;
+    TIntermSwizzle *swizzleNode = node->getAsSwizzleNode();
+    if (swizzleNode)
+    {
+        binaryNode = swizzleNode->getOperand()->getAsBinaryNode();
+        if (binaryNode)
+        {
+            return IsInShaderStorageBlock(binaryNode->getLeft());
+        }
+        TIntermSymbol *symbolNode = swizzleNode->getOperand()->getAsSymbolNode();
+        if (symbolNode)
+        {
+            return symbolNode->getQualifier() == EvqBuffer;
+        }
+    }
+    binaryNode = node->getAsBinaryNode();
+
+    if (binaryNode)
+    {
+        return IsInShaderStorageBlock(binaryNode->getLeft());
+    }
+
+    const TType &type = node->getType();
+
+    return type.getQualifier() == EvqBuffer;
 }
 
 }  // namespace sh

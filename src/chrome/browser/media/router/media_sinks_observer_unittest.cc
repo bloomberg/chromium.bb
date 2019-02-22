@@ -5,12 +5,14 @@
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
 
 TEST(MediaSinksObserverTest, OriginMatching) {
+  content::TestBrowserThreadBundle thread_bundle;
   MockMediaRouter router;
   MediaSource source(
       MediaSourceForPresentationUrl(GURL("https://presentation.com")));

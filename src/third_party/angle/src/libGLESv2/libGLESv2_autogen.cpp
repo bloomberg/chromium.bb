@@ -2418,6 +2418,46 @@ void GL_APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const 
     return gl::VertexPointer(size, type, stride, pointer);
 }
 
+// GL_ANGLE_copy_texture_3d
+void GL_APIENTRY glCopyTexture3DANGLE(GLuint sourceId,
+                                      GLint sourceLevel,
+                                      GLenum destTarget,
+                                      GLuint destId,
+                                      GLint destLevel,
+                                      GLint internalFormat,
+                                      GLenum destType,
+                                      GLboolean unpackFlipY,
+                                      GLboolean unpackPremultiplyAlpha,
+                                      GLboolean unpackUnmultiplyAlpha)
+{
+    return gl::CopyTexture3DANGLE(sourceId, sourceLevel, destTarget, destId, destLevel,
+                                  internalFormat, destType, unpackFlipY, unpackPremultiplyAlpha,
+                                  unpackUnmultiplyAlpha);
+}
+
+void GL_APIENTRY glCopySubTexture3DANGLE(GLuint sourceId,
+                                         GLint sourceLevel,
+                                         GLenum destTarget,
+                                         GLuint destId,
+                                         GLint destLevel,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLint zoffset,
+                                         GLint x,
+                                         GLint y,
+                                         GLint z,
+                                         GLint width,
+                                         GLint height,
+                                         GLint depth,
+                                         GLboolean unpackFlipY,
+                                         GLboolean unpackPremultiplyAlpha,
+                                         GLboolean unpackUnmultiplyAlpha)
+{
+    return gl::CopySubTexture3DANGLE(sourceId, sourceLevel, destTarget, destId, destLevel, xoffset,
+                                     yoffset, zoffset, x, y, z, width, height, depth, unpackFlipY,
+                                     unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
 // GL_ANGLE_framebuffer_blit
 void GL_APIENTRY glBlitFramebufferANGLE(GLint srcX0,
                                         GLint srcY0,
@@ -3136,19 +3176,6 @@ void GL_APIENTRY glGetQueryObjectui64vRobustANGLE(GLuint id,
     return gl::GetQueryObjectui64vRobustANGLE(id, pname, bufSize, length, params);
 }
 
-// GL_ANGLE_texture_multisample_array
-void GL_APIENTRY glTexStorage3DMultisampleANGLE(GLenum target,
-                                                GLsizei samples,
-                                                GLint sizedinternalformat,
-                                                GLsizei width,
-                                                GLsizei height,
-                                                GLsizei depth,
-                                                GLboolean fixedsamplelocations)
-{
-    return gl::TexStorage3DMultisampleANGLE(target, samples, sizedinternalformat, width, height,
-                                            depth, fixedsamplelocations);
-}
-
 // GL_ANGLE_translated_shader_source
 void GL_APIENTRY glGetTranslatedShaderSourceANGLE(GLuint shader,
                                                   GLsizei bufsize,
@@ -3404,6 +3431,32 @@ void GL_APIENTRY glProgramPathFragmentInputGenCHROMIUM(GLuint program,
                                                        const GLfloat *coeffs)
 {
     return gl::ProgramPathFragmentInputGenCHROMIUM(program, location, genMode, components, coeffs);
+}
+
+// GL_EXT_blend_func_extended
+void GL_APIENTRY glBindFragDataLocationEXT(GLuint program, GLuint color, const GLchar *name)
+{
+    return gl::BindFragDataLocationEXT(program, color, name);
+}
+
+void GL_APIENTRY glBindFragDataLocationIndexedEXT(GLuint program,
+                                                  GLuint colorNumber,
+                                                  GLuint index,
+                                                  const GLchar *name)
+{
+    return gl::BindFragDataLocationIndexedEXT(program, colorNumber, index, name);
+}
+
+GLint GL_APIENTRY glGetFragDataIndexEXT(GLuint program, const GLchar *name)
+{
+    return gl::GetFragDataIndexEXT(program, name);
+}
+
+GLint GL_APIENTRY glGetProgramResourceLocationIndexEXT(GLuint program,
+                                                       GLenum programInterface,
+                                                       const GLchar *name)
+{
+    return gl::GetProgramResourceLocationIndexEXT(program, programInterface, name);
 }
 
 // GL_EXT_debug_marker
@@ -3959,6 +4012,19 @@ void GL_APIENTRY glTexGenxvOES(GLenum coord, GLenum pname, const GLfixed *params
     return gl::TexGenxvOES(coord, pname, params);
 }
 
+// GL_OES_texture_storage_multisample_2d_array
+void GL_APIENTRY glTexStorage3DMultisampleOES(GLenum target,
+                                              GLsizei samples,
+                                              GLenum internalformat,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLsizei depth,
+                                              GLboolean fixedsamplelocations)
+{
+    return gl::TexStorage3DMultisampleOES(target, samples, internalformat, width, height, depth,
+                                          fixedsamplelocations);
+}
+
 // GL_OES_vertex_array_object
 void GL_APIENTRY glBindVertexArrayOES(GLuint array)
 {
@@ -4052,6 +4118,23 @@ void GL_APIENTRY glBindBufferRangeContextANGLE(GLeglContext ctx,
                                                GLsizeiptr size)
 {
     return gl::BindBufferRangeContextANGLE(ctx, target, index, buffer, offset, size);
+}
+
+void GL_APIENTRY glBindFragDataLocationEXTContextANGLE(GLeglContext ctx,
+                                                       GLuint program,
+                                                       GLuint color,
+                                                       const GLchar *name)
+{
+    return gl::BindFragDataLocationEXTContextANGLE(ctx, program, color, name);
+}
+
+void GL_APIENTRY glBindFragDataLocationIndexedEXTContextANGLE(GLeglContext ctx,
+                                                              GLuint program,
+                                                              GLuint colorNumber,
+                                                              GLuint index,
+                                                              const GLchar *name)
+{
+    return gl::BindFragDataLocationIndexedEXTContextANGLE(ctx, program, colorNumber, index, name);
 }
 
 void GL_APIENTRY glBindFramebufferContextANGLE(GLeglContext ctx, GLenum target, GLuint framebuffer)
@@ -5272,6 +5355,13 @@ void GL_APIENTRY glGetFloatvContextANGLE(GLeglContext ctx, GLenum pname, GLfloat
     return gl::GetFloatvContextANGLE(ctx, pname, data);
 }
 
+GLint GL_APIENTRY glGetFragDataIndexEXTContextANGLE(GLeglContext ctx,
+                                                    GLuint program,
+                                                    const GLchar *name)
+{
+    return gl::GetFragDataIndexEXTContextANGLE(ctx, program, name);
+}
+
 GLint GL_APIENTRY glGetFragDataLocationContextANGLE(GLeglContext ctx,
                                                     GLuint program,
                                                     const GLchar *name)
@@ -5486,6 +5576,14 @@ GLint GL_APIENTRY glGetProgramResourceLocationContextANGLE(GLeglContext ctx,
                                                            const GLchar *name)
 {
     return gl::GetProgramResourceLocationContextANGLE(ctx, program, programInterface, name);
+}
+
+GLint GL_APIENTRY glGetProgramResourceLocationIndexEXTContextANGLE(GLeglContext ctx,
+                                                                   GLuint program,
+                                                                   GLenum programInterface,
+                                                                   const GLchar *name)
+{
+    return gl::GetProgramResourceLocationIndexEXTContextANGLE(ctx, program, programInterface, name);
 }
 
 void GL_APIENTRY glGetProgramResourceNameContextANGLE(GLeglContext ctx,
@@ -7172,6 +7270,19 @@ void GL_APIENTRY glTexStorage3DEXTContextANGLE(GLeglContext ctx,
                                            depth);
 }
 
+void GL_APIENTRY glTexStorage3DMultisampleOESContextANGLE(GLeglContext ctx,
+                                                          GLenum target,
+                                                          GLsizei samples,
+                                                          GLenum internalformat,
+                                                          GLsizei width,
+                                                          GLsizei height,
+                                                          GLsizei depth,
+                                                          GLboolean fixedsamplelocations)
+{
+    return gl::TexStorage3DMultisampleOESContextANGLE(ctx, target, samples, internalformat, width,
+                                                      height, depth, fixedsamplelocations);
+}
+
 void GL_APIENTRY glTexSubImage2DContextANGLE(GLeglContext ctx,
                                              GLenum target,
                                              GLint level,
@@ -8740,17 +8851,45 @@ glFramebufferTextureMultiviewSideBySideANGLEContextANGLE(GLeglContext ctx,
         ctx, target, attachment, texture, level, numViews, viewportOffsets);
 }
 
-void GL_APIENTRY glTexStorage3DMultisampleANGLEContextANGLE(GLeglContext ctx,
-                                                            GLenum target,
-                                                            GLsizei samples,
-                                                            GLint sizedinternalformat,
-                                                            GLsizei width,
-                                                            GLsizei height,
-                                                            GLsizei depth,
-                                                            GLboolean fixedsamplelocations)
+void GL_APIENTRY glCopyTexture3DANGLEContextANGLE(GLeglContext ctx,
+                                                  GLuint sourceId,
+                                                  GLint sourceLevel,
+                                                  GLenum destTarget,
+                                                  GLuint destId,
+                                                  GLint destLevel,
+                                                  GLint internalFormat,
+                                                  GLenum destType,
+                                                  GLboolean unpackFlipY,
+                                                  GLboolean unpackPremultiplyAlpha,
+                                                  GLboolean unpackUnmultiplyAlpha)
 {
-    return gl::TexStorage3DMultisampleANGLEContextANGLE(ctx, target, samples, sizedinternalformat,
-                                                        width, height, depth, fixedsamplelocations);
+    return gl::CopyTexture3DANGLEContextANGLE(ctx, sourceId, sourceLevel, destTarget, destId,
+                                              destLevel, internalFormat, destType, unpackFlipY,
+                                              unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
+void GL_APIENTRY glCopySubTexture3DANGLEContextANGLE(GLeglContext ctx,
+                                                     GLuint sourceId,
+                                                     GLint sourceLevel,
+                                                     GLenum destTarget,
+                                                     GLuint destId,
+                                                     GLint destLevel,
+                                                     GLint xoffset,
+                                                     GLint yoffset,
+                                                     GLint zoffset,
+                                                     GLint x,
+                                                     GLint y,
+                                                     GLint z,
+                                                     GLint width,
+                                                     GLint height,
+                                                     GLint depth,
+                                                     GLboolean unpackFlipY,
+                                                     GLboolean unpackPremultiplyAlpha,
+                                                     GLboolean unpackUnmultiplyAlpha)
+{
+    return gl::CopySubTexture3DANGLEContextANGLE(
+        ctx, sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, zoffset, x, y,
+        z, width, height, depth, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 }  // extern "C"

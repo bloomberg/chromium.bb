@@ -171,9 +171,9 @@ class MetricsService : public base::HistogramFlattener {
   void PushExternalLog(const std::string& log);
 
   // Updates data usage tracking prefs with the specified values.
-  void UpdateMetricsUsagePrefs(const std::string& service_name,
-                               int message_size,
-                               bool is_cellular);
+  void UpdateMetricsUsagePrefs(int message_size,
+                               bool is_cellular,
+                               bool is_metrics_service_usage);
 
   variations::SyntheticTrialRegistry* synthetic_trial_registry() {
     return &synthetic_trial_registry_;

@@ -13,14 +13,17 @@
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 
-ImmersiveContextMus::ImmersiveContextMus() {}
+// static
+ImmersiveContextMus* ImmersiveContextMus::instance_ = nullptr;
 
-ImmersiveContextMus::~ImmersiveContextMus() {}
+ImmersiveContextMus::ImmersiveContextMus() {
+  DCHECK(!instance_);
+  instance_ = this;
+}
 
-void ImmersiveContextMus::InstallResizeHandleWindowTargeter(
-    ash::ImmersiveFullscreenController* controller) {
-  // There shouldn't be a need to do anything here, the windowmanager takes care
-  // of this for us.
+ImmersiveContextMus::~ImmersiveContextMus() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
 }
 
 void ImmersiveContextMus::OnEnteringOrExitingImmersive(

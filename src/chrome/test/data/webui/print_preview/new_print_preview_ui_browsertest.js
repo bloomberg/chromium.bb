@@ -77,6 +77,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Color', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Color);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'ColorSaveToDrive', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.ColorSaveToDrive);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSize', function() {
   this.runMochaTest(settings_sections_tests.TestNames.MediaSize);
 });
@@ -153,6 +157,18 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'PresetCopies', function() {
 TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
 });
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'ColorManaged', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.ColorManaged);
+});
+
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
+    function() {
+      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+      this.runMochaTest(
+          settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
+    });
 
 PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
@@ -242,6 +258,32 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
   this.runMochaTest(select_behavior_test.TestNames.CallProcessSelectChange);
 });
 
+PrintPreviewBaseSettingsSectionTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/settings_section.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'base_settings_section_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return base_settings_section_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewBaseSettingsSectionTest', 'ManagedShowsEnterpriseIcon',
+    function() {
+      this.runMochaTest(
+          base_settings_section_test.TestNames.ManagedShowsEnterpriseIcon);
+    });
+
 PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -265,39 +307,6 @@ PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
 TEST_F('PrintPreviewNumberSettingsSectionTest', 'BlocksInvalidKeys',
     function() {
   this.runMochaTest(number_settings_section_test.TestNames.BlocksInvalidKeys);
-});
-
-PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://print/new/pages_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../settings/test_util.js',
-      'print_preview_test_utils.js',
-      'pages_settings_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return pages_settings_test.suiteName;
-  }
-};
-
-TEST_F('PrintPreviewPagesSettingsTest', 'ValidPageRanges', function() {
-  this.runMochaTest(pages_settings_test.TestNames.ValidPageRanges);
-});
-
-TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
-  this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
-});
-
-TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
-  this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
 });
 
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
@@ -450,6 +459,14 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'Destination', function() {
   this.runMochaTest(preview_generation_test.TestNames.Destination);
 });
 
+TEST_F(
+    'PrintPreviewPreviewGenerationTest', 'ChangeMarginsByPagesPerSheet',
+    function() {
+      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+      this.runMochaTest(
+          preview_generation_test.TestNames.ChangeMarginsByPagesPerSheet);
+    });
+
 GEN('#if !defined(OS_CHROMEOS)');
 PrintPreviewLinkContainerTest = class extends NewPrintPreviewTest {
   /** @override */
@@ -478,6 +495,10 @@ TEST_F('PrintPreviewLinkContainerTest', 'HideInAppKioskMode', function() {
 
 TEST_F('PrintPreviewLinkContainerTest', 'SystemDialogLinkClick', function() {
   this.runMochaTest(link_container_test.TestNames.SystemDialogLinkClick);
+});
+
+TEST_F('PrintPreviewLinkContainerTest', 'InvalidState', function() {
+  this.runMochaTest(link_container_test.TestNames.InvalidState);
 });
 GEN('#endif');  // !defined(OS_CHROMEOS)
 
@@ -671,6 +692,12 @@ TEST_F('PrintPreviewDestinationDialogTest', 'PrinterList', function() {
   this.runMochaTest(destination_dialog_test.TestNames.PrinterList);
 });
 
+TEST_F(
+    'PrintPreviewDestinationDialogTest', 'ShowProvisionalDialog', function() {
+      this.runMochaTest(
+          destination_dialog_test.TestNames.ShowProvisionalDialog);
+    });
+
 PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -826,6 +853,12 @@ TEST_F(
       this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
     });
 
+TEST_F(
+    'PrintPreviewNewDestinationSearchTest',
+    'ReceiveSuccessfultSetupWithPolicies', function() {
+      this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
+    });
+
 GEN('#else');  // !defined(OS_CHROMEOS)
 TEST_F(
     'PrintPreviewNewDestinationSearchTest', 'GetCapabilitiesFails', function() {
@@ -870,6 +903,10 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderWithCopies', function() {
 
 TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
   this.runMochaTest(header_test.TestNames.HeaderChangesForState);
+});
+
+TEST_F('PrintPreviewHeaderTest', 'ButtonOrder', function() {
+  this.runMochaTest(header_test.TestNames.ButtonOrder);
 });
 
 PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {

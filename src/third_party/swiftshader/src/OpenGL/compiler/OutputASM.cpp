@@ -400,12 +400,12 @@ namespace glsl
 		registerIndex = 0;
 	}
 
-	Attribute::Attribute(GLenum type, const std::string &name, int arraySize, int location, int registerIndex)
+	Attribute::Attribute(GLenum type, const std::string &name, int arraySize, int layoutLocation, int registerIndex)
 	{
 		this->type = type;
 		this->name = name;
 		this->arraySize = arraySize;
-		this->location = location;
+		this->layoutLocation = layoutLocation;
 		this->registerIndex = registerIndex;
 	}
 
@@ -748,6 +748,11 @@ namespace glsl
 		case EOpVectorTimesMatrixAssign:
 			assert(visit == PreVisit);
 			{
+				// The left operand may contain a swizzle serving double-duty as
+				// swizzle and writemask, so it's important that we traverse it
+				// first. Otherwise we may end up never setting up our left
+				// operand correctly.
+				left->traverse(this);
 				right->traverse(this);
 				int size = leftType.getNominalSize();
 
@@ -1564,9 +1569,19 @@ namespace glsl
 					for(int i = 0; i < outCols; i++)
 					{
 						emit(sw::Shader::OPCODE_MOV, result, i, &zero);
-						Instruction *mov = emitCast(result, i, arg0, 0);
-						mov->dst.mask = 1 << i;
-						ASSERT(mov->src[0].swizzle == 0x00);
+						if (i < outRows)
+						{
+							// Insert the scalar value on the main diagonal.
+							// For non-square matrices, Avoid emitting in
+							// a column which doesn't /have/ a main diagonal
+							// element, even though it would be fairly benign --
+							// it's not necessarily trivial for downstream
+							// passes to see that this is redundant and strip it
+							// out.
+							Instruction *mov = emitCast(result, i, arg0, 0);
+							mov->dst.mask = 1 << i;
+							ASSERT(mov->src[0].swizzle == 0x00);
+						}
 					}
 				}
 				else if(arg0->isMatrix())

@@ -57,7 +57,6 @@ class CONTENT_EXPORT VideoCaptureHost
                media::VideoCaptureError error) override;
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
-                   int length,
                    int buffer_id) override;
   void OnBufferDestroyed(VideoCaptureControllerID id,
                          int buffer_id) override;

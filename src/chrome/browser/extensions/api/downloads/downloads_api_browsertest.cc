@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -43,6 +44,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -56,6 +58,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "net/base/data_url.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -105,8 +108,8 @@ void OnOpenPromptCreated(download::DownloadItem* item,
                          DownloadOpenPrompt* prompt) {
   EXPECT_FALSE(item->GetOpened());
   // Posts a task to accept the DownloadOpenPrompt.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DownloadOpenPrompt::AcceptConfirmationDialogForTesting,
                      base::Unretained(prompt)));
 }
@@ -377,8 +380,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
   // InProcessBrowserTest
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     GoOnTheRecord();
     current_browser()->profile()->GetPrefs()->SetBoolean(
@@ -659,11 +662,13 @@ class DownloadExtensionTest : public ExtensionApiTest {
  private:
   void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
     if (extension_) {
+      const GURL url = current_browser_ == incognito_browser_ &&
+                               !IncognitoInfo::IsSplitMode(extension_)
+                           ? GURL(url::kAboutBlankURL)
+                           : extension_->GetResourceURL("empty.html");
       // Recreate the tab each time for insulation.
       content::WebContents* tab = chrome::AddSelectedTabWithURL(
-          current_browser(),
-          extension_->GetResourceURL("empty.html"),
-          ui::PAGE_TRANSITION_LINK);
+          current_browser(), url, ui::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
       function->SetRenderFrameHost(tab->GetMainFrame());
     }
@@ -700,8 +705,8 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
     if (expected_path_ == path &&
         expected_icon_size_ == icon_size) {
       callback_ = callback;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&MockIconExtractorImpl::RunCallback,
                          base::Unretained(this)));
       return true;
@@ -785,8 +790,8 @@ class HTML5FileWriter {
     // Invoke the fileapi to copy it into the sandboxed filesystem.
     bool result = false;
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CreateFileForTestingOnIOThread,
                        base::Unretained(context), path, temp_file,
                        base::Unretained(&result), run_loop.QuitClosure()));
@@ -802,7 +807,7 @@ class HTML5FileWriter {
                                base::File::Error error) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_closure);
   }
 
   static void CreateFileForTestingOnIOThread(
@@ -1158,9 +1163,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     ASSERT_FALSE(base::PathExists(fake_path));
   }
 
-  for (DownloadManager::DownloadVector::iterator iter = all_downloads.begin();
-       iter != all_downloads.end();
-       ++iter) {
+  for (auto iter = all_downloads.begin(); iter != all_downloads.end(); ++iter) {
     std::string result_string;
     // Use a MockIconExtractorImpl to test if the correct path is being passed
     // into the DownloadFileIconExtractor.
@@ -4191,8 +4194,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(&items);
-    for (DownloadManager::DownloadVector::iterator iter = items.begin();
-          iter != items.end(); ++iter) {
+    for (auto iter = items.begin(); iter != items.end(); ++iter) {
       if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
         // There should be only one IN_PROGRESS item.
         EXPECT_EQ(NULL, item);

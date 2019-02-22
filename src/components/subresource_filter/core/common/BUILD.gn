@@ -7,17 +7,12 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 static_library("common") {
   sources = [
     "activation_decision.h",
-    "activation_level.cc",
-    "activation_level.h",
     "activation_list.cc",
     "activation_list.h",
     "activation_scope.cc",
     "activation_scope.h",
-    "activation_state.cc",
-    "activation_state.h",
     "common_features.cc",
     "common_features.h",
-    "document_load_statistics.h",
     "document_subresource_filter.cc",
     "document_subresource_filter.h",
     "first_party_origin.cc",
@@ -35,6 +30,7 @@ static_library("common") {
 
   public_deps = [
     "//components/subresource_filter/core/common/flat:indexed_ruleset",
+    "//components/subresource_filter/mojom",
     "//components/url_pattern_index",
   ]
 

@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -102,21 +103,23 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
 
   std::string headers =
       success ? "HTTP/1.1 200 OK\n" : "HTTP/1.1 404 Not found\n";
-  request_info->PopulateWithResponse(std::make_unique<BackgroundFetchResponse>(
+  auto response = std::make_unique<BackgroundFetchResponse>(
       std::vector<GURL>(1u, request_info->fetch_request().url),
-      base::MakeRefCounted<net::HttpResponseHeaders>(headers)));
+      base::MakeRefCounted<net::HttpResponseHeaders>(headers));
 
   if (!success) {
     // Fill |request_info| with a failed result.
     request_info->SetResult(std::make_unique<BackgroundFetchResult>(
-        base::Time::Now(), BackgroundFetchResult::FailureReason::UNKNOWN));
+        std::move(response), base::Time::Now(),
+        BackgroundFetchResult::FailureReason::FETCH_ERROR));
     return;
   }
 
   // This is treated as an empty response, but the size is set to
   // |kResponseFileSize| for tests that use filesize.
   request_info->SetResult(std::make_unique<BackgroundFetchResult>(
-      base::Time::Now(), base::FilePath(), base::nullopt /* blob_handle */,
+      std::move(response), base::Time::Now(), base::FilePath(),
+      base::nullopt /* blob_handle */,
       over_quota ? kBackgroundFetchMaxQuotaBytes + 1 : kResponseFileSize));
 }
 
@@ -232,7 +235,7 @@ class BackgroundFetchDataManagerTest
 
     base::RunLoop run_loop;
     background_fetch_data_manager_->CreateRegistration(
-        registration_id, requests, options, icon,
+        registration_id, requests, options, icon, /* start_paused = */ false,
         base::BindOnce(&DidCreateRegistration, run_loop.QuitClosure(),
                        out_error));
     run_loop.Run();
@@ -312,7 +315,9 @@ class BackgroundFetchDataManagerTest
   // BackgroundFetchDataManager::PopNextRequest().
   void PopNextRequest(
       const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchError* out_error,
       scoped_refptr<BackgroundFetchRequestInfo>* out_request_info) {
+    DCHECK(out_error);
     DCHECK(out_request_info);
 
     base::RunLoop run_loop;
@@ -320,7 +325,7 @@ class BackgroundFetchDataManagerTest
         registration_id,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidPopNextRequest,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       out_request_info));
+                       out_error, out_request_info));
     run_loop.Run();
   }
 
@@ -353,13 +358,16 @@ class BackgroundFetchDataManagerTest
   // Synchronous version of BackgroundFetchDataManager::MarkRequestAsComplete().
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request_info) {
+      BackgroundFetchRequestInfo* request_info,
+      blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
     base::RunLoop run_loop;
     background_fetch_data_manager_->MarkRequestAsComplete(
         registration_id, request_info,
         base::BindOnce(
             &BackgroundFetchDataManagerTest::DidMarkRequestAsComplete,
-            base::Unretained(this), run_loop.QuitClosure()));
+            base::Unretained(this), run_loop.QuitClosure(), out_error));
     run_loop.Run();
   }
 
@@ -371,10 +379,10 @@ class BackgroundFetchDataManagerTest
       blink::mojom::QueryParamsPtr cache_query_params,
       bool match_all,
       blink::mojom::BackgroundFetchError* out_error,
-      bool* out_succeeded,
+      blink::mojom::BackgroundFetchFailureReason* out_failure_reason,
       std::vector<BackgroundFetchSettledFetch>* out_settled_fetches) {
     DCHECK(out_error);
-    DCHECK(out_succeeded);
+    DCHECK(out_failure_reason);
     DCHECK(out_settled_fetches);
 
     base::RunLoop run_loop;
@@ -385,7 +393,7 @@ class BackgroundFetchDataManagerTest
         base::BindOnce(&BackgroundFetchDataManagerTest::
                            DidGetSettledFetchesForRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       out_error, out_succeeded, out_settled_fetches));
+                       out_error, out_failure_reason, out_settled_fetches));
     run_loop.Run();
   }
 
@@ -552,12 +560,13 @@ class BackgroundFetchDataManagerTest
   }
 
   // BackgroundFetchDataManagerObserver mocks:
-  MOCK_METHOD5(OnRegistrationCreated,
+  MOCK_METHOD6(OnRegistrationCreated,
                void(const BackgroundFetchRegistrationId& registration_id,
                     const BackgroundFetchRegistration& registration,
                     const BackgroundFetchOptions& options,
                     const SkBitmap& icon,
-                    int num_requests));
+                    int num_requests,
+                    bool start_paused));
   MOCK_METHOD3(OnUpdatedUI,
                void(const BackgroundFetchRegistrationId& registration,
                     const base::Optional<std::string>& title,
@@ -565,6 +574,8 @@ class BackgroundFetchDataManagerTest
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
   MOCK_METHOD1(OnQuotaExceeded,
+               void(const BackgroundFetchRegistrationId& registration_id));
+  MOCK_METHOD1(OnFetchStorageError,
                void(const BackgroundFetchRegistrationId& registration_id));
 
  protected:
@@ -615,27 +626,33 @@ class BackgroundFetchDataManagerTest
 
   void DidPopNextRequest(
       base::OnceClosure quit_closure,
+      blink::mojom::BackgroundFetchError* out_error,
       scoped_refptr<BackgroundFetchRequestInfo>* out_request_info,
+      blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+    *out_error = error;
     *out_request_info = request_info;
     std::move(quit_closure).Run();
   }
 
-  void DidMarkRequestAsComplete(base::OnceClosure quit_closure) {
+  void DidMarkRequestAsComplete(base::OnceClosure quit_closure,
+                                blink::mojom::BackgroundFetchError* out_error,
+                                blink::mojom::BackgroundFetchError error) {
+    *out_error = error;
     std::move(quit_closure).Run();
   }
 
   void DidGetSettledFetchesForRegistration(
       base::OnceClosure quit_closure,
       blink::mojom::BackgroundFetchError* out_error,
-      bool* out_succeeded,
+      blink::mojom::BackgroundFetchFailureReason* out_failure_reason,
       std::vector<BackgroundFetchSettledFetch>* out_settled_fetches,
       blink::mojom::BackgroundFetchError error,
-      bool succeeded,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>) {
     *out_error = error;
-    *out_succeeded = succeeded;
+    *out_failure_reason = failure_reason;
     *out_settled_fetches = std::move(settled_fetches);
 
     std::move(quit_closure).Run();
@@ -707,7 +724,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
 
   // Creating the initial registration should succeed.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _, _));
 
     CreateRegistration(registration_id1, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -736,7 +753,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   // is no longer an *active* registration with the same |developer_id|, even
   // though the initial registration has not yet been deleted.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
     CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -764,6 +781,73 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaFailsCreation) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
 }
 
+TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
+  // Tests that the BackgroundFetchDataManager correctly rejects creating a
+  // registration when an origin exceeds the allowed number of registrations.
+  int64_t swid1 = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, swid1);
+  int64_t swid2 = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, swid2);
+
+  ASSERT_NE(swid1, swid2);
+
+  blink::mojom::BackgroundFetchError error;
+
+  // Create two registrations for every Service Worker.
+  for (int i = 0; i < 2; i++) {
+    // First Service Worker.
+    BackgroundFetchRegistrationId registration_id1(
+        swid1, origin(), kExampleDeveloperId + base::IntToString(i),
+        base::GenerateGUID());
+    CreateRegistration(registration_id1,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    // Second service Worker.
+    BackgroundFetchRegistrationId registration_id2(
+        swid2, origin(), kExampleDeveloperId + base::IntToString(i),
+        base::GenerateGUID());
+    CreateRegistration(registration_id2,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Create another registration in the first Service Worker,
+  // bringing us to the limit.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid1, origin(), "developer_id1", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // A registration this time should fail.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid1, origin(), "developer_id2", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error,
+              blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
+  }
+
+  // The registration should also fail for the other Service Worker.
+  {
+    BackgroundFetchRegistrationId registration_id(
+        swid2, origin(), "developer_id3", base::GenerateGUID());
+    CreateRegistration(registration_id,
+                       std::vector<ServiceWorkerFetchRequest>(),
+                       BackgroundFetchOptions(), SkBitmap(), &error);
+    ASSERT_EQ(error,
+              blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
+  }
+}
+
 TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
@@ -781,7 +865,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   BackgroundFetchRegistrationId registration_id1(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _, _));
 
     CreateRegistration(registration_id1, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -803,7 +887,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   BackgroundFetchRegistrationId registration_id2(
       sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
     CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -835,7 +919,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
 
   // Create a single registration.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -877,7 +961,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
 
   // Create a single registration.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -915,7 +999,7 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
 
   // Create a single registration.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, icon, &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -947,7 +1031,7 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
 
   // Create a single registration.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, CreateTestIcon(),
                        &error);
@@ -1044,7 +1128,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   blink::mojom::BackgroundFetchError error;
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _, _));
 
     CreateRegistration(registration_id1, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1091,7 +1175,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   // |developer_id|, even though the initial registration has not yet been
   // deleted.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
     CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1104,10 +1188,53 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
+TEST_F(BackgroundFetchDataManagerTest, MarkRegistrationForDeletion) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id1(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id1, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Create a |developer_id| such that the other one is a substring.
+  std::string developer_id2 = std::string(kExampleDeveloperId) + "!";
+  BackgroundFetchRegistrationId registration_id2(sw_id, origin(), developer_id2,
+                                                 kAlternativeUniqueId);
+
+  CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Get all active registration mappings.
+  {
+    auto registrations = GetRegistrationUserDataByKeyPrefix(
+        sw_id, background_fetch::ActiveRegistrationUniqueIdKey(""));
+    EXPECT_EQ(registrations.size(), 2u);
+  }
+
+  // Deactivate the first registration.
+  MarkRegistrationForDeletion(registration_id1, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // The second registration should still exist.
+  {
+    auto registrations = GetRegistrationUserDataByKeyPrefix(
+        sw_id, background_fetch::ActiveRegistrationUniqueIdKey(""));
+    ASSERT_EQ(registrations.size(), 1u);
+    EXPECT_EQ(registrations[0], kAlternativeUniqueId);
+  }
+}
+
 TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
+  blink::mojom::BackgroundFetchError error;
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
 
   BackgroundFetchRegistrationId registration_id(
@@ -1115,7 +1242,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // There registration hasn't been created yet, so there are no pending
   // requests.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
@@ -1124,10 +1252,9 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
-  blink::mojom::BackgroundFetchError error;
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1139,7 +1266,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           0 /* completed_requests */}));
 
   // Popping should work now.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(request_info);
   EXPECT_EQ(request_info->request_index(), 0);
   EXPECT_FALSE(request_info->download_guid().empty());
@@ -1150,7 +1278,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
       (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
@@ -1158,7 +1287,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   RestartDataManagerFromPersistentStorage();
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(request_info);
   EXPECT_EQ(request_info->request_index(), 1);
   EXPECT_FALSE(request_info->download_guid().empty());
@@ -1169,14 +1299,16 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           2 /* completed_requests */}));
 
   // We are out of pending requests.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
@@ -1184,7 +1316,7 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           2 /* completed_requests */}));
 }
 
-TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
+TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1195,7 +1327,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1204,36 +1336,42 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
   auto registration =
       GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, 0u);
+  EXPECT_EQ(registration.downloaded, 0u);
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, kResponseFileSize);
+  EXPECT_EQ(registration.downloaded, kResponseFileSize);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
+  EXPECT_EQ(registration.downloaded, 2 * kResponseFileSize);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  false /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  // |download_total| is unchanged.
-  EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
+  // |registration.downloaded| is unchanged.
+  EXPECT_EQ(registration.downloaded, 2 * kResponseFileSize);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
@@ -1247,19 +1385,21 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(
       request_info.get(), true /* succeeded */, true /* over_quota */);
   {
     EXPECT_CALL(*this, OnQuotaExceeded(registration_id));
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
   }
 }
 
@@ -1274,19 +1414,21 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_TRUE(HasCache(kExampleUniqueId));
   EXPECT_FALSE(HasCache("foo"));
@@ -1294,12 +1436,14 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   EXPECT_TRUE(MatchCache(requests[0]));
   EXPECT_FALSE(MatchCache(requests[1]));
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(MatchCache(requests[0]));
   EXPECT_TRUE(MatchCache(requests[1]));
 
@@ -1321,19 +1465,21 @@ TEST_F(BackgroundFetchDataManagerTest, CacheDeleted) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, {request}, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_TRUE(HasCache(kExampleUniqueId));
   EXPECT_TRUE(MatchCache(request));
@@ -1358,7 +1504,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1370,22 +1516,24 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
                           0 /* completed_requests */}));
 
   // Nothing is downloaded yet.
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
   EXPECT_EQ(settled_fetches.size(), 0u);
 
   for (size_t i = 0; i < requests.size(); i++) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   RestartDataManagerFromPersistentStorage();
@@ -1398,11 +1546,12 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
 
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
-  EXPECT_FALSE(succeeded);
+  EXPECT_EQ(failure_reason,
+            blink::mojom::BackgroundFetchFailureReason::BAD_STATUS);
   EXPECT_EQ(settled_fetches.size(), requests.size());
 }
 
@@ -1417,50 +1566,54 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   // Nothing is downloaded yet.
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
   EXPECT_EQ(settled_fetches.size(), 0u);
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
   EXPECT_EQ(settled_fetches.size(), 1u);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
   ASSERT_EQ(settled_fetches.size(), 2u);
 
   // Sanity check that the responses are written to / read from the cache.
@@ -1476,9 +1629,9 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
   EXPECT_EQ(settled_fetches.size(), 2u);
 }
 
@@ -1493,7 +1646,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForASpecificRequest) {
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1502,10 +1655,12 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForASpecificRequest) {
   for (size_t i = 0; i < requests.size(); i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1513,16 +1668,17 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForASpecificRequest) {
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           requests.size() /* completed_requests */}));
 
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   GetSettledFetchesForRegistration(
       registration_id, requests[0] /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
 
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
-  EXPECT_FALSE(succeeded);
+  EXPECT_EQ(failure_reason,
+            blink::mojom::BackgroundFetchFailureReason::BAD_STATUS);
   EXPECT_EQ(settled_fetches.size(), 1u);
 }
 
@@ -1538,7 +1694,7 @@ TEST_F(BackgroundFetchDataManagerTest,
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1547,10 +1703,12 @@ TEST_F(BackgroundFetchDataManagerTest,
   for (size_t i = 0; i < requests.size() - 1; i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1558,12 +1716,12 @@ TEST_F(BackgroundFetchDataManagerTest,
       (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
                           requests.size() - 1 /* completed_requests */}));
 
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   GetSettledFetchesForRegistration(
       registration_id, requests[2] /* request_to_match */,
       nullptr /* cache_query_params */, false /* match_all */, &error,
-      &succeeded, &settled_fetches);
+      &failure_reason, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), 1u);
   EXPECT_EQ(settled_fetches[0].response->response_type,
@@ -1584,7 +1742,7 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1593,10 +1751,12 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
   for (size_t i = 0; i < requests.size(); i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1604,19 +1764,20 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           requests.size() /* completed_requests */}));
 
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   blink::mojom::QueryParamsPtr cache_query_params =
       blink::mojom::QueryParams::New();
   cache_query_params->ignore_method = true;
   GetSettledFetchesForRegistration(
       registration_id, requests[0] /* request_to_match */,
-      std::move(cache_query_params), true /* match_all */, &error, &succeeded,
-      &settled_fetches);
+      std::move(cache_query_params), true /* match_all */, &error,
+      &failure_reason, &settled_fetches);
 
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
-  EXPECT_FALSE(succeeded);
+  EXPECT_EQ(failure_reason,
+            blink::mojom::BackgroundFetchFailureReason::BAD_STATUS);
   // If the ASSERT below fails, the Cache Storage API implementation has likely
   // changed to distinguish keys by request data other than just the URL.
   // Thank you! Please can you update the 1u below to 2u, or file a bug against
@@ -1642,7 +1803,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
   // Create a registration.
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1660,12 +1821,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
 
   RestartDataManagerFromPersistentStorage();
 
-  // Pending Requests should be deleted after marking a registration for
-  // deletion.
-  EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(
-                    sw_id, background_fetch::kPendingRequestKeyPrefix)
-                    .size());
-  EXPECT_EQ(2u,  // Metadata proto + title.
+  EXPECT_EQ(4u,  // Metadata proto + UI options + remaining pending fetches.
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 
   // Cleanup should delete the registration.
@@ -1708,7 +1864,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     CreateRegistration(registration_id, requests, options, CreateTestIcon(),
                        &error);
@@ -1738,11 +1894,16 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
   // Mark one request as complete and start another.
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
+
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
-  PopNextRequest(registration_id, &request_info);
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   {
     std::vector<BackgroundFetchInitializationData> data =
@@ -1767,7 +1928,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
   BackgroundFetchRegistrationId registration_id2(
       sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
   {
-    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _));
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
     CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1794,7 +1955,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   std::vector<blink::mojom::BackgroundFetchError> errors(5);
 
   // We expect a single successful registration to be created.
-  EXPECT_CALL(*this, OnRegistrationCreated(_, _, _, _, _));
+  EXPECT_CALL(*this, OnRegistrationCreated(_, _, _, _, _, _));
 
   const int num_parallel_creates = 5;
 
@@ -1810,6 +1971,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
 
     background_fetch_data_manager_->CreateRegistration(
         registration_id, requests, options, SkBitmap(),
+        /* start_paused = */ false,
         base::BindOnce(&DidCreateRegistration, quit_once_all_finished_closure,
                        &errors[i]));
   }
@@ -1868,20 +2030,22 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  bool succeeded = false;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
 
   {
     GetSettledFetchesForRegistration(
         registration_id, base::nullopt /* request_to_match */,
         nullptr /* cache_query_params */, false /* match_all */, &error,
-        &succeeded, &settled_fetches);
+        &failure_reason, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
@@ -1896,7 +2060,7 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
     GetSettledFetchesForRegistration(
         registration_id, base::nullopt /* request_to_match */,
         nullptr /* cache_query_params */, false /* match_all */, &error,
-        &succeeded, &settled_fetches);
+        &failure_reason, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     histogram_tester.ExpectBucketCount(

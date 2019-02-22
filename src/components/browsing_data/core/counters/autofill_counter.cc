@@ -19,7 +19,7 @@ namespace {
 
 bool IsAutofillSyncEnabled(const syncer::SyncService* sync_service) {
   return sync_service && sync_service->IsFirstSetupComplete() &&
-         sync_service->IsSyncActive() &&
+         sync_service->IsSyncFeatureActive() &&
          sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL);
 }
 

@@ -71,12 +71,12 @@ bool HasUserActivation(GamepadList* gamepads) {
   // A button press counts as a user activation if the button's value is greater
   // than the activation threshold. A threshold is used so that analog buttons
   // or triggers do not generate an activation from a light touch.
-  for (size_t pad_index = 0; pad_index < gamepads->length(); ++pad_index) {
+  for (wtf_size_t pad_index = 0; pad_index < gamepads->length(); ++pad_index) {
     Gamepad* pad = gamepads->item(pad_index);
     if (pad) {
       const GamepadButtonVector& buttons = pad->buttons();
-      for (size_t i = 0; i < buttons.size(); ++i) {
-        double value = buttons.at(i)->value();
+      for (auto button : buttons) {
+        double value = button->value();
         if (value > kButtonActivationThreshold)
           return true;
       }
@@ -88,7 +88,7 @@ bool HasUserActivation(GamepadList* gamepads) {
 }  // namespace
 
 template <typename T>
-static void SampleGamepad(size_t index,
+static void SampleGamepad(unsigned index,
                           T& gamepad,
                           const device::Gamepad& device_gamepad,
                           const TimeTicks& navigation_start) {
@@ -107,6 +107,12 @@ static void SampleGamepad(size_t index,
   gamepad.SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
   gamepad.SetPose(device_gamepad.pose);
   gamepad.SetHand(device_gamepad.hand);
+
+  if (device_gamepad.is_xr) {
+    TimeTicks now = TimeTicks::Now();
+    TRACE_COUNTER1("input", "XR gamepad pose age (ms)",
+                   (now - last_updated).InMilliseconds());
+  }
 
   bool newly_connected;
   HasGamepadConnectionChanged(old_id, gamepad.id(), old_was_connected,
@@ -138,7 +144,7 @@ static void SampleGamepads(ListType* into,
 
   GamepadDispatcher::Instance().SampleGamepads(gamepads);
 
-  for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& web_gamepad = gamepads.items[i];
 
     bool hide_xr_gamepad = false;
@@ -210,7 +216,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
   // visible.
   if (RuntimeEnabledFeatures::UserActivationV2Enabled() && GetFrame() &&
       GetPage() && GetPage()->IsPageVisible() && HasUserActivation(gamepads_)) {
-    Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+    LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
   }
 
   return gamepads_.Get();
@@ -384,7 +390,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
 bool NavigatorGamepad::CheckConnectedGamepads(GamepadList* old_gamepads,
                                               GamepadList* new_gamepads) {
   int disconnection_count = 0;
-  for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     Gamepad* old_gamepad = old_gamepads ? old_gamepads->item(i) : nullptr;
     Gamepad* new_gamepad = new_gamepads->item(i);
     bool connected, disconnected;

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -31,6 +32,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -126,8 +128,8 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       base::BindOnce(&SiteEngagementService::AfterStartupTask,
                      weak_factory_.GetWeakPtr()));
 
@@ -248,16 +250,6 @@ void SiteEngagementService::SetLastShortcutLaunchTime(
   OnEngagementEvent(web_contents, url, ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH);
 }
 
-void SiteEngagementService::HelperCreated(
-    SiteEngagementService::Helper* helper) {
-  helpers_.insert(helper);
-}
-
-void SiteEngagementService::HelperDeleted(
-    SiteEngagementService::Helper* helper) {
-  helpers_.erase(helper);
-}
-
 double SiteEngagementService::GetScore(const GURL& url) const {
   return GetDetails(url).total_score;
 }
@@ -319,16 +311,10 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
     CleanupEngagementScores(true);
 
   SiteEngagementScore score = CreateEngagementScore(url);
-  blink::mojom::EngagementLevel old_level = score.GetEngagementLevel();
-
   score.AddPoints(points);
   score.Commit();
 
   SetLastEngagementTime(score.last_engagement_time());
-
-  blink::mojom::EngagementLevel new_level = score.GetEngagementLevel();
-  if (old_level != new_level)
-    SendLevelChangeToHelpers(url, new_level);
 }
 
 void SiteEngagementService::AfterStartupTask() {
@@ -551,13 +537,6 @@ void SiteEngagementService::OnEngagementEvent(
   double score = GetScore(url);
   for (SiteEngagementObserver& observer : observer_list_)
     observer.OnEngagementEvent(web_contents, url, score, type);
-}
-
-void SiteEngagementService::SendLevelChangeToHelpers(
-    const GURL& url,
-    blink::mojom::EngagementLevel level) {
-  for (SiteEngagementService::Helper* helper : helpers_)
-    helper->OnEngagementLevelChanged(url, level);
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {

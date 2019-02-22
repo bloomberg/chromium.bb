@@ -36,7 +36,6 @@
     <color name="black_alpha_65">#A6000000</color>
     <color name="white_alpha_50">#80FFFFFF</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
-    <color name="white_alpha_70">#B3FFFFFF</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
 
     <!-- Old color palette -->
@@ -55,12 +54,14 @@
     <!-- Tab Switcher Colors -->
     <color name="tab_switcher_background">#14181C</color>
     <color name="accessibility_tab_switcher_list_item">#252525</color>
-    <color name="accessibility_close_undo_text">#3ADAFF</color>
     <color name="tab_back">#F1F1F1</color>
     <color name="tab_back_incognito">#4F4F4F</color>
 
     <!-- App banner colors -->
     <color name="app_banner_install_button_bg">#0F9D58</color>
+
+    <!-- App menu colors -->
+    <color name="update_menu_item_text_color">#DC5554</color>
 
     <!-- Connection Info Popup colors -->
     <color name="connection_info_popup_reset_cert_decisions_button">#000000</color>
@@ -78,7 +79,6 @@
     <!-- Omnibox Suggestion colors -->
     <color name="suggestion_url_dark_modern">@color/default_text_color_link</color>
     <color name="suggestion_url_light_modern">@color/modern_blue_300</color>
-    <color name="suggestion_url_light">#5595FE</color>
     <color name="answers_description_text_negative">@color/google_red_700</color>
     <color name="answers_description_text_positive">@color/google_green_700</color>
     <color name="answers_answer_text">#8A8A8A</color>
@@ -137,12 +137,11 @@
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
-    <color name="locationbar_light_hint_text">@color/modern_grey_400</color>
+    <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
     <color name="locationbar_light_selection_color">#CC5595FE</color>
     <color name="locationbar_status_offline_color">@color/modern_grey_900</color>
     <color name="locationbar_status_offline_color_light">@android:color/white</color>
-    <color name="locationbar_status_preview_color">@color/modern_blue_300</color>
-    <color name="locationbar_status_preview_color_light">@color/modern_blue_600</color>
+    <color name="locationbar_status_preview_color">@color/modern_blue_600</color>
     <color name="locationbar_status_separator_color">@color/black_alpha_24</color>
     <color name="locationbar_status_separator_color_light">#3DFFFFFF</color>
     <color name="omnibox_focused_fading_background_color">@color/black_alpha_65</color>
@@ -164,13 +163,6 @@
 
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">@color/modern_grey_50</color>
-    <color name="webapp_splash_title_light">@android:color/white</color>
-
-    <!-- Bookmark UI colors -->
-    <color name="bookmark_detail_section">#7C7B79</color>
-
-    <!-- Download home colors -->
-    <color name="download_image_loading_color">#BDC1C6</color>
 
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#787878</color>

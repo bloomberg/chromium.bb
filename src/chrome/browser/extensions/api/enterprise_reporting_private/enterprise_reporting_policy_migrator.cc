@@ -11,12 +11,14 @@ namespace enterprise_reporting {
 
 namespace {
 
-// Extension ID for the Chrome Reporting Extension.
+// Hash of the Extension ID for the Chrome Reporting Extension.
 // https://chrome.google.com/webstore/detail/chrome-reporting-extensio/emahakmocgideepebncgnmlmliepgpgb
-const char kStableExtensionId[] = "emahakmocgideepebncgnmlmliepgpgb";
+const char kStableHashedExtensionId[] =
+    "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD";
 
-// Beta extension ID.
-const char kBetaExtensionId[] = "kigjhoekjcpdfjpimbdjegmgecmlicaf";
+// Hash of the beta extension ID.
+const char kBetaHashedExtensionId[] =
+    "08455FA7CB8734168378F731B00B354CEEE0088F";
 
 const policy::ExtensionPolicyMigrator::Migration kMigrations[] = {
     {"report_version_data", policy::key::kReportVersionData},
@@ -32,8 +34,8 @@ EnterpriseReportingPolicyMigrator::EnterpriseReportingPolicyMigrator() {}
 EnterpriseReportingPolicyMigrator::~EnterpriseReportingPolicyMigrator() {}
 
 void EnterpriseReportingPolicyMigrator::Migrate(policy::PolicyBundle* bundle) {
-  CopyPoliciesIfUnset(bundle, kStableExtensionId, kMigrations);
-  CopyPoliciesIfUnset(bundle, kBetaExtensionId, kMigrations);
+  CopyPoliciesIfUnset(bundle, kStableHashedExtensionId, kMigrations);
+  CopyPoliciesIfUnset(bundle, kBetaHashedExtensionId, kMigrations);
 }
 
 }  // namespace enterprise_reporting

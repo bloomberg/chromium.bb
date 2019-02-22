@@ -10,6 +10,10 @@
 
 #include "base/macros.h"
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace syncer {
 
 class SyncManager;
@@ -17,13 +21,16 @@ class SyncManager;
 // Helper class to allow dependency injection of the SyncManager in tests.
 class SyncManagerFactory {
  public:
-  SyncManagerFactory();
+  SyncManagerFactory(
+      network::NetworkConnectionTracker* network_connection_tracker);
   virtual ~SyncManagerFactory();
 
   virtual std::unique_ptr<SyncManager> CreateSyncManager(
       const std::string& name);
 
  private:
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncManagerFactory);
 };
 

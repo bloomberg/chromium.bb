@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
-
-#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_import_rule.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -27,24 +29,16 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor,
-    CSSStyleSheet* default_style_sheet)
-    : descriptor_(descriptor), default_style_sheet_(default_style_sheet) {}
-
-CustomElementDefinition::CustomElementDefinition(
-    const CustomElementDescriptor& descriptor,
-    CSSStyleSheet* default_style_sheet,
     const HashSet<AtomicString>& observed_attributes)
     : descriptor_(descriptor),
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
-          observed_attributes.Contains(HTMLNames::styleAttr.LocalName())),
-      default_style_sheet_(default_style_sheet) {}
-
+          observed_attributes.Contains(HTMLNames::styleAttr.LocalName())) {}
 CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
   visitor->Trace(construction_stack_);
-  visitor->Trace(default_style_sheet_);
+  visitor->Trace(default_style_sheets_);
 }
 
 static String ErrorMessageForConstructorResult(Element* element,
@@ -212,6 +206,33 @@ void CustomElementDefinition::Upgrade(Element* element) {
   }
 
   element->SetCustomElementDefinition(this);
+  AddDefaultStylesTo(*element);
+}
+
+void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
+  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() ||
+      !HasDefaultStyleSheets())
+    return;
+  const auto& default_styles = DefaultStyleSheets();
+  for (CSSStyleSheet* style : default_styles) {
+    Document* associated_document = style->AssociatedDocument();
+    if (associated_document && associated_document != &element.GetDocument()) {
+      // No spec yet, but for now we forbid usage of other document's
+      // constructed stylesheet.
+      return;
+    }
+  }
+  if (!added_default_style_sheet_) {
+    element.GetDocument().GetStyleEngine().AddedCustomElementDefaultStyles(
+        default_styles);
+    added_default_style_sheet_ = true;
+    const AtomicString& local_tag_name = element.LocalNameForSelectorMatching();
+    for (CSSStyleSheet* sheet : default_styles)
+      sheet->AddToCustomElementTagNames(local_tag_name);
+  }
+  element.SetNeedsStyleRecalc(kLocalStyleChange,
+                              StyleChangeReasonForTracing::Create(
+                                  StyleChangeReason::kActiveStylesheetsUpdate));
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(
@@ -223,8 +244,11 @@ bool CustomElementDefinition::HasStyleAttributeChangedCallback() const {
   return has_style_attribute_changed_callback_;
 }
 
-void CustomElementDefinition::EnqueueUpgradeReaction(Element* element) {
-  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(this));
+void CustomElementDefinition::EnqueueUpgradeReaction(
+    Element* element,
+    bool upgrade_invisible_elements) {
+  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(
+                                      this, upgrade_invisible_elements));
 }
 
 void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {

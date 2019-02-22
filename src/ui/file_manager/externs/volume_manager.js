@@ -5,7 +5,6 @@
 /**
  * VolumeManager is responsible for tracking list of mounted volumes.
  * @interface
- * @extends {VolumeManagerCommon.VolumeInfoProvider}
  */
 function VolumeManager() {}
 
@@ -14,6 +13,14 @@ function VolumeManager() {}
  * @type {VolumeInfoList}
  */
 VolumeManager.prototype.volumeInfoList;
+
+/**
+ * Obtains a volume info containing the passed entry.
+ * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
+ *     returned. Can be fake.
+ * @return {VolumeInfo} The VolumeInfo instance or null if not found.
+ */
+VolumeManager.prototype.getVolumeInfo;
 
 /**
  * Returns the drive connection state.
@@ -59,22 +66,16 @@ VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {};
 /**
  * Obtains location information from an entry.
  *
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry File or directory entry. It
+ * @param {!Entry|!FilesAppEntry} entry File or directory entry. It
  *     can be a fake entry.
  * @return {EntryLocation} Location information.
  */
 VolumeManager.prototype.getLocationInfo = function(entry) {};
 
 /**
- * Returns current state of VolumeManager.
- * @return {string} Current state of VolumeManager.
- */
-VolumeManager.prototype.toString = function() {};
-
-/**
  * Adds an event listener to the target.
  * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler for the event. This is
+ * @param {function(!Event)} handler The handler for the event. This is
  *     called when the event is dispatched.
  */
 VolumeManager.prototype.addEventListener = function(type, handler) {};
@@ -82,7 +83,7 @@ VolumeManager.prototype.addEventListener = function(type, handler) {};
 /**
  * Removes an event listener from the target.
  * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler for the event.
+ * @param {function(!Event)} handler The handler for the event.
  */
 VolumeManager.prototype.removeEventListener = function(type, handler) {};
 
@@ -95,6 +96,22 @@ VolumeManager.prototype.removeEventListener = function(type, handler) {};
  */
 VolumeManager.prototype.dispatchEvent = function(event) {};
 
+/**
+ * Searches the information of the volume that exists on the given device path.
+ * @param {string} devicePath Path of the device to search.
+ * @return {VolumeInfo} The volume's information, or null if not found.
+ */
+VolumeManager.prototype.findByDevicePath = function(devicePath) {};
+
+/**
+ * Returns a promise that will be resolved when volume info, identified
+ * by {@code volumeId} is created.
+ *
+ * @param {string} volumeId
+ * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
+ *     if the volume is never mounted.
+ */
+VolumeManager.prototype.whenVolumeInfoReady = function(volumeId) {};
 
 /**
  * Event object which is dispached with 'externally-unmounted' event.

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -36,6 +37,7 @@
 #include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
@@ -46,10 +48,12 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/wm/core/window_animations.h"
 
+namespace keyboard {
+
 namespace {
 
 // Owned by ash::Shell.
-keyboard::KeyboardController* g_keyboard_controller = nullptr;
+KeyboardController* g_keyboard_controller = nullptr;
 
 constexpr int kHideKeyboardDelayMs = 100;
 
@@ -65,43 +69,36 @@ constexpr int kReportLingeringStateDelayMs = 5000;
 constexpr int kTransientBlurThresholdMs = 3500;
 
 // State transition diagram (document linked from crbug.com/719905)
-bool isAllowedStateTransition(keyboard::KeyboardControllerState from,
-                              keyboard::KeyboardControllerState to) {
-  static const std::set<std::pair<keyboard::KeyboardControllerState,
-                                  keyboard::KeyboardControllerState>>
+bool IsAllowedStateTransition(KeyboardControllerState from,
+                              KeyboardControllerState to) {
+  static const std::set<
+      std::pair<KeyboardControllerState, KeyboardControllerState>>
       kAllowedStateTransition = {
           // The initial ShowKeyboard scenario
           // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
-          {keyboard::KeyboardControllerState::UNKNOWN,
-           keyboard::KeyboardControllerState::INITIAL},
-          {keyboard::KeyboardControllerState::INITIAL,
-           keyboard::KeyboardControllerState::LOADING_EXTENSION},
-          {keyboard::KeyboardControllerState::LOADING_EXTENSION,
-           keyboard::KeyboardControllerState::HIDDEN},
-          {keyboard::KeyboardControllerState::HIDDEN,
-           keyboard::KeyboardControllerState::SHOWN},
+          {KeyboardControllerState::UNKNOWN, KeyboardControllerState::INITIAL},
+          {KeyboardControllerState::INITIAL,
+           KeyboardControllerState::LOADING_EXTENSION},
+          {KeyboardControllerState::LOADING_EXTENSION,
+           KeyboardControllerState::HIDDEN},
+          {KeyboardControllerState::HIDDEN, KeyboardControllerState::SHOWN},
 
           // Hide scenario
           // SHOWN -> WILL_HIDE -> HIDDEN.
-          {keyboard::KeyboardControllerState::SHOWN,
-           keyboard::KeyboardControllerState::WILL_HIDE},
-          {keyboard::KeyboardControllerState::WILL_HIDE,
-           keyboard::KeyboardControllerState::HIDDEN},
+          {KeyboardControllerState::SHOWN, KeyboardControllerState::WILL_HIDE},
+          {KeyboardControllerState::WILL_HIDE, KeyboardControllerState::HIDDEN},
 
           // Focus transition scenario
           // SHOWN -> WILL_HIDE -> SHOWN.
-          {keyboard::KeyboardControllerState::WILL_HIDE,
-           keyboard::KeyboardControllerState::SHOWN},
+          {KeyboardControllerState::WILL_HIDE, KeyboardControllerState::SHOWN},
 
           // HideKeyboard can be called at anytime for example on shutdown.
-          {keyboard::KeyboardControllerState::SHOWN,
-           keyboard::KeyboardControllerState::HIDDEN},
+          {KeyboardControllerState::SHOWN, KeyboardControllerState::HIDDEN},
 
           // Return to INITIAL when keyboard is disabled.
-          {keyboard::KeyboardControllerState::LOADING_EXTENSION,
-           keyboard::KeyboardControllerState::INITIAL},
-          {keyboard::KeyboardControllerState::HIDDEN,
-           keyboard::KeyboardControllerState::INITIAL},
+          {KeyboardControllerState::LOADING_EXTENSION,
+           KeyboardControllerState::INITIAL},
+          {KeyboardControllerState::HIDDEN, KeyboardControllerState::INITIAL},
       };
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
 };
@@ -117,21 +114,21 @@ void SetTouchEventLogging(bool enable) {
     controller->SetTouchEventLoggingEnabled(enable);
 }
 
-std::string StateToStr(keyboard::KeyboardControllerState state) {
+std::string StateToStr(KeyboardControllerState state) {
   switch (state) {
-    case keyboard::KeyboardControllerState::UNKNOWN:
+    case KeyboardControllerState::UNKNOWN:
       return "UNKNOWN";
-    case keyboard::KeyboardControllerState::SHOWN:
+    case KeyboardControllerState::SHOWN:
       return "SHOWN";
-    case keyboard::KeyboardControllerState::LOADING_EXTENSION:
+    case KeyboardControllerState::LOADING_EXTENSION:
       return "LOADING_EXTENSION";
-    case keyboard::KeyboardControllerState::WILL_HIDE:
+    case KeyboardControllerState::WILL_HIDE:
       return "WILL_HIDE";
-    case keyboard::KeyboardControllerState::HIDDEN:
+    case KeyboardControllerState::HIDDEN:
       return "HIDDEN";
-    case keyboard::KeyboardControllerState::INITIAL:
+    case KeyboardControllerState::INITIAL:
       return "INITIAL";
-    case keyboard::KeyboardControllerState::COUNT:
+    case KeyboardControllerState::COUNT:
       NOTREACHED();
   }
   NOTREACHED() << "Unknownstate: " << static_cast<int>(state);
@@ -139,9 +136,20 @@ std::string StateToStr(keyboard::KeyboardControllerState state) {
   return "";
 }
 
-}  // namespace
+// An enumeration of different keyboard control events that should be logged.
+enum KeyboardControlEvent {
+  KEYBOARD_CONTROL_SHOW = 0,
+  KEYBOARD_CONTROL_HIDE_AUTO,
+  KEYBOARD_CONTROL_HIDE_USER,
+  KEYBOARD_CONTROL_MAX,
+};
 
-namespace keyboard {
+void LogKeyboardControlEvent(KeyboardControlEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event,
+                            KEYBOARD_CONTROL_MAX);
+}
+
+}  // namespace
 
 // Observer for both keyboard show and hide animations. It should be owned by
 // KeyboardController.
@@ -170,7 +178,8 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 KeyboardController::KeyboardController()
-    : weak_factory_report_lingering_state_(this),
+    : ime_observer_(this),
+      weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
@@ -178,14 +187,25 @@ KeyboardController::KeyboardController()
 
 KeyboardController::~KeyboardController() {
   DCHECK(g_keyboard_controller);
-  DCHECK(!enabled())
-      << "Keyboard must be disabled before KeyboardController is destroyed";
+  DCHECK(!ui_)
+      << "Keyboard UI must be destroyed before KeyboardController is destroyed";
   g_keyboard_controller = nullptr;
+}
+
+// static
+KeyboardController* KeyboardController::Get() {
+  DCHECK(g_keyboard_controller);
+  return g_keyboard_controller;
+}
+
+// static
+bool KeyboardController::HasInstance() {
+  return g_keyboard_controller;
 }
 
 void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
                                         KeyboardLayoutDelegate* delegate) {
-  if (enabled())
+  if (ui_)
     DisableKeyboard();
 
   ui_ = std::move(ui);
@@ -195,16 +215,16 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
   show_on_keyboard_window_load_ = false;
   keyboard_locked_ = false;
   state_ = KeyboardControllerState::UNKNOWN;
-  ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
   SetContainerBehaviorInternal(ContainerType::FULL_WIDTH);
   ChangeState(KeyboardControllerState::INITIAL);
   visual_bounds_in_screen_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
+  UpdateInputMethodObserver();
 }
 
 void KeyboardController::DisableKeyboard() {
-  if (!enabled())
+  if (!ui_)
     return;
 
   if (parent_container_)
@@ -222,7 +242,7 @@ void KeyboardController::DisableKeyboard() {
   container_behavior_.reset();
   animation_observer_.reset();
 
-  ui_->GetInputMethod()->RemoveObserver(this);
+  ime_observer_.RemoveAll();
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardDisabled();
   ui_->SetController(nullptr);
@@ -236,8 +256,7 @@ void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
   // Observe changes to root window bounds.
   parent_container_->GetRootWindow()->AddObserver(this);
 
-  // TODO(https://crbug.com/845780): Investigate whether this does anything.
-  OnTextInputStateChanged(ui_->GetInputMethod()->GetTextInputClient());
+  UpdateInputMethodObserver();
 
   if (GetKeyboardWindow()) {
     DCHECK(!GetKeyboardWindow()->parent());
@@ -259,17 +278,6 @@ void KeyboardController::DeactivateKeyboard() {
   parent_container_ = nullptr;
 }
 
-// static
-KeyboardController* KeyboardController::Get() {
-  DCHECK(g_keyboard_controller);
-  return g_keyboard_controller;
-}
-
-// static
-bool KeyboardController::HasInstance() {
-  return g_keyboard_controller;
-}
-
 aura::Window* KeyboardController::GetKeyboardWindow() const {
   return ui_ && ui_->HasKeyboardWindow() ? ui_->GetKeyboardWindow() : nullptr;
 }
@@ -278,22 +286,26 @@ aura::Window* KeyboardController::GetRootWindow() {
   return parent_container_ ? parent_container_->GetRootWindow() : nullptr;
 }
 
+// private
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   visual_bounds_in_screen_ = new_bounds;
-  if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
+  aura::Window* window = GetKeyboardWindow();
+  if (window && window->IsVisible()) {
     const gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBounds();
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(), new_bounds,
         occluded_bounds_in_screen, observer_list_);
 
-    if (keyboard::IsKeyboardOverscrollEnabled())
+    if (IsKeyboardOverscrollEnabled())
       ui_->InitInsets(occluded_bounds_in_screen);
     else
       ui_->ResetInsets();
   } else {
     visual_bounds_in_screen_ = gfx::Rect();
   }
+
+  EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
 void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
@@ -329,6 +341,16 @@ void KeyboardController::NotifyKeyboardWindowLoaded() {
   }
 }
 
+void KeyboardController::Reload() {
+  if (!GetKeyboardWindow())
+    return;
+
+  // A reload should never try to show virtual keyboard. If keyboard is not
+  // visible before reload, it should stay invisible after reload.
+  show_on_keyboard_window_load_ = false;
+  ui_->ReloadKeyboardIfNeeded();
+}
+
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -346,6 +368,54 @@ ui::TextInputClient* KeyboardController::GetTextInputClient() {
   return ui_->GetInputMethod()->GetTextInputClient();
 }
 
+bool KeyboardController::InsertText(const base::string16& text) {
+  if (!ui_)
+    return false;
+
+  ui::InputMethod* input_method = ui_->GetInputMethod();
+  if (!input_method)
+    return false;
+
+  ui::TextInputClient* tic = input_method->GetTextInputClient();
+  if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
+
+  tic->InsertText(text);
+
+  return true;
+}
+
+bool KeyboardController::UpdateKeyboardConfig(
+    const mojom::KeyboardConfig& config) {
+  if (config.Equals(keyboard_config_))
+    return false;
+  keyboard_config_ = config;
+  if (IsEnabled())
+    NotifyKeyboardConfigChanged();
+  return true;
+}
+
+bool KeyboardController::IsKeyboardOverscrollEnabled() const {
+  if (!keyboard::IsKeyboardEnabled())
+    return false;
+
+  // Users of the sticky accessibility on-screen keyboard are likely to be using
+  // mouse input, which may interfere with overscrolling.
+  if (IsEnabled() && !IsOverscrollAllowed())
+    return false;
+
+  // If overscroll enabled behavior is set, use it instead. Currently
+  // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
+  if (keyboard_config_.overscroll_behavior !=
+      mojom::KeyboardOverscrollBehavior::kDefault) {
+    return keyboard_config_.overscroll_behavior ==
+           mojom::KeyboardOverscrollBehavior::kEnabled;
+  }
+
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableVirtualKeyboardOverscroll);
+}
+
 void KeyboardController::MoveToDisplayWithTransition(
     display::Display display,
     gfx::Rect new_bounds_in_local) {
@@ -354,10 +424,12 @@ void KeyboardController::MoveToDisplayWithTransition(
   HideKeyboardTemporarilyForTransition();
 }
 
+// private
 void KeyboardController::HideKeyboard(HideReason reason) {
   TRACE_EVENT0("vk", "HideKeyboard");
 
   switch (state_) {
+    case KeyboardControllerState::UNKNOWN:
     case KeyboardControllerState::INITIAL:
     case KeyboardControllerState::HIDDEN:
       return;
@@ -374,12 +446,11 @@ void KeyboardController::HideKeyboard(HideReason reason) {
         case HIDE_REASON_SYSTEM_EXPLICIT:
         case HIDE_REASON_SYSTEM_IMPLICIT:
         case HIDE_REASON_SYSTEM_TEMPORARY:
-          keyboard::LogKeyboardControlEvent(
-              keyboard::KEYBOARD_CONTROL_HIDE_AUTO);
+          LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_AUTO);
           break;
         case HIDE_REASON_USER_EXPLICIT:
-          keyboard::LogKeyboardControlEvent(
-              keyboard::KEYBOARD_CONTROL_HIDE_USER);
+        case HIDE_REASON_USER_IMPLICIT:
+          LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_USER);
           break;
       }
 
@@ -393,6 +464,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
         case HIDE_REASON_SYSTEM_TEMPORARY:
         case HIDE_REASON_SYSTEM_EXPLICIT:
         case HIDE_REASON_USER_EXPLICIT:
+        case HIDE_REASON_USER_IMPLICIT:
           time_of_last_blur_ = base::Time::UnixEpoch();
           break;
       }
@@ -422,17 +494,21 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       for (KeyboardControllerObserver& observer : observer_list_)
         observer.OnKeyboardHidden(reason == HIDE_REASON_SYSTEM_TEMPORARY);
-      ui_->EnsureCaretInWorkArea(gfx::Rect());
 
       break;
     }
-    default:
+    case KeyboardControllerState::COUNT:
       NOTREACHED();
   }
 }
 
 void KeyboardController::HideKeyboardByUser() {
   HideKeyboard(HIDE_REASON_USER_EXPLICIT);
+}
+
+void KeyboardController::HideKeyboardImplicitlyByUser() {
+  if (!keyboard_locked())
+    HideKeyboard(HIDE_REASON_USER_IMPLICIT);
 }
 
 void KeyboardController::HideKeyboardTemporarilyForTransition() {
@@ -461,6 +537,7 @@ void KeyboardController::DismissVirtualKeyboard() {
   HideKeyboardByUser();
 }
 
+// private
 void KeyboardController::HideAnimationFinished() {
   if (state_ == KeyboardControllerState::HIDDEN) {
     if (queued_container_type_) {
@@ -482,15 +559,16 @@ void KeyboardController::HideAnimationFinished() {
   }
 }
 
+// private
 void KeyboardController::ShowAnimationFinished() {
   MarkKeyboardLoadFinished();
 
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
-  ui_->EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
+// private
 void KeyboardController::SetContainerBehaviorInternal(
     const ContainerType type) {
   // Reset the hit test event targeter because the hit test bounds will
@@ -524,6 +602,16 @@ void KeyboardController::ShowKeyboardInDisplay(
   ShowKeyboardInternal(display);
 }
 
+void KeyboardController::LoadKeyboardWindowInBackground() {
+  // ShowKeyboardInternal may trigger RootControllerWindow::ActiveKeyboard which
+  // will cause LoadKeyboardWindowInBackground to potentially run even though
+  // the keyboard has been initialized.
+  if (state_ != KeyboardControllerState::INITIAL)
+    return;
+
+  PopulateKeyboardContent(display::Display(), false);
+}
+
 void KeyboardController::OnWindowAddedToRootWindow(aura::Window* window) {
   container_behavior_->SetCanonicalBounds(GetKeyboardWindow(),
                                           GetRootWindow()->bounds());
@@ -545,13 +633,10 @@ void KeyboardController::OnWindowBoundsChanged(
     NotifyKeyboardBoundsChanging(new_bounds);
 }
 
-void KeyboardController::Reload() {
-  if (ui_->HasKeyboardWindow()) {
-    // A reload should never try to show virtual keyboard. If keyboard is not
-    // visible before reload, it should stay invisible after reload.
-    show_on_keyboard_window_load_ = false;
-    ui_->ReloadKeyboardIfNeeded();
-  }
+void KeyboardController::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+  ime_observer_.RemoveAll();
+  OnTextInputStateChanged(nullptr);
 }
 
 void KeyboardController::OnTextInputStateChanged(
@@ -609,23 +694,14 @@ void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
 
 void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (IsKeyboardEnabled() && !keyboard_locked())
+  if (keyboard::IsKeyboardEnabled() && !keyboard_locked())
     ShowKeyboardInternal(display::Display());
 }
 
-void KeyboardController::LoadKeyboardWindowInBackground() {
-  // ShowKeyboardInternal may trigger RootControllerWindow::ActiveKeyboard which
-  // will cause LoadKeyboardWindowInBackground to potentially run even though
-  // the keyboard has been initialized.
-  if (state_ != KeyboardControllerState::INITIAL)
-    return;
-
-  PopulateKeyboardContent(display::Display(), false);
-}
-
 void KeyboardController::ShowKeyboardInternal(const display::Display& display) {
-  keyboard::MarkKeyboardLoadStarted();
+  MarkKeyboardLoadStarted();
   PopulateKeyboardContent(display, true);
+  UpdateInputMethodObserver();
 }
 
 void KeyboardController::PopulateKeyboardContent(
@@ -637,13 +713,15 @@ void KeyboardController::PopulateKeyboardContent(
 
   if (parent_container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
+    // TODO(https://crbug.com/845780): This call will create and load the
+    // virtual keyboard window. Redesign the KeyboardUI interface so that
+    // loading is explicit.
     aura::Window* keyboard_window = ui_->GetKeyboardWindow();
     keyboard_window->AddPreTargetHandler(&event_filter_);
     keyboard_window->AddObserver(this);
     parent_container_->AddChild(keyboard_window);
   }
 
-  DCHECK(ui_->HasKeyboardWindow());
   if (layout_delegate_ != nullptr) {
     if (display.is_valid())
       layout_delegate_->MoveKeyboardToDisplay(display);
@@ -651,7 +729,8 @@ void KeyboardController::PopulateKeyboardContent(
       layout_delegate_->MoveKeyboardToTouchableDisplay();
   }
 
-  aura::Window* keyboard_window = ui_->GetKeyboardWindow();
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  DCHECK(keyboard_window);
   DCHECK_EQ(parent_container_, keyboard_window->parent());
 
   switch (state_) {
@@ -670,7 +749,7 @@ void KeyboardController::PopulateKeyboardContent(
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
-      DCHECK_EQ(ui_->GetKeyboardWindow()->bounds().height(), 0);
+      DCHECK_EQ(keyboard_window->bounds().height(), 0);
       show_on_keyboard_window_load_ = show_keyboard;
       ChangeState(KeyboardControllerState::LOADING_EXTENSION);
       return;
@@ -687,7 +766,7 @@ void KeyboardController::PopulateKeyboardContent(
   // are at begin states for animation.
   container_behavior_->InitializeShowAnimationStartingState(keyboard_window);
 
-  keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
+  LogKeyboardControlEvent(KEYBOARD_CONTROL_SHOW);
   RecordUkmKeyboardShown();
 
   ui::LayerAnimator* container_animator =
@@ -729,7 +808,7 @@ void KeyboardController::NotifyKeyboardConfigChanged() {
 void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
                                               KeyboardControllerState next) {
   std::stringstream error_message;
-  const bool valid_transition = isAllowedStateTransition(prev, next);
+  const bool valid_transition = IsAllowedStateTransition(prev, next);
   if (!valid_transition)
     error_message << "Unexpected transition";
 
@@ -783,7 +862,7 @@ void KeyboardController::ReportLingeringState() {
 }
 
 gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
-  if (!enabled())
+  if (!ui_)
     return gfx::Rect();
 
   const gfx::Rect visual_bounds_in_window(visual_bounds_in_screen_.size());
@@ -798,7 +877,7 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // Overscroll is generally dependent on lock state, however, its behavior
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
-  if (!keyboard::IsKeyboardOverscrollEnabled() &&
+  if (!IsKeyboardOverscrollEnabled() &&
       container_behavior_->GetType() != ContainerType::FLOATING &&
       container_behavior_->GetType() != ContainerType::FULLSCREEN) {
     return visual_bounds_in_screen_;
@@ -866,6 +945,15 @@ void KeyboardController::SetContainerType(
   }
 }
 
+ui::InputMethod* KeyboardController::GetInputMethodForTest() {
+  return ui_->GetInputMethod();
+}
+
+void KeyboardController::EnsureCaretInWorkAreaForTest(
+    const gfx::Rect& occluded_bounds) {
+  EnsureCaretInWorkArea(occluded_bounds);
+}
+
 void KeyboardController::RecordUkmKeyboardShown() {
   ui::TextInputClient* text_input_client = GetTextInputClient();
   if (!text_input_client)
@@ -882,7 +970,7 @@ bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
 
 bool KeyboardController::DisplayVirtualKeyboard() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (IsKeyboardEnabled() && !keyboard_locked()) {
+  if (keyboard::IsKeyboardEnabled() && !keyboard_locked()) {
     ShowKeyboardInternal(display::Display());
     return true;
   }
@@ -899,7 +987,65 @@ void KeyboardController::RemoveObserver(
 }
 
 bool KeyboardController::IsKeyboardVisible() {
-  return state_ == KeyboardControllerState::SHOWN;
+  if (state_ == KeyboardControllerState::SHOWN) {
+    DCHECK(IsEnabled());
+    return true;
+  }
+  return false;
+}
+
+void KeyboardController::UpdateInputMethodObserver() {
+  ui::InputMethod* ime = ui_->GetInputMethod();
+
+  // IME could be null during initialization. Ignoring the case is okay because
+  // UpdateInputMethodObserver() will be called later on.
+  if (!ime)
+    return;
+
+  if (ime_observer_.IsObserving(ime))
+    return;
+
+  // Only observes the current active IME.
+  ime_observer_.RemoveAll();
+  ime_observer_.Add(ime);
+
+  // TODO(https://crbug.com/845780): Investigate whether this does anything.
+  OnTextInputStateChanged(ime->GetTextInputClient());
+}
+
+void KeyboardController::EnsureCaretInWorkArea(
+    const gfx::Rect& occluded_bounds) {
+  ui::InputMethod* ime = ui_->GetInputMethod();
+  if (!ime)
+    return;
+
+  TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
+
+  if (IsOverscrollAllowed()) {
+    ime->SetOnScreenKeyboardBounds(occluded_bounds);
+  } else if (ime->GetTextInputClient()) {
+    ime->GetTextInputClient()->EnsureCaretNotInRect(occluded_bounds);
+  }
+}
+
+void KeyboardController::MarkKeyboardLoadStarted() {
+  if (!keyboard_load_time_logged_)
+    keyboard_load_time_start_ = base::Time::Now();
+}
+
+void KeyboardController::MarkKeyboardLoadFinished() {
+  // Possible to get a load finished without a start if navigating directly to
+  // chrome://keyboard.
+  if (keyboard_load_time_start_.is_null())
+    return;
+
+  if (keyboard_load_time_logged_)
+    return;
+
+  // Log the delta only once.
+  UMA_HISTOGRAM_TIMES("VirtualKeyboard.InitLatency.FirstLoad",
+                      base::Time::Now() - keyboard_load_time_start_);
+  keyboard_load_time_logged_ = true;
 }
 
 }  // namespace keyboard

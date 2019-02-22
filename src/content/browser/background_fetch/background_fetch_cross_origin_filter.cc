@@ -37,7 +37,7 @@ bool ParseOriginListHeader(const std::string& value,
 
   for (const std::string& origin_string : origin_vector) {
     url::Origin origin = url::Origin::Create(GURL(origin_string));
-    if (origin.unique())
+    if (origin.opaque())
       return false;
 
     candidate_origins.insert(origin);

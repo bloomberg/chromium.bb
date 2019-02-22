@@ -7,6 +7,7 @@
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
+class MediaRouterActionController;
 class PrefService;
 
 namespace views {
@@ -57,9 +58,10 @@ class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  explicit MediaRemotingDialogView(views::View* anchor_view,
-                                   PrefService* pref_service,
-                                   PermissionCallback callback);
+  MediaRemotingDialogView(views::View* anchor_view,
+                          PrefService* pref_service,
+                          MediaRouterActionController* action_controller,
+                          PermissionCallback callback);
   ~MediaRemotingDialogView() override;
 
   // views::BubbleDialogDelegateView:
@@ -76,6 +78,7 @@ class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
   PermissionCallback permission_callback_;
 
   PrefService* const pref_service_;
+  MediaRouterActionController* const action_controller_;
 
   // Title shown at the top of the dialog.
   base::string16 dialog_title_;

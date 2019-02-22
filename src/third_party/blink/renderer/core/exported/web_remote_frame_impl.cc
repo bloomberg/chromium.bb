@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -185,11 +184,10 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
 }
 
 void WebRemoteFrameImpl::SetCcLayer(cc::Layer* layer,
-                                    bool prevent_contents_opaque_changes) {
-  if (!GetFrame())
-    return;
-
-  GetFrame()->SetCcLayer(layer, prevent_contents_opaque_changes);
+                                    bool prevent_contents_opaque_changes,
+                                    bool is_surface_layer) {
+  GetFrame()->SetCcLayer(layer, prevent_contents_opaque_changes,
+                         is_surface_layer);
 }
 
 void WebRemoteFrameImpl::SetCoreFrame(RemoteFrame* frame) {
@@ -314,11 +312,7 @@ void WebRemoteFrameImpl::DidStopLoading() {
 }
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
-  HTMLFrameOwnerElement* owner = GetFrame()->DeprecatedLocalOwner();
-  if (!owner || !owner->GetLayoutObject())
-    return false;
-  return owner->GetLayoutObject()->Style()->PointerEvents() ==
-         EPointerEvents::kNone;
+  return GetFrame()->IsIgnoredForHitTest();
 }
 
 void WebRemoteFrameImpl::WillEnterFullscreen() {

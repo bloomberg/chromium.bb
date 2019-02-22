@@ -26,6 +26,8 @@ enum DifferentPrimaryAccounts {
 };
 
 // Track all the ways a profile can become signed out as a histogram.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
 enum ProfileSignout {
   // The value used within unit tests
   SIGNOUT_TEST = 0,
@@ -50,6 +52,9 @@ enum ProfileSignout {
   AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
   // The user disables sync from the DICE UI.
   USER_TUNED_OFF_SYNC_FROM_DICE_UI,
+  // Android specific. Signout forced because the account was removed from the
+  // device.
+  ACCOUNT_REMOVED_FROM_DEVICE,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
@@ -64,7 +69,7 @@ enum AccessPointAction {
   HISTOGRAM_REJECTED,
   // The user pressed the X button to dismiss the infobar this time.
   HISTOGRAM_DISMISSED,
-  // The user completely ignored the infoar.  Either they navigated away, or
+  // The user completely ignored the infobar.  Either they navigated away, or
   // they used the page as is.
   HISTOGRAM_IGNORED,
   // The user clicked on the learn more link in the infobar.
@@ -342,6 +347,10 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                                     bool primary_accounts_same,
                                     bool is_first_reconcile,
                                     int pre_count_gaia_cookies);
+
+// Logs to UMA histograms how many accounts are in the browser for this
+// profile.
+void RecordAccountsPerProfile(int total_number_accounts);
 
 // Logs duration of a single execution of AccountReconciler to UMA histograms.
 // |duration| - How long execution of AccountReconciler took.

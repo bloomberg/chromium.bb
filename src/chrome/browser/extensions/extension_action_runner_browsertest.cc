@@ -46,7 +46,8 @@ const char kBackgroundScriptSource[] =
     "    code: \"chrome.test.sendMessage('inject succeeded');\"\n"
     "  });"
     "};\n"
-    "chrome.tabs.onUpdated.addListener(listener);";
+    "chrome.tabs.onUpdated.addListener(listener);\n"
+    "chrome.test.sendMessage('ready');";
 const char kContentScriptSource[] =
     "chrome.test.sendMessage('inject succeeded');";
 
@@ -102,6 +103,12 @@ class ExtensionActionRunnerBrowserTest : public ExtensionBrowserTest {
                                    InjectionType injection_type,
                                    WithholdPermissions withhold_permissions);
 
+  void RunActiveScriptsTest(const std::string& name,
+                            HostType host_type,
+                            InjectionType injection_type,
+                            WithholdPermissions withhold_permissions,
+                            RequiresConsent requires_consent);
+
  private:
   std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
   std::vector<const Extension*> extensions_;
@@ -111,7 +118,8 @@ class ExtensionActionRunnerBrowserTest : public ExtensionBrowserTest {
 void ExtensionActionRunnerBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  scoped_feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list_.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 }
 
 void ExtensionActionRunnerBrowserTest::TearDownOnMainThread() {
@@ -165,7 +173,15 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
                  injection_type == CONTENT_SCRIPT ? kContentScriptSource
                                                   : kBackgroundScriptSource);
 
-  const Extension* extension = LoadExtension(dir->UnpackedPath());
+  const Extension* extension = nullptr;
+  if (injection_type == CONTENT_SCRIPT) {
+    extension = LoadExtension(dir->UnpackedPath());
+  } else {
+    ExtensionTestMessageListener listener("ready", false);
+    extension = LoadExtension(dir->UnpackedPath());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
   if (extension) {
     test_extension_dirs_.push_back(std::move(dir));
     extensions_.push_back(extension);
@@ -181,176 +197,112 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
   return extension;
 }
 
-class ActiveScriptTester {
- public:
-  ActiveScriptTester(const std::string& name,
-                     const Extension* extension,
-                     Browser* browser,
-                     RequiresConsent requires_consent,
-                     InjectionType type);
-  ~ActiveScriptTester();
+void ExtensionActionRunnerBrowserTest::RunActiveScriptsTest(
+    const std::string& name,
+    HostType host_type,
+    InjectionType injection_type,
+    WithholdPermissions withhold_permissions,
+    RequiresConsent requires_consent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  testing::AssertionResult Verify();
-
-  std::string name() const;
-
- private:
-  // Returns the ExtensionActionRunner, or null if one does not exist.
-  ExtensionActionRunner* GetExtensionActionRunner();
-
-  // Returns true if the extension has a pending request with the
-  // ExtensionActionRunner.
-  bool WantsToRun();
-
-  // The name of the extension, and also the message it sends.
-  std::string name_;
-
-  // The extension associated with this tester.
-  const Extension* extension_;
-
-  // The browser the tester is running in.
-  Browser* browser_;
-
-  // Whether or not the extension has permission to run the script without
-  // asking the user.
-  RequiresConsent requires_consent_;
-
-  // All of these extensions should inject a script (either through content
-  // scripts or through chrome.tabs.executeScript()) that sends a message with
-  // the |kInjectSucceeded| message.
-  std::unique_ptr<ExtensionTestMessageListener> inject_success_listener_;
-};
-
-ActiveScriptTester::ActiveScriptTester(const std::string& name,
-                                       const Extension* extension,
-                                       Browser* browser,
-                                       RequiresConsent requires_consent,
-                                       InjectionType type)
-    : name_(name),
-      extension_(extension),
-      browser_(browser),
-      requires_consent_(requires_consent),
-      inject_success_listener_(
-          new ExtensionTestMessageListener(kInjectSucceeded,
-                                           false /* won't reply */)) {
-  inject_success_listener_->set_extension_id(extension->id());
-}
-
-ActiveScriptTester::~ActiveScriptTester() {}
-
-std::string ActiveScriptTester::name() const {
-  return name_;
-}
-
-testing::AssertionResult ActiveScriptTester::Verify() {
-  if (!extension_)
-    return testing::AssertionFailure() << "Could not load extension: " << name_;
+  const Extension* extension =
+      CreateExtension(host_type, injection_type, withhold_permissions);
+  ASSERT_TRUE(extension);
 
   content::WebContents* web_contents =
-      browser_ ? browser_->tab_strip_model()->GetActiveWebContents() : NULL;
-  if (!web_contents)
-    return testing::AssertionFailure() << "No web contents.";
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
 
-  // Give the extension plenty of time to inject.
-  if (!RunAllPendingInRenderer(web_contents))
-    return testing::AssertionFailure() << "Could not run pending in renderer.";
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(runner);
 
-  // Make sure all running tasks are complete.
-  content::RunAllPendingInMessageLoop();
+  const bool will_reply = false;
+  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded,
+                                                       will_reply);
+  auto navigate = [this]() {
+    // Navigate to an URL (which matches the explicit host specified in the
+    // extension content_scripts_explicit_hosts). All extensions should
+    // inject the script.
+    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                                "/extensions/test_file.html"));
+  };
 
-  ExtensionActionRunner* runner = GetExtensionActionRunner();
-  if (!runner)
-    return testing::AssertionFailure() << "Could not find runner.";
-
-  bool wants_to_run = WantsToRun();
-
-  // An extension should have an action displayed iff it requires user consent.
-  if ((requires_consent_ == REQUIRES_CONSENT && !wants_to_run) ||
-      (requires_consent_ == DOES_NOT_REQUIRE_CONSENT && wants_to_run)) {
-    return testing::AssertionFailure()
-           << "Improper wants to run for " << name_ << ": expected "
-           << (requires_consent_ == REQUIRES_CONSENT) << ", found "
-           << wants_to_run;
+  if (requires_consent == DOES_NOT_REQUIRE_CONSENT) {
+    // If the extension doesn't require explicit consent, it should inject
+    // automatically right away.
+    navigate();
+    EXPECT_FALSE(runner->WantsToRun(extension));
+    EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
+    EXPECT_FALSE(runner->WantsToRun(extension));
+    return;
   }
 
-  // If the extension has permission, we should be able to simply wait for it
-  // to execute.
-  if (requires_consent_ == DOES_NOT_REQUIRE_CONSENT) {
-    EXPECT_TRUE(inject_success_listener_->WaitUntilSatisfied());
-    return testing::AssertionSuccess();
-  }
+  ASSERT_EQ(REQUIRES_CONSENT, requires_consent);
 
-  // Otherwise, we don't have permission, and have to grant it. Ensure the
-  // script has *not* already executed.
-  if (inject_success_listener_->was_satisfied()) {
-    return testing::AssertionFailure() << name_
-                                       << "'s script ran without permission.";
-  }
+  class BlockedActionWaiter : public ExtensionActionRunner::TestObserver {
+   public:
+    explicit BlockedActionWaiter(ExtensionActionRunner* runner)
+        : runner_(runner) {
+      runner_->set_observer_for_testing(this);
+    }
+    ~BlockedActionWaiter() { runner_->set_observer_for_testing(nullptr); }
 
-  // If we reach this point, we should always want to run.
-  DCHECK(wants_to_run);
+    void Wait() { run_loop_.Run(); }
+
+   private:
+    // ExtensionActionRunner::TestObserver:
+    void OnBlockedActionAdded() override { run_loop_.Quit(); }
+
+    ExtensionActionRunner* runner_;
+    base::RunLoop run_loop_;
+
+    DISALLOW_COPY_AND_ASSIGN(BlockedActionWaiter);
+  };
+
+  BlockedActionWaiter waiter(runner);
+  navigate();
+  waiter.Wait();
+  EXPECT_TRUE(runner->WantsToRun(extension));
+  EXPECT_FALSE(inject_success_listener.was_satisfied());
 
   // Grant permission by clicking on the extension action.
-  runner->RunAction(extension_, true);
+  runner->RunAction(extension, true);
 
   // Now, the extension should be able to inject the script.
-  EXPECT_TRUE(inject_success_listener_->WaitUntilSatisfied());
+  EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
 
   // The extension should no longer want to run.
-  wants_to_run = WantsToRun();
-  if (wants_to_run) {
-    return testing::AssertionFailure()
-           << "Extension " << name_ << " still wants to run after injecting.";
-  }
-
-  return testing::AssertionSuccess();
+  EXPECT_FALSE(runner->WantsToRun(extension));
 }
 
-ExtensionActionRunner* ActiveScriptTester::GetExtensionActionRunner() {
-  return ExtensionActionRunner::GetForWebContents(
-      browser_ ? browser_->tab_strip_model()->GetActiveWebContents() : nullptr);
+// Load up different combinations of extensions, and verify that script
+// injection is properly withheld and indicated to the user.
+// NOTE: Though these could be parameterized test cases, there's enough
+// bits here that just having a helper method is quite a bit more readable.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionActionRunnerBrowserTest,
+    ActiveScriptsAreDisplayedAndDelayExecution_ExecuteScripts_AllHosts) {
+  RunActiveScriptsTest("execute_scripts_all_hosts", ALL_HOSTS, EXECUTE_SCRIPT,
+                       WITHHOLD_PERMISSIONS, REQUIRES_CONSENT);
 }
-
-bool ActiveScriptTester::WantsToRun() {
-  ExtensionActionRunner* runner = GetExtensionActionRunner();
-  return runner ? runner->WantsToRun(extension_) : false;
+IN_PROC_BROWSER_TEST_F(
+    ExtensionActionRunnerBrowserTest,
+    ActiveScriptsAreDisplayedAndDelayExecution_ExecuteScripts_ExplicitHosts) {
+  RunActiveScriptsTest("execute_scripts_explicit_hosts", EXPLICIT_HOSTS,
+                       EXECUTE_SCRIPT, WITHHOLD_PERMISSIONS, REQUIRES_CONSENT);
 }
-
-IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
-                       ActiveScriptsAreDisplayedAndDelayExecution) {
-  // First, we load up four extensions:
-  // - An extension that injects scripts into all hosts,
-  // - An extension that injects scripts into explicit hosts,
-  // - An extension with a content script that runs on all hosts,
-  // - An extension with a content script that runs on explicit hosts.
-  // All extensions should require user consent.
-  std::vector<std::unique_ptr<ActiveScriptTester>> testers;
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "inject_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), REQUIRES_CONSENT, EXECUTE_SCRIPT));
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "inject_scripts_explicit_hosts",
-      CreateExtension(EXPLICIT_HOSTS, EXECUTE_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), REQUIRES_CONSENT, EXECUTE_SCRIPT));
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "content_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), REQUIRES_CONSENT, CONTENT_SCRIPT));
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "content_scripts_explicit_hosts",
-      CreateExtension(EXPLICIT_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS),
-      browser(), REQUIRES_CONSENT, CONTENT_SCRIPT));
-
-  // Navigate to an URL (which matches the explicit host specified in the
-  // extension content_scripts_explicit_hosts). All four extensions should
-  // inject the script.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
-
-  for (const auto& tester : testers)
-    EXPECT_TRUE(tester->Verify()) << tester->name();
+IN_PROC_BROWSER_TEST_F(
+    ExtensionActionRunnerBrowserTest,
+    ActiveScriptsAreDisplayedAndDelayExecution_ContentScripts_AllHosts) {
+  RunActiveScriptsTest("content_scripts_all_hosts", ALL_HOSTS, CONTENT_SCRIPT,
+                       WITHHOLD_PERMISSIONS, REQUIRES_CONSENT);
+}
+IN_PROC_BROWSER_TEST_F(
+    ExtensionActionRunnerBrowserTest,
+    ActiveScriptsAreDisplayedAndDelayExecution_ContentScripts_ExplicitHosts) {
+  RunActiveScriptsTest("content_scripts_explicit_hosts", EXPLICIT_HOSTS,
+                       CONTENT_SCRIPT, WITHHOLD_PERMISSIONS, REQUIRES_CONSENT);
 }
 
 // Test that removing an extension with pending injections a) removes the
@@ -546,25 +498,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
       web_contents->GetController().GetLastCommittedEntry()->GetUniqueID());
 }
 
+// If we don't withhold permissions, extensions should execute normally.
 IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
-                       ScriptsExecuteWhenNoPermissionsWithheld) {
-  // If we don't withhold permissions, extensions should execute normally.
-  std::vector<std::unique_ptr<ActiveScriptTester>> testers;
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "content_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, DONT_WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT));
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "inject_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT, DONT_WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT));
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
-
-  for (const auto& tester : testers)
-    EXPECT_TRUE(tester->Verify()) << tester->name();
+                       ScriptsExecuteWhenNoPermissionsWithheld_ContentScripts) {
+  RunActiveScriptsTest("content_scripts_all_hosts", ALL_HOSTS, CONTENT_SCRIPT,
+                       DONT_WITHHOLD_PERMISSIONS, DOES_NOT_REQUIRE_CONSENT);
+}
+IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
+                       ScriptsExecuteWhenNoPermissionsWithheld_ExecuteScripts) {
+  RunActiveScriptsTest("execute_scripts_all_hosts", ALL_HOSTS, EXECUTE_SCRIPT,
+                       DONT_WITHHOLD_PERMISSIONS, DOES_NOT_REQUIRE_CONSENT);
 }
 
 // A version of the test with the flag off, in order to test that everything
@@ -579,23 +522,14 @@ class FlagOffExtensionActionRunnerBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(FlagOffExtensionActionRunnerBrowserTest,
-                       ScriptsExecuteWhenFlagAbsent) {
-  std::vector<std::unique_ptr<ActiveScriptTester>> testers;
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "content_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, DONT_WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT));
-  testers.push_back(std::make_unique<ActiveScriptTester>(
-      "inject_scripts_all_hosts",
-      CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT, DONT_WITHHOLD_PERMISSIONS),
-      browser(), DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT));
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
-
-  for (const auto& tester : testers)
-    EXPECT_TRUE(tester->Verify()) << tester->name();
+                       ScriptsExecuteWhenFlagAbsent_ContentScripts) {
+  RunActiveScriptsTest("content_scripts_all_hosts", ALL_HOSTS, CONTENT_SCRIPT,
+                       DONT_WITHHOLD_PERMISSIONS, DOES_NOT_REQUIRE_CONSENT);
+}
+IN_PROC_BROWSER_TEST_F(FlagOffExtensionActionRunnerBrowserTest,
+                       ScriptsExecuteWhenFlagAbsent_ExecuteScripts) {
+  RunActiveScriptsTest("execute_scripts_all_hosts", ALL_HOSTS, EXECUTE_SCRIPT,
+                       DONT_WITHHOLD_PERMISSIONS, DOES_NOT_REQUIRE_CONSENT);
 }
 
 }  // namespace extensions

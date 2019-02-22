@@ -110,12 +110,12 @@ class AuthCredentials;
 class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
+class CookieStore;
 class HttpRequestHeaders;
 class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
-class URLRequestContext;
 }  // namespace net
 
 namespace network {
@@ -179,6 +179,7 @@ class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
+enum class OriginPolicyErrorReason;
 struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
@@ -322,6 +323,28 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       ResourceType resource_type);
 
+  // Called to create a URLLoaderFactory for network requests in the following
+  // cases:
+  // - The default factory to be used by a frame.  In this case
+  //   |request_initiator| is the origin being committed in the frame (or the
+  //   last origin committed in the frame).
+  // - The initiator-specific factory to be used by a frame.  This happens for
+  //   origins covered via
+  //   RenderFrameHost::MarkInitiatorAsRequiringSeparateURLLoaderFactory.
+  //
+  // This method allows the //content embedder to provide a URLLoaderFactory
+  // with |request_initiator|-specific properties (e.g. with relaxed
+  // Cross-Origin Read Blocking enforcement as needed by some extensions).
+  //
+  // If the embedder doesn't want to override the URLLoaderFactory for the given
+  // |request_initiator|, then it should return an invalid
+  // mojo::InterfacePtrInfo.
+  virtual network::mojom::URLLoaderFactoryPtrInfo
+  CreateURLLoaderFactoryForNetworkRequests(
+      RenderProcessHost* process,
+      network::mojom::NetworkContext* network_context,
+      const url::Origin& request_initiator);
+
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource
@@ -374,14 +397,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool* is_renderer_initiated,
                                         content::Referrer* referrer) {}
 
-  // Allows the embedder to override top document isolation for specific frames.
-  // |url| is the URL being loaded in the subframe, and |parent_site_instance|
-  // is the SiteInstance of the parent frame. Called only for subframes and only
-  // when top document isolation mode is enabled.
-  virtual bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      SiteInstance* parent_site_instance);
-
   // Temporary hack to determine whether to skip OOPIFs on the new tab page.
   // TODO(creis): Remove when https://crbug.com/566091 is fixed.
   virtual bool ShouldStayInParentProcessForNTP(
@@ -402,6 +417,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // unless there is a good reason otherwise.
   virtual bool ShouldTryToUseExistingProcessHost(
       BrowserContext* browser_context, const GURL& url);
+
+  // Returns whether or not subframes of |main_frame| should try to
+  // aggressively reuse existing processes, even when below process limit.
+  // This gets called when navigating a subframe to a URL that requires a
+  // dedicated process and defaults to true, which minimizes the process count.
+  // The embedder can choose to override this if there is a reason to avoid the
+  // reuse.
+  virtual bool ShouldSubframesTryToReuseExistingProcess(
+      RenderFrameHost* main_frame);
 
   // Called when a site instance is first associated with a process.
   virtual void SiteInstanceGotProcess(SiteInstance* site_instance) {}
@@ -610,12 +634,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
 
-  // Allow the embedder to override the request context based on the URL for
-  // certain operations, like cookie access. Returns nullptr to indicate the
-  // regular request context should be used.
+  // Allow the embedder to override the cookie store for a particular URL.
+  // Returns nullptr to indicate the regular cookie store should be used.
   // This is called on the IO thread.
-  virtual net::URLRequestContext* OverrideRequestContextForURL(
-      const GURL& url, ResourceContext* context);
+  virtual net::CookieStore* OverrideCookieStoreForURL(const GURL& url,
+                                                      ResourceContext* context);
 
   // Allows the embedder to override the LocationProvider implementation.
   // Return nullptr to indicate the default one for the platform should be
@@ -1122,15 +1145,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
-  // navigation or being brokered on behalf of a renderer fetching subresources,
-  // or for non-navigation requests initiated by the browser on behalf of a
-  // BrowserContext.
+  // navigation or being brokered on behalf of a renderer fetching subresources.
   //
   // |is_navigation| is true when it's a request used for navigation.
-  // |url| is set when it's a request for navigations or for a renderer fetching
-  // subresources. It's not set in the 3rd case (browser-initiated
-  // non-navigation requests) because in that case the factory is cached and it
-  // can be used for multiple URLs.
+  //
+  // |request_initiator| indicates which origin will be the initiator of
+  // requests that will use the URLLoaderFactory (see also
+  // |network::ResourceRequest::requests|).  |request_initiator| is set when
+  // it's a request for a renderer fetching subresources. It's not set when
+  // creating a factory for navigation requests, because navigation requests are
+  // made on behalf of the browser, rather than on behalf of any particular
+  // origin.
   //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its
@@ -1138,18 +1163,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
   // unmodified and this must return |false|.
   //
+  // |bypass_redirect_checks| will be set to true when the embedder will be
+  // handling redirect security checks.
+  //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
-  //
-  // Note that |frame| may be null if this is a browser-initiated,
-  // non-navigation request, e.g. a request made via
-  // |StoragePartition::GetURLLoaderFactoryForBrowserProcess()|.
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       bool is_navigation,
-      const GURL& url,
-      network::mojom::URLLoaderFactoryRequest* factory_request);
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      bool* bypass_redirect_checks);
 
   // Allows the embedder to intercept a WebSocket connection. |*request|
   // is always valid upon entry and MUST be valid upon return. The embedder
@@ -1326,6 +1351,19 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterRendererPreferenceWatcherForWorkers(
       BrowserContext* browser_context,
       mojom::RendererPreferenceWatcherPtr watcher);
+
+  // Returns the HTML content of the error page for Origin Policy related
+  // errors.
+  virtual base::Optional<std::string> GetOriginPolicyErrorPage(
+      OriginPolicyErrorReason error_reason,
+      const url::Origin& origin,
+      const GURL& url);
+
+  // Returns true if it is OK to ignore errors for certificates specified by the
+  // --ignore-certificate-errors-spki-list command line flag. The embedder may
+  // perform additional checks, such as requiring --user-data-dir flag too to
+  // make sure that insecure contents will not persist accidentally.
+  virtual bool CanIgnoreCertificateErrorIfNeeded();
 };
 
 }  // namespace content

@@ -334,6 +334,13 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
                                     WebFeature::kCSSDeepCombinator);
       FALLTHROUGH;
     case CSSSelector::kDescendant:
+      if (next_context.selector->GetPseudoType() == CSSSelector::kPseudoScope) {
+        if (next_context.selector->IsLastInTagHistory()) {
+          if (context.scope->IsDocumentFragment())
+            return kSelectorMatches;
+        }
+      }
+
       if (context.selector->RelationIsAffectedByPseudoContent()) {
         for (Element* element = context.element; element;
              element = element->parentElement()) {
@@ -361,6 +368,14 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       }
       return kSelectorFailsCompletely;
     case CSSSelector::kChild: {
+      if (next_context.selector->GetPseudoType() == CSSSelector::kPseudoScope) {
+        if (next_context.selector->IsLastInTagHistory()) {
+          if (context.element->parentNode() == context.scope &&
+              context.scope->IsDocumentFragment())
+            return kSelectorMatches;
+        }
+      }
+
       if (context.selector->RelationIsAffectedByPseudoContent())
         return MatchForPseudoContent(next_context, *context.element, result);
 
@@ -549,7 +564,7 @@ static bool AttributeValueMatches(const Attribute& attribute_item,
 
       unsigned start_search_at = 0;
       while (true) {
-        size_t found_pos =
+        wtf_size_t found_pos =
             value.Find(selector_value, start_search_at, case_sensitivity);
         if (found_pos == kNotFound)
           return false;
@@ -668,6 +683,7 @@ bool SelectorChecker::CheckOne(const SelectorCheckingContext& context,
   // http://drafts.csswg.org/css-scoping/#host-element
   if (context.scope && context.scope->OwnerShadowHost() == element &&
       (!selector.IsHostPseudoClass() &&
+       selector.GetPseudoType() != CSSSelector::kPseudoScope &&
        !context.treat_shadow_host_as_normal_scope &&
        selector.Match() != CSSSelector::kPseudoElement))
     return false;
@@ -878,6 +894,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoAutofill:
       return element.IsFormControlElement() &&
              ToHTMLFormControlElement(element).IsAutofilled();
+    case CSSSelector::kPseudoAutofillPreviewed:
+      return element.IsFormControlElement() &&
+             ToHTMLFormControlElement(element).GetAutofillState() ==
+                 WebAutofillState::kPreviewed;
+    case CSSSelector::kPseudoAutofillSelected:
+      return element.IsFormControlElement() &&
+             ToHTMLFormControlElement(element).GetAutofillState() ==
+                 WebAutofillState::kAutofilled;
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoLink:
@@ -887,34 +911,26 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
              context.visited_match_type == kVisitedMatchEnabled;
     case CSSSelector::kPseudoDrag:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByDrag();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByDrag();
-        }
       }
       return element.IsDragged();
     case CSSSelector::kPseudoFocus:
-      if (mode_ == kResolvingStyle && !context.in_rightmost_compound) {
-        element_style_->SetUnique();
+      if (mode_ == kResolvingStyle && !context.in_rightmost_compound)
         element.SetChildrenOrSiblingsAffectedByFocus();
-      }
       return MatchesFocusPseudoClass(element);
     case CSSSelector::kPseudoFocusVisible:
-      if (mode_ == kResolvingStyle && !context.in_rightmost_compound) {
-        element_style_->SetUnique();
+      if (mode_ == kResolvingStyle && !context.in_rightmost_compound)
         element.SetChildrenOrSiblingsAffectedByFocusVisible();
-      }
       return MatchesFocusVisiblePseudoClass(element);
     case CSSSelector::kPseudoFocusWithin:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByFocusWithin();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByFocusWithin();
-        }
       }
       probe::forcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
                               &force_pseudo_state);
@@ -923,12 +939,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.HasFocusWithin();
     case CSSSelector::kPseudoHover:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByHover();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByHover();
-        }
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
@@ -939,12 +953,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.IsHovered();
     case CSSSelector::kPseudoActive:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByActive();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByActive();
-        }
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
@@ -1039,13 +1051,17 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoPastCue:
       return element.IsVTTElement() && ToVTTElement(element).IsPastNode();
     case CSSSelector::kPseudoScope:
+      if (!context.scope)
+        return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
+      if (context.scope->IsShadowRoot())
+        return element == ToShadowRoot(context.scope)->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
-      return element.IsUnresolvedV0CustomElement();
+      return !element.IsDefined() && element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
-      return element.IsDefined();
+      return element.IsDefined() || element.IsUpgradedV0CustomElement();
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
       return CheckPseudoHost(context, result);
@@ -1145,7 +1161,13 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       DCHECK(selector.SelectorList()->First());
       DCHECK(!CSSSelectorList::Next(*selector.SelectorList()->First()));
       sub_context.selector = selector.SelectorList()->First();
-      return Match(sub_context);
+      MatchResult sub_result;
+      if (!Match(sub_context, sub_result))
+        return false;
+      result.specificity += sub_context.selector->Specificity() +
+                            sub_result.specificity +
+                            CSSSelector::kTagSpecificity;
+      return true;
     }
     case CSSSelector::kPseudoContent:
       return element.IsInShadowTree() && element.IsV0InsertionPoint();
@@ -1173,10 +1195,15 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
   if (!shadow_host || shadow_host != element)
     return false;
   DCHECK(IsShadowHost(element));
+  DCHECK(element.GetShadowRoot());
+  bool is_v1_shadow = element.GetShadowRoot()->IsV1();
 
   // For the case with no parameters, i.e. just :host.
-  if (!selector.SelectorList())
+  if (!selector.SelectorList()) {
+    if (is_v1_shadow)
+      result.specificity += CSSSelector::kClassLikeSpecificity;
     return true;
+  }
 
   SelectorCheckingContext sub_context(context);
   sub_context.is_sub_selector = true;
@@ -1218,6 +1245,8 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
   }
   if (matched) {
     result.specificity += max_specificity;
+    if (is_v1_shadow)
+      result.specificity += CSSSelector::kClassLikeSpecificity;
     return true;
   }
 

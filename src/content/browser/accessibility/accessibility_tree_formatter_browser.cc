@@ -30,6 +30,13 @@ AccessibilityTreeFormatterBrowser::BuildAccessibilityTreeForWindow(
   return nullptr;
 }
 
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterBrowser::BuildAccessibilityTreeForPattern(
+    const base::StringPiece& pattern) {
+  NOTREACHED();
+  return nullptr;
+}
+
 void AccessibilityTreeFormatterBrowser::RecursiveBuildAccessibilityTree(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {

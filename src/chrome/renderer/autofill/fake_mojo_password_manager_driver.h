@@ -31,8 +31,6 @@ class FakeMojoPasswordManagerDriver
     return called_show_pw_suggestions_;
   }
 
-  int show_pw_suggestions_key() const { return show_pw_suggestions_key_; }
-
   const base::Optional<base::string16>& show_pw_suggestions_username() const {
     return show_pw_suggestions_username_;
   }
@@ -43,7 +41,6 @@ class FakeMojoPasswordManagerDriver
 
   void reset_show_pw_suggestions() {
     called_show_pw_suggestions_ = false;
-    show_pw_suggestions_key_ = -1;
     show_pw_suggestions_username_ = base::nullopt;
     show_pw_suggestions_options_ = -1;
   }
@@ -153,8 +150,7 @@ class FakeMojoPasswordManagerDriver
   void SameDocumentNavigation(
       const autofill::PasswordForm& password_form) override;
 
-  void ShowPasswordSuggestions(int key,
-                               base::i18n::TextDirection text_direction,
+  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                const base::string16& typed_username,
                                int options,
                                const gfx::RectF& bounds) override;
@@ -174,7 +170,6 @@ class FakeMojoPasswordManagerDriver
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;
   // Records data received via ShowPasswordSuggestions() call.
-  int show_pw_suggestions_key_ = -1;
   base::Optional<base::string16> show_pw_suggestions_username_;
   int show_pw_suggestions_options_ = -1;
   // Records whether ShowNotSecureWarning() gets called.

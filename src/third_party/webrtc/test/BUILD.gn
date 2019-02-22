@@ -16,7 +16,6 @@ group("test") {
   testonly = true
 
   deps = [
-    ":field_trial",
     ":rtp_test_utils",
     ":test_common",
     ":test_renderer",
@@ -28,6 +27,7 @@ group("test") {
     deps += [
       ":test_main",
       ":test_support_unittests",
+      "scenario/scenario_tests",
     ]
   }
 }
@@ -71,6 +71,7 @@ rtc_source_set("video_test_common") {
     "../rtc_base:rtc_base",
     "../rtc_base:rtc_task_queue",
     "../system_wrappers",
+    "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -113,8 +114,7 @@ rtc_source_set("field_trial") {
 
   deps = [
     "..:webrtc_common",
-    "../system_wrappers:field_trial_api",
-    "../system_wrappers:field_trial_default",
+    "../system_wrappers:field_trial",
   ]
 }
 
@@ -127,6 +127,7 @@ rtc_source_set("perf_test") {
   deps = [
     "..:webrtc_common",
     "../api:array_view",
+    "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
   ]
 }
@@ -141,7 +142,7 @@ if (is_ios) {
     ]
     deps = [
       ":perf_test",
-      "../sdk:common_objc",
+      "../sdk:helpers_objc",
     ]
   }
 }
@@ -192,10 +193,6 @@ rtc_source_set("test_support") {
     # Suppress warnings from the Chromium Clang plugin (bugs.webrtc.org/163).
     suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
   }
-
-  if (is_ios && !build_with_chromium) {
-    deps += [ "../sdk:common_objc" ]
-  }
 }
 
 if (rtc_include_tests) {
@@ -211,13 +208,17 @@ if (rtc_include_tests) {
     ]
     deps = [
       ":field_trial",
-      ":fileutils",
       ":perf_test",
-      "../rtc_base:rtc_base_approved",
-      "../system_wrappers:field_trial_default",
-      "../system_wrappers:metrics_default",
-      "../system_wrappers:runtime_enabled_features_default",
+      "../rtc_base:rtc_base",
+      "../system_wrappers:field_trial",
+      "../system_wrappers:metrics",
       "//testing/gtest",
+
+      # TODO(bugs.webrtc.org/9792): This is needed for downstream projects on
+      # Android, where it's replaced by an internal version of fileutils that
+      # has a certain flag. Remove this once the internal fileutils has been
+      # eliminated.
+      "../test:fileutils",
     ]
   }
 
@@ -262,10 +263,6 @@ if (rtc_include_tests) {
 
     if (is_android) {
       deps += [ "//base:base" ]
-    }
-
-    if (is_ios) {
-      deps += [ "../sdk:common_objc" ]
     }
   }
 
@@ -323,6 +320,7 @@ if (rtc_include_tests) {
       "../modules/video_coding:simulcast_test_fixture_impl",
       "../rtc_base:rtc_base_approved",
       "../test:single_threaded_task_queue",
+      "scenario:scenario_unittests",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/abseil-cpp/absl/memory",
@@ -366,16 +364,30 @@ if (rtc_include_tests) {
 }
 
 if (is_ios) {
-  rtc_source_set("fileutils_objc") {
+  rtc_source_set("fileutils_ios_objc") {
     visibility = [ ":fileutils" ]
     sources = [
+      "testsupport/iosfileutils.h",
       "testsupport/iosfileutils.mm",
     ]
     deps = [
       "..:webrtc_common",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
-      "../sdk:common_objc",
+      "../sdk:helpers_objc",
+    ]
+  }
+}
+
+if (is_mac) {
+  rtc_source_set("fileutils_mac_objc") {
+    visibility = [ ":fileutils" ]
+    sources = [
+      "testsupport/macfileutils.h",
+      "testsupport/macfileutils.mm",
+    ]
+    deps = [
+      "../rtc_base:checks",
     ]
   }
 }
@@ -395,7 +407,10 @@ rtc_source_set("fileutils") {
     "//third_party/abseil-cpp/absl/types:optional",
   ]
   if (is_ios) {
-    deps += [ ":fileutils_objc" ]
+    deps += [ ":fileutils_ios_objc" ]
+  }
+  if (is_mac) {
+    deps += [ ":fileutils_mac_objc" ]
   }
   if (is_win) {
     deps += [ "../rtc_base:rtc_base" ]
@@ -513,6 +528,8 @@ rtc_source_set("fake_video_codecs") {
     "fake_decoder.h",
     "fake_encoder.cc",
     "fake_encoder.h",
+    "fake_vp8_decoder.cc",
+    "fake_vp8_decoder.h",
     "fake_vp8_encoder.cc",
     "fake_vp8_encoder.h",
   ]
@@ -522,6 +539,7 @@ rtc_source_set("fake_video_codecs") {
   }
   deps = [
     "..:webrtc_common",
+    "../api/video:encoded_image",
     "../api/video:video_frame_i420",
     "../api/video_codecs:video_codecs_api",
     "../common_video:common_video",
@@ -547,7 +565,6 @@ rtc_source_set("test_common") {
     "constants.h",
     "drifting_clock.cc",
     "drifting_clock.h",
-    "encoder_proxy_factory.h",
     "encoder_settings.cc",
     "encoder_settings.h",
     "fake_videorenderer.h",
@@ -562,6 +579,8 @@ rtc_source_set("test_common") {
     "rtp_rtcp_observer.h",
     "statistics.cc",
     "statistics.h",
+    "video_decoder_proxy_factory.h",
+    "video_encoder_proxy_factory.h",
     "win/run_loop_win.cc",
   ]
   if (!is_win) {
@@ -620,8 +639,7 @@ rtc_source_set("test_common") {
     "../rtc_base:rtc_base_approved",
     "../rtc_base/experiments:congestion_controller_experiment",
     "../system_wrappers",
-    "../system_wrappers:field_trial_api",
-    "../system_wrappers:runtime_enabled_features_api",
+    "../system_wrappers:field_trial",
     "../video",
     "//testing/gtest",
     "//third_party/abseil-cpp/absl/memory",

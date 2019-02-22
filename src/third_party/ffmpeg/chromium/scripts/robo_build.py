@@ -9,7 +9,6 @@
 import os
 from robo_lib import log
 from subprocess import call
-import subprocess
 
 def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   """Run FFmpeg's configure script, and build ffmpeg.

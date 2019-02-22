@@ -24,10 +24,10 @@ static const char kCategoriesTableCreationSql[] =
                                                        // ID is *not* retained
                                                        // across catalog
                                                        // updates.
-    "version INTEGER NOT NULL, "  // matches an entry in the meta table:
-                                  // ‘current_catalog’ or ‘downloading_catalog’.
+    "version_token TEXT NOT NULL, "  // matches an entry in the meta table:
+                                     // ‘current_catalog’ or
+                                     // ‘downloading_catalog’.
     "type INTEGER NOT NULL, "
-    "usable_on_ntp BOOLEAN NOT NULL, "
     "label TEXT NOT NULL, "
     "image BLOB, "  // can be NULL if no image is available, but must be
                     // populated for use on the NTP.
@@ -79,13 +79,20 @@ bool CreateLatestSchema(sql::Database* db) {
 }  // namespace
 
 // static
+bool ExploreSitesSchema::InitMetaTable(sql::Database* db,
+                                       sql::MetaTable* meta_table) {
+  DCHECK(meta_table);
+  return meta_table->Init(db, kCurrentVersion, kCompatibleVersion);
+}
+
+// static
 bool ExploreSitesSchema::CreateOrUpgradeIfNeeded(sql::Database* db) {
   DCHECK_GE(kCurrentVersion, kCompatibleVersion);
   if (!db)
     return false;
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, kCurrentVersion, kCompatibleVersion))
+  if (!InitMetaTable(db, &meta_table))
     return false;
 
   const int compatible_version = meta_table.GetCompatibleVersionNumber();

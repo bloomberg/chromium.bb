@@ -71,6 +71,9 @@ class WindowTreeClientPrivate {
 
   bool HasChangeInFlightOfType(ChangeType type);
 
+  // Calls FlushForTesting() on the mojo::Binding for the WindowTreeClient.
+  void FlushForTesting();
+
  private:
   ws::mojom::WindowDataPtr CreateWindowDataForEmbed();
 

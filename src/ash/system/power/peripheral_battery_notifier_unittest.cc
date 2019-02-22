@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -190,7 +189,7 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
   const std::string kTestStylusName = "test_stylus";
 
   // Add an external stylus to our test device manager.
-  ui::TouchscreenDevice stylus(0 /* id */, ui::INPUT_DEVICE_EXTERNAL,
+  ui::TouchscreenDevice stylus(0 /* id */, ui::INPUT_DEVICE_USB,
                                kTestStylusName, gfx::Size(),
                                1 /* touch_points */, true /* has_stylus */);
   stylus.sys_path = base::FilePath(kTestStylusBatteryPath);

@@ -5,16 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BLOCK_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BLOCK_PAINTER_H_
 
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 struct PaintInfo;
-class PaintInfoWithOffset;
+class ScopedPaintState;
 class InlineBox;
 class LayoutBlock;
 class LayoutBox;
-class LayoutFlexibleBox;
 class LayoutPoint;
 
 class BlockPainter {
@@ -31,13 +31,10 @@ class BlockPainter {
   void PaintOverflowControlsIfNeeded(const PaintInfo&,
                                      const LayoutPoint& paint_offset);
 
-  // See ObjectPainter::paintAllPhasesAtomically().
+  // See ObjectPainter::PaintAllPhasesAtomically().
   void PaintAllChildPhasesAtomically(const LayoutBox&, const PaintInfo&);
-  static void PaintChildrenOfFlexibleBox(const LayoutFlexibleBox&,
-                                         const PaintInfo&);
+  void PaintChildrenAtomically(const OrderIterator&, const PaintInfo&);
   static void PaintInlineBox(const InlineBox&, const PaintInfo&);
-
-  bool ShouldPaint(const PaintInfoWithOffset&) const;
 
  private:
   // Paint scroll hit test placeholders in the correct paint order (see:
@@ -49,6 +46,8 @@ class BlockPainter {
   void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintBlockFlowContents(const PaintInfo&, const LayoutPoint&);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
+
+  bool ShouldPaint(const ScopedPaintState&) const;
 
   const LayoutBlock& layout_block_;
 };

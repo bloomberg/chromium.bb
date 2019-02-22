@@ -129,8 +129,8 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
       this.onMountCompleted_.bind(this));
   console.debug('Requesting volume list.');
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
-    console.debug('Volume list fetched with: ' + volumeMetadataList.length +
-        ' items.');
+    console.debug(
+        'Volume list fetched with: ' + volumeMetadataList.length + ' items.');
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList. crbug.com/330061.
     // But volumes reported by onMountCompleted events must be added after the
@@ -206,7 +206,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         var volumeInfo = volumeInfoIndex !== -1 ?
             this.volumeInfoList.item(volumeInfoIndex) : null;
         if (event.status === 'success' && !requested && volumeInfo) {
-          console.warn('Mounted volume without a request: ' + volumeId);
+          console.warn('Unmounted volume without a request: ' + volumeId);
           var e = new Event('externally-unmounted');
           e.volumeInfo = volumeInfo;
           this.dispatchEvent(e);
@@ -215,6 +215,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         this.finishRequest_(requestKey, status);
         if (event.status === 'success')
           this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+        console.debug('unmounted volume: ' + volumeId);
         callback();
         break;
     }
@@ -270,7 +271,20 @@ VolumeManagerImpl.prototype.configure = function(volumeInfo) {
 
 /** @override */
 VolumeManagerImpl.prototype.getVolumeInfo = function(entry) {
-  return this.volumeInfoList.findByEntry(entry);
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.fileSystem &&
+        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
+      return volumeInfo;
+    }
+    // Additionally, check fake entries.
+    for (let key in volumeInfo.fakeEntries_) {
+      const fakeEntry = volumeInfo.fakeEntries_[key];
+      if (util.isSameEntry(fakeEntry, entry))
+        return volumeInfo;
+    }
+  }
+  return null;
 };
 
 /** @override */
@@ -286,7 +300,7 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 
 /** @override */
 VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
-  var volumeInfo = this.volumeInfoList.findByEntry(entry);
+  var volumeInfo = this.getVolumeInfo(entry);
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
@@ -302,8 +316,8 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   var isReadOnly;
   var isRootEntry;
   if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
-    // For Drive, the roots are /root, /team_drives and /other, instead of /.
-    // Root URLs contain trailing slashes.
+    // For Drive, the roots are /root, /team_drives, /Computers and /other,
+    // instead of /. Root URLs contain trailing slashes.
     if (entry.fullPath == '/root' || entry.fullPath.indexOf('/root/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
@@ -327,11 +341,39 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
           isReadOnly = volumeInfo.isReadOnly;
         }
       }
+    } else if (
+        entry.fullPath == VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH ||
+        entry.fullPath.indexOf(
+            VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH + '/') === 0) {
+      if (entry.fullPath == VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH) {
+        rootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
+        isReadOnly = true;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.COMPUTER;
+        if (util.isComputersRoot(entry)) {
+          isReadOnly = false;
+          isRootEntry = true;
+        } else {
+          // Regular files/directories under a Computer entry.
+          isRootEntry = false;
+          isReadOnly = volumeInfo.isReadOnly;
+        }
+      }
     } else if (entry.fullPath == '/other' ||
                entry.fullPath.indexOf('/other/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
       isReadOnly = true;
       isRootEntry = entry.fullPath === '/other';
+    } else if (
+        entry.fullPath === '/.files-by-id' ||
+        entry.fullPath.indexOf('/.files-by-id/') === 0) {
+      rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
+
+      // /.files-by-id/<id> is read-only, but /.files-by-id/<id>/foo is
+      // read-write.
+      isReadOnly = entry.fullPath.split('/').length < 4;
+      isRootEntry = entry.fullPath === '/.files-by-id';
     } else {
       // Accessing Drive files outside of /drive/root and /drive/other is not
       // allowed, but can happen. Therefore returning null.
@@ -354,6 +396,31 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   }
 
   return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly);
+};
+
+/** @override */
+VolumeManagerImpl.prototype.findByDevicePath = function(devicePath) {
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath)
+      return volumeInfo;
+  }
+  return null;
+};
+
+/** @override */
+VolumeManagerImpl.prototype.whenVolumeInfoReady = function(volumeId) {
+  return new Promise((fulfill) => {
+    const handler = () => {
+      const index = this.volumeInfoList.findIndex(volumeId);
+      if (index !== -1) {
+        fulfill(this.volumeInfoList.item(index));
+        this.volumeInfoList.removeEventListener('splice', handler);
+      }
+    };
+    this.volumeInfoList.addEventListener('splice', handler);
+    handler();
+  });
 };
 
 /**
@@ -430,11 +497,4 @@ VolumeManagerImpl.prototype.invokeRequestCallbacks_ = function(
     volumeManagerUtil.validateError(status);
     callEach(request.errorCallbacks, this, [status]);
   }
-};
-
-/** @override */
-VolumeManagerImpl.prototype.toString = function() {
-  return 'VolumeManager\n' +
-      '- MountQueue_:\n' +
-      '  ' + this.mountQueue_.toString().replace(/\n/g, '\n  ');
 };

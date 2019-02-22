@@ -87,11 +87,7 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 // VoiceData
 //
 
-
-VoiceData::VoiceData()
-    : gender(TTS_GENDER_NONE),
-      remote(false),
-      native(false) {}
+VoiceData::VoiceData() : remote(false), native(false) {}
 
 VoiceData::VoiceData(const VoiceData& other) = default;
 
@@ -109,7 +105,6 @@ Utterance::Utterance(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       id_(next_utterance_id_++),
       src_id_(-1),
-      gender_(TTS_GENDER_NONE),
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
@@ -223,8 +218,6 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
                         !utterance->voice_name().empty());
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasLang",
                         !utterance->lang().empty());
-  UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasGender",
-                        utterance->gender() != TTS_GENDER_NONE);
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasRate",
                         utterance->continuous_parameters().rate != 1.0);
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasPitch",
@@ -385,7 +378,7 @@ void TtsControllerImpl::OnTtsEvent(int utterance_id,
 }
 
 void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
-                              std::vector<VoiceData>* out_voices) {
+                                  std::vector<VoiceData>* out_voices) {
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
@@ -470,7 +463,6 @@ int TtsControllerImpl::GetMatchingVoice(
   //   Utterange language (exact region preferred, then general language code)
   //   App/system language (exact region preferred, then general language code)
   //   Required event types
-  //   Gender
   //   User-selected preference of voice given the general language code.
 
   // TODO(gaochun): Replace the global variable g_browser_process with
@@ -509,10 +501,10 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty() && !utterance->lang().empty()) {
       // An exact language match is worth more than a partial match.
       if (voice.lang == utterance->lang()) {
-        score += 128;
+        score += 64;
       } else if (l10n_util::GetLanguage(voice.lang) ==
                  l10n_util::GetLanguage(utterance->lang())) {
-        score += 64;
+        score += 32;
       }
     }
 
@@ -520,30 +512,21 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty()) {
       if (l10n_util::GetLanguage(voice.lang) ==
           l10n_util::GetLanguage(app_lang))
-        score += 32;
+        score += 16;
     }
 
     // Next, prefer required event types.
     if (utterance->required_event_types().size() > 0) {
       bool has_all_required_event_types = true;
-      for (std::set<TtsEventType>::const_iterator iter =
-               utterance->required_event_types().begin();
-           iter != utterance->required_event_types().end();
-           ++iter) {
+      for (auto iter = utterance->required_event_types().begin();
+           iter != utterance->required_event_types().end(); ++iter) {
         if (voice.events.find(*iter) == voice.events.end()) {
           has_all_required_event_types = false;
           break;
         }
       }
       if (has_all_required_event_types)
-        score += 16;
-    }
-
-    // Prefer the requested gender.
-    if (voice.gender != TTS_GENDER_NONE &&
-        utterance->gender() != TTS_GENDER_NONE &&
-        voice.gender == utterance->gender()) {
-      score += 8;
+        score += 8;
     }
 
 #if defined(OS_CHROMEOS)
@@ -639,21 +622,18 @@ void TtsControllerImpl::VoicesChanged() {
   if (!platform_impl_)
     return;
 
-  for (std::set<VoicesChangedDelegate*>::iterator iter =
-           voices_changed_delegates_.begin();
-       iter != voices_changed_delegates_.end(); ++iter) {
-    (*iter)->OnVoicesChanged();
-  }
+  for (auto& delegate : voices_changed_delegates_)
+    delegate.OnVoicesChanged();
 }
 
 void TtsControllerImpl::AddVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.insert(delegate);
+  voices_changed_delegates_.AddObserver(delegate);
 }
 
 void TtsControllerImpl::RemoveVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.erase(delegate);
+  voices_changed_delegates_.RemoveObserver(delegate);
 }
 
 void TtsControllerImpl::RemoveUtteranceEventDelegate(
@@ -686,8 +666,7 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
   }
 }
 
-void TtsControllerImpl::SetTtsEngineDelegate(
-    TtsEngineDelegate* delegate) {
+void TtsControllerImpl::SetTtsEngineDelegate(TtsEngineDelegate* delegate) {
   tts_engine_delegate_ = delegate;
 }
 

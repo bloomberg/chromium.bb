@@ -114,7 +114,7 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   printing::BackgroundPrintingManager* background_printing_manager() override;
   const std::string& GetApplicationLocale() override;
-  void SetApplicationLocale(const std::string& app_locale) override;
+  void SetApplicationLocale(const std::string& actual_locale) override;
   DownloadStatusUpdater* download_status_updater() override;
   DownloadRequestLimiter* download_request_limiter() override;
 
@@ -177,6 +177,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
+  scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   std::unique_ptr<printing::PrintJobManager> print_job_manager_;

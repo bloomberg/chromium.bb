@@ -3,8 +3,14 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//third_party/closure_compiler/js_unit_tests.gni")
 
-js_type_check("closure_compile") {
+visibility = [
+  "//ui/file_manager/file_manager/foreground/*",
+  "//ui/file_manager/file_manager/test/*",
+]
+
+js_type_check("closure_compile_module") {
   deps = [
     ":actions_controller",
     ":actions_model",
@@ -12,6 +18,7 @@ js_type_check("closure_compile") {
     ":closure_compile_externs",
     ":column_visibility_controller",
     ":constants",
+    ":crostini",
     ":dialog_action_controller",
     ":dialog_type",
     ":directory_contents",
@@ -49,14 +56,12 @@ js_type_check("closure_compile") {
     ":scan_controller",
     ":search_controller",
     ":selection_menu_controller",
-    ":share_client",
     ":sort_menu_controller",
     ":spinner_controller",
     ":task_controller",
     ":task_history",
     ":thumbnail_loader",
     ":toolbar_controller",
-    ":volume_manager_wrapper",
     ":web_store_utils",
     ":webui_command_extender",
   ]
@@ -110,11 +115,11 @@ js_library("actions_controller") {
 js_library("actions_model") {
   deps = [
     ":folder_shortcuts_data_model",
+    "../../common/js:util",
     "metadata:metadata_model",
     "ui:error_dialog",
     "ui:files_alert_dialog",
     "ui:list_container",
-    "ui:share_dialog",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -146,12 +151,15 @@ js_library("dialog_action_controller") {
     ":file_selection",
     ":launch_param",
     ":naming_controller",
-    ":volume_manager_wrapper",
     "../../common/js:metrics",
     "metadata:metadata_model",
     "ui:dialog_footer",
     "//ui/webui/resources/js/cr/ui:command",
   ]
+}
+
+js_library("crostini") {
+  deps = []
 }
 
 js_library("dialog_type") {
@@ -175,7 +183,6 @@ js_library("directory_model") {
   deps = [
     ":directory_contents",
     ":file_watcher",
-    ":volume_manager_wrapper",
     "../../common/js:importer_common",
     "../../common/js:metrics_events",
     "ui:file_list_selection_model",
@@ -185,7 +192,6 @@ js_library("directory_model") {
 js_library("navigation_uma") {
   deps = [
     ":dialog_type",
-    ":volume_manager_wrapper",
     "../../common/js:metrics",
   ]
 }
@@ -253,10 +259,10 @@ js_library("file_manager") {
     ":spinner_controller",
     ":task_controller",
     ":toolbar_controller",
-    ":volume_manager_wrapper",
     "ui:commandbutton",
     "ui:directory_tree",
     "ui:file_manager_ui",
+    "//ui/file_manager/base/js:filtered_volume_manager",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
   ]
 }
@@ -274,7 +280,6 @@ js_library("file_manager_commands") {
     ":providers_model",
     ":spinner_controller",
     ":task_controller",
-    ":volume_manager_wrapper",
     "ui:directory_tree",
     "ui:file_manager_ui",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
@@ -285,7 +290,6 @@ js_library("file_selection") {
   deps = [
     ":constants",
     ":directory_model",
-    ":volume_manager_wrapper",
     "../../common/js:file_type",
     "../../common/js:util",
     "../../common/js:volume_manager_common",
@@ -298,9 +302,9 @@ js_library("file_selection") {
 
 js_library("file_tasks") {
   deps = [
+    ":crostini",
     ":directory_model",
     ":task_history",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
@@ -311,7 +315,6 @@ js_library("file_transfer_controller") {
     ":directory_model",
     ":drop_effect_and_label",
     ":file_selection",
-    ":volume_manager_wrapper",
     ":webui_command_extender",
     "../../common/js:progress_center_common",
     "metadata:metadata_model",
@@ -335,11 +338,11 @@ js_library("file_watcher") {
 
 js_library("folder_shortcuts_data_model") {
   deps = [
-    ":volume_manager_wrapper",
-    "../../common/js:async_util",
-    "../../common/js:metrics",
-    "../../common/js:util",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/file_manager/common/js:async_util",
+    "//ui/file_manager/file_manager/common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/common/js:volume_manager_common",
   ]
 }
 
@@ -389,7 +392,6 @@ js_library("list_thumbnail_loader") {
     ":directory_model",
     ":file_list_model",
     ":thumbnail_loader",
-    ":volume_manager_wrapper",
     "../../common/js:volume_manager_common",
     "metadata:thumbnail_model",
   ]
@@ -413,7 +415,6 @@ js_library("main_window_component") {
     ":file_selection",
     ":naming_controller",
     ":task_controller",
-    ":volume_manager_wrapper",
     "ui:file_manager_ui",
   ]
 }
@@ -457,7 +458,6 @@ js_library("naming_controller") {
 js_library("navigation_list_model") {
   deps = [
     ":folder_shortcuts_data_model",
-    ":volume_manager_wrapper",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
@@ -472,7 +472,6 @@ js_library("progress_center_item_group") {
 
 js_library("providers_model") {
   deps = [
-    ":volume_manager_wrapper",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -485,7 +484,6 @@ js_library("quick_view_controller") {
     ":quick_view_model",
     ":quick_view_uma",
     ":task_controller",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:list_container",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
@@ -503,7 +501,6 @@ js_library("quick_view_uma") {
   deps = [
     ":dialog_type",
     ":file_tasks",
-    ":volume_manager_wrapper",
     "../../common/js:file_type",
   ]
 }
@@ -535,14 +532,6 @@ js_library("selection_menu_controller") {
   ]
 }
 
-js_library("share_client") {
-  deps = [
-    "../../../externs:webview_tag",
-    "../../common/js:volume_manager_common",
-    "//ui/webui/resources/js/cr:event_target",
-  ]
-}
-
 js_library("sort_menu_controller") {
   deps = [
     ":file_list_model",
@@ -565,7 +554,6 @@ js_library("task_controller") {
     ":file_tasks",
     ":metadata_update_controller",
     ":task_history",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
@@ -577,12 +565,23 @@ js_library("task_history") {
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("thumbnail_loader") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "../../../image_loader:image_loader_client",
     "../../common/js:file_type",
     "../../common/js:util",
     "//ui/webui/resources/js:assert",
+  ]
+}
+
+js_library("thumbnail_loader_unittest") {
+  deps = [
+    ":thumbnail_loader",
+    "../../common/js:mock_entry",
+    "../../common/js:unittest_util",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -596,27 +595,6 @@ js_library("toolbar_controller") {
   ]
 }
 
-js_library("volume_manager_wrapper") {
-  deps = [
-    "../../common/js:async_util",
-    "../../common/js:volume_manager_common",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr:event_target",
-    "//ui/webui/resources/js/cr/ui:array_data_model",
-  ]
-  externs_list = [
-    # Note: volume_info has a dependency on chrome.fileManagerPrivate.IconSet.
-    # Also, fileManagerPrivate depends on chrome.fileSystemProvider, so these
-    # must be introduced together.
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
-    "../../../externs/background/volume_manager_factory.js",
-    "../../../externs/volume_info.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
-  ]
-}
-
 js_library("web_store_utils") {
   deps = [
     ":constants",
@@ -627,5 +605,19 @@ js_library("webui_command_extender") {
   deps = [
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:command",
+  ]
+}
+
+js_unit_tests("unit_tests") {
+  deps = [
+    ":thumbnail_loader_unittest",
+  ]
+}
+
+group("closure_compile") {
+  visibility += [ "*" ]
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests_type_check",
   ]
 }

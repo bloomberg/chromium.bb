@@ -158,13 +158,7 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 // Tests API behaviors, including info queries, and constraints violations.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest(
-      "tab_capture", base::StringPrintf("api_tests.html%s",
-                                        base::FeatureList::IsEnabled(
-                                            features::kAudioServiceAudioStreams)
-                                            ? ""
-                                            : "?includeLegacyUnmuteTest=true")))
-      << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
 #if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)

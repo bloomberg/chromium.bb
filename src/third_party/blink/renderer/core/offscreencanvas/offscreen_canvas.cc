@@ -52,7 +52,8 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
   current_frame_damage_rect_.join(damage_rect);
   GetOrCreateResourceDispatcher()->DispatchFrameSync(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
-      !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */);
+      !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */,
+      IsOpaque());
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
@@ -67,9 +68,8 @@ void OffscreenCanvas::Dispose() {
     WorkerAnimationFrameProvider* animation_frame_provider =
         ToWorkerGlobalScope(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
-    if (animation_frame_provider) {
+    if (animation_frame_provider)
       animation_frame_provider->DeregisterOffscreenCanvas(this);
-    }
   }
 }
 
@@ -80,9 +80,8 @@ void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
     WorkerAnimationFrameProvider* animation_frame_provider =
         ToWorkerGlobalScope(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
-    if (animation_frame_provider) {
+    if (animation_frame_provider)
       animation_frame_provider->RegisterOffscreenCanvas(this);
-    }
   }
 }
 
@@ -109,13 +108,12 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
     }
   }
   size_ = size;
-  if (frame_dispatcher_) {
+  if (frame_dispatcher_)
     frame_dispatcher_->Reshape(size_);
-  }
+
   current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
-  if (context_) {
+  if (context_)
     context_->DidDraw();
-  }
 }
 
 void OffscreenCanvas::SetNeutered() {
@@ -186,9 +184,7 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
 }
 
 bool OffscreenCanvas::IsOpaque() const {
-  if (!context_)
-    return false;
-  return !context_->CreationAttributes().alpha;
+  return context_ ? !context_->CreationAttributes().alpha : false;
 }
 
 CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
@@ -203,8 +199,9 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeCount ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !OriginTrials::WebXREnabled(execution_context)))
+       !OriginTrials::WebXREnabled(execution_context))) {
     return nullptr;
+  }
 
   CanvasRenderingContextFactory* factory =
       GetRenderingContextFactory(context_type);
@@ -302,17 +299,15 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     IntSize surface_size(width(), height());
     CanvasResourceProvider::ResourceUsage usage;
     if (can_use_gpu) {
-      if (HasPlaceholderCanvas()) {
+      if (HasPlaceholderCanvas())
         usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
-      } else {
+      else
         usage = CanvasResourceProvider::kAcceleratedResourceUsage;
-      }
     } else {
-      if (HasPlaceholderCanvas()) {
+      if (HasPlaceholderCanvas())
         usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
-      } else {
+      else
         usage = CanvasResourceProvider::kSoftwareResourceUsage;
-      }
     }
 
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
@@ -390,16 +385,17 @@ void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty() || !canvas_resource)
     return;
-  base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
+  const base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
-      !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */);
+      !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */,
+      IsOpaque());
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
-  if (GetExecutionContext()->IsDocument()) {
-    return ToDocument(execution_context_)->GetStyleEngine().GetFontSelector();
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+    return document->GetStyleEngine().GetFontSelector();
   }
   return ToWorkerGlobalScope(execution_context_)->GetFontSelector();
 }

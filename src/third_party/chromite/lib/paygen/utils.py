@@ -7,62 +7,8 @@
 
 from __future__ import print_function
 
-from contextlib import contextmanager
 import os
 import tempfile
-
-from chromite.lib import cros_logging as logging
-
-
-# Give preference to /usr/local/google/tmp for space reasons.
-TMPS = ('/usr/local/google/tmp', '/tmp')
-
-
-class UnableToCreateTmpDir(Exception):
-  """Raised if we are unable to find a suitable tmp area."""
-
-
-def CreateTmpDir(prefix='cros-rel', tmps=TMPS, minimum_size=0):
-  """Return a unique tmp dir with enough free space (if specified).
-
-  Check if any tmp in tmps exists that also meets the minimum_size
-  free space requirement. If so, return a unique tmp dir in that path.
-
-  Args:
-    prefix: Prefix to use with tempfile.mkdtemp.
-    tmps: An iterable of directories to consider for tmp space.
-    minimum_size: The minimum size the tmp dir needs to have. Default: 0.
-
-  Raises:
-    UnableToCreateTmpDir: If we are unable to find a suitable tmp dir.
-  """
-  for entry in tmps:
-    if os.path.exists(entry):
-      if not minimum_size or GetFreeSpace(entry) > minimum_size:
-        return tempfile.mkdtemp(prefix=prefix, dir=entry)
-      else:
-        logging.warning('Not enough space in %s to create %s temp dir.',
-                        entry, prefix)
-
-  raise UnableToCreateTmpDir('Unable to find a suitable %s tmp dir.'
-                             '  Considered: %s', prefix, ', '.join(tmps))
-
-
-def GetFreeSpace(path):
-  """Return the available free space in bytes.
-
-  Args:
-    path: The dir path to check. If this is a file it will be converted to a
-        path.
-
-  Returns:
-    The byte representation of available space.
-  """
-  if os.path.isfile(path):
-    path = os.path.dirname(path)
-
-  stats = os.statvfs(path)
-  return stats.f_bavail * stats.f_frsize
 
 
 def CreateTempFileWithContents(contents, base_dir=None):
@@ -165,32 +111,3 @@ class RestrictedAttrDict(dict):
     """
     if self[key] == default:
       self[key] = None
-
-
-def PathPrepend(new_dir, curr_path=None):
-  """Prepends a directory to a given path (or system path, if none provided)."""
-  if curr_path is None:
-    curr_path = os.environ.get('PATH')
-  return '%s:%s' % (new_dir, curr_path) if curr_path else new_dir
-
-
-@contextmanager
-def CheckedOpen(name, mode=None, buffering=None):
-  """A context for opening/closing a file iff an actual name is provided."""
-  # Open the file, as necessary.
-  f = None
-  if name:
-    dargs = {'name': name}
-    if mode is not None:
-      dargs['mode'] = mode
-    if buffering is not None:
-      dargs['buffering'] = buffering
-    f = open(**dargs)
-
-  try:
-    # Yield to the wait-statement body.
-    yield f
-  finally:
-    # If an actual file was opened, close it.
-    if f:
-      f.close()

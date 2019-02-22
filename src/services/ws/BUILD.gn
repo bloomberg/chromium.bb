@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
@@ -18,9 +19,9 @@ component("lib") {
     "//ash:ash_unittests",
   ]
   public = [
-    "gpu_interface_provider.h",
     "ids.h",
     "window_delegate_impl.h",
+    "window_manager_interface.h",
     "window_properties.h",
     "window_service.h",
     "window_service_delegate.h",
@@ -69,6 +70,8 @@ component("lib") {
     "window_tree_factory.cc",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     "//components/discardable_memory/public/interfaces",
     "//components/viz/host",
@@ -83,6 +86,11 @@ component("lib") {
     "//ui/wm/public",
   ]
 
+  deps = [
+    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
+  ]
+
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
 }
 
@@ -93,6 +101,8 @@ source_set("host") {
   sources = [
     "host_context_factory.cc",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     ":lib",
@@ -113,6 +123,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "client_root_test_helper.cc",
+    "client_root_test_helper.h",
     "event_test_utils.cc",
     "event_test_utils.h",
     "server_window_test_helper.cc",
@@ -143,6 +155,7 @@ static_library("test_support") {
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ws/common",
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//ui/aura",
@@ -175,12 +188,14 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "client_root_unittest.cc",
     "drag_drop_delegate_unittest.cc",
     "embedding_unittest.cc",
     "focus_handler_unittest.cc",
     "injected_event_handler_unittest.cc",
     "screen_provider_unittest.cc",
     "server_window_unittest.cc",
+    "topmost_window_observer_unittest.cc",
     "user_activity_monitor_unittest.cc",
     "window_delegate_impl_unittest.cc",
     "window_service_observer_unittest.cc",
@@ -191,10 +206,12 @@ source_set("tests") {
 
   deps = [
     ":lib",
+    ":test_mojom",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/viz/common",
+    "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
@@ -202,6 +219,7 @@ source_set("tests") {
     "//services/ws/common:task_runner_test_base",
     "//services/ws/gpu_host:tests",
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//third_party/mesa_headers",
@@ -223,4 +241,12 @@ source_set("tests") {
 service_manifest("manifest") {
   name = "ui"
   source = "manifest.json"
+}
+
+mojom("test_mojom") {
+  testonly = true
+
+  sources = [
+    "test_wm.mojom",
+  ]
 }

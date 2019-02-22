@@ -197,6 +197,11 @@ bool EventDeviceInfo::Initialize(int fd, const base::FilePath& path) {
 
   device_type_ = GetInputDeviceTypeFromPath(path);
 
+  // TODO(spang): Implement these quirks in a better way.
+  constexpr uint16_t kGoogleVendorId = 0x18d1;
+  if (vendor_id_ == kGoogleVendorId && product_id_ == 0x5030)
+    device_type_ = InputDeviceType::INPUT_DEVICE_INTERNAL;
+
   return true;
 }
 

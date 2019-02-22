@@ -11,7 +11,7 @@ namespace content {
 TouchSelectionControllerClientManagerAndroid::
     TouchSelectionControllerClientManagerAndroid(
         RenderWidgetHostViewAndroid* rwhv)
-    : rwhv_(rwhv), active_client_(rwhv), page_scale_factor_(1.f) {
+    : rwhv_(rwhv), active_client_(rwhv) {
   DCHECK(rwhv_);
 }
 
@@ -20,27 +20,6 @@ TouchSelectionControllerClientManagerAndroid::
   for (auto& observer : observers_)
     observer.OnManagerWillDestroy(this);
 }
-
-void TouchSelectionControllerClientManagerAndroid::SetPageScaleFactor(
-    float page_scale_factor) {
-  page_scale_factor_ = page_scale_factor;
-}
-
-namespace {
-
-gfx::SelectionBound ScaleSelectionBound(const gfx::SelectionBound& bound,
-                                        float scale) {
-  gfx::SelectionBound scaled_bound;
-  gfx::PointF scaled_top = bound.edge_top();
-  scaled_top.Scale(scale);
-  gfx::PointF scaled_bottom = bound.edge_bottom();
-  scaled_bottom.Scale(scale);
-  scaled_bound.SetEdge(scaled_top, scaled_bottom);
-  scaled_bound.set_type(bound.type());
-  scaled_bound.set_visible(bound.visible());
-  return scaled_bound;
-}
-}  // namespace
 
 // TouchSelectionControllerClientManager implementation.
 void TouchSelectionControllerClientManagerAndroid::DidStopFlinging() {
@@ -61,13 +40,9 @@ void TouchSelectionControllerClientManagerAndroid::UpdateClientSelectionBounds(
   }
 
   active_client_ = client;
-  if (active_client_ != rwhv_) {
-    manager_selection_start_ = ScaleSelectionBound(start, page_scale_factor_);
-    manager_selection_end_ = ScaleSelectionBound(end, page_scale_factor_);
-  } else {
-    manager_selection_start_ = start;
-    manager_selection_end_ = end;
-  }
+  manager_selection_start_ = start;
+  manager_selection_end_ = end;
+
   // Notify TouchSelectionController if anything should change here. Only
   // update if the client is different and not making a change to empty, or
   // is the same client.
@@ -109,30 +84,18 @@ void TouchSelectionControllerClientManagerAndroid::SetNeedsAnimate() {
 
 void TouchSelectionControllerClientManagerAndroid::MoveCaret(
     const gfx::PointF& position) {
-  gfx::PointF scaled_position = position;
-  if (active_client_ != rwhv_)
-    scaled_position.Scale(1 / page_scale_factor_);
-  active_client_->MoveCaret(scaled_position);
+  active_client_->MoveCaret(position);
 }
 
 void TouchSelectionControllerClientManagerAndroid::MoveRangeSelectionExtent(
     const gfx::PointF& extent) {
-  gfx::PointF scaled_extent = extent;
-  if (active_client_ != rwhv_)
-    scaled_extent.Scale(1 / page_scale_factor_);
-  active_client_->MoveRangeSelectionExtent(scaled_extent);
+  active_client_->MoveRangeSelectionExtent(extent);
 }
 
 void TouchSelectionControllerClientManagerAndroid::SelectBetweenCoordinates(
     const gfx::PointF& base,
     const gfx::PointF& extent) {
-  gfx::PointF scaled_extent = extent;
-  gfx::PointF scaled_base = base;
-  if (active_client_ != rwhv_) {
-    scaled_extent.Scale(1 / page_scale_factor_);
-    scaled_base.Scale(1 / page_scale_factor_);
-  }
-  active_client_->SelectBetweenCoordinates(scaled_base, scaled_extent);
+  active_client_->SelectBetweenCoordinates(base, extent);
 }
 
 void TouchSelectionControllerClientManagerAndroid::OnSelectionEvent(

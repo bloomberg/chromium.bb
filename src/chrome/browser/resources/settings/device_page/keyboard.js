@@ -39,6 +39,9 @@ Polymer({
     /** @private Whether to show diamond key options. */
     showDiamondKey_: Boolean,
 
+    /** @private Whether this device has an internal keyboard. */
+    hasInternalKeyboard_: Boolean,
+
     /**
      * Whether to show a remapping option for external keyboard's Meta key
      * (Search/Windows keys). This is true only when there's an external
@@ -133,6 +136,7 @@ Polymer({
    * @private
    */
   onShowKeysChange_: function(keyboardParams) {
+    this.hasInternalKeyboard_ = keyboardParams['hasInternalKeyboard'];
     this.showCapsLock_ = keyboardParams['showCapsLock'];
     this.showDiamondKey_ = keyboardParams['showDiamondKey'];
     this.showExternalMetaKey_ = keyboardParams['showExternalMetaKey'];
@@ -146,5 +150,16 @@ Polymer({
 
   onShowLanguageInputTap_: function() {
     settings.navigateTo(settings.routes.LANGUAGES);
+  },
+
+  getExternalMetaKeyLabel_: function(hasInternalKeyboard) {
+    return loadTimeData.getString(
+        hasInternalKeyboard ? 'keyboardKeyExternalMeta' : 'keyboardKeyMeta');
+  },
+
+  getExternalCommandKeyLabel_: function(hasInternalKeyboard) {
+    return loadTimeData.getString(
+        hasInternalKeyboard ? 'keyboardKeyExternalCommand' :
+                              'keyboardKeyCommand');
   },
 });

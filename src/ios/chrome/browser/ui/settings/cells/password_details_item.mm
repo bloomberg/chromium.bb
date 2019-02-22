@@ -7,7 +7,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -69,17 +68,10 @@ const CGFloat kVerticalPadding = 16;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     _textLabel.numberOfLines = 0;
     [contentView addSubview:_textLabel];
-
-    // Fonts and colors vary based on the UI reboot experiment.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
-    } else {
-      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    }
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[

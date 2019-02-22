@@ -4,14 +4,14 @@
 
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_custom_scheduler.h"
 
-#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
 namespace {
 
-class ThreadWithCustomScheduler : public WebThread {
+class ThreadWithCustomScheduler : public Thread {
  public:
   explicit ThreadWithCustomScheduler(ThreadScheduler* scheduler)
       : scheduler_(scheduler) {}
@@ -21,7 +21,7 @@ class ThreadWithCustomScheduler : public WebThread {
     DCHECK(WTF::IsMainThread());
     return true;
   }
-  ThreadScheduler* Scheduler() const override { return scheduler_; }
+  ThreadScheduler* Scheduler() override { return scheduler_; }
 
  private:
   ThreadScheduler* scheduler_;
@@ -29,16 +29,16 @@ class ThreadWithCustomScheduler : public WebThread {
 
 }  // namespace
 
-TestingPlatformSupportWithCustomScheduler ::
+TestingPlatformSupportWithCustomScheduler::
     TestingPlatformSupportWithCustomScheduler(ThreadScheduler* scheduler)
-    : thread_(std::make_unique<ThreadWithCustomScheduler>(scheduler)) {}
-
-TestingPlatformSupportWithCustomScheduler ::
-    ~TestingPlatformSupportWithCustomScheduler() {}
-
-WebThread* TestingPlatformSupportWithCustomScheduler::CurrentThread() {
-  DCHECK(WTF::IsMainThread());
-  return thread_.get();
+    : thread_(std::make_unique<ThreadWithCustomScheduler>(scheduler)) {
+  // If main_thread_ is set, Platform::SetCurrentPlatformForTesting() properly
+  // sets up the platform so Platform::CurrentThread() would return the
+  // thread specified here.
+  main_thread_ = thread_.get();
 }
+
+TestingPlatformSupportWithCustomScheduler::
+    ~TestingPlatformSupportWithCustomScheduler() {}
 
 }  // namespace blink

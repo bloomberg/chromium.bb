@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 3
+// Next min version: 4
 
 module cros.mojom;
 
@@ -38,13 +38,17 @@ interface CameraHalDispatcher {
 
 // The CrOS camera HAL v3 Mojo server.
 //
-// Next method ID: 1
+// Next method ID: 2
 interface CameraHalServer {
   // A caller calls CreateChannel to create a new Mojo channel to the camera
   // HAL v3 adapter.  Upon successfully binding of |camera_module_request|, the
   // caller will have a established Mojo channel to the camera HAL v3 adapter
   // process.
   CreateChannel@0(CameraModule& camera_module_request);
+
+  // Enable or disable tracing.
+  [MinVersion=3]
+  SetTracingEnabled@1(bool enabled);
 };
 
 // The CrOS camera HAL v3 Mojo client.

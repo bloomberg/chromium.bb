@@ -272,9 +272,6 @@ TEST_P(FramebufferFormatsTest, RenderbufferMultisample_STENCIL_INDEX8)
 // Test that binding an incomplete cube map is rejected by ANGLE.
 TEST_P(FramebufferFormatsTest, IncompleteCubeMap)
 {
-    // TODO(jmadill): Handle cube textures. http://anglebug.com/2470
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     // First make a complete CubeMap.
     glGenTextures(1, &mTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTexture);
@@ -306,6 +303,8 @@ TEST_P(FramebufferFormatsTest, IncompleteCubeMap)
     // Verify the framebuffer is incomplete.
     ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
                      glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    ASSERT_GL_NO_ERROR();
 
     // Verify drawing with the incomplete framebuffer produces a GL error
     mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
@@ -530,6 +529,119 @@ TEST_P(FramebufferTest_ES3, AttachmentWith3DLayers)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texA, 0);
     glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texB, 0, 0);
     ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clearing the stencil buffer when the framebuffer only has a color attachment does not
+// crash.
+TEST_P(FramebufferTest_ES3, ClearNonexistentStencil)
+{
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+    GLint clearValue = 0;
+    glClearBufferiv(GL_STENCIL, 0, &clearValue);
+
+    // There's no error specified for clearing nonexistent buffers, it's simply a no-op.
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clearing the depth buffer when the framebuffer only has a color attachment does not
+// crash.
+TEST_P(FramebufferTest_ES3, ClearNonexistentDepth)
+{
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+    GLfloat clearValue = 0.0f;
+    glClearBufferfv(GL_DEPTH, 0, &clearValue);
+
+    // There's no error specified for clearing nonexistent buffers, it's simply a no-op.
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clearing a nonexistent color attachment does not crash.
+TEST_P(FramebufferTest_ES3, ClearNonexistentColor)
+{
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+    std::vector<GLfloat> clearValue = {{0.0f, 1.0f, 0.0f, 1.0f}};
+    glClearBufferfv(GL_COLOR, 1, clearValue.data());
+
+    // There's no error specified for clearing nonexistent buffers, it's simply a no-op.
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clearing the depth and stencil buffers when the framebuffer only has a color attachment
+// does not crash.
+TEST_P(FramebufferTest_ES3, ClearNonexistentDepthStencil)
+{
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+    glClearBufferfi(GL_DEPTH_STENCIL, 0, 0.0f, 0);
+
+    // There's no error specified for clearing nonexistent buffers, it's simply a no-op.
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clearing a color attachment that has been deleted doesn't crash.
+TEST_P(FramebufferTest_ES3, ClearDeletedAttachment)
+{
+    // An INVALID_FRAMEBUFFER_OPERATION error was seen in this test on Mac, not sure where it might
+    // be originating from. http://anglebug.com/2834
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL());
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    // There used to be a bug where some draw buffer state used to remain set even after the
+    // attachment was detached via deletion. That's why we create, attach and delete this RBO here.
+    GLuint rbo = 0u;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+    glDeleteRenderbuffers(1, &rbo);
+
+    // There needs to be at least one color attachment to prevent early out from the clear calls.
+    GLRenderbuffer rbo2;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo2);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, rbo2);
+
+    ASSERT_GL_NO_ERROR();
+
+    // There's no error specified for clearing nonexistent buffers, it's simply a no-op, so we
+    // expect no GL errors below.
+    std::array<GLfloat, 4> floatClearValue = {0.0f, 0.0f, 0.0f, 0.0f};
+    glClearBufferfv(GL_COLOR, 0, floatClearValue.data());
+    EXPECT_GL_NO_ERROR();
+    std::array<GLuint, 4> uintClearValue = {0u, 0u, 0u, 0u};
+    glClearBufferuiv(GL_COLOR, 0, uintClearValue.data());
+    EXPECT_GL_NO_ERROR();
+    std::array<GLint, 4> intClearValue = {0, 0, 0, 0};
+    glClearBufferiv(GL_COLOR, 0, intClearValue.data());
     EXPECT_GL_NO_ERROR();
 }
 

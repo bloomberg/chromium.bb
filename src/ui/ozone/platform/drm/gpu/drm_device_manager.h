@@ -50,7 +50,7 @@ class DrmDeviceManager {
   const DrmDeviceVector& GetDrmDevices() const;
 
  private:
-  std::unique_ptr<DrmDeviceGenerator> drm_device_generator_;
+  const std::unique_ptr<DrmDeviceGenerator> drm_device_generator_;
 
   DrmDeviceVector devices_;
 

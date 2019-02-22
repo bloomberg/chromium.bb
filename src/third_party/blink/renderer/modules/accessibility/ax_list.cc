@@ -59,10 +59,10 @@ bool AXList::IsDescriptionList() const {
   return node && node->HasTagName(dlTag);
 }
 
-AccessibilityRole AXList::RoleValue() const {
+ax::mojom::Role AXList::RoleValue() const {
   if (IsDescriptionList())
-    return kDescriptionListRole;
+    return ax::mojom::Role::kDescriptionList;
 
-  return kListRole;
+  return ax::mojom::Role::kList;
 }
 }  // namespace blink

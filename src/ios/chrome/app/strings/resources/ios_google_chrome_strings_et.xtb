@@ -22,7 +22,6 @@
 <translation id="3196546062792660320">Chrome säästab aega, tuues teie kontod veebi. Saate kontosid lisada või eemaldada menüüs Seaded.</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3345341804167540816">Chrome'i kasutamine kõikjal</translation>
-<translation id="3678774398092457402">Kas soovite, et Chrome salvestaks selle saidi puhul teie parooli?</translation>
 <translation id="384394811301901750">Chrome ei saa praegu kaamerat kasutada</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Vahetate kontode sünkroonimise kontolt <ph name="USER_EMAIL1" /> kontole <ph name="USER_EMAIL2" />. Olemasolevaid Chrome'i andmeid haldab domeen <ph name="DOMAIN" />. See kustutab teie andmed sellest seadmest, kuid teie andmed jäävad alles kontole <ph name="USER_EMAIL1" />.</translation>
@@ -48,6 +47,7 @@
 <translation id="690638524486313356">Google Chrome'i teenusetingimused</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
 <translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">Chrome kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="7265369419224458312">Hankige juurdepääs arvutis avatud vahelehtedele siit. Lihtsalt avage arvutis Chrome, minge menüüsse ja valige käsk „Logi Chrome'i sisse ...”</translation>
 <translation id="728488472449859922">Google Chrome'i QR-skanneri sisselülitamine</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>

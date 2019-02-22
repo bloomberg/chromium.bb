@@ -73,6 +73,19 @@ std::unique_ptr<base::Value> NetLogQuicPacketRetransmittedCallback(
   return std::move(dict);
 }
 
+std::unique_ptr<base::Value> NetLogQuicPacketLostCallback(
+    quic::QuicPacketNumber packet_number,
+    quic::TransmissionType transmission_type,
+    quic::QuicTime detection_time,
+    NetLogCaptureMode /*capture_mode*/) {
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetInteger("transmission_type", transmission_type);
+  dict->SetString("packet_number", base::NumberToString(packet_number));
+  dict->SetString("detection_time_us",
+                  base::Int64ToString(detection_time.ToDebuggingValue()));
+  return dict;
+}
+
 std::unique_ptr<base::Value> NetLogQuicDuplicatePacketCallback(
     quic::QuicPacketNumber packet_number,
     NetLogCaptureMode /* capture_mode */) {
@@ -128,8 +141,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
 
   auto received = std::make_unique<base::ListValue>();
   const quic::PacketTimeVector& received_times = frame->received_packet_times;
-  for (quic::PacketTimeVector::const_iterator it = received_times.begin();
-       it != received_times.end(); ++it) {
+  for (auto it = received_times.begin(); it != received_times.end(); ++it) {
     auto info = std::make_unique<base::DictionaryValue>();
     info->SetInteger("packet_number", static_cast<int>(it->first));
     info->SetString("received",
@@ -202,9 +214,7 @@ std::unique_ptr<base::Value> NetLogQuicVersionNegotiationPacketCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto versions = std::make_unique<base::ListValue>();
-  for (quic::ParsedQuicVersionVector::const_iterator it =
-           packet->versions.begin();
-       it != packet->versions.end(); ++it) {
+  for (auto it = packet->versions.begin(); it != packet->versions.end(); ++it) {
     versions->AppendString(ParsedQuicVersionToString(*it));
   }
   dict->Set("versions", std::move(versions));
@@ -225,8 +235,7 @@ std::unique_ptr<base::Value> NetLogQuicCryptoHandshakeMessageCallback(
     const quic::CryptoHandshakeMessage* message,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("quic_crypto_handshake_message",
-                  message->DebugString(quic::Perspective::IS_CLIENT));
+  dict->SetString("quic_crypto_handshake_message", message->DebugString());
   return std::move(dict);
 }
 
@@ -468,6 +477,18 @@ void QuicConnectionLogger::OnPacketSent(
         base::Bind(&NetLogQuicPacketRetransmittedCallback,
                    original_packet_number, serialized_packet.packet_number));
   }
+}
+
+void QuicConnectionLogger::OnPacketLoss(
+    quic::QuicPacketNumber lost_packet_number,
+    quic::TransmissionType transmission_type,
+    quic::QuicTime detection_time) {
+  if (!net_log_is_capturing_)
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_PACKET_LOST,
+      base::Bind(&NetLogQuicPacketLostCallback, lost_packet_number,
+                 transmission_type, detection_time));
 }
 
 void QuicConnectionLogger::OnPingSent() {

@@ -21,8 +21,8 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
       CSSLengthArray&& length_array,
       const StyleResolverState& state) {
     bool create = false;
-    size_t last_index = 0;
-    for (size_t i = 0; i < length_array.values.size(); i++) {
+    wtf_size_t last_index = 0;
+    for (wtf_size_t i = 0; i < length_array.values.size(); i++) {
       if (i == CSSPrimitiveValue::kUnitTypePercentage ||
           !length_array.type_flags.Get(i))
         continue;
@@ -38,7 +38,7 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    for (size_t i = 0; i <= last_index_; i++) {
+    for (wtf_size_t i = 0; i <= last_index_; i++) {
       if (i == CSSPrimitiveValue::kUnitTypePercentage ||
           !length_array_.type_flags.Get(i))
         continue;
@@ -49,7 +49,7 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
     return true;
   }
 
-  static double LengthUnit(size_t length_unit_type,
+  static double LengthUnit(wtf_size_t length_unit_type,
                            const CSSToLengthConversionData& conversion_data) {
     return conversion_data.ZoomedComputedPixels(
         1,
@@ -59,11 +59,11 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
 
  private:
   LengthUnitsChecker(CSSPrimitiveValue::CSSLengthArray&& length_array,
-                     size_t last_index)
+                     wtf_size_t last_index)
       : length_array_(std::move(length_array)), last_index_(last_index) {}
 
   const CSSLengthArray length_array_;
-  const size_t last_index_;
+  const wtf_size_t last_index_;
 };
 
 }  // namespace blink

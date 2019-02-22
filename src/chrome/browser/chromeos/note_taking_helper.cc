@@ -30,6 +30,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
@@ -517,6 +518,11 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
     // TODO(derat): Is there some way to detect whether this fails due to the
     // package no longer being available?
     helper->HandleIntent(CreateIntentInfo(clip_data_uri), std::move(activity));
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Arc.UserInteraction",
+        arc::UserInteractionType::APP_STARTED_FROM_STYLUS_TOOLS);
+
     return LaunchResult::ANDROID_SUCCESS;
   } else {
     // Chrome app.

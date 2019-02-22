@@ -90,7 +90,8 @@ class BASE_EXPORT SequenceManagerImpl
   // MessageLoop. The SequenceManager can be initialized on the current thread
   // and then needs to be bound and initialized on the target thread by calling
   // BindToCurrentThread() and CompleteInitializationOnBoundThread() during the
-  // thread's startup.
+  // thread's startup. If |message_loop| is null then BindToMessageLoop() must
+  // be called instead of CompleteInitializationOnBoundThread.
   //
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
@@ -98,6 +99,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
+  void BindToMessageLoop(MessageLoop* message_loop) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
   void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
@@ -157,6 +159,9 @@ class BASE_EXPORT SequenceManagerImpl
 
   WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
+  // TODO(alexclarke): Remove when possible.
+  bool SetCrashKeysAndCheckIsTaskCancelled(const PendingTask& task) const;
+
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
@@ -190,15 +195,15 @@ class BASE_EXPORT SequenceManagerImpl
   // selector interface is unaware of those.  This struct keeps track off all
   // task related state needed to make pairs of TakeTask() / DidRunTask() work.
   struct ExecutingTask {
-    ExecutingTask(internal::TaskQueueImpl::Task&& task,
+    ExecutingTask(Task&& task,
                   internal::TaskQueueImpl* task_queue,
                   TaskQueue::TaskTiming task_timing)
         : pending_task(std::move(task)),
           task_queue(task_queue),
           task_timing(task_timing),
-          task_type(pending_task.task_type()) {}
+          task_type(pending_task.task_type) {}
 
-    internal::TaskQueueImpl::Task pending_task;
+    Task pending_task;
     internal::TaskQueueImpl* task_queue = nullptr;
     TaskQueue::TaskTiming task_timing;
     // Save task metadata to use in after running a task as |pending_task|
@@ -250,6 +255,7 @@ class BASE_EXPORT SequenceManagerImpl
     std::vector<internal::TaskQueueImpl*> queues_to_reload;
 
     bool task_was_run_on_quiescence_monitored_queue = false;
+    bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
     std::list<ExecutingTask> task_execution_stack;
@@ -267,7 +273,7 @@ class BASE_EXPORT SequenceManagerImpl
   // Called by the task queue to inform this SequenceManager of a task that's
   // about to be queued. This SequenceManager may use this opportunity to add
   // metadata to |pending_task| before it is moved into the queue.
-  void WillQueueTask(internal::TaskQueueImpl::Task* pending_task);
+  void WillQueueTask(Task* pending_task);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.

@@ -61,25 +61,28 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
   return true;
 }
 
+std::string GetStringFromDictionary(const base::Value* dict, const char* key) {
+  const base::Value* v = dict ? dict->FindKey(key) : nullptr;
+  return v ? v->GetString() : std::string();
+}
+
 }  // namespace
 
-void SetSSID(const std::string& ssid, base::DictionaryValue* properties) {
+void SetSSID(const std::string& ssid, base::Value* properties) {
   std::string hex_ssid = base::HexEncode(ssid.c_str(), ssid.size());
   properties->SetKey(shill::kWifiHexSsid, base::Value(hex_ssid));
 }
 
-std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
+std::string GetSSIDFromProperties(const base::Value& properties,
                                   bool verbose_logging,
                                   bool* unknown_encoding) {
   if (unknown_encoding)
     *unknown_encoding = false;
 
   // Get name for debugging.
-  std::string name;
-  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
-
-  std::string hex_ssid;
-  properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
+  std::string name = GetStringFromDictionary(&properties, shill::kNameProperty);
+  std::string hex_ssid =
+      GetStringFromDictionary(&properties, shill::kWifiHexSsid);
 
   if (hex_ssid.empty()) {
     if (verbose_logging)
@@ -108,8 +111,7 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
     // TODO(stevenjb): This is currently experimental. If we find a case where
     // base::DetectEncoding() fails, we need to figure out whether we can use
     // country_code with ConvertToUtf8(). crbug.com/233267.
-    properties.GetStringWithoutPathExpansion(shill::kCountryProperty,
-                                             &encoding);
+    encoding = GetStringFromDictionary(&properties, shill::kCountryProperty);
   }
   std::string utf8_ssid;
   if (!encoding.empty() &&
@@ -133,35 +135,36 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   return ssid;
 }
 
-std::string GetNetworkIdFromProperties(
-    const base::DictionaryValue& properties) {
-  if (properties.empty())
+std::string GetNetworkIdFromProperties(const base::Value& properties) {
+  if (properties.DictEmpty())
     return "EmptyProperties";
-  std::string result;
-  if (properties.GetStringWithoutPathExpansion(shill::kGuidProperty, &result))
-    return result;
-  if (properties.GetStringWithoutPathExpansion(shill::kSSIDProperty, &result))
-    return result;
-  if (properties.GetStringWithoutPathExpansion(shill::kNameProperty, &result))
-    return result;
-  std::string type = "UnknownType";
-  properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
-  return "Unidentified " + type;
+  const base::Value* result =
+      properties.FindKeyOfType(shill::kGuidProperty, base::Value::Type::STRING);
+  if (!result) {
+    result = properties.FindKeyOfType(shill::kSSIDProperty,
+                                      base::Value::Type::STRING);
+  }
+  if (!result) {
+    result = properties.FindKeyOfType(shill::kNameProperty,
+                                      base::Value::Type::STRING);
+  }
+  if (result)
+    return result->GetString();
+  result =
+      properties.FindKeyOfType(shill::kTypeProperty, base::Value::Type::STRING);
+  return result ? "Unidentified " + result->GetString() : "UnknownType";
 }
 
 std::string GetNameFromProperties(const std::string& service_path,
-                                  const base::DictionaryValue& properties) {
-  std::string name;
-  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
-
+                                  const base::Value& properties) {
+  std::string name = GetStringFromDictionary(&properties, shill::kNameProperty);
   std::string validated_name = ValidateUTF8(name);
   if (validated_name != name) {
     NET_LOG(DEBUG) << "GetNameFromProperties: " << service_path
                    << " Validated name=" << validated_name << " name=" << name;
   }
 
-  std::string type;
-  properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+  std::string type = GetStringFromDictionary(&properties, shill::kTypeProperty);
   if (type.empty()) {
     NET_LOG(ERROR) << "GetNameFromProperties: " << service_path << " No type.";
     return validated_name;

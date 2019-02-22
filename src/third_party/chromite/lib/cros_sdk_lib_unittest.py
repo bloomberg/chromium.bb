@@ -7,9 +7,9 @@
 
 from __future__ import print_function
 
-import errno
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -19,70 +19,11 @@ from chromite.lib import partial_mock
 class TestGetChrootVersion(cros_test_lib.MockTestCase):
   """Tests GetChrootVersion functionality."""
 
-  def testSimpleBuildroot(self):
-    """Verify buildroot arg works"""
-    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='12\n')
-    ret = cros_sdk_lib.GetChrootVersion(buildroot='/build/root')
-    self.assertEqual(ret, 12)
-    read_mock.assert_called_with('/build/root/chroot/etc/cros_chroot_version')
-
-  def testSimpleChroot(self):
-    """Verify chroot arg works"""
-    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='70')
-    ret = cros_sdk_lib.GetChrootVersion(chroot='/ch/root')
-    self.assertEqual(ret, 70)
-    read_mock.assert_called_with('/ch/root/etc/cros_chroot_version')
-
   def testNoChroot(self):
-    """Verify we don't blow up when there is no chroot yet"""
-    ret = cros_sdk_lib.GetChrootVersion(chroot='/.$om3/place/nowhere')
-    self.assertEqual(ret, None)
-
-  def testInvalidVersion(self):
-    """Verify chroot with non-integer version returns None."""
-    self.PatchObject(osutils, 'ReadFile', return_value='1dog')
-    self.assertIsNone(cros_sdk_lib.GetChrootVersion(chroot='/some/chroot'))
-
-
-class TestIsChrootReady(cros_test_lib.MockTestCase):
-  """Tests IsChrootReady functionality."""
-
-  def testBuildrootArgGoodVersion(self):
-    """Verify buildroot arg works."""
-    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='100\n')
-    self.assertTrue(cros_sdk_lib.IsChrootReady(buildroot='/build/root'))
-    read_mock.assert_called_with('/build/root/chroot/etc/cros_chroot_version')
-
-  def testChrootArgGoodVersion(self):
-    """Verify chroot arg works."""
-    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='100\n')
-    self.assertTrue(cros_sdk_lib.IsChrootReady(chroot='/some/chroot'))
-    read_mock.assert_called_with('/some/chroot/etc/cros_chroot_version')
-
-  def testMissingChroot(self):
-    """Verify missing chroot isn't considered ready."""
-    self.assertFalse(cros_sdk_lib.IsChrootReady('/no/such/chroot'))
-
-  def testMissingVersion(self):
-    """Verify chroot without version file isn't considered ready."""
-    self.PatchObject(osutils, 'ReadFile',
-                     side_effect=IOError(errno.ENOENT, 'No such file'))
-    self.assertFalse(cros_sdk_lib.IsChrootReady(chroot='/some/chroot'))
-
-  def testEmptyVersion(self):
-    """Verify chroot with empty version file isn't considered ready."""
-    self.PatchObject(osutils, 'ReadFile', return_value='')
-    self.assertFalse(cros_sdk_lib.IsChrootReady(chroot='/some/chroot'))
-
-  def testInvalidVersion(self):
-    """Verify chroot with non-integer version isn't considered ready."""
-    self.PatchObject(osutils, 'ReadFile', return_value='1dog')
-    self.assertFalse(cros_sdk_lib.IsChrootReady(chroot='/some/chroot'))
-
-  def testZeroVersion(self):
-    """Verify chroot with version 0 isn't considered ready."""
-    self.PatchObject(osutils, 'ReadFile', return_value='0\n')
-    self.assertFalse(cros_sdk_lib.IsChrootReady(chroot='/some/chroot'))
+    """Verify we don't blow up when there is no chroot yet."""
+    self.PatchObject(cros_sdk_lib.ChrootUpdater, 'GetVersion',
+                     side_effect=IOError())
+    self.assertIsNone(cros_sdk_lib.GetChrootVersion('/.$om3/place/nowhere'))
 
 
 class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
@@ -610,3 +551,124 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     m2.assert_called_with(self.chroot_path, None)
     m3.assert_called_with(self.chroot_img)
     m4.assert_called_with(self.chroot_path, ignore_missing=True, sudo=True)
+
+
+class ChrootUpdaterTest(cros_test_lib.MockTempDirTestCase):
+  """ChrootUpdater tests."""
+
+  def setUp(self):
+    # Build expected success scripts.
+    D = cros_test_lib.Directory
+    filesystem = (
+        D('hooks', (
+            '8_invalid_gap',
+            '10_run_success',
+            '11_run_success',
+            '12_run_success',
+        )),
+        'version_file',
+    )
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
+
+    self.version_file = os.path.join(self.tempdir, 'version_file')
+    osutils.WriteFile(self.version_file, '0')
+    self.hooks_dir = os.path.join(self.tempdir, 'hooks')
+
+    self.latest_version = 12
+    self.deprecated_versions = (6, 7, 8)
+    self.invalid_versions = (13,)
+    self.success_versions = (9, 10, 11, 12)
+    self.chroot = cros_sdk_lib.ChrootUpdater(version_file=self.version_file,
+                                             hooks_dir=self.hooks_dir)
+
+  def testVersion(self):
+    """Test the version property logic."""
+    # Testing default value.
+    self.assertEqual(0, self.chroot.GetVersion())
+
+    # Test setting the version.
+    self.chroot.SetVersion(5)
+    self.assertEqual(5, self.chroot.GetVersion())
+    self.assertEqual('5', osutils.ReadFile(self.version_file))
+
+    # The current behavior is that outside processes writing to the file
+    # does not affect our view after we've already read it. This shouldn't
+    # generally be a problem since run_chroot_version_hooks should be the only
+    # process writing to it.
+    osutils.WriteFile(self.version_file, '10')
+    self.assertEqual(5, self.chroot.GetVersion())
+
+  def testInvalidVersion(self):
+    """Test invalid version file contents."""
+    osutils.WriteFile(self.version_file, 'invalid')
+    with self.assertRaises(cros_sdk_lib.InvalidChrootVersionError):
+      self.chroot.GetVersion()
+
+  def testMissingFileVersion(self):
+    """Test missing version file."""
+    osutils.SafeUnlink(self.version_file)
+    with self.assertRaises(cros_sdk_lib.UninitializedChrootError):
+      self.chroot.GetVersion()
+
+  def testLatestVersion(self):
+    """Test the latest_version property/_LatestScriptsVersion method."""
+    self.assertEqual(self.latest_version, self.chroot.latest_version)
+
+  def testGetChrootUpdates(self):
+    """Test GetChrootUpdates."""
+    # Test the deprecated error conditions.
+    for version in self.deprecated_versions:
+      self.chroot.SetVersion(version)
+      with self.assertRaises(cros_sdk_lib.ChrootDeprecatedError):
+        self.chroot.GetChrootUpdates()
+
+  def testMultipleUpdateFiles(self):
+    """Test handling of multiple files existing for a single version."""
+    # When the version would be run.
+    osutils.WriteFile(os.path.join(self.hooks_dir, '10_duplicate'), '')
+
+    self.chroot.SetVersion(9)
+    with self.assertRaises(cros_sdk_lib.VersionHasMultipleHooksError):
+      self.chroot.GetChrootUpdates()
+
+    # When the version would not be run.
+    self.chroot.SetVersion(11)
+    with self.assertRaises(cros_sdk_lib.VersionHasMultipleHooksError):
+      self.chroot.GetChrootUpdates()
+
+  def testApplyUpdates(self):
+    """Test ApplyUpdates."""
+    self.PatchObject(cros_build_lib, 'RunCommand',
+                     return_value=cros_build_lib.CommandResult(returncode=0))
+    for version in self.success_versions:
+      self.chroot.SetVersion(version)
+      self.chroot.ApplyUpdates()
+      self.assertEqual(self.latest_version, self.chroot.GetVersion())
+
+  def testApplyInvalidUpdates(self):
+    """Test the invalid version conditions for ApplyUpdates."""
+    for version in self.invalid_versions:
+      self.chroot.SetVersion(version)
+      with self.assertRaises(cros_sdk_lib.InvalidChrootVersionError):
+        self.chroot.ApplyUpdates()
+
+  def testIsInitialized(self):
+    """Test IsInitialized conditions."""
+    self.chroot.SetVersion(0)
+    self.assertFalse(self.chroot.IsInitialized())
+
+    self.chroot.SetVersion(1)
+    self.assertTrue(self.chroot.IsInitialized())
+
+    # Test handling each of the errors thrown by GetVersion.
+    self.PatchObject(self.chroot, 'GetVersion',
+                     side_effect=cros_sdk_lib.InvalidChrootVersionError())
+    self.assertFalse(self.chroot.IsInitialized())
+
+    self.PatchObject(self.chroot, 'GetVersion',
+                     side_effect=IOError())
+    self.assertFalse(self.chroot.IsInitialized())
+
+    self.PatchObject(self.chroot, 'GetVersion',
+                     side_effect=cros_sdk_lib.UninitializedChrootError())
+    self.assertFalse(self.chroot.IsInitialized())

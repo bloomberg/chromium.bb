@@ -29,6 +29,14 @@ var originalChrome = null;
 var currentTestCase = null;
 
 /**
+ * Value set to true by WebUIBrowserTest if test harness should wait for user to
+ * attach a debugger.
+ *
+ * @type {boolean}
+ */
+var waitUser = false;
+
+/**
  * The string representation of the currently running test function.
  * @type {?string}
  */
@@ -1052,6 +1060,12 @@ function createExpect(assertFunc) {
  * @see runTestFunction
  */
 function runTest(isAsync, testFunction, testArguments) {
+  // If waiting for user to attach a debugger, retry in 1 second.
+  if (waitUser) {
+    setTimeout(runTest, 1000, isAsync, testFunction, testArguments);
+    return true;
+  }
+
   // Avoid eval() if at all possible, since it will not work on pages
   // that have enabled content-security-policy.
   var testBody = this[testFunction];  // global object -- not a method.
@@ -1167,6 +1181,25 @@ function preloadJavascriptLibraries(testFixture, testName) {
   }, true);
   currentTestCase = createTestCase(testFixture, testName);
   currentTestCase.preLoad();
+}
+
+
+/**
+ * Sets |waitUser| to true so |runTest| function waits for user to attach a
+ * debugger.
+ */
+function setWaitUser() {
+  waitUser = true;
+  console.log('Waiting for debugger...');
+  console.log('Run: go() in the JS console when you are ready.');
+}
+
+/**
+ * Sets |waitUser| to false, so |runTest| function stops waiting for user and
+ * start running the tests.
+ */
+function go() {
+  waitUser = false;
 }
 
 /**
@@ -1758,6 +1791,8 @@ exports.assertAccessibilityOk = assertAccessibilityOk;
 exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
+exports.setWaitUser = setWaitUser;
+exports.go = go;
 exports.registerMessageCallback = registerMessageCallback;
 exports.registerMockGlobals = registerMockGlobals;
 exports.registerMockMessageCallbacks = registerMockMessageCallbacks;

@@ -285,12 +285,25 @@ int64_t HttpProxyClientSocketWrapper::GetTotalReceivedBytes() const {
 }
 
 void HttpProxyClientSocketWrapper::ApplySocketTag(const SocketTag& tag) {
-  // HttpProxyClientSocketPool only tags once connected, when transport_socket_
-  // is set. Socket tagging is not supported with tunneling. Socket tagging is
-  // also not supported with proxy auth so ApplySocketTag() won't be called with
-  // a specific (non-default) tag when transport_socket_ is cleared by
-  // RestartWithAuth().
-  if (tunnel_ || !transport_socket_) {
+  // Applying a socket tag to an HttpProxyClientSocketWrapper is done by simply
+  // applying the socket tag to the underlying socket.
+
+  // In the case of a connection to the proxy using HTTP/2 or HTTP/3 where the
+  // underlying socket may multiplex multiple streams, applying this request's
+  // socket tag to the multiplexed session would incorrectly apply the socket
+  // tag to all mutliplexed streams. In reality this would hit the CHECK(false)
+  // in QuicProxyClientSocket::ApplySocketTag() or
+  // SpdyProxyClientSocket::ApplySocketTag(). Fortunately socket tagging is only
+  // supported on Android without the data reduction proxy, so only simple HTTP
+  // proxies are supported, so proxies won't be using HTTP/2 or HTTP/3. Detect
+  // this case (|ssl_params_| must be set for HTTP/2 and HTTP/3 proxies) and
+  // enforce that a specific (non-default) tag isn't being applied.
+  if (ssl_params_ ||
+      // Android also doesn't support proxy auth, so RestartWithAuth() should't
+      // be called so |transport_socket_| shouldn't be cleared. If
+      // |transport_socket_| is cleared, enforce that a specific (non-default)
+      // tag isn't being applied.
+      !transport_socket_) {
     CHECK(tag == SocketTag());
   } else {
     transport_socket_->ApplySocketTag(tag);
@@ -649,6 +662,7 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateSession() {
       initial_socket_tag_, ssl_params_->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log_,
       &quic_net_error_details_,
+      /*failed_on_default_network_callback=*/CompletionOnceCallback(),
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)));
 }

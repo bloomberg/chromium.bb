@@ -17,8 +17,8 @@
 #include "SkImageShader.h"
 #include "SkMask.h"
 #include "SkNx.h"
-#include "SkPM4f.h"
 #include "SkPixmapPriv.h"
+#include "SkPM4f.h"
 #include "SkReadPixelsRec.h"
 #include "SkSurface.h"
 #include "SkTemplates.h"
@@ -78,6 +78,57 @@ bool SkPixmap::extractSubset(SkPixmap* result, const SkIRect& subset) const {
     }
     result->reset(fInfo.makeWH(r.width(), r.height()), pixels, fRowBytes);
     return true;
+}
+
+// This is the same as SkPixmap::addr(x,y), but this version gets inlined, while the public
+// method does not. Perhaps we could bloat it so it can be inlined, but that would grow code-size
+// everywhere, instead of just here (on behalf of getAlphaf()).
+static const void* fast_getaddr(const SkPixmap& pm, int x, int y) {
+    x <<= SkColorTypeShiftPerPixel(pm.colorType());
+    return static_cast<const char*>(pm.addr()) + y * pm.rowBytes() + x;
+}
+
+float SkPixmap::getAlphaf(int x, int y) const {
+    SkASSERT(this->addr());
+    SkASSERT((unsigned)x < (unsigned)this->width());
+    SkASSERT((unsigned)y < (unsigned)this->height());
+
+    float value = 0;
+    const void* srcPtr = fast_getaddr(*this, x, y);
+
+    switch (this->colorType()) {
+        case kUnknown_SkColorType:
+            return 0;
+        case kGray_8_SkColorType:
+        case kRGB_565_SkColorType:
+        case kRGB_888x_SkColorType:
+        case kRGB_101010x_SkColorType:
+            return 1;
+        case kAlpha_8_SkColorType:
+            value = static_cast<const uint8_t*>(srcPtr)[0] * (1.0f/255);
+            break;
+        case kARGB_4444_SkColorType: {
+            uint16_t u16 = static_cast<const uint16_t*>(srcPtr)[0];
+            value = SkGetPackedA4444(u16) * (1.0f/15);
+        } break;
+        case kRGBA_8888_SkColorType:
+        case kBGRA_8888_SkColorType:
+            value = static_cast<const uint8_t*>(srcPtr)[3] * (1.0f/255);
+            break;
+        case kRGBA_1010102_SkColorType: {
+            uint32_t u32 = static_cast<const uint32_t*>(srcPtr)[0];
+            value = (u32 >> 30) * (1.0f/3);
+        } break;
+        case kRGBA_F16_SkColorType: {
+            uint64_t px;
+            memcpy(&px, srcPtr, sizeof(px));
+            value = SkHalfToFloat_finite_ftz(px)[3];
+        } break;
+        case kRGBA_F32_SkColorType:
+            value = static_cast<const float*>(srcPtr)[3];
+            break;
+    }
+    return value;
 }
 
 bool SkPixmap::readPixels(const SkImageInfo& dstInfo, void* dstPixels, size_t dstRB,
@@ -255,7 +306,8 @@ bool SkPixmap::erase(const SkColor4f& origColor, const SkIRect* subset) const {
     const SkColor4f color = origColor.pin();
 
     if (pm.colorType() == kRGBA_F16_SkColorType) {
-        const uint64_t half4 = color.premul().toF16();
+        uint64_t half4;
+        SkFloatToHalf_finite_ftz(Sk4f::Load(color.premul().vec())).store(&half4);
         for (int y = 0; y < pm.height(); ++y) {
             sk_memset64(pm.writable_addr64(0, y), half4, pm.width());
         }
@@ -263,14 +315,14 @@ bool SkPixmap::erase(const SkColor4f& origColor, const SkIRect* subset) const {
     }
 
     if (pm.colorType() == kRGBA_F32_SkColorType) {
-        const SkPM4f rgba = color.premul();
+        const SkPMColor4f rgba = color.premul();
         for (int y = 0; y < pm.height(); ++y) {
-            auto row = (float*)pm.writable_addr();
+            auto row = (float*)pm.writable_addr(0, y);
             for (int x = 0; x < pm.width(); ++x) {
-                row[4*x+0] = rgba.r();
-                row[4*x+1] = rgba.g();
-                row[4*x+2] = rgba.b();
-                row[4*x+3] = rgba.a();
+                row[4*x+0] = rgba.fR;
+                row[4*x+1] = rgba.fG;
+                row[4*x+2] = rgba.fB;
+                row[4*x+3] = rgba.fA;
             }
         }
         return true;

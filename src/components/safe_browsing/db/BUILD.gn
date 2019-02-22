@@ -31,7 +31,6 @@ group("safe_browsing_db_shared") {
   deps = [
     ":database_manager",
     ":hit_report",
-    ":prefix_set",
     ":safebrowsing_proto",
     ":util",
     ":v4_feature_list",  # Used by SafeBrowsingService
@@ -81,17 +80,6 @@ static_library("hit_report") {
     "//components/metrics",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//url",
-  ]
-}
-
-static_library("prefix_set") {
-  sources = [
-    "prefix_set.cc",
-    "prefix_set.h",
-  ]
-  deps = [
-    ":util",
-    "//base",
   ]
 }
 
@@ -390,7 +378,6 @@ source_set("unit_tests_shared") {
   testonly = true
   sources = [
     "database_manager_unittest.cc",
-    "prefix_set_unittest.cc",
     "util_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
     "v4_protocol_manager_util_unittest.cc",
@@ -398,7 +385,6 @@ source_set("unit_tests_shared") {
   ]
   deps = [
     ":database_manager",
-    ":prefix_set",
     ":safebrowsing_proto",
     ":test_database_manager",
     ":util",

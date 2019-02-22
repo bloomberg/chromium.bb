@@ -75,8 +75,7 @@ public:
                 args.fUniformHandler->getUniformCStr(fProfileSizeVar),
                 fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
-                args.fOutputColor, args.fInputColor ? args.fInputColor : "half4(1)",
-                args.fUniformHandler->getUniformCStr(fRectVar),
+                args.fOutputColor, args.fInputColor, args.fUniformHandler->getUniformCStr(fRectVar),
                 args.fUniformHandler->getUniformCStr(fRectVar),
                 args.fUniformHandler->getUniformCStr(fRectVar),
                 args.fUniformHandler->getUniformCStr(fRectVar),
@@ -98,17 +97,14 @@ public:
                 args.fUniformHandler->getUniformCStr(fProfileSizeVar),
                 fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
-                args.fOutputColor, args.fInputColor ? args.fInputColor : "half4(1)");
+                args.fOutputColor, args.fInputColor);
     }
 
 private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {
         const GrRectBlurEffect& _outer = _proc.cast<GrRectBlurEffect>();
-        {
-            const SkRect rectValue = _outer.rect();
-            pdman.set4fv(fRectVar, 1, (float*)&rectValue);
-        }
+        { pdman.set4fv(fRectVar, 1, reinterpret_cast<const float*>(&(_outer.rect()))); }
         UniformHandle& rect = fRectVar;
         (void)rect;
         auto sigma = _outer.sigma();

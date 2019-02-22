@@ -41,7 +41,7 @@ class NavigatorEvents {
   STATIC_ONLY(NavigatorEvents);
 
  public:
-  static long maxTouchPoints(Navigator&);
+  static int32_t maxTouchPoints(Navigator&);
 };
 
 }  // namespace blink

@@ -734,6 +734,7 @@ void checkDeviceExtensions (tcu::ResultCollector& results, const vector<string>&
 		"VK_KHR_incremental_present",
 		"VK_KHR_shared_presentable_image",
 		"VK_KHR_storage_buffer_storage_class",
+		"VK_KHR_8bit_storage",
 		"VK_KHR_16bit_storage",
 		"VK_KHR_get_memory_requirements2",
 		"VK_KHR_external_memory",
@@ -756,7 +757,10 @@ void checkDeviceExtensions (tcu::ResultCollector& results, const vector<string>&
 		"VK_KHR_device_group",
 		"VK_KHR_multiview",
 		"VK_KHR_maintenance3",
-		"VK_KHR_draw_indirect_count"
+		"VK_KHR_draw_indirect_count",
+		"VK_KHR_create_renderpass2",
+		"VK_KHR_driver_properties",
+		"VK_KHR_shader_atomic_int64",
 	};
 
 	checkKhrExtensions(results, extensions, DE_LENGTH_OF_ARRAY(s_allowedDeviceKhrExtensions), s_allowedDeviceKhrExtensions);
@@ -826,6 +830,48 @@ tcu::TestStatus enumerateInstanceExtensions (Context& context)
 	}
 
 	return tcu::TestStatus(results.getResult(), results.getMessage());
+}
+
+tcu::TestStatus testNoKhxExtensions (Context& context)
+{
+	VkPhysicalDevice			physicalDevice	= context.getPhysicalDevice();
+	const PlatformInterface&	vkp				= context.getPlatformInterface();
+	const InstanceInterface&	vki				= context.getInstanceInterface();
+
+	tcu::ResultCollector		results(context.getTestContext().getLog());
+	bool						testSucceeded = true;
+	deUint32					instanceExtensionsCount;
+	deUint32					deviceExtensionsCount;
+
+	// grab number of instance and device extensions
+	vkp.enumerateInstanceExtensionProperties(DE_NULL, &instanceExtensionsCount, DE_NULL);
+	vki.enumerateDeviceExtensionProperties(physicalDevice, DE_NULL, &deviceExtensionsCount, DE_NULL);
+	vector<VkExtensionProperties> extensionsProperties(instanceExtensionsCount + deviceExtensionsCount);
+
+	// grab instance and device extensions into single vector
+	if (instanceExtensionsCount)
+		vkp.enumerateInstanceExtensionProperties(DE_NULL, &instanceExtensionsCount, &extensionsProperties[0]);
+	if (deviceExtensionsCount)
+		vki.enumerateDeviceExtensionProperties(physicalDevice, DE_NULL, &deviceExtensionsCount, &extensionsProperties[instanceExtensionsCount]);
+
+	// iterate over all extensions and verify their names
+	vector<VkExtensionProperties>::const_iterator extension = extensionsProperties.begin();
+	while (extension != extensionsProperties.end())
+	{
+		// KHX author ID is no longer used, all KHX extensions have been promoted to KHR status
+		std::string extensionName(extension->extensionName);
+		bool caseFailed = de::beginsWith(extensionName, "VK_KHX_");
+		if (caseFailed)
+		{
+			results.fail("Invalid extension name " + extensionName);
+			testSucceeded = false;
+		}
+		++extension;
+	}
+
+	if (testSucceeded)
+		return tcu::TestStatus::pass("No extensions begining with \"VK_KHX\"");
+	return tcu::TestStatus::fail("One or more extensions begins with \"VK_KHX\"");
 }
 
 tcu::TestStatus enumerateDeviceLayers (Context& context)
@@ -1667,7 +1713,7 @@ VkFormatFeatureFlags getRequiredOptimalExtendedTilingFeatures (Context& context,
 					vk.getPhysicalDeviceProperties2(context.getPhysicalDevice(), &physicalDeviceProperties);
 				}
 
-				if (physicalDeviceSamplerMinMaxProperties.filterMinmaxImageComponentMapping)
+				if (physicalDeviceSamplerMinMaxProperties.filterMinmaxSingleComponentFormats)
 				{
 					flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT;
 				}
@@ -2477,7 +2523,9 @@ tcu::TestStatus imageFormatProperties (Context& context, const VkFormat format, 
 
 	if (isYcbcrConversionSupported(context) && (format == VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR || format == VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR))
 	{
-		const VkFormatFeatureFlags requiredFeatures = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR | VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR;
+		VkFormatFeatureFlags requiredFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR;
+		if (tiling == VK_IMAGE_TILING_OPTIMAL)
+			requiredFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR;
 
 		results.check((supportedFeatures & requiredFeatures) == requiredFeatures,
 					  getFormatName(format) + string(" must support ") + de::toString(getFormatFeatureFlagsStr(requiredFeatures)));
@@ -2696,8 +2744,8 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 {
 	const PlatformInterface&	vkp				= context.getPlatformInterface();
 	const VkPhysicalDevice		physicalDevice	= context.getPhysicalDevice();
-	const VkInstance			instance		(context.getInstance());
-	const InstanceDriver		vki				(vkp, instance);
+	const Unique<VkInstance>	instance		(createInstanceWithExtension(vkp, "VK_KHR_get_physical_device_properties2", context));
+	const InstanceDriver		vki				(vkp, *instance);
 	TestLog&					log				= context.getTestContext().getLog();
 	VkPhysicalDeviceFeatures	coreFeatures;
 	VkPhysicalDeviceFeatures2	extFeatures;
@@ -2720,6 +2768,8 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 
 	log << TestLog::Message << extFeatures << TestLog::EndMessage;
 
+	vector<VkExtensionProperties>	properties = enumerateDeviceExtensionProperties(vki, physicalDevice, DE_NULL);
+	const bool khr_8bit_storage		= checkExtension(properties,"VK_KHR_8bit_storage");;
 	bool khr_16bit_storage			= true;
 	bool khr_multiview				= true;
 	bool deviceProtectedMemory		= true;
@@ -2727,7 +2777,6 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 	bool variable_pointers			= true;
 	if (getPhysicalDeviceProperties(vki, physicalDevice).apiVersion < VK_API_VERSION_1_1)
 	{
-		vector<VkExtensionProperties> properties = enumerateDeviceExtensionProperties(vki, physicalDevice, DE_NULL);
 		khr_16bit_storage = checkExtension(properties,"VK_KHR_16bit_storage");
 		khr_multiview = checkExtension(properties,"VK_KHR_multiview");
 		deviceProtectedMemory = false;
@@ -2736,6 +2785,7 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 	}
 
 	const int count = 2u;
+	VkPhysicalDevice8BitStorageFeaturesKHR				device8BitStorageFeatures[count];
 	VkPhysicalDevice16BitStorageFeatures				device16BitStorageFeatures[count];
 	VkPhysicalDeviceMultiviewFeatures					deviceMultiviewFeatures[count];
 	VkPhysicalDeviceProtectedMemoryFeatures				protectedMemoryFeatures[count];
@@ -2744,11 +2794,15 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 
 	for (int ndx = 0; ndx < count; ++ndx)
 	{
+		deMemset(&device8BitStorageFeatures[ndx],		0xFF*ndx, sizeof(VkPhysicalDevice8BitStorageFeaturesKHR));
 		deMemset(&device16BitStorageFeatures[ndx],		0xFF*ndx, sizeof(VkPhysicalDevice16BitStorageFeatures));
 		deMemset(&deviceMultiviewFeatures[ndx],			0xFF*ndx, sizeof(VkPhysicalDeviceMultiviewFeatures));
 		deMemset(&protectedMemoryFeatures[ndx],			0xFF*ndx, sizeof(VkPhysicalDeviceProtectedMemoryFeatures));
 		deMemset(&samplerYcbcrConversionFeatures[ndx],	0xFF*ndx, sizeof(VkPhysicalDeviceSamplerYcbcrConversionFeatures));
 		deMemset(&variablePointerFeatures[ndx],			0xFF*ndx, sizeof(VkPhysicalDeviceVariablePointerFeatures));
+
+		device8BitStorageFeatures[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR;
+		device8BitStorageFeatures[ndx].pNext = &device16BitStorageFeatures[ndx];
 
 		device16BitStorageFeatures[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
 		device16BitStorageFeatures[ndx].pNext = &deviceMultiviewFeatures[ndx];
@@ -2767,9 +2821,18 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 
 		deMemset(&extFeatures.features, 0xcd, sizeof(extFeatures.features));
 		extFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		extFeatures.pNext = &device16BitStorageFeatures[ndx];
+		extFeatures.pNext = &device8BitStorageFeatures[ndx];
 
 		vki.getPhysicalDeviceFeatures2(physicalDevice, &extFeatures);
+	}
+
+	if ( khr_8bit_storage &&
+		(device8BitStorageFeatures[0].storageBuffer8BitAccess				!= device8BitStorageFeatures[1].storageBuffer8BitAccess ||
+		device8BitStorageFeatures[0].uniformAndStorageBuffer8BitAccess		!= device8BitStorageFeatures[1].uniformAndStorageBuffer8BitAccess ||
+		device8BitStorageFeatures[0].storagePushConstant8					!= device8BitStorageFeatures[1].storagePushConstant8 )
+		)
+	{
+		TCU_FAIL("Mismatch between VkPhysicalDevice8BitStorageFeatures");
 	}
 
 	if ( khr_16bit_storage &&
@@ -2808,6 +2871,8 @@ tcu::TestStatus deviceFeatures2 (Context& context)
 	{
 		TCU_FAIL("Mismatch between VkPhysicalDeviceVariablePointerFeatures");
 	}
+	if (khr_8bit_storage)
+		log << TestLog::Message << device8BitStorageFeatures[0]		<< TestLog::EndMessage;
 	if (khr_16bit_storage)
 		log << TestLog::Message << toString(device16BitStorageFeatures[0])		<< TestLog::EndMessage;
 	if (khr_multiview)
@@ -2931,74 +2996,131 @@ tcu::TestStatus deviceProperties2 (Context& context)
 
 	const int count = 2u;
 
-	if (getPhysicalDeviceProperties(vki, physicalDevice).apiVersion >= VK_API_VERSION_1_1)
+	bool khr_external_memory_capabilities		= true;
+	bool khr_multiview							= true;
+	bool khr_maintenance2						= true;
+	bool khr_maintenance3						= true;
+	bool apiVersionSmallerThen_1_1				= (getPhysicalDeviceProperties(vki, physicalDevice).apiVersion < VK_API_VERSION_1_1);
+	if (apiVersionSmallerThen_1_1)
 	{
-		VkPhysicalDeviceIDProperties								IDProperties[count];
-		VkPhysicalDeviceMaintenance3Properties						maintenance3Properties[count];
-		VkPhysicalDeviceMultiviewProperties							multiviewProperties[count];
-		VkPhysicalDevicePointClippingProperties						pointClippingProperties[count];
-		VkPhysicalDeviceProtectedMemoryProperties					protectedMemoryPropertiesKHR[count];
-		VkPhysicalDeviceSubgroupProperties							subgroupProperties[count];
+		vector<VkExtensionProperties> properties	= enumerateDeviceExtensionProperties(vki, physicalDevice, DE_NULL);
+		khr_external_memory_capabilities			= checkExtension(properties,"VK_KHR_external_memory_capabilities");
+		khr_multiview								= checkExtension(properties,"VK_KHR_multiview");
+		khr_maintenance2							= checkExtension(properties,"VK_KHR_maintenance2");
+		khr_maintenance3							= checkExtension(properties,"VK_KHR_maintenance3");
+	}
 
-		for (int ndx = 0; ndx < count; ++ndx)
+	VkPhysicalDeviceIDProperties				IDProperties[count];
+	VkPhysicalDeviceMaintenance3Properties		maintenance3Properties[count];
+	VkPhysicalDeviceMultiviewProperties			multiviewProperties[count];
+	VkPhysicalDevicePointClippingProperties		pointClippingProperties[count];
+	VkPhysicalDeviceProtectedMemoryProperties	protectedMemoryPropertiesKHR[count];
+	VkPhysicalDeviceSubgroupProperties			subgroupProperties[count];
+
+	for (int ndx = 0; ndx < count; ++ndx)
+	{
+		deMemset(&IDProperties[ndx],					0xFF*ndx, sizeof(VkPhysicalDeviceIDProperties				));
+		deMemset(&maintenance3Properties[ndx],			0xFF*ndx, sizeof(VkPhysicalDeviceMaintenance3Properties		));
+		deMemset(&multiviewProperties[ndx],				0xFF*ndx, sizeof(VkPhysicalDeviceMultiviewProperties		));
+		deMemset(&pointClippingProperties[ndx],			0xFF*ndx, sizeof(VkPhysicalDevicePointClippingProperties	));
+		deMemset(&protectedMemoryPropertiesKHR[ndx],	0xFF*ndx, sizeof(VkPhysicalDeviceProtectedMemoryProperties	));
+		deMemset(&subgroupProperties[ndx],				0xFF*ndx, sizeof(VkPhysicalDeviceSubgroupProperties			));
+
+		IDProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+		IDProperties[ndx].pNext = &maintenance3Properties[ndx];
+
+		maintenance3Properties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
+		maintenance3Properties[ndx].pNext = &multiviewProperties[ndx];
+
+		multiviewProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
+		multiviewProperties[ndx].pNext = &pointClippingProperties[ndx];
+
+		pointClippingProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES;
+		pointClippingProperties[ndx].pNext = &protectedMemoryPropertiesKHR[ndx];
+
+		protectedMemoryPropertiesKHR[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES;
+		protectedMemoryPropertiesKHR[ndx].pNext = &subgroupProperties[ndx];
+
+		subgroupProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
+		subgroupProperties[ndx].pNext = DE_NULL;
+
+		extProperties.pNext = &IDProperties[ndx];
+
+		vki.getPhysicalDeviceProperties2(physicalDevice, &extProperties);
+
+		IDProperties[ndx].pNext						= DE_NULL;
+		maintenance3Properties[ndx].pNext			= DE_NULL;
+		multiviewProperties[ndx].pNext				= DE_NULL;
+		pointClippingProperties[ndx].pNext			= DE_NULL;
+		protectedMemoryPropertiesKHR[ndx].pNext		= DE_NULL;
+		subgroupProperties[ndx].pNext				= DE_NULL;
+	}
+
+	if (khr_external_memory_capabilities)
+	{
+		if ((deMemCmp(IDProperties[0].deviceUUID, IDProperties[1].deviceUUID, VK_UUID_SIZE) != 0) ||
+			(deMemCmp(IDProperties[0].driverUUID, IDProperties[1].driverUUID, VK_UUID_SIZE) != 0) ||
+			(IDProperties[0].deviceLUIDValid	!= IDProperties[1].deviceLUIDValid))
 		{
-
-			deMemset(&IDProperties[ndx],					0xFF, sizeof(VkPhysicalDeviceIDProperties						));
-			deMemset(&maintenance3Properties[ndx],			0xFF, sizeof(VkPhysicalDeviceMaintenance3Properties				));
-			deMemset(&multiviewProperties[ndx],				0xFF, sizeof(VkPhysicalDeviceMultiviewProperties				));
-			deMemset(&pointClippingProperties[ndx],			0xFF, sizeof(VkPhysicalDevicePointClippingProperties			));
-			deMemset(&protectedMemoryPropertiesKHR[ndx],	0xFF, sizeof(VkPhysicalDeviceProtectedMemoryProperties			));
-			deMemset(&subgroupProperties[ndx],				0xFF, sizeof(VkPhysicalDeviceSubgroupProperties					));
-
-
-			IDProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
-			IDProperties[ndx].pNext = &maintenance3Properties[ndx];
-
-			maintenance3Properties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
-			maintenance3Properties[ndx].pNext = &multiviewProperties[ndx];
-
-			multiviewProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
-			multiviewProperties[ndx].pNext = &pointClippingProperties[ndx];
-
-			pointClippingProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES;
-			pointClippingProperties[ndx].pNext = &protectedMemoryPropertiesKHR[ndx];
-
-			protectedMemoryPropertiesKHR[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES;
-			protectedMemoryPropertiesKHR[ndx].pNext = &subgroupProperties[ndx];
-
-			subgroupProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
-			subgroupProperties[ndx].pNext = DE_NULL;
-
-			extProperties.pNext = &IDProperties[ndx];
-
-			vki.getPhysicalDeviceProperties2(physicalDevice, &extProperties);
-
-			IDProperties[ndx].pNext						= DE_NULL;
-			maintenance3Properties[ndx].pNext			= DE_NULL;
-			multiviewProperties[ndx].pNext				= DE_NULL;
-			pointClippingProperties[ndx].pNext			= DE_NULL;
-			protectedMemoryPropertiesKHR[ndx].pNext		= DE_NULL;
-			subgroupProperties[ndx].pNext				= DE_NULL;
+			TCU_FAIL("Mismatch between VkPhysicalDeviceIDProperties");
 		}
-
-		if (
-			deMemCmp(&IDProperties[0],					&IDProperties[1],					sizeof(VkPhysicalDeviceIDProperties	))							!= 0 ||
-			deMemCmp(&maintenance3Properties[0],		&maintenance3Properties[1],			sizeof(VkPhysicalDeviceMaintenance3Properties))					!= 0 ||
-			deMemCmp(&multiviewProperties[0],			&multiviewProperties[1],			sizeof(VkPhysicalDeviceMultiviewProperties))					!= 0 ||
-			deMemCmp(&pointClippingProperties[0],		&pointClippingProperties[1],		sizeof(VkPhysicalDevicePointClippingProperties))				!= 0 ||
-			deMemCmp(&protectedMemoryPropertiesKHR[0],	&protectedMemoryPropertiesKHR[1],	sizeof(VkPhysicalDeviceProtectedMemoryProperties))				!= 0 ||
-			deMemCmp(&subgroupProperties[0],			&subgroupProperties[1],				sizeof(VkPhysicalDeviceSubgroupProperties))						!= 0
-			)
+		else if (IDProperties[0].deviceLUIDValid)
 		{
-			TCU_FAIL("Mismatch in vkGetPhysicalDeviceProperties2");
+			// If deviceLUIDValid is VK_FALSE, the contents of deviceLUID and deviceNodeMask are undefined
+			// so thay can only be compared when deviceLUIDValid is VK_TRUE.
+			if ((deMemCmp(IDProperties[0].deviceLUID, IDProperties[1].deviceLUID, VK_UUID_SIZE) != 0) ||
+				(IDProperties[0].deviceNodeMask		!= IDProperties[1].deviceNodeMask))
+			{
+				TCU_FAIL("Mismatch between VkPhysicalDeviceIDProperties");
+			}
 		}
+	}
+	if (khr_maintenance3 &&
+		((maintenance3Properties[0].maxPerSetDescriptors	!= maintenance3Properties[1].maxPerSetDescriptors) ||
+		(maintenance3Properties[0].maxMemoryAllocationSize	!= maintenance3Properties[1].maxMemoryAllocationSize))
+		)
+	{
+		TCU_FAIL("Mismatch between VkPhysicalDeviceMaintenance3Properties");
+	}
+	if (khr_multiview &&
+		((multiviewProperties[0].maxMultiviewViewCount		!= multiviewProperties[1].maxMultiviewViewCount) ||
+		(multiviewProperties[0].maxMultiviewInstanceIndex	!= multiviewProperties[1].maxMultiviewInstanceIndex))
+		)
+	{
+		TCU_FAIL("Mismatch between VkPhysicalDeviceMultiviewProperties");
+	}
+	if (khr_maintenance2 &&
+		(pointClippingProperties[0].pointClippingBehavior != pointClippingProperties[1].pointClippingBehavior))
+	{
+		TCU_FAIL("Mismatch between VkPhysicalDevicePointClippingProperties");
+	}
+	if (!apiVersionSmallerThen_1_1)
+	{
+		if(protectedMemoryPropertiesKHR[0].protectedNoFault != protectedMemoryPropertiesKHR[1].protectedNoFault)
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDeviceProtectedMemoryProperties");
+		}
+		if ((subgroupProperties[0].subgroupSize					!= subgroupProperties[1].subgroupSize) ||
+			(subgroupProperties[0].supportedStages				!= subgroupProperties[1].supportedStages) ||
+			(subgroupProperties[0].supportedOperations			!= subgroupProperties[1].supportedOperations) ||
+			(subgroupProperties[0].quadOperationsInAllStages	!= subgroupProperties[1].quadOperationsInAllStages))
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDeviceSubgroupProperties");
+		}
+	}
 
-		log << TestLog::Message	<< toString(IDProperties[0])				<< TestLog::EndMessage
-		<< TestLog::Message		<< toString(maintenance3Properties[0])			<< TestLog::EndMessage
-		<< TestLog::Message		<< toString(multiviewProperties[0])				<< TestLog::EndMessage
-		<< TestLog::Message		<< toString(pointClippingProperties[0])			<< TestLog::EndMessage
-		<< TestLog::Message		<< toString(protectedMemoryPropertiesKHR[0])	<< TestLog::EndMessage
-		<< TestLog::Message		<< toString(subgroupProperties[0])				<< TestLog::EndMessage;
+	if (khr_external_memory_capabilities)
+		log << TestLog::Message << toString(IDProperties[0])					<< TestLog::EndMessage;
+	if (khr_maintenance3)
+		log << TestLog::Message << toString(maintenance3Properties[0])			<< TestLog::EndMessage;
+	if (khr_multiview)
+		log << TestLog::Message << toString(multiviewProperties[0])				<< TestLog::EndMessage;
+	if (khr_maintenance2)
+		log << TestLog::Message << toString(pointClippingProperties[0])			<< TestLog::EndMessage;
+	if (!apiVersionSmallerThen_1_1)
+	{
+		log << TestLog::Message << toString(protectedMemoryPropertiesKHR[0])	<< TestLog::EndMessage
+			<< TestLog::Message << toString(subgroupProperties[0])				<< TestLog::EndMessage;
 	}
 
 	const vector<VkExtensionProperties>	extensions = enumerateDeviceExtensionProperties(vki, physicalDevice, DE_NULL);
@@ -3414,8 +3536,7 @@ void checkExtensions (tcu::ResultCollector& results, const set<string>& allowedE
 	for (vector<VkExtensionProperties>::const_iterator extension = reportedExtensions.begin(); extension != reportedExtensions.end(); ++extension)
 	{
 		const string	extensionName	(extension->extensionName);
-		const bool		mustBeKnown		= de::beginsWith(extensionName, "VK_KHX_")		||
-										  de::beginsWith(extensionName, "VK_GOOGLE_")	||
+		const bool		mustBeKnown		= de::beginsWith(extensionName, "VK_GOOGLE_")	||
 										  de::beginsWith(extensionName, "VK_ANDROID_");
 
 		if (mustBeKnown && !de::contains(allowedExtensions, extensionName))
@@ -3432,6 +3553,7 @@ tcu::TestStatus testNoUnknownExtensions (Context& context)
 
 	// All known extensions should be added to allowedExtensions:
 	// allowedExtensions.insert("VK_GOOGLE_extension1");
+	allowedDeviceExtensions.insert("VK_ANDROID_external_memory_android_hardware_buffer");
 	allowedDeviceExtensions.insert("VK_GOOGLE_display_timing");
 
 	// Instance extensions
@@ -3559,6 +3681,7 @@ tcu::TestCaseGroup* createFeatureInfoTests (tcu::TestContext& testCtx)
 		addFunctionCase(deviceInfoTests.get(), "memory_properties",			"Memory properties",		deviceMemoryProperties);
 		addFunctionCase(deviceInfoTests.get(), "layers",					"Layers",					enumerateDeviceLayers);
 		addFunctionCase(deviceInfoTests.get(), "extensions",				"Extensions",				enumerateDeviceExtensions);
+		addFunctionCase(deviceInfoTests.get(), "no_khx_extensions",			"KHX extensions",			testNoKhxExtensions);
 
 		infoTests->addChild(deviceInfoTests.release());
 	}

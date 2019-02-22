@@ -49,8 +49,8 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_list_badge_icon_dimension() const {
     return search_list_badge_icon_dimension_;
   }
-  int recommended_app_icon_dimension() const {
-    return recommended_app_icon_dimension_;
+  int suggestion_chip_icon_dimension() const {
+    return suggestion_chip_icon_dimension_;
   }
   int app_title_max_line_height() const { return app_title_max_line_height_; }
   const gfx::FontList& app_title_font() const { return app_title_font_; }
@@ -90,6 +90,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return grid_tile_spacing_in_folder_;
   }
   int shelf_height() const { return shelf_height_; }
+  int blur_radius() const { return blur_radius_; }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -139,6 +140,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetPreferredIconDimension(
       ash::SearchResultDisplayType display_type) const;
 
+  // Returns the maximum number of items allowed in specified page in apps grid.
+  int GetMaxNumOfItemsPerPage(int page) const;
+
  private:
   // The tile view's width and height of the item in apps grid view.
   int grid_tile_width_;
@@ -183,7 +187,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_list_badge_icon_dimension_;
 
   // The suggestion chip icon dimension.
-  int recommended_app_icon_dimension_;
+  int suggestion_chip_icon_dimension_;
 
   // The maximum line height for app title in app list.
   int app_title_max_line_height_;
@@ -255,6 +259,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The height/width of the shelf from the bottom/side of the screen.
   int shelf_height_;
+
+  // The blur radius used in the app list.
+  int blur_radius_ = 30;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
 };
 
 }  // namespace app_list

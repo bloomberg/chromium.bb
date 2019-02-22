@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
 
 #include <cmath>
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"

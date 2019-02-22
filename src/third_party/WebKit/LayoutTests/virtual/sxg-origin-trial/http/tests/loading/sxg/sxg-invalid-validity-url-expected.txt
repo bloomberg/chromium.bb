@@ -8,6 +8,6 @@ frame "sxg_iframe" - didReceiveTitle:
 frame "sxg_iframe" - didStartProvisionalLoadForFrame
 frame "sxg_iframe" - didFailProvisionalLoadWithError
 This is a testharness.js-based test.
-FAIL Loading SignedHTTPExchange which validity URL is different origin from request URL must fail promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'data' of undefined"
+FAIL Loading SignedHTTPExchange which validity URL is different origin from request URL must fail promise_test: Unhandled rejection with value: "timeout"
 Harness: the test ran to completion.
 

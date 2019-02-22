@@ -32,10 +32,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chrome_browser_net {
-class Predictor;
-}
-
 namespace content {
 class WebUI;
 }
@@ -201,9 +197,10 @@ class Profile : public content::BrowserContext {
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  // Returns the request context used for extension-related requests.  This
-  // is only used for a separate cookie store currently.
-  virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
+  // Returns a callback (which must be executed on the IO thread) that returns
+  // the cookie store for the chrome-extensions:// scheme.
+  virtual base::OnceCallback<net::CookieStore*()>
+  GetExtensionsCookieStoreGetter() = 0;
 
   // Returns the main URLLoaderFactory.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -251,9 +248,6 @@ class Profile : public content::BrowserContext {
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
 #endif  // defined(OS_CHROMEOS)
-
-  // Returns the Predictor object used for dns prefetch.
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
 
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;

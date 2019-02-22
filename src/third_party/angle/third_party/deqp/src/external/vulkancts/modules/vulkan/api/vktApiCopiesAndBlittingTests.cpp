@@ -244,6 +244,12 @@ inline deUint32 getArraySize(const ImageParms& parms)
 	return (parms.imageType == VK_IMAGE_TYPE_2D) ? parms.extent.depth : 1u;
 }
 
+inline VkImageCreateFlags getCreateFlags(const ImageParms& parms)
+{
+	return parms.imageType == VK_IMAGE_TYPE_2D && parms.extent.depth % 6 == 0 ?
+		VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
+}
+
 inline VkExtent3D getExtent3D(const ImageParms& parms, deUint32 mipLevel = 0u)
 {
 	const bool			isCompressed	= isCompressedFormat(parms.format);
@@ -839,7 +845,7 @@ CopyImageToImage::CopyImageToImage (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.src.image),		// VkImageCreateFlags	flags;
 			m_params.src.image.imageType,			// VkImageType			imageType;
 			m_params.src.image.format,				// VkFormat				format;
 			getExtent3D(m_params.src.image),		// VkExtent3D			extent;
@@ -866,7 +872,7 @@ CopyImageToImage::CopyImageToImage (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
 			m_params.dst.image.imageType,			// VkImageType			imageType;
 			m_params.dst.image.format,				// VkFormat				format;
 			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
@@ -1384,7 +1390,7 @@ CopyImageToBuffer::CopyImageToBuffer (Context& context, TestParams testParams)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.src.image),		// VkImageCreateFlags	flags;
 			m_params.src.image.imageType,			// VkImageType			imageType;
 			m_params.src.image.format,				// VkFormat				format;
 			getExtent3D(m_params.src.image),		// VkExtent3D			extent;
@@ -1605,7 +1611,7 @@ CopyBufferToImage::CopyBufferToImage (Context& context, TestParams testParams)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
 			m_params.dst.image.imageType,			// VkImageType			imageType;
 			m_params.dst.image.format,				// VkFormat				format;
 			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
@@ -1779,7 +1785,7 @@ BlittingImages::BlittingImages (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.src.image),		// VkImageCreateFlags	flags;
 			m_params.src.image.imageType,			// VkImageType			imageType;
 			m_params.src.image.format,				// VkFormat				format;
 			getExtent3D(m_params.src.image),		// VkExtent3D			extent;
@@ -1806,7 +1812,7 @@ BlittingImages::BlittingImages (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
 			m_params.dst.image.imageType,			// VkImageType			imageType;
 			m_params.dst.image.format,				// VkFormat				format;
 			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
@@ -2600,13 +2606,8 @@ public:
 			TCU_THROW(NotSupportedError, "Format feature blit destination not supported");
 		}
 
-		if (m_params.filter == VK_FILTER_LINEAR)
-		{
-			if (!(srcFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-				TCU_THROW(NotSupportedError, "Source format feature sampled image filter linear not supported");
-			if (!(dstFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-				TCU_THROW(NotSupportedError, "Destination format feature sampled image filter linear not supported");
-		}
+		if (m_params.filter == VK_FILTER_LINEAR && !(srcFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			TCU_THROW(NotSupportedError, "Source format feature sampled image filter linear not supported");
 	}
 
 private:
@@ -2651,7 +2652,7 @@ BlittingMipmaps::BlittingMipmaps (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.src.image),		// VkImageCreateFlags	flags;
 			m_params.src.image.imageType,			// VkImageType			imageType;
 			m_params.src.image.format,				// VkFormat				format;
 			getExtent3D(m_params.src.image),		// VkExtent3D			extent;
@@ -2678,7 +2679,7 @@ BlittingMipmaps::BlittingMipmaps (Context& context, TestParams params)
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
 			m_params.dst.image.imageType,			// VkImageType			imageType;
 			m_params.dst.image.format,				// VkFormat				format;
 			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
@@ -3280,13 +3281,8 @@ public:
 			TCU_THROW(NotSupportedError, "Format feature blit destination not supported");
 		}
 
-		if (m_params.filter == VK_FILTER_LINEAR)
-		{
-			if (!(srcFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-				TCU_THROW(NotSupportedError, "Source format feature sampled image filter linear not supported");
-			if (!(dstFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-				TCU_THROW(NotSupportedError, "Destination format feature sampled image filter linear not supported");
-		}
+		if (m_params.filter == VK_FILTER_LINEAR && !(srcFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			TCU_THROW(NotSupportedError, "Source format feature sampled image filter linear not supported");
 	}
 
 private:
@@ -3356,7 +3352,7 @@ ResolveImageToImage::ResolveImageToImage (Context& context, TestParams params, c
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,									// VkStructureType			sType;
 			DE_NULL,																// const void*				pNext;
-			0u,																		// VkImageCreateFlags		flags;
+			getCreateFlags(m_params.src.image),										// VkImageCreateFlags		flags;
 			m_params.src.image.imageType,											// VkImageType				imageType;
 			m_params.src.image.format,												// VkFormat					format;
 			getExtent3D(m_params.src.image),										// VkExtent3D				extent;
@@ -3411,7 +3407,7 @@ ResolveImageToImage::ResolveImageToImage (Context& context, TestParams params, c
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
 			DE_NULL,								// const void*			pNext;
-			0u,										// VkImageCreateFlags	flags;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
 			m_params.dst.image.imageType,			// VkImageType			imageType;
 			m_params.dst.image.format,				// VkFormat				format;
 			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
@@ -6545,6 +6541,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 
 	const VkImageSubresourceLayers	defaultDepthSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 0u, 1u };
 	const VkImageSubresourceLayers	defaultStencilSourceLayer	= { VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
+	const VkImageSubresourceLayers	defaultDSSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
 
 	for (int compatibleFormatsIndex = 0; compatibleFormatsIndex < DE_LENGTH_OF_ARRAY(depthAndStencilFormats); ++compatibleFormatsIndex)
 	{
@@ -6557,6 +6554,9 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 		params.dst.image.format				= params.src.image.format;
 		params.allocationKind				= allocationKind;
 
+		bool hasDepth	= tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order);
+		bool hasStencil	= tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order);
+
 		CopyRegion	region;
 		for (int i = 0, j = 1; (i + defaultFourthSize / j < defaultSize) && (defaultFourthSize > j); i += defaultFourthSize / j++)
 		{
@@ -6565,7 +6565,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 			const VkOffset3D	dstOffset0	= {i, 0, 0};
 			const VkOffset3D	dstOffset1	= {i + defaultFourthSize / j, defaultFourthSize / j, 1};
 
-			if (tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order))
+			if (hasDepth)
 			{
 				const VkImageBlit			imageBlit	=
 				{
@@ -6577,7 +6577,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 				region.imageBlit	= imageBlit;
 				params.regions.push_back(region);
 			}
-			if (tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order))
+			if (hasStencil)
 			{
 				const VkImageBlit			imageBlit	=
 				{
@@ -6597,7 +6597,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 			const VkOffset3D	dstOffset0	= {i, defaultSize / 2, 0};
 			const VkOffset3D	dstOffset1	= {i + defaultFourthSize, defaultSize / 2 + defaultFourthSize, 1};
 
-			if (tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order))
+			if (hasDepth)
 			{
 				const VkImageBlit			imageBlit	=
 				{
@@ -6609,7 +6609,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 				region.imageBlit	= imageBlit;
 				params.regions.push_back(region);
 			}
-			if (tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order))
+			if (hasStencil)
 			{
 				const VkImageBlit			imageBlit	=
 				{
@@ -6617,6 +6617,20 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 					{ srcOffset0, srcOffset1 },		// VkOffset3D					srcOffsets[2];
 					defaultStencilSourceLayer,		// VkImageSubresourceLayers	dstSubresource;
 					{ dstOffset0, dstOffset1 }		// VkOffset3D					dstOffset[2];
+				};
+				region.imageBlit	= imageBlit;
+				params.regions.push_back(region);
+			}
+			if (hasDepth && hasStencil)
+			{
+				const VkOffset3D			dstDSOffset0	= {i, 3 * defaultFourthSize, 0};
+				const VkOffset3D			dstDSOffset1	= {i + defaultFourthSize, defaultSize, 1};
+				const VkImageBlit			imageBlit	=
+				{
+					defaultDSSourceLayer,			// VkImageSubresourceLayers	srcSubresource;
+					{ srcOffset0, srcOffset1 },		// VkOffset3D					srcOffsets[2];
+					defaultDSSourceLayer,			// VkImageSubresourceLayers	dstSubresource;
+					{ dstDSOffset0, dstDSOffset1 }	// VkOffset3D					dstOffset[2];
 				};
 				region.imageBlit	= imageBlit;
 				params.regions.push_back(region);
@@ -6683,9 +6697,9 @@ void addBlittingImageAllFormatsBaseLevelMipmapTests (tcu::TestCaseGroup* group, 
 		{ compatibleFormatsSrgb,	false	},
 	};
 
-	const int	numOfColorImageFormatsToTest		= DE_LENGTH_OF_ARRAY(colorImageFormatsToTestBlit);
+	const int	numOfColorImageFormatsToTest	= DE_LENGTH_OF_ARRAY(colorImageFormatsToTestBlit);
 
-	const int	layerCountsToTest[]					=
+	const int	layerCountsToTest[]				=
 	{
 		1,
 		6
@@ -6789,9 +6803,9 @@ void addBlittingImageAllFormatsPreviousLevelMipmapTests (tcu::TestCaseGroup* gro
 		{ compatibleFormatsSrgb,	false	},
 	};
 
-	const int	numOfColorImageFormatsToTest		= DE_LENGTH_OF_ARRAY(colorImageFormatsToTestBlit);
+	const int	numOfColorImageFormatsToTest	= DE_LENGTH_OF_ARRAY(colorImageFormatsToTestBlit);
 
-	const int	layerCountsToTest[]					=
+	const int	layerCountsToTest[]				=
 	{
 		1,
 		6

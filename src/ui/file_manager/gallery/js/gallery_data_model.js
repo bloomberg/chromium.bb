@@ -49,7 +49,7 @@ GalleryDataModel.prototype = {
 /**
  * Saves new image.
  *
- * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!GalleryItem} item Original gallery item.
  * @param {!HTMLCanvasElement} canvas Canvas containing new image.
  * @param {boolean} overwrite Set true to overwrite original if it's possible.

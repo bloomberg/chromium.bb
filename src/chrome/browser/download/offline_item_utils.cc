@@ -4,9 +4,11 @@
 
 #include "chrome/browser/download/offline_item_utils.h"
 
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using DownloadItem = download::DownloadItem;
 using ContentId = offline_items_collection::ContentId;
@@ -15,6 +17,7 @@ using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
 using OfflineItemState = offline_items_collection::OfflineItemState;
 using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
+using FailState = offline_items_collection::FailState;
 using PendingState = offline_items_collection::PendingState;
 
 namespace {
@@ -24,6 +27,9 @@ const char kDownloadNamespace[] = "LEGACY_DOWNLOAD";
 
 // The namespace for incognito downloads.
 const char kDownloadIncognitoNamespace[] = "LEGACY_DOWNLOAD_INCOGNITO";
+
+// Prefix that all download namespaces should start with.
+const char kDownloadNamespacePrefix[] = "LEGACY_DOWNLOAD";
 
 // The remaining time for a download item if it cannot be calculated.
 constexpr int64_t kUnknownRemainingTime = -1;
@@ -51,14 +57,14 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
 
 }  // namespace
 
-OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
+OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
+                                                DownloadItem* download_item) {
   bool off_the_record =
       content::DownloadItemUtils::GetBrowserContext(download_item)
           ->IsOffTheRecord();
 
   OfflineItem item;
-  item.id =
-      ContentId(GetDownloadNamespace(off_the_record), download_item->GetGuid());
+  item.id = ContentId(name_space, download_item->GetGuid());
   item.title = download_item->GetFileNameToReportUser().AsUTF8Unsafe();
   item.description = download_item->GetFileNameToReportUser().AsUTF8Unsafe();
   item.filter = MimeTypeToOfflineItemFilter(download_item->GetMimeType());
@@ -88,7 +94,8 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
   item.time_remaining_ms = time_remaining_known ? time_delta.InMilliseconds()
                                                 : kUnknownRemainingTime;
   // TODO(crbug.com/857549): Add allow_metered, fail_state, pending_state.
-
+  item.fail_state =
+      ConvertDownloadInterruptReasonToFailState(download_item->GetLastReason());
   switch (download_item->GetState()) {
     case DownloadItem::IN_PROGRESS:
       item.state = download_item->IsPaused() ? OfflineItemState::PAUSED
@@ -103,7 +110,8 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
       item.state = OfflineItemState::CANCELLED;
       break;
     case DownloadItem::INTERRUPTED:
-      item.state = OfflineItemState::INTERRUPTED;
+      item.state = download_item->CanResume() ? OfflineItemState::INTERRUPTED
+                                              : OfflineItemState::FAILED;
       break;
     default:
       NOTREACHED();
@@ -118,6 +126,178 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
   return item;
 }
 
-std::string OfflineItemUtils::GetDownloadNamespace(bool is_off_the_record) {
+std::string OfflineItemUtils::GetDownloadNamespacePrefix(
+    bool is_off_the_record) {
   return is_off_the_record ? kDownloadIncognitoNamespace : kDownloadNamespace;
+}
+
+bool OfflineItemUtils::IsDownload(const ContentId& id) {
+  return id.name_space.find(kDownloadNamespacePrefix) != std::string::npos;
+}
+
+// static
+FailState OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
+    download::DownloadInterruptReason reason) {
+  switch (reason) {
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
+      return FailState::FILE_FAILED;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+      return FailState::FILE_ACCESS_DENIED;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+      return FailState::FILE_NO_SPACE;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
+      return FailState::FILE_NAME_TOO_LONG;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+      return FailState::FILE_TOO_LARGE;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
+      return FailState::FILE_VIRUS_INFECTED;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
+      return FailState::FILE_TRANSIENT_ERROR;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
+      return FailState::FILE_BLOCKED;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
+      return FailState::FILE_SECURITY_CHECK_FAILED;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
+      return FailState::FILE_TOO_SHORT;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
+      return FailState::FILE_HASH_MISMATCH;
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE:
+      return FailState::FILE_SAME_AS_SOURCE;
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
+      return FailState::NETWORK_FAILED;
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+      return FailState::NETWORK_TIMEOUT;
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
+      return FailState::NETWORK_DISCONNECTED;
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
+      return FailState::NETWORK_SERVER_DOWN;
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST:
+      return FailState::NETWORK_INVALID_REQUEST;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED:
+      return FailState::SERVER_FAILED;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+      return FailState::SERVER_NO_RANGE;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT:
+      return FailState::SERVER_BAD_CONTENT;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
+      return FailState::SERVER_UNAUTHORIZED;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
+      return FailState::SERVER_CERT_PROBLEM;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+      return FailState::SERVER_FORBIDDEN;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
+      return FailState::SERVER_UNREACHABLE;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
+      return FailState::SERVER_CONTENT_LENGTH_MISMATCH;
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT:
+      return FailState::SERVER_CROSS_ORIGIN_REDIRECT;
+    case download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+      return FailState::USER_CANCELED;
+    case download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
+      return FailState::USER_SHUTDOWN;
+    case download::DOWNLOAD_INTERRUPT_REASON_CRASH:
+      return FailState::CRASH;
+    case download::DOWNLOAD_INTERRUPT_REASON_NONE:
+      return FailState::NO_FAILURE;
+  }
+}
+
+// static
+base::string16 OfflineItemUtils::GetFailStateMessage(FailState fail_state) {
+  int string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
+
+  switch (fail_state) {
+    case FailState::FILE_ACCESS_DENIED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED;
+      break;
+    case FailState::FILE_NO_SPACE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_DISK_FULL;
+      break;
+    case FailState::FILE_NAME_TOO_LONG:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_PATH_TOO_LONG;
+      break;
+    case FailState::FILE_TOO_LARGE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_LARGE;
+      break;
+    case FailState::FILE_VIRUS_INFECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_VIRUS;
+      break;
+    case FailState::FILE_TRANSIENT_ERROR:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_TEMPORARY_PROBLEM;
+      break;
+    case FailState::FILE_BLOCKED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_BLOCKED;
+      break;
+    case FailState::FILE_SECURITY_CHECK_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SECURITY_CHECK_FAILED;
+      break;
+    case FailState::FILE_TOO_SHORT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_SHORT;
+      break;
+    case FailState::FILE_SAME_AS_SOURCE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_SAME_AS_SOURCE;
+      break;
+    case FailState::NETWORK_INVALID_REQUEST:
+      FALLTHROUGH;
+    case FailState::NETWORK_FAILED:
+      FALLTHROUGH;
+    case FailState::NETWORK_INSTABILITY:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR;
+      break;
+    case FailState::NETWORK_TIMEOUT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT;
+      break;
+    case FailState::NETWORK_DISCONNECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_DISCONNECTED;
+      break;
+    case FailState::NETWORK_SERVER_DOWN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_DOWN;
+      break;
+    case FailState::SERVER_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_PROBLEM;
+      break;
+    case FailState::SERVER_BAD_CONTENT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NO_FILE;
+      break;
+    case FailState::USER_CANCELED:
+      string_id = IDS_DOWNLOAD_STATUS_CANCELLED;
+      break;
+    case FailState::USER_SHUTDOWN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SHUTDOWN;
+      break;
+    case FailState::CRASH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_CRASH;
+      break;
+    case FailState::SERVER_UNAUTHORIZED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_UNAUTHORIZED;
+      break;
+    case FailState::SERVER_CERT_PROBLEM:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_CERT_PROBLEM;
+      break;
+    case FailState::SERVER_FORBIDDEN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FORBIDDEN;
+      break;
+    case FailState::SERVER_UNREACHABLE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_UNREACHABLE;
+      break;
+    case FailState::SERVER_CONTENT_LENGTH_MISMATCH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_CONTENT_LENGTH_MISMATCH;
+      break;
+
+    case FailState::NO_FAILURE:
+      NOTREACHED();
+      FALLTHROUGH;
+    case FailState::CANNOT_DOWNLOAD:
+      FALLTHROUGH;
+    case FailState::SERVER_NO_RANGE:
+      FALLTHROUGH;
+    case FailState::SERVER_CROSS_ORIGIN_REDIRECT:
+      FALLTHROUGH;
+    case FailState::FILE_FAILED:
+      FALLTHROUGH;
+    case FailState::FILE_HASH_MISMATCH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
+  }
+
+  return l10n_util::GetStringUTF16(string_id);
 }

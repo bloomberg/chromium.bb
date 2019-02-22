@@ -23,6 +23,9 @@ namespace smb_client {
 using GatherSharesResponse =
     base::RepeatingCallback<void(const std::vector<SmbUrl>& shares_gathered)>;
 
+// The callback run to indicate the scan for hosts on the network is complete.
+using HostDiscoveryResponse = base::OnceClosure;
+
 // This class is responsible for finding hosts in a network and getting the
 // available shares for each host found.
 class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
@@ -31,9 +34,16 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   ~SmbShareFinder();
 
   // Gathers the hosts in the network using |scanner_| and gets the shares for
-  // each of the hosts found. |callback| will be called once per host and will
-  // contain the paths to the shares found (e.g. "smb://host/share").
-  void GatherSharesInNetwork(GatherSharesResponse callback);
+  // each of the hosts found. |discovery_callback| runs once when host
+  // disovery is complete. |shares_callback| runs once per host and will contain
+  // the paths to the shares found (e.g. "smb://host/share").
+  void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
+                             GatherSharesResponse shares_callback);
+
+  // Gathers the hosts in the network using |scanner_|. Runs
+  // |discovery_callback| upon completion. No data is returned to the caller,
+  // but hosts are cached in |scanner_| and can be used for name resolution.
+  void DiscoverHostsInNetwork(HostDiscoveryResponse discovery_callback);
 
   // Registers HostLocator |locator| to |scanner_|.
   void RegisterHostLocator(std::unique_ptr<HostLocator> locator);
@@ -43,14 +53,20 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   std::string GetResolvedUrl(const SmbUrl& url) const;
 
  private:
+  // Handles the response from discovering hosts in the network.
+  void OnHostsDiscovered(HostDiscoveryResponse discovery_callback,
+                         bool success,
+                         const HostMap& hosts);
+
   // Handles the response from finding hosts in the network.
-  void OnHostsFound(GatherSharesResponse callback,
+  void OnHostsFound(HostDiscoveryResponse discovery_callback,
+                    GatherSharesResponse shares_callback,
                     bool success,
                     const HostMap& hosts);
 
   // Handles the response from getting shares for a given host.
   void OnSharesFound(const std::string& host_name,
-                     GatherSharesResponse callback,
+                     GatherSharesResponse shares_callback,
                      smbprovider::ErrorType error,
                      const smbprovider::DirectoryEntryListProto& entries);
 

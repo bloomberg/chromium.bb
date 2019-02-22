@@ -312,7 +312,7 @@ bool ServiceWorkerURLRequestJob::Delegate::RequestStillValid(
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    const std::string& client_id,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     const ResourceContext* resource_context,
     network::mojom::FetchRequestMode request_mode,
@@ -321,7 +321,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body,
     Delegate* delegate)
@@ -330,7 +330,9 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       response_type_(ResponseType::NOT_DETERMINED),
       is_started_(false),
       fetch_response_type_(network::mojom::FetchResponseType::kDefault),
-      client_id_(client_id),
+      provider_host_(std::move(provider_host)),
+      client_id_(provider_host_ ? provider_host_->client_uuid()
+                                : std::string()),
       blob_storage_context_(blob_storage_context),
       resource_context_(resource_context),
       request_mode_(request_mode),
@@ -569,13 +571,20 @@ ServiceWorkerURLRequestJob::CreateResourceRequest() {
   request->fetch_credentials_mode = credentials_mode_;
   request->load_flags = request_->load_flags();
   request->fetch_redirect_mode = redirect_mode_;
-  request->fetch_request_context_type = request_context_type_;
+  request->fetch_request_context_type = static_cast<int>(request_context_type_);
   request->fetch_frame_type = frame_type_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info)
     request->transition_type = info->GetPageTransition();
   request->fetch_integrity = integrity_;
   request->keepalive = keepalive_;
+  // Set the request window id if we have one. If we don't, or the provider
+  // host is gone, it just means client certification authentication may fail
+  // so continue on without it anyway.
+  if (provider_host_ && provider_host_->fetch_request_window_id()) {
+    request->fetch_window_id =
+        base::make_optional(provider_host_->fetch_request_window_id());
+  }
   return request;
 }
 
@@ -586,7 +595,7 @@ blink::mojom::BlobPtr ServiceWorkerURLRequestJob::CreateRequestBodyBlob(
   auto blob_builder =
       std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
   for (const network::DataElement& element : (*body_->elements())) {
-    blob_builder->AppendIPCDataElement(element, nullptr,
+    blob_builder->AppendIPCDataElement(element,
                                        blob_storage_context_->registry());
   }
 
@@ -660,6 +669,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing,
     scoped_refptr<ServiceWorkerVersion> version) {
   // Do not clear |fetch_dispatcher_| if it has dispatched a navigation preload
   // request to keep the network::mojom::URLLoader related objects in it,

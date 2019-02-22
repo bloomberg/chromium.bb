@@ -9,6 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
 
@@ -19,6 +21,7 @@ class Thread;
 namespace blink {
 
 class IceTransportHost;
+class QuicTransportProxy;
 
 // This class allows the ICE implementation (P2PTransportChannel) to run on a
 // thread different from the thread from which it is controlled. All
@@ -47,30 +50,46 @@ class IceTransportProxy final {
     }
     virtual void OnCandidateGathered(const cricket::Candidate& candidate) {}
     virtual void OnStateChanged(cricket::IceTransportState new_state) {}
+    virtual void OnSelectedCandidatePairChanged(
+        const std::pair<cricket::Candidate, cricket::Candidate>&
+            selected_candidate_pair) {}
   };
 
   // Construct a Proxy with the underlying ICE implementation running on the
   // given host thread and callbacks serviced by the given delegate.
   // The P2PTransportChannel will be created with the given PortAllocator.
   // The delegate must outlive the IceTransportProxy.
-  IceTransportProxy(FrameScheduler* frame_scheduler,
-                    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-                    rtc::Thread* host_thread_rtc_thread,
-                    Delegate* delegate,
-                    std::unique_ptr<cricket::PortAllocator> port_allocator);
+  IceTransportProxy(
+      FrameScheduler* frame_scheduler,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      Delegate* delegate,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
   ~IceTransportProxy();
 
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
+
+  // These methods are proxied to an IceTransportAdapter instance.
   void StartGathering(
       const cricket::IceParameters& local_parameters,
       const cricket::ServerAddresses& stun_servers,
       const std::vector<cricket::RelayServerConfig>& turn_servers,
-      int32_t candidate_filter);
-
-  void SetRole(cricket::IceRole role);
-  void SetRemoteParameters(const cricket::IceParameters& remote_parameters);
-
+      IceTransportPolicy policy);
+  void Start(const cricket::IceParameters& remote_parameters,
+             cricket::IceRole role,
+             const std::vector<cricket::Candidate>& initial_remote_candidates);
+  void HandleRemoteRestart(const cricket::IceParameters& new_remote_parameters);
   void AddRemoteCandidate(const cricket::Candidate& candidate);
-  void ClearRemoteCandidates();
+
+  // A QuicTransportProxy can be connected to this IceTransportProxy. Only one
+  // can be connected at a time, and the caller must ensure that the consumer
+  // is disconnected before destroying the IceTransportProxy.
+  // ConnectConsumer returns an IceTransportHost that can be used to connect
+  // a QuicTransportHost.
+  bool HasConsumer() const;
+  IceTransportHost* ConnectConsumer(QuicTransportProxy* consumer_proxy);
+  void DisconnectConsumer(QuicTransportProxy* consumer_proxy);
 
  private:
   // Callbacks from RTCIceTransportHost.
@@ -78,12 +97,17 @@ class IceTransportProxy final {
   void OnGatheringStateChanged(cricket::IceGatheringState new_state);
   void OnCandidateGathered(const cricket::Candidate& candidate);
   void OnStateChanged(cricket::IceTransportState new_state);
+  void OnSelectedCandidatePairChanged(
+      const std::pair<cricket::Candidate, cricket::Candidate>&
+          selected_candidate_pair);
 
+  const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
   // Since the Host is deleted on the host thread (via OnTaskRunnerDeleter), as
   // long as this is alive it is safe to post tasks to it (using unretained).
   std::unique_ptr<IceTransportHost, base::OnTaskRunnerDeleter> host_;
   Delegate* const delegate_;
+  QuicTransportProxy* consumer_proxy_ = nullptr;
 
   // This handle notifies scheduler about an active connection associated
   // with a frame. Handle should be destroyed when connection is closed.

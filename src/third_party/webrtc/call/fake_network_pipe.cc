@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <assert.h>
 #include <math.h>
 #include <string.h>
 
@@ -67,62 +66,24 @@ NetworkPacket& NetworkPacket::operator=(NetworkPacket&& o) {
   return *this;
 }
 
-FakeNetworkPipe::FakeNetworkPipe(Clock* clock,
-                                 const FakeNetworkPipe::Config& config)
-    : FakeNetworkPipe(clock, config, nullptr, 1) {}
-
-FakeNetworkPipe::FakeNetworkPipe(Clock* clock,
-                                 const FakeNetworkPipe::Config& config,
-                                 PacketReceiver* receiver)
-    : FakeNetworkPipe(clock, config, receiver, 1) {}
-
-FakeNetworkPipe::FakeNetworkPipe(Clock* clock,
-                                 const FakeNetworkPipe::Config& config,
-                                 PacketReceiver* receiver,
-                                 uint64_t seed)
-    : clock_(clock),
-      network_simulation_(absl::make_unique<SimulatedNetwork>(config, seed)),
-      receiver_(receiver),
-      transport_(nullptr),
-      clock_offset_ms_(0),
-      dropped_packets_(0),
-      sent_packets_(0),
-      total_packet_delay_us_(0),
-      next_process_time_us_(clock_->TimeInMicroseconds()),
-      last_log_time_us_(clock_->TimeInMicroseconds()) {}
-
-FakeNetworkPipe::FakeNetworkPipe(Clock* clock,
-                                 const FakeNetworkPipe::Config& config,
-                                 Transport* transport)
-    : clock_(clock),
-      network_simulation_(absl::make_unique<SimulatedNetwork>(config, 1)),
-      receiver_(nullptr),
-      transport_(transport),
-      clock_offset_ms_(0),
-      dropped_packets_(0),
-      sent_packets_(0),
-      total_packet_delay_us_(0),
-      next_process_time_us_(clock_->TimeInMicroseconds()),
-      last_log_time_us_(clock_->TimeInMicroseconds()) {}
+FakeNetworkPipe::FakeNetworkPipe(
+    Clock* clock,
+    std::unique_ptr<NetworkBehaviorInterface> network_behavior)
+    : FakeNetworkPipe(clock, std::move(network_behavior), nullptr, 1) {}
 
 FakeNetworkPipe::FakeNetworkPipe(
     Clock* clock,
-    std::unique_ptr<NetworkSimulationInterface> network_simulation)
-    : FakeNetworkPipe(clock, std::move(network_simulation), nullptr, 1) {}
-
-FakeNetworkPipe::FakeNetworkPipe(
-    Clock* clock,
-    std::unique_ptr<NetworkSimulationInterface> network_simulation,
+    std::unique_ptr<NetworkBehaviorInterface> network_behavior,
     PacketReceiver* receiver)
-    : FakeNetworkPipe(clock, std::move(network_simulation), receiver, 1) {}
+    : FakeNetworkPipe(clock, std::move(network_behavior), receiver, 1) {}
 
 FakeNetworkPipe::FakeNetworkPipe(
     Clock* clock,
-    std::unique_ptr<NetworkSimulationInterface> network_simulation,
+    std::unique_ptr<NetworkBehaviorInterface> network_behavior,
     PacketReceiver* receiver,
     uint64_t seed)
     : clock_(clock),
-      network_simulation_(std::move(network_simulation)),
+      network_behavior_(std::move(network_behavior)),
       receiver_(receiver),
       transport_(nullptr),
       clock_offset_ms_(0),
@@ -134,10 +95,10 @@ FakeNetworkPipe::FakeNetworkPipe(
 
 FakeNetworkPipe::FakeNetworkPipe(
     Clock* clock,
-    std::unique_ptr<NetworkSimulationInterface> network_simulation,
+    std::unique_ptr<NetworkBehaviorInterface> network_behavior,
     Transport* transport)
     : clock_(clock),
-      network_simulation_(std::move(network_simulation)),
+      network_behavior_(std::move(network_behavior)),
       receiver_(nullptr),
       transport_(transport),
       clock_offset_ms_(0),
@@ -201,7 +162,7 @@ bool FakeNetworkPipe::EnqueuePacket(rtc::CopyOnWriteBuffer packet,
 
   packets_in_flight_.emplace_back(StoredPacket(std::move(net_packet)));
   int64_t packet_id = reinterpret_cast<uint64_t>(&packets_in_flight_.back());
-  bool sent = network_simulation_->EnqueuePacket(
+  bool sent = network_behavior_->EnqueuePacket(
       PacketInFlightInfo(packet_size, time_now_us, packet_id));
 
   if (!sent) {
@@ -256,7 +217,7 @@ void FakeNetworkPipe::Process() {
     }
 
     std::vector<PacketDeliveryInfo> delivery_infos =
-        network_simulation_->DequeueDeliverablePackets(time_now_us);
+        network_behavior_->DequeueDeliverablePackets(time_now_us);
     for (auto& delivery_info : delivery_infos) {
       // In the common case where no reordering happens, find will return early
       // as the first packet will be a match.
@@ -300,8 +261,7 @@ void FakeNetworkPipe::Process() {
     packets_to_deliver.pop();
     DeliverNetworkPacket(&packet);
   }
-  absl::optional<int64_t> delivery_us =
-      network_simulation_->NextDeliveryTimeUs();
+  absl::optional<int64_t> delivery_us = network_behavior_->NextDeliveryTimeUs();
   next_process_time_us_ = delivery_us
                               ? *delivery_us
                               : time_now_us + kDefaultProcessIntervalMs * 1000;

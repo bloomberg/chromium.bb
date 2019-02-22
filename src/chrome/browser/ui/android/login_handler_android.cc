@@ -87,7 +87,10 @@ class LoginHandlerAndroid : public LoginHandler {
  protected:
   ~LoginHandlerAndroid() override {}
 
-  void CloseDialog() override {}
+  void CloseDialog() override {
+    if (chrome_http_auth_handler_)
+      chrome_http_auth_handler_->CloseDialog();
+  }
 
  private:
   std::unique_ptr<ChromeHttpAuthHandler> chrome_http_auth_handler_;

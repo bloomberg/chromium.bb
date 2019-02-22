@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 
-#include "base/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
@@ -119,10 +118,6 @@ bool WebXrPresentationState::RecycleProcessingFrameIfPossible() {
 void WebXrPresentationState::EndPresentation() {
   TRACE_EVENT0("gpu", __FUNCTION__);
 
-  if (end_presentation_callback) {
-    base::ResetAndReturn(&end_presentation_callback).Run();
-  }
-
   if (HaveRenderingFrame()) {
     rendering_frame_->Recycle();
     idle_frames_.push(rendering_frame_);
@@ -155,7 +150,7 @@ void WebXrPresentationState::ProcessOrDefer(base::OnceClosure callback) {
   DCHECK(animating_frame_ && !animating_frame_->deferred_start_processing);
   if (CanProcessFrame()) {
     TransitionFrameAnimatingToProcessing();
-    base::ResetAndReturn(&callback).Run();
+    std::move(callback).Run();
   } else {
     DVLOG(2) << "Deferring processing frame, not ready";
     animating_frame_->deferred_start_processing = std::move(callback);
@@ -171,7 +166,7 @@ void WebXrPresentationState::TryDeferredProcessing() {
   // Run synchronously, not via PostTask, to ensure we don't
   // get a new SendVSync scheduling in between.
   TransitionFrameAnimatingToProcessing();
-  base::ResetAndReturn(&animating_frame_->deferred_start_processing).Run();
+  std::move(animating_frame_->deferred_start_processing).Run();
 }
 
 }  // namespace vr

@@ -137,7 +137,8 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
         size_t offset = 0;
         for (const auto& span : *data) {
           bool final_chunk = offset + span.size() == data->size();
-          if (!xmlParseChunk(ctx, span.data(), span.size(), final_chunk))
+          if (!xmlParseChunk(ctx, span.data(), static_cast<int>(span.size()),
+                             final_chunk))
             break;
           offset += span.size();
         }
@@ -189,9 +190,10 @@ static int WriteToStringBuilder(void* context, const char* buffer, int len) {
     return -1;
   }
 
-  int utf16_length = buffer_u_char - string_buffer.Characters();
+  int utf16_length =
+      static_cast<int>(buffer_u_char - string_buffer.Characters());
   result_output.Append(string_buffer.Characters(), utf16_length);
-  return string_current - buffer;
+  return static_cast<int>(string_current - buffer);
 }
 
 static bool SaveResultToString(xmlDocPtr result_doc,

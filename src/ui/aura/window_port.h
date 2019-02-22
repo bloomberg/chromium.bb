@@ -40,7 +40,21 @@ class WindowObserver;
 // Env::CreateWindowPort() is used to create the WindowPort.
 class AURA_EXPORT WindowPort {
  public:
+  // Corresponds to the concrete implementation of this interface.
+  enum class Type {
+    // WindowPortLocal.
+    kLocal,
+
+    // WindowPortMus.
+    kMus,
+
+    // WindowPortForShutdown.
+    kShutdown,
+  };
+
   virtual ~WindowPort() {}
+
+  Type type() const { return type_; }
 
   // Called from Window::Init().
   virtual void OnPreInit(Window* window) = 0;
@@ -116,13 +130,23 @@ class AURA_EXPORT WindowPort {
   // See description of function with same name in transient_window_client.
   virtual bool ShouldRestackTransientChildren() = 0;
 
+  // Called to register/unregister an embedded FramesSinkId. This is only called
+  // if SetEmbedFrameSinkId() is called on the associated Window.
+  virtual void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
+  virtual void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
+
  protected:
+  explicit WindowPort(Type type);
+
   // Returns the WindowPort associated with a Window.
   static WindowPort* Get(Window* window);
 
   // Returns the ObserverList of a Window.
   static base::ObserverList<WindowObserver, true>::Unchecked* GetObservers(
       Window* window);
+
+ private:
+  const Type type_;
 };
 
 }  // namespace aura

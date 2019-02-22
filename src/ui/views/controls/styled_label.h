@@ -140,7 +140,6 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // View:
   const char* GetClassName() const override;
-  gfx::Insets GetInsets() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;

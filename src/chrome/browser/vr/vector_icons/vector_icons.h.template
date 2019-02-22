@@ -17,6 +17,10 @@ namespace vr {
 #define VECTOR_ICON_TEMPLATE_H(icon_name) \
 extern const gfx::VectorIcon icon_name;
 
+#if defined(FEATURE_MODULES) && defined(VR_VECTOR_ICONS_IMPL)
+#define VECTOR_ICON_EXPORT __attribute__((visibility("default")))
+#endif
+
 TEMPLATE_PLACEHOLDER
 
 #undef VECTOR_ICON_TEMPLATE_H

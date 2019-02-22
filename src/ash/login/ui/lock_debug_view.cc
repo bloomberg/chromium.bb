@@ -323,24 +323,9 @@ class LockDebugView::DebugDataDispatcherTransformer
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     UserMetadata* debug_user = &debug_users_[user_index];
 
-    // FingerprintUnlockState transition.
-    auto get_next_state = [](mojom::FingerprintUnlockState state) {
-      switch (state) {
-        case mojom::FingerprintUnlockState::UNAVAILABLE:
-          return mojom::FingerprintUnlockState::AVAILABLE;
-        case mojom::FingerprintUnlockState::AVAILABLE:
-          return mojom::FingerprintUnlockState::AUTH_SUCCESS;
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-          return mojom::FingerprintUnlockState::AUTH_FAILED;
-        case mojom::FingerprintUnlockState::AUTH_FAILED:
-          return mojom::FingerprintUnlockState::AUTH_DISABLED;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED:
-          return mojom::FingerprintUnlockState::UNAVAILABLE;
-      }
-    };
-
-    debug_user->fingerprint_state =
-        get_next_state(debug_user->fingerprint_state);
+    debug_user->fingerprint_state = static_cast<mojom::FingerprintUnlockState>(
+        (static_cast<int>(debug_user->fingerprint_state) + 1) %
+        (static_cast<int>(mojom::FingerprintUnlockState::kMaxValue) + 1));
     debug_dispatcher_.SetFingerprintUnlockState(debug_user->account_id,
                                                 debug_user->fingerprint_state);
   }

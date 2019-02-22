@@ -29,6 +29,7 @@
 #include "deUniquePtr.hpp"
 #include "vkPrograms.hpp"
 #include "vkApiVersion.hpp"
+#include "vktTestCaseDefs.hpp"
 
 namespace glu
 {
@@ -71,10 +72,14 @@ public:
 	const vk::VkPhysicalDeviceSamplerYcbcrConversionFeatures&
 												getSamplerYCbCrConversionFeatures
 																				(void) const;
+	const vk::VkPhysicalDevice8BitStorageFeaturesKHR&
+												get8BitStorageFeatures			(void) const;
 	const vk::VkPhysicalDevice16BitStorageFeatures&
 												get16BitStorageFeatures			(void) const;
 	const vk::VkPhysicalDeviceVariablePointerFeatures&
 												getVariablePointerFeatures		(void) const;
+	const vk::VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT&
+												getVertexAttributeDivisorFeatures	(void) const;
 	const vk::VkPhysicalDeviceProperties&		getDeviceProperties				(void) const;
 	const std::vector<std::string>&				getDeviceExtensions				(void) const;
 	vk::VkDevice								getDevice						(void) const;
@@ -88,6 +93,9 @@ public:
 	bool										contextSupports					(const deUint32 majorNum, const deUint32 minorNum, const deUint32 patchNum) const;
 	bool										contextSupports					(const vk::ApiVersion version) const;
 	bool										contextSupports					(const deUint32 requiredApiVersionBits) const;
+	bool										requireDeviceExtension			(const std::string& required);
+	bool										requireInstanceExtension		(const std::string& required);
+	bool										requireDeviceCoreFeature		(const DeviceCoreFeature requiredDeviceCoreFeature);
 
 protected:
 	tcu::TestContext&							m_testCtx;

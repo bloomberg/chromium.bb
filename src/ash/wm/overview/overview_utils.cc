@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
@@ -137,8 +140,14 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
-  if (slide)
+  if (slide) {
     window->SetTransform(original_transform);
+
+    auto start_observer = std::make_unique<StartAnimationObserver>();
+    scoped_overview_animation_settings.AddObserver(start_observer.get());
+    Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
+        std::move(start_observer));
+  }
 }
 
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
@@ -207,7 +216,7 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   wm::GetWindowState(widget_window)->set_ignored_by_shelf(true);
   if (params.layer_type == ui::LAYER_SOLID_COLOR) {
     widget_window->layer()->SetColor(background_color);
-  } else {
+  } else if (params.layer_type == ui::LAYER_TEXTURED) {
     views::View* content_view = new views::View();
     content_view->SetBackground(std::make_unique<BackgroundWith1PxBorder>(
         background_color, border_color, border_thickness, border_radius));
@@ -255,6 +264,52 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
     bounds.Union(enclosing_bounds);
   }
   return bounds;
+}
+
+gfx::Rect GetTargetBoundsInScreen(aura::Window* window) {
+  gfx::Rect bounds;
+  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+    // Ignore other window types when computing bounding box of window
+    // selector target item.
+    if (window_iter != window &&
+        window_iter->type() != aura::client::WINDOW_TYPE_NORMAL &&
+        window_iter->type() != aura::client::WINDOW_TYPE_PANEL) {
+      continue;
+    }
+    gfx::Rect target_bounds = window_iter->GetTargetBounds();
+    ::wm::ConvertRectToScreen(window_iter->parent(), &target_bounds);
+    bounds.Union(target_bounds);
+  }
+  return bounds;
+}
+
+void SetTransform(aura::Window* window, const gfx::Transform& transform) {
+  gfx::Point target_origin(GetTargetBoundsInScreen(window).origin());
+  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+    aura::Window* parent_window = window_iter->parent();
+    gfx::Rect original_bounds(window_iter->GetTargetBounds());
+    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
+    gfx::Transform new_transform =
+        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
+                                       target_origin.y() - original_bounds.y()),
+                            transform);
+    window_iter->SetTransform(new_transform);
+  }
+}
+
+bool IsSlidingOutOverviewFromShelf() {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    return false;
+
+  HomeLauncherGestureHandler* home_launcher_gesture_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+  if (home_launcher_gesture_handler &&
+      home_launcher_gesture_handler->mode() ==
+          HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace ash

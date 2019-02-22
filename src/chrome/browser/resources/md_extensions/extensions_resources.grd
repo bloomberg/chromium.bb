@@ -195,12 +195,6 @@
       <structure name="IDR_MD_EXTENSIONS_STRINGS_HTML"
                  file="strings.html"
                  type="chrome_html" />
-      <structure name="IDR_MD_EXTENSIONS_VIEW_MANAGER_HTML"
-                 file="view_manager.html"
-                 type="chrome_html" />
-      <structure name="IDR_MD_EXTENSIONS_VIEW_MANAGER_JS"
-                 file="view_manager.js"
-                 type="chrome_html" />
     </structures>
   </release>
 </grit>

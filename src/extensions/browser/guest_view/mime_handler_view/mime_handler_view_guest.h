@@ -162,6 +162,8 @@ class MimeHandlerViewGuest
   void FuseBeforeUnloadControl(
       mime_handler::BeforeUnloadControlRequest request);
 
+  content::RenderFrameHost* GetEmbedderFrame() const;
+
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;
 

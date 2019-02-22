@@ -44,20 +44,20 @@ class CORE_EXPORT PlainTextRange {
  public:
   PlainTextRange();
   PlainTextRange(const PlainTextRange&);
-  explicit PlainTextRange(int location);
-  PlainTextRange(int start, int end);
+  explicit PlainTextRange(wtf_size_t location);
+  PlainTextRange(wtf_size_t start, wtf_size_t end);
 
-  size_t End() const {
+  wtf_size_t End() const {
     DCHECK(IsNotNull());
     return end_;
   }
-  size_t Start() const {
+  wtf_size_t Start() const {
     DCHECK(IsNotNull());
     return start_;
   }
   bool IsNull() const { return start_ == kNotFound; }
   bool IsNotNull() const { return start_ != kNotFound; }
-  size_t length() const {
+  wtf_size_t length() const {
     DCHECK(IsNotNull());
     return end_ - start_;
   }
@@ -77,8 +77,8 @@ class CORE_EXPORT PlainTextRange {
   EphemeralRange CreateRangeFor(const ContainerNode& scope,
                                 const TextIteratorBehavior&) const;
 
-  const size_t start_;
-  const size_t end_;
+  const wtf_size_t start_;
+  const wtf_size_t end_;
 };
 
 }  // namespace blink

@@ -196,8 +196,8 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 }
 
 - (void)dealloc {
-  UMA_HISTOGRAM_COUNTS(kPrerendersPerSessionCountHistogramName,
-                       successfulPrerendersPerSessionCount_);
+  UMA_HISTOGRAM_COUNTS_1M(kPrerendersPerSessionCountHistogramName,
+                          successfulPrerendersPerSessionCount_);
   [self cancelPrerender];
 }
 

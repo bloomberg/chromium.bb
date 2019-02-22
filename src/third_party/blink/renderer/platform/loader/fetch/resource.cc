@@ -125,16 +125,20 @@ class CachedMetadataSenderImpl : public CachedMetadataSender {
  private:
   const KURL response_url_;
   const Time response_time_;
+  const ResourceType resource_type_;
 };
 
 CachedMetadataSenderImpl::CachedMetadataSenderImpl(const Resource* resource)
     : response_url_(resource->GetResponse().Url()),
-      response_time_(resource->GetResponse().ResponseTime()) {
+      response_time_(resource->GetResponse().ResponseTime()),
+      resource_type_(resource->GetType()) {
   DCHECK(resource->GetResponse().CacheStorageCacheName().IsNull());
 }
 
 void CachedMetadataSenderImpl::Send(const char* data, size_t size) {
-  Platform::Current()->CacheMetadata(response_url_, response_time_, data, size);
+  Platform::Current()->CacheMetadata(
+      Resource::ResourceTypeToCodeCacheType(resource_type_), response_url_,
+      response_time_, data, size);
 }
 
 // This is a CachedMetadataSender implementation that does nothing.
@@ -182,7 +186,7 @@ void ServiceWorkerCachedMetadataSender::Send(const char* data, size_t size) {
 }
 
 Resource::Resource(const ResourceRequest& request,
-                   Type type,
+                   ResourceType type,
                    const ResourceLoaderOptions& options)
     : type_(type),
       status_(ResourceStatus::kNotStarted),
@@ -335,7 +339,7 @@ void Resource::SetDataBufferingPolicy(
   SetEncodedSize(0);
 }
 
-static bool NeedsSynchronousCacheHit(Resource::Type type,
+static bool NeedsSynchronousCacheHit(ResourceType type,
                                      const ResourceLoaderOptions& options) {
   // Synchronous requests must always succeed or fail synchronously.
   if (options.synchronous_policy == kRequestSynchronously)
@@ -346,11 +350,11 @@ static bool NeedsSynchronousCacheHit(Resource::Type type,
   // performance regression.
   // FIXME: Get to the point where we don't need to special-case sync/async
   // behavior for different resource types.
-  if (type == Resource::kCSSStyleSheet)
+  if (type == ResourceType::kCSSStyleSheet)
     return true;
-  if (type == Resource::kScript)
+  if (type == ResourceType::kScript)
     return true;
-  if (type == Resource::kFont)
+  if (type == ResourceType::kFont)
     return true;
   return false;
 }
@@ -364,8 +368,15 @@ void Resource::FinishAsError(const ResourceError& error,
     GetMemoryCache()->Remove(this);
 
   bool failed_during_start = status_ == ResourceStatus::kNotStarted;
-  if (!ErrorOccurred())
+  if (!ErrorOccurred()) {
     SetStatus(ResourceStatus::kLoadError);
+    // If the response type has not been set, set it to "error". This is
+    // important because in some cases we arrive here after setting the response
+    // type (e.g., while downloading payload), and that shouldn't change the
+    // response type.
+    if (response_.GetType() == network::mojom::FetchResponseType::kDefault)
+      response_.SetType(network::mojom::FetchResponseType::kError);
+  }
   DCHECK(ErrorOccurred());
   ClearData();
   loader_ = nullptr;
@@ -410,6 +421,10 @@ bool Resource::MustRefetchDueToIntegrityMetadata(
 
   return !IntegrityMetadata::SetsEqual(IntegrityMetadata(),
                                        params.IntegrityMetadata());
+}
+
+const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
+  return LastResourceRequest().RequestorOrigin();
 }
 
 static double CurrentAge(const ResourceResponse& response,
@@ -530,13 +545,14 @@ void Resource::SetResponse(const ResourceResponse& response) {
 std::unique_ptr<CachedMetadataSender> Resource::CreateCachedMetadataSender()
     const {
   if (GetResponse().WasFetchedViaServiceWorker()) {
-    // TODO(leszeks): Check whether it's correct that the source_origin can be
-    // null.
-    if (!source_origin_ || GetResponse().CacheStorageCacheName().IsNull()) {
+    scoped_refptr<const SecurityOrigin> origin =
+        GetResourceRequest().RequestorOrigin();
+    // TODO(leszeks): Check whether it's correct that |origin| can be nullptr.
+    if (!origin || GetResponse().CacheStorageCacheName().IsNull()) {
       return std::make_unique<NullCachedMetadataSender>();
     }
-    return std::make_unique<ServiceWorkerCachedMetadataSender>(
-        this, source_origin_.get());
+    return std::make_unique<ServiceWorkerCachedMetadataSender>(this,
+                                                               origin.get());
   }
   return std::make_unique<CachedMetadataSenderImpl>(this);
 }
@@ -764,12 +780,17 @@ void Resource::FinishPendingClients() {
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
 }
 
-Resource::MatchStatus Resource::CanReuse(
-    const FetchParameters& params,
-    scoped_refptr<const SecurityOrigin> new_source_origin) const {
+Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
   const ResourceLoaderOptions& new_options = params.Options();
+  scoped_refptr<const SecurityOrigin> existing_origin =
+      GetResourceRequest().RequestorOrigin();
+  scoped_refptr<const SecurityOrigin> new_origin =
+      new_request.RequestorOrigin();
   DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
+
+  DCHECK(existing_origin);
+  DCHECK(new_origin);
 
   // Never reuse opaque responses from a service worker for requests that are
   // not no-cors. https://crbug.com/625575
@@ -843,11 +864,9 @@ Resource::MatchStatus Resource::CanReuse(
   if (GetResourceRequest().HttpBody() != new_request.HttpBody())
     return MatchStatus::kUnknownFailure;
 
-  DCHECK(source_origin_);
-  DCHECK(new_source_origin);
 
   // Don't reuse an existing resource when the source origin is different.
-  if (!source_origin_->IsSameSchemeHostPort(new_source_origin.get()))
+  if (!existing_origin->IsSameSchemeHostPort(new_origin.get()))
     return MatchStatus::kUnknownFailure;
 
   // securityOrigin has more complicated checks which callers are responsible
@@ -1183,42 +1202,56 @@ static const char* InitiatorTypeNameToString(
 }
 
 const char* Resource::ResourceTypeToString(
-    Type type,
+    ResourceType type,
     const AtomicString& fetch_initiator_name) {
   switch (type) {
-    case Resource::kMainResource:
+    case ResourceType::kMainResource:
       return "Main resource";
-    case Resource::kImage:
+    case ResourceType::kImage:
       return "Image";
-    case Resource::kCSSStyleSheet:
+    case ResourceType::kCSSStyleSheet:
       return "CSS stylesheet";
-    case Resource::kScript:
+    case ResourceType::kScript:
       return "Script";
-    case Resource::kFont:
+    case ResourceType::kFont:
       return "Font";
-    case Resource::kRaw:
+    case ResourceType::kRaw:
       return InitiatorTypeNameToString(fetch_initiator_name);
-    case Resource::kSVGDocument:
+    case ResourceType::kSVGDocument:
       return "SVG document";
-    case Resource::kXSLStyleSheet:
+    case ResourceType::kXSLStyleSheet:
       return "XSL stylesheet";
-    case Resource::kLinkPrefetch:
+    case ResourceType::kLinkPrefetch:
       return "Link prefetch resource";
-    case Resource::kTextTrack:
+    case ResourceType::kTextTrack:
       return "Text track";
-    case Resource::kImportResource:
+    case ResourceType::kImportResource:
       return "Imported resource";
-    case Resource::kAudio:
+    case ResourceType::kAudio:
       return "Audio";
-    case Resource::kVideo:
+    case ResourceType::kVideo:
       return "Video";
-    case Resource::kManifest:
+    case ResourceType::kManifest:
       return "Manifest";
-    case Resource::kMock:
+    case ResourceType::kMock:
       return "Mock";
   }
   NOTREACHED();
   return InitiatorTypeNameToString(fetch_initiator_name);
+}
+
+// static
+blink::mojom::CodeCacheType Resource::ResourceTypeToCodeCacheType(
+    ResourceType resource_type) {
+  // Cacheable WebAssembly modules are fetched, so raw resource type.
+  if (resource_type == ResourceType::kRaw)
+    return blink::mojom::CodeCacheType::kWebAssembly;
+  // Cacheable Javascript is a script or a document resource. Also accept mock
+  // resources for testing.
+  DCHECK(resource_type == ResourceType::kScript ||
+         resource_type == ResourceType::kMainResource ||
+         resource_type == ResourceType::kMock);
+  return blink::mojom::CodeCacheType::kJavascript;
 }
 
 bool Resource::ShouldBlockLoadEvent() const {
@@ -1227,22 +1260,22 @@ bool Resource::ShouldBlockLoadEvent() const {
 
 bool Resource::IsLoadEventBlockingResourceType() const {
   switch (type_) {
-    case Resource::kMainResource:
-    case Resource::kImage:
-    case Resource::kCSSStyleSheet:
-    case Resource::kScript:
-    case Resource::kFont:
-    case Resource::kSVGDocument:
-    case Resource::kXSLStyleSheet:
-    case Resource::kImportResource:
+    case ResourceType::kMainResource:
+    case ResourceType::kImage:
+    case ResourceType::kCSSStyleSheet:
+    case ResourceType::kScript:
+    case ResourceType::kFont:
+    case ResourceType::kSVGDocument:
+    case ResourceType::kXSLStyleSheet:
+    case ResourceType::kImportResource:
       return true;
-    case Resource::kRaw:
-    case Resource::kLinkPrefetch:
-    case Resource::kTextTrack:
-    case Resource::kAudio:
-    case Resource::kVideo:
-    case Resource::kManifest:
-    case Resource::kMock:
+    case ResourceType::kRaw:
+    case ResourceType::kLinkPrefetch:
+    case ResourceType::kTextTrack:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
+    case ResourceType::kManifest:
+    case ResourceType::kMock:
       return false;
   }
   NOTREACHED();

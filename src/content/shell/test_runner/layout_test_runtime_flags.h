@@ -190,6 +190,11 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // Contains text passed by the test to testRunner.setCustomTextOutput.
   DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(custom_text_output)
 
+  // Controls which implementation to use for text dump, to help progressive
+  // rebaseline of layout test text dumps.
+  // TODO(xiaochengh): Remove this flag when rebaseline is complete.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(should_use_inner_text_dump)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

@@ -85,7 +85,7 @@ class MockHttpAgentConfig {
   // Reads up to |*count| bytes from the |calls_.read_data_result| call
   // configuration string, and returns the data in |buffer|. |count| will be
   // updated with the number of bytes actually read.
-  void ReadData(char* buffer, size_t* count);
+  void ReadData(char* buffer, uint32_t* count);
 
   // Returns the number of calls to Post() that were recorded so far.
   size_t num_request_data() const { return request_data_.size(); }

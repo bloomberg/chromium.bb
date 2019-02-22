@@ -66,6 +66,17 @@ class IconImage : public content::NotificationObserver {
   // |context| is required by the underlying implementation to retrieve the
   // |ImageLoader| instance associated with the given context. |ImageLoader| is
   // used to perform the asynchronous image load work.
+  // Set |keep_original_size| to true to load the icon at the original size
+  // without resizing. In this case |resource_size_in_dip| will still be used to
+  // pick the correct icon representation. This is useful if the client code
+  // performs its own resizing.
+  IconImage(content::BrowserContext* context,
+            const Extension* extension,
+            const ExtensionIconSet& icon_set,
+            int resource_size_in_dip,
+            bool keep_original_size,
+            const gfx::ImageSkia& default_icon,
+            Observer* observer);
   IconImage(content::BrowserContext* context,
             const Extension* extension,
             const ExtensionIconSet& icon_set,
@@ -102,6 +113,8 @@ class IconImage : public content::NotificationObserver {
   scoped_refptr<const Extension> extension_;
   ExtensionIconSet icon_set_;
   const int resource_size_in_dip_;
+  // Whether the loaded icon should be kept at the original size.
+  const bool keep_original_size_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

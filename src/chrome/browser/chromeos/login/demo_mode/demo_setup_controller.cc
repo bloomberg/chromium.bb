@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -24,10 +25,13 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -97,9 +101,30 @@ base::Optional<std::string> ReadFileToOptionalString(
   return result;
 }
 
-}  //  namespace
+// Returns whether online FRE check is required.
+bool IsOnlineFreCheckRequired() {
+  AutoEnrollmentController::FRERequirement fre_requirement =
+      AutoEnrollmentController::GetFRERequirement();
+  bool enrollment_check_required =
+      fre_requirement !=
+          AutoEnrollmentController::FRERequirement::kExplicitlyNotRequired &&
+      fre_requirement !=
+          AutoEnrollmentController::FRERequirement::kNotRequired &&
+      AutoEnrollmentController::IsFREEnabled();
 
-namespace chromeos {
+  if (!enrollment_check_required)
+    return false;
+
+  std::string block_dev_mode_value;
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  provider->GetMachineStatistic(system::kBlockDevModeKey,
+                                &block_dev_mode_value);
+
+  return block_dev_mode_value == "1";
+}
+
+}  //  namespace
 
 // static
 constexpr char DemoSetupController::kDemoModeDomain[];
@@ -184,8 +209,7 @@ void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   component_updater::CrOSComponentManager* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   // In tests, use the desired error code.
-  if (!cros_component_manager ||
-      chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
+  if (!cros_component_manager || DBusThreadManager::Get()->IsUsingFakes()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
@@ -233,6 +257,14 @@ void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
   DCHECK(policy_dir_.empty());
   policy_dir_ = policy_dir;
+
+  if (IsOnlineFreCheckRequired()) {
+    SetupFailed(
+        "Cannot do offline demo mode setup, because online FRE check is "
+        "required.",
+        DemoSetupError::kFatal);
+    return;
+  }
 
   std::string* message = new std::string();
   base::PostTaskWithTraitsAndReplyWithResult(

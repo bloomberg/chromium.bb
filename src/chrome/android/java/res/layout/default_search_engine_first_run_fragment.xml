@@ -43,7 +43,7 @@
                     android:paddingBottom="@dimen/signin_chooser_padding"
                     android:background="@color/signin_head_background"
                     android:importantForAccessibility="no"
-                    android:textAppearance="@style/BlackHeadline1"
+                    android:textAppearance="@style/BlackHeadline"
                     android:text="@string/search_engine_dialog_title" />
 
                 <View style="@style/HorizontalDivider" />

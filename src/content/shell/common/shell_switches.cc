@@ -10,9 +10,6 @@
 
 namespace switches {
 
-// Tells Content Shell that it's running as a content_browsertest.
-const char kContentBrowserTest[] = "browser-test";
-
 // Makes Content Shell use the given path for its data directory.
 const char kContentShellDataPath[] = "data-path";
 
@@ -41,10 +38,6 @@ const char kContentShellHostWindowSize[] = "content-shell-host-window-size";
 
 // Hides toolbar from content_shell's host window.
 const char kContentShellHideToolbar[] = "content-shell-hide-toolbar";
-
-// Forces all navigations to go through the browser process (in a
-// non-PlzNavigate way).
-const char kContentShellAlwaysFork[] = "content-shell-always-fork";
 
 std::vector<std::string> GetSideloadFontFiles() {
   std::vector<std::string> files;

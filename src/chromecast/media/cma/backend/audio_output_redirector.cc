@@ -84,13 +84,13 @@ void AudioOutputRedirector::InputImpl::Redirect(::media::AudioBus* const buffer,
   if (previous_ended_in_silence_) {
     if (!redirected) {
       // Smoothly fade in from previous silence.
-      AudioFader::FadeInHelper(temp_buffer_.get(), num_frames, num_frames,
+      AudioFader::FadeInHelper(temp_buffer_.get(), num_frames, 0, num_frames,
                                num_frames);
     }
   } else if (redirected) {
     // Smoothly fade out to silence, since output is now being redirected by a
     // previous output splitter.
-    AudioFader::FadeOutHelper(temp_buffer_.get(), num_frames, num_frames,
+    AudioFader::FadeOutHelper(temp_buffer_.get(), num_frames, 0, num_frames,
                               num_frames);
   }
   previous_ended_in_silence_ = redirected;

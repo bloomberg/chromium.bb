@@ -25,15 +25,11 @@ function testComputed(elementname, property, value, expected) {
   shouldBeEqualToString('computedStyle("' + elementname + '", "' + property + '", "' + value + '")', expected);
 }
 
-function negativeTest(elementname, property, value) {
-  testComputed(elementname, property, value, "auto");
+function negativeTest(elementname, property, value, expected) {
+  testComputed(elementname, property, value, expected);
 }
 
-function negativeTestZero(elementname, property, value) {
-  testComputed(elementname, property, value, "0px");
-}
-
-function testAttributeOnElement(elementname, attributename) {
+function testAttributeOnElement(elementname, attributename, initial_value) {
   testComputed(elementname, attributename, "  100", "100px");
   testComputed(elementname, attributename, "100   ", "100px");
   testComputed(elementname, attributename, "100px", "100px");
@@ -42,26 +38,28 @@ function testAttributeOnElement(elementname, attributename) {
   testComputed(elementname, attributename, "20%", "20%");
   testComputed(elementname, attributename, "-200px", "-200px");
 
-  negativeTestZero(elementname, attributename, "auto", "auto");
-  negativeTestZero(elementname, attributename, "100   px");
-  negativeTestZero(elementname, attributename, "100px;");
-  negativeTestZero(elementname, attributename, "100px !important");
-  negativeTestZero(elementname, attributename, "{ 100px }");
+  negativeTest(elementname, attributename, "auto", initial_value);
+  negativeTest(elementname, attributename, "100   px", initial_value);
+  negativeTest(elementname, attributename, "100px;", initial_value);
+  negativeTest(elementname, attributename, "100px !important", initial_value);
+  negativeTest(elementname, attributename, "{ 100px }", initial_value);
 }
 
 var xyelements = [ "mask", "svg", "rect", "image", "foreignObject" ];
 for (var elm of xyelements) {
-  testAttributeOnElement(elm, "x");
-  testAttributeOnElement(elm, "y");
+  let initial_value = elm === "mask" ? "-10%" : "0px";
+  testAttributeOnElement(elm, "x", initial_value);
+  testAttributeOnElement(elm, "y", initial_value);
 }
 
 var rxryelements = [ "rect", "ellipse" ];
 for (var elm of rxryelements) {
-  testAttributeOnElement(elm, "rx");
-  testAttributeOnElement(elm, "ry");
+  let initial_value = "0px";
+  testAttributeOnElement(elm, "rx", initial_value);
+  testAttributeOnElement(elm, "ry", initial_value);
 }
 
-testAttributeOnElement("circle", "r");
+testAttributeOnElement("circle", "r", "0px");
 </script>
 </body>
 </html>

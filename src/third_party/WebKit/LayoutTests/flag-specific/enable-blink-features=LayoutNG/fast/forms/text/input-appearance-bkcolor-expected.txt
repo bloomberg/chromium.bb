@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (564,0) size 0x19
       LayoutTextControl {INPUT} at (0,20) size 181x22 [bgcolor=#FFC0CB] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (181,21) size 0x19
+      LayoutBR {BR} at (181,36) size 0x0
       LayoutTextControl {INPUT} at (0,42) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
 layer at (10,31) size 177x16

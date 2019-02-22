@@ -124,7 +124,7 @@ void CastWebViewDefault::LoadUrl(GURL url) {
 void CastWebViewDefault::ClosePage(const base::TimeDelta& shutdown_delay) {
   shutdown_delay_ = shutdown_delay;
   content::WebContentsObserver::Observe(nullptr);
-  web_contents_->DispatchBeforeUnload();
+  web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
   web_contents_->ClosePage();
 }
 
@@ -151,6 +151,8 @@ void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
                                       z_order, initial_priority);
   web_contents_->Focus();
 }
+
+void CastWebViewDefault::SetContext(base::Value context) {}
 
 void CastWebViewDefault::GrantScreenAccess() {
   window_->GrantScreenAccess();

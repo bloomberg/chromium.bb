@@ -39,7 +39,6 @@ static_library("arc") {
     "intent_helper/open_url_delegate.h",
     "lock_screen/arc_lock_screen_bridge.cc",
     "lock_screen/arc_lock_screen_bridge.h",
-    "metrics/arc_metrics_constants.h",
     "metrics/arc_metrics_service.cc",
     "metrics/arc_metrics_service.h",
     "midis/arc_midis_bridge.cc",
@@ -71,6 +70,7 @@ static_library("arc") {
 
   public_deps = [
     ":arc_base",
+    ":arc_metrics_constants",
     ":prefs",
   ]
 
@@ -270,6 +270,12 @@ static_library("arc_test_support") {
     "//content/test:test_support",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
+  ]
+}
+
+source_set("arc_metrics_constants") {
+  sources = [
+    "metrics/arc_metrics_constants.h",
   ]
 }
 

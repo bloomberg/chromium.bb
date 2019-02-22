@@ -8,9 +8,6 @@ declare_args() {
   # Optional system library.
   use_xkbcommon = false
 
-  # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
-  mac_views_browser = is_mac
-
   # Whether the platform provides a native accessibility toolkit.
   has_native_accessibility = use_atk || is_win || is_mac
 

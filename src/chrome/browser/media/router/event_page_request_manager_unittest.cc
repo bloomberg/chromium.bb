@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -52,7 +53,7 @@ class TestProcessManager : public extensions::ProcessManager {
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& ext_id));
   MOCK_METHOD2(WakeEventPage,
                bool(const std::string& extension_id,
-                    const base::Callback<void(bool)>& callback));
+                    base::OnceCallback<void(bool)> callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
@@ -70,7 +71,7 @@ class EventPageRequestManagerTest : public ::testing::Test {
     profile_ = std::make_unique<TestingProfile>();
     // Set up a mock ProcessManager instance.
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), &TestProcessManager::Create);
+        profile_.get(), base::BindRepeating(&TestProcessManager::Create));
     process_manager_ = static_cast<TestProcessManager*>(
         extensions::ProcessManager::Get(profile_.get()));
     DCHECK(process_manager_);
@@ -141,11 +142,11 @@ TEST_F(EventPageRequestManagerTest, RunRequestsOnConnectionsReady) {
   ON_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillByDefault(Return(true));
   EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
-      .WillOnce(Invoke([](const std::string& extension_id,
-                          const base::Callback<void(bool)>& callback) {
-        callback.Run(true);
+      .WillOnce([](const std::string& extension_id,
+                   base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(true);
         return true;
-      }));
+      });
   request_manager_->RunOrDefer(
       base::BindOnce(&MockRequest::Run, base::Unretained(&request1)),
       MediaRouteProviderWakeReason::DETACH_ROUTE);
@@ -185,18 +186,20 @@ TEST_F(EventPageRequestManagerTest, FailedWakeupDrainsQueue) {
   StrictMock<MockRequest> request1;
   StrictMock<MockRequest> request2;
 
-  base::Callback<void(bool)> extension_wakeup_callback;
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillOnce(Return(true));
   EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
-      .WillOnce(
-          testing::DoAll(SaveArg<1>(&extension_wakeup_callback), Return(true)));
+      .WillOnce([](const std::string& extension_id,
+                   base::OnceCallback<void(bool)> callback) {
+        // Run the callback with false to indicate that the wakeup failed.
+        // This call drains the request queue, so |request1| won't be
+        // called.
+        std::move(callback).Run(false);
+        return true;
+      });
   request_manager_->RunOrDefer(
       base::BindOnce(&MockRequest::Run, base::Unretained(&request1)),
       MediaRouteProviderWakeReason::CREATE_ROUTE);
-  // Run the callback with false to indicate that the wakeup failed. This call
-  // drains the request queue, so |request1| won't be called.
-  extension_wakeup_callback.Run(false);
 
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
       .WillRepeatedly(Return(false));

@@ -40,6 +40,7 @@ class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
 class EXTTextureFilterAnisotropic;
+class KHRParallelShaderCompile;
 class OESElementIndexUint;
 class OESStandardDerivatives;
 class OESTextureFloat;
@@ -98,6 +99,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<EXTShaderTextureLOD> ext_shader_texture_lod_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<EXTsRGB> exts_rgb_;
+  Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESElementIndexUint> oes_element_index_uint_;
   Member<OESStandardDerivatives> oes_standard_derivatives_;
   Member<OESTextureFloat> oes_texture_float_;

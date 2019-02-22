@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -272,12 +271,6 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void BrowserTabStripController::ToggleTabAudioMute(int model_index) {
-  content::WebContents* const contents = model_->GetWebContentsAt(model_index);
-  chrome::SetTabAudioMuted(contents, !contents->IsAudioMuted(),
-                           TabMutedReason::AUDIO_INDICATOR, std::string());
-}
-
 void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
@@ -346,11 +339,6 @@ void BrowserTabStripController::CreateNewTabWithLocation(
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }
 
-bool BrowserTabStripController::IsIncognito() {
-  return browser_view_->browser()->profile()->GetProfileType() ==
-      Profile::INCOGNITO_PROFILE;
-}
-
 void BrowserTabStripController::StackedLayoutMaybeChanged() {
   bool adjust_layout = false;
   bool stacked_layout = DetermineTabStripLayoutStacked(
@@ -407,9 +395,8 @@ SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return GetFrameView()->GetToolbarTopSeparatorColor();
 }
 
-SkColor BrowserTabStripController::GetTabBackgroundColor(TabState state,
-                                                         bool opaque) const {
-  return GetFrameView()->GetTabBackgroundColor(state, opaque);
+SkColor BrowserTabStripController::GetTabBackgroundColor(TabState state) const {
+  return GetFrameView()->GetTabBackgroundColor(state);
 }
 
 SkColor BrowserTabStripController::GetTabForegroundColor(TabState state) const {

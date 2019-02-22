@@ -52,11 +52,9 @@ class SVGAnimatedNumberOptionalNumber
   static SVGAnimatedNumberOptionalNumber* Create(
       SVGElement* context_element,
       const QualifiedName& attribute_name,
-      float initial_first_value = 0,
-      float initial_second_value = 0) {
+      float initial_value) {
     return new SVGAnimatedNumberOptionalNumber(context_element, attribute_name,
-                                               initial_first_value,
-                                               initial_second_value);
+                                               initial_value);
   }
 
   void SetAnimatedValue(SVGPropertyBase*) override;
@@ -71,8 +69,7 @@ class SVGAnimatedNumberOptionalNumber
  protected:
   SVGAnimatedNumberOptionalNumber(SVGElement* context_element,
                                   const QualifiedName& attribute_name,
-                                  float initial_first_value,
-                                  float initial_second_value);
+                                  float initial_value);
 
   Member<SVGAnimatedNumber> first_number_;
   Member<SVGAnimatedNumber> second_number_;

@@ -56,6 +56,15 @@ struct NativeWebKeyboardEvent;
 //  of the RenderWidgetHost.
 class CONTENT_EXPORT RenderWidgetHostDelegate {
  public:
+  // Functions for controlling the browser top controls slide behavior with page
+  // gesture scrolling.
+  virtual void SetTopControlsShownRatio(
+      RenderWidgetHostImpl* render_widget_host,
+      float ratio) {}
+  virtual bool DoBrowserControlsShrinkRendererSize() const;
+  virtual int GetTopControlsHeight() const;
+  virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
+
   // The RenderWidgetHost has just been created.
   virtual void RenderWidgetCreated(RenderWidgetHostImpl* render_widget_host) {}
 

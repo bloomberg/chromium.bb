@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -20,6 +19,7 @@ class ExecutionContext;
 class DocumentLoader;
 class ResourceRequest;
 class ResourceResponse;
+enum class ResourceType : uint8_t;
 struct FetchInitiatorInfo;
 
 namespace probe {
@@ -52,7 +52,7 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
                                ResourceRequest&,
                                const ResourceResponse& redirect_response,
                                const FetchInitiatorInfo&,
-                               Resource::Type);
+                               ResourceType);
 
   // Returns true if any script in the pseudo call stack has previously been
   // identified as an ad resource.

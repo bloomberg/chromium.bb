@@ -246,6 +246,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
 
+  CallJS("clearDemoMode");
+
   // Enable ARC to match ArcSessionManager logic. ArcSessionManager expects that
   // ARC is enabled (prefs::kArcEnabled = true) on showing Terms of Service. If
   // user accepts ToS then prefs::kArcEnabled is left activated. If user skips

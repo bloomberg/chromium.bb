@@ -78,6 +78,8 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -639,7 +641,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
        userIsInteracting:(BOOL)userIsInteracting
                originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame;
+             isMainFrame:(BOOL)isMainFrame
+             senderFrame:(web::WebFrame*)senderFrame;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Returns a new script which wraps |script| with windowID check so |script| is
@@ -651,6 +654,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message;
 // Handles frame became unavailable message.
 - (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message;
+// Clears the frames list.
+- (void)removeAllWebFrames;
 // Registers load request with empty referrer and link or client redirect
 // transition based on user interaction state. Returns navigation context for
 // this request.
@@ -904,6 +909,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // NSURLErrorCancelled code should be cancelled.
 - (BOOL)shouldCancelLoadForCancelledError:(NSError*)error;
 
+// Returns YES if response should be rendered in WKWebView.
+- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse;
+
+// Creates DownloadTask for the given navigation response. Headers are passed
+// as argument to avoid extra NSDictionary -> net::HttpResponseHeaders
+// conversion.
+- (void)createDownloadTaskForResponse:(WKNavigationResponse*)WKResponse
+                          HTTPHeaders:(net::HttpResponseHeaders*)headers;
+
 // This method should be called on receiving WKNavigationDelegate callbacks. It
 // will log a metric if the callback occurs after the reciever has already been
 // closed.
@@ -946,6 +960,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 @synthesize nativeProvider = _nativeProvider;
 @synthesize swipeRecognizerProvider = _swipeRecognizerProvider;
 @synthesize webViewProxy = _webViewProxy;
+@synthesize allowsBackForwardNavigationGestures =
+    _allowsBackForwardNavigationGestures;
 
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
@@ -1459,7 +1475,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   context->SetIsPost([self isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
 
-  if (!IsPlaceholderUrl(requestURL)) {
+  if (!IsWKInternalUrl(requestURL)) {
     _webStateImpl->SetIsLoading(true);
 
     // WKBasedNavigationManager triggers HTML load when placeholder navigation
@@ -1947,8 +1963,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->ClearTransientContent();
 
   // Reset tracked frames because JavaScript unload handler will not be called.
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
-
+  [self removeAllWebFrames];
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   const bool isCurrentURLAppSpecific =
@@ -1989,6 +2004,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self loadCurrentURL];
   } else if (!_currentURLLoadWasTrigerred) {
     [self ensureContainerViewCreated];
+
+    // This method reloads last committed item, so make than item also pending.
+    self.sessionController.pendingItemIndex =
+        self.sessionController.lastCommittedItemIndex;
 
     // TODO(crbug.com/796608): end the practice of calling |loadCurrentURL|
     // when it is possible there is no current URL. If the call performs
@@ -2077,7 +2096,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_webView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   [self loadCancelled];
 }
 
@@ -2278,6 +2297,41 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.navigationManagerImpl->DiscardNonCommittedItems();
 }
 
+- (void)takeSnapshotWithRect:(CGRect)rect
+                  completion:(void (^)(UIImage*))completion {
+  if (@available(iOS 11, *)) {
+    if (_webView) {
+      WKSnapshotConfiguration* configuration =
+          [[WKSnapshotConfiguration alloc] init];
+      configuration.rect = rect;
+      __weak CRWWebController* weakSelf = self;
+      [_webView
+          takeSnapshotWithConfiguration:configuration
+                      completionHandler:^(UIImage* snapshot, NSError* error) {
+                        // Pass nil to the completion block if there is an error
+                        // or if the web view has been removed before the
+                        // snapshot is finished.  |snapshot| can sometimes be
+                        // corrupt if it's sent due to the WKWebView's
+                        // deallocation, so callbacks received after
+                        // |-removeWebView| are ignored to prevent crashing.
+                        if (error || !weakSelf.webView) {
+                          if (error) {
+                            DLOG(ERROR) << "WKWebView snapshot error: "
+                                        << error.description;
+                          }
+                          completion(nil);
+                        } else {
+                          completion(snapshot);
+                        }
+                      }];
+      return;
+    }
+  }
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completion(nil);
+  });
+}
+
 #pragma mark -
 #pragma mark CRWWebControllerContainerViewDelegate
 
@@ -2342,7 +2396,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (BOOL)respondToMessage:(base::DictionaryValue*)message
        userIsInteracting:(BOOL)userIsInteracting
                originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame {
+             isMainFrame:(BOOL)isMainFrame
+             senderFrame:(web::WebFrame*)senderFrame {
   std::string command;
   if (!message->GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";
@@ -2351,8 +2406,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   SEL handler = [self selectorToHandleJavaScriptCommand:command];
   if (!handler) {
-    if (self.webStateImpl->OnScriptCommandReceived(
-            command, *message, originURL, userIsInteracting, isMainFrame)) {
+    if (self.webStateImpl->OnScriptCommandReceived(command, *message, originURL,
+                                                   userIsInteracting,
+                                                   isMainFrame, senderFrame)) {
       return YES;
     }
     // Message was either unexpected or not correctly handled.
@@ -2421,15 +2477,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
-      scriptMessage.frameInfo.securityOrigin);
-  if (!scriptMessage.frameInfo.mainFrame &&
-      messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
-    // Messages from cross-origin iframes are not currently supported.
-    // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
-    // about:blank pages, so it is important to allow all messages coming from
-    // the main frame, even if messageFrameOrigin and _documentURL have
-    // different origins.
+  if (![scriptMessage.name isEqualToString:kScriptMessageName]) {
     return NO;
   }
 
@@ -2439,69 +2487,102 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!messageAsValue || !messageAsValue->GetAsDictionary(&message)) {
     return NO;
   }
-  std::string windowID;
-  message->GetString("crwWindowId", &windowID);
-  // Check for correct windowID
-  if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
-    DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: " <<
-        [_windowIDJSManager windowID]
-                  << " != " << base::SysUTF8ToNSString(windowID);
-    return NO;
+
+  web::WebFrame* senderFrame = nullptr;
+  std::string frameID;
+  if (message->GetString("crwFrameId", &frameID)) {
+    senderFrame = web::GetWebFrameWithId([self webState], frameID);
   }
+
+  if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
+    // Message must be associated with a current frame.
+    if (!senderFrame) {
+      return NO;
+    }
+  } else {
+    GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
+        scriptMessage.frameInfo.securityOrigin);
+    if (!scriptMessage.frameInfo.mainFrame &&
+        messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
+      // Messages from cross-origin iframes are not currently supported.
+      // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
+      // about:blank pages, so it is important to allow all messages coming from
+      // the main frame, even if messageFrameOrigin and _documentURL have
+      // different origins.
+      return NO;
+    }
+
+    std::string windowID;
+    // If windowID exists, it must match the ID from the main frame.
+    if (message->GetString("crwWindowId", &windowID)) {
+      if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
+        DLOG(WARNING)
+            << "Message from JS ignored due to non-matching windowID: "
+            << base::SysNSStringToUTF8([_windowIDJSManager windowID])
+            << " != " << windowID;
+        return NO;
+      }
+    }
+  }
+
   base::DictionaryValue* command = nullptr;
   if (!message->GetDictionary("crwCommand", &command)) {
     return NO;
   }
-  if ([scriptMessage.name isEqualToString:kScriptMessageName]) {
-    return [self respondToMessage:command
-                userIsInteracting:[self userIsInteracting]
-                        originURL:net::GURLWithNSURL([_webView URL])
-                      isMainFrame:scriptMessage.frameInfo.mainFrame];
-  }
-
-  NOTREACHED();
-  return NO;
+  return [self respondToMessage:command
+              userIsInteracting:[self userIsInteracting]
+                      originURL:net::GURLWithNSURL([_webView URL])
+                    isMainFrame:scriptMessage.frameInfo.mainFrame
+                    senderFrame:senderFrame];
 }
+
+#pragma mark -
+#pragma mark Web frames management
 
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
   // Validate all expected message components because any frame could falsify
   // this message.
+  // TODO(crbug.com/881816): Create a WebFrame even if key is empty.
   if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
-      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]] ||
-      ![message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] ||
-      [message.body[@"crwFrameKey"] length] == 0 ||
-      ![message.body[@"crwFrameLastReceivedMessageId"]
-          isKindOfClass:[NSNumber class]]) {
-    // WebController is being destroyed, message is invalid, or frame does not
-    // have a key.
+      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
+    // WebController is being destroyed or the message is invalid.
     return;
   }
 
+  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
   web::WebFramesManagerImpl* framesManager =
       web::WebFramesManagerImpl::FromWebState([self webState]);
-
-  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
-  std::string encodedFrameKeyString =
-      base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
-  NSNumber* lastSentMessageID = message.body[@"crwFrameLastReceivedMessageId"];
   if (!framesManager->GetFrameWithId(frameID)) {
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
 
-    std::string decodedFrameKeyString;
-    base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
-    std::unique_ptr<crypto::SymmetricKey> frameKey =
-        crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
-                                     decodedFrameKeyString);
-    if (frameKey) {
-      int initialMessageID = lastSentMessageID.intValue == INT_MAX
-                                 ? 0
-                                 : lastSentMessageID.intValue + 1;
-      auto newFrame = std::make_unique<web::WebFrameImpl>(
-          frameID, std::move(frameKey), initialMessageID,
-          message.frameInfo.mainFrame, messageFrameOrigin, self.webState);
-      framesManager->AddFrame(std::move(newFrame));
+    std::unique_ptr<crypto::SymmetricKey> frameKey;
+    if ([message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] &&
+        [message.body[@"crwFrameKey"] length] > 0) {
+      std::string decodedFrameKeyString;
+      std::string encodedFrameKeyString =
+          base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
+      base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
+      frameKey = crypto::SymmetricKey::Import(
+          crypto::SymmetricKey::Algorithm::AES, decodedFrameKeyString);
     }
+
+    auto newFrame = std::make_unique<web::WebFrameImpl>(
+        frameID, message.frameInfo.mainFrame, messageFrameOrigin,
+        self.webState);
+    if (frameKey) {
+      newFrame->SetEncryptionKey(std::move(frameKey));
+    }
+
+    NSNumber* lastSentMessageID =
+        message.body[@"crwFrameLastReceivedMessageId"];
+    if ([lastSentMessageID isKindOfClass:[NSNumber class]]) {
+      int nextMessageID = std::max(0, lastSentMessageID.intValue + 1);
+      newFrame->SetNextMessageId(nextMessageID);
+    }
+
+    framesManager->AddFrame(std::move(newFrame));
+    _webStateImpl->OnWebFrameAvailable(framesManager->GetFrameWithId(frameID));
   }
 }
 
@@ -2511,8 +2592,23 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
   std::string frameID = base::SysNSStringToUTF8(message.body);
-  web::WebFramesManagerImpl::FromWebState(self.webState)
-      ->RemoveFrameWithId(frameID);
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState([self webState]);
+
+  if (framesManager->GetFrameWithId(frameID)) {
+    _webStateImpl->OnWebFrameUnavailable(
+        framesManager->GetFrameWithId(frameID));
+    framesManager->RemoveFrameWithId(frameID);
+  }
+}
+
+- (void)removeAllWebFrames {
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState([self webState]);
+  for (auto* frame : framesManager->GetAllWebFrames()) {
+    _webStateImpl->OnWebFrameUnavailable(frame);
+  }
+  framesManager->RemoveAllWebFrames();
 }
 
 #pragma mark -
@@ -2536,9 +2632,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
         DLOG(WARNING) << "JS message parameter not found: arguments";
         return NO;
       }
+      // WebFrame messaging is not supported in WebUI (as window.isSecureContext
+      // is false. Pass nullptr as sender_frame.
       _webStateImpl->OnScriptCommandReceived(
           messageContent, *message, currentURL, context[kUserIsInteractingKey],
-          [context[kIsMainFrame] boolValue]);
+          [context[kIsMainFrame] boolValue], nullptr);
       _webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
                                          *arguments);
       return YES;
@@ -2823,14 +2921,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 #pragma mark -
-
-- (BOOL)wantsLocationBarHintText {
-  if ([self.nativeController
-          respondsToSelector:@selector(wantsLocationBarHintText)]) {
-    return [self.nativeController wantsLocationBarHintText];
-  }
-  return YES;
-}
 
 // TODO(stuartmorgan): This method conflates document changes and URL changes;
 // we should be distinguishing better, and be clear about the expected
@@ -3137,6 +3227,66 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (_isBeingDestroyed) {
     UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
   }
+}
+
+- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse {
+  if (!WKResponse.canShowMIMEType) {
+    return NO;
+  }
+
+  BOOL mainFrame = WKResponse.forMainFrame;
+  if (!_webStateImpl->ShouldAllowResponse(WKResponse.response, mainFrame)) {
+    return NO;
+  }
+
+  GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
+  if (responseURL.SchemeIs(url::kDataScheme) && mainFrame) {
+    // Block rendering data URLs for renderer-initiated navigations in main
+    // frame to prevent abusive behavior (crbug.com/890558).
+    web::NavigationContext* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+    if (context->IsRendererInitiated()) {
+      return NO;
+    }
+  }
+
+  return YES;
+}
+
+- (void)createDownloadTaskForResponse:(WKNavigationResponse*)WKResponse
+                          HTTPHeaders:(net::HttpResponseHeaders*)headers {
+  const GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
+  const int64_t contentLength = WKResponse.response.expectedContentLength;
+  const std::string MIMEType =
+      base::SysNSStringToUTF8(WKResponse.response.MIMEType);
+
+  std::string contentDisposition;
+  if (headers) {
+    headers->GetNormalizedHeader("content-disposition", &contentDisposition);
+  }
+
+  ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  if (WKResponse.forMainFrame) {
+    web::NavigationContextImpl* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+    context->SetIsDownload(true);
+    // Navigation callbacks can only be called for the main frame.
+    _webStateImpl->OnNavigationFinished(context);
+    transition = context->GetPageTransition();
+    bool transitionIsLink = ui::PageTransitionTypeIncludingQualifiersIs(
+        transition, ui::PAGE_TRANSITION_LINK);
+    if (transitionIsLink && !context->HasUserGesture()) {
+      // Link click is not possible without user gesture, so this transition
+      // was incorrectly classified and should be "client redirect" instead.
+      // TODO(crbug.com/549301): Remove this workaround when transition
+      // detection is fixed.
+      transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+    }
+  }
+  web::DownloadController::FromBrowserState(_webStateImpl->GetBrowserState())
+      ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString, responseURL,
+                           contentDisposition, contentLength, MIMEType,
+                           transition);
 }
 
 #pragma mark -
@@ -3946,6 +4096,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
+  _webView.allowsBackForwardNavigationGestures =
+      _allowsBackForwardNavigationGestures;
   _injectedScriptManagers = [[NSMutableSet alloc] init];
   [self setDocumentURL:_defaultURL context:nullptr];
 }
@@ -4291,6 +4443,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
               decisionHandler(WKNavigationActionPolicyCancel);
               if (action.targetFrame.mainFrame) {
                 [_pendingNavigationInfo setCancelled:YES];
+                _webStateImpl->SetIsLoading(false);
               }
             }
           }));
@@ -4322,11 +4475,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self userClickedRecently] &&
       net::GURLWithNSURL(action.request.mainDocumentURL) ==
           _lastUserInteraction->main_document_url;
-  web::NavigationItem* item = self.currentNavItem;
-  const GURL& sourceURL =
-      item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, sourceURL, isMainFrameNavigationAction,
+      transition, isMainFrameNavigationAction,
       userInteractedWithRequestMainFrame);
   // First check if the navigation action should be blocked by the controller
   // and make sure to update the controller in the case that the controller
@@ -4373,14 +4523,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webView:(WKWebView*)webView
-    decidePolicyForNavigationResponse:(WKNavigationResponse*)navigationResponse
+    decidePolicyForNavigationResponse:(WKNavigationResponse*)WKResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
   [self didReceiveWebViewNavigationDelegateCallback];
 
-  GURL responseURL = net::GURLWithNSURL(navigationResponse.response.URL);
-
   // If this is a placeholder navigation, pass through.
+  GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
   if ((web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
        base::FeatureList::IsEnabled(web::features::kWebErrorPages)) &&
       IsPlaceholderUrl(responseURL)) {
@@ -4388,72 +4537,37 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  scoped_refptr<net::HttpResponseHeaders> HTTPHeaders;
-  if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
-    // Create HTTP headers from the response.
-    // TODO(crbug.com/546157): Due to the limited interface of
-    // NSHTTPURLResponse, some data in the HttpResponseHeaders generated here is
-    // inexact.  Once UIWebView is no longer supported, update WebState's
-    // implementation so that the Content-Language and the MIME type can be set
-    // without using this imperfect conversion.
-    HTTPHeaders = net::CreateHeadersFromNSHTTPURLResponse(
-        static_cast<NSHTTPURLResponse*>(navigationResponse.response));
-    self.webStateImpl->OnHttpResponseHeadersReceived(
-        HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  if ([WKResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
+    headers = net::CreateHeadersFromNSHTTPURLResponse(
+        static_cast<NSHTTPURLResponse*>(WKResponse.response));
+    // TODO(crbug.com/551677): remove |OnHttpResponseHeadersReceived| and attach
+    // headers to web::NavigationContext.
+    _webStateImpl->OnHttpResponseHeadersReceived(headers.get(), responseURL);
   }
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationResponse:navigationResponse];
+  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
 
-  NSString* MIMEType = navigationResponse.response.MIMEType;
-  BOOL allowNavigation = navigationResponse.canShowMIMEType;
-  if (allowNavigation) {
-    allowNavigation = self.webStateImpl->ShouldAllowResponse(
-        navigationResponse.response, navigationResponse.forMainFrame);
-    if (!allowNavigation && navigationResponse.isForMainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
-    }
-  } else {
-    if (responseURL.SchemeIsHTTPOrHTTPS()) {
-      std::string contentDisposition;
-      if (HTTPHeaders) {
-        HTTPHeaders->GetNormalizedHeader("content-disposition",
-                                         &contentDisposition);
-      }
-      int64_t contentLength = navigationResponse.response.expectedContentLength;
-      web::BrowserState* browserState = self.webState->GetBrowserState();
-      ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-      if (navigationResponse.forMainFrame) {
-        web::NavigationContextImpl* context =
-            [self contextForPendingMainFrameNavigationWithURL:responseURL];
-        context->SetIsDownload(true);
-        // Navigation callbacks can only be called for the main frame.
-        _webStateImpl->OnNavigationFinished(context);
-        transition = context->GetPageTransition();
-        if (!context->HasUserGesture() &&
-            ui::PageTransitionTypeIncludingQualifiersIs(
-                transition, ui::PAGE_TRANSITION_LINK)) {
-          // Link click is not possible without user gesture, so this transition
-          // was incorrectly classified and should be "client redirect" instead.
-          // TODO(crbug.com/549301): Remove this workaround when transition
-          // detection is fixed.
-          transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-        }
-      }
-      web::DownloadController::FromBrowserState(browserState)
-          ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
-                               responseURL, contentDisposition, contentLength,
-                               base::SysNSStringToUTF8(MIMEType), transition);
+  BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
+  if (!WKResponse.canShowMIMEType) {
+    DCHECK(!shouldRenderResponse);
+    if (web::UrlHasWebScheme(responseURL)) {
+      [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
+    } else {
+      // DownloadTask only supports web schemes, so do nothing.
     }
     // Discard the pending item to ensure that the current URL is not different
     // from what is displayed on the view.
     [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
     _webStateImpl->SetIsLoading(false);
+  } else if (!shouldRenderResponse && WKResponse.forMainFrame) {
+    [_pendingNavigationInfo setCancelled:YES];
   }
 
-  handler(allowNavigation ? WKNavigationResponsePolicyAllow
-                          : WKNavigationResponsePolicyCancel);
+  handler(shouldRenderResponse ? WKNavigationResponsePolicyAllow
+                               : WKNavigationResponsePolicyCancel);
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4626,7 +4740,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   // This must be reset at the end, since code above may need information about
   // the pending load.
   _pendingNavigationInfo = nil;
@@ -4718,7 +4832,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -4964,7 +5078,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
           forNavigation:navigation];
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -5016,7 +5130,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didReceiveWebViewNavigationDelegateCallback];
 
   _certVerificationErrors->Clear();
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   [self webViewWebProcessDidCrash];
 }
 
@@ -5264,9 +5378,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // update NavigationItem URL.
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       const GURL webViewURL = net::GURLWithNSURL(_webView.URL);
-      web::NavigationItem* currentItem = [[CRWNavigationItemHolder
-          holderForBackForwardListItem:_webView.backForwardList.currentItem]
-          navigationItem];
+      web::NavigationItem* currentItem = nullptr;
+      if (_webView.backForwardList.currentItem) {
+        currentItem = [[CRWNavigationItemHolder
+            holderForBackForwardListItem:_webView.backForwardList.currentItem]
+            navigationItem];
+      } else {
+        // WKBackForwardList.currentItem may be nil in a corner case when
+        // location.replace is called with about:blank#hash in an empty window
+        // open tab. See crbug.com/866142.
+        DCHECK(self.webStateImpl->HasOpener());
+        DCHECK(!self.navigationManagerImpl->GetTransientItem());
+        DCHECK(!self.navigationManagerImpl->GetPendingItem());
+        currentItem = self.navigationManagerImpl->GetLastCommittedItem();
+      }
       if (currentItem && webViewURL != currentItem->GetURL())
         currentItem->SetURL(webViewURL);
     }
@@ -5344,7 +5469,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_webView URL]));
-  DCHECK(!_documentURL.host().empty() || _documentURL.SchemeIsFile());
 
   if (base::FeatureList::IsEnabled(
           web::features::kCrashOnUnexpectedURLChange)) {
@@ -5634,6 +5758,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.IOSWKWebViewSlowFastBackForward", type,
       BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
+}
+
+- (void)setAllowsBackForwardNavigationGestures:
+    (BOOL)allowsBackForwardNavigationGestures {
+  // Store it to an instance variable as well as
+  // _webView.allowsBackForwardNavigationGestures because _webView may be nil.
+  // When _webView is nil, it will be set later in -setWebView:.
+  _allowsBackForwardNavigationGestures = allowsBackForwardNavigationGestures;
+  _webView.allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
 }
 
 #pragma mark -

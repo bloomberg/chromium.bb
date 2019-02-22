@@ -169,7 +169,7 @@ void SocketDataProvider::DetachSocket() {
   socket_ = nullptr;
 }
 
-SocketDataProvider::SocketDataProvider() : socket_(nullptr) {}
+SocketDataProvider::SocketDataProvider() {}
 
 SocketDataProvider::~SocketDataProvider() {
   if (socket_)
@@ -352,8 +352,8 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
   int next_sequence_number = 0;
   bool last_event_was_pause = false;
 
-  auto* next_read = reads.begin();
-  auto* next_write = writes.begin();
+  auto next_read = reads.begin();
+  auto next_write = writes.begin();
   while (next_read != reads.end() || next_write != writes.end()) {
     if (next_read != reads.end() &&
         next_read->sequence_number == next_sequence_number) {
@@ -407,8 +407,8 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
   // ERR_IO_PENDING.
   CHECK(!last_event_was_pause);
 
-  CHECK_EQ(next_read, reads.end());
-  CHECK_EQ(next_write, writes.end());
+  CHECK(next_read == reads.end());
+  CHECK(next_write == writes.end());
 }
 
 SequencedSocketData::SequencedSocketData(const MockConnect& connect,
@@ -1004,6 +1004,34 @@ int MockTCPClientSocket::Write(
   return write_result.result;
 }
 
+int MockTCPClientSocket::SetReceiveBufferSize(int32_t size) {
+  if (!connected_)
+    return net::ERR_UNEXPECTED;
+  data_->set_receive_buffer_size(size);
+  return data_->set_receive_buffer_size_result();
+}
+
+int MockTCPClientSocket::SetSendBufferSize(int32_t size) {
+  if (!connected_)
+    return net::ERR_UNEXPECTED;
+  data_->set_send_buffer_size(size);
+  return data_->set_send_buffer_size_result();
+}
+
+bool MockTCPClientSocket::SetNoDelay(bool no_delay) {
+  if (!connected_)
+    return false;
+  data_->set_no_delay(no_delay);
+  return data_->set_no_delay_result();
+}
+
+bool MockTCPClientSocket::SetKeepAlive(bool enable, int delay) {
+  if (!connected_)
+    return false;
+  data_->set_keep_alive(enable, delay);
+  return data_->set_keep_alive_result();
+}
+
 void MockTCPClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
   *out = connection_attempts_;
 }
@@ -1018,13 +1046,34 @@ void MockTCPClientSocket::AddConnectionAttempts(
                               attempts.end());
 }
 
+void MockTCPClientSocket::SetBeforeConnectCallback(
+    const BeforeConnectCallback& before_connect_callback) {
+  DCHECK(!before_connect_callback_);
+  DCHECK(!connected_);
+
+  before_connect_callback_ = before_connect_callback;
+}
+
 int MockTCPClientSocket::Connect(CompletionOnceCallback callback) {
   if (!data_)
     return ERR_UNEXPECTED;
 
   if (connected_)
     return OK;
+
+  // Setting socket options fails if not connected, so need to set this before
+  // calling |before_connect_callback_|.
   connected_ = true;
+
+  if (before_connect_callback_) {
+    int result = before_connect_callback_.Run();
+    DCHECK_NE(result, ERR_IO_PENDING);
+    if (result != net::OK) {
+      connected_ = false;
+      return result;
+    }
+  }
+
   peer_closed_connection_ = false;
 
   int result = data_->connect_data().result;
@@ -1535,13 +1584,6 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
 
 ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
   return data_->channel_id_service;
-}
-
-Error MockSSLClientSocket::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                                    TokenBindingType tb_type,
-                                                    std::vector<uint8_t>* out) {
-  out->push_back('A');
-  return OK;
 }
 
 int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,

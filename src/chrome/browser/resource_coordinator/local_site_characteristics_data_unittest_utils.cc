@@ -38,7 +38,7 @@ void WaitForLocalDBEntryToBeInitialized(
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetLocalSiteCharacteristicsDataImplForWC(web_contents);
   DCHECK(impl);
-  while (!impl->site_characteristics_for_testing().IsInitialized())
+  while (!impl->fully_initialized_for_testing())
     run_pending_tasks.Run();
 }
 
@@ -81,6 +81,11 @@ void NoopLocalSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
     const std::vector<url::Origin>& site_origins) {}
 
 void NoopLocalSiteCharacteristicsDatabase::ClearDatabase() {}
+
+void NoopLocalSiteCharacteristicsDatabase::GetDatabaseSize(
+    GetDatabaseSizeCallback callback) {
+  std::move(callback).Run(base::nullopt, base::nullopt);
+}
 
 ChromeTestHarnessWithLocalDB::ChromeTestHarnessWithLocalDB() {
   scoped_feature_list_.InitAndEnableFeature(

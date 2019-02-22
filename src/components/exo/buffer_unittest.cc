@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2extchromium.h>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/exo/buffer.h"
@@ -25,6 +26,10 @@ namespace {
 
 using BufferTest = test::ExoTestBase;
 
+aura::Env* GetAuraEnv() {
+  return ash::Shell::Get()->aura_env();
+}
+
 void Release(int* release_call_count) {
   (*release_call_count)++;
 }
@@ -33,7 +38,7 @@ void VerifySyncTokensInCompositorFrame(viz::CompositorFrame* frame) {
   std::vector<GLbyte*> sync_tokens;
   for (auto& resource : frame->resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
-  gpu::gles2::GLES2Interface* gles2 = aura::Env::GetInstance()
+  gpu::gles2::GLES2Interface* gles2 = GetAuraEnv()
                                           ->context_factory()
                                           ->SharedMainThreadContextProvider()
                                           ->ContextGL();
@@ -97,9 +102,7 @@ TEST_F(BufferTest, IsLost) {
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::ContextProvider> context_provider =
-      aura::Env::GetInstance()
-          ->context_factory()
-          ->SharedMainThreadContextProvider();
+      GetAuraEnv()->context_factory()->SharedMainThreadContextProvider();
   if (context_provider) {
     gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
     gles2->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -151,8 +154,7 @@ TEST_F(BufferTest, OnLostResources) {
       buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
   ASSERT_TRUE(rv);
 
-  static_cast<ui::InProcessContextFactory*>(
-      aura::Env::GetInstance()->context_factory())
+  static_cast<ui::InProcessContextFactory*>(GetAuraEnv()->context_factory())
       ->SendOnLostSharedContext();
 }
 

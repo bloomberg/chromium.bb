@@ -22,6 +22,7 @@ class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;
 class CSSValue;
+enum class ParseSheetResult;
 enum class SecureContextMode;
 
 // This class serves as the public API for the css/parser subsystem
@@ -33,10 +34,14 @@ class CORE_EXPORT CSSParser {
   static StyleRuleBase* ParseRule(const CSSParserContext*,
                                   StyleSheetContents*,
                                   const String&);
-  static void ParseSheet(const CSSParserContext*,
-                         StyleSheetContents*,
-                         const String&,
-                         bool defer_property_parsing = false);
+
+  static ParseSheetResult ParseSheet(
+      const CSSParserContext*,
+      StyleSheetContents*,
+      const String&,
+      CSSDeferPropertyParsing defer_property_parsing =
+          CSSDeferPropertyParsing::kNo,
+      bool allow_import_rules = true);
   static CSSSelectorList ParseSelector(const CSSParserContext*,
                                        StyleSheetContents*,
                                        const String&);

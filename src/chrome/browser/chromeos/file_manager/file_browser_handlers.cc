@@ -138,15 +138,16 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
 
       // Filter out Files app from handling ZIP files via a handler, as it's
       // now handled by:
-      // - ZIP unpacker extension based on File System Provider API
       // - Zip Archiver native extension component
+      // TODO(amistry): This can be removed once the AVFS-based zip mounting is
+      // removed and zip handling is removed from the file manager's
+      // manifest.json.
       const URLPattern zip_pattern(URLPattern::SCHEME_EXTENSION,
                                    "chrome-extension://*/*.zip");
       if (handler->extension_id() == kFileManagerAppId &&
           zip_pattern.MatchesURL(selected_file_url) &&
-          (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-               chromeos::switches::kDisableNewZIPUnpacker) ||
-           chromeos::switches::IsZipArchiverUnpackerEnabled())) {
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kDisableNewZIPUnpacker)) {
         continue;
       }
       results.push_back(handler);
@@ -175,7 +176,7 @@ class FileBrowserHandlerExecutor {
 
   // Executes the task for each file. |done| will be run with the result.
   void Execute(const std::vector<FileSystemURL>& file_urls,
-               const file_tasks::FileTaskFinishedCallback& done);
+               file_tasks::FileTaskFinishedCallback done);
 
  private:
   // This object is responsible to delete itself.
@@ -284,8 +285,8 @@ FileBrowserHandlerExecutor::~FileBrowserHandlerExecutor() = default;
 
 void FileBrowserHandlerExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
-    const file_tasks::FileTaskFinishedCallback& done) {
-  done_ = done;
+    file_tasks::FileTaskFinishedCallback done) {
+  done_ = std::move(done);
 
   // Get file system context for the extension to which onExecute event will be
   // sent. The file access permissions will be granted to the extension in the
@@ -295,10 +296,10 @@ void FileBrowserHandlerExecutor::Execute(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&SetupFileAccessPermissions, file_system_context, extension_,
-                 file_urls),
-      base::Bind(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SetupFileAccessPermissions, file_system_context,
+                     extension_, file_urls),
+      base::BindOnce(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
@@ -307,21 +308,20 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
   const FileDefinitionList& file_definition_list_ref =
       *file_definition_list.get();
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      profile_,
-      extension_->id(),
-      file_definition_list_ref,
-      base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&file_definition_list)));
+      profile_, extension_->id(), file_definition_list_ref,
+      base::BindOnce(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(file_definition_list)));
 }
 
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!done_.is_null())
-    done_.Run(
+  if (done_) {
+    std::move(done_).Run(
         success
             ? extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT
             : extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  }
   delete this;
 }
 
@@ -391,20 +391,8 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   auto details = std::make_unique<base::DictionaryValue>();
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
-  auto file_entries = std::make_unique<base::ListValue>();
-
-  for (EntryDefinitionList::const_iterator iter =
-           entry_definition_list->begin();
-       iter != entry_definition_list->end();
-       ++iter) {
-    auto file_def = std::make_unique<base::DictionaryValue>();
-    file_def->SetString("fileSystemName", iter->file_system_name);
-    file_def->SetString("fileSystemRoot", iter->file_system_root_url);
-    file_def->SetString("fileFullPath",
-                        "/" + iter->full_path.AsUTF8Unsafe());
-    file_def->SetBoolean("fileIsDirectory", iter->is_directory);
-    file_entries->Append(std::move(file_def));
-  }
+  auto file_entries = file_manager::util::ConvertEntryDefinitionListToListValue(
+      *entry_definition_list);
 
   details->Set("entries", std::move(file_entries));
   event_args->Append(std::move(details));
@@ -469,12 +457,11 @@ bool OpenFilesWithBrowser(Profile* profile,
 
 }  // namespace
 
-bool ExecuteFileBrowserHandler(
-    Profile* profile,
-    const Extension* extension,
-    const std::string& action_id,
-    const std::vector<FileSystemURL>& file_urls,
-    const file_tasks::FileTaskFinishedCallback& done) {
+bool ExecuteFileBrowserHandler(Profile* profile,
+                               const Extension* extension,
+                               const std::string& action_id,
+                               const std::vector<FileSystemURL>& file_urls,
+                               file_tasks::FileTaskFinishedCallback done) {
   // Forbid calling undeclared handlers.
   if (!FindFileBrowserHandlerForActionId(extension, action_id))
     return false;
@@ -484,13 +471,14 @@ bool ExecuteFileBrowserHandler(
   if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
     const bool result = OpenFilesWithBrowser(profile, file_urls);
     if (result && !done.is_null())
-      done.Run(extensions::api::file_manager_private::TASK_RESULT_OPENED);
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_OPENED);
     return result;
   }
 
   // The executor object will be self deleted on completion.
-  (new FileBrowserHandlerExecutor(
-      profile, extension, action_id))->Execute(file_urls, done);
+  (new FileBrowserHandlerExecutor(profile, extension, action_id))
+      ->Execute(file_urls, std::move(done));
   return true;
 }
 

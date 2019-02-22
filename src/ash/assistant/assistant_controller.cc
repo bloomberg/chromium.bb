@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -44,15 +45,17 @@ AssistantController::AssistantController()
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
-
-  AddObserver(this);
-  NotifyConstructed();
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  AddObserver(this);
+
+  NotifyConstructed();
 }
 
 AssistantController::~AssistantController() {
-  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   NotifyDestroying();
+
+  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   RemoveObserver(this);
 }
 
@@ -84,6 +87,12 @@ void AssistantController::SetAssistant(
   assistant_notification_controller_->SetAssistant(assistant_.get());
   assistant_screen_context_controller_->SetAssistant(assistant_.get());
   assistant_ui_controller_->SetAssistant(assistant_.get());
+
+  // The Assistant service needs to have accessibility state synced with ash
+  // and be notified of any accessibility status changes in the future to
+  // provide an opportunity to turn on/off A11Y features.
+  Shell::Get()->accessibility_controller()->AddObserver(this);
+  OnAccessibilityStatusChanged();
 }
 
 void AssistantController::SetAssistantImageDownloader(
@@ -183,9 +192,16 @@ void AssistantController::DownloadImage(
 void AssistantController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
+  using assistant::util::DeepLinkParam;
   using assistant::util::DeepLinkType;
 
   switch (type) {
+    case DeepLinkType::kChromeSettings: {
+      // Chrome Settings deep links are opened in a new browser tab.
+      OpenUrl(assistant::util::GetChromeSettingsUrl(
+          assistant::util::GetDeepLinkParam(params, DeepLinkParam::kPage)));
+      break;
+    }
     case DeepLinkType::kFeedback:
       // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
       // to kFeedbackSourceAsh). This may be useful for differentiating feedback
@@ -193,13 +209,14 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
     case DeepLinkType::kScreenshot:
-      // TODO(dmblack): The user probably doesn't want their screenshot to
-      // include Assistant so we may want to hide it before calling this API.
-      // Unfortunately, hiding our UI immediately beforehand doesn't resolve the
-      // issue, so we may need to introduce a delay or visibility change
-      // callback to remedy this. For now, keeping Assistant UI open since it
-      // will be included in the screenshot anyway.
+      // We close the UI before taking the screenshot as it's probably not the
+      // user's intention to include the Assistant in the picture.
+      assistant_ui_controller_->CloseUi(AssistantSource::kUnspecified);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
+      break;
+    case DeepLinkType::kTaskManager:
+      // Open task manager window.
+      Shell::Get()->new_window_controller()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kOnboarding:
@@ -214,6 +231,7 @@ void AssistantController::OnDeepLinkReceived(
 
 void AssistantController::ShouldOpenUrlFromTab(
     const GURL& url,
+    WindowOpenDisposition disposition,
     ash::mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
         callback) {
   // We always handle deep links ourselves.
@@ -223,10 +241,13 @@ void AssistantController::ShouldOpenUrlFromTab(
     return;
   }
 
+  AssistantUiMode ui_mode = assistant_ui_controller_->model()->ui_mode();
+
   // When in main UI mode, WebContents should not navigate as they are hosting
-  // Assistant cards. Instead, we route navigation attempts to the browser.
-  if (assistant_ui_controller_->model()->ui_mode() ==
-      AssistantUiMode::kMainUi) {
+  // Assistant cards. Instead, we route navigation attempts to the browser. We
+  // also respect open |disposition| to launch in the browser if appropriate.
+  if (ui_mode == AssistantUiMode::kMainUi ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
     std::move(callback).Run(/*should_open=*/false);
     OpenUrl(url);
     return;
@@ -270,14 +291,24 @@ void AssistantController::OnOutputNodeVolumeChanged(uint64_t node, int volume) {
   });
 }
 
-void AssistantController::OpenUrl(const GURL& url) {
+void AssistantController::OnAccessibilityStatusChanged() {
+  // The Assistant service needs to be informed of changes to accessibility
+  // state so that it can turn on/off A11Y features appropriately.
+  assistant_->OnAccessibilityStatusChanged(
+      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
+}
+
+void AssistantController::OpenUrl(const GURL& url, bool from_server) {
   if (assistant::util::IsDeepLinkUrl(url)) {
     NotifyDeepLinkReceived(url);
     return;
   }
 
-  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
-  NotifyUrlOpened(url);
+  // The new tab should be opened with a user activation since the user
+  // interacted with the Assistant to open the url.
+  Shell::Get()->new_window_controller()->NewTabWithUrl(
+      url, /*from_user_interaction=*/true);
+  NotifyUrlOpened(url, from_server);
 }
 
 void AssistantController::NotifyConstructed() {
@@ -302,9 +333,9 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
     observer.OnDeepLinkReceived(type, params);
 }
 
-void AssistantController::NotifyUrlOpened(const GURL& url) {
+void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
   for (AssistantControllerObserver& observer : observers_)
-    observer.OnUrlOpened(url);
+    observer.OnUrlOpened(url, from_server);
 }
 
 void AssistantController::OnVoiceInteractionStatusChanged(

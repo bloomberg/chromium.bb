@@ -151,13 +151,18 @@ void* GrBufferAllocPool::makeSpace(size_t size,
         BufferBlock& back = fBlocks.back();
         size_t usedBytes = back.fBuffer->gpuMemorySize() - back.fBytesFree;
         size_t pad = GrSizeAlignUpPad(usedBytes, alignment);
-        if ((size + pad) <= back.fBytesFree) {
+        SkSafeMath safeMath;
+        size_t alignedSize = safeMath.add(pad, size);
+        if (!safeMath.ok()) {
+            return nullptr;
+        }
+        if (alignedSize <= back.fBytesFree) {
             memset((void*)(reinterpret_cast<intptr_t>(fBufferPtr) + usedBytes), 0, pad);
             usedBytes += pad;
             *offset = usedBytes;
             *buffer = back.fBuffer;
-            back.fBytesFree -= size + pad;
-            fBytesInUse += size + pad;
+            back.fBytesFree -= alignedSize;
+            fBytesInUse += alignedSize;
             VALIDATE();
             return (void*)(reinterpret_cast<intptr_t>(fBufferPtr) + usedBytes);
         }
@@ -373,7 +378,7 @@ GrBuffer* GrBufferAllocPool::getBuffer(size_t size) {
     auto resourceProvider = fGpu->getContext()->contextPriv().resourceProvider();
 
     // Shouldn't have to use this flag (https://bug.skia.org/4156)
-    static const uint32_t kFlags = GrResourceProvider::kNoPendingIO_Flag;
+    static const auto kFlags = GrResourceProvider::Flags::kNoPendingIO;
     return resourceProvider->createBuffer(size, fBufferType, kDynamic_GrAccessPattern, kFlags);
 }
 

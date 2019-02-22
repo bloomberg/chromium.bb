@@ -13,4 +13,4 @@ run:
 go get -u github.com/WICG/webpackage/go/signedexchange/cmd/...
 ```
 
-The revision of the tools used to generate the test files is `d4b8ed9`.
+The revision of the tools used to generate the test files is `99155ec`.

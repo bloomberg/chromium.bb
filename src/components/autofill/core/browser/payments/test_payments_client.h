@@ -30,13 +30,14 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
-      const int billable_service_number) override;
+      const int billable_service_number,
+      MigrationSource migration_source =
+          MigrationSource::UNKNOWN_MIGRATION_SOURCE) override;
 
   void UploadCard(
       const payments::PaymentsClient::UploadRequestDetails& request_details,
@@ -58,7 +59,6 @@ class TestPaymentsClient : public payments::PaymentsClient {
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;
   }
-  std::string pan_first_six_in_upload_details() const { return pan_first_six_; }
   const std::vector<AutofillProfile>& addresses_in_upload_card() const {
     return upload_card_addresses_;
   }
@@ -73,6 +73,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
   int detected_values_;
   std::string pan_first_six_;
   std::vector<const char*> active_experiments_;
+  PaymentsClient::MigrationSource migration_source_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);

@@ -79,6 +79,8 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
   }
 
   void ClickButton(views::Button* button) {
+    bubble()->GetDialogClientView()->ResetViewShownTimeStampForTesting();
+
     ASSERT_TRUE(button);
     const gfx::Point point(10, 10);
     const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,

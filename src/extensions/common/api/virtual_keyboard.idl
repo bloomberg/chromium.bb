@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The <code>chrome.virtualKeybaord</code> API is a kiosk only API used to
+// The <code>chrome.virtualKeyboard</code> API is a kiosk only API used to
 // configure virtual keyboard layout and behavior in kiosk sessions.
 [platforms=("chromeos")]
 namespace virtualKeyboard {

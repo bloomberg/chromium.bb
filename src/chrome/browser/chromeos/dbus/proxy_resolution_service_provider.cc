@@ -166,7 +166,7 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
           << request_ptr->source_url;
   const int result = proxy_resolution_service->ResolveProxy(
       GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
-      callback, &request_ptr->request, nullptr, net::NetLogWithSource());
+      callback, &request_ptr->request, net::NetLogWithSource());
   if (result != net::ERR_IO_PENDING) {
     VLOG(1) << "Network proxy resolution completed synchronously.";
     callback.Run(result);

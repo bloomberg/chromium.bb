@@ -172,7 +172,6 @@ int CheckPDFiumCApi() {
     CHK(FPDFPageObj_SetStrokeColor);
     CHK(FPDFPageObj_SetStrokeWidth);
     CHK(FPDFPageObj_Transform);
-    CHK(FPDFPage_CountObject);
     CHK(FPDFPage_CountObjects);
     CHK(FPDFPage_Delete);
     CHK(FPDFPage_GenerateContent);
@@ -250,7 +249,6 @@ int CheckPDFiumCApi() {
 #endif
     CHK(FORM_Redo);
     CHK(FORM_ReplaceSelection);
-    CHK(FORM_SetSaveCallback);
     CHK(FORM_Undo);
     CHK(FPDFDOC_ExitFormFillEnvironment);
     CHK(FPDFDOC_InitFormFillEnvironment);
@@ -334,9 +332,11 @@ int CheckPDFiumCApi() {
 
     // fpdf_transformpage.h
     CHK(FPDFPageObj_TransformClipPath);
+    CHK(FPDFPage_GetArtBox);
     CHK(FPDFPage_GetCropBox);
     CHK(FPDFPage_GetMediaBox);
     CHK(FPDFPage_InsertClipPath);
+    CHK(FPDFPage_SetArtBox);
     CHK(FPDFPage_SetCropBox);
     CHK(FPDFPage_SetMediaBox);
     CHK(FPDFPage_TransFormWithClip);

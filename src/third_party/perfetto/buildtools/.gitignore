@@ -1,6 +1,8 @@
+android-core/
 android_sdk/
 aosp-*/
 benchmark/
+bionic/
 clang/
 clang_format/
 emulator/
@@ -9,14 +11,15 @@ jsoncpp/
 libbacktrace/
 libcxx/
 libcxxabi/
+libfuzzer/
 libunwind/
+linenoise/
 linux/
 linux64/
+lzma/
 mac/
 ndk/
 nodejs/
 protobuf/
 sqlite/
-android-core/
-lzma/
 test_data/

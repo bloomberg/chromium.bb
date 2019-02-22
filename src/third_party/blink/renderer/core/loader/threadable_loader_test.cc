@@ -223,7 +223,7 @@ class ThreadableLoaderTest : public testing::Test {
                    network::mojom::FetchRequestMode fetch_request_mode =
                        network::mojom::FetchRequestMode::kNoCORS) {
     ResourceRequest request(url);
-    request.SetRequestContext(WebURLRequest::kRequestContextObject);
+    request.SetRequestContext(mojom::RequestContextType::OBJECT);
     request.SetFetchRequestMode(fetch_request_mode);
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);

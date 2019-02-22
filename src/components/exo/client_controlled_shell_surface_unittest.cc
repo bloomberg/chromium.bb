@@ -5,12 +5,12 @@
 #include "components/exo/client_controlled_shell_surface.h"
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
@@ -20,8 +20,8 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -608,7 +608,7 @@ TEST_F(ClientControlledShellSurfaceTest, NoSynthesizedEventOnFrameChange) {
 
   // AutoHide
   base::RunLoop().RunUntilIdle();
-  auto* env = aura::Env::GetInstance();
+  aura::Env* env = ash::Shell::Get()->aura_env();
   gfx::Rect cropped_fullscreen_bounds(0, 0, 800, 400);
   env->SetLastMouseLocation(gfx::Point(100, 30));
   TestEventHandler handler;
@@ -1171,8 +1171,7 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
   const base::TimeDelta duration =
       event_generator->CalculateScrollDurationForFlingVelocity(
           start, end,
-          ash::TabletModeAppWindowDragController::kFlingToOverviewThreshold +
-              10.f,
+          ash::TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f,
           200);
   event_generator->GestureScrollSequence(start, end, duration, 200);
   EXPECT_TRUE(shell->window_selector_controller()->IsSelecting());
@@ -1767,6 +1766,13 @@ TEST_F(ClientControlledShellSurfaceTest, AdjustBoundsLocally) {
   views::Widget* widget = shell_surface->GetWidget();
   EXPECT_EQ(gfx::Rect(774, 0, 200, 300), widget->GetWindowBoundsInScreen());
   EXPECT_EQ(gfx::Rect(774, 0, 200, 300), requested_bounds);
+
+  // Receiving the same bounds shouldn't try to update the bounds again.
+  requested_bounds.SetRect(0, 0, 0, 0);
+  shell_surface->SetGeometry(client_bounds);
+  surface->Commit();
+
+  EXPECT_TRUE(requested_bounds.IsEmpty());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
@@ -1850,6 +1856,40 @@ TEST_F(ClientControlledShellSurfaceTest, MovingPipWindowOffDisplayIsAllowed) {
 
   EXPECT_EQ(gfx::Rect(-200, 0, 100, 100),
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
+}
+
+TEST_F(ClientControlledShellSurfaceDisplayTest,
+       NoBoundsChangeEventInMinimized) {
+  gfx::Size buffer_size(100, 100);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 100, 100));
+  surface->Commit();
+
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
+      base::Unretained(this)));
+  ASSERT_EQ(0, bounds_change_count());
+
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::NORMAL,
+                                     ash::mojom::WindowStateType::NORMAL, 0,
+                                     gfx::Rect(10, 10, 100, 100), 0);
+  ASSERT_EQ(1, bounds_change_count());
+
+  EXPECT_FALSE(shell_surface->GetWidget()->IsMinimized());
+
+  shell_surface->SetMinimized();
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
+                                     ash::mojom::WindowStateType::MINIMIZED, 0,
+                                     gfx::Rect(0, 0, 100, 100), 0);
+  ASSERT_EQ(1, bounds_change_count());
 }
 
 }  // namespace exo

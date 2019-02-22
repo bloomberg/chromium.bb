@@ -7,17 +7,15 @@
 #ifndef XFA_FXFA_PARSER_XFA_BASIC_DATA_H_
 #define XFA_FXFA_PARSER_XFA_BASIC_DATA_H_
 
-#include <map>
-
 #include "xfa/fxfa/fxfa_basic.h"
 
 extern const XFA_AttributeEnumInfo g_XFAEnumData[];
-extern const int32_t g_iXFAEnumCount;
+extern const size_t g_szXFAEnumCount;
 
 extern const XFA_SCRIPTHIERARCHY g_XFAScriptIndex[];
-extern const int32_t g_iScriptIndexCount;
+extern const size_t g_szScriptIndexCount;
 
 extern const XFA_SCRIPTATTRIBUTEINFO g_SomAttributeData[];
-extern const int32_t g_iSomAttributeCount;
+extern const size_t g_szSomAttributeCount;
 
 #endif  // XFA_FXFA_PARSER_XFA_BASIC_DATA_H_

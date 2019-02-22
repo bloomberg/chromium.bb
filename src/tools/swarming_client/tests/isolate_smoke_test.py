@@ -653,7 +653,7 @@ class IsolateTempdirBase(unittest.TestCase):
 
     # Do not check on Windows since a lot of spew is generated there.
     if sys.platform != 'win32':
-      self.assertTrue(err in (None, ''), err)
+      self.assertTrue(err in (None, '', isolate._VARIABLE_WARNING), err)
     return out
 
   def case(self):
@@ -1025,7 +1025,7 @@ class IsolateOther(IsolateTempdirBase):
         stderr=subprocess.STDOUT,
         cwd=ROOT_DIR)
     stdout = proc.communicate()[0]
-    self.assertEqual('', stdout)
+    self.assertEqual(isolate._VARIABLE_WARNING, stdout)
     self.assertEqual(0, proc.returncode)
     expected = [
       'simple.isolate', 'simple.isolated', 'simple.isolated.state', 'simple.py',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.test.runTests([
+var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
   function logout() {
@@ -28,7 +28,7 @@ chrome.test.runTests([
   function loginStatus() {
     chrome.autotestPrivate.loginStatus(
         chrome.test.callbackPass(function(status) {
-          chrome.test.assertEq(typeof(status), 'object');
+          chrome.test.assertEq(typeof status, 'object');
           chrome.test.assertTrue(status.hasOwnProperty("isLoggedIn"));
           chrome.test.assertTrue(status.hasOwnProperty("isOwner"));
           chrome.test.assertTrue(status.hasOwnProperty("isScreenLocked"));
@@ -43,7 +43,7 @@ chrome.test.runTests([
   function getExtensionsInfo() {
     chrome.autotestPrivate.getExtensionsInfo(
         chrome.test.callbackPass(function(extInfo) {
-          chrome.test.assertEq(typeof(extInfo), 'object');
+          chrome.test.assertEq(typeof extInfo, 'object');
           chrome.test.assertTrue(extInfo.hasOwnProperty('extensions'));
           chrome.test.assertTrue(extInfo.extensions.constructor === Array);
           for (var i = 0; i < extInfo.extensions.length; ++i) {
@@ -113,30 +113,140 @@ chrome.test.runTests([
     chrome.autotestPrivate.getVisibleNotifications(function(){});
     chrome.test.succeed();
   },
+  // In this test, ARC is available but not managed and not enabled by default.
   function getPlayStoreState() {
     chrome.autotestPrivate.getPlayStoreState(function(state) {
-      // By default ARC is not available. Field allowed must be set to false;
-      // managed and enabled should be underfined.
-      chrome.test.assertFalse(state.allowed);
-      chrome.test.assertEq(undefined, state.enabled);
-      chrome.test.assertEq(undefined, state.managed);
+      chrome.test.assertTrue(state.allowed);
+      chrome.test.assertFalse(state.enabled);
+      chrome.test.assertFalse(state.managed);
       chrome.test.succeed();
     });
   },
+  // This test turns ARC enabled state to ON.
   function setPlayStoreEnabled() {
-    chrome.autotestPrivate.setPlayStoreEnabled(false, function() {
-      // By default ARC is not available.
-      chrome.test.assertTrue(chrome.runtime.lastError != undefined);
-      chrome.test.succeed();
+    chrome.autotestPrivate.setPlayStoreEnabled(true, function() {
+      chrome.test.assertNoLastError();
+      chrome.autotestPrivate.getPlayStoreState(function(state) {
+        chrome.test.assertTrue(state.allowed);
+        chrome.test.assertTrue(state.enabled);
+        chrome.test.assertFalse(state.managed);
+        chrome.test.succeed();
+      });
     });
+  },
+  function getHistogramExists() {
+    // Request an arbitrary histogram that is reported once at startup and seems
+    // unlikely to go away.
+    chrome.autotestPrivate.getHistogram(
+        "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime",
+        chrome.test.callbackPass(function(histogram) {
+          chrome.test.assertEq(typeof histogram, 'object');
+          chrome.test.assertEq(histogram.buckets.length, 1);
+          chrome.test.assertEq(histogram.buckets[0].count, 1);
+          chrome.test.assertTrue(
+              histogram.buckets[0].max > histogram.buckets[0].min);
+        }));
+  },
+  function getHistogramMissing() {
+    chrome.autotestPrivate.getHistogram(
+        'Foo.Nonexistent',
+        chrome.test.callbackFail('Histogram Foo.Nonexistent not found'));
+  },
+  // This test verifies that Play Store window is not shown by default but
+  // Chrome is shown.
+  function isAppShown() {
+    chrome.autotestPrivate.isAppShown('cnbgggchhmkkdmeppjobngjoejnihlei',
+        function(appShown) {
+          chrome.test.assertFalse(appShown);
+          chrome.test.assertNoLastError();
+
+          // Chrome is running.
+          chrome.autotestPrivate.isAppShown('mgndgikekgjfcpckkfioiadnlibdjbkf',
+              function(appShown) {
+                 chrome.test.assertTrue(appShown);
+                 chrome.test.assertNoLastError();
+                 chrome.test.succeed();
+            });
+        });
+  },
+  // This launches Chrome.
+  function launchApp() {
+    chrome.autotestPrivate.launchApp('mgndgikekgjfcpckkfioiadnlibdjbkf',
+      function() {
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      });
+  },
+  function setCrostiniEnabled() {
+    chrome.autotestPrivate.setCrostiniEnabled(true, chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
   },
   function runCrostiniInstaller() {
     chrome.autotestPrivate.runCrostiniInstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  function bootstrapMachineLearningService() {
+    chrome.autotestPrivate.bootstrapMachineLearningService(
+        chrome.test.callbackFail('ML Service connection error'));
+  },
+  function runCrostiniUninstaller() {
+    chrome.autotestPrivate.runCrostiniUninstaller(chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
+  function takeScreenshot() {
+    chrome.autotestPrivate.takeScreenshot(
+      function(base64Png) {
+        chrome.test.assertTrue(base64Png.length > 0);
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      }
+    )
+  },
   function getPrinterList() {
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();
     });
+  },
+  function setAssistantEnabled() {
+    chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
+        chrome.test.callbackFail(
+            'Assistant is not available for the current user'));
+  },
+  // This test verifies that ARC is not provisioned by default.
+  function isArcProvisioned() {
+    chrome.autotestPrivate.isArcProvisioned(
+        function(arcProvisioned) {
+          chrome.test.assertFalse(arcProvisioned);
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+];
+
+var arcProvisionedTests = [
+  // This test verifies that isArcProvisioned returns True in case ARC
+  // provisiong is done.
+  function isArcProvisioned() {
+    chrome.autotestPrivate.isArcProvisioned(
+        function(arcProvisioned) {
+          chrome.test.assertTrue(arcProvisioned);
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+];
+
+var test_suites = {
+  'default': defaultTests,
+  'arcProvisioned': arcProvisionedTests
+};
+
+chrome.test.getConfig(function(config) {
+  var suite = test_suites[config.customArg];
+  if (config.customArg in test_suites) {
+    chrome.test.runTests(test_suites[config.customArg]);
+  } else {
+    chrome.test.fail('Invalid test suite');
   }
-]);
+});
+

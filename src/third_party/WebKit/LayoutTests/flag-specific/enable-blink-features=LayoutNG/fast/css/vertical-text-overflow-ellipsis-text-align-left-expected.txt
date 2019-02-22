@@ -29,77 +29,77 @@ layer at (0,0) size 785x2982 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 507: "Right-To-Left containing replaced content blocking the ellipsis"
 layer at (8,50) size 22x310 clip at (9,51) size 20x308 scrollHeight 718
   LayoutNGBlockFlow {DIV} at (0,41.72) size 22x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,1) size 19x303
-      text run at (2,1) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
-      text run at (2,288) width 16: "\x{2026}"
+    LayoutText {#text} at (1,1) size 19x303
+      text run at (1,1) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
+      text run at (1,288) width 16: "\x{2026}"
 layer at (8,421) size 82x310 backgroundClip at (8,421) size 82x179 clip at (9,422) size 80x178 scrollHeight 718
   LayoutNGBlockFlow {DIV} at (0,413.44) size 82x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (62,1) size 19x303
-      text run at (62,1) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
-      text run at (62,288) width 16: "\x{2026}"
+    LayoutText {#text} at (1,1) size 19x303
+      text run at (1,1) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
+      text run at (1,288) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (42,1) size 19x306
-      text run at (42,1) width 290: "orem ipsum dolor sit amet, consectetur adipisc"
-      text run at (42,291) width 16: "\x{2026}"
+    LayoutText {#text} at (21,1) size 19x306
+      text run at (21,1) width 290: "orem ipsum dolor sit amet, consectetur adipisc"
+      text run at (21,291) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (22,1) size 19x302
-      text run at (22,1) width 286: "rem ipsum dolor sit amet, consectetur adipisci"
-      text run at (22,287) width 16: "\x{2026}"
+    LayoutText {#text} at (41,1) size 19x302
+      text run at (41,1) width 286: "rem ipsum dolor sit amet, consectetur adipisci"
+      text run at (41,287) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (2,1) size 19x305
-      text run at (2,1) width 289: "em ipsum dolor sit amet, consectetur adipiscin"
-      text run at (2,290) width 16: "\x{2026}"
+    LayoutText {#text} at (61,1) size 19x305
+      text run at (61,1) width 289: "em ipsum dolor sit amet, consectetur adipiscin"
+      text run at (61,290) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
 layer at (8,793) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 747
   LayoutNGBlockFlow {DIV} at (0,785.16) size 32x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,1) size 19x181
-      text run at (2,1) width 181: "Lorem ipsum dolor sit amet, "
+    LayoutText {#text} at (11,1) size 19x181
+      text run at (11,1) width 181: "Lorem ipsum dolor sit amet, "
     LayoutImage {IMG} at (1,182) size 25x25
-    LayoutText {#text} at (2,207) size 19x102
-      text run at (2,207) width 86: " consectetur a"
-      text run at (2,293) width 16: "\x{2026}"
+    LayoutText {#text} at (11,207) size 19x102
+      text run at (11,207) width 86: " consectetur a"
+      text run at (11,293) width 16: "\x{2026}"
 layer at (8,1165) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 743
   LayoutNGBlockFlow {DIV} at (0,1156.88) size 32x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,1) size 19x287
-      text run at (2,1) width 271: "Lorem ipsum dolor sit amet, consectetur ad"
-      text run at (2,272) width 16: "\x{2026}"
+    LayoutText {#text} at (11,1) size 19x287
+      text run at (11,1) width 271: "Lorem ipsum dolor sit amet, consectetur ad"
+      text run at (11,272) width 16: "\x{2026}"
     LayoutImage {IMG} at (0,0) size 25x25
     LayoutText {#text} at (0,0) size 0x0
 layer at (8,1537) size 22x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 411.00 scrollHeight 719
   LayoutNGBlockFlow {DIV} at (0,1528.59) size 22x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,22) size 19x303
-      text run at (2,22) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
-      text run at (2,6) width 16: "\x{2026}"
+    LayoutText {#text} at (1,22) size 19x303
+      text run at (1,22) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
+      text run at (1,6) width 16: "\x{2026}"
 layer at (8,1908) size 82x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 411.00 scrollHeight 719
   LayoutNGBlockFlow {DIV} at (0,1900.31) size 82x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (62,22) size 19x303
-      text run at (62,22) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
-      text run at (62,6) width 16: "\x{2026}"
+    LayoutText {#text} at (1,22) size 19x303
+      text run at (1,22) width 287: "Lorem ipsum dolor sit amet, consectetur adipi"
+      text run at (1,6) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (42,19) size 19x306
-      text run at (42,19) width 290: "orem ipsum dolor sit amet, consectetur adipisc"
-      text run at (42,3) width 16: "\x{2026}"
+    LayoutText {#text} at (21,19) size 19x306
+      text run at (21,19) width 290: "orem ipsum dolor sit amet, consectetur adipisc"
+      text run at (21,3) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (22,23) size 19x302
-      text run at (22,23) width 286: "rem ipsum dolor sit amet, consectetur adipisci"
-      text run at (22,7) width 16: "\x{2026}"
+    LayoutText {#text} at (41,23) size 19x302
+      text run at (41,23) width 286: "rem ipsum dolor sit amet, consectetur adipisci"
+      text run at (41,7) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (2,20) size 19x305
-      text run at (2,20) width 289: "em ipsum dolor sit amet, consectetur adipiscin"
-      text run at (2,4) width 16: "\x{2026}"
+    LayoutText {#text} at (61,20) size 19x305
+      text run at (61,20) width 289: "em ipsum dolor sit amet, consectetur adipiscin"
+      text run at (61,4) width 16: "\x{2026}"
     LayoutBR {BR} at (0,0) size 0x0
 layer at (8,2280) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 440.00 scrollHeight 748
   LayoutNGBlockFlow {DIV} at (0,2272.03) size 32x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,128) size 19x181
-      text run at (2,128) width 181: "Lorem ipsum dolor sit amet, "
+    LayoutText {#text} at (11,128) size 19x181
+      text run at (11,128) width 181: "Lorem ipsum dolor sit amet, "
     LayoutImage {IMG} at (1,103) size 25x25
-    LayoutText {#text} at (2,17) size 19x102
-      text run at (2,17) width 86: " consectetur a"
-      text run at (2,1) width 16: "\x{2026}"
+    LayoutText {#text} at (11,17) size 19x102
+      text run at (11,17) width 86: " consectetur a"
+      text run at (11,1) width 16: "\x{2026}"
 layer at (8,2652) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 436.00 scrollHeight 744
   LayoutNGBlockFlow {DIV} at (0,2643.75) size 32x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (2,38) size 19x287
-      text run at (2,38) width 271: "Lorem ipsum dolor sit amet, consectetur ad"
-      text run at (2,22) width 16: "\x{2026}"
+    LayoutText {#text} at (11,38) size 19x287
+      text run at (11,38) width 271: "Lorem ipsum dolor sit amet, consectetur ad"
+      text run at (11,22) width 16: "\x{2026}"
     LayoutImage {IMG} at (0,0) size 25x25
     LayoutText {#text} at (0,0) size 0x0

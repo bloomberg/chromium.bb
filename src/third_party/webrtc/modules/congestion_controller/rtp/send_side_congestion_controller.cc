@@ -15,12 +15,12 @@
 #include <memory>
 #include <vector>
 #include "absl/memory/memory.h"
+#include "api/transport/goog_cc_factory.h"
 #include "api/transport/network_types.h"
-#include "modules/congestion_controller/congestion_window_pushback_controller.h"
-#include "modules/congestion_controller/goog_cc/include/goog_cc_factory.h"
 #include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "rtc_base/bind.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/event.h"
 #include "rtc_base/format_macros.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -30,7 +30,6 @@
 #include "rtc_base/socket.h"
 #include "rtc_base/timeutils.h"
 #include "system_wrappers/include/field_trial.h"
-#include "system_wrappers/include/runtime_enabled_features.h"
 
 using absl::make_unique;
 
@@ -39,36 +38,15 @@ namespace webrtc_cc {
 namespace {
 using send_side_cc_internal::PeriodicTask;
 
-const char kCwndExperiment[] = "WebRTC-CwndExperiment";
-
-// When CongestionWindowPushback is enabled, the pacer is oblivious to
-// the congestion window. The relation between outstanding data and
-// the congestion window affects encoder allocations directly.
-const char kCongestionPushbackExperiment[] = "WebRTC-CongestionWindowPushback";
-
 // When PacerPushbackExperiment is enabled, build-up in the pacer due to
 // the congestion window and/or data spikes reduces encoder allocations.
 const char kPacerPushbackExperiment[] = "WebRTC-PacerPushbackExperiment";
 const int64_t PacerQueueUpdateIntervalMs = 25;
 
 bool IsPacerPushbackExperimentEnabled() {
-  return webrtc::field_trial::IsEnabled(kPacerPushbackExperiment) ||
-         (!webrtc::field_trial::IsDisabled(kPacerPushbackExperiment) &&
-          webrtc::runtime_enabled_features::IsFeatureEnabled(
-              webrtc::runtime_enabled_features::kDualStreamModeFeatureName));
+  return webrtc::field_trial::IsEnabled(kPacerPushbackExperiment);
 }
 
-bool IsCongestionWindowPushbackExperimentEnabled() {
-  return webrtc::field_trial::IsEnabled(kCongestionPushbackExperiment) &&
-         webrtc::field_trial::IsEnabled(kCwndExperiment);
-}
-
-std::unique_ptr<CongestionWindowPushbackController>
-MaybeInitalizeCongestionWindowPushbackController() {
-  return IsCongestionWindowPushbackExperimentEnabled()
-             ? absl::make_unique<CongestionWindowPushbackController>()
-             : nullptr;
-}
 
 void SortPacketFeedbackVector(std::vector<webrtc::PacketFeedback>* input) {
   std::sort(input->begin(), input->end(), PacketFeedbackComparator());
@@ -78,7 +56,7 @@ PacketResult NetworkPacketFeedbackFromRtpPacketFeedback(
     const webrtc::PacketFeedback& pf) {
   PacketResult feedback;
   if (pf.arrival_time_ms == webrtc::PacketFeedback::kNotReceived)
-    feedback.receive_time = Timestamp::Infinity();
+    feedback.receive_time = Timestamp::PlusInfinity();
   else
     feedback.receive_time = Timestamp::ms(pf.arrival_time_ms);
   if (pf.send_time_ms != webrtc::PacketFeedback::kNoSendTime) {
@@ -206,8 +184,6 @@ class ControlHandler {
   uint32_t min_pushback_target_bitrate_bps_;
   int64_t pacer_expected_queue_ms_ = 0;
   double encoding_rate_ratio_ = 1.0;
-  const std::unique_ptr<CongestionWindowPushbackController>
-      congestion_window_pushback_controller_;
 
   rtc::SequencedTaskChecker sequenced_checker_;
   RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(ControlHandler);
@@ -218,21 +194,14 @@ ControlHandler::ControlHandler(NetworkChangedObserver* observer,
                                const Clock* clock)
     : observer_(observer),
       pacer_controller_(pacer_controller),
-      pacer_pushback_experiment_(IsPacerPushbackExperimentEnabled()),
-      congestion_window_pushback_controller_(
-          MaybeInitalizeCongestionWindowPushbackController()) {
+      pacer_pushback_experiment_(IsPacerPushbackExperimentEnabled()) {
   sequenced_checker_.Detach();
 }
 
 void ControlHandler::PostUpdates(NetworkControlUpdate update) {
   RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_checker_);
   if (update.congestion_window) {
-    if (congestion_window_pushback_controller_) {
-      congestion_window_pushback_controller_->SetDataWindow(
-          update.congestion_window.value());
-    } else {
-      pacer_controller_->OnCongestionWindow(*update.congestion_window);
-    }
+    pacer_controller_->OnCongestionWindow(*update.congestion_window);
   }
   if (update.pacer_config) {
     pacer_controller_->OnPacerConfig(*update.pacer_config);
@@ -254,10 +223,6 @@ void ControlHandler::OnNetworkAvailability(NetworkAvailability msg) {
 
 void ControlHandler::OnOutstandingData(DataSize in_flight_data) {
   RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_checker_);
-  if (congestion_window_pushback_controller_) {
-    congestion_window_pushback_controller_->UpdateOutstandingData(
-        in_flight_data.bytes());
-  }
   OnNetworkInvalidation();
 }
 
@@ -286,10 +251,6 @@ void ControlHandler::OnNetworkInvalidation() {
 
   if (!network_available_) {
     target_bitrate_bps = 0;
-  } else if (congestion_window_pushback_controller_) {
-    target_bitrate_bps =
-        congestion_window_pushback_controller_->UpdateTargetBitrate(
-            target_bitrate_bps);
   } else if (!pacer_pushback_experiment_) {
     target_bitrate_bps = IsSendQueueFull() ? 0 : target_bitrate_bps;
   } else {
@@ -372,7 +333,15 @@ SendSideCongestionController::SendSideCongestionController(
   initial_config_.constraints = ConvertConstraints(
       min_bitrate_bps, max_bitrate_bps, start_bitrate_bps, clock_);
   RTC_DCHECK(start_bitrate_bps > 0);
-  initial_config_.starting_bandwidth = DataRate::bps(start_bitrate_bps);
+  // To be fully compatible with legacy SendSideCongestionController, make sure
+  // pacer is initialized even if there are no registered streams. This should
+  // not happen under normal circumstances, but some tests rely on it and there
+  // are no checks detecting when the legacy SendSideCongestionController is
+  // used. This way of setting the value has the drawback that it might be wrong
+  // compared to what the actual value from the congestion controller will be.
+  // TODO(srte): Remove this when the legacy SendSideCongestionController is
+  // removed.
+  pacer_->SetEstimatedBitrate(start_bitrate_bps);
 }
 
 // There is no point in having a network controller for a network that is not
@@ -420,6 +389,14 @@ void SendSideCongestionController::MaybeRecreateControllers() {
   RTC_DCHECK(controller_);
 }
 
+void SendSideCongestionController::UpdateInitialConstraints(
+    TargetRateConstraints new_contraints) {
+  if (!new_contraints.starting_rate)
+    new_contraints.starting_rate = initial_config_.constraints.starting_rate;
+  RTC_DCHECK(new_contraints.starting_rate);
+  initial_config_.constraints = new_contraints;
+}
+
 SendSideCongestionController::~SendSideCongestionController() = default;
 
 void SendSideCongestionController::RegisterPacketFeedbackObserver(
@@ -447,15 +424,13 @@ void SendSideCongestionController::SetBweBitrates(int min_bitrate_bps,
                                                   int max_bitrate_bps) {
   TargetRateConstraints constraints = ConvertConstraints(
       min_bitrate_bps, max_bitrate_bps, start_bitrate_bps, clock_);
-  task_queue_->PostTask([this, constraints, start_bitrate_bps]() {
+  task_queue_->PostTask([this, constraints]() {
     RTC_DCHECK_RUN_ON(task_queue_);
     if (controller_) {
       control_handler_->PostUpdates(
           controller_->OnTargetRateConstraints(constraints));
     } else {
-      initial_config_.constraints = constraints;
-      if (start_bitrate_bps > 0)
-        initial_config_.starting_bandwidth = DataRate::bps(start_bitrate_bps);
+      UpdateInitialConstraints(constraints);
     }
   });
 }
@@ -493,9 +468,7 @@ void SendSideCongestionController::OnNetworkRouteChanged(
     if (controller_) {
       control_handler_->PostUpdates(controller_->OnNetworkRouteChange(msg));
     } else {
-      if (msg.constraints.starting_rate)
-        initial_config_.starting_bandwidth = *msg.constraints.starting_rate;
-      initial_config_.constraints = msg.constraints;
+      UpdateInitialConstraints(msg.constraints);
     }
     pacer_controller_->OnNetworkRouteChange(msg);
   });
@@ -744,7 +717,13 @@ void SendSideCongestionController::SetPacingFactor(float pacing_factor) {
 }
 
 void SendSideCongestionController::SetAllocatedBitrateWithoutFeedback(
-    uint32_t bitrate_bps) {}
+    uint32_t bitrate_bps) {
+  task_queue_->PostTask([this, bitrate_bps]() {
+    RTC_DCHECK_RUN_ON(task_queue_);
+    streams_config_.unacknowledged_rate_allocation = DataRate::bps(bitrate_bps);
+    UpdateStreamsConfig();
+  });
+}
 
 void SendSideCongestionController::DisablePeriodicTasks() {
   task_queue_->PostTask([this]() {

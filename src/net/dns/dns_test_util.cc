@@ -208,7 +208,7 @@ class MockTransactionFactory : public DnsTransactionFactory {
   void CompleteDelayedTransactions() {
     DelayedTransactionList old_delayed_transactions;
     old_delayed_transactions.swap(delayed_transactions_);
-    for (DelayedTransactionList::iterator it = old_delayed_transactions.begin();
+    for (auto it = old_delayed_transactions.begin();
          it != old_delayed_transactions.end(); ++it) {
       if (it->get())
         (*it)->FinishDelayedTransaction();

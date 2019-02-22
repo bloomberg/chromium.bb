@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -453,13 +454,14 @@ void FakePhotoDevice::GetPhotoState(
   if (config_.should_fail_get_photo_capabilities)
     return;
 
-  mojom::PhotoStatePtr photo_state = mojom::PhotoState::New();
+  mojom::PhotoStatePtr photo_state = mojo::CreateEmptyPhotoState();
 
   photo_state->current_white_balance_mode = mojom::MeteringMode::NONE;
   photo_state->current_exposure_mode = mojom::MeteringMode::NONE;
   photo_state->current_focus_mode = mojom::MeteringMode::NONE;
 
   photo_state->exposure_compensation = mojom::Range::New();
+  photo_state->exposure_time = mojom::Range::New();
   photo_state->color_temperature = mojom::Range::New();
   photo_state->iso = mojom::Range::New();
   photo_state->iso->current = 100.0;
@@ -471,6 +473,12 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->contrast = media::mojom::Range::New();
   photo_state->saturation = media::mojom::Range::New();
   photo_state->sharpness = media::mojom::Range::New();
+
+  photo_state->focus_distance = mojom::Range::New();
+  photo_state->focus_distance->current = 3.0;
+  photo_state->focus_distance->max = 5.0;
+  photo_state->focus_distance->min = 1.0;
+  photo_state->focus_distance->step = 1.0;
 
   photo_state->zoom = mojom::Range::New();
   photo_state->zoom->current = fake_device_state_->zoom;
@@ -521,9 +529,9 @@ void FakePhotoDevice::SetPhotoOptions(
 void FakeVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakePhotoDevice::TakePhoto,
-                            base::Unretained(photo_device_.get()),
-                            base::Passed(&callback), elapsed_time_));
+      FROM_HERE, base::BindOnce(&FakePhotoDevice::TakePhoto,
+                                base::Unretained(photo_device_.get()),
+                                base::Passed(&callback), elapsed_time_));
 }
 
 OwnBufferFrameDeliverer::OwnBufferFrameDeliverer(
@@ -566,11 +574,15 @@ void ClientBufferFrameDeliverer::PaintAndDeliverNextFrame(
     return;
 
   const int arbitrary_frame_feedback_id = 0;
-  auto capture_buffer = client()->ReserveOutputBuffer(
+  VideoCaptureDevice::Client::Buffer capture_buffer;
+  const auto reserve_result = client()->ReserveOutputBuffer(
       device_state()->format.frame_size, device_state()->format.pixel_format,
-      arbitrary_frame_feedback_id);
-  DLOG_IF(ERROR, !capture_buffer.is_valid())
-      << "Couldn't allocate Capture Buffer";
+      arbitrary_frame_feedback_id, &capture_buffer);
+  if (reserve_result != VideoCaptureDevice::Client::ReserveResult::kSucceeded) {
+    client()->OnFrameDropped(
+        ConvertReservationFailureToFrameDropReason(reserve_result));
+    return;
+  }
   auto buffer_access =
       capture_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK(buffer_access->data()) << "Buffer has NO backing memory";

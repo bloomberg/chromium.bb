@@ -21,6 +21,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -308,11 +310,12 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
     }
 
     // Currently the plugin private filesystem is only used by Encrypted
-    // Media Content Decryption Modules, which are treated as pepper plugins.
-    // Each CDM gets a directory based on the mimetype (e.g. plugin
-    // application/x-ppapi-widevine-cdm uses directory
-    // application_x-ppapi-widevine-cdm). Enumerate through the set of
-    // directories so that data from any CDM used by this origin is deleted.
+    // Media Content Decryption Modules (CDM), which used to be hosted as pepper
+    // plugins. Each CDM gets a directory based on the CdmInfo::file_system_id,
+    // e.g. application/x-ppapi-widevine-cdm (same as previous plugin mimetypes
+    // to avoid data migration). See https://crbug.com/479923 for the history.
+    // Enumerate through the set of directories so that data from any CDM used
+    // by this origin is deleted.
     base::FileEnumerator file_enumerator(path, false,
                                          base::FileEnumerator::DIRECTORIES);
     for (base::FilePath plugin_path = file_enumerator.Next();
@@ -323,8 +326,8 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
               filesystem_context_.get(), origin.GetOrigin(),
               plugin_path.BaseName().MaybeAsASCII(), begin_, end_,
               decrement_callback);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &PluginPrivateDataByOriginChecker::CheckFilesOnIOThread,
               base::Unretained(helper)));

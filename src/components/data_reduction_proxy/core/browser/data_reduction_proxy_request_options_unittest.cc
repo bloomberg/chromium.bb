@@ -162,7 +162,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
         base::Unretained(this)));
   }
 
-  void UpdateHeaderCallback(net::HttpRequestHeaders headers) {
+  void UpdateHeaderCallback(const net::HttpRequestHeaders& headers) {
     callback_headers_ = headers;
   }
 

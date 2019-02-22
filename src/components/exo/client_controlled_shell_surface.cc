@@ -7,10 +7,11 @@
 #include <map>
 #include <utility>
 
-#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/caption_buttons/caption_button_model.h"
+#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -19,11 +20,9 @@
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/drag_details.h"
-#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
@@ -63,22 +62,6 @@ ClientControlledShellSurface::DelegateFactoryCallback& GetFactoryForTesting() {
 // TODO(oshima): Looks like android is generating unnecessary frames.
 // Fix it on Android side and reduce the timeout.
 constexpr int kOrientationLockTimeoutMs = 2500;
-
-// Minimal WindowResizer that unlike DefaultWindowResizer does not handle
-// dragging and resizing windows.
-class CustomWindowResizer : public ash::WindowResizer {
- public:
-  explicit CustomWindowResizer(ash::wm::WindowState* window_state)
-      : WindowResizer(window_state) {}
-
-  // Overridden from ash::WindowResizer:
-  void Drag(const gfx::Point& location, int event_flags) override {}
-  void CompleteDrag() override {}
-  void RevertDrag() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowResizer);
-};
 
 Orientation SizeToOrientation(const gfx::Size& size) {
   DCHECK_NE(size.width(), size.height());
@@ -505,8 +488,7 @@ void ClientControlledShellSurface::UpdateAutoHideFrame() {
     bool enabled = (frame_type_ == SurfaceFrameType::AUTOHIDE &&
                     (GetWindowState()->IsMaximizedOrFullscreenOrPinned() ||
                      GetWindowState()->IsSnapped()));
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
+    ash::ImmersiveFullscreenController::EnableForWidget(widget_, enabled);
   }
 }
 
@@ -557,9 +539,11 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     int64_t display_id,
     const gfx::Rect& window_bounds,
     int bounds_change) {
-  // Do no update the bounds unless we have geometry from client.
+  // 1) Do no update the bounds unless we have geometry from client.
+  // 2) Do not update the bounds if window is minimized.
+  // The bounds will be provided by client when unminimized.
   if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
-      bounds_changed_callback_) {
+      !widget_->IsMinimized() && bounds_changed_callback_) {
     // Sends the client bounds, which matches the geometry
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
@@ -674,7 +658,8 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
       static_cast<ash::NonClientFrameViewAsh*>(
           ShellSurfaceBase::CreateNonClientFrameView(widget));
   immersive_fullscreen_controller_ =
-      std::make_unique<ash::ImmersiveFullscreenController>();
+      std::make_unique<ash::ImmersiveFullscreenController>(
+          ash::Shell::Get()->immersive_context());
   frame_view->InitImmersiveFullscreenControllerForView(
       immersive_fullscreen_controller_.get());
   return frame_view;
@@ -776,7 +761,14 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     preserve_widget_bounds_ = false;
   }
 
-  if (bounds == widget_->GetWindowBoundsInScreen() &&
+  // Calculate a minimum window visibility required bounds.
+  gfx::Rect adjusted_bounds = bounds;
+  if (!is_display_move_pending) {
+    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+        target_display.bounds(), &adjusted_bounds);
+  }
+
+  if (adjusted_bounds == widget_->GetWindowBoundsInScreen() &&
       target_display.id() == current_display.id()) {
     return;
   }
@@ -799,17 +791,10 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     // Move the window relative to the current display.
     {
       ScopedSetBoundsLocally scoped_set_bounds(this);
-      window->SetBounds(gfx::Rect(origin, bounds.size()));
+      window->SetBounds(gfx::Rect(origin, adjusted_bounds.size()));
     }
     UpdateSurfaceBounds();
     return;
-  }
-
-  // Calculate a minimum window visibility required bounds.
-  gfx::Rect adjusted_bounds = bounds;
-  if (!is_display_move_pending) {
-    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-        target_display.bounds(), &adjusted_bounds);
   }
 
   {
@@ -989,8 +974,7 @@ void ClientControlledShellSurface::UpdateFrame() {
   if (enable_wide_frame) {
     if (!wide_frame_) {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
       wide_frame_->GetWidget()->Show();
       // Restoring window targeter replaced by ImmersiveFullscreenController.
@@ -1000,8 +984,7 @@ void ClientControlledShellSurface::UpdateFrame() {
     }
   } else {
     if (wide_frame_) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_.reset();
       GetFrameView()->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());

@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -35,8 +36,8 @@ class SiteSettingsCounterTest : public testing::Test {
     handler_registry_ = std::make_unique<ProtocolHandlerRegistry>(
         profile(), new ProtocolHandlerRegistry::Delegate());
 
-    counter_ = std::make_unique<SiteSettingsCounter>(map(), zoom_map(),
-                                                     handler_registry());
+    counter_ = std::make_unique<SiteSettingsCounter>(
+        map(), zoom_map(), handler_registry(), profile_->GetPrefs());
     counter_->Init(profile()->GetPrefs(),
                    browsing_data::ClearBrowsingDataTab::ADVANCED,
                    base::BindRepeating(&SiteSettingsCounterTest::Callback,
@@ -200,23 +201,32 @@ TEST_F(SiteSettingsCounterTest, ZoomLevel) {
   EXPECT_EQ(2, GetResult());
 }
 
-TEST_F(SiteSettingsCounterTest, ZoomAndContentSettingAndHandlers) {
+TEST_F(SiteSettingsCounterTest, AllSiteSettingsMixed) {
   zoom_map()->SetZoomLevelForHost("google.com", 1.5);
   zoom_map()->SetZoomLevelForHost("www.google.com", 1.5);
+
   map()->SetContentSettingDefaultScope(
       GURL("https://www.google.com"), GURL("https://www.google.com"),
       CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
   map()->SetContentSettingDefaultScope(
       GURL("https://maps.google.com"), GURL("https://maps.google.com"),
       CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
+
   base::Time now = base::Time::Now();
   handler_registry()->OnAcceptRegisterProtocolHandler(
       ProtocolHandler("test1", GURL("http://www.google.com"), now));
   handler_registry()->OnAcceptRegisterProtocolHandler(
       ProtocolHandler("test1", GURL("http://docs.google.com"), now));
+  handler_registry()->OnAcceptRegisterProtocolHandler(
+      ProtocolHandler("test1", GURL("http://slides.google.com"), now));
 
+  auto translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+  translate_prefs->BlacklistSite("www.google.com");
+  translate_prefs->BlacklistSite("docs.google.com");
+  translate_prefs->BlacklistSite("photos.google.com");
   counter()->Restart();
-  EXPECT_EQ(4, GetResult());
+  EXPECT_EQ(6, GetResult());
 }
 #endif
 
@@ -235,6 +245,16 @@ TEST_F(SiteSettingsCounterTest, ProtocolHandlerCounting) {
   EXPECT_EQ(2, GetResult());
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
   EXPECT_EQ(1, GetResult());
+}
+
+TEST_F(SiteSettingsCounterTest, TranslatedSitesCounting) {
+  auto translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+  translate_prefs->BlacklistSite("www.google.com");
+  translate_prefs->BlacklistSite("maps.google.com");
+
+  SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
+  EXPECT_EQ(2, GetResult());
 }
 
 }  // namespace

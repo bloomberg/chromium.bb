@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -141,14 +142,14 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
   }
 
   void DoTouchMove() {
-    SyntheticWebTouchEvent kEvents[4];
-    kEvents[0].PressPoint(10, 10);
-    kEvents[1].PressPoint(10, 10);
-    kEvents[1].MovePoint(0, 20, 20);
-    kEvents[2].PressPoint(10, 10);
-    kEvents[2].MovePoint(0, 30, 30);
-    kEvents[3].PressPoint(10, 10);
-    kEvents[3].MovePoint(0, 35, 40);
+    SyntheticWebTouchEvent events[4];
+    events[0].PressPoint(10, 10);
+    events[1].PressPoint(10, 10);
+    events[1].MovePoint(0, 20, 20);
+    events[2].PressPoint(10, 10);
+    events[2].MovePoint(0, 30, 30);
+    events[3].PressPoint(10, 10);
+    events[3].MovePoint(0, 35, 40);
 
     // Send a click event to cause some jankiness. This is done via a click
     // event as ExecuteScript is synchronous.
@@ -157,8 +158,11 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
         GetWidgetHost(), blink::WebInputEvent::kTouchMove);
 
-    for (const auto& event : kEvents)
-      GetWidgetHost()->ForwardEmulatedTouchEvent(event, nullptr);
+    auto* root_view = GetWidgetHost()->GetView();
+    auto* input_event_router =
+        GetWidgetHost()->delegate()->GetInputEventRouter();
+    for (auto& event : events)
+      input_event_router->RouteTouchEvent(root_view, &event, ui::LatencyInfo());
 
     // Runs until we get the InputMsgAck callback.
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,

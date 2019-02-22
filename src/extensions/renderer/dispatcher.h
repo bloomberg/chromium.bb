@@ -100,6 +100,12 @@ class Dispatcher : public content::RenderThreadObserver,
                                 const v8::Local<v8::Context>& context,
                                 int world_id);
 
+  // Runs on worker thread and should not use any member variables.
+  static void DidStartServiceWorkerContextOnWorkerThread(
+      int64_t service_worker_version_id,
+      const GURL& service_worker_scope,
+      const GURL& script_url);
+
   // Runs on a different thread and should not use any member variables.
   static void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
@@ -252,9 +258,6 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // The delegate for this dispatcher to handle embedder-specific logic.
   std::unique_ptr<DispatcherDelegate> delegate_;
-
-  // True if the IdleNotification timer should be set.
-  bool set_idle_notifications_;
 
   // The IDs of extensions that failed to load, mapped to the error message
   // generated on failure.

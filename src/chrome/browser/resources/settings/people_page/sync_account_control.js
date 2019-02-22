@@ -277,7 +277,7 @@ Polymer({
    * @private
    */
   computeShouldShowAvatarRow_: function() {
-    if (this.storedAccounts_ == undefined)
+    if (this.storedAccounts_ === undefined || this.syncStatus === undefined)
       return false;
 
     return this.syncStatus.signedIn || this.storedAccounts_.length > 0;
@@ -345,7 +345,7 @@ Polymer({
 
   /** @private */
   onShownAccountShouldChange_: function() {
-    if (this.storedAccounts_ == undefined)
+    if (this.storedAccounts_ === undefined || this.syncStatus === undefined)
       return;
 
     if (this.syncStatus.signedIn) {

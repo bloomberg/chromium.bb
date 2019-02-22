@@ -3,31 +3,31 @@
 <script>
 var results = [];
 
-// This wraps the usual definition of waitForNotification in a 100ms setTimeout.
-// The extra delay is necessary to ensure that notifications have been generated
-// when the observer is tracking visibility; see:
-//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
-function waitForNotification(f) {
-  setTimeout(() => {
-    requestAnimationFrame(function () {
-      setTimeout(function () {
-        setTimeout(f)
-      })
-    })
-  }, 100)
+if (window.internals) {
+  internals.DisableIntersectionObserverThrottleDelay();
 }
+
+function waitForNotification(f) {
+  requestAnimationFrame(function () {
+    setTimeout(function () {
+      setTimeout(f)
+    })
+  })
+}
+
+window.addEventListener("message", event => {
+  waitForNotification(() => {
+    window.parent.postMessage(results.map(e => { return e.isVisible }), "*");
+    results = [];
+  });
+});
 
 onload = () => {
   var target = document.getElementById("target");
   var observer = new IntersectionObserver(entries => {
     results = entries;
-  }, { trackVisibility: true });
+  }, {trackVisibility: true, delay: 100});
   observer.observe(document.getElementById("target"));
-  window.addEventListener("message", event => {
-    waitForNotification(() => {
-      window.parent.postMessage(results.map(e => { return e.isVisible }), "*");
-      results = [];
-    });
-  });
+  window.parent.postMessage("", "*");
 };
 </script>

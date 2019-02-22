@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -102,6 +103,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   uint32_t GetRenderFrameId() const;
   uint32_t GetProcessId() const;
+
+  const net::HttpRequestHeaders& custom_proxy_pre_cache_headers() const {
+    return custom_proxy_pre_cache_headers_;
+  }
+
+  const net::HttpRequestHeaders& custom_proxy_post_cache_headers() const {
+    return custom_proxy_post_cache_headers_;
+  }
 
   // Gets the URLLoader associated with this request.
   static URLLoader* ForRequest(const net::URLRequest& request);
@@ -254,6 +263,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool first_auth_attempt_;
 
   std::unique_ptr<ScopedThrottlingToken> throttling_token_;
+
+  net::HttpRequestHeaders custom_proxy_pre_cache_headers_;
+  net::HttpRequestHeaders custom_proxy_post_cache_headers_;
+
+  // Indicates the originating frame of the request, see
+  // network::ResourceRequest::fetch_window_id for details.
+  base::Optional<base::UnguessableToken> fetch_window_id_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

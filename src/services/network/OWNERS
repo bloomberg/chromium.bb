@@ -8,7 +8,6 @@ tsepez@chromium.org
 yhirano@chromium.org
 
 per-file cross_origin_read_blocking*=creis@chromium.org
-per-file cross_origin_read_blocking*=nick@chromium.org
 per-file cross_origin_read_blocking*=lukasza@chromium.org
 
 per-file expect_ct_reporter*=estark@chromium.org

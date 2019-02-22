@@ -27,12 +27,12 @@ class LocalMediaDataSourceFactory
 
   ~LocalMediaDataSourceFactory() override;
 
- private:
   // SafeMediaMetadataParser::MediaDataSourceFactory implementation.
   std::unique_ptr<chrome::mojom::MediaDataSource> CreateMediaDataSource(
       chrome::mojom::MediaDataSourcePtr* request,
       MediaDataCallback media_data_callback) override;
 
+ private:
   // Local downloaded media file path. This is user-defined input.
   base::FilePath file_path_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

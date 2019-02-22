@@ -355,10 +355,12 @@ _COPY_PATHS_CHROME = (
 
     # Widevine CDM is already pre-stripped.  In addition, it doesn't
     # play well with the binutils stripping tools, so skip stripping.
+    # Optional for arm64 builds (http://crbug.com/881022)
     Path('libwidevinecdm.so',
          exe=True,
          strip=False,
-         cond=C.GnSetTo(_IS_CHROME_BRANDED, True)),
+         cond=C.GnSetTo(_IS_CHROME_BRANDED, True),
+         optional=C.GnSetTo('target_cpu', 'arm64')),
     # In component build, copy so files (e.g. libbase.so) except for the
     # blacklist.
     Path('*.so',

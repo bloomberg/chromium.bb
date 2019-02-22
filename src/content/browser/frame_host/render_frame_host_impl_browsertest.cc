@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -202,20 +203,36 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
       : message_loop_runner_(new MessageLoopRunner), url_invalidate_count_(0) {}
   ~TestJavaScriptDialogManager() override {}
 
+  // This waits until either WCD::BeforeUnloadFired is called (the unload has
+  // been handled) or JSDM::RunJavaScriptDialog/RunBeforeUnloadDialog is called
+  // (a request to display a dialog has been received).
   void Wait() {
     message_loop_runner_->Run();
     message_loop_runner_ = new MessageLoopRunner;
   }
 
-  DialogClosedCallback& callback() { return callback_; }
+  // Runs the dialog callback.
+  void Run(bool success, const base::string16& user_input) {
+    std::move(callback_).Run(success, user_input);
+  }
 
   int num_beforeunload_dialogs_seen() { return num_beforeunload_dialogs_seen_; }
+  int num_beforeunload_fired_seen() { return num_beforeunload_fired_seen_; }
+  bool proceed() { return proceed_; }
 
   // WebContentsDelegate
 
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override {
     return this;
+  }
+
+  void BeforeUnloadFired(WebContents* tab,
+                         bool proceed,
+                         bool* proceed_to_fire_unload) override {
+    ++num_beforeunload_fired_seen_;
+    proceed_ = proceed;
+    message_loop_runner_->Quit();
   }
 
   // JavaScriptDialogManager
@@ -226,7 +243,10 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
                            DialogClosedCallback callback,
-                           bool* did_suppress_message) override {}
+                           bool* did_suppress_message) override {
+    callback_ = std::move(callback);
+    message_loop_runner_->Quit();
+  }
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              RenderFrameHost* render_frame_host,
@@ -267,6 +287,13 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   // The total number of beforeunload dialogs seen by this dialog manager.
   int num_beforeunload_dialogs_seen_ = 0;
+
+  // The total number of BeforeUnloadFired events witnessed by the
+  // WebContentsDelegate.
+  int num_beforeunload_fired_seen_ = 0;
+
+  // The |proceed| value returned by the last unload event.
+  bool proceed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
@@ -339,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   main_frame->GetProcess()->AddFilter(filter.get());
 
   // Answer the dialog.
-  std::move(dialog_manager.callback()).Run(true, base::string16());
+  dialog_manager.Run(true, base::string16());
 
   // There will be no beforeunload ACK, so if the beforeunload ACK timer isn't
   // functioning then the navigation will hang forever and this test will time
@@ -378,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   dialog_manager.Wait();
 
   // Answer the dialog.
-  std::move(dialog_manager.callback()).Run(true, base::string16());
+  dialog_manager.Run(true, base::string16());
   EXPECT_TRUE(WaitForLoadStop(wc));
 
   // The reload should have cleared the user gesture bit, so upon leaving again
@@ -409,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Cancel the dialog.
   dialog_manager.reset_url_invalidate_count();
-  std::move(dialog_manager.callback()).Run(false, base::string16());
+  dialog_manager.Run(false, base::string16());
   EXPECT_FALSE(wc->IsLoading());
 
   // Verify there are no pending history items after the dialog is cancelled.
@@ -447,13 +474,13 @@ class RenderFrameHostImplBeforeUnloadBrowserTest
   }
 
   void CloseDialogAndProceed() {
-    std::move(dialog_manager()->callback())
-        .Run(true /* navigation should proceed */, base::string16());
+    dialog_manager_->Run(true /* navigation should proceed */,
+                         base::string16());
   }
 
   void CloseDialogAndCancel() {
-    std::move(dialog_manager()->callback())
-        .Run(false /* navigation should proceed */, base::string16());
+    dialog_manager_->Run(false /* navigation should proceed */,
+                         base::string16());
   }
 
   // Installs a beforeunload handler in the given frame.
@@ -953,7 +980,7 @@ class ExecuteScriptBeforeRenderFrameDeletedHelper
 //
 // Note that if the second WebContents scheduled a call to window.close() to
 // close itself after it calls window.open(), the CreateNewWindow sync IPC could
-// be dispatched *before* ViewHostMsg_Close in the browser process, provided
+// be dispatched *before* WidgetHostMsg_Close in the browser process, provided
 // that the browser happened to be in IPC::SyncChannel::WaitForReply on the UI
 // thread (most likely after sending GpuCommandBufferMsg_* messages), in which
 // case incoming sync IPCs to this thread are dispatched, but the message loop
@@ -1871,6 +1898,77 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // once we handle frame-ancestors CSP in the browser process and commit it
   // with the original URL.
   //   EXPECT_EQ(blocked_url, nav_handle_observer.last_committed_url());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       BeforeUnloadDialogSuppressedForDiscard) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  wc->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+
+  // Give the page a user gesture so javascript beforeunload works, and then
+  // dispatch a before unload with discard as a reason. This should return
+  // without any dialog being seen.
+  wc->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::string16());
+  wc->GetMainFrame()->DispatchBeforeUnload(
+      RenderFrameHostImpl::BeforeUnloadType::DISCARD, false);
+  dialog_manager.Wait();
+  EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
+  EXPECT_EQ(1, dialog_manager.num_beforeunload_fired_seen());
+  EXPECT_FALSE(dialog_manager.proceed());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       PendingDialogMakesDiscardUnloadReturnFalse) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  wc->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+
+  // Give the page a user gesture so javascript beforeunload works, and then
+  // dispatch a before unload with discard as a reason. This should return
+  // without any dialog being seen.
+  wc->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::string16());
+
+  // Launch an alert javascript dialog. This pending dialog should block a
+  // subsequent discarding before unload request.
+  wc->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"));
+  dialog_manager.Wait();
+  EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
+  EXPECT_EQ(0, dialog_manager.num_beforeunload_fired_seen());
+
+  // Dispatch a before unload request while the first is still blocked
+  // on the dialog, and expect it to return false immediately (synchronously).
+  wc->GetMainFrame()->DispatchBeforeUnload(
+      RenderFrameHostImpl::BeforeUnloadType::DISCARD, false);
+  dialog_manager.Wait();
+  EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
+  EXPECT_EQ(1, dialog_manager.num_beforeunload_fired_seen());
+  EXPECT_FALSE(dialog_manager.proceed());
+
+  // Clear the existing javascript dialog so that the associated IPC message
+  // doesn't leak.
+  dialog_manager.Run(true, base::string16());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

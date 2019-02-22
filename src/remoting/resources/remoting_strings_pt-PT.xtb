@@ -102,7 +102,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3171922709365450819">Este dispositivo não é compatível com este cliente, uma vez que requer autenticação de terceiros.</translation>
 <translation id="3194245623920924351">Ambiente de Trabalho Remoto</translation>
 <translation id="3197730452537982411">Ambiente de Trabalho Remoto</translation>
-<translation id="3212472844831225214">• Foi adicionada a compatibilidade com o Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Enviar estas instruções por email</translation>
 <translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="3286521253923406898">Controlador do Anfitrião do Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
 <translation id="8548209692293300397">Iniciou sessão anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN" />inicie sessão no Google Chrome<ph name="LINK_END" /> com essa conta e reinstale o Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="8642984861538780905">Razoável</translation>
+<translation id="8705151241155781642">• Foi adicionada a compatibilidade com o Android 9.0 Pie.
+• Compatibilidade para redimensionar a resolução do ambiente de trabalho remoto de modo a corresponder ao ecrã do dispositivo Android.</translation>
 <translation id="8712909229180978490">Não consigo ver os ficheiros guardados online no Google Drive.</translation>
 <translation id="8743328882720071828">Pretende permitir que <ph name="CLIENT_USERNAME" /> veja e controle o seu computador?</translation>
 <translation id="8747048596626351634">Falha da sessão ou falha ao iniciar a sessão. Se ~/.chrome-remote-desktop-session existir no computador remoto, certifique-se de que inicia um processo em primeiro plano de longa execução, como um gestor de janelas ou um ambiente de trabalho.</translation>

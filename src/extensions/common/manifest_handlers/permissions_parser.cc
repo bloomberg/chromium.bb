@@ -187,7 +187,7 @@ bool ParseHelper(Extension* extension,
     // Check if it's a host pattern permission.
     URLPattern pattern = URLPattern(kAllowedSchemes);
     URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
-    if (parse_result == URLPattern::PARSE_SUCCESS) {
+    if (parse_result == URLPattern::ParseResult::kSuccess) {
       // The path component is not used for host permissions, so we force it
       // to match all paths.
       pattern.SetPath("/*");

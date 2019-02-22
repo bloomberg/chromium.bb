@@ -6,6 +6,8 @@ package com.android.webview.chromium;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.webkit.TracingController;
+import android.webkit.WebViewDelegate;
 
 import org.chromium.base.annotations.DoNotInline;
 
@@ -24,10 +26,14 @@ public final class GlueApiHelperForP {
     /**
      * See {@link
      * TracingControllerAdapter#TracingControllerAdapter(WebViewChromiumFactoryProvider,
-     * AwTracingController)}, which was added in N.
+     * AwTracingController)}, which was added in P.
      */
-    public static TracingControllerAdapter createTracingControllerAdapter(
+    public static TracingController createTracingControllerAdapter(
             WebViewChromiumFactoryProvider provider, WebViewChromiumAwInit awInit) {
-        return new TracingControllerAdapter(provider, awInit.getAwTracingController());
+        return new TracingControllerAdapter(new SharedTracingControllerAdapter(
+                awInit.getRunQueue(), awInit.getAwTracingController()));
+    }
+    public static String getDataDirectorySuffix(WebViewDelegate webViewDelegate) {
+        return webViewDelegate.getDataDirectorySuffix();
     }
 }

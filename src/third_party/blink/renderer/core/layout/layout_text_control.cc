@@ -67,7 +67,6 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
       inner_editor_layout_object->InvalidateSelectedChildrenOnStyleChange();
     }
   }
-  GetTextControlElement()->UpdatePlaceholderVisibility();
 }
 
 int LayoutTextControl::TextBlockLogicalHeight() const {
@@ -302,7 +301,7 @@ void LayoutTextControl::ComputePreferredLogicalWidths() {
 
 void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
                                         const LayoutPoint& additional_offset,
-                                        IncludeBlockVisualOverflowOrNot) const {
+                                        NGOutlineType) const {
   rects.push_back(LayoutRect(additional_offset, Size()));
 }
 

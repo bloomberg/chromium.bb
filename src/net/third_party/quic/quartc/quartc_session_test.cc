@@ -13,6 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
+#include "net/third_party/quic/quartc/counting_packet_filter.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/simulated_packet_transport.h"
@@ -30,29 +31,6 @@ namespace quic {
 namespace {
 
 static QuicByteCount kDefaultMaxPacketSize = 1200;
-
-// Simple packet filter which drops the first N packets it observes.
-class CountingPacketFilter : public simulator::PacketFilter {
- public:
-  CountingPacketFilter(simulator::Simulator* simulator,
-                       const QuicString& name,
-                       simulator::Endpoint* endpoint)
-      : PacketFilter(simulator, name, endpoint) {}
-
-  void set_packets_to_drop(int count) { packets_to_drop_ = count; }
-
- protected:
-  bool FilterPacket(const simulator::Packet& packet) override {
-    if (packets_to_drop_ > 0) {
-      --packets_to_drop_;
-      return false;
-    }
-    return true;
-  }
-
- private:
-  int packets_to_drop_ = 0;
-};
 
 class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
  public:
@@ -72,6 +50,7 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
   void OnIncomingStream(QuartcStream* quartc_stream) override {
     last_incoming_stream_ = quartc_stream;
     last_incoming_stream_->SetDelegate(stream_delegate_);
+    quartc_stream->set_deliver_on_complete(false);
   }
 
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
@@ -126,7 +105,7 @@ class QuartcSessionTest : public QuicTest {
             &simulator_, "server_transport", "client_transport",
             10 * kDefaultMaxPacketSize);
 
-    client_filter_ = QuicMakeUnique<CountingPacketFilter>(
+    client_filter_ = QuicMakeUnique<simulator::CountingPacketFilter>(
         &simulator_, "client_filter", client_transport_.get());
 
     client_server_link_ = QuicMakeUnique<simulator::SymmetricLink>(
@@ -199,12 +178,14 @@ class QuartcSessionTest : public QuicTest {
     ASSERT_TRUE(client_peer_->IsEncryptionEstablished());
 
     // Now we can establish encrypted outgoing stream.
-    QuartcStream* outgoing_stream = server_peer_->CreateOutgoingDynamicStream();
+    QuartcStream* outgoing_stream =
+        server_peer_->CreateOutgoingBidirectionalStream();
     QuicStreamId stream_id = outgoing_stream->id();
     ASSERT_NE(nullptr, outgoing_stream);
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
+    outgoing_stream->set_deliver_on_complete(false);
 
     // Send a test message from peer 1 to peer 2.
     char kTestMessage[] = "Hello";
@@ -251,7 +232,7 @@ class QuartcSessionTest : public QuicTest {
 
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> client_transport_;
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> server_transport_;
-  std::unique_ptr<CountingPacketFilter> client_filter_;
+  std::unique_ptr<simulator::CountingPacketFilter> client_filter_;
   std::unique_ptr<simulator::SymmetricLink> client_server_link_;
 
   std::unique_ptr<QuartcPacketWriter> client_writer_;
@@ -282,8 +263,8 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
 // Test that data streams are not created before handshake.
 TEST_F(QuartcSessionTest, CannotCreateDataStreamBeforeHandshake) {
   CreateClientAndServerSessions();
-  EXPECT_EQ(nullptr, server_peer_->CreateOutgoingDynamicStream());
-  EXPECT_EQ(nullptr, client_peer_->CreateOutgoingDynamicStream());
+  EXPECT_EQ(nullptr, server_peer_->CreateOutgoingBidirectionalStream());
+  EXPECT_EQ(nullptr, client_peer_->CreateOutgoingBidirectionalStream());
 }
 
 TEST_F(QuartcSessionTest, CancelQuartcStream) {
@@ -292,7 +273,7 @@ TEST_F(QuartcSessionTest, CancelQuartcStream) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   ASSERT_NE(nullptr, stream);
 
   uint32_t id = stream->id();
@@ -314,7 +295,7 @@ TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   stream->SetDelegate(client_stream_delegate_.get());
 
   char kClientMessage[] = "Hello";
@@ -347,7 +328,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   QuicStreamId stream_id = stream->id();
   stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(false);
@@ -371,7 +352,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   QuicStreamId stream_id = stream->id();
   stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(true);
@@ -385,7 +366,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
   simulator_.RunFor(QuicTime::Delta::FromMilliseconds(1));
 
   // Send another packet to trigger loss detection.
-  QuartcStream* stream_1 = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream_1 = client_peer_->CreateOutgoingBidirectionalStream();
   stream_1->SetDelegate(client_stream_delegate_.get());
 
   char kMessage1[] = "Second message";

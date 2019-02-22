@@ -19,8 +19,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.UUID;
 

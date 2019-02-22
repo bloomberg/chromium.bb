@@ -55,8 +55,10 @@ jumbo_component("keyboard") {
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
 
   deps = [
+    ":mojom",
     ":resources",
     "//base",
+    "//chromeos",
     "//services/metrics/public/cpp:ukm_builders",
     "//ui/aura",
     "//ui/base",
@@ -139,10 +141,7 @@ build_closure("inputview") {
 
 mojom("mojom") {
   sources = [
-    "keyboard.mojom",
-  ]
-  deps = [
-    "//ui/gfx/geometry/mojo",
+    "public/keyboard_config.mojom",
   ]
 }
 
@@ -160,11 +159,12 @@ test("keyboard_unittests") {
 
   deps = [
     ":keyboard",
+    ":mojom",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/ukm:test_support",
-    "//mojo/core/embedder",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura:test_support",

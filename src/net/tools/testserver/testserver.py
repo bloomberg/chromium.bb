@@ -161,8 +161,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                npn_protocols, record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response,
-               alert_after_handshake, disable_channel_id, disable_ems,
-               token_binding_params):
+               alert_after_handshake, disable_channel_id, disable_ems):
     self.cert_chain = tlslite.api.X509CertChain()
     self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
@@ -209,8 +208,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.ssl_handshake_settings.enableChannelID = False
     if disable_ems:
       self.ssl_handshake_settings.enableExtendedMasterSecret = False
-    self.ssl_handshake_settings.supportedTokenBindingParams = \
-        token_binding_params
     self.ssl_handshake_settings.alpnProtos=alpn_protocols;
 
     if record_resume_info:
@@ -344,8 +341,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
-      self.GetTokenBindingEKM,
-      self.ForwardTokenBindingHeader,
       self.GetClientCert,
       self.ClientCipherListHandler,
       self.CloseSocketHandler,
@@ -1522,41 +1517,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
     return True
 
-  def GetTokenBindingEKM(self):
-    """Send a reply containing the EKM value for token binding from the TLS
-    layer."""
-
-    if not self._ShouldHandleRequest('/tokbind-ekm'):
-      return False
-
-    ekm = self.server.tlsConnection.exportKeyingMaterial(
-        "EXPORTER-Token-Binding", "", False, 32)
-    self.send_response(200)
-    self.send_header('Content-Type', 'application/octet-stream')
-    self.end_headers()
-    self.wfile.write(ekm)
-    return True
-
-  def ForwardTokenBindingHeader(self):
-    """Send a redirect that sets the Include-Referred-Token-Binding-ID
-    header."""
-
-    test_name = '/forward-tokbind'
-    if not self._ShouldHandleRequest(test_name):
-      return False
-
-    query_char = self.path.find('?')
-    if query_char < 0 or len(self.path) <= query_char + 1:
-      self.sendRedirectHelp(test_name)
-      return True
-    dest = urllib.unquote(self.path[query_char + 1:])
-
-    self.send_response(302)
-    self.send_header('Location', dest)
-    self.send_header('Include-Referred-Token-Binding-ID', 'true')
-    self.end_headers()
-    return True
-
   def GetClientCert(self):
     """Send a reply whether a client certificate was provided."""
 
@@ -2118,8 +2078,7 @@ class ServerRunner(testserver_base.TestServerRunner):
                              stapled_ocsp_response,
                              self.options.alert_after_handshake,
                              self.options.disable_channel_id,
-                             self.options.disable_extended_master_secret,
-                             self.options.token_binding_params)
+                             self.options.disable_extended_master_secret)
         print 'HTTPS server started on https://%s:%d...' % \
             (host, server.server_port)
       else:
@@ -2419,8 +2378,6 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--disable-channel-id', action='store_true')
     self.option_parser.add_option('--disable-extended-master-secret',
                                   action='store_true')
-    self.option_parser.add_option('--token-binding-params', action='append',
-                                  default=[], type='int')
     self.option_parser.add_option('--redirect-connect-to-localhost',
                                   dest='redirect_connect_to_localhost',
                                   default=False, action='store_true',

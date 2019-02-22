@@ -5,7 +5,6 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/control_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -22,6 +21,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height_no_shadow"
             android:background="@android:color/white"
+            android:paddingStart="@dimen/toolbar_edge_padding"
+            android:paddingEnd="@dimen/toolbar_edge_padding"
             android:clickable="true" >
 
         <org.chromium.chrome.browser.searchwidget.SearchActivityLocationBarLayout
@@ -31,8 +32,8 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="@dimen/location_bar_vertical_margin"
                 android:layout_marginBottom="@dimen/location_bar_vertical_margin"
-                android:layout_marginStart="@dimen/modern_toolbar_background_focused_left_margin"
-                android:layout_marginEnd="@dimen/modern_toolbar_background_focused_left_margin" />
+                android:paddingStart="@dimen/location_bar_lateral_padding"
+                android:paddingEnd="@dimen/location_bar_lateral_padding" />
 
     </FrameLayout>
 

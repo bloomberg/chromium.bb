@@ -202,8 +202,7 @@ def GenerateCPEList(deps_list, board):
     split = portage_util.SplitCPV(sdk_cpv)
     cpes = GetCPEFromCPV(split.category, split.package, split.version_no_rev)
     if cpes:
-      cpe_dump.append({'ComponentName': '%s/%s' % (split.category,
-                                                   split.package),
+      cpe_dump.append({'ComponentName': '%s' % split.cp,
                        'Repository': 'cros',
                        'Targets': sorted(cpes)})
     else:

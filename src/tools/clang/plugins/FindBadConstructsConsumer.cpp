@@ -573,7 +573,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   // Deletion of virtual and insertion of override are tricky. The AST does not
   // expose the location of `virtual` or `=`: the former is useful when trying
   // to remove `virtual, while the latter is useful when trying to insert
-  // `override`. Iterate over the tokens from |method->getLocStart()| until:
+  // `override`. Iterate over the tokens from |method->getBeginLoc()| until:
   // 1. A `{` not nested inside parentheses is found or
   // 2. A `=` not nested inside parentheses is found or
   // 3. A `;` not nested inside parentheses is found or
@@ -582,7 +582,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   SourceLocation override_insertion_loc;
   // Attempt to set up the lexer in raw mode.
   std::pair<FileID, unsigned> decomposed_start =
-      manager.getDecomposedLoc(method->getLocStart());
+      manager.getDecomposedLoc(method->getBeginLoc());
   bool invalid = false;
   StringRef buffer = manager.getBufferData(decomposed_start.first, &invalid);
   if (!invalid) {
@@ -816,7 +816,7 @@ bool FindBadConstructsConsumer::HasPublicDtorCallback(
 // Outputs a C++ inheritance chain as a diagnostic aid.
 void FindBadConstructsConsumer::PrintInheritanceChain(const CXXBasePath& path) {
   for (CXXBasePath::const_iterator it = path.begin(); it != path.end(); ++it) {
-    diagnostic().Report(it->Base->getLocStart(), diag_note_inheritance_)
+    diagnostic().Report(it->Base->getBeginLoc(), diag_note_inheritance_)
         << it->Class << it->Base->getType();
   }
 }
@@ -1041,7 +1041,7 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
           // should be fewer auto types than banned namespace/directory types,
           // so check this last.
           LocationType location_type =
-              ClassifyLocation(var_decl->getLocStart());
+              ClassifyLocation(var_decl->getBeginLoc());
           if (location_type != LocationType::kThirdParty) {
             // The range starts from |var_decl|'s loc start, which is the
             // beginning of the full expression defining this |var_decl|. It
@@ -1051,8 +1051,8 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
             // qualifiers, which is why it's not a good candidate to use for the
             // start of the range.
             clang::SourceRange range(
-                var_decl->getLocStart(),
-                var_decl->getTypeSourceInfo()->getTypeLoc().getLocEnd());
+                var_decl->getBeginLoc(),
+                var_decl->getTypeSourceInfo()->getTypeLoc().getEndLoc());
             ReportIfSpellingLocNotIgnored(range.getBegin(),
                                           diag_auto_deduced_to_a_pointer_type_)
                 << FixItHint::CreateReplacement(

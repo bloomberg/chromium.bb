@@ -210,6 +210,9 @@ SUSPECT_REASONS = {
     SUSPECT_REASON_UNKNOWN: 6,
 }
 
+# Ts-mon related constants
+TSMON_METRIC_FIELDS = '/tmp/ts_mon_fields.txt'
+
 # Monarch metric names
 MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
@@ -227,6 +230,7 @@ MON_BUILD_SANITY_ID = 'chromeos/cbuildbot/build/sanity_build_id'
 MON_BUILD_DURATION = 'chromeos/cbuildbot/build/durations'
 MON_STAGE_COMP_COUNT = 'chromeos/cbuildbot/stage/completed_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
+MON_STAGE_INSTANCE_DURATION = 'chromeos/cbuildbot/stage/instance_durations'
 MON_STAGE_FAILURE_COUNT = 'chromeos/cbuildbot/stage/failure_count'
 MON_FAILED_STAGE = 'chromeos/chromite/cbuildbot_launch/failed_stage'
 MON_CL_HANDLE_TIME = 'chromeos/cbuildbot/submitted_change/handling_times'
@@ -345,16 +349,18 @@ ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
-ANDROID_PI_BUILD_BRANCH = 'git_pi-arc-dev'
+ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
     'XTS': ('linux-gts_arm64', r'\.zip$'),
 }
 ANDROID_MST_BUILD_TARGETS = {
     'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    'ARM64': ('linux-cheets_arm64-user', r'\.zip$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
@@ -394,10 +400,12 @@ ANDROID_PI_BUILD_TARGETS = {
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
+    'ARM64': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
     'X86_NDK_TRANSLATION': 'googlestorage_acl_ndk.txt',
     'X86_64': 'googlestorage_acl_x86.txt',
     'ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
+    'ARM64_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_NDK_TRANSLATION_USERDEBUG': 'googlestorage_acl_ndk.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
@@ -423,6 +431,7 @@ ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # the Android bucket to the ARC++ bucket (b/33072485).
 ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'ARM_USERDEBUG',
+    'ARM64_USERDEBUG',
     'X86_NDK_TRANSLATION',
     'X86_USERDEBUG',
     'X86_NDK_TRANSLATION_USERDEBUG',
@@ -634,6 +643,7 @@ VALID_BUILD_TYPES = (
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
     'betty-pre-cq',                   # vm board                  vmtest
+    'betty-arcnext-pre-cq',           # vm board                  arcnext
     'cyan-no-vmtest-pre-cq',          # braswell     kernel 3.18
     'daisy_spring-no-vmtest-pre-cq',  # arm32        kernel 3.8
     'eve-no-vmtest-pre-cq',           # kabylake     kernel 4.4   cheets_user_64
@@ -700,7 +710,6 @@ HWTEST_MAX_RETRIES = 5
 #   INSTALLER: Blocking suite run against all canaries; tests basic installer
 #              functionality.
 HWTEST_ARC_COMMIT_SUITE = 'bvt-arc'
-HWTEST_ARC_CANARY_SUITE = 'arc-bvt-perbuild'
 HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'

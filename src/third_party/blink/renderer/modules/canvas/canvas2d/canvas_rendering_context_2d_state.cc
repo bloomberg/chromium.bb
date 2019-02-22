@@ -155,8 +155,8 @@ void CanvasRenderingContext2DState::SetLineDash(const Vector<double>& dash) {
 }
 
 static bool HasANonZeroElement(const Vector<double>& line_dash) {
-  for (size_t i = 0; i < line_dash.size(); i++) {
-    if (line_dash[i] != 0.0)
+  for (double dash : line_dash) {
+    if (dash != 0.0)
       return true;
   }
   return false;

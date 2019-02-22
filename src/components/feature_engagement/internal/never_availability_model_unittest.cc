@@ -15,10 +15,10 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAvailabilityTestFeatureFoo{
+    "test_foo", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAvailabilityTestFeatureBar{
+    "test_bar", base::FEATURE_DISABLED_BY_DEFAULT};
 
 class NeverAvailabilityModelTest : public ::testing::Test {
  public:
@@ -40,9 +40,9 @@ class NeverAvailabilityModelTest : public ::testing::Test {
 
 TEST_F(NeverAvailabilityModelTest, ShouldNeverHaveData) {
   EXPECT_EQ(base::nullopt,
-            availability_model_.GetAvailability(kTestFeatureFoo));
+            availability_model_.GetAvailability(kAvailabilityTestFeatureFoo));
   EXPECT_EQ(base::nullopt,
-            availability_model_.GetAvailability(kTestFeatureBar));
+            availability_model_.GetAvailability(kAvailabilityTestFeatureBar));
 
   availability_model_.Initialize(
       base::BindOnce(&NeverAvailabilityModelTest::OnInitializedCallback,
@@ -51,9 +51,9 @@ TEST_F(NeverAvailabilityModelTest, ShouldNeverHaveData) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(base::nullopt,
-            availability_model_.GetAvailability(kTestFeatureFoo));
+            availability_model_.GetAvailability(kAvailabilityTestFeatureFoo));
   EXPECT_EQ(base::nullopt,
-            availability_model_.GetAvailability(kTestFeatureBar));
+            availability_model_.GetAvailability(kAvailabilityTestFeatureBar));
 }
 
 TEST_F(NeverAvailabilityModelTest, ShouldBeReadyAfterInitialization) {

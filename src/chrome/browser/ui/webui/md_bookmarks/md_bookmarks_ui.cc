@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -32,13 +34,22 @@ void AddLocalizedString(content::WebUIDataSource* source,
                         const std::string& message,
                         int id) {
   base::string16 str = l10n_util::GetStringUTF16(id);
-  str.erase(std::remove(str.begin(), str.end(), '&'), str.end());
+  base::Erase(str, '&');
   source->AddString(message, str);
 }
 
 content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
+
+  // Build an Accelerator to describe undo shortcut
+  // NOTE: the undo shortcut is also defined in md_bookmarks/command_manager.js
+  // TODO(b/893033): de-duplicate shortcut by moving all shortcut definitions
+  // from JS to C++.
+  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  source->AddString("undoDescription", l10n_util::GetStringFUTF16(
+                                           IDS_BOOKMARK_BAR_UNDO_DESCRIPTION,
+                                           undoAccelerator.GetShortcutText()));
 
   // Localized strings (alphabetical order).
   AddLocalizedString(source, "addBookmarkTitle",
@@ -161,8 +172,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                           IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML);
   source->AddResourcePath("dialog_focus_manager.js",
                           IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS);
-  source->AddResourcePath("dnd_chip.html", IDR_MD_BOOKMARKS_DND_CHIP_HTML);
-  source->AddResourcePath("dnd_chip.js", IDR_MD_BOOKMARKS_DND_CHIP_JS);
   source->AddResourcePath("dnd_manager.html",
                           IDR_MD_BOOKMARKS_DND_MANAGER_HTML);
   source->AddResourcePath("dnd_manager.js", IDR_MD_BOOKMARKS_DND_MANAGER_JS);

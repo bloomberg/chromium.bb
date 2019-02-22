@@ -400,9 +400,10 @@ int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {
 QuicChromiumClientStream::QuicChromiumClientStream(
     quic::QuicStreamId id,
     quic::QuicSpdyClientSessionBase* session,
+    quic::StreamType type,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : quic::QuicSpdyStream(id, session),
+    : quic::QuicSpdyStream(id, session, type),
       net_log_(net_log),
       handle_(nullptr),
       headers_delivered_(false),

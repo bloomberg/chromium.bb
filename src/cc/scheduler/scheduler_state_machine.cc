@@ -565,14 +565,12 @@ bool SchedulerStateMachine::ShouldInvalidateLayerTreeFrameSink() const {
   if (begin_impl_frame_state_ != BeginImplFrameState::INSIDE_BEGIN_FRAME)
     return false;
 
-  // Don't invalidate if we cannnot draw.
-  if (PendingDrawsShouldBeAborted())
-    return false;
-
+  // Don't invalidate for draw if we cannnot draw.
   // TODO(sunnyps): needs_prepare_tiles_ is needed here because PrepareTiles is
   // called only inside the deadline / draw phase. We could remove this if we
   // allowed PrepareTiles to happen in OnBeginImplFrame.
-  return needs_redraw_ || needs_prepare_tiles_;
+  return (needs_redraw_ && !PendingDrawsShouldBeAborted()) ||
+         needs_prepare_tiles_;
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {

@@ -45,7 +45,7 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::LOCK_SCREEN_NOTE_APP_TOAST);
 
-  set_arrow(views::BubbleBorder::NONE);
+  SetArrow(views::BubbleBorder::NONE);
   set_margins(
       gfx::Insets(kDialogMessageMarginTopDp, kDialogMessageMarginStartDp,
                   kDialogMessageMarginBottomDp, kDialogMessageMarginEndDp));

@@ -48,10 +48,8 @@ struct RenderFrameMetadata {
 
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
-  [EnableIf=is_android]
   float top_controls_height;
 
-  [EnableIf=is_android]
   float top_controls_shown_ratio;
 
   // Used to position Android bottom bar, whose position is computed by the

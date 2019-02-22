@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 #include "base/debug/stack_trace.h"
 
@@ -54,6 +55,8 @@ const TransformPaintPropertyNode* FragmentData::PreTransform() const {
 
 const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
   if (const auto* properties = PaintProperties()) {
+    if (properties->TransformIsolationNode())
+      return properties->TransformIsolationNode();
     if (properties->ScrollTranslation())
       return properties->ScrollTranslation();
     if (properties->ReplacedContentTransform())
@@ -83,6 +86,8 @@ const ClipPaintPropertyNode* FragmentData::PreClip() const {
 
 const ClipPaintPropertyNode* FragmentData::PostOverflowClip() const {
   if (const auto* properties = PaintProperties()) {
+    if (properties->ClipIsolationNode())
+      return properties->ClipIsolationNode();
     if (properties->OverflowClip())
       return properties->OverflowClip();
     if (properties->InnerBorderRadiusClip())
@@ -109,6 +114,14 @@ const EffectPaintPropertyNode* FragmentData::PreFilter() const {
   return LocalBorderBoxProperties().Effect();
 }
 
+const EffectPaintPropertyNode* FragmentData::PostIsolationEffect() const {
+  if (const auto* properties = PaintProperties()) {
+    if (properties->EffectIsolationNode())
+      return properties->EffectIsolationNode();
+  }
+  return LocalBorderBoxProperties().Effect();
+}
+
 void FragmentData::InvalidateClipPathCache() {
   if (!rare_data_)
     return;
@@ -123,6 +136,38 @@ void FragmentData::SetClipPathCache(const base::Optional<IntRect>& bounding_box,
   EnsureRareData().is_clip_path_cache_valid = true;
   rare_data_->clip_path_bounding_box = bounding_box;
   rare_data_->clip_path_path = std::move(path);
+}
+
+template <typename Rect, typename PaintOffsetFunction>
+static void MapRectBetweenFragment(
+    const FragmentData& from_fragment,
+    const FragmentData& to_fragment,
+    const PaintOffsetFunction& paint_offset_function,
+    Rect& rect) {
+  if (&from_fragment == &to_fragment)
+    return;
+  const auto* from_transform =
+      from_fragment.LocalBorderBoxProperties().Transform();
+  const auto* to_transform = to_fragment.LocalBorderBoxProperties().Transform();
+  rect.MoveBy(paint_offset_function(from_fragment.PaintOffset()));
+  GeometryMapper::SourceToDestinationRect(from_transform, to_transform, rect);
+  rect.MoveBy(-paint_offset_function(to_fragment.PaintOffset()));
+}
+
+void FragmentData::MapRectToFragment(const FragmentData& fragment,
+                                     IntRect& rect) const {
+  MapRectBetweenFragment(*this, fragment,
+                         [](const LayoutPoint& paint_offset) {
+                           return RoundedIntPoint(paint_offset);
+                         },
+                         rect);
+}
+
+void FragmentData::MapRectToFragment(const FragmentData& fragment,
+                                     LayoutRect& rect) const {
+  MapRectBetweenFragment(
+      *this, fragment,
+      [](const LayoutPoint& paint_offset) { return paint_offset; }, rect);
 }
 
 }  // namespace blink

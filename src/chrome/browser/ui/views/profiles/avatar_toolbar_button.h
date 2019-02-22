@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/events/event.h"
 
 class Browser;
@@ -22,7 +23,8 @@ class AvatarToolbarButton : public ToolbarButton,
                             public AvatarButtonErrorControllerDelegate,
                             public ProfileAttributesStorage::Observer,
                             public GaiaCookieManagerService::Observer,
-                            public AccountTrackerService::Observer {
+                            public AccountTrackerService::Observer,
+                            public ui::MaterialDesignControllerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
   ~AvatarToolbarButton() override;
@@ -62,12 +64,17 @@ class AvatarToolbarButton : public ToolbarButton,
                              const gfx::Image& image) override;
   void OnAccountRemoved(const AccountInfo& info) override;
 
+  // ui::MaterialDesignControllerObserver:
+  void OnMdModeChanged() override;
+
   bool IsIncognito() const;
   bool ShouldShowGenericIcon() const;
   base::string16 GetAvatarTooltipText() const;
   gfx::ImageSkia GetAvatarIcon() const;
   gfx::Image GetIconImageFromProfile() const;
   SyncState GetSyncState() const;
+
+  void SetInsets();
 
   Browser* const browser_;
   Profile* const profile_;
@@ -81,6 +88,8 @@ class AvatarToolbarButton : public ToolbarButton,
       cookie_manager_service_observer_;
   ScopedObserver<AccountTrackerService, AvatarToolbarButton>
       account_tracker_service_observer_;
+  ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
+      md_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButton);
 };

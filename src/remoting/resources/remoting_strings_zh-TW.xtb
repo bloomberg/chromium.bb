@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">由於需要第三方驗證，因此這個用戶端不支援這部裝置。</translation>
 <translation id="3194245623920924351">Chrome 遠端桌面</translation>
 <translation id="3197730452537982411">遠端桌面</translation>
-<translation id="3212472844831225214">• 支援 Android 9.0 Pie。</translation>
 <translation id="324272851072175193">寄送說明電子郵件</translation>
 <translation id="3258789396564295715">你可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="8548209692293300397">您先前曾以<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN" />登入 Google Chrome<ph name="LINK_END" />，並重新安裝 Chrome 遠端桌面。</translation>
 <translation id="8642984861538780905">普通</translation>
+<translation id="8705151241155781642">• 支援 Android 9.0 Pie。
+• 可根據你使用的 Android 裝置螢幕大小，調整遠端桌面解析度。</translation>
 <translation id="8712909229180978490">我已儲存的檔案未顯示在線上 Google 雲端硬碟中。</translation>
 <translation id="8743328882720071828">你要將電腦的瀏覽及控制權限授予 <ph name="CLIENT_USERNAME" /> 嗎？</translation>
 <translation id="8747048596626351634">工作階段當機或無法啟動。如果遠端電腦有 ~/.chrome-remote-desktop-session，請確認該檔案開始執行長期運作的前景程序，例如桌面環境或視窗管理員。</translation>

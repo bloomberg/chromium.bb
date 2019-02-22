@@ -5,10 +5,12 @@
 #ifndef NET_EXTRAS_SQLITE_COOKIE_CRYPTO_DELEGATE_H_
 #define NET_EXTRAS_SQLITE_COOKIE_CRYPTO_DELEGATE_H_
 
+#include "base/component_export.h"
+
 namespace net {
 
 // Implements encryption and decryption for the persistent cookie store.
-class CookieCryptoDelegate {
+class COMPONENT_EXPORT(NET_EXTRAS) CookieCryptoDelegate {
  public:
   virtual ~CookieCryptoDelegate() {}
 

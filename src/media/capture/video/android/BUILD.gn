@@ -24,6 +24,7 @@ source_set("android") {
     ":capture_jni_headers",
     "//media/capture:capture_device_specific",
     "//media/capture/mojom:image_capture",
+    "//media/capture/mojom:image_capture_types",
     "//third_party/libyuv",
     "//ui/gfx:color_space",
     "//ui/gfx/geometry",
@@ -51,7 +52,7 @@ java_cpp_enum("media_java_enums_srcjar") {
 android_library("capture_java") {
   deps = [
     "//base:base_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
   ]
 
   srcjar_deps = [ ":media_java_enums_srcjar" ]

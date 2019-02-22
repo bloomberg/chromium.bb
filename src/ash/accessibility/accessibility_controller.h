@@ -27,6 +27,7 @@ namespace ash {
 class AccessibilityHighlightController;
 class AccessibilityObserver;
 class ScopedBacklightsForcedOff;
+class SelectToSpeakEventHandler;
 
 enum AccessibilityNotificationVisibility {
   A11Y_NOTIFICATION_NONE,
@@ -164,6 +165,9 @@ class ASH_EXPORT AccessibilityController
       const gfx::Rect& bounds,
       mojom::AccessibilityPanelState state) override;
   void SetSelectToSpeakState(mojom::SelectToSpeakState state) override;
+  void SetSelectToSpeakEventHandlerDelegate(
+      mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override;
+  void ToggleDictationFromSource(mojom::DictationToggleSource source) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -196,6 +200,8 @@ class ASH_EXPORT AccessibilityController
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 
+  void MaybeCreateSelectToSpeakEventHandler();
+
   // The pref service of the currently active user or the signin profile before
   // user logs in. Can be null in ash_unittests.
   PrefService* active_user_prefs_ = nullptr;
@@ -226,6 +232,9 @@ class ASH_EXPORT AccessibilityController
 
   mojom::SelectToSpeakState select_to_speak_state_ =
       mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
+  std::unique_ptr<SelectToSpeakEventHandler> select_to_speak_event_handler_;
+  mojom::SelectToSpeakEventHandlerDelegatePtr
+      select_to_speak_event_handler_delegate_ptr_;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

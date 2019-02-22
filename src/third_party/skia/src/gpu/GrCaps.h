@@ -58,6 +58,7 @@ public:
     bool multisampleDisableSupport() const { return fMultisampleDisableSupport; }
     bool instanceAttribSupport() const { return fInstanceAttribSupport; }
     bool usesMixedSamples() const { return fUsesMixedSamples; }
+    bool halfFloatVertexAttributeSupport() const { return fHalfFloatVertexAttributeSupport; }
 
     // Primitive restart functionality is core in ES 3.0, but using it will cause slowdowns on some
     // systems. This cap is only set if primitive restart will improve performance.
@@ -74,6 +75,8 @@ public:
     bool blacklistCoverageCounting() const { return fBlacklistCoverageCounting; }
 
     bool avoidStencilBuffers() const { return fAvoidStencilBuffers; }
+
+    bool avoidWritePixelsFastPath() const { return fAvoidWritePixelsFastPath; }
 
     /**
      * Indicates the capabilities of the fixed function blend unit.
@@ -228,18 +231,27 @@ public:
         is not initialized (even if not read by draw calls). */
     bool mustClearUploadedBufferData() const { return fMustClearUploadedBufferData; }
 
+    /** Returns true if the given backend supports importing AHardwareBuffers via the
+     * GrAHardwarebufferImageGenerator. This will only ever be supported on Android devices with API
+     * level >= 26.
+     * */
+    bool supportsAHardwareBufferImages() const { return fSupportsAHardwareBufferImages; }
+
     bool wireframeMode() const { return fWireframeMode; }
 
     bool sampleShadingSupport() const { return fSampleShadingSupport; }
 
     bool fenceSyncSupport() const { return fFenceSyncSupport; }
     bool crossContextTextureSupport() const { return fCrossContextTextureSupport; }
-
     /**
      * Returns whether or not we will be able to do a copy given the passed in params
      */
     virtual bool canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
                                 const SkIRect& srcRect, const SkIPoint& dstPoint) const = 0;
+
+    bool dynamicStateArrayGeometryProcessorTextureSupport() const {
+        return fDynamicStateArrayGeometryProcessorTextureSupport;
+    }
 
     /**
      * This is can be called before allocating a texture to be a dst for copySurface. This is only
@@ -315,10 +327,13 @@ protected:
     bool fPreferClientSideDynamicBuffers             : 1;
     bool fPreferFullscreenClears                     : 1;
     bool fMustClearUploadedBufferData                : 1;
+    bool fSupportsAHardwareBufferImages              : 1;
+    bool fHalfFloatVertexAttributeSupport            : 1;
 
     // Driver workaround
     bool fBlacklistCoverageCounting                  : 1;
     bool fAvoidStencilBuffers                        : 1;
+    bool fAvoidWritePixelsFastPath                   : 1;
 
     // ANGLE performance workaround
     bool fPreferVRAMUseOverFlushes                   : 1;
@@ -327,8 +342,11 @@ protected:
     // TODO: this may need to be an enum to support different fence types
     bool fFenceSyncSupport                           : 1;
 
-    // Vulkan doesn't support this (yet) and some drivers have issues, too
+    // Requires fence sync support in GL.
     bool fCrossContextTextureSupport                 : 1;
+
+    // Not (yet) implemented in VK backend.
+    bool fDynamicStateArrayGeometryProcessorTextureSupport : 1;
 
     BlendEquationSupport fBlendEquationSupport;
     uint32_t fAdvBlendEqBlacklist;

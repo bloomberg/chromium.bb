@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -37,22 +36,13 @@ class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
     utils_.pref_service()->registry()->RegisterBooleanPref(kTestPrefName, true);
   }
 
-  // |list_hiding_enabled| indicates whether kArticleSuggestionsExpandableHeader
-  // is enabled.
+  // |empty_additional_pref| indicates whether the service is created without an
+  // additional pref.
   std::unique_ptr<RemoteSuggestionsStatusServiceImpl> MakeService(
-      bool list_hiding_enabled) {
-    // Enabling/disabling the feature.
-    if (list_hiding_enabled) {
-      feature_list_.InitAndEnableFeature(
-          ntp_snippets::kArticleSuggestionsExpandableHeader);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          ntp_snippets::kArticleSuggestionsExpandableHeader);
-    }
-
+      bool empty_additional_pref) {
     auto service = std::make_unique<RemoteSuggestionsStatusServiceImpl>(
         false, utils_.pref_service(),
-        list_hiding_enabled ? std::string() : kTestPrefName);
+        empty_additional_pref ? std::string() : kTestPrefName);
     service->Init(base::BindRepeating(
         &RemoteSuggestionsStatusServiceImplTest::OnStatusChange,
         base::Unretained(this)));
@@ -67,14 +57,13 @@ class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
     last_status_ = new_status;
   }
 
-  base::test::ScopedFeatureList feature_list_;
   RemoteSuggestionsStatus last_status_;
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
 };
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, NoSigninNeeded) {
-  auto service = MakeService(/*list_hiding_enabled=*/false);
+  auto service = MakeService(/*empty_additional_pref=*/false);
 
   // By default, no signin is required.
   EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT, last_status());
@@ -85,7 +74,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, NoSigninNeeded) {
 }
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledViaPref) {
-  auto service = MakeService(/*list_hiding_enabled=*/false);
+  auto service = MakeService(/*empty_additional_pref=*/false);
 
   // The default test setup is signed out. The service is enabled.
   ASSERT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT, last_status());
@@ -100,7 +89,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledViaPref) {
 }
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledViaAdditionalPref) {
-  auto service = MakeService(/*list_hiding_enabled=*/false);
+  auto service = MakeService(/*empty_additional_pref=*/false);
 
   // The default test setup is signed out. The service is enabled.
   ASSERT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT, last_status());
@@ -115,7 +104,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledViaAdditionalPref) {
 }
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, EnabledAfterListFolded) {
-  auto service = MakeService(/*list_hiding_enabled="*/ true);
+  auto service = MakeService(/*empty_additional_pref=*/true);
   // By default, the articles list should be visible.
   EXPECT_TRUE(utils_.pref_service()->GetBoolean(prefs::kArticlesListVisible));
 
@@ -134,7 +123,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, EnabledAfterListFolded) {
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledWhenListFoldedOnStart) {
   utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, false);
-  auto service = MakeService(/*list_hiding_enabled="*/ true);
+  auto service = MakeService(/*empty_additional_pref=*/true);
 
   // The state should be disabled when starting with no list shown.
   EXPECT_EQ(RemoteSuggestionsStatus::EXPLICITLY_DISABLED, last_status());
@@ -146,7 +135,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledWhenListFoldedOnStart) {
 
 TEST_F(RemoteSuggestionsStatusServiceImplTest, EnablingAfterFoldedStart) {
   utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, false);
-  auto service = MakeService(/*list_hiding_enabled="*/ true);
+  auto service = MakeService(/*empty_additional_pref=*/true);
 
   // The state should be disabled when starting with no list shown.
   EXPECT_EQ(RemoteSuggestionsStatus::EXPLICITLY_DISABLED, last_status());
@@ -164,7 +153,7 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest, EnablingAfterFoldedStart) {
 TEST_F(RemoteSuggestionsStatusServiceImplTest,
        EnablingAfterFoldedStartSignedIn) {
   utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, false);
-  auto service = MakeService(/*list_hiding_enabled="*/ true);
+  auto service = MakeService(/*empty_additional_pref=*/true);
 
   // Signin should not cause a state change, because UI is not visible.
   service->OnSignInStateChanged(/*has_signed_in=*/true);
@@ -173,19 +162,6 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest,
   // When the user toggles the visibility of articles list in UI on, the service
   // should get enabled.
   utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, true);
-  EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN, last_status());
-}
-
-TEST_F(RemoteSuggestionsStatusServiceImplTest,
-       DisablingHidingFeatureWhenFolder) {
-  utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, false);
-  auto service = MakeService(/*list_hiding_enabled="*/ false);
-
-  // The state should be enabled when hiding is disabled.
-  EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT, last_status());
-
-  // Signin should cause a state change.
-  service->OnSignInStateChanged(/*has_signed_in=*/true);
   EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN, last_status());
 }
 

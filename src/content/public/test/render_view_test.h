@@ -68,6 +68,10 @@ class RenderViewTest : public testing::Test {
     void Initialize();
     void Shutdown();
 
+    blink::scheduler::WebThreadScheduler* GetMainThreadScheduler() {
+      return main_thread_scheduler_.get();
+    }
+
    private:
     std::unique_ptr<blink::scheduler::WebThreadScheduler>
         main_thread_scheduler_;
@@ -178,8 +182,7 @@ class RenderViewTest : public testing::Test {
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
-                                bool is_new_navigation,
-                                bool content_initiated);
+                                bool is_new_navigation);
   blink::WebWidget* GetWebWidget();
 
   // Allows a subclass to override the various content client implementations.

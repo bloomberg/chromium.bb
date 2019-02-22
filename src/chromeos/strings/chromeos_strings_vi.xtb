@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1510238584712386396">Trình chạy</translation>
+<translation id="1734367976349034509">Thiết bị này do doanh nghiệp quản lý</translation>
+<translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
 <translation id="2083960536266308407">Không có gì trên màn hình</translation>
+<translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
+<translation id="2805756323405976993">Ứng dụng</translation>
+<translation id="2872961005593481000">Tắt</translation>
+<translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
 Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translation>
-<translation id="6674412557034343536">dừng hẹn giờ</translation>
-<translation id="8626219642120025691">Bộ hẹn giờ đã kết thúc</translation>
+<translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
+<translation id="54609108002486618">Được quản lý</translation>
+<translation id="5832805196449965646">Thêm người</translation>
+<translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="7222902781030499995">Dừng lịch hẹn giờ</translation>
+<translation id="7658239707568436148">Hủy</translation>
+<translation id="7837740436429729974">Hết giờ</translation>
 <translation id="8898978413391960553">00:00 giây</translation>
+<translation id="9111102763498581341">Mở khóa</translation>
 </translationbundle>

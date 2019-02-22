@@ -28,7 +28,12 @@ class CONTROLLER_EXPORT CrashMemoryMetricsReporterImpl
 
   void WriteIntoSharedMemory(const OomInterventionMetrics& metrics);
 
-  void OnVirtualMemoryOOMCallback(bool virtual_memory_oom);
+  // This method tracks when an allocation failure occurs. It should be hooked
+  // into all platform allocation failure handlers in a process such as
+  // base::TerminateBecauseOutOfMemory() and OOM_CRASH() in Partition Alloc.
+  // TODO(yuzus): Now only called from OOM_CRASH(). Call this from malloc/new
+  // failures and base::TerminateBecauseOutOfMemory(), too.
+  static void OnOOMCallback();
 
   // This function needs to be called after ResetFileDescriptors.
   OomInterventionMetrics GetCurrentMemoryMetrics();

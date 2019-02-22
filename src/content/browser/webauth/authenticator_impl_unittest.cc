@@ -399,6 +399,11 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     scoped_feature_list_->InitAndEnableFeature(feature);
   }
 
+  void DisableFeature(const base::Feature& feature) {
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitAndDisableFeature(feature);
+  }
+
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
@@ -526,8 +531,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if resident
-// key is requested for U2F devices on create().
+// Test that MakeCredential request returns if resident
+// key is requested on create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
   device::test::ScopedVirtualFidoDevice scoped_virtual_device;
@@ -546,7 +551,10 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+            callback_receiver.status());
+
+  // TODO add CTAP device
 }
 
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if a
@@ -830,22 +838,16 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   auto authenticator = ConnectToAuthenticator();
-// On Windows caBLE should be disabled by default regardless of version.
-#if defined(OS_WIN)
-  EXPECT_FALSE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-// Otherwise, it should be enabled by default if BLE is supported.
-#else
+
+  // caBLE should be enabled by default if BLE is supported.
   EXPECT_EQ(
       device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
       SupportsTransportProtocol(
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-#endif
 }
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
-  scoped_feature_list_.emplace();
-  scoped_feature_list_->InitAndDisableFeature(features::kWebAuthCable);
+  DisableFeature(features::kWebAuthCable);
 
   auto authenticator = ConnectToAuthenticator();
   EXPECT_FALSE(SupportsTransportProtocol(
@@ -931,7 +933,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+  EXPECT_EQ(AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
             callback_receiver.status());
 }
 
@@ -1124,7 +1126,9 @@ class TestAuthenticatorRequestDelegate
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
+      override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
         << "RegisterActionCallbacks called twice.";
     std::move(action_callbacks_registered_callback_).Run();
@@ -1704,6 +1708,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseIfFeatureFlagOff) {
   if (__builtin_available(macOS 10.12.2, *)) {
     // Touch ID is hardware-supported and embedder-enabled, but the flag is off.
+    DisableFeature(device::kWebAuthTouchId);
     device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
     touch_id_test_environment.SetTouchIdAvailable(true);
     test_client_.supports_touch_id = true;
@@ -2007,6 +2012,36 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   EXPECT_EQ(content::AuthenticatorRequestClientDelegate::
                 InterestingFailureReason::kKeyNotRegistered,
             std::get<0>(*failure_reason_receiver.result()));
+}
+
+TEST_F(AuthenticatorImplTest, Transports) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (auto protocol :
+       {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap}) {
+    SCOPED_TRACE(static_cast<int>(protocol));
+
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    scoped_virtual_device.SetSupportedProtocol(protocol);
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    const std::vector<blink::mojom::AuthenticatorTransport>& transports(
+        callback_receiver.value()->transports);
+    ASSERT_EQ(2u, transports.size());
+    EXPECT_EQ(blink::mojom::AuthenticatorTransport::USB, transports[0]);
+    // VirtualFidoDevice generates an attestation certificate that asserts NFC
+    // support via an extension.
+    EXPECT_EQ(blink::mojom::AuthenticatorTransport::NFC, transports[1]);
+  }
 }
 
 }  // namespace content

@@ -283,11 +283,11 @@ void HTMLTreeBuilder::Trace(blink::Visitor* visitor) {
 void HTMLTreeBuilder::Detach() {
 #if DCHECK_IS_ON()
   // This call makes little sense in fragment mode, but for consistency
-  // DocumentParser expects detach() to always be called before it's destroyed.
+  // DocumentParser expects Detach() to always be called before it's destroyed.
   is_attached_ = false;
 #endif
-  // HTMLConstructionSite might be on the callstack when detach() is called
-  // otherwise we'd just call m_tree.clear() here instead.
+  // HTMLConstructionSite might be on the callstack when Detach() is called
+  // otherwise we'd just call tree_.Clear() here instead.
   tree_.Detach();
 }
 
@@ -1816,7 +1816,7 @@ bool HTMLTreeBuilder::ProcessCaptionEndTagForInCaption() {
     return false;
   }
   tree_.GenerateImpliedEndTags();
-  // FIXME: parse error if (!m_tree.currentStackItem()->hasTagName(captionTag))
+  // FIXME: parse error if (!tree_.CurrentStackItem()->HasTagName(captionTag))
   tree_.OpenElements()->PopUntilPopped(captionTag.LocalName());
   tree_.ActiveFormattingElements()->ClearToLastMarker();
   SetInsertionMode(kInTableMode);

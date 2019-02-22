@@ -119,7 +119,6 @@ chrome.test.runTests([
         'extension speech 3',
         {
          'voiceName': 'Pat',
-         'gender': 'male',
          'enqueue': true,
          'onEvent': function(event) {
            if (event.type == 'end') {
@@ -148,17 +147,23 @@ chrome.test.runTests([
     chrome.ttsEngine.onStop.addListener(stopListener);
 
     chrome.tts.getVoices(function(voices) {
-      chrome.test.assertEq(3, voices.length);
+      chrome.test.assertEq(4, voices.length);
 
       chrome.test.assertEq('TestNativeVoice', voices[0].voiceName);
       chrome.test.assertEq('en-GB', voices[0].lang);
 
       chrome.test.assertEq('Alice', voices[1].voiceName);
       chrome.test.assertEq('en-US', voices[1].lang);
-      chrome.test.assertEq('female', voices[1].gender);
 
       chrome.test.assertEq('Pat', voices[2].voiceName);
       chrome.test.assertEq('en-US', voices[2].lang);
+
+      chrome.test.assertEq('Cat', voices[3].voiceName);
+
+      chrome.test.assertEq(voices[0].gender, undefined);
+      chrome.test.assertEq(voices[1].gender, undefined);
+      chrome.test.assertEq(voices[2].gender, undefined);
+
       chrome.test.succeed();
     });
   }

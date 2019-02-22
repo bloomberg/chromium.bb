@@ -50,6 +50,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -102,6 +103,27 @@ struct WindowSelectorItemForRoot {
   }
 
   const aura::Window* root_window;
+};
+
+// A WidgetDelegate to specify the initialy focused view.
+class TextFilterWidgetDelegate : public views::WidgetDelegate {
+ public:
+  TextFilterWidgetDelegate(views::Widget* widget, views::View* initial_focus)
+      : widget_(widget), initial_focus_(initial_focus) {}
+  ~TextFilterWidgetDelegate() override = default;
+
+  // WidgetDelegate:
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
+  views::View* GetInitiallyFocusedView() override { return initial_focus_; }
+
+ private:
+  views::Widget* widget_;
+  views::View* initial_focus_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextFilterWidgetDelegate);
 };
 
 // Triggers a shelf visibility update on all root window controllers.
@@ -202,6 +224,9 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.name = "OverviewModeTextFilter";
   *text_filter_bottom = params.bounds.bottom() + kTextFieldBottomMargin;
   params.parent = root_window->GetChildById(kShellWindowId_StatusContainer);
+
+  views::Textfield* textfield = new views::Textfield();
+  params.delegate = new TextFilterWidgetDelegate(widget, textfield);
   widget->Init(params);
 
   // Use |container| to specify the padding surrounding the text and to give
@@ -221,7 +246,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
                   vertical_padding, kTextFilterCornerRadius),
       kTextFilterHorizontalPadding));
 
-  views::Textfield* textfield = new views::Textfield();
   textfield->set_controller(controller);
   textfield->SetBorder(views::NullBorder());
   textfield->SetBackgroundColor(kTextFilterBackgroundColor);
@@ -245,8 +269,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   aura::Window* text_filter_widget_window = widget->GetNativeWindow();
   text_filter_widget_window->layer()->SetOpacity(0);
   text_filter_widget_window->SetTransform(transform);
-  widget->Show();
-  textfield->RequestFocus();
 
   return widget;
 }
@@ -354,11 +376,14 @@ void WindowSelector::Init(const WindowList& windows,
           GetDraggedWindow(window_grid->root_window(), mru_window_list);
       if (dragged_window) {
         window_grid->PositionWindows(/*animate=*/false);
-      } else if (use_slide_animation_) {
+      } else if (enter_exit_overview_type_ ==
+                 EnterExitOverviewType::kWindowsMinimized) {
         window_grid->PositionWindows(/*animate=*/false);
         window_grid->SlideWindowsIn();
-        use_slide_animation_ = false;
       } else {
+        // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
+        // should not appear here.
+        DCHECK_EQ(enter_exit_overview_type_, EnterExitOverviewType::kNormal);
         window_grid->CalculateWindowListAnimationStates(
             /*selected_item=*/nullptr, OverviewTransition::kEnter);
         window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
@@ -424,7 +449,8 @@ void WindowSelector::Shutdown() {
   // Setting focus after restoring windows' state avoids unnecessary animations.
   // No need to restore if we are sliding to the home launcher screen, as all
   // windows will be minimized.
-  ResetFocusRestoreWindow(!use_slide_animation_);
+  ResetFocusRestoreWindow(enter_exit_overview_type_ ==
+                          EnterExitOverviewType::kNormal);
   RemoveAllObservers();
 
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
@@ -723,6 +749,37 @@ void WindowSelector::SetWindowListNotAnimatedWhenExiting(
     grid->SetWindowListNotAnimatedWhenExiting();
 }
 
+void WindowSelector::UpdateGridAtLocationYPositionAndOpacity(
+    int64_t display_id,
+    int new_y,
+    float opacity,
+    const gfx::Rect& work_area,
+    UpdateAnimationSettingsCallback callback) {
+  WindowGrid* grid = GetGridWithRootWindow(
+      ash::Shell::Get()->GetRootWindowForDisplayId(display_id));
+  if (grid)
+    grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
+}
+
+void WindowSelector::UpdateMaskAndShadow(bool show) {
+  for (auto& grid : grid_list_) {
+    for (auto& window : grid->window_list())
+      window->UpdateMaskAndShadow(show);
+  }
+}
+
+void WindowSelector::OnStartingAnimationComplete(bool canceled) {
+  if (!canceled) {
+    UpdateMaskAndShadow(!canceled);
+    if (text_filter_widget_)
+      text_filter_widget_->Show();
+    for (auto& grid : grid_list_) {
+      for (auto& window : grid->window_list())
+        window->OnStartingAnimationComplete();
+    }
+  }
+}
+
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
@@ -801,9 +858,14 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Do not cancel the overview mode if the window activation was caused by
+  // Do not cancel overview mode if the window activation was caused by
   // snapping window to one side of the screen.
   if (Shell::Get()->IsSplitViewModeActive())
+    return;
+
+  // Do not cancel overview mode if the window activation was caused while
+  // dragging overview mode offscreen.
+  if (IsSlidingOutOverviewFromShelf())
     return;
 
   // Don't restore focus on exit if a window was just activated.
@@ -857,9 +919,9 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
     grid->FilterItems(new_contents);
 
-  // If the selection widget is not active, execute a Move() command so that it
-  // shows up on the first undimmed item.
-  if (grid_list_[selected_grid_index_]->is_selecting())
+  // If the selection widget is not active and the filter string is not empty,
+  // execute a Move() command so that it shows up on the first undimmed item.
+  if (grid_list_[selected_grid_index_]->is_selecting() || new_contents.empty())
     return;
   Move(WindowSelector::RIGHT, false);
 }

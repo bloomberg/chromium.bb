@@ -225,10 +225,10 @@ void AppendKeyValue(base::ListValue* list,
                     std::string value,
                     std::string clazz = std::string()) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetPath({kKey}, base::Value(std::move(key)));
-  dict->SetPath({kValue}, base::Value(std::move(value)));
+  dict->SetKey(kKey, base::Value(std::move(key)));
+  dict->SetKey(kValue, base::Value(std::move(value)));
   if (!clazz.empty())
-    dict->SetPath({kClass}, base::Value(std::move(clazz)));
+    dict->SetKey(kClass, base::Value(std::move(clazz)));
   list->GetList().push_back(std::move(*dict));
 }
 
@@ -319,8 +319,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       drive::DriveServiceInterface* drive_service);
   void UpdateAboutResourceSection(
       drive::DriveServiceInterface* drive_service);
-  void UpdateAppListSection(
-      drive::DriveServiceInterface* drive_service);
   void UpdateDeltaUpdateStatusSection(
       drive::DebugInfoCollector* debug_info_collector);
   void UpdateInFlightOperationsSection(drive::JobListInterface* job_list);
@@ -359,10 +357,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnGetAboutResource(
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
-
-  // Called when GetAppList() call to DriveService is complete.
-  void OnGetAppList(google_apis::DriveApiErrorCode status,
-                    std::unique_ptr<google_apis::AppList> app_list);
 
   // Callback for DebugInfoCollector::GetMetadata for delta update.
   void OnGetFilesystemMetadataForDeltaUpdate(
@@ -423,36 +417,6 @@ void DriveInternalsWebUIHandler::OnGetAboutResource(
                            parsed_about_resource->root_folder_id());
 
   web_ui()->CallJavascriptFunctionUnsafe("updateAboutResource", about_resource);
-}
-
-void DriveInternalsWebUIHandler::OnGetAppList(
-    google_apis::DriveApiErrorCode status,
-    std::unique_ptr<google_apis::AppList> parsed_app_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (status != google_apis::HTTP_SUCCESS) {
-    LOG(ERROR) << "Failed to get app list";
-    return;
-  }
-  DCHECK(parsed_app_list);
-
-  base::DictionaryValue app_list;
-  app_list.SetString("etag", parsed_app_list->etag());
-
-  auto items = std::make_unique<base::ListValue>();
-  for (size_t i = 0; i < parsed_app_list->items().size(); ++i) {
-    const google_apis::AppResource* app = parsed_app_list->items()[i].get();
-    auto app_data = std::make_unique<base::DictionaryValue>();
-    app_data->SetString("name", app->name());
-    app_data->SetString("application_id", app->application_id());
-    app_data->SetString("object_type", app->object_type());
-    app_data->SetBoolean("supports_create", app->supports_create());
-
-    items->Append(std::move(app_data));
-  }
-  app_list.Set("items", std::move(items));
-
-  web_ui()->CallJavascriptFunctionUnsafe("updateAppList", app_list);
 }
 
 void DriveInternalsWebUIHandler::RegisterMessages() {
@@ -528,7 +492,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   if (drive_service) {
     UpdateConnectionStatusSection(drive_service);
     UpdateAboutResourceSection(drive_service);
-    UpdateAppListSection(drive_service);
   }
 
   drive::DebugInfoCollector* debug_info_collector =
@@ -620,16 +583,6 @@ void DriveInternalsWebUIHandler::UpdateAboutResourceSection(
 
   drive_service->GetAboutResource(
       base::Bind(&DriveInternalsWebUIHandler::OnGetAboutResource,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DriveInternalsWebUIHandler::UpdateAppListSection(
-    drive::DriveServiceInterface* drive_service) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(drive_service);
-
-  drive_service->GetAppList(
-      base::Bind(&DriveInternalsWebUIHandler::OnGetAppList,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -912,7 +865,7 @@ void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
       &paths, "Downloads",
       file_manager::util::GetDownloadsFolderForProfile(profile).AsUTF8Unsafe());
   const auto* integration_service = GetIntegrationService();
-  if (integration_service && integration_service->IsMounted()) {
+  if (integration_service) {
     AppendKeyValue(&paths, "Drive",
                    integration_service->GetMountPointPath().AsUTF8Unsafe());
   }

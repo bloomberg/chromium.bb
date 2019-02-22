@@ -40,6 +40,12 @@ chrome_cleaner_mojom("json_parser_interface") {
   ]
 }
 
+chrome_cleaner_mojom("zip_archiver_interface") {
+  sources = [
+    "zip_archiver.mojom",
+  ]
+}
+
 chrome_cleaner_mojom("engine_sandbox_test_interface") {
   testonly = true
 

@@ -22,7 +22,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -40,7 +39,6 @@ namespace {
 
 ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
                                           gfx::NativeWindow window) {
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForNativeWindow(window);
   if (!browser_view)
@@ -53,10 +51,6 @@ ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
   ToolbarActionView* const reference_view =
       browser_actions_container->GetViewForId(extension_id);
   return reference_view && reference_view->visible() ? reference_view : nullptr;
-#else
-  // Anchoring is not supported when using Cocoa.
-  return nullptr;
-#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 }
 
 class ExtensionUninstallDialogDelegateView;
@@ -296,8 +290,6 @@ base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
 
 }  // namespace
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-
 // static
 extensions::ExtensionUninstallDialog*
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
@@ -305,8 +297,6 @@ extensions::ExtensionUninstallDialog::Create(Profile* profile,
                                              Delegate* delegate) {
   return CreateViews(profile, parent, delegate);
 }
-
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
 // static
 extensions::ExtensionUninstallDialog*

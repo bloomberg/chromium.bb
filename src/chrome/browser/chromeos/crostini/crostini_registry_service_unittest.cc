@@ -164,8 +164,7 @@ TEST_F(CrostiniRegistryServiceTest, ZeroAppsInstalledHistogram) {
   RecreateService();
 
   // Check that there are no apps installed.
-  histogram_tester.ExpectTotalCount(kCrostiniAppsInstalledHistogram, 1);
-  histogram_tester.ExpectBucketCount(kCrostiniAppsInstalledHistogram, 0, 1);
+  histogram_tester.ExpectUniqueSample(kCrostiniAppsInstalledHistogram, 0, 1);
 }
 
 TEST_F(CrostiniRegistryServiceTest, NAppsInstalledHistogram) {
@@ -195,8 +194,7 @@ TEST_F(CrostiniRegistryServiceTest, NAppsInstalledHistogram) {
 
   RecreateService();
 
-  histogram_tester.ExpectTotalCount(kCrostiniAppsInstalledHistogram, 1);
-  histogram_tester.ExpectBucketCount(kCrostiniAppsInstalledHistogram, 4, 1);
+  histogram_tester.ExpectUniqueSample(kCrostiniAppsInstalledHistogram, 4, 1);
 }
 
 TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {
@@ -423,4 +421,34 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNameSkipNoDisplay) {
   EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             CrostiniTestHelper::GenerateAppId("app2", "vm", "container"));
 }
+
+TEST_F(CrostiniRegistryServiceTest, IsScaledReturnFalseWhenNotSet) {
+  std::string app_id =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  service()->UpdateApplicationList(app_list);
+  base::Optional<CrostiniRegistryService::Registration> registration =
+      service()->GetRegistration(app_id);
+  EXPECT_TRUE(registration.has_value());
+  EXPECT_FALSE(registration.value().IsScaled());
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetScaledWorks) {
+  std::string app_id =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  service()->UpdateApplicationList(app_list);
+  service()->SetAppScaled(app_id, true);
+  base::Optional<CrostiniRegistryService::Registration> registration =
+      service()->GetRegistration(app_id);
+  EXPECT_TRUE(registration.has_value());
+  EXPECT_TRUE(registration.value().IsScaled());
+  service()->SetAppScaled(app_id, false);
+  registration = service()->GetRegistration(app_id);
+  EXPECT_TRUE(registration.has_value());
+  EXPECT_FALSE(registration.value().IsScaled());
+}
+
 }  // namespace crostini

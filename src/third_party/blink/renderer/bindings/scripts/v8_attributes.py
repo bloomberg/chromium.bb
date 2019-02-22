@@ -80,7 +80,7 @@ def attribute_context(interface, attribute, interfaces):
         includes.add('core/frame/use_counter.h')
     # [CrossOrigin]
     if has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'):
-        includes.add('bindings/core/v8/v8_cross_origin_setter_info.h')
+        includes.add('platform/bindings/v8_cross_origin_setter_info.h')
     # [Constructor]
     # TODO(yukishiino): Constructors are much like methods although constructors
     # are not methods.  Constructors must be data-type properties, and we can
@@ -104,11 +104,6 @@ def attribute_context(interface, attribute, interfaces):
         'SaveSameObject' in attribute.extended_attributes)
     if is_save_same_object:
         includes.add('platform/bindings/v8_private_property.h')
-
-    if (base_idl_type == 'EventHandler' and
-            interface.name in ['Window', 'WorkerGlobalScope'] and
-            attribute.name == 'onerror'):
-        includes.add('bindings/core/v8/v8_error_handler.h')
 
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
@@ -185,7 +180,7 @@ def attribute_context(interface, attribute, interfaces):
         'is_save_same_object': is_save_same_object,
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
-        'is_unforgeable': is_unforgeable(interface, attribute),
+        'is_unforgeable': is_unforgeable(attribute),
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
@@ -463,6 +458,8 @@ def setter_context(interface, attribute, interfaces, context):
         'has_type_checking_interface': has_type_checking_interface,
         'is_setter_call_with_execution_context': has_extended_attribute_value(
             attribute, 'SetterCallWith', 'ExecutionContext'),
+        'is_setter_call_with_script_state': has_extended_attribute_value(
+            attribute, 'SetterCallWith', 'ScriptState'),
         'is_setter_raises_exception': is_setter_raises_exception,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue'),
@@ -492,17 +489,16 @@ def setter_expression(interface, attribute, context):
         getter_name = scoped_name(interface, attribute, cpp_name(attribute))
         context['event_handler_getter_expression'] = '%s(%s)' % (
             getter_name, ', '.join(arguments))
-        if (interface.name in ['Window', 'WorkerGlobalScope'] and
-                attribute.name == 'onerror'):
-            includes.add('bindings/core/v8/v8_error_handler.h')
-            arguments.append(
-                'V8EventListenerHelper::EnsureErrorHandler(' +
-                'ScriptState::ForRelevantRealm(info), v8Value)')
-        else:
-            arguments.append(
-                'V8EventListenerHelper::GetEventListener(' +
-                'ScriptState::ForRelevantRealm(info), v8Value, true, ' +
-                'kListenerFindOrCreate)')
+        handler_type = 'kEventHandler'
+        if attribute.name == 'onerror':
+            handler_type = 'kOnErrorEventHandler'
+        elif attribute.name == 'onbeforeunload':
+            handler_type = 'kOnBeforeUnloadEventHandler'
+        arguments.append(
+            'V8EventListenerHelper::GetEventHandler(' +
+            'ScriptState::ForRelevantRealm(info), v8Value, ' +
+            'JSEventHandler::HandlerType::' + handler_type +
+            ', kListenerFindOrCreate)')
     elif idl_type.base_type == 'SerializedScriptValue':
         arguments.append('std::move(cppValue)')
     else:
@@ -579,7 +575,7 @@ def property_attributes(interface, attribute):
     if ('NotEnumerable' in extended_attributes or
             is_constructor_attribute(attribute)):
         property_attributes_list.append('v8::DontEnum')
-    if is_unforgeable(interface, attribute):
+    if is_unforgeable(attribute):
         property_attributes_list.append('v8::DontDelete')
     if not is_writable(attribute):
         property_attributes_list.append('v8::ReadOnly')

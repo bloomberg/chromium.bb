@@ -116,6 +116,7 @@ BackgroundTest.prototype = {
         var d = document.getElementById('disappearing');
         d.parentElement.removeChild(d);
         document.getElementById('live').innerText = 'Deleted';
+        document.body.offsetTop
       });
     </script>
   */},
@@ -875,8 +876,15 @@ TEST_F('BackgroundTest', 'DisappearingObject', function() {
         .expectSpeech('After2')
         .call(doCmd('previousObject'))
         .expectSpeech('After1')
+        .call(doCmd('dumpTree'));
+
+/*
+    // This is broken by cl/1260523 making tree updating (more) asynchronous.
+    // TODO(aboxhall/dtseng): Add a function to wait for next tree update?
+    mockFeedback
         .call(doCmd('previousObject'))
         .expectSpeech('Before3');
+*/
 
     mockFeedback.replay();
   });
@@ -1185,8 +1193,7 @@ TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   });
 });
 
-// Flaky, see https://crbug.com/622387.
-TEST_F('BackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
+TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
     <input type="text"></input>
@@ -1362,7 +1369,7 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
   });
 });
 
-// Flaky. See http://crbug.com/857382.
+// Failing consistently, please see https://crbug.com/857382
 TEST_F('BackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
@@ -1474,8 +1481,7 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   });
 });
 
-// Flaky, see https://crbug.com/622387.
-TEST_F('BackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
+TEST_F('BackgroundTest', 'NavigationEscapesEdit', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before content editable</p>
@@ -1716,6 +1722,78 @@ TEST_F('BackgroundTest', 'GestureGranularity', function() {
         .call(doGesture('swipeRight3'))
         .expectSpeech('Line')
 
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'LinesFilterWhitespace', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <p>start</p>
+    <div role="list">
+      <div role="listitem">
+        <span>Munich</span>
+        <span>London</span>
+      </div>
+    </div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('start')
+        .clearPendingOutput()
+        .call(doCmd('nextLine'))
+        .expectSpeech('Munich')
+        .expectNextSpeechUtteranceIsNot(' ')
+        .expectSpeech('London')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'TabSwitchAndRefreshRecovery', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <p>tab1</p>
+  */}, function(root1) {
+    this.runWithLoadedTree(function() {/*
+      <p>tab2</p>
+    */}, function(root2) {
+      mockFeedback.expectSpeech('tab2')
+          .clearPendingOutput()
+          .call(press(9  /* tab */, {shift: true, ctrl: true}))
+          .expectSpeech('tab1')
+          .clearPendingOutput()
+          .call(press(9  /* tab */, {ctrl: true}))
+          .expectSpeech('tab2')
+          .clearPendingOutput()
+          .call(press(82  /* R */, {ctrl: true}))
+          .expectSpeech('tab2')
+          .replay();
+    });
+  });
+});
+
+TEST_F('BackgroundTest', 'ListName', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <div id="_md-chips-wrapper-76" tabindex="-1" class="md-chips md-readonly" aria-setsize="4" aria-label="Favorite Sports" role="list" aria-describedby="chipsNote">
+      <div role="listitem">Baseball</div>
+      <div role="listitem">Hockey</div>
+      <div role="listitem">Lacrosse</div>
+      <div role="listitem">Football</div>
+    </div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('Favorite Sports')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'LayoutTable', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <table><tr><td>start</td></tr></table>
+  */}, function(root) {
+    mockFeedback.expectSpeech(
+            'start',
+            'row 1 column 1',
+            'Table , 1 by 1')
         .replay();
   });
 });

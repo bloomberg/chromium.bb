@@ -202,7 +202,7 @@ void AdbClientSocket::SendCommand(const std::string& command,
                                   bool is_void,
                                   const CommandCallback& callback) {
   scoped_refptr<net::StringIOBuffer> request_buffer =
-      new net::StringIOBuffer(EncodeMessage(command));
+      base::MakeRefCounted<net::StringIOBuffer>(EncodeMessage(command));
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("adb_client_socket", R"(
         semantics {
@@ -243,7 +243,7 @@ void AdbClientSocket::ReadResponse(const CommandCallback& callback,
     return;
   }
   scoped_refptr<net::IOBuffer> response_buffer =
-      new net::IOBuffer(kBufferSize);
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   result = socket_->Read(response_buffer.get(),
                          kBufferSize,
                          base::Bind(&AdbClientSocket::OnResponseHeader,

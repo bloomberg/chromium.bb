@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 
 /**
  * IME (input method editor) and text input tests.

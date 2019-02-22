@@ -65,10 +65,9 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
 
 void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  const int key = GetNextKey();
-  password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
+  password_autofill_manager_.OnAddPasswordFillData(form_data);
   GetPasswordAutofillAgent()->FillPasswordForm(
-      key, autofill::ClearPasswordValues(form_data));
+      autofill::ClearPasswordValues(form_data));
 }
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
@@ -119,19 +118,12 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
 
 void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
     const autofill::PasswordFormFillData& form_data) {
-  const int key = GetNextKey();
-  password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
-  GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(key, form_data);
+  password_autofill_manager_.OnAddPasswordFillData(form_data);
+  GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(form_data);
 }
 
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
   GetAutofillAgent()->ClearPreviewedForm();
-}
-
-void ContentPasswordManagerDriver::ForceSavePassword() {
-  GetPasswordAutofillAgent()->FindFocusedPasswordForm(
-      base::BindOnce(&ContentPasswordManagerDriver::OnFocusedPasswordFormFound,
-                     weak_factory_.GetWeakPtr()));
 }
 
 void ContentPasswordManagerDriver::GeneratePassword() {
@@ -176,15 +168,6 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
   }
 }
 
-void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
-    const autofill::PasswordForm& password_form) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND))
-    return;
-  GetPasswordManager()->OnPasswordFormForceSaveRequested(this, password_form);
-}
-
 const autofill::mojom::AutofillAgentAssociatedPtr&
 ContentPasswordManagerDriver::GetAutofillAgent() {
   autofill::ContentAutofillDriver* autofill_driver =
@@ -216,14 +199,6 @@ ContentPasswordManagerDriver::GetPasswordGenerationAgent() {
   }
 
   return password_gen_agent_;
-}
-
-int ContentPasswordManagerDriver::GetNextKey() {
-  // Limit the range of the key to avoid excessive allocations. See
-  // https://crbug.com/846404.
-  constexpr int kMaxKeyRange = 4 * 1024;
-  next_free_key_ = (next_free_key_ + 1) % kMaxKeyRange;
-  return next_free_key_;
 }
 
 }  // namespace password_manager

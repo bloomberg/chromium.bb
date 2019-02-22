@@ -28,6 +28,11 @@ const NetworkRequestError kErrorSettingFeatureNetworkRequestError =
 const NetworkRequestError kErrorFindingEligibleNetworkRequestError =
     NetworkRequestError::kEndpointNotFound;
 
+const char kBetterTogetherHostCallbackBluetoothAddress[] =
+    "BETTER_TOGETHER_HOST";
+const char kBetterTogetherClientCallbackBluetoothAddress[] =
+    "BETTER_TOGETHER_CLIENT";
+
 std::vector<cryptauth::ExternalDeviceInfo>
 CreateExternalDeviceInfosForRemoteDevices(
     const cryptauth::RemoteDeviceRefList remote_devices) {
@@ -273,6 +278,8 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestOrderUponMultipleRequests) {
 
   EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherHostCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
@@ -288,6 +295,8 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestOrderUponMultipleRequests) {
   EXPECT_EQ(
       SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
       last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherClientCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
@@ -336,6 +345,8 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest,
 
   EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherHostCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
@@ -343,11 +354,15 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest,
   EXPECT_EQ(
       SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_CLIENT),
       last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherClientCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorFindingEligible, GetResultAndReset());
 
   EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherHostCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeFindEligibleDevicesCallback(CreateFindEligibleUnlockDevicesResponse());
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
   VerifyDeviceEligibility();
@@ -366,6 +381,8 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestOrderViaMultipleErrors) {
 
   EXPECT_EQ(SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST),
             last_find_request_.feature());
+  EXPECT_EQ(kBetterTogetherHostCallbackBluetoothAddress,
+            last_find_request_.callback_bluetooth_address());
   InvokeErrorCallback();
   EXPECT_EQ(Result::kErrorFindingEligible, GetResultAndReset());
 }

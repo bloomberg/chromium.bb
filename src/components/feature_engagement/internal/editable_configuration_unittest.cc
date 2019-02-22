@@ -14,10 +14,10 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEditableTestFeatureFoo{"test_foo",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEditableTestFeatureBar{"test_bar",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 class EditableConfigurationTest : public ::testing::Test {
  public:
@@ -37,23 +37,23 @@ class EditableConfigurationTest : public ::testing::Test {
 
 TEST_F(EditableConfigurationTest, SingleConfigAddAndGet) {
   FeatureConfig foo_config = CreateFeatureConfig("foo", true);
-  configuration_.SetConfiguration(&kTestFeatureFoo, foo_config);
+  configuration_.SetConfiguration(&kEditableTestFeatureFoo, foo_config);
   const FeatureConfig& foo_config_result =
-      configuration_.GetFeatureConfig(kTestFeatureFoo);
+      configuration_.GetFeatureConfig(kEditableTestFeatureFoo);
 
   EXPECT_EQ(foo_config, foo_config_result);
 }
 
 TEST_F(EditableConfigurationTest, TwoConfigAddAndGet) {
   FeatureConfig foo_config = CreateFeatureConfig("foo", true);
-  configuration_.SetConfiguration(&kTestFeatureFoo, foo_config);
+  configuration_.SetConfiguration(&kEditableTestFeatureFoo, foo_config);
   FeatureConfig bar_config = CreateFeatureConfig("bar", true);
-  configuration_.SetConfiguration(&kTestFeatureBar, bar_config);
+  configuration_.SetConfiguration(&kEditableTestFeatureBar, bar_config);
 
   const FeatureConfig& foo_config_result =
-      configuration_.GetFeatureConfig(kTestFeatureFoo);
+      configuration_.GetFeatureConfig(kEditableTestFeatureFoo);
   const FeatureConfig& bar_config_result =
-      configuration_.GetFeatureConfig(kTestFeatureBar);
+      configuration_.GetFeatureConfig(kEditableTestFeatureBar);
 
   EXPECT_EQ(foo_config, foo_config_result);
   EXPECT_EQ(bar_config, bar_config_result);
@@ -61,16 +61,16 @@ TEST_F(EditableConfigurationTest, TwoConfigAddAndGet) {
 
 TEST_F(EditableConfigurationTest, ConfigShouldBeEditable) {
   FeatureConfig valid_foo_config = CreateFeatureConfig("foo", true);
-  configuration_.SetConfiguration(&kTestFeatureFoo, valid_foo_config);
+  configuration_.SetConfiguration(&kEditableTestFeatureFoo, valid_foo_config);
 
   const FeatureConfig& valid_foo_config_result =
-      configuration_.GetFeatureConfig(kTestFeatureFoo);
+      configuration_.GetFeatureConfig(kEditableTestFeatureFoo);
   EXPECT_EQ(valid_foo_config, valid_foo_config_result);
 
   FeatureConfig invalid_foo_config = CreateFeatureConfig("foo2", false);
-  configuration_.SetConfiguration(&kTestFeatureFoo, invalid_foo_config);
+  configuration_.SetConfiguration(&kEditableTestFeatureFoo, invalid_foo_config);
   const FeatureConfig& invalid_foo_config_result =
-      configuration_.GetFeatureConfig(kTestFeatureFoo);
+      configuration_.GetFeatureConfig(kEditableTestFeatureFoo);
   EXPECT_EQ(invalid_foo_config, invalid_foo_config_result);
 }
 

@@ -20,10 +20,8 @@ interface DriveFsBootstrap {
 
 // Implemented by DriveFS, used from Chrome.
 interface DriveFs {
-  // Returns the metadata for |path|. Thumbnail requests may require requesting
-  // a thumbnail from the server so thumbnails are only populated for requests
-  // where |want_thumbnail| is true.
-  GetMetadata(mojo_base.mojom.FilePath path, bool want_thumbnail) => (
+  // Returns the metadata for |path|.
+  GetMetadata(mojo_base.mojom.FilePath path) => (
       FileError error, FileMetadata? metadata);
 
   // Sets the file at |path| to pinned or unpinned depending on the value of
@@ -36,6 +34,22 @@ interface DriveFs {
 
   // Reset DriveFS cache.
   ResetCache() => (FileError error);
+
+  // Returns a PNG containing a thumbnail for |path|. If |crop_to_square|, a
+  // 360x360 thumbnail, cropped to fit a square is returned; otherwise a
+  // thumbnail up to 500x500, maintaining aspect ration, is returned. If |path|
+  // does not exist or does not have a thumbnail, |thumbnail| will be null.
+  GetThumbnail(mojo_base.mojom.FilePath path, bool crop_to_square) => (
+      array<uint8>? thumbnail);
+
+  // Copy a file at |source| to |target|. If |source| refers to a directory,
+  // kNotAFile is returned. |target| is the path to the desired output of the
+  // copy; its parent must be an existing directory.
+  CopyFile(mojo_base.mojom.FilePath source, mojo_base.mojom.FilePath target) =>
+      (FileError error);
+
+  // Start a search query with given parameters.
+  StartSearchQuery(SearchQuery& query, QueryParameters query_params);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -61,6 +75,9 @@ interface DriveFsDelegate {
 
   // Invoked when server-side file changes are received.
   OnFilesChanged(array<FileChange> changes);
+
+  // Invoked when a supported error occurs.
+  OnError(DriveError error);
 };
 
 struct DriveFsConfiguration {
@@ -103,6 +120,18 @@ enum FileError {
   kServiceUnavailable = -18,
 };
 
+// Errors received from DriveFS to be forwarded to the file manager UI.
+struct DriveError {
+  [Extensible] enum Type {
+    kCantUploadStorageFull,
+  };
+
+  Type type;
+
+  // The path to the file where an error was encountered, if there was one.
+  mojo_base.mojom.FilePath path;
+};
+
 struct FileMetadata {
   enum Type {
     // A regular file.
@@ -129,7 +158,7 @@ struct FileMetadata {
   string download_url;
 
   mojo_base.mojom.Time modification_time;
-  mojo_base.mojom.Time modification_by_me_time;
+  mojo_base.mojom.Time last_viewed_by_me_time;
 
   bool available_offline;
   bool dirty;
@@ -140,9 +169,8 @@ struct FileMetadata {
   // May be present if the file is an image.
   ImageMetadata? image_metadata;
 
-  // The thumbnail as a PNG. It is only set if |want_thumbnail| is true in the
-  // request and the file has a thumbnail available.
-  array<uint8>? thumbnail;
+  // Never set.
+  array<uint8>? deprecated_thumbnail;
 
   Capabilities capabilities;
 };
@@ -204,4 +232,66 @@ struct FileChange {
   };
 
   Type type;
+};
+
+// Definition of the search request sent to DriveFS.
+struct QueryParameters {
+  // Where this request should go to.
+  enum QuerySource {
+    kLocalOnly = 0,
+    kCloudOnly = 1,
+  };
+
+  // Which field should be used for sorting the results.
+  [Extensible]
+  enum SortField {
+    kNone = 0,
+    kLastModified = 1,
+    kLastViewedByMe = 2,
+    kFileSize = 3,
+  };
+
+  enum SortDirection {
+    kAscending = 0,
+    kDescending = 1,
+  };
+
+  // How many results to fetch per page.
+  int32 page_size = 100;
+
+  // Which source should be queried.
+  QuerySource query_source = kCloudOnly;
+
+  // Search for documents whose titles matches this string.
+  string? title;
+
+  // Full-text search by content. Works only with |kCloudOnly|.
+  string? text_content;
+
+  // Search for documents of this type.
+  string? mime_type;
+
+  // Results must be only from shared with me documents.
+  bool shared_with_me = false;
+
+  // Results must be only from available localy on the device. Works only
+  // with |kLocalOnly|.
+  bool available_offline = false;
+
+  // How to sort the returned results.
+  SortField sort_field = kNone;
+  SortDirection sort_direction = kAscending;
+};
+
+// Represents a search request in progress.
+interface SearchQuery {
+  // Performs query and if successful returns next portion of results. If there
+  // are no more results to fetch then |results| is empty array.
+  GetNextPage() => (FileError error, array<QueryItem>? results);
+};
+
+// Single entry in search response.
+struct QueryItem {
+  FileMetadata metadata;
+  mojo_base.mojom.FilePath path;
 };

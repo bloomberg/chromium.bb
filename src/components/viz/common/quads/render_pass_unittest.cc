@@ -215,7 +215,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   pass_quad->SetNew(pass->shared_quad_state_list.back(), contrib_output_rect,
                     contrib_output_rect, contrib_id, 0, gfx::RectF(),
                     gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF(),
-                    false);
+                    false, 1.0f);
 
   pass_list.push_back(std::move(pass));
   pass_list.push_back(std::move(contrib));

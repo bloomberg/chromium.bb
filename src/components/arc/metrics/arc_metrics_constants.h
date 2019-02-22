@@ -44,8 +44,8 @@ enum class UserInteractionType {
   // User started an app from settings.
   APP_STARTED_FROM_SETTINGS = 9,
 
-  // User interacted with an ARC++ notification.
-  // TODO(crbug.com/862001): Record this.
+  // User interacted with an ARC++ notification. Dismissal of notifications such
+  // as closing and swiping out are not being considered.
   NOTIFICATION_INTERACTION = 10,
 
   // User interacted with the content window.
@@ -54,8 +54,23 @@ enum class UserInteractionType {
   // User started an app from chrome.arcAppsPrivate.launchApp.
   APP_STARTED_FROM_EXTENSION_API = 12,
 
-  // The size of this enum; keep last.
-  SIZE,
+  // User started note-taking app from stylus tools.
+  APP_STARTED_FROM_STYLUS_TOOLS = 13,
+
+  // User started an app by opening files in the file manager.
+  APP_STARTED_FROM_FILE_MANAGER = 14,
+
+  // User started an app by left-clicking on links in the browser.
+  APP_STARTED_FROM_LINK = 15,
+
+  // User started an app from context menu by right-clicking on links in the
+  // browser.
+  APP_STARTED_FROM_LINK_CONTEXT_MENU = 16,
+
+  // User started an app from Smart Text Selection context menu.
+  APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU = 17,
+
+  kMaxValue = APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU,
 };
 
 }  // namespace arc

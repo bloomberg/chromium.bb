@@ -48,7 +48,10 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   specifics->set_use_date(entry.use_date().ToTimeT());
   specifics->set_address_home_language_code(
       TruncateUTF8(entry.language_code()));
-  specifics->set_validity_state_bitfield(entry.GetValidityBitfieldValue());
+  specifics->set_validity_state_bitfield(
+      entry.GetClientValidityBitfieldValue());
+  specifics->set_is_client_validity_states_updated(
+      entry.is_client_validity_states_updated());
 
   // Set repeated fields.
   if (entry.HasRawInfo(NAME_FIRST)) {
@@ -134,7 +137,8 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
   profile->set_use_count(specifics.use_count());
   profile->set_use_date(base::Time::FromTimeT(specifics.use_date()));
   profile->set_language_code(specifics.address_home_language_code());
-  profile->SetValidityFromBitfieldValue(specifics.validity_state_bitfield());
+  profile->SetClientValidityFromBitfieldValue(
+      specifics.validity_state_bitfield());
 
   // Set repeated fields.
   if (specifics.name_first_size() > 0) {
@@ -209,6 +213,10 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
     profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                         UTF8ToUTF16(specifics.address_home_street_address()));
   }
+
+  // This has to be the last one, otherwise setting the raw info may change it.
+  profile->set_is_client_validity_states_updated(
+      specifics.is_client_validity_states_updated());
 
   return profile;
 }

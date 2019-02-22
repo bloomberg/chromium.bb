@@ -2316,7 +2316,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         @Override
         public void super_startActivityForResult(Intent intent, int requestCode) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                mWebViewPrivate.super_startActivityForResult(intent, requestCode);
+                GlueApiHelperForN.super_startActivityForResult(
+                        mWebViewPrivate, intent, requestCode);
             } else {
                 try {
                     Method startActivityForResultMethod =

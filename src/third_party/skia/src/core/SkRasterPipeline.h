@@ -9,13 +9,14 @@
 #define SkRasterPipeline_DEFINED
 
 #include "SkArenaAlloc.h"
+#include "SkColor.h"
 #include "SkImageInfo.h"
 #include "SkNx.h"
-#include "SkPM4f.h"
 #include "SkTArray.h"
 #include "SkTypes.h"
 #include <functional>
 #include <vector>
+#include "../jumper/SkJumper.h"
 
 /**
  * SkRasterPipeline provides a cheap way to chain together a pixel processing pipeline.
@@ -37,10 +38,10 @@
 #define SK_RASTER_PIPELINE_STAGES(M)                               \
     M(callback)                                                    \
     M(move_src_dst) M(move_dst_src)                                \
-    M(clamp_0) M(clamp_1) M(clamp_a) M(clamp_a_dst)                \
+    M(clamp_0) M(clamp_1) M(clamp_a) M(clamp_a_dst) M(clamp_gamut) \
     M(unpremul) M(premul) M(premul_dst)                            \
     M(force_opaque) M(force_opaque_dst)                            \
-    M(set_rgb) M(swap_rb)                                          \
+    M(set_rgb) M(unbounded_set_rgb) M(swap_rb)                     \
     M(from_srgb) M(to_srgb)                                        \
     M(black_color) M(white_color) M(uniform_color) M(unbounded_uniform_color) \
     M(seed_shader) M(dither)                                       \
@@ -140,14 +141,25 @@ public:
     // Tries to optimize the stage based on the color.
     void append_constant_color(SkArenaAlloc*, const float rgba[4]);
 
-    void append_constant_color(SkArenaAlloc* alloc, const SkPM4f& color) {
-        this->append_constant_color(alloc, color.fVec);
-    }
     void append_constant_color(SkArenaAlloc* alloc, const SkColor4f& color) {
         this->append_constant_color(alloc, color.vec());
     }
 
+    // Like append_constant_color() but only affecting r,g,b, ignoring the alpha channel.
+    void append_set_rgb(SkArenaAlloc*, const float rgb[3]);
+
+    void append_set_rgb(SkArenaAlloc* alloc, const SkColor4f& color) {
+        this->append_set_rgb(alloc, color.vec());
+    }
+
+    void append_load    (SkColorType, const SkJumper_MemoryCtx*);
+    void append_load_dst(SkColorType, const SkJumper_MemoryCtx*);
+    void append_store   (SkColorType, const SkJumper_MemoryCtx*);
+
+    void append_gamut_clamp_if_normalized(const SkImageInfo&);
+
     bool empty() const { return fStages == nullptr; }
+
 
 private:
     struct StageList {

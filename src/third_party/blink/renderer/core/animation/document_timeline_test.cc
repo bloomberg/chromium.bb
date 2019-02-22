@@ -408,7 +408,7 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
-  timing.iteration_duration = 2;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
   timing.start_delay = 5;
 
   KeyframeEffect* keyframe_effect =
@@ -440,7 +440,7 @@ TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
-  timing.iteration_duration = 2;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
   timing.start_delay = 5;
 
   timeline = &document->Timeline();

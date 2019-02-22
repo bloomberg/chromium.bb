@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
-#include "media/base/cdm_proxy_context.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
+#include "media/cdm/cdm_proxy_context.h"
 #include "media/mojo/interfaces/cdm_proxy.mojom.h"
 #include "media/mojo/services/mojo_cdm_proxy.h"
 #include "media/mojo/services/mojo_cdm_proxy_service.h"
@@ -48,50 +48,34 @@ class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
   ~MockCdmProxy() override = default;
 
   // media::CdmProxy implementation.
-  // Note: As move-only parameters (e.g. OnceCallback) aren't supported by mock
-  // methods, add On... methods to pass a non-const reference to OnceCallback.
 
   base::WeakPtr<CdmContext> GetCdmContext() override {
     return weak_factory_.GetWeakPtr();
   }
 
-  void Initialize(Client* client, InitializeCB init_cb) override {
-    OnInitialize(client, init_cb);
-  }
-  MOCK_METHOD2(OnInitialize, void(Client* client, InitializeCB& init_cb));
+  MOCK_METHOD2(Initialize, void(Client* client, InitializeCB init_cb));
 
-  void Process(Function function,
-               uint32_t crypto_session_id,
-               const std::vector<uint8_t>& input_data,
-               uint32_t expected_output_data_size,
-               ProcessCB process_cb) override {
-    OnProcess(function, crypto_session_id, input_data,
-              expected_output_data_size, process_cb);
-  }
-  MOCK_METHOD5(OnProcess,
+  MOCK_METHOD5(Process,
                void(Function function,
                     uint32_t crypto_session_id,
                     const std::vector<uint8_t>& input_data,
                     uint32_t expected_output_data_size,
-                    ProcessCB& process_cb));
+                    ProcessCB process_cb));
 
-  void CreateMediaCryptoSession(
-      const std::vector<uint8_t>& input_data,
-      CreateMediaCryptoSessionCB create_media_crypto_session_cb) override {
-    OnCreateMediaCryptoSession(input_data, create_media_crypto_session_cb);
-  }
-  MOCK_METHOD2(
-      OnCreateMediaCryptoSession,
-      void(const std::vector<uint8_t>& input_data,
-           CreateMediaCryptoSessionCB& create_media_crypto_session_cb));
+  MOCK_METHOD2(CreateMediaCryptoSession,
+               void(const std::vector<uint8_t>& input_data,
+                    CreateMediaCryptoSessionCB create_media_crypto_session_cb));
 
-  MOCK_METHOD3(SetKey,
+  MOCK_METHOD5(SetKey,
                void(uint32_t crypto_session_id,
                     const std::vector<uint8_t>& key_id,
-                    const std::vector<uint8_t>& key_blob));
-  MOCK_METHOD2(RemoveKey,
+                    KeyType key_type,
+                    const std::vector<uint8_t>& key_blob,
+                    SetKeyCB set_key_cb));
+  MOCK_METHOD3(RemoveKey,
                void(uint32_t crypto_session_id,
-                    const std::vector<uint8_t>& key_id));
+                    const std::vector<uint8_t>& key_id,
+                    RemoveKeyCB remove_key_cb));
 
   // media::CdmContext implementation.
   CdmProxyContext* GetCdmProxyContext() override {
@@ -120,6 +104,8 @@ class MockCdmProxyClient : public cdm::CdmProxyClient {
                void(Status status,
                     uint32_t crypto_session_id,
                     uint64_t output_data));
+  MOCK_METHOD1(OnKeySet, void(Status status));
+  MOCK_METHOD1(OnKeyRemoved, void(Status status));
   MOCK_METHOD0(NotifyHardwareReset, void());
 };
 
@@ -154,9 +140,11 @@ class MojoCdmProxyTest : public ::testing::Test {
   void Initialize(Status expected_status = Status::kOk,
                   bool has_connection = true) {
     if (has_connection) {
-      EXPECT_CALL(*mock_cdm_proxy_, OnInitialize(NotNull(), _))
-          .WillOnce(RunOnceCallback<1>(
-              expected_status, CdmProxy::Protocol::kNone, kCryptoSessionId));
+      EXPECT_CALL(*mock_cdm_proxy_, Initialize(NotNull(), _))
+          .WillOnce([&](auto, auto init_cb) {
+            std::move(init_cb).Run(expected_status, CdmProxy::Protocol::kNone,
+                                   kCryptoSessionId);
+          });
       EXPECT_CALL(client_,
                   OnInitialized(StatusEq(expected_status),
                                 cdm::CdmProxyClient::kNone, kCryptoSessionId))
@@ -180,9 +168,11 @@ class MojoCdmProxyTest : public ::testing::Test {
     if (has_connection) {
       EXPECT_CALL(
           *mock_cdm_proxy_,
-          OnProcess(CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange,
-                    crypto_session_id_, kInputData, kExpectedOutputDataSize, _))
-          .WillOnce(RunOnceCallback<4>(expected_status, kOutputData));
+          Process(CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange,
+                  crypto_session_id_, kInputData, kExpectedOutputDataSize, _))
+          .WillOnce([&](auto, auto, auto, auto, auto process_cb) {
+            std::move(process_cb).Run(expected_status, kOutputData);
+          });
       EXPECT_CALL(client_, OnProcessed(StatusEq(expected_status), NotNull(),
                                        kOutputData.size()));
     } else {
@@ -205,9 +195,11 @@ class MojoCdmProxyTest : public ::testing::Test {
     const uint64_t kOutputData = 333;
 
     if (has_connection) {
-      EXPECT_CALL(*mock_cdm_proxy_, OnCreateMediaCryptoSession(kInputData, _))
-          .WillOnce(RunOnceCallback<1>(expected_status, kMediaCryptoSessionId,
-                                       kOutputData));
+      EXPECT_CALL(*mock_cdm_proxy_, CreateMediaCryptoSession(kInputData, _))
+          .WillOnce([&](auto, auto create_media_crypto_session_cb) {
+            std::move(create_media_crypto_session_cb)
+                .Run(expected_status, kMediaCryptoSessionId, kOutputData);
+          });
       EXPECT_CALL(client_, OnMediaCryptoSessionCreated(
                                StatusEq(expected_status), kMediaCryptoSessionId,
                                kOutputData));
@@ -225,15 +217,25 @@ class MojoCdmProxyTest : public ::testing::Test {
   void SetKey() {
     const std::vector<uint8_t> key_id = {8, 9};
     const std::vector<uint8_t> key_blob = {10, 11, 12};
-    EXPECT_CALL(*mock_cdm_proxy_, SetKey(crypto_session_id_, key_id, key_blob));
+    EXPECT_CALL(*mock_cdm_proxy_,
+                SetKey(crypto_session_id_, key_id, _, key_blob, _))
+        .WillOnce([&](auto, auto, auto, auto, auto set_key_cb) {
+          std::move(set_key_cb).Run(Status::kOk);
+        });
+    EXPECT_CALL(client_, OnKeySet(StatusEq(Status::kOk)));
     cdm_proxy_->SetKey(crypto_session_id_, key_id.data(), key_id.size(),
-                       key_blob.data(), key_blob.size());
+                       cdm::CdmProxy::KeyType::kDecryptOnly, key_blob.data(),
+                       key_blob.size());
     base::RunLoop().RunUntilIdle();
   }
 
   void RemoveKey() {
     const std::vector<uint8_t> key_id = {13, 14};
-    EXPECT_CALL(*mock_cdm_proxy_, RemoveKey(crypto_session_id_, key_id));
+    EXPECT_CALL(*mock_cdm_proxy_, RemoveKey(crypto_session_id_, key_id, _))
+        .WillOnce([&](auto, auto, auto remove_key_cb) {
+          std::move(remove_key_cb).Run(Status::kOk);
+        });
+    EXPECT_CALL(client_, OnKeyRemoved(StatusEq(Status::kOk)));
     cdm_proxy_->RemoveKey(crypto_session_id_, key_id.data(), key_id.size());
     base::RunLoop().RunUntilIdle();
   }

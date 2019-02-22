@@ -376,8 +376,8 @@ enum class ReauthenticationStatus {
       "PasswordManager.ExportPasswordsToCSVResult",
       password_manager::metrics_util::ExportPasswordsResult::SUCCESS,
       password_manager::metrics_util::ExportPasswordsResult::COUNT);
-  UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
-                       self.passwordCount);
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ExportedPasswordsPerUserInCSV",
+                          self.passwordCount);
 }
 
 #pragma mark - ForTesting

@@ -4,7 +4,7 @@
 <body>
 <script>
 function getFontsWithTestCharsForOS() {
-  if (navigator.userAgent.indexOf("Android") !== -1)
+  if (navigator.userAgent.indexOf("Android") !== -1) {
     // Intersection of available fonts of Android Kitkat to Oreo that kept the
     // same family names to compare against for these postscript or full font
     // names. (RobotoThin* and RobotoLight* had differing family names on
@@ -54,11 +54,55 @@ function getFontsWithTestCharsForOS() {
       ["RobotoCondensed-Regular", "0"],
       ["Roboto-Italic", "0"],
     ];
+  } else if (navigator.userAgent.indexOf("Linux") !== -1
+             || navigator.userAgent.indexOf("CrOS") !== -1) {
+    return [
+      ["Ahem", "0"],
+      ["Arimo-Bold", "0"],
+      ["Arimo-BoldItalic", "0"],
+      ["Arimo-Italic", "0"],
+      ["Arimo-Regular", "0"],
+      ["Cousine-Bold", "0"],
+      ["Cousine-BoldItalic", "0"],
+      ["Cousine-Italic", "0"],
+      ["Cousine-Regular", "0"],
+      ["DejaVuSans", "0"],
+      ["DejaVuSans-Bold", "0"],
+      ["Garuda", "0"],
+      ["Gelasio-Bold", "0"],
+      ["Gelasio-BoldItalic", "0"],
+      ["Gelasio-Italic", "0"],
+      ["Gelasio-Regular", "0"],
+      ["Lohit-Devanagari", "0"],
+      ["Lohit-Gurmukhi", "0"],
+      ["Lohit-Tamil", "0"],
+      ["NotoSansKhmer-Regular", "០"],
+      ["Tinos-Bold", "0"],
+      ["Tinos-BoldItalic", "0"],
+      ["Tinos-Italic", "0"],
+      ["Tinos-Regular", "0"],
+      ["muktinarrow", "0"],
+      ["Tinos-Regular", "0"]
+    ];
+  } else if (navigator.userAgent.indexOf("Macintosh") !== -1) {
+    return [
+      [ "AmericanTypewriter-CondensedLight", "0" ],
+      [ "ArialNarrow-BoldItalic", "0" ],
+      [ "Baskerville-SemiBoldItalic", "0" ],
+      [ "DevanagariMT", "0" ],
+      [ "DINAlternate-Bold", "0" ],
+      [ "GillSans-LightItalic", "0" ],
+      [ "IowanOldStyle-Titling", "0" ],
+      [ "MalayalamSangamMN", "0" ],
+      [ "HiraMaruPro-W4", "0" ],
+      [ "HiraKakuStdN-W8", "0" ],
+    ]
+  };
   return [];
 }
 
 function stripSpaces(fontName) {
-    return fontName.replace(/\s+/g, '');
+  return fontName.replace(/\s+/g, '');
 }
 
 function addTestNodes() {
@@ -78,6 +122,9 @@ function addTestNodes() {
   }
   fontfaces.innerText = fontFaceDeclarations;
   document.body.appendChild(containerDiv);
+  // Force layout so that the DevTools side of the test can start accessing
+  // nodes' font information reliably.
+  document.body.offsetTop;
   return containerDiv.children.length;
 }
 </script>

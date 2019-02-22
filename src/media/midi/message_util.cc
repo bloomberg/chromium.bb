@@ -79,9 +79,9 @@ bool IsValidWebMIDIData(const std::vector<uint8_t>& data) {
     if (in_sysex) {
       if (data[i] == kEndOfSysExByte) {
         in_sysex = false;
-        UMA_HISTOGRAM_COUNTS("Media.Midi.SysExMessageSizeUpTo1MB",
-                             static_cast<base::HistogramBase::Sample>(
-                                 i - sysex_start_offset + 1));
+        UMA_HISTOGRAM_COUNTS_1M("Media.Midi.SysExMessageSizeUpTo1MB",
+                                static_cast<base::HistogramBase::Sample>(
+                                    i - sysex_start_offset + 1));
       } else if (!IsDataByte(current)) {
         return false;  // Error: |current| should have been data byte.
       }

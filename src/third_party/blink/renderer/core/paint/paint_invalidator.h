@@ -17,20 +17,20 @@ class NGPaintFragment;
 class PrePaintTreeWalk;
 
 struct CORE_EXPORT PaintInvalidatorContext {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   class ParentContextAccessor {
    public:
     ParentContextAccessor() = default;
     ParentContextAccessor(PrePaintTreeWalk* tree_walk,
-                          size_t parent_context_index)
+                          wtf_size_t parent_context_index)
         : tree_walk_(tree_walk), parent_context_index_(parent_context_index) {}
     const PaintInvalidatorContext* ParentContext() const;
 
    private:
     PrePaintTreeWalk* tree_walk_ = nullptr;
-    size_t parent_context_index_ = 0u;
+    wtf_size_t parent_context_index_ = 0u;
   };
 
   PaintInvalidatorContext() = default;
@@ -51,6 +51,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
     if (force_visual_rect_update_for_checking_)
       return true;
 #endif
+    // If an ancestor needed a visual rect update and any subtree flag was set,
+    // then we require that the subtree also needs a visual rect update.
     return object.NeedsPaintOffsetAndVisualRectUpdate() ||
            (subtree_flags & PaintInvalidatorContext::kSubtreeVisualRectUpdate);
   }

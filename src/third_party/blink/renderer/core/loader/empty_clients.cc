@@ -46,9 +46,9 @@
 namespace blink {
 
 void FillWithEmptyClients(Page::PageClients& page_clients) {
-  DEFINE_STATIC_LOCAL(ChromeClient, dummy_chrome_client,
+  DEFINE_STATIC_LOCAL(Persistent<ChromeClient>, dummy_chrome_client,
                       (EmptyChromeClient::Create()));
-  page_clients.chrome_client = &dummy_chrome_client;
+  page_clients.chrome_client = dummy_chrome_client;
 }
 
 class EmptyPopupMenu : public PopupMenu {
@@ -103,6 +103,7 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     NavigationPolicy,
     bool,
     bool,
+    bool,
     WebTriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
@@ -112,8 +113,6 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
 }
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
-
-void EmptyLocalFrameClient::DispatchWillSubmitForm(HTMLFormElement*) {}
 
 DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,

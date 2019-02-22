@@ -11,8 +11,10 @@
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -175,6 +177,12 @@ void ArcNotificationItemImpl::Close(bool by_user) {
 
 void ArcNotificationItemImpl::Click() {
   manager_->SendNotificationClickedOnChrome(notification_key_);
+
+  // This is reached when user focuses on the notification and hits enter on
+  // keyboard. Mouse clicks and taps are handled separately in
+  // ArcNotificationContentView.
+  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                            arc::UserInteractionType::NOTIFICATION_INTERACTION);
 }
 
 void ArcNotificationItemImpl::OpenSettings() {

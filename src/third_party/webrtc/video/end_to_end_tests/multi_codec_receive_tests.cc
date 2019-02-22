@@ -153,18 +153,16 @@ class MultiCodecReceiveTest : public test::CallTest {
           &task_queue_, sender_call_.get(), &observer_,
           test::PacketTransport::kSender, kPayloadTypeMap,
           absl::make_unique<FakeNetworkPipe>(
-              Clock::GetRealTimeClock(),
-              absl::make_unique<SimulatedNetwork>(
-                  DefaultNetworkSimulationConfig()))));
+              Clock::GetRealTimeClock(), absl::make_unique<SimulatedNetwork>(
+                                             BuiltInNetworkBehaviorConfig()))));
       send_transport_->SetReceiver(receiver_call_->Receiver());
 
       receive_transport_.reset(new test::PacketTransport(
           &task_queue_, receiver_call_.get(), &observer_,
           test::PacketTransport::kReceiver, kPayloadTypeMap,
           absl::make_unique<FakeNetworkPipe>(
-              Clock::GetRealTimeClock(),
-              absl::make_unique<SimulatedNetwork>(
-                  DefaultNetworkSimulationConfig()))));
+              Clock::GetRealTimeClock(), absl::make_unique<SimulatedNetwork>(
+                                             BuiltInNetworkBehaviorConfig()))));
       receive_transport_->SetReceiver(sender_call_->Receiver());
     });
   }
@@ -180,6 +178,7 @@ class MultiCodecReceiveTest : public test::CallTest {
   struct CodecConfig {
     std::string payload_name;
     VideoEncoderFactory* encoder_factory;
+    VideoDecoderFactory* decoder_factory;
     size_t num_temporal_layers;
   };
 
@@ -197,18 +196,16 @@ class MultiCodecReceiveTest : public test::CallTest {
 
 void MultiCodecReceiveTest::ConfigureDecoders(
     const std::vector<CodecConfig>& configs) {
+  video_receive_configs_[0].decoders.clear();
   // Placing the payload names in a std::set retains the unique names only.
   std::set<std::string> unique_payload_names;
   for (const auto& config : configs)
-    unique_payload_names.insert(config.payload_name);
+    if (unique_payload_names.insert(config.payload_name).second) {
+      VideoReceiveStream::Decoder decoder = test::CreateMatchingDecoder(
+          PayloadNameToPayloadType(config.payload_name), config.payload_name);
+      decoder.decoder_factory = config.decoder_factory;
 
-  video_receive_configs_[0].decoders.clear();
-  for (const auto& payload_name : unique_payload_names) {
-    VideoReceiveStream::Decoder decoder = test::CreateMatchingDecoder(
-        PayloadNameToPayloadType(payload_name), payload_name);
-    allocated_decoders_.push_back(
-        std::unique_ptr<VideoDecoder>(decoder.decoder));
-    video_receive_configs_[0].decoders.push_back(decoder);
+      video_receive_configs_[0].decoders.push_back(decoder);
   }
 }
 
@@ -270,9 +267,13 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9) {
       []() { return VP8Encoder::Create(); });
   test::FunctionVideoEncoderFactory vp9_encoder_factory(
       []() { return VP9Encoder::Create(); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 1},
-                     {"VP9", &vp9_encoder_factory, 1},
-                     {"VP8", &vp8_encoder_factory, 1}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory vp9_decoder_factory(
+      []() { return VP9Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 1},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 1},
+                     {"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 1}});
 }
 
 TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9WithTl) {
@@ -280,9 +281,13 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9WithTl) {
       []() { return VP8Encoder::Create(); });
   test::FunctionVideoEncoderFactory vp9_encoder_factory(
       []() { return VP9Encoder::Create(); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 2},
-                     {"VP9", &vp9_encoder_factory, 2},
-                     {"VP8", &vp8_encoder_factory, 2}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory vp9_decoder_factory(
+      []() { return VP9Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 2},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 2},
+                     {"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 2}});
 }
 
 #if defined(WEBRTC_USE_H264)
@@ -291,9 +296,13 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8H264) {
       []() { return VP8Encoder::Create(); });
   test::FunctionVideoEncoderFactory h264_encoder_factory(
       []() { return H264Encoder::Create(cricket::VideoCodec("H264")); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 1},
-                     {"H264", &h264_encoder_factory, 1},
-                     {"VP8", &vp8_encoder_factory, 1}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory h264_decoder_factory(
+      []() { return H264Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 1},
+                     {"H264", &h264_encoder_factory, &h264_decoder_factory, 1},
+                     {"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 1}});
 }
 
 TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8H264WithTl) {
@@ -301,9 +310,13 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8H264WithTl) {
       []() { return VP8Encoder::Create(); });
   test::FunctionVideoEncoderFactory h264_encoder_factory(
       []() { return H264Encoder::Create(cricket::VideoCodec("H264")); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 3},
-                     {"H264", &h264_encoder_factory, 1},
-                     {"VP8", &vp8_encoder_factory, 3}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory h264_decoder_factory(
+      []() { return H264Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 3},
+                     {"H264", &h264_encoder_factory, &h264_decoder_factory, 1},
+                     {"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 3}});
 }
 
 TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9H264) {
@@ -313,10 +326,16 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9H264) {
       []() { return VP9Encoder::Create(); });
   test::FunctionVideoEncoderFactory h264_encoder_factory(
       []() { return H264Encoder::Create(cricket::VideoCodec("H264")); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 1},
-                     {"VP9", &vp9_encoder_factory, 1},
-                     {"H264", &h264_encoder_factory, 1},
-                     {"VP9", &vp9_encoder_factory, 1}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory vp9_decoder_factory(
+      []() { return VP9Decoder::Create(); });
+  test::FunctionVideoDecoderFactory h264_decoder_factory(
+      []() { return H264Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 1},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 1},
+                     {"H264", &h264_encoder_factory, &h264_decoder_factory, 1},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 1}});
 }
 
 TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9H264WithTl) {
@@ -326,10 +345,16 @@ TEST_F(MultiCodecReceiveTest, SingleStreamReceivesVp8Vp9H264WithTl) {
       []() { return VP9Encoder::Create(); });
   test::FunctionVideoEncoderFactory h264_encoder_factory(
       []() { return H264Encoder::Create(cricket::VideoCodec("H264")); });
-  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, 3},
-                     {"VP9", &vp9_encoder_factory, 2},
-                     {"H264", &h264_encoder_factory, 1},
-                     {"VP9", &vp9_encoder_factory, 3}});
+  test::FunctionVideoDecoderFactory vp8_decoder_factory(
+      []() { return VP8Decoder::Create(); });
+  test::FunctionVideoDecoderFactory vp9_decoder_factory(
+      []() { return VP9Decoder::Create(); });
+  test::FunctionVideoDecoderFactory h264_decoder_factory(
+      []() { return H264Decoder::Create(); });
+  RunTestWithCodecs({{"VP8", &vp8_encoder_factory, &vp8_decoder_factory, 3},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 2},
+                     {"H264", &h264_encoder_factory, &h264_decoder_factory, 1},
+                     {"VP9", &vp9_encoder_factory, &vp9_decoder_factory, 3}});
 }
 #endif  // defined(WEBRTC_USE_H264)
 

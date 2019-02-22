@@ -28,8 +28,7 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
                      bool skip_for_now,
                      bool trusted,
                      bool trusted_found,
-                     bool choose_what_to_sync,
-                     const std::string& session_index) override;
+                     bool choose_what_to_sync) override;
 
  private:
   base::RepeatingClosure close_dialog_closure_;

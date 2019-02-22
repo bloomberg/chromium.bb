@@ -7,7 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/download/internal/background_service/scheduler/device_status_listener.h"
-#include "services/network/test/test_network_connection_tracker.h"
 
 namespace download {
 namespace test {
@@ -33,7 +32,6 @@ class TestDeviceStatusListener : public DeviceStatusListener {
  private:
   void StartAfterDelay();
 
-  network::TestNetworkConnectionTracker test_network_connection_tracker_;
   base::WeakPtrFactory<TestDeviceStatusListener> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDeviceStatusListener);

@@ -105,6 +105,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       tests.append(input_api.canned_checks.CheckCIPDManifest(
           input_api, output_api,
           content=CIPD_CLIENT_ENSURE_FILE_TEMPLATE % (pkg, ver)))
+      tests.append(input_api.canned_checks.CheckCIPDClientDigests(
+          input_api, output_api, client_version_file=path))
 
   results.extend(input_api.RunTests(tests))
   return results

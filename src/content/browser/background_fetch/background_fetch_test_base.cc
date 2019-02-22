@@ -67,6 +67,10 @@ void DidUnregisterServiceWorker(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
+GURL GetPatternForId(int64_t id) {
+  return GURL(kTestOrigin + base::IntToString(id));
+}
+
 }  // namespace
 
 BackgroundFetchTestBase::BackgroundFetchTestBase()
@@ -99,7 +103,7 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
 
   {
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = origin_.GetURL();
+    options.scope = GetPatternForId(next_pattern_id_++);
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
         script_url, options,
@@ -142,10 +146,11 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
   return service_worker_registration_id;
 }
 
-void BackgroundFetchTestBase::UnregisterServiceWorker() {
+void BackgroundFetchTestBase::UnregisterServiceWorker(
+    int64_t service_worker_registration_id) {
   base::RunLoop run_loop;
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
-      origin_.GetURL(),
+      GetPatternForId(service_worker_registration_id),
       base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
   run_loop.Run();
 }
@@ -167,11 +172,11 @@ std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
     const std::string& developer_id,
     const std::string& unique_id,
-    blink::mojom::BackgroundFetchState state,
+    blink::mojom::BackgroundFetchResult result,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
   auto registration = std::make_unique<BackgroundFetchRegistration>(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state, failure_reason);
+      0 /* download_total */, 0 /* downloaded */, result, failure_reason);
   return registration;
 }
 

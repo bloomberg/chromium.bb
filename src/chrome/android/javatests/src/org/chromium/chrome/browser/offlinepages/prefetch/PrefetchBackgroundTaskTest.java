@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.offlinepages.prefetch;
 
-import android.content.Context;
-import android.support.test.filters.SmallTest;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import android.content.Context;
+import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -110,8 +110,8 @@ public class PrefetchBackgroundTaskTest {
     private static class TestBackgroundTaskScheduler implements BackgroundTaskScheduler {
         private HashMap<Integer, TestPrefetchBackgroundTask> mTasks = new HashMap<>();
         private Semaphore mStartSemaphore = new Semaphore(0);
-        private int mAddCount = 0;
-        private int mRemoveCount = 0;
+        private int mAddCount;
+        private int mRemoveCount;
 
         @Override
         public boolean schedule(final Context context, final TaskInfo taskInfo) {

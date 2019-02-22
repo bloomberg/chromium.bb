@@ -33,7 +33,7 @@ jumbo_component("web_dialogs") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   sources = [
     "test/test_web_contents_handler.cc",
     "test/test_web_contents_handler.h",

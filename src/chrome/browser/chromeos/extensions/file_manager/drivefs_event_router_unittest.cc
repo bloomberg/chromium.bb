@@ -18,6 +18,7 @@
 namespace file_manager {
 namespace file_manager_private = extensions::api::file_manager_private;
 
+using file_manager_private::DriveSyncErrorEvent;
 using file_manager_private::FileTransferStatus;
 using file_manager_private::FileWatchEvent;
 using testing::_;
@@ -588,6 +589,21 @@ TEST_F(DriveFsEventRouterTest, OnFilesChanged_MultipleDirectories) {
   changes.emplace_back(base::FilePath("/root/b/file"),
                        drivefs::mojom::FileChange::Type::kCreate);
   observer().OnFilesChanged(changes);
+}
+
+TEST_F(DriveFsEventRouterTest, OnError_CantUploadStorageFull) {
+  DriveSyncErrorEvent event;
+  event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE;
+  event.file_url = "ext:/a";
+  EXPECT_CALL(
+      mock(),
+      DispatchEventToExtensionImpl(
+          "ext", file_manager_private::OnDriveSyncError::kEventName,
+          testing::MakeMatcher(new ListValueMatcher(std::move(
+              *file_manager_private::OnDriveSyncError::Create(event))))));
+
+  observer().OnError({drivefs::mojom::DriveError::Type::kCantUploadStorageFull,
+                      base::FilePath("/a")});
 }
 
 }  // namespace

@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -89,10 +90,16 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
   started_loading_ = true;
 #endif  // DCHECK_IS_ON()
 
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes =
+      blink::BlobUtils::GetDataPipeCapacity(blob_data->size());
+
   mojo::ScopedDataPipeProducerHandle producer_handle;
-  MojoResult result =
-      CreateDataPipe(nullptr, &producer_handle, &consumer_handle_);
-  if (result != MOJO_RESULT_OK) {
+  MojoResult rv = CreateDataPipe(&options, &producer_handle, &consumer_handle_);
+  if (rv != MOJO_RESULT_OK) {
     Failed(FileError::kNotReadableErr, FailureType::kMojoPipeCreation);
     return;
   }

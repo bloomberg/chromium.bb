@@ -112,6 +112,7 @@ enum CameraMetadataSectionStart {
  * addition, the name and type of the tag needs to be added to
  * system/media/camera/src/camera_metadata_tag_info.c
  */
+[Extensible]
 enum CameraMetadataTag {
     ANDROID_COLOR_CORRECTION_MODE =                    0x0, // ANDROID_COLOR_CORRECTION_START,
     ANDROID_COLOR_CORRECTION_TRANSFORM,

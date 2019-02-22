@@ -5,6 +5,7 @@
 #include "chromeos/dbus/cicerone_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -74,7 +75,9 @@ class CiceroneClientImpl : public CiceroneClient {
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR)
           << "Failed to encode LaunchContainerApplicationRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+
       return;
     }
 
@@ -97,7 +100,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode ContainerAppIonRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -119,7 +123,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode InstallLinuxPackageRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -140,7 +145,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode CreateLxdContainerRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -161,7 +167,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StartLxdContainerRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -183,7 +190,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode GetLxdContainerUsernameRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -205,7 +213,8 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode SetUpLxdContainerUserRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 

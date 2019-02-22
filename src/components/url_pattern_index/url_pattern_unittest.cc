@@ -14,10 +14,12 @@ namespace {
 constexpr proto::AnchorType kAnchorNone = proto::ANCHOR_TYPE_NONE;
 constexpr proto::AnchorType kBoundary = proto::ANCHOR_TYPE_BOUNDARY;
 constexpr proto::AnchorType kSubdomain = proto::ANCHOR_TYPE_SUBDOMAIN;
+constexpr UrlPattern::MatchCase kMatchCase = UrlPattern::MatchCase::kTrue;
+constexpr UrlPattern::MatchCase kDonotMatchCase = UrlPattern::MatchCase::kFalse;
 
 }  // namespace
 
-TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
+TEST(UrlPatternTest, MatchesUrl) {
   const struct {
     UrlPattern url_pattern;
     const char* url;
@@ -122,13 +124,40 @@ TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
       {{"/path", kSubdomain, kBoundary}, "http://a.com./path", true},
       {{"^path", kSubdomain, kBoundary}, "http://a.com./path", true},
       {{"path", kSubdomain, kBoundary}, "http://a.com./path", false},
+      // Case-sensitivity tests.
+      {{"path", proto::URL_PATTERN_TYPE_SUBSTRING, kDonotMatchCase},
+       "http://a.com/PaTh",
+       true},
+      {{"path", proto::URL_PATTERN_TYPE_SUBSTRING, kMatchCase},
+       "http://a.com/PaTh",
+       false},
+      {{"path", proto::URL_PATTERN_TYPE_SUBSTRING, kDonotMatchCase},
+       "http://a.com/path",
+       true},
+      {{"path", proto::URL_PATTERN_TYPE_SUBSTRING, kMatchCase},
+       "http://a.com/path",
+       true},
+      {{"abc*def^", proto::URL_PATTERN_TYPE_WILDCARDED, kMatchCase},
+       "http://a.com/abcxAdef/vo",
+       true},
+      {{"abc*def^", proto::URL_PATTERN_TYPE_WILDCARDED, kMatchCase},
+       "http://a.com/aBcxAdeF/vo",
+       false},
+      {{"abc*def^", proto::URL_PATTERN_TYPE_WILDCARDED, kDonotMatchCase},
+       "http://a.com/aBcxAdeF/vo",
+       true},
+      {{"abc*def^", proto::URL_PATTERN_TYPE_WILDCARDED, kDonotMatchCase},
+       "http://a.com/abcxAdef/vo",
+       true},
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
                                     << "; URL: " << GURL(test_case.url));
 
-    const bool is_match = test_case.url_pattern.MatchesUrl(GURL(test_case.url));
+    GURL url(test_case.url);
+    const bool is_match =
+        test_case.url_pattern.MatchesUrl(UrlPattern::UrlInfo(url));
     EXPECT_EQ(test_case.expect_match, is_match);
   }
 }

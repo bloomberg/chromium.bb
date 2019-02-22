@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -1604,7 +1605,7 @@ template <typename Key,
 Value*
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     AllocateTable(unsigned size) {
-  size_t alloc_size = size * sizeof(ValueType);
+  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
   ValueType* result;
   // Assert that we will not use memset on things with a vtable entry.  The
   // compiler will also check this on some platforms. We would like to check
@@ -1614,13 +1615,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   static_assert(
       !Traits::kEmptyValueIsZero || !std::is_polymorphic<KeyType>::value,
       "empty value cannot be zero for things with a vtable");
-  static_assert(Allocator::kIsGarbageCollected ||
-                    ((!AllowsOnlyPlacementNew<KeyType>::value ||
-                      !IsTraceable<KeyType>::value) &&
-                     (!AllowsOnlyPlacementNew<ValueType>::value ||
-                      !IsTraceable<ValueType>::value)),
-                "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that "
-                "have trace methods into an off-heap HashTable");
+  static_assert(
+      Allocator::kIsGarbageCollected ||
+          ((!IsDisallowNew<KeyType>::value || !IsTraceable<KeyType>::value) &&
+           (!IsDisallowNew<ValueType>::value ||
+            !IsTraceable<ValueType>::value)),
+      "Cannot put DISALLOW_NEW objects that "
+      "have trace methods into an off-heap HashTable");
 
   if (Traits::kEmptyValueIsZero) {
     result = Allocator::template AllocateZeroedHashTableBacking<ValueType,

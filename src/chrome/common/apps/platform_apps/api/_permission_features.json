@@ -1,0 +1,63 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This features file defines Chrome Apps APIs implemented under src/chrome.
+// See chrome/common/extensions/api/_features.md to understand this file, as
+// well as feature.h, simple_feature.h, and feature_provider.h.
+
+{
+  "browser": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
+  "easyUnlockPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "location": "component",
+    "platforms": ["chromeos"]
+  },
+  "mediaGalleries": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  // TODO(devlin): These all specify the same permissions. There's no need for
+  // child features.
+  "mediaGalleries.allAutoDetected": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.scan": {
+    "channel": "dev",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.read": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.copyTo": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.delete": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "musicManagerPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C", // Music Manager
+      "B8F61FD1B25DE03706DBB8906A73261E4DBB992A", // Test
+      "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA",
+      "4FE45FA56EF6A25FDE8C302C44045CA9CE8A605A",
+      "3D14248405B8A59043420AAC160077C99E7788A9",
+      "A6C87307BBE5886CC5F1393025000E2FE8060BF2",
+      "3407516021EA3669C0EC8E65E6B9837E5A521B9C"
+    ]
+  },
+  "syncFileSystem": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  }
+}

@@ -18,16 +18,23 @@
 #include "SkPaintPriv.h"
 #include "SkTextToPathIter.h"
 #include "ops/GrAtlasTextOp.h"
+
 #include <new>
+
+template <size_t N> static size_t sk_align(size_t s) {
+    return ((s + (N-1)) / N) * N;
+}
 
 sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
     // We allocate size for the GrTextBlob itself, plus size for the vertices array,
     // and size for the glyphIds array.
     size_t verticesCount = glyphCount * kVerticesPerGlyph * kMaxVASize;
-    size_t size = sizeof(GrTextBlob) +
-                  verticesCount +
-                  glyphCount * sizeof(GrGlyph**) +
-                  sizeof(GrTextBlob::Run) * runCount;
+
+    size_t   blob = 0;
+    size_t vertex = sk_align<alignof(char)>           (blob + sizeof(GrTextBlob) * 1);
+    size_t glyphs = sk_align<alignof(GrGlyph*)>       (vertex + sizeof(char) * verticesCount);
+    size_t   runs = sk_align<alignof(GrTextBlob::Run)>(glyphs + sizeof(GrGlyph*) * glyphCount);
+    size_t   size =                                   (runs + sizeof(GrTextBlob::Run) * runCount);
 
     void* allocation = ::operator new (size);
 
@@ -39,9 +46,9 @@ sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
     cacheBlob->fSize = size;
 
     // setup offsets for vertices / glyphs
-    cacheBlob->fVertices = sizeof(GrTextBlob) + reinterpret_cast<char*>(cacheBlob.get());
-    cacheBlob->fGlyphs = reinterpret_cast<GrGlyph**>(cacheBlob->fVertices + verticesCount);
-    cacheBlob->fRuns = reinterpret_cast<GrTextBlob::Run*>(cacheBlob->fGlyphs + glyphCount);
+    cacheBlob->fVertices = SkTAddOffset<char>(cacheBlob.get(), vertex);
+    cacheBlob->fGlyphs = SkTAddOffset<GrGlyph*>(cacheBlob.get(), glyphs);
+    cacheBlob->fRuns = SkTAddOffset<GrTextBlob::Run>(cacheBlob.get(), runs);
 
     // Initialize runs
     for (int i = 0; i < runCount; i++) {
@@ -71,10 +78,10 @@ SkExclusiveStrikePtr GrTextBlob::setupCache(int runIndex,
 }
 
 void GrTextBlob::appendGlyph(int runIndex,
-                                  const SkRect& positions,
-                                  GrColor color,
-                                  sk_sp<GrTextStrike> strike,
-                                  GrGlyph* glyph, bool preTransformed) {
+                             const SkRect& positions,
+                             GrColor color,
+                             const sk_sp<GrTextStrike>& strike,
+                             GrGlyph* glyph, bool preTransformed) {
 
     Run& run = fRuns[runIndex];
     GrMaskFormat format = glyph->fMaskFormat;
@@ -82,9 +89,9 @@ void GrTextBlob::appendGlyph(int runIndex,
     Run::SubRunInfo* subRun = &run.fSubRunInfo.back();
     if (run.fInitialized && subRun->maskFormat() != format) {
         subRun = &run.push_back();
-        subRun->setStrike(std::move(strike));
+        subRun->setStrike(strike);
     } else if (!run.fInitialized) {
-        subRun->setStrike(std::move(strike));
+        subRun->setStrike(strike);
     }
 
     run.fInitialized = true;
@@ -283,54 +290,88 @@ void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
     // GrTextBlob::makeOp only takes uint16_t values for run and subRun indices.
     // Encountering something larger than this is highly unlikely, so we'll just not draw it.
     int lastRun = SkTMin(fRunCount, (1 << 16)) - 1;
-    SkPaint runPaint{paint};
+    // For each run in the GrTextBlob we're going to churn through all the glyphs.
+    // Each run is broken into a path part and a Mask / DFT / ARGB part.
     for (int runIndex = 0; runIndex <= lastRun; runIndex++) {
+
         Run& run = fRuns[runIndex];
 
         // first flush any path glyphs
         if (run.fPathGlyphs.count()) {
-            SkScalar transX, transY;
-            uint16_t paintFlags = run.fPaintFlags;
-            runPaint.setFlags((runPaint.getFlags() & ~Run::kPaintFlagsMask) | paintFlags);
+            SkPaint runPaint{paint};
+            runPaint.setFlags((runPaint.getFlags() & ~Run::kPaintFlagsMask) | run.fPaintFlags);
 
             for (int i = 0; i < run.fPathGlyphs.count(); i++) {
                 GrTextBlob::Run::PathGlyph& pathGlyph = run.fPathGlyphs[i];
-                calculate_translation(pathGlyph.fPreTransformed, viewMatrix, x, y,
-                                      fInitialViewMatrix, fInitialX, fInitialY, &transX, &transY);
 
-                const SkMatrix* ctm = pathGlyph.fPreTransformed ? &SkMatrix::I() : &viewMatrix;
-                SkMatrix pathMatrix;
-                pathMatrix.setScale(pathGlyph.fScale, pathGlyph.fScale);
-                pathMatrix.postTranslate(pathGlyph.fX + transX, pathGlyph.fY + transY);
-
+                SkMatrix ctm;
                 const SkPath* path = &pathGlyph.fPath;
+
+                // TmpPath must be in the same scope as GrShape shape below.
                 SkTLazy<SkPath> tmpPath;
 
-                GrStyle style(runPaint);
+                // The glyph positions and glyph outlines are either in device space or in source
+                // space based on fPreTransformed.
+                if (!pathGlyph.fPreTransformed) {
+                    // Positions and outlines are in source space.
 
-                SkMaskFilter* mf = runPaint.getMaskFilter();
+                    ctm = viewMatrix;
 
-                // Styling, blurs, and shading are supposed to be applied *after* the pathMatrix.
-                // However, if the mask filter is a blur and the pathMatrix contains no scale, then
-                // we can still fold the path matrix into the CTM
-                bool needToApply = runPaint.getShader() || style.applies() ||
-                                   (mf && (!as_MFB(mf)->asABlur(nullptr) ||
-                                           !SkScalarNearlyEqual(pathGlyph.fScale, 1.0f)));
+                    SkMatrix pathMatrix = SkMatrix::MakeScale(pathGlyph.fScale, pathGlyph.fScale);
 
-                if (needToApply) {
-                    SkPath* result = tmpPath.init();
-                    path->transform(pathMatrix, result);
-                    result->setIsVolatile(true);
-                    path = result;
+                    // The origin for the blob may have changed, so figure out the delta.
+                    SkVector originShift = SkPoint{x, y} - SkPoint{fInitialX, fInitialY};
+
+                    // Shift the original glyph location in source space to the position of the new
+                    // blob.
+                    pathMatrix.postTranslate(originShift.x() + pathGlyph.fX,
+                                             originShift.y() + pathGlyph.fY);
+
+                    // If there are shaders, blurs or styles, the path must be scaled into source
+                    // space independently of the CTM. This allows the CTM to be correct for the
+                    // different effects.
+                    GrStyle style(runPaint);
+                    bool scalePath = runPaint.getShader()
+                                     || style.applies()
+                                     || runPaint.getMaskFilter();
+                    if (!scalePath) {
+                        // Scale can be applied to CTM -- no effects.
+
+                        ctm.preConcat(pathMatrix);
+                    } else {
+                        // Scale the outline into source space.
+
+                        // Transform the path form the normalized outline to source space. This
+                        // way the CTM will remain the same so it can be used by the effects.
+                        SkPath* sourceOutline = tmpPath.init();
+                        path->transform(pathMatrix, sourceOutline);
+                        sourceOutline->setIsVolatile(true);
+                        path = sourceOutline;
+                    }
+
+
                 } else {
-                    pathMatrix.postConcat(*ctm);
-                    ctm = &pathMatrix;
+                    // Positions and outlines are in device space.
+
+                    SkPoint originalOrigin = {fInitialX, fInitialY};
+                    fInitialViewMatrix.mapPoints(&originalOrigin, 1);
+
+                    SkPoint newOrigin = {x, y};
+                    viewMatrix.mapPoints(&newOrigin, 1);
+
+                    // The origin shift in device space.
+                    SkPoint originShift = newOrigin - originalOrigin;
+
+                    // Shift the original glyph location in device space to the position of the
+                    // new blob.
+                    ctm = SkMatrix::MakeTrans(originShift.x() + pathGlyph.fX,
+                                              originShift.y() + pathGlyph.fY);
                 }
 
                 // TODO: we are losing the mutability of the path here
                 GrShape shape(*path, paint);
 
-                target->drawShape(clip, runPaint, *ctm, shape);
+                target->drawShape(clip, runPaint, ctm, shape);
             }
         }
 
@@ -338,6 +379,7 @@ void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
         if (!run.fInitialized) {
             continue;
         }
+
         int lastSubRun = SkTMin(run.fSubRunInfo.count(), 1 << 16) - 1;
         for (int subRun = 0; subRun <= lastSubRun; subRun++) {
             const Run::SubRunInfo& info = run.fSubRunInfo[subRun];

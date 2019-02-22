@@ -6,6 +6,6 @@
 test(() => {
   let response;
   fillStackAndRun(() => response = new Response('hi'));
-  assert_equals(response.body, undefined, 'response body should be undefined');
-}, 'stack overflow in Response constructor should lead to an undefined body');
+  assert_equals(response.body instanceof ReadableStream, true, 'response body should be ReadableStream');
+}, 'stack overflow in Response constructor should not crash the browser');
 </script>

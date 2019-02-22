@@ -16,11 +16,15 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace v8 {
 class Function;
@@ -49,6 +53,7 @@ class HitTestRequest;
 class HitTestResult;
 class ImageResourceContent;
 class InvalidationSet;
+class KURL;
 class LayoutImage;
 class LayoutObject;
 class LayoutRect;
@@ -63,8 +68,8 @@ class ResourceRequest;
 class ResourceResponse;
 class StyleChangeReasonForTracing;
 class StyleImage;
-class WorkerThread;
 class XMLHttpRequest;
+enum class ResourceType : uint8_t;
 
 namespace probe {
 class CallFunction;
@@ -83,7 +88,7 @@ class CORE_EXPORT InspectorTraceEvents
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       Resource::Type);
+                       ResourceType);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
@@ -456,9 +461,11 @@ std::unique_ptr<TracedValue> Data(ExecutionContext*, const String& message);
 }
 
 namespace InspectorTracingSessionIdForWorkerEvent {
-std::unique_ptr<TracedValue> Data(LocalFrame*,
-                                  const String& url,
-                                  WorkerThread*);
+std::unique_ptr<TracedValue> Data(
+    const base::UnguessableToken& worker_devtools_token,
+    const base::UnguessableToken& parent_devtools_token,
+    const KURL& url,
+    PlatformThreadId worker_thread_id);
 }
 
 namespace InspectorTracingStartedInFrame {

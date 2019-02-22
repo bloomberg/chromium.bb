@@ -78,12 +78,7 @@ using ::testing::_;
 namespace media {
 
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
-
-// Specify different values for testing.
-const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
-    base::TimeDelta::FromSeconds(5);
-const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideoMSE =
-    base::TimeDelta::FromSeconds(10);
+constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
 
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
@@ -223,18 +218,19 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     DCHECK_EQ(player_id_, delegate_id);
   }
 
-  MOCK_METHOD4(DidPictureInPictureModeStart,
+  MOCK_METHOD5(DidPictureInPictureModeStart,
                void(int,
                     const viz::SurfaceId&,
                     const gfx::Size&,
-                    blink::WebMediaPlayer::PipWindowOpenedCallback));
+                    blink::WebMediaPlayer::PipWindowOpenedCallback,
+                    bool));
   MOCK_METHOD2(DidPictureInPictureModeEnd,
                void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
   MOCK_METHOD2(DidSetPictureInPictureCustomControls,
                void(int,
                     const std::vector<blink::PictureInPictureControlInfo>&));
-  MOCK_METHOD3(DidPictureInPictureSurfaceChange,
-               void(int, const viz::SurfaceId&, const gfx::Size&));
+  MOCK_METHOD4(DidPictureInPictureSurfaceChange,
+               void(int, const viz::SurfaceId&, const gfx::Size&, bool));
   MOCK_METHOD2(RegisterPictureInPictureWindowResizeCallback,
                void(int, blink::WebMediaPlayer::PipWindowResizedCallback));
 
@@ -392,16 +388,14 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
                             base::Unretained(this)),
-        nullptr, RequestRoutingTokenCallback(), nullptr,
-        kMaxKeyframeDistanceToDisableBackgroundVideo,
-        kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
+        nullptr, RequestRoutingTokenCallback(), nullptr, false, false,
         std::move(provider),
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)
-            ? WebMediaPlayerParams::SurfaceLayerMode::kAlways
-            : WebMediaPlayerParams::SurfaceLayerMode::kNever);
+            ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
+            : blink::WebMediaPlayer::SurfaceLayerMode::kNever);
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -496,9 +490,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnError(status);
   }
 
-  void OnMetadata(PipelineMetadata metadata) {
-    wmpi_->OnMetadata(metadata);
-  }
+  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
 
   void OnVideoNaturalSizeChange(const gfx::Size& size) {
     wmpi_->OnVideoNaturalSizeChange(size);
@@ -767,6 +759,39 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
 }
 
+// Verify that lazy load for preload=metadata works properly.
+TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kPreloadMetadataLazyLoad);
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+
+  // Don't set poster, but ensure we still reach suspended state.
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+  }
+
+  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  CycleThreads();
+  EXPECT_TRUE(IsSuspended());
+  EXPECT_TRUE(wmpi_->DidLazyLoad());
+
+  // The data source contains the entire file, so subtract it from the memory
+  // usage to ensure there's no other memory usage.
+  const int64_t data_source_size = GetDataSourceMemoryUsage();
+  EXPECT_GT(data_source_size, 0);
+  EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
 // Verify that preload=metadata suspend video w/ poster uses zero video memory.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   InitializeWebMediaPlayerImpl();
@@ -783,7 +808,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata("bear-320x240-video-only.webm");
+  LoadAndWaitForMetadata(kVideoOnlyTestFile);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -1072,6 +1097,26 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_StaysSuspended) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
   EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_ResumeForNeedFirstFrame) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+
+  // Should stay suspended even though not stale or backgrounded.
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_Suspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+
+  wmpi_->OnBecameVisible();
+  state = ComputePlayState_Suspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
@@ -1398,6 +1443,9 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 
 // Tests delegate methods are called when Picture-in-Picture is triggered.
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
+
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
@@ -1414,15 +1462,59 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
       .WillRepeatedly(
           Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
   EXPECT_CALL(delegate_,
-              DidPictureInPictureSurfaceChange(delegate_.player_id(),
-                                               surface_id_, GetNaturalSize()))
+              DidPictureInPictureSurfaceChange(
+                  delegate_.player_id(), surface_id_, GetNaturalSize(), true))
       .Times(2);
 
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   EXPECT_CALL(delegate_,
               DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
-                                           GetNaturalSize(), _));
+                                           GetNaturalSize(), _, true));
+
+  wmpi_->EnterPictureInPicture(base::DoNothing());
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
+
+  // Updating SurfaceId should NOT exit Picture-in-Picture.
+  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
+      .Times(0);
+}
+
+// Tests delegate methods are called with the appropriate play/pause button
+// state when Picture-in-Picture is triggered and video duration is infinity.
+TEST_F(WebMediaPlayerImplTest,
+       PictureInPictureTriggerWithInfiniteDurationCallback) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
+
+  InitializeWebMediaPlayerImpl();
+  SetDuration(kInfiniteDuration);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+      .WillRepeatedly(ReturnRef(surface_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+      .WillRepeatedly(Return(base::TimeTicks()));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  OnMetadata(metadata);
+
+  EXPECT_CALL(client_, DisplayType())
+      .WillRepeatedly(
+          Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureSurfaceChange(
+                  delegate_.player_id(), surface_id_, GetNaturalSize(), false))
+      .Times(2);
+
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
+
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
+                                           GetNaturalSize(), _, false));
 
   wmpi_->EnterPictureInPicture(base::DoNothing());
   wmpi_->OnSurfaceIdUpdated(surface_id_);
@@ -1454,9 +1546,9 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     std::string enabled_features;
     std::string disabled_features;
     if (IsBackgroundOptimizationOn()) {
-      enabled_features += kBackgroundVideoTrackOptimization.name;
+      enabled_features += kBackgroundSrcVideoTrackOptimization.name;
     } else {
-      disabled_features += kBackgroundVideoTrackOptimization.name;
+      disabled_features += kBackgroundSrcVideoTrackOptimization.name;
     }
 
     if (IsBackgroundPauseOn()) {
@@ -1533,11 +1625,8 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   }
 
   int GetMaxKeyframeDistanceSec() const {
-    base::TimeDelta max_keyframe_distance =
-        std::get<kIsMediaSource>(GetParam())
-            ? kMaxKeyframeDistanceToDisableBackgroundVideoMSE
-            : kMaxKeyframeDistanceToDisableBackgroundVideo;
-    return max_keyframe_distance.InSeconds();
+    return WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+           base::Time::kMillisecondsPerSecond;
   }
 
   bool IsAndroid() {
@@ -1629,15 +1718,25 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   EXPECT_TRUE(IsDisableVideoTrackPending());
 }
 
-INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
-                        WebMediaPlayerImplBackgroundBehaviorTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Values(5, 300),
-                                           ::testing::Values(5, 100),
-                                           ::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(
+    BackgroundBehaviorTestInstances,
+    WebMediaPlayerImplBackgroundBehaviorTest,
+    ::testing::Combine(
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Values(
+            WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+                    base::Time::kMillisecondsPerSecond +
+                1,
+            300),
+        ::testing::Values(
+            WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+                    base::Time::kMillisecondsPerSecond +
+                1,
+            100),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool()));
 
 }  // namespace media

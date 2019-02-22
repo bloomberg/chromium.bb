@@ -98,7 +98,7 @@ SearchResultTileItemView::SearchResultTileItemView(
     : view_delegate_(view_delegate),
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
-          features::IsPlayStoreAppSearchEnabled()),
+          app_list_features::IsPlayStoreAppSearchEnabled()),
       show_in_apps_page_(show_in_apps_page),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -113,7 +113,8 @@ SearchResultTileItemView::SearchResultTileItemView(
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
   AddChildView(icon_);
 
-  if (is_play_store_app_search_enabled_) {
+  if (is_play_store_app_search_enabled_ ||
+      app_list_features::IsAppShortcutSearchEnabled()) {
     badge_ = new views::ImageView;
     badge_->set_can_process_events_within_subtree(false);
     badge_->SetVerticalAlignment(views::ImageView::LEADING);

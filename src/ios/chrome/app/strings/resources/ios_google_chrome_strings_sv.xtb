@@ -22,7 +22,6 @@
 <translation id="3196546062792660320">Med Chrome sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3345341804167540816">Använd Chrome överallt</translation>
-<translation id="3678774398092457402">Vill du att Chrome sparar lösenordet för den här webbplatsen?</translation>
 <translation id="384394811301901750">Google Chrome kan inte använda kameran just nu</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Du håller på att byta synkroniseringskonto från <ph name="USER_EMAIL1" /> till <ph name="USER_EMAIL2" />. Befintlig data i Chrome hanteras av <ph name="DOMAIN" />. Åtgärden raderar din data från den här enheten men den finns kvar på <ph name="USER_EMAIL1" />.</translation>
@@ -48,6 +47,7 @@
 <translation id="690638524486313356">Användarvillkor för Google Chrome</translation>
 <translation id="7165736900384873061">Börja använda Google Chrome som QR-skanner</translation>
 <translation id="7172660552945675509">Tips! <ph name="BEGIN_LINK" />Flytta Chrome till Dock<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">Chrome använder Face ID för att se till att endast behöriga har åtkomst till lösenorden.</translation>
 <translation id="7265369419224458312">Använd flikar som du öppnar på datorn även här. Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Chrome …</translation>
 <translation id="728488472449859922">Aktivera Google Chrome som QR-skanner</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>

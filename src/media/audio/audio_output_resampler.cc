@@ -106,9 +106,8 @@ static void RecordStats(const AudioParameters& output_params) {
     UMA_HISTOGRAM_ENUMERATION(
         "Media.HardwareAudioSamplesPerSecond", asr, kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS(
-        "Media.HardwareAudioSamplesPerSecondUnexpected",
-        output_params.sample_rate());
+    UMA_HISTOGRAM_COUNTS_1M("Media.HardwareAudioSamplesPerSecondUnexpected",
+                            output_params.sample_rate());
   }
 }
 
@@ -128,7 +127,7 @@ static void RecordFallbackStats(const AudioParameters& output_params) {
         "Media.FallbackHardwareAudioSamplesPerSecond",
         asr, kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Media.FallbackHardwareAudioSamplesPerSecondUnexpected",
         output_params.sample_rate());
   }
@@ -410,7 +409,7 @@ bool AudioOutputResampler::StartStream(
   DCHECK(dispatcher_);
 
   OnMoreDataConverter* resampler_callback = nullptr;
-  CallbackMap::iterator it = callbacks_.find(stream_proxy);
+  auto it = callbacks_.find(stream_proxy);
   if (it == callbacks_.end()) {
     // If a register callback has been given, register and pass the returned
     // recoder to the converter. Data is fed to same recorder for the lifetime
@@ -441,7 +440,7 @@ void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,
 void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
   DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
 
-  CallbackMap::iterator it = callbacks_.find(stream_proxy);
+  auto it = callbacks_.find(stream_proxy);
   DCHECK(it != callbacks_.end());
   StopStreamInternal(*it);
 }

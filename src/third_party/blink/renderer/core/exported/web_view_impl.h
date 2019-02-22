@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -68,10 +69,12 @@
 
 namespace cc {
 class Layer;
+class ScopedDeferCommits;
 }
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class BrowserControls;
 class CompositorAnimationHost;
 class DevToolsEmulator;
@@ -86,7 +89,6 @@ class WebInputMethodController;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
-class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewClient;
@@ -106,6 +108,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static bool UseExternalPopupMenus();
 
   // WebWidget methods:
+  void SetLayerTreeView(WebLayerTreeView*) override;
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
@@ -115,10 +118,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time) override;
-
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
-  void CompositeWithRasterForTesting() override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void PaintContentIgnoringCompositing(cc::PaintCanvas*,
                                        const WebRect&) override;
@@ -129,12 +131,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
-
-  void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
-                           const WebFloatSize& layout_viewport_delta,
-                           const WebFloatSize& elastic_overscroll_delta,
-                           float page_scale_delta,
-                           float browser_controls_shown_ratio_delta) override;
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;
@@ -148,6 +145,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
+  WebURL GetURLForDebugTrace() override;
 
   // WebView methods:
   bool IsWebView() const override { return true; }
@@ -447,6 +445,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       const IntRect& caret_bounds_in_document,
       bool zoom_into_legible_scale);
 
+  void StopDeferringCommits() { scoped_defer_commits_.reset(); }
+
+  void DeferCommitsForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
@@ -493,8 +495,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void ConfigureAutoResizeMode();
 
-  void InitializeLayerTreeView();
-
   void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
   void ReallocateRenderer();
@@ -518,6 +518,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
+  WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
+
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
@@ -533,7 +535,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Create or return cached mutation distributor.  The WeakPtr must only be
   // dereferenced on the returned |mutator_task_runner|.
-  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
   bool ScrollFocusedEditableElementIntoView();
@@ -656,7 +659,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to
   // make that happen.
-  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
@@ -672,6 +675,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // split is complete, since in out-of-process iframes the page can be
   // visible, but the WebView should not be used as a widget.
   bool override_compositor_visibility_;
+
+  // We defer commits when transitioning to a new page. ChromeClientImpl calls
+  // StopDeferringCommits() to release this when a new page is loaded.
+  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
 };

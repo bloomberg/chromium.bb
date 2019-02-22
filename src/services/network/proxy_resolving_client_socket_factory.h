@@ -27,7 +27,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
   // Constructs a ProxyResolvingClientSocketFactory. This factory shares
   // network session params with |request_context|, but keeps separate socket
   // pools by instantiating and owning a separate |network_session_|.
-  ProxyResolvingClientSocketFactory(net::URLRequestContext* request_context);
+  explicit ProxyResolvingClientSocketFactory(
+      net::URLRequestContext* request_context);
   ~ProxyResolvingClientSocketFactory();
 
   // Creates a socket. |url|'s host and port specify where a connection will be
@@ -40,6 +41,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
   // respected when establishing a TLS connection.
   std::unique_ptr<ProxyResolvingClientSocket> CreateSocket(const GURL& url,
                                                            bool use_tls);
+
+  const net::HttpNetworkSession* network_session() const {
+    return network_session_.get();
+  }
 
  private:
   std::unique_ptr<net::HttpNetworkSession> network_session_;

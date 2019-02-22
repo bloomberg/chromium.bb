@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
+#include "third_party/blink/renderer/core/animation/animation_time_delta.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
@@ -61,7 +63,7 @@ struct Timing {
         fill_mode(FillMode::AUTO),
         iteration_start(0),
         iteration_count(1),
-        iteration_duration(std::numeric_limits<double>::quiet_NaN()),
+        iteration_duration(base::nullopt),
         direction(PlaybackDirection::NORMAL),
         timing_function(LinearTimingFunction::Shared()) {}
 
@@ -71,7 +73,8 @@ struct Timing {
     DCHECK(std::isfinite(iteration_start));
     DCHECK_GE(iteration_start, 0);
     DCHECK_GE(iteration_count, 0);
-    DCHECK(std::isnan(iteration_duration) || iteration_duration >= 0);
+    DCHECK(!iteration_duration ||
+           iteration_duration.value() >= AnimationTimeDelta());
     DCHECK(timing_function);
   }
 
@@ -80,9 +83,7 @@ struct Timing {
            fill_mode == other.fill_mode &&
            iteration_start == other.iteration_start &&
            iteration_count == other.iteration_count &&
-           ((std::isnan(iteration_duration) &&
-             std::isnan(other.iteration_duration)) ||
-            iteration_duration == other.iteration_duration) &&
+           iteration_duration == other.iteration_duration &&
            direction == other.direction &&
            DataEquivalent(timing_function.get(), other.timing_function.get());
   }
@@ -94,7 +95,8 @@ struct Timing {
   FillMode fill_mode;
   double iteration_start;
   double iteration_count;
-  double iteration_duration;
+  // If empty, indicates the 'auto' value.
+  base::Optional<AnimationTimeDelta> iteration_duration;
 
   PlaybackDirection direction;
   scoped_refptr<TimingFunction> timing_function;

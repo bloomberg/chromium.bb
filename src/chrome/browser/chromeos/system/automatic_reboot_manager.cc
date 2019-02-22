@@ -25,7 +25,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -53,7 +53,7 @@ const int kGracePeriodMs = 24 * 60 * 60 * 1000;    // 24 hours.
 const int kOneKilobyte = 1 << 10;                  // 1 kB in bytes.
 
 base::TimeDelta ReadTimeDeltaFromFile(const base::FilePath& path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ScopedFD fd(
       HANDLE_EINTR(open(path.value().c_str(), O_RDONLY | O_NOFOLLOW)));
   if (!fd.is_valid())
@@ -85,7 +85,7 @@ AutomaticRebootManager::SystemEventTimes GetSystemEventTimes() {
 }
 
 void SaveUpdateRebootNeededUptime() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const base::TimeDelta kZeroTimeDelta;
 
   base::FilePath update_reboot_needed_uptime_file;

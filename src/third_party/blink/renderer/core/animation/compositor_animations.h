@@ -114,7 +114,7 @@ class CORE_EXPORT CompositorAnimations {
 
   struct CompositorTiming {
     Timing::PlaybackDirection direction;
-    double scaled_duration;
+    AnimationTimeDelta scaled_duration;
     double scaled_time_offset;
     double adjusted_iteration_count;
     double playback_rate;
@@ -148,15 +148,15 @@ class CORE_EXPORT CompositorAnimations {
 
   friend class AnimationCompositorAnimationsTest;
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           canStartElementOnCompositorTransformSPv2);
+                           CanStartElementOnCompositorTransformSPv2);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           canStartElementOnCompositorEffectSPv2);
+                           CanStartElementOnCompositorEffectSPv2);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           canStartElementOnCompositorEffect);
+                           CanStartElementOnCompositorEffect);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           cannotStartElementOnCompositorEffectSVG);
+                           CannotStartElementOnCompositorEffectSVG);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           cancelIncompatibleCompositorAnimations);
+                           CancelIncompatibleCompositorAnimations);
 };
 
 }  // namespace blink

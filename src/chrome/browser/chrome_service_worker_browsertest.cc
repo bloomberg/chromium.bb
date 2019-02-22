@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -27,6 +28,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,7 +36,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace {
 
@@ -116,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -142,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -168,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -222,8 +224,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&content::ServiceWorkerContext::
                          StartServiceWorkerAndDispatchLongRunningMessage,
                      base::Unretained(GetServiceWorkerContext()),
@@ -551,6 +553,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/scope/"),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/sw.js"), options,

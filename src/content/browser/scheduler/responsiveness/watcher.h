@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_WATCHER_H_
 
 #include <memory>
-#include <stack>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -98,13 +98,13 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
 
   // Common implementations for the thread-specific methods.
   void WillRunTask(const base::PendingTask* task,
-                   std::stack<Metadata>* currently_running_metadata);
+                   std::vector<Metadata>* currently_running_metadata);
 
   // |callback| will either be synchronously invoked, or else never invoked.
   using TaskOrEventFinishedCallback =
       base::OnceCallback<void(base::TimeTicks, base::TimeTicks)>;
   void DidRunTask(const base::PendingTask* task,
-                  std::stack<Metadata>* currently_running_metadata,
+                  std::vector<Metadata>* currently_running_metadata,
                   int* mismatched_task_identifiers,
                   TaskOrEventFinishedCallback callback);
 
@@ -120,7 +120,7 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   std::unique_ptr<NativeEventObserver> native_event_observer_ui_;
 
   // Metadata for currently running tasks and events on the UI thread.
-  std::stack<Metadata> currently_running_metadata_ui_;
+  std::vector<Metadata> currently_running_metadata_ui_;
 
   // Task identifiers should only be mismatched once, since the Watcher may
   // register itself during a Task execution, and thus doesn't capture the
@@ -133,7 +133,7 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   int mismatched_event_identifiers_ui_ = 0;
 
   // The following members are all affine to the IO thread.
-  std::stack<Metadata> currently_running_metadata_io_;
+  std::vector<Metadata> currently_running_metadata_io_;
   int mismatched_task_identifiers_io_ = 0;
   std::unique_ptr<MessageLoopObserver> message_loop_observer_io_;
 

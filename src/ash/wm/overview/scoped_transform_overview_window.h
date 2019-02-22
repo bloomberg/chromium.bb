@@ -20,6 +20,7 @@
 
 namespace aura {
 class Window;
+class WindowTargeter;
 }
 
 namespace gfx {
@@ -99,9 +100,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Returns true if this window selector window contains the |target|.
   bool Contains(const aura::Window* target) const;
 
-  // Returns the original target bounds of all transformed windows.
-  gfx::Rect GetTargetBoundsInScreen() const;
-
   // Returns transformed bounds of the overview window. See
   // OverviewUtil::GetTransformedBounds for more details.
   gfx::Rect GetTransformedBounds() const;
@@ -122,10 +120,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // Prepares for overview mode by doing any necessary actions before entering.
   void PrepareForOverview();
-
-  // Applies the |transform| to the overview window and all of its transient
-  // children.
-  void SetTransform(aura::Window* root_window, const gfx::Transform& transform);
 
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
@@ -171,6 +165,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // change. Must be called before PositionWindows in WindowGrid.
   void UpdateWindowDimensionsType();
 
+  // Updates the mask which gives rounded corners on the windows. Shows the mask
+  // if |show| is true, otherwise removes it.
+  void UpdateMask(bool show);
+
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();
 
@@ -192,10 +190,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   void CloseWidget();
 
   void CreateMirrorWindowForMinimizedState();
-
-  // Creates and applys a mask which adds rounded edges to windows in overview
-  // mode.
-  void CreateAndApplyMaskAndShadow();
 
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
@@ -237,6 +231,15 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
+
+  // Stores the targeter for the window. For the duration of this object,
+  // |window_|'s event targeter will be replaced by a NullWindowTargeter to
+  // prevent events from reaching |window_|.
+  // TODO(sammiequon): Investigate if we can use a custom event targeter on
+  // windows for overview mode and remove the need for the extra widget which
+  // blocks events in WindowSelectorItem.
+  std::unique_ptr<aura::WindowTargeter> original_targeter_;
+  aura::WindowTargeter* null_targeter_ = nullptr;
 
   base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
 

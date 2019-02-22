@@ -514,6 +514,9 @@
       <message desc="An option to show the cursor between characters." name="IDS_CHROMEVOX_OPTIONS_CURSOR_BETWEEN_CHARACTERS">
         Place cursor between characters when editing text (like Mac OS X).
       </message>
+      <message desc="An option to speak text under the mouse." name="IDS_CHROMEVOX_OPTIONS_SPEAK_MOUSE">
+        Speak text under the mouse.
+      </message>
       <message desc="An options page section header for options about the ChromeVox voice. This section lets users change the voice by selecting a different voice from a listbox." name="IDS_CHROMEVOX_OPTIONS_VOICES">
         Voices
       </message>
@@ -3037,6 +3040,51 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="Hint for how to start editing a text field while exploring the screen using touch exploration." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP_TO_EDIT">
         Double tap to start editing
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP1_GESTURE">
+        Swipe one finger up
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN1_GESTURE">
+        Swipe one finger down
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT1_GESTURE">
+        Swipe one finger left
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT1_GESTURE">
+        Swipe one finger right
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP2_GESTURE">
+        Swipe two fingers up
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN2_GESTURE">
+        Swipe two fingers down
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT2_GESTURE">
+        Swipe two fingers left
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT2_GESTURE">
+        Swipe two fingers right
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP3_GESTURE">
+        Swipe three fingers up
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN3_GESTURE">
+        Swipe three fingers down
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT3_GESTURE">
+        Swipe three fingers left
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT3_GESTURE">
+        Swipe three fingers right
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP2_GESTURE">
+        Tap with two fingers
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP4_GESTURE">
+        Tap with four fingers
+      </message>
+      <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_CLICK_GESTURE">
+        Double tap with one finger
       </message>
     </messages>
   </release>

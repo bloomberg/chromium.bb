@@ -785,6 +785,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterSecondaryProperties) {
       has_video_ ? kCodecH264 : kUnknownVideoCodec,
       has_audio_ ? "FirstAudioDecoder" : "",
       has_video_ ? "FirstVideoDecoder" : "",
+      has_audio_ ? EncryptionMode::kCenc : EncryptionMode::kUnencrypted,
+      has_video_ ? EncryptionMode::kCbcs : EncryptionMode::kUnencrypted,
       has_video_ ? gfx::Size(800, 600) : gfx::Size());
 
   // Get a pointer to our original properties since we're not allowed to use

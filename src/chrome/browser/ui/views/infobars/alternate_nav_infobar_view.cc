@@ -23,11 +23,6 @@
 // static
 std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
     std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return CreateInfoBarCocoa(std::move(delegate));
-  }
-#endif
   return std::make_unique<AlternateNavInfoBarView>(std::move(delegate));
 }
 
@@ -62,7 +57,7 @@ void AlternateNavInfoBarView::ElideLabels(Labels* labels, int available_width) {
   views::Label* last_label = labels->back();
   labels->pop_back();
   int used_width = 0;
-  for (Labels::iterator i(labels->begin()); i != labels->end(); ++i)
+  for (auto i(labels->begin()); i != labels->end(); ++i)
     used_width += (*i)->GetPreferredSize().width();
   int last_label_width = std::min(last_label->GetPreferredSize().width(),
                                   available_width - used_width);

@@ -8,7 +8,7 @@ The techniques in this codelab also apply to other interpreted languages
 we've ported to PNaCl, including: Python, Lua, Ruby, Tcl, Bash, and Forth.
 
 Requirements:
-  * A Desktop / Laptop Windows, Mac, Linux, or ChromeOS browser
+  * A Desktop / Laptop Windows, macOS, Linux, or Chrome OS browser
     |python_check|
   * A fast broadband connection (500MB download)
   * Can read and write Python

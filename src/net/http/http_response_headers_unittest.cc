@@ -733,7 +733,7 @@ const ContentTypeTestData mimetype_tests[] = {
     "text/html", true,
     "'utf-8'", true,
     "text/html;charset='utf-8', text/html" },
-  // Last charset wins if matching content-type.
+  // First charset wins if matching content-type.
   { "HTTP/1.1 200 OK\n"
     "Content-type: text/html;charset=utf-8\n"
     "Content-type: text/html;charset=iso-8859-1\n",
@@ -759,11 +759,11 @@ const ContentTypeTestData mimetype_tests[] = {
     "text/html", true,
     "", false,
     "text/html;charset=" },
-  // Multiple charsets, last one wins.
+  // Multiple charsets, first one wins.
   { "HTTP/1.1 200 OK\n"
     "Content-type: text/html;charset=utf-8; charset=iso-8859-1\n",
     "text/html", true,
-    "iso-8859-1", true,
+    "utf-8", true,
     "text/html;charset=utf-8; charset=iso-8859-1" },
   // Multiple params.
   { "HTTP/1.1 200 OK\n"

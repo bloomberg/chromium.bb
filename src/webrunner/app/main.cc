@@ -51,8 +51,12 @@ int main(int argc, char** argv) {
   base::MessageLoopForIO message_loop;
 
   auto web_context = CreateContext();
+
+  // Run until the WebContentRunner is ready to exit.
   base::RunLoop run_loop;
-  webrunner::WebContentRunner runner(std::move(web_context));
+
+  webrunner::WebContentRunner runner(std::move(web_context),
+                                     run_loop.QuitClosure());
 
   base::fuchsia::ServiceDirectory* directory =
       base::fuchsia::ServiceDirectory::GetDefault();
@@ -61,7 +65,6 @@ int main(int argc, char** argv) {
   base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner> runner_binding(
       directory, &runner);
 
-  // Quit the process after the app manager closes the Runner connection.
   runner_binding.SetOnLastClientCallback(run_loop.QuitClosure());
 
   // The RunLoop runs until all Components have been closed, at which point the

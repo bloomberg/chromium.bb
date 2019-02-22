@@ -16,6 +16,7 @@ import json
 import logging
 import netrc
 import os
+import random
 import re
 import socket
 import stat
@@ -32,14 +33,30 @@ import subprocess2
 from third_party import httplib2
 
 LOGGER = logging.getLogger()
-# With a starting sleep time of 1 second, 2^n exponential backoff, and six
-# total tries, the sleep time between the first and last tries will be 31s.
-TRY_LIMIT = 6
+# With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
+# total tries, the sleep time between the first and last tries will be 94.5 sec.
+# TODO(crbug.com/881860): Lower this when crbug.com/877717 is fixed.
+TRY_LIMIT = 7
 
 
 # Controls the transport protocol used to communicate with gerrit.
 # This is parameterized primarily to enable GerritTestCase.
 GERRIT_PROTOCOL = 'https'
+
+
+# TODO(crbug.com/881860): Remove.
+GERRIT_ERR_LOGGER = logging.getLogger('GerritErrorLogs')
+GERRIT_ERR_LOG_FILE = os.path.join(tempfile.gettempdir(), 'GerritHeaders.txt')
+GERRIT_ERR_MESSAGE = (
+    'If you see this when running \'git cl upload\', please report this to '
+    'https://crbug.com/881860, and attach the failures in %s.\n' %
+    GERRIT_ERR_LOG_FILE)
+INTERESTING_HEADERS = frozenset([
+    'x-google-backends',
+    'x-google-errorfiltertrace',
+    'x-google-filter-grace',
+    'x-errorid',
+])
 
 
 class GerritError(Exception):
@@ -102,9 +119,27 @@ class CookiesAuthenticator(Authenticator):
   Expected case for developer workstations.
   """
 
+  _EMPTY = object()
+
   def __init__(self):
-    self.netrc = self._get_netrc()
-    self.gitcookies = self._get_gitcookies()
+    # Credentials will be loaded lazily on first use. This ensures Authenticator
+    # get() can always construct an authenticator, even if something is broken.
+    # This allows 'creds-check' to proceed to actually checking creds later,
+    # rigorously (instead of blowing up with a cryptic error if they are wrong).
+    self._netrc = self._EMPTY
+    self._gitcookies = self._EMPTY
+
+  @property
+  def netrc(self):
+    if self._netrc is self._EMPTY:
+      self._netrc = self._get_netrc()
+    return self._netrc
+
+  @property
+  def gitcookies(self):
+    if self._gitcookies is self._EMPTY:
+      self._gitcookies = self._get_gitcookies()
+    return self._gitcookies
 
   @classmethod
   def get_new_password_url(cls, host):
@@ -199,11 +234,13 @@ class CookiesAuthenticator(Authenticator):
             continue
           domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
           if xpath == '/' and key == 'o':
-            login, secret_token = value.split('=', 1)
-            gitcookies[domain] = (login, secret_token)
+            if value.startswith('git-'):
+              login, secret_token = value.split('=', 1)
+              gitcookies[domain] = (login, secret_token)
+            else:
+              gitcookies[domain] = ('', value)
         except (IndexError, ValueError, TypeError) as exc:
           LOGGER.warning(exc)
-
     return gitcookies
 
   def _get_auth_for_host(self, host):
@@ -215,7 +252,10 @@ class CookiesAuthenticator(Authenticator):
   def get_auth_header(self, host):
     a = self._get_auth_for_host(host)
     if a:
-      return 'Basic %s' % (base64.b64encode('%s:%s' % (a[0], a[2])))
+      if a[0]:
+        return 'Basic %s' % (base64.b64encode('%s:%s' % (a[0], a[2])))
+      else:
+        return 'Bearer %s' % a[2]
     return None
 
   def get_auth_email(self, host):
@@ -360,6 +400,8 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     if body:
       LOGGER.debug(body)
   conn = GetConnectionObject()
+  # HACK: httplib.Http has no such attribute; we store req_host here for later
+  # use in ReadHttpResponse.
   conn.req_host = host
   conn.req_params = {
       'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
@@ -379,7 +421,8 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                      Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
-  sleep_time = 1
+  sleep_time = 1.5
+  failed = False
   for idx in range(TRY_LIMIT):
     response, contents = conn.request(**conn.req_params)
 
@@ -406,24 +449,49 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       if response.status == 404:
         contents = ''
       break
-    # A status >=500 is assumed to be a possible transient error; retry.
-    http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    LOGGER.warn('A transient error occurred while querying %s:\n'
-                '%s %s %s\n'
-                '%s %d %s',
-                conn.req_host, conn.req_params['method'],
-                conn.req_params['uri'],
-                http_version, http_version, response.status, response.reason)
+    if response.status == 404:
+      # TODO(crbug/881860): remove this hack.
+      # HACK: try different Gerrit mirror as a workaround for potentially
+      # out-of-date mirror hit through default routing.
+      if conn.req_host == 'chromium-review.googlesource.com':
+        conn.req_params['uri'] = _UseGerritMirror(
+            conn.req_params['uri'], 'chromium-review.googlesource.com')
+        # And don't increase sleep_time in this case, since we suspect we've
+        # just asked wrong git mirror before.
+        sleep_time /= 2.0
+        failed = True
+        rpc_headers = '\n'.join(
+            '  ' + header + ': ' + value
+            for header, value in response.iteritems()
+            if header.lower() in INTERESTING_HEADERS
+        )
+        GERRIT_ERR_LOGGER.info('Gerrit RPC failures:\n%s\n', rpc_headers)
+    else:
+      # A status >=500 is assumed to be a possible transient error; retry.
+      http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
+      LOGGER.warn('A transient error occurred while querying %s:\n'
+                  '%s %s %s\n'
+                  '%s %d %s',
+                  conn.req_host, conn.req_params['method'],
+                  conn.req_params['uri'],
+                  http_version, http_version, response.status, response.reason)
+
     if TRY_LIMIT - idx > 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
+  # end of retries loop
+
+  if failed:
+    LOGGER.warn(GERRIT_ERR_MESSAGE)
   if response.status not in accept_statuses:
     if response.status in (401, 403):
       print('Your Gerrit credentials might be misconfigured. Try: \n'
             '  git cl creds-check')
     reason = '%s: %s' % (response.reason, contents)
+    if failed:
+      reason += '\n' + GERRIT_ERR_MESSAGE
     raise GerritError(response.status, reason)
   return StringIO(contents)
 
@@ -911,3 +979,31 @@ def ChangeIdentifier(project, change_number):
   """
   assert int(change_number)
   return '%s~%s' % (urllib.quote(project, safe=''), change_number)
+
+
+# TODO(crbug/881860): remove this hack.
+_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3']
+assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
+
+
+def _UseGerritMirror(url, host):
+  """Returns new url which uses randomly selected mirror for a gerrit host.
+
+  url's host should be for a given host or a result of prior call to this
+  function.
+
+  Assumes url has a single occurence of the host substring.
+  """
+  assert host in url
+  suffix = '-mirror-' + host
+  prefixes = set(_GERRIT_MIRROR_PREFIXES)
+  prefix_len = len(_GERRIT_MIRROR_PREFIXES[0])
+  st = url.find(suffix)
+  if st == -1:
+    actual_host = host
+  else:
+    # Already uses some mirror.
+    assert st >= prefix_len, (uri, host, st, prefix_len)
+    prefixes.remove(url[st-prefix_len:st])
+    actual_host = url[st-prefix_len:st+len(suffix)]
+  return url.replace(actual_host, random.choice(list(prefixes)) + suffix)

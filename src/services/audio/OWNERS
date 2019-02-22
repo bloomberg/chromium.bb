@@ -6,6 +6,7 @@ miu@chromium.org
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
 
+per-file audio_sandbox_hook_linux.*=file://sandbox/linux/OWNERS
 per-file audio_sandbox_win.*=file://sandbox/win/OWNERS
 
 # COMPONENT: Internals>Media>Audio

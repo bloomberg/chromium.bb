@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -32,8 +33,9 @@ class CORE_EXPORT StyleInheritedVariables
 
   void SetVariable(const AtomicString& name,
                    scoped_refptr<CSSVariableData> value) {
-    needs_resolution_ = needs_resolution_ || value->NeedsVariableResolution() ||
-                        value->NeedsUrlResolution();
+    needs_resolution_ =
+        needs_resolution_ || (value && (value->NeedsVariableResolution() ||
+                                        value->NeedsUrlResolution()));
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
@@ -51,13 +53,13 @@ class CORE_EXPORT StyleInheritedVariables
   void ClearNeedsResolution() { needs_resolution_ = false; }
 
  private:
-  StyleInheritedVariables() : root_(nullptr), needs_resolution_(false) {}
+  StyleInheritedVariables();
   StyleInheritedVariables(StyleInheritedVariables& other);
 
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
-  PersistentHeapHashMap<AtomicString, Member<CSSValue>> registered_data_;
+  Persistent<HeapHashMap<AtomicString, Member<CSSValue>>> registered_data_;
   scoped_refptr<StyleInheritedVariables> root_;
   bool needs_resolution_;
 };

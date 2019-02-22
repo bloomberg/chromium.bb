@@ -58,15 +58,6 @@ struct EnumTraits<autofill::mojom::GenerationUploadStatus,
 };
 
 template <>
-struct EnumTraits<autofill::mojom::PasswordFormLayout,
-                  autofill::PasswordForm::Layout> {
-  static autofill::mojom::PasswordFormLayout ToMojom(
-      autofill::PasswordForm::Layout input);
-  static bool FromMojom(autofill::mojom::PasswordFormLayout input,
-                        autofill::PasswordForm::Layout* output);
-};
-
-template <>
 struct EnumTraits<autofill::mojom::PasswordFormType,
                   autofill::PasswordForm::Type> {
   static autofill::mojom::PasswordFormType ToMojom(
@@ -596,11 +587,6 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
 
   static bool skip_zero_click(const autofill::PasswordForm& r) {
     return r.skip_zero_click;
-  }
-
-  static autofill::PasswordForm::Layout layout(
-      const autofill::PasswordForm& r) {
-    return r.layout;
   }
 
   static bool was_parsed_using_autofill_predictions(

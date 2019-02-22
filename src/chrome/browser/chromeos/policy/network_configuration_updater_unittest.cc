@@ -457,7 +457,7 @@ TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
   // Ignore network config updates.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
 
-  settings_helper_.ReplaceProvider(chromeos::kSignedDataRoamingEnabled);
+  settings_helper_.ReplaceDeviceSettingsProviderWithStub();
   settings_helper_.SetBoolean(chromeos::kSignedDataRoamingEnabled, false);
   EXPECT_FALSE(network_device_handler_.allow_roaming_);
 

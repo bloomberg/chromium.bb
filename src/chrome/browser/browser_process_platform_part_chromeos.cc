@@ -108,9 +108,12 @@ void BrowserProcessPlatformPart::ShutdownSessionManager() {
 }
 
 void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
+  if (using_testing_cros_component_manager_)
+    return;
+
   DCHECK(!cros_component_manager_);
   cros_component_manager_ =
-      std::make_unique<component_updater::CrOSComponentManager>(
+      std::make_unique<component_updater::CrOSComponentInstaller>(
           component_updater::MetadataTable::Create(
               g_browser_process->local_state()));
 
@@ -119,6 +122,9 @@ void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
 }
 
 void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
+  if (using_testing_cros_component_manager_)
+    return;
+
   cros_component_manager_.reset();
 }
 

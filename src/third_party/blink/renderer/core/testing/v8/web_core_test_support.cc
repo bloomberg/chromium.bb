@@ -117,7 +117,7 @@ void ResetInternalsObject(v8::Local<v8::Context> context) {
   blink::ScriptState* script_state = blink::ScriptState::From(context);
   blink::ScriptState::Scope scope(script_state);
   blink::Document* document =
-      ToDocument(blink::ExecutionContext::From(script_state));
+      blink::To<blink::Document>(blink::ExecutionContext::From(script_state));
   DCHECK(document);
   blink::LocalFrame* frame = document->GetFrame();
   // Should the document have been detached, the page is assumed being destroyed

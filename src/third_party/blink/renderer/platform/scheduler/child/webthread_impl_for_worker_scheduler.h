@@ -32,12 +32,11 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
     : public WebThreadBase,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  explicit WebThreadImplForWorkerScheduler(
-      const WebThreadCreationParams& params);
+  explicit WebThreadImplForWorkerScheduler(const ThreadCreationParams& params);
   ~WebThreadImplForWorkerScheduler() override;
 
-  // WebThread implementation.
-  ThreadScheduler* Scheduler() const override;
+  // Thread implementation.
+  ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 

@@ -98,7 +98,7 @@ void WeightedMovingLinearRegression::UpdateSet(int64_t x,
 
 void WeightedMovingLinearRegression::DumpSamples() const {
   for (auto sample : samples_) {
-    LOG(INFO) << "x,y,weight: " << sample.x << ", " << sample.y
+    LOG(INFO) << "x, y, weight: " << sample.x << " " << sample.y << " "
               << sample.weight;
   }
 }

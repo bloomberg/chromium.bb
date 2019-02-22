@@ -109,7 +109,7 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
     return false;
   }
   allowed_origins_.ClearPatterns();
-  for (base::ListValue::const_iterator it = allowed_origins_list->begin();
+  for (auto it = allowed_origins_list->begin();
        it != allowed_origins_list->end(); ++it) {
     std::string pattern_string;
     if (!it->GetAsString(&pattern_string)) {
@@ -119,7 +119,7 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
 
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
     URLPattern::ParseResult result = pattern.Parse(pattern_string);
-    if (result != URLPattern::PARSE_SUCCESS) {
+    if (result != URLPattern::ParseResult::kSuccess) {
       *error_message = "Failed to parse pattern \"" + pattern_string +
           "\": " + URLPattern::GetParseResultString(result);
       return false;

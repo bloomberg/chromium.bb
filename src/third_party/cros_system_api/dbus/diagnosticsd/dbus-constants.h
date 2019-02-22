@@ -10,13 +10,16 @@
 
 namespace diagnostics {
 
-const char kDiagnosticsdServiceInterface[] =
+constexpr char kDiagnosticsdServiceInterface[] =
     "org.chromium.DiagnosticsdInterface";
-const char kDiagnosticsdServicePath[] = "/org/chromium/Diagnosticsd";
-const char kDiagnosticsdServiceName[] = "org.chromium.Diagnosticsd";
+constexpr char kDiagnosticsdServicePath[] = "/org/chromium/Diagnosticsd";
+constexpr char kDiagnosticsdServiceName[] = "org.chromium.Diagnosticsd";
 
-const char kDiagnosticsdBootstrapMojoConnectionMethod[] =
+constexpr char kDiagnosticsdBootstrapMojoConnectionMethod[] =
     "BootstrapMojoConnection";
+
+// Token used for the Mojo connection pipe.
+constexpr char kDiagnosticsdMojoConnectionChannelToken[] = "diagnosticsd";
 
 }  // namespace diagnostics
 

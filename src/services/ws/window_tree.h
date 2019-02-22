@@ -39,6 +39,7 @@ class FocusHandler;
 class PointerWatcher;
 class ServerWindow;
 class TopmostWindowObserver;
+class WindowManagerInterface;
 class WindowService;
 
 // WindowTree manages a client connected to the Window Service. WindowTree
@@ -86,6 +87,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SendPointerWatcherEventToClient(int64_t display_id,
                                        std::unique_ptr<ui::Event> event);
 
+  // Returns the aura::Window associated with the specified transport id; null
+  // if |transport_window_id| is not a valid id for a window.
+  aura::Window* GetWindowByTransportId(Id transport_window_id);
+
   // Returns true if |window| was created by the client calling
   // NewTopLevelWindow().
   bool IsTopLevel(aura::Window* window);
@@ -123,7 +128,16 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // one of the roots.
   bool HasAtLeastOneRootWithCompositorFrameSink();
 
-  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+  // Returns true if |window| has been exposed to this client. A client
+  // typically only sees a limited set of windows that may exist. The set of
+  // windows exposed to the client are referred to as the known windows.
+  bool IsWindowKnown(aura::Window* window) const;
+
+  ClientWindowId ClientWindowIdForWindow(aura::Window* window) const;
+
+  // If |window| is a client root, the ClientRoot is returned. This does not
+  // recurse.
+  ClientRoot* GetClientRootForWindow(aura::Window* window);
 
  private:
   friend class ClientRoot;
@@ -161,6 +175,22 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
     kDestructor,
   };
 
+  // Used to track every window known to the client.
+  struct KnownWindow {
+    KnownWindow();
+    ~KnownWindow();
+
+    // Id for the window.
+    ClientWindowId client_window_id;
+
+    // If non-null, the client created the window and owns it. During window
+    // destruction this may be destroyed before the entry is moved. If you need
+    // to know if the client created the window, use the |is_client_created|.
+    std::unique_ptr<aura::Window> owned_window;
+
+    bool is_client_created = false;
+  };
+
   // Creates a new ClientRoot. The returned ClientRoot is owned by this.
   // |is_top_level| is true if this is called from
   // WindowTree::NewTopLevelWindow().
@@ -169,23 +199,21 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeleteClientRootWithRoot(aura::Window* window);
 
   aura::Window* GetWindowByClientId(const ClientWindowId& id);
-  aura::Window* GetWindowByTransportId(Id transport_window_id);
 
   // Returns true if |this| created |window|.
   bool IsClientCreatedWindow(aura::Window* window);
   bool IsClientRootWindow(aura::Window* window);
 
-  // Returns the window which is corresponded with the root window for the
-  // specified |window| in the client.
-  aura::Window* GetClientRootWindowFor(aura::Window* window);
+  // Returns the ClientRoot that |window| is parented to, null if |window| is
+  // not in a ClientRoot.
+  ClientRoot* FindClientRootContaining(aura::Window* window);
 
   ClientRoots::iterator FindClientRootWithRoot(aura::Window* window);
 
-  // Returns true if |window| has been exposed to this client. A client
-  // typically only sees a limited set of windows that may exist. The set of
-  // windows exposed to the client are referred to as the known windows.
-  bool IsWindowKnown(aura::Window* window) const;
   bool IsWindowRootOfAnotherClient(aura::Window* window) const;
+
+  // Returns true if |window| has an ancestor that intercepts events.
+  bool DoesAnyAncestorInterceptEvents(ServerWindow* window);
 
   // Called when one of the windows known to the client loses capture.
   // |lost_capture| is the window that had capture.
@@ -213,6 +241,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // fails or gets canceled).
   void OnPerformDragDropDone(uint32_t change_id, int drag_result);
 
+  // Returns the first window in |known_windows_map_| that was created by
+  // the client; null if the client did not create an windows.
+  aura::Window* FindFirstClientCreatedWindow();
+
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
       const ClientWindowId& id,
@@ -221,7 +253,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Adds/removes a Window from the set of windows known to the client. This
   // also adds or removes any observers that may need to be installed.
-  void AddWindowToKnownWindows(aura::Window* window, const ClientWindowId& id);
+  void AddWindowToKnownWindows(aura::Window* window,
+                               const ClientWindowId& id,
+                               std::unique_ptr<aura::Window> owned_window);
 
   // |delete_if_owned| indicates if |window| should be deleted if this client
   // created it. |delete_if_owned| is false only if the window was externally
@@ -288,8 +322,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   bool RemoveTransientWindowFromParentImpl(const ClientWindowId& transient_id);
   bool SetModalTypeImpl(const ClientWindowId& client_window_id,
                         ui::ModalType type);
-  bool SetChildModalParentImpl(const ClientWindowId& child_id,
-                               const ClientWindowId& parent_id);
   bool SetWindowVisibilityImpl(const ClientWindowId& window_id, bool visible);
   bool SetWindowPropertyImpl(const ClientWindowId& window_id,
                              const std::string& name,
@@ -321,6 +353,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void OnEmbeddedClientConnectionLost(Embedding* embedding);
 
   // aura::WindowObserver:
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
   // aura::client::CaptureClientObserver:
@@ -355,8 +388,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
                          additional_client_areas) override;
-  void SetHitTestMask(Id transport_window_id,
-                      const base::Optional<gfx::Rect>& mask) override;
+  void SetHitTestInsets(Id transport_window_id,
+                        const gfx::Insets& mouse,
+                        const gfx::Insets& touch) override;
+  void AttachFrameSinkId(Id transport_window_id,
+                         const viz::FrameSinkId& f) override;
+  void UnattachFrameSinkId(Id transport_window_id) override;
   void SetCanAcceptDrops(Id window_id, bool accepts_drops) override;
   void SetWindowVisibility(uint32_t change_id,
                            Id transport_window_id,
@@ -383,9 +420,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SetModalType(uint32_t change_id,
                     Id window_id,
                     ui::ModalType type) override;
-  void SetChildModalParent(uint32_t change_id,
-                           Id window_id,
-                           Id parent_window_id) override;
   void ReorderWindow(uint32_t change_id,
                      Id transport_window_id,
                      Id transport_relative_window_id,
@@ -421,7 +455,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeactivateWindow(Id transport_window_id) override;
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
-  void PerformWmAction(Id window_id, const std::string& action) override;
+  void BindWindowManagerInterface(
+      const std::string& name,
+      mojom::WindowManagerAssociatedRequest window_manager) override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformWindowMove(uint32_t change_id,
@@ -442,6 +478,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ObserveTopmostWindow(mojom::MoveLoopSource source,
                             Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void CancelActiveTouchesExcept(Id not_cancelled_window_id) override;
+  void CancelActiveTouches(Id window_id) override;
+  void TransferGestureEventsTo(Id current_id,
+                               Id new_id,
+                               bool should_cancel) override;
 
   WindowService* window_service_;
 
@@ -461,20 +502,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ClientRoots client_roots_;
 
-  // Set of windows this client created. The values are the same as key, but
-  // put inside a unique_ptr to reinforce this class owns these Windows.
-  // Ideally set would be used, but sets have some painful restrictions
-  // (c++17's set::extract() may make it possible to use a set again).
-  std::unordered_map<aura::Window*, std::unique_ptr<aura::Window>>
-      client_created_windows_;
-
-  // These contain mappings for known windows. At a minimum this contains the
-  // windows in |client_created_windows_|. It will also contain any windows
-  // that are exposed (known) to this client for various reasons. For example,
-  // if this client is the result of an embedding then the window at the embed
-  // point (the root window of the ClientRoot) was not created by this client,
-  // but is known and in these mappings.
-  std::map<aura::Window*, ClientWindowId> window_to_client_window_id_map_;
+  // These contain mappings for known windows, see KnownWindow for details on
+  // it. This contains all windows created by the client, as well as windows
+  // known to the client. For example,if this client is the result of an
+  // embedding then the window at the embed point (the root window of the
+  // ClientRoot) was not created by this client, but is known and in these
+  // mappings.
+  std::map<aura::Window*, KnownWindow> known_windows_map_;
   std::unordered_map<ClientWindowId, aura::Window*, ClientWindowIdHash>
       client_window_id_to_window_map_;
 
@@ -515,6 +549,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Set while a drag loop is in progress.
   Id pending_drag_source_window_id_ = kInvalidTransportId;
+
+  std::vector<std::unique_ptr<WindowManagerInterface>>
+      window_manager_interfaces_;
 
   base::WeakPtrFactory<WindowTree> weak_factory_{this};
 

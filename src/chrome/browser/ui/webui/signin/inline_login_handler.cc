@@ -137,11 +137,10 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   if (!default_email.empty())
     params.SetString("email", default_email);
 
-  std::string is_constrained;
-  net::GetValueForKeyInQuery(
-      current_url, signin::kSignInPromoQueryKeyConstrained, &is_constrained);
-  if (!is_constrained.empty())
-    params.SetString(signin::kSignInPromoQueryKeyConstrained, is_constrained);
+  // The legacy full-tab Chrome sign-in page is no longer used as it was relying
+  // on exchanging cookies for refresh tokens and that endpoint is no longer
+  // supported.
+  params.SetString("constrained", "1");
 
   // TODO(rogerta): this needs to be passed on to gaia somehow.
   std::string read_only_email;
@@ -196,12 +195,8 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
   bool choose_what_to_sync = false;
   dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync);
 
-  base::string16 session_index_string16;
-  dict->GetString("sessionIndex", &session_index_string16);
-  std::string session_index = base::UTF16ToASCII(session_index_string16);
-
   CompleteLogin(email, password, gaia_id, auth_code, skip_for_now, trusted,
-                trusted_found, choose_what_to_sync, session_index);
+                trusted_found, choose_what_to_sync);
 }
 
 void InlineLoginHandler::HandleSwitchToFullTabMessage(
@@ -227,14 +222,6 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       main_frame_url, kSignInPromoQueryKeyShowAccountManagement, "1");
   main_frame_url = net::AppendOrReplaceQueryParameter(
       main_frame_url, signin::kSignInPromoQueryKeyForceKeepData, "1");
-  if (base::FeatureList::IsEnabled(
-          features::kRemoveUsageOfDeprecatedGaiaSigninEndpoint)) {
-    main_frame_url = net::AppendOrReplaceQueryParameter(
-        main_frame_url, signin::kSignInPromoQueryKeyConstrained, "1");
-  } else {
-    main_frame_url = net::AppendOrReplaceQueryParameter(
-        main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0");
-  }
 
   NavigateParams params(profile, main_frame_url,
                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);

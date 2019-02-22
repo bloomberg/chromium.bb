@@ -32,7 +32,7 @@ class MockCredentialManager {
       icon: new url.mojom.Url({url: icon}),
       password: stringToMojoString16(password),
       federation: new url.mojom.Origin(
-          {scheme: '', host: '', port: 0, unique: true})
+          {scheme: 'https', host: 'foo.com', port: 443})
     });
   }
 
@@ -97,7 +97,8 @@ class MockAuthenticator {
           });
       response = new blink.mojom.MakeCredentialAuthenticatorResponse(
           { info: info,
-            attestationObject: this.attestationObject_
+            attestationObject: this.attestationObject_,
+            transports: [blink.mojom.AuthenticatorTransport.INTERNAL],
           });
     }
     let status = this.status_;

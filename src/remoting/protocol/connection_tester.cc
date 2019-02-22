@@ -66,7 +66,7 @@ void StreamConnectionTester::InitBuffers() {
     output_buffer_->data()[i] = static_cast<char>(i);
   }
 
-  input_buffer_ = new net::GrowableIOBuffer();
+  input_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
 }
 
 void StreamConnectionTester::DoWrite() {
@@ -183,7 +183,8 @@ void DatagramConnectionTester::DoWrite() {
     return;
   }
 
-  scoped_refptr<net::IOBuffer> packet(new net::IOBuffer(message_size_));
+  scoped_refptr<net::IOBuffer> packet(
+      base::MakeRefCounted<net::IOBuffer>(message_size_));
   for (int i = 0; i < message_size_; ++i) {
     packet->data()[i] = static_cast<char>(i);
   }
@@ -220,7 +221,7 @@ void DatagramConnectionTester::DoRead() {
   int result = 1;
   while (result > 0) {
     int kReadSize = message_size_ * 2;
-    read_buffer_ = new net::IOBuffer(kReadSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadSize);
 
     result = host_socket_->Recv(
         read_buffer_.get(), kReadSize,

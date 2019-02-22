@@ -40,82 +40,86 @@ class BlitGL : angle::NonCopyable
            StateManagerGL *stateManager);
     ~BlitGL();
 
-    gl::Error copyImageToLUMAWorkaroundTexture(const gl::Context *context,
-                                               GLuint texture,
-                                               gl::TextureType textureType,
-                                               gl::TextureTarget target,
-                                               GLenum lumaFormat,
-                                               size_t level,
-                                               const gl::Rectangle &sourceArea,
-                                               GLenum internalFormat,
-                                               gl::Framebuffer *source);
+    angle::Result copyImageToLUMAWorkaroundTexture(const gl::Context *context,
+                                                   GLuint texture,
+                                                   gl::TextureType textureType,
+                                                   gl::TextureTarget target,
+                                                   GLenum lumaFormat,
+                                                   size_t level,
+                                                   const gl::Rectangle &sourceArea,
+                                                   GLenum internalFormat,
+                                                   gl::Framebuffer *source);
 
-    gl::Error copySubImageToLUMAWorkaroundTexture(const gl::Context *context,
-                                                  GLuint texture,
-                                                  gl::TextureType textureType,
-                                                  gl::TextureTarget target,
-                                                  GLenum lumaFormat,
-                                                  size_t level,
-                                                  const gl::Offset &destOffset,
-                                                  const gl::Rectangle &sourceArea,
-                                                  gl::Framebuffer *source);
+    angle::Result copySubImageToLUMAWorkaroundTexture(const gl::Context *context,
+                                                      GLuint texture,
+                                                      gl::TextureType textureType,
+                                                      gl::TextureTarget target,
+                                                      GLenum lumaFormat,
+                                                      size_t level,
+                                                      const gl::Offset &destOffset,
+                                                      const gl::Rectangle &sourceArea,
+                                                      gl::Framebuffer *source);
 
-    gl::Error blitColorBufferWithShader(const gl::Framebuffer *source,
-                                        const gl::Framebuffer *dest,
-                                        const gl::Rectangle &sourceArea,
-                                        const gl::Rectangle &destArea,
-                                        GLenum filter);
+    angle::Result blitColorBufferWithShader(const gl::Context *context,
+                                            const gl::Framebuffer *source,
+                                            const gl::Framebuffer *dest,
+                                            const gl::Rectangle &sourceArea,
+                                            const gl::Rectangle &destArea,
+                                            GLenum filter);
 
-    gl::ErrorOrResult<bool> copySubTexture(const gl::Context *context,
-                                           TextureGL *source,
-                                           size_t sourceLevel,
-                                           GLenum sourceComponentType,
-                                           TextureGL *dest,
-                                           gl::TextureTarget destTarget,
-                                           size_t destLevel,
-                                           GLenum destComponentType,
-                                           const gl::Extents &sourceSize,
-                                           const gl::Rectangle &sourceArea,
-                                           const gl::Offset &destOffset,
-                                           bool needsLumaWorkaround,
-                                           GLenum lumaFormat,
-                                           bool unpackFlipY,
-                                           bool unpackPremultiplyAlpha,
-                                           bool unpackUnmultiplyAlpha);
+    angle::Result copySubTexture(const gl::Context *context,
+                                 TextureGL *source,
+                                 size_t sourceLevel,
+                                 GLenum sourceComponentType,
+                                 TextureGL *dest,
+                                 gl::TextureTarget destTarget,
+                                 size_t destLevel,
+                                 GLenum destComponentType,
+                                 const gl::Extents &sourceSize,
+                                 const gl::Rectangle &sourceArea,
+                                 const gl::Offset &destOffset,
+                                 bool needsLumaWorkaround,
+                                 GLenum lumaFormat,
+                                 bool unpackFlipY,
+                                 bool unpackPremultiplyAlpha,
+                                 bool unpackUnmultiplyAlpha,
+                                 bool *copySucceededOut);
 
-    gl::Error copySubTextureCPUReadback(const gl::Context *context,
-                                        TextureGL *source,
-                                        size_t sourceLevel,
-                                        GLenum sourceComponentType,
-                                        TextureGL *dest,
-                                        gl::TextureTarget destTarget,
-                                        size_t destLevel,
-                                        GLenum destFormat,
-                                        GLenum destType,
-                                        const gl::Rectangle &sourceArea,
-                                        const gl::Offset &destOffset,
-                                        bool unpackFlipY,
-                                        bool unpackPremultiplyAlpha,
-                                        bool unpackUnmultiplyAlpha);
-
-    gl::ErrorOrResult<bool> copyTexSubImage(TextureGL *source,
+    angle::Result copySubTextureCPUReadback(const gl::Context *context,
+                                            TextureGL *source,
                                             size_t sourceLevel,
+                                            GLenum sourceComponentType,
                                             TextureGL *dest,
                                             gl::TextureTarget destTarget,
                                             size_t destLevel,
+                                            GLenum destFormat,
+                                            GLenum destType,
                                             const gl::Rectangle &sourceArea,
-                                            const gl::Offset &destOffset);
+                                            const gl::Offset &destOffset,
+                                            bool unpackFlipY,
+                                            bool unpackPremultiplyAlpha,
+                                            bool unpackUnmultiplyAlpha);
 
-    gl::ErrorOrResult<bool> clearRenderableTexture(TextureGL *source,
-                                                   GLenum sizedInternalFormat,
-                                                   int numTextureLayers,
-                                                   const gl::ImageIndex &imageIndex);
+    angle::Result copyTexSubImage(TextureGL *source,
+                                  size_t sourceLevel,
+                                  TextureGL *dest,
+                                  gl::TextureTarget destTarget,
+                                  size_t destLevel,
+                                  const gl::Rectangle &sourceArea,
+                                  const gl::Offset &destOffset,
+                                  bool *copySucceededOut);
 
-    gl::Error clearRenderbuffer(RenderbufferGL *source, GLenum sizedInternalFormat);
+    angle::Result clearRenderableTexture(TextureGL *source,
+                                         GLenum sizedInternalFormat,
+                                         int numTextureLayers,
+                                         const gl::ImageIndex &imageIndex,
+                                         bool *clearSucceededOut);
 
-    gl::Error clearFramebuffer(FramebufferGL *source);
+    angle::Result clearRenderbuffer(RenderbufferGL *source, GLenum sizedInternalFormat);
 
-    gl::Error initializeResources();
+    angle::Result clearFramebuffer(FramebufferGL *source);
+
+    angle::Result initializeResources();
 
   private:
     void orphanScratchTextures();
@@ -143,7 +147,9 @@ class BlitGL : angle::NonCopyable
     };
 
     static BlitProgramType getBlitProgramType(GLenum sourceComponentType, GLenum destComponentType);
-    gl::Error getBlitProgram(BlitProgramType type, BlitProgram **program);
+    angle::Result getBlitProgram(const gl::Context *context,
+                                 BlitProgramType type,
+                                 BlitProgram **program);
 
     std::map<BlitProgramType, BlitProgram> mBlitPrograms;
 

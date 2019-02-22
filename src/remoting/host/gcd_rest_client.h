@@ -11,18 +11,22 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/clock.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/base/oauth_token_getter.h"
-#include "remoting/base/url_request_context_getter.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
 
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+struct ResourceRequest;
+}  // namespace network
+
 namespace remoting {
 
 // A client for calls to the GCD REST API.
-class GcdRestClient : public net::URLFetcherDelegate {
+class GcdRestClient {
  public:
   // Result of a GCD call.
   enum Result {
@@ -35,17 +39,17 @@ class GcdRestClient : public net::URLFetcherDelegate {
   typedef base::Callback<void(Result result)> ResultCallback;
 
   // Note: |token_getter| must outlive this object.
-  GcdRestClient(const std::string& gcd_base_url,
-                const std::string& gcd_device_id,
-                const scoped_refptr<net::URLRequestContextGetter>&
-                    url_request_context_getter,
-                OAuthTokenGetter* token_getter);
+  GcdRestClient(
+      const std::string& gcd_base_url,
+      const std::string& gcd_device_id,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      OAuthTokenGetter* token_getter);
 
-  ~GcdRestClient() override;
+  ~GcdRestClient();
 
   // Tests whether is object is currently running a request.  Only one
   // request at a time may be pending.
-  bool HasPendingRequest() { return !!url_fetcher_; }
+  bool HasPendingRequest() { return !!resource_request_ || !!url_loader_; }
 
   // Sends a 'patchState' request to the GCD API.  Constructs and
   // sends an appropriate JSON message M where |patch_details| becomes
@@ -61,15 +65,16 @@ class GcdRestClient : public net::URLFetcherDelegate {
                        const std::string& access_token);
   void FinishCurrentRequest(Result result);
 
-  // URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   std::string gcd_base_url_;
   std::string gcd_device_id_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   OAuthTokenGetter* token_getter_;
   base::Clock* clock_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  std::unique_ptr<network::ResourceRequest> resource_request_;
+  std::string patch_string_;
   ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GcdRestClient);

@@ -42,6 +42,12 @@
 #include "source/val/validation_state.h"
 #include "spirv-tools/libspirv.h"
 
+namespace {
+// TODO(issue 1950): The validator only returns a single message anyway, so no
+// point in generating more than 1 warning.
+static uint32_t kDefaultMaxNumOfWarnings = 1;
+}  // namespace
+
 namespace spvtools {
 namespace val {
 namespace {
@@ -313,8 +319,7 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
     if (auto error = ModeSettingPass(*vstate, &instruction)) return error;
     if (auto error = TypePass(*vstate, &instruction)) return error;
     if (auto error = ConstantPass(*vstate, &instruction)) return error;
-    if (auto error = ValidateMemoryInstructions(*vstate, &instruction))
-      return error;
+    if (auto error = MemoryPass(*vstate, &instruction)) return error;
     if (auto error = FunctionPass(*vstate, &instruction)) return error;
     if (auto error = ImagePass(*vstate, &instruction)) return error;
     if (auto error = ConversionPass(*vstate, &instruction)) return error;
@@ -333,10 +338,11 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
     if (auto error = NonUniformPass(*vstate, &instruction)) return error;
 
     if (auto error = LiteralsPass(*vstate, &instruction)) return error;
-    // Validate the preconditions involving adjacent instructions. e.g. SpvOpPhi
-    // must only be preceeded by SpvOpLabel, SpvOpPhi, or SpvOpLine.
-    if (auto error = ValidateAdjacency(*vstate, i)) return error;
   }
+
+  // Validate the preconditions involving adjacent instructions. e.g. SpvOpPhi
+  // must only be preceeded by SpvOpLabel, SpvOpPhi, or SpvOpLine.
+  if (auto error = ValidateAdjacency(*vstate)) return error;
 
   if (auto error = ValidateEntryPoints(*vstate)) return error;
   // CFG checks are performed after the binary has been parsed
@@ -369,8 +375,8 @@ spv_result_t ValidateBinaryAndKeepValidationState(
     UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
   }
 
-  vstate->reset(
-      new ValidationState_t(&hijack_context, options, words, num_words));
+  vstate->reset(new ValidationState_t(&hijack_context, options, words,
+                                      num_words, kDefaultMaxNumOfWarnings));
 
   return ValidateBinaryUsingContextAndValidationState(
       hijack_context, words, num_words, pDiagnostic, vstate->get());
@@ -400,7 +406,8 @@ spv_result_t spvValidateBinary(const spv_const_context context,
 
   // Create the ValidationState using the context and default options.
   spvtools::val::ValidationState_t vstate(&hijack_context, default_options,
-                                          words, num_words);
+                                          words, num_words,
+                                          kDefaultMaxNumOfWarnings);
 
   spv_result_t result =
       spvtools::val::ValidateBinaryUsingContextAndValidationState(
@@ -422,7 +429,8 @@ spv_result_t spvValidateWithOptions(const spv_const_context context,
 
   // Create the ValidationState using the context.
   spvtools::val::ValidationState_t vstate(&hijack_context, options,
-                                          binary->code, binary->wordCount);
+                                          binary->code, binary->wordCount,
+                                          kDefaultMaxNumOfWarnings);
 
   return spvtools::val::ValidateBinaryUsingContextAndValidationState(
       hijack_context, binary->code, binary->wordCount, pDiagnostic, &vstate);

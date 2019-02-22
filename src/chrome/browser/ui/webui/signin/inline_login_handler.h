@@ -82,8 +82,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
                              bool skip_for_now,
                              bool trusted,
                              bool trusted_found,
-                             bool choose_what_to_sync,
-                             const std::string& session_index) = 0;
+                             bool choose_what_to_sync) = 0;
 
   base::WeakPtrFactory<InlineLoginHandler> weak_ptr_factory_;
 

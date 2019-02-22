@@ -148,7 +148,7 @@ static bool CanPropagate(const ScrollState& scroll_state,
 
 void ScrollManager::RecomputeScrollChain(const Node& start_node,
                                          const ScrollState& scroll_state,
-                                         std::deque<int>& scroll_chain) {
+                                         std::deque<DOMNodeId>& scroll_chain) {
   DCHECK(!scroll_chain.size());
   scroll_chain.clear();
 
@@ -184,7 +184,7 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
         // We should add the first node with non-auto overscroll-behavior to
         // the scroll chain regardlessly, as it's the only node we can latch to.
         if (scroll_chain.empty() ||
-            scroll_chain.front() != (int)DOMNodeIds::IdForNode(cur_element)) {
+            scroll_chain.front() != DOMNodeIds::IdForNode(cur_element)) {
           scroll_chain.push_front(DOMNodeIds::IdForNode(cur_element));
         }
         break;
@@ -261,7 +261,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  std::deque<int> scroll_chain;
+  std::deque<DOMNodeId> scroll_chain;
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));

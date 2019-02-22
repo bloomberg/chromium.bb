@@ -316,7 +316,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       drive::prefs::kDisableDriveHostedFiles, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
+                                false);
   registry->RegisterStringPref(drive::prefs::kDriveFsProfileSalt, "");
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsPinnedMigrated, false);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
@@ -506,6 +509,7 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kTPMFirmwareUpdateCleanupDismissed,
                                 false);
+  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

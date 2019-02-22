@@ -41,6 +41,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -49,12 +50,15 @@ namespace {
 constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
+constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
 constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
+constexpr char kResourceLoadingHintsDescription[] =
+    "ResourceLoadingHints Previews";
 constexpr char kOfflineDesciption[] = "Offline Previews";
 
 // The HTML DOM ID used in Javascript.
@@ -62,10 +66,14 @@ constexpr char kEctFlagHtmlId[] = "ect-flag";
 constexpr char kIgnorePreviewsBlacklistFlagHtmlId[] =
     "ignore-previews-blacklist";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
+constexpr char kResourceLoadingHintsFlagHtmlId[] =
+    "resource-loading-hints-flag";
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 
 // Links to flags in chrome://flags.
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
+constexpr char kResourceLoadingHintsFlagLink[] =
+    "chrome://flags/#enable-resource-loading-hints";
 constexpr char kEctFlagLink[] =
     "chrome://flags/#force-effective-connection-type";
 constexpr char kIgnorePreviewsBlacklistLink[] =
@@ -75,6 +83,7 @@ constexpr char kOfflinePageFlagLink[] =
 
 // Flag features names.
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
+constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
 
 constexpr char kDefaultFlagValue[] = "Default";
@@ -213,15 +222,18 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
 // Mocked TestPreviewsService for testing InterventionsInternalsPageHandler.
 class TestPreviewsUIService : public previews::PreviewsUIService {
  public:
-  TestPreviewsUIService(TestPreviewsDeciderImpl* previews_decider_impl,
-                        std::unique_ptr<previews::PreviewsLogger> logger)
+  TestPreviewsUIService(
+      TestPreviewsDeciderImpl* previews_decider_impl,
+      std::unique_ptr<previews::PreviewsLogger> logger,
+      network::TestNetworkQualityTracker* test_network_quality_tracker)
       : PreviewsUIService(previews_decider_impl,
                           nullptr, /* io_task_runner */
                           nullptr, /* previews_opt_out_store */
                           nullptr, /* previews_opt_guide */
                           base::Bind(&MockedPreviewsIsEnabled),
                           std::move(logger),
-                          blacklist::BlacklistData::AllowedTypesAndVersions()),
+                          blacklist::BlacklistData::AllowedTypesAndVersions(),
+                          test_network_quality_tracker),
         blacklist_ignored_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -250,8 +262,8 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     std::unique_ptr<TestPreviewsLogger> logger =
         std::make_unique<TestPreviewsLogger>();
     logger_ = logger.get();
-    previews_ui_service_ =
-        std::make_unique<TestPreviewsUIService>(&io_data, std::move(logger));
+    previews_ui_service_ = std::make_unique<TestPreviewsUIService>(
+        &io_data, std::move(logger), &test_network_quality_tracker_);
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
@@ -278,6 +290,7 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   TestingProfileManager profile_manager_;
 
   TestPreviewsLogger* logger_;
+  network::TestNetworkQualityTracker test_network_quality_tracker_;
   std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
 
   // InterventionsInternalPageHandler's variables.
@@ -295,7 +308,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 4;
+  constexpr size_t expected = 5;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -373,6 +386,36 @@ TEST_F(InterventionsInternalsPageHandlerTest, NoScriptEnabled) {
   EXPECT_TRUE(noscript->second->enabled);
 }
 
+TEST_F(InterventionsInternalsPageHandlerTest, ResourceLoadingHintsDisabled) {
+  // Init with kResourceLoadingHints disabled.
+  scoped_feature_list_->InitWithFeatures(
+      {}, {previews::features::kResourceLoadingHints});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints =
+      passed_in_modes.find(kResourceLoadingHintsHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kResourceLoadingHintsDescription,
+            resource_loading_hints->second->description);
+  EXPECT_FALSE(resource_loading_hints->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, ResourceLoadingHintsEnabled) {
+  // Init with kResourceLoadingHints enabled.
+  scoped_feature_list_->InitWithFeatures(
+      {previews::features::kResourceLoadingHints}, {});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints =
+      passed_in_modes.find(kResourceLoadingHintsHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kResourceLoadingHintsDescription,
+            resource_loading_hints->second->description);
+  EXPECT_TRUE(resource_loading_hints->second->enabled);
+}
+
 TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsDisabled) {
   // Init with kOfflinePreviews disabled.
   scoped_feature_list_->InitWithFeatures(
@@ -404,7 +447,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 5;
+  constexpr size_t expected = 6;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -542,6 +585,61 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDisabled) {
             noscript_flag->second->description);
   EXPECT_EQ(kDisabledFlagValue, noscript_flag->second->value);
   EXPECT_EQ(kNoScriptFlagLink, noscript_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsResourceLoadingHintsDefaultValue) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto resource_loading_hints_flag =
+      passed_in_flags.find(kResourceLoadingHintsFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), resource_loading_hints_flag);
+  EXPECT_EQ(flag_descriptions::kEnableResourceLoadingHintsName,
+            resource_loading_hints_flag->second->description);
+  EXPECT_EQ(kDefaultFlagValue, resource_loading_hints_flag->second->value);
+  EXPECT_EQ(kResourceLoadingHintsFlagLink,
+            resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsResourceLoadingHintsEnabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                  kResourceLoadingHintsFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto resource_loading_hints_flag =
+      passed_in_flags.find(kResourceLoadingHintsFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), resource_loading_hints_flag);
+  EXPECT_EQ(flag_descriptions::kEnableResourceLoadingHintsName,
+            resource_loading_hints_flag->second->description);
+  EXPECT_EQ(kEnabledFlagValue, resource_loading_hints_flag->second->value);
+  EXPECT_EQ(kResourceLoadingHintsFlagLink,
+            resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsResourceLoadingHintsDisabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                  kResourceLoadingHintsFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto resource_loading_hints_flag =
+      passed_in_flags.find(kResourceLoadingHintsFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), resource_loading_hints_flag);
+  EXPECT_EQ(flag_descriptions::kEnableResourceLoadingHintsName,
+            resource_loading_hints_flag->second->description);
+  EXPECT_EQ(kDisabledFlagValue, resource_loading_hints_flag->second->value);
+  EXPECT_EQ(kResourceLoadingHintsFlagLink,
+            resource_loading_hints_flag->second->link);
 }
 
 #if defined(OS_ANDROID)

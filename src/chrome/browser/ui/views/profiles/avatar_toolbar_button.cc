@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -24,7 +25,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
@@ -68,11 +69,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
         AccountTrackerServiceFactory::GetForProfile(profile_));
   }
 
-  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
-  // is hard to read for user avatars. This constant is correspondingly smaller
-  // than GetLayoutInsets(TOOLBAR_BUTTON).
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    SetLayoutInsets(GetLayoutInsets(TOOLBAR_BUTTON) - gfx::Insets(2));
+  SetInsets();
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
@@ -80,7 +77,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON);
 
   set_tag(IDC_SHOW_AVATAR_MENU);
-  set_id(VIEW_ID_AVATAR_BUTTON);
 
   // The avatar should not flip with RTL UI. This does not affect text rendering
   // and LabelButton image/label placement is still flipped like usual.
@@ -103,9 +99,11 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
   UpdateText();
+
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
-AvatarToolbarButton::~AvatarToolbarButton() = default;
+AvatarToolbarButton::~AvatarToolbarButton() {}
 
 void AvatarToolbarButton::UpdateIcon() {
   SetImage(views::Button::STATE_NORMAL, GetAvatarIcon());
@@ -194,6 +192,11 @@ void AvatarToolbarButton::OnAccountRemoved(const AccountInfo& info) {
   UpdateIcon();
 }
 
+void AvatarToolbarButton::OnMdModeChanged() {
+  SetInsets();
+  PreferredSizeChanged();
+}
+
 bool AvatarToolbarButton::IsIncognito() const {
   return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
 }
@@ -217,7 +220,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
-         !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+         !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount();
 }
 
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
@@ -300,7 +303,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   //  - the user isn't signed in
   //  - the profile icon wasn't explicitly changed
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-      !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() &&
+      !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount() &&
       entry->IsUsingDefaultAvatar()) {
     std::vector<AccountInfo> promo_accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
@@ -316,19 +319,28 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 #if !defined(OS_CHROMEOS)
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  if (signin_manager && signin_manager->IsAuthenticated() &&
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  if (identity_manager && identity_manager->HasPrimaryAccount() &&
       profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
     const bool should_show_sync_paused_ui =
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-        sync_ui_util::GetMessagesForAvatarSyncError(profile_, *signin_manager,
-                                                    &unused, &unused) ==
-            sync_ui_util::AUTH_ERROR;
+        // TODO(http://crbug.com/890796): Migrate to passing an IdentityManager
+        sync_ui_util::GetMessagesForAvatarSyncError(
+            profile_, *SigninManagerFactory::GetForProfile(profile_), &unused,
+            &unused) == sync_ui_util::AUTH_ERROR;
     return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
   }
 #endif  // !defined(OS_CHROMEOS)
   return SyncState::kNormal;
+}
+
+void AvatarToolbarButton::SetInsets() {
+  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
+  // is hard to read for user avatars, so we need to set corresponding insets.
+  SetLayoutInsetDelta(gfx::Insets(
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : -2));
 }

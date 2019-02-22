@@ -60,9 +60,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     kCleanup = 20,
 
+    kWebSchedulingUserInteraction = 21,
+    kWebSchedulingBestEffort = 22,
+
     // Used to group multiple types when calculating Expected Queueing Time.
-    kOther = 21,
-    kCount = 22
+    kOther = 23,
+    kCount = 24
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -243,11 +246,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   QueueTraits GetQueueTraits() const { return queue_traits_; }
 
   void OnTaskStarted(
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnTaskCompleted(
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void DetachFromMainThreadScheduler();

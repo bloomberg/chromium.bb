@@ -740,9 +740,9 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
-  FloatSize elastic_overscroll(10, -20);
-  web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
-                                elastic_overscroll, 1.0f, 0.0f);
+  gfx::Vector2dF elastic_overscroll(10, -20);
+  web_view->ApplyViewportChanges(
+      {gfx::Vector2dF(), elastic_overscroll, 1.0f, 0.0f});
 
   // Just elastic overscroll.
   {
@@ -757,11 +757,10 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
     IntPoint position =
         FlooredIntPoint(transformed_mouse_event.PositionInRootFrame());
 
-    EXPECT_EQ(web_mouse_event.PositionInWidget().x + elastic_overscroll.Width(),
+    EXPECT_EQ(web_mouse_event.PositionInWidget().x + elastic_overscroll.x(),
               position.X());
-    EXPECT_EQ(
-        web_mouse_event.PositionInWidget().y + elastic_overscroll.Height(),
-        position.Y());
+    EXPECT_EQ(web_mouse_event.PositionInWidget().y + elastic_overscroll.y(),
+              position.Y());
     EXPECT_EQ(web_mouse_event.PositionInScreen().x,
               transformed_mouse_event.PositionInScreen().x);
     EXPECT_EQ(web_mouse_event.PositionInScreen().y,
@@ -788,10 +787,10 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
         FlooredIntPoint(transformed_mouse_event.PositionInRootFrame());
 
     EXPECT_EQ(web_mouse_event.PositionInWidget().x / page_scale +
-                  visual_offset.X() + elastic_overscroll.Width(),
+                  visual_offset.X() + elastic_overscroll.x(),
               position.X());
     EXPECT_EQ(web_mouse_event.PositionInWidget().y / page_scale +
-                  visual_offset.Y() + elastic_overscroll.Height(),
+                  visual_offset.Y() + elastic_overscroll.y(),
               position.Y());
     EXPECT_EQ(web_mouse_event.PositionInScreen().x,
               transformed_mouse_event.PositionInScreen().x);
@@ -814,9 +813,9 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   web_view->Resize(WebSize(page_width, page_height));
   web_view->UpdateAllLifecyclePhases();
 
-  FloatSize elastic_overscroll(10, -20);
-  web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
-                                elastic_overscroll, 1.0f, 0.0f);
+  gfx::Vector2dF elastic_overscroll(10, -20);
+  web_view->ApplyViewportChanges(
+      {gfx::Vector2dF(), elastic_overscroll, 1.0f, 0.0f});
   FrameTestHelpers::ReloadFrame(web_view_helper.GetWebView()->MainFrameImpl());
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
@@ -833,11 +832,10 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
     IntPoint position =
         FlooredIntPoint(transformed_mouse_event.PositionInRootFrame());
 
-    EXPECT_EQ(web_mouse_event.PositionInWidget().x + elastic_overscroll.Width(),
+    EXPECT_EQ(web_mouse_event.PositionInWidget().x + elastic_overscroll.x(),
               position.X());
-    EXPECT_EQ(
-        web_mouse_event.PositionInWidget().y + elastic_overscroll.Height(),
-        position.Y());
+    EXPECT_EQ(web_mouse_event.PositionInWidget().y + elastic_overscroll.y(),
+              position.Y());
     EXPECT_EQ(web_mouse_event.PositionInScreen().x,
               transformed_mouse_event.PositionInScreen().x);
     EXPECT_EQ(web_mouse_event.PositionInScreen().y,

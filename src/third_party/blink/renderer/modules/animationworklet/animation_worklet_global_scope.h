@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 
 namespace blink {
 
@@ -27,14 +27,12 @@ class WorkletAnimationOptions;
 // The scope keeps a map of these animator definitions and can look them up
 // based on their name. The scope also owns a list of active animators that it
 // animates.
-class MODULES_EXPORT AnimationWorkletGlobalScope
-    : public ThreadedWorkletGlobalScope {
+class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static AnimationWorkletGlobalScope* Create(
       std::unique_ptr<GlobalScopeCreationParams>,
-      v8::Isolate*,
       WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
   void Trace(blink::Visitor*) override;
@@ -54,7 +52,6 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
 
  private:
   AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                              v8::Isolate*,
                               WorkerThread*);
 
   void RegisterWithProxyClientIfNeeded();

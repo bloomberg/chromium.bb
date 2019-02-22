@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -38,7 +39,7 @@ TEST_F(HTMLObjectElementTest, FallbackRecalcForReattach) {
 
   object->RenderFallbackContent();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kForce);
+  GetDocument().GetStyleEngine().RecalcStyle(kForce);
 
   EXPECT_TRUE(IsHTMLSlotElement(slot));
   EXPECT_TRUE(object->UseFallbackContent());

@@ -54,7 +54,9 @@ extern "C" {
 void EMSCRIPTEN_KEEPALIVE Initialize(ReplyFunction);
 void Initialize(ReplyFunction reply_function) {
   PERFETTO_ILOG("Initializing WASM bridge");
-  g_trace_processor = new TraceProcessor();
+  TraceProcessor::Config config;
+  config.optimization_mode = OptimizationMode::kMaxBandwidth;
+  g_trace_processor = new TraceProcessor(config);
   g_reply = reply_function;
 }
 
@@ -69,6 +71,17 @@ void trace_processor_parse(RequestID id, const uint8_t* data, size_t size) {
   std::unique_ptr<uint8_t[]> buf(new uint8_t[size]);
   memcpy(buf.get(), data, size);
   g_trace_processor->Parse(std::move(buf), size);
+  g_reply(id, true, "", 0);
+}
+
+// We keep the same signature as other methods even though we don't take input
+// arguments for simplicity.
+void EMSCRIPTEN_KEEPALIVE trace_processor_notifyEof(RequestID,
+                                                    const uint8_t*,
+                                                    uint32_t);
+void trace_processor_notifyEof(RequestID id, const uint8_t*, uint32_t size) {
+  PERFETTO_DCHECK(!size);
+  g_trace_processor->NotifyEndOfFile();
   g_reply(id, true, "", 0);
 }
 

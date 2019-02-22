@@ -34,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -82,8 +83,8 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
   scoped_refptr<PublicKey> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key_data)) {
     scoped_refptr<PrivateKey> private_key;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, public_key, private_key));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::Bind(callback, public_key, private_key));
     return;
   }
   public_key = new PublicKey();
@@ -104,9 +105,8 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     private_key = new PrivateKey(owner_key_util->FindPrivateKeyInSlot(
         public_key->data(), public_slot.get()));
   }
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(callback, public_key, private_key));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::Bind(callback, public_key, private_key));
 }
 
 void ContinueLoadPrivateKeyOnIOThread(
@@ -406,9 +406,8 @@ void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
 
   // Make sure NSS is initialized and NSS DB is loaded for the user before
   // searching for the owner key.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO,
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::Bind(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
                  user_hash,
                  ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
@@ -707,8 +706,8 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
     return;
   }
 
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  bool rv = base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::Bind(&LoadPrivateKeyOnIOThread, owner_key_util_,
                  ProfileHelper::GetUserIdHashFromProfile(profile_), callback));
   if (!rv) {

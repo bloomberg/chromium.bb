@@ -13,9 +13,8 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -31,29 +30,28 @@ const char kRequestContentType[] = "application/x-protobuf";
 // static
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
     const GURL& url,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url, std::string(), request_context_getter, std::move(callback)));
+      url, std::string(), url_loader_factory, std::move(callback)));
 }
 
 // static
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
     const GURL& url,
     const std::string& message,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url, message, request_context_getter, std::move(callback)));
+      url, message, url_loader_factory, std::move(callback)));
 }
 
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const GURL& url,
     const std::string& message,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback)
-    : request_context_getter_(request_context_getter),
-      callback_(std::move(callback)) {
+    : url_loader_factory_(url_loader_factory), callback_(std::move(callback)) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("offline_prefetch", R"(
         semantics {
@@ -75,33 +73,38 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");
-  url_fetcher_ = net::URLFetcher::Create(
-      url, message.empty() ? net::URLFetcher::GET : net::URLFetcher::POST, this,
-      traffic_annotation);
-  url_fetcher_->SetRequestContext(request_context_getter_.get());
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->method = message.empty() ? "GET" : "POST";
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+
   std::string experiment_header = PrefetchExperimentHeader();
   if (!experiment_header.empty())
-    url_fetcher_->AddExtraRequestHeader(experiment_header);
-  if (message.empty()) {
-    std::string content_type_header(net::HttpRequestHeaders::kContentType);
-    content_type_header += ": ";
-    content_type_header += kRequestContentType;
-    url_fetcher_->AddExtraRequestHeader(content_type_header);
-  } else {
-    url_fetcher_->SetUploadData(kRequestContentType, message);
-  }
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
+    resource_request->headers.AddHeaderFromString(experiment_header);
+
+  if (message.empty())
+    resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                        kRequestContentType);
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+
+  if (!message.empty())
+    url_loader_->AttachStringForUpload(message, kRequestContentType);
+
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&PrefetchRequestFetcher::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
 PrefetchRequestFetcher::~PrefetchRequestFetcher() {}
 
-void PrefetchRequestFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void PrefetchRequestFetcher::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   std::string data;
-  PrefetchRequestStatus status = ParseResponse(source, &data);
+  PrefetchRequestStatus status = ParseResponse(std::move(response_body), &data);
 
   // TODO(jianli): Report UMA.
 
@@ -109,31 +112,38 @@ void PrefetchRequestFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
-    const net::URLFetcher* source,
+    std::unique_ptr<std::string> response_body,
     std::string* data) {
-  if (!source->GetStatus().is_success()) {
-    net::Error net_error = source->GetStatus().ToNetError();
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+
+  if ((response_code < 200 || response_code > 299) && response_code != -1) {
+    DVLOG(1) << "HTTP status: " << response_code;
+    switch (response_code) {
+      case net::HTTP_NOT_IMPLEMENTED:
+        return PrefetchRequestStatus::kShouldSuspendNotImplemented;
+      case net::HTTP_FORBIDDEN:
+        return PrefetchRequestStatus::kShouldSuspendForbidden;
+      default:
+        return PrefetchRequestStatus::kShouldRetryWithBackoff;
+    }
+  }
+  if (!response_body) {
+    int net_error = url_loader_->NetError();
     DVLOG(1) << "Net error: " << net_error;
     return (net_error == net::ERR_BLOCKED_BY_ADMINISTRATOR)
-               ? PrefetchRequestStatus::SHOULD_SUSPEND
-               : PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF;
+               ? PrefetchRequestStatus::kShouldSuspendBlockedByAdministrator
+               : PrefetchRequestStatus::kShouldRetryWithoutBackoff;
   }
 
-  net::HttpStatusCode response_status =
-      static_cast<net::HttpStatusCode>(source->GetResponseCode());
-  if (response_status != net::HTTP_OK) {
-    DVLOG(1) << "HTTP status: " << response_status;
-    return (response_status == net::HTTP_NOT_IMPLEMENTED)
-               ? PrefetchRequestStatus::SHOULD_SUSPEND
-               : PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
-  }
-
-  if (!source->GetResponseAsString(data) || data->empty()) {
+  if (response_body->empty()) {
     DVLOG(1) << "Failed to get response or empty response";
-    return PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
+    return PrefetchRequestStatus::kShouldRetryWithBackoff;
   }
 
-  return PrefetchRequestStatus::SUCCESS;
+  *data = *response_body;
+  return PrefetchRequestStatus::kSuccess;
 }
 
-}  // offline_pages
+}  // namespace offline_pages

@@ -24,11 +24,13 @@ class BookmarkNode;
 typedef NS_ENUM(NSInteger, BookmarkHomeSectionIdentifier) {
   BookmarkHomeSectionIdentifierPromo = kSectionIdentifierEnumZero,
   BookmarkHomeSectionIdentifierBookmarks,
+  BookmarkHomeSectionIdentifierMessages,
 };
 
 typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
   BookmarkHomeItemTypePromo = kItemTypeEnumZero,
   BookmarkHomeItemTypeBookmark,
+  BookmarkHomeItemTypeMessage,
 };
 
 @protocol BookmarkHomeSharedStateObserver
@@ -63,6 +65,9 @@ typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
 
 // If the table view is in edit mode.
 @property(nonatomic, assign) BOOL currentlyInEditMode;
+
+// If the table view showing search results.
+@property(nonatomic, assign) BOOL currentlyShowingSearchResults;
 
 // The set of nodes currently being edited.
 @property(nonatomic, readonly, assign)

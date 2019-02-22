@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_FRAME_MESSAGE_ENUMS_H_
 #define CONTENT_COMMON_FRAME_MESSAGE_ENUMS_H_
 
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 
 struct FrameMsg_Navigate_Type {
  public:

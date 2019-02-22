@@ -19,6 +19,7 @@
 #include "base/win/scoped_variant.h"
 #include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/win/metrics.h"
 #include "media/capture/video/win/video_capture_device_utils_win.h"
@@ -653,7 +654,7 @@ void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
       return;
   }
 
-  auto photo_capabilities = mojom::PhotoState::New();
+  auto photo_capabilities = mojo::CreateEmptyPhotoState();
 
   photo_capabilities->exposure_compensation = RetrieveControlRangeAndCurrent(
       [this](auto... args) {

@@ -271,8 +271,8 @@ void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
   SetState(kStopping);
 
   if (shared_state_.statistics.video_frames_decoded > 0) {
-    UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
-                         shared_state_.statistics.video_frames_dropped);
+    UMA_HISTOGRAM_COUNTS_1M("Media.DroppedFrameCount",
+                            shared_state_.statistics.video_frames_dropped);
   }
 
   // If we stop during starting/seeking/suspending/resuming we don't want to
@@ -722,8 +722,8 @@ void PipelineImpl::RendererWrapper::OnVideoNaturalSizeChange(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnVideoNaturalSizeChange,
-                            weak_pipeline_, size));
+      FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoNaturalSizeChange,
+                                weak_pipeline_, size));
 }
 
 void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
@@ -778,7 +778,7 @@ void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
 
   status_ = error;
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnError, weak_pipeline_, error));
+      FROM_HERE, base::BindOnce(&PipelineImpl::OnError, weak_pipeline_, error));
 }
 
 void PipelineImpl::RendererWrapper::OnCdmAttached(
@@ -800,7 +800,7 @@ void PipelineImpl::RendererWrapper::CheckPlaybackEnded() {
 
   DCHECK_EQ(status_, PIPELINE_OK);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnEnded, weak_pipeline_));
+      FROM_HERE, base::BindOnce(&PipelineImpl::OnEnded, weak_pipeline_));
 }
 
 void PipelineImpl::RendererWrapper::SetState(State next_state) {
@@ -842,7 +842,8 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
 
   SetState(kPlaying);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_, false));
+      FROM_HERE,
+      base::BindOnce(&PipelineImpl::OnSeekDone, weak_pipeline_, false));
 }
 
 void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
@@ -870,7 +871,7 @@ void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
 
   SetState(kSuspended);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnSuspendDone, weak_pipeline_));
+      FROM_HERE, base::BindOnce(&PipelineImpl::OnSuspendDone, weak_pipeline_));
 }
 
 void PipelineImpl::RendererWrapper::InitializeDemuxer(
@@ -956,8 +957,9 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
       break;
   }
 
-  main_task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::OnMetadata,
-                                                    weak_pipeline_, metadata));
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PipelineImpl::OnMetadata, weak_pipeline_, metadata));
 
   // If suspended start has not been requested, or is not allowed given the
   // metadata, continue the normal renderer initialization path.
@@ -974,7 +976,8 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
       std::max(base::TimeDelta(), demuxer_->GetStartTime());
   SetState(kSuspended);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_, true));
+      FROM_HERE,
+      base::BindOnce(&PipelineImpl::OnSeekDone, weak_pipeline_, true));
 }
 
 PipelineImpl::PipelineImpl(
@@ -997,8 +1000,8 @@ PipelineImpl::~PipelineImpl() {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!client_) << "Stop() must complete before destroying object";
-  DCHECK(seek_cb_.is_null());
-  DCHECK(suspend_cb_.is_null());
+  DCHECK(!seek_cb_);
+  DCHECK(!suspend_cb_);
   DCHECK(!weak_factory_.HasWeakPtrs());
 
   // RendererWrapper is deleted on the media thread.
@@ -1015,10 +1018,10 @@ void PipelineImpl::Start(StartType start_type,
   DCHECK(demuxer);
   DCHECK(renderer);
   DCHECK(client);
-  DCHECK(!seek_cb.is_null());
+  DCHECK(seek_cb);
 
   DCHECK(!client_);
-  DCHECK(seek_cb_.is_null());
+  DCHECK(!seek_cb_);
   client_ = client;
   seek_cb_ = seek_cb;
   last_media_time_ = base::TimeDelta();
@@ -1081,33 +1084,34 @@ void PipelineImpl::Stop() {
 void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
   DVLOG(2) << __func__ << " to " << time.InMicroseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!seek_cb.is_null());
+  DCHECK(seek_cb);
 
   if (!IsRunning()) {
     DLOG(ERROR) << "Media pipeline isn't running. Ignoring Seek().";
     return;
   }
 
-  DCHECK(seek_cb_.is_null());
+  DCHECK(!seek_cb_);
   seek_cb_ = seek_cb;
   seek_time_ = time;
   last_media_time_ = base::TimeDelta();
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RendererWrapper::Seek,
-                            base::Unretained(renderer_wrapper_.get()), time));
+      FROM_HERE,
+      base::BindOnce(&RendererWrapper::Seek,
+                     base::Unretained(renderer_wrapper_.get()), time));
 }
 
 void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
   DVLOG(2) << __func__;
-  DCHECK(!suspend_cb.is_null());
+  DCHECK(suspend_cb);
 
   DCHECK(IsRunning());
-  DCHECK(suspend_cb_.is_null());
+  DCHECK(!suspend_cb_);
   suspend_cb_ = suspend_cb;
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RendererWrapper::Suspend,
-                            base::Unretained(renderer_wrapper_.get())));
+      FROM_HERE, base::BindOnce(&RendererWrapper::Suspend,
+                                base::Unretained(renderer_wrapper_.get())));
 }
 
 void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
@@ -1116,18 +1120,18 @@ void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(renderer);
-  DCHECK(!seek_cb.is_null());
+  DCHECK(seek_cb);
 
   DCHECK(IsRunning());
-  DCHECK(seek_cb_.is_null());
+  DCHECK(!seek_cb_);
   seek_cb_ = seek_cb;
   seek_time_ = time;
   last_media_time_ = base::TimeDelta();
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RendererWrapper::Resume,
-                            base::Unretained(renderer_wrapper_.get()),
-                            base::Passed(&renderer), time));
+      FROM_HERE, base::BindOnce(&RendererWrapper::Resume,
+                                base::Unretained(renderer_wrapper_.get()),
+                                base::Passed(&renderer), time));
 }
 
 bool PipelineImpl::IsRunning() const {
@@ -1234,7 +1238,7 @@ void PipelineImpl::SetCdm(CdmContext* cdm_context,
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cdm_context);
-  DCHECK(!cdm_attached_cb.is_null());
+  DCHECK(cdm_attached_cb);
 
   media_task_runner_->PostTask(
       FROM_HERE,
@@ -1275,13 +1279,13 @@ void PipelineImpl::OnError(PipelineStatus error) {
   // If the error happens during starting/seeking/suspending/resuming,
   // report the error via the completion callback for those tasks.
   // Else report error via the client interface.
-  if (!seek_cb_.is_null()) {
-    base::ResetAndReturn(&seek_cb_).Run(error);
+  if (seek_cb_) {
+    std::move(seek_cb_).Run(error);
     return;
   }
 
-  if (!suspend_cb_.is_null()) {
-    base::ResetAndReturn(&suspend_cb_).Run(error);
+  if (suspend_cb_) {
+    std::move(suspend_cb_).Run(error);
     return;
   }
 
@@ -1407,8 +1411,8 @@ void PipelineImpl::OnSeekDone(bool is_suspended) {
   seek_time_ = kNoTimestamp;
   is_suspended_ = is_suspended;
 
-  DCHECK(!seek_cb_.is_null());
-  base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+  DCHECK(seek_cb_);
+  std::move(seek_cb_).Run(PIPELINE_OK);
 }
 
 void PipelineImpl::OnSuspendDone() {
@@ -1417,8 +1421,8 @@ void PipelineImpl::OnSuspendDone() {
   DCHECK(IsRunning());
 
   is_suspended_ = true;
-  DCHECK(!suspend_cb_.is_null());
-  base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
+  DCHECK(suspend_cb_);
+  std::move(suspend_cb_).Run(PIPELINE_OK);
 }
 
 }  // namespace media

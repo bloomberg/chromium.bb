@@ -81,9 +81,9 @@ void SensorDeviceManager::OnDeviceAdded(udev_device* dev) {
   if (device_node.empty())
     return;
 
-  const uint32_t first = static_cast<uint32_t>(mojom::SensorType::FIRST);
-  const uint32_t last = static_cast<uint32_t>(mojom::SensorType::LAST);
-  for (uint32_t i = first; i < last; ++i) {
+  const uint32_t first = static_cast<uint32_t>(mojom::SensorType::kMinValue);
+  const uint32_t last = static_cast<uint32_t>(mojom::SensorType::kMaxValue);
+  for (uint32_t i = first; i <= last; ++i) {
     SensorPathsLinux data;
     mojom::SensorType type = static_cast<mojom::SensorType>(i);
     if (!InitSensorData(type, &data))

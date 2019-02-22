@@ -23,7 +23,6 @@
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
-#include "components/offline_pages/core/background/request_queue_store_sql.h"
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter.h"
@@ -72,8 +71,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   base::FilePath queue_store_path =
       profile->GetPath().Append(chrome::kOfflinePageRequestQueueDirname);
 
-  std::unique_ptr<RequestQueueStoreSQL> queue_store(
-      new RequestQueueStoreSQL(background_task_runner, queue_store_path));
+  std::unique_ptr<RequestQueueStore> queue_store(
+      new RequestQueueStore(background_task_runner, queue_store_path));
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(queue_store)));
   std::unique_ptr<Scheduler>
       scheduler(new android::BackgroundSchedulerBridge());

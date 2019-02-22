@@ -36,7 +36,8 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
     DPLOG(ERROR) << "waitpid(" << handle << ")";
     *exit_code = 0;
     return TERMINATION_STATUS_NORMAL_TERMINATION;
-  } else if (result == 0) {
+  }
+  if (result == 0) {
     // the child hasn't exited yet.
     *exit_code = 0;
     return TERMINATION_STATUS_STILL_RUNNING;

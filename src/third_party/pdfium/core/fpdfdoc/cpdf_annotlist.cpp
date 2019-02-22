@@ -12,6 +12,7 @@
 
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
@@ -20,7 +21,7 @@
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
-#include "core/fpdfdoc/cpdf_interform.h"
+#include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_occontext.h"
 #include "core/fpdfdoc/cpvt_generateap.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -169,7 +170,8 @@ CPDF_AnnotList::CPDF_AnnotList(CPDF_Page* pPage)
 
   const CPDF_Dictionary* pRoot = m_pDocument->GetRoot();
   const CPDF_Dictionary* pAcroForm = pRoot->GetDictFor("AcroForm");
-  bool bRegenerateAP = pAcroForm && pAcroForm->GetBooleanFor("NeedAppearances");
+  bool bRegenerateAP =
+      pAcroForm && pAcroForm->GetBooleanFor("NeedAppearances", false);
   for (size_t i = 0; i < pAnnots->GetCount(); ++i) {
     CPDF_Dictionary* pDict = ToDictionary(pAnnots->GetDirectObjectAt(i));
     if (!pDict)
@@ -183,7 +185,7 @@ CPDF_AnnotList::CPDF_AnnotList(CPDF_Page* pPage)
     pAnnots->ConvertToIndirectObjectAt(i, m_pDocument);
     m_AnnotList.push_back(pdfium::MakeUnique<CPDF_Annot>(pDict, m_pDocument));
     if (bRegenerateAP && subtype == "Widget" &&
-        CPDF_InterForm::IsUpdateAPEnabled() && !pDict->GetDictFor("AP")) {
+        CPDF_InteractiveForm::IsUpdateAPEnabled() && !pDict->GetDictFor("AP")) {
       GenerateAP(m_pDocument, pDict);
     }
   }

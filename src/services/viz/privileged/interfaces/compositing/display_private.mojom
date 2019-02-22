@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "gpu/ipc/common/context_result.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
@@ -32,11 +33,6 @@ interface DisplayPrivate {
   SetDisplayColorSpace(gfx.mojom.ColorSpace blending_color_space,
                        gfx.mojom.ColorSpace device_color_space);
   SetOutputIsSecure(bool secure);
-
-  // Locks the vsync interval used to generate BeginFrames for this display to
-  // |interval|. Changes to vsync interval from other sources will be ignored.
-  // This will do nothing if the display is using an external BeginFrame source.
-  SetAuthoritativeVSyncInterval(mojo_base.mojom.TimeDelta interval);
 
   // Updates vsync parameters used to generate BeginFrames for this display.
   // This will do nothing if the display is using an external BeginFrame source.
@@ -74,4 +70,9 @@ interface DisplayClient {
   // size of the swapped frame.
   [EnableIf=is_android]
   DidCompleteSwapWithSize(gfx.mojom.Size size);
+
+  // Notifies that context creation failed. On Android we can't fall back to
+  // SW in these cases, so we need to handle this specifically.
+  [EnableIf=is_android]
+  OnFatalOrSurfaceContextCreationFailure(gpu.mojom.ContextResult result);
 };

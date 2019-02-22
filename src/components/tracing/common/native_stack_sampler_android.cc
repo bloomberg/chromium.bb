@@ -4,17 +4,15 @@
 
 #include "components/tracing/common/native_stack_sampler_android.h"
 
-#include "components/tracing/common/stack_unwinder_android.h"
+#include "base/trace_event/trace_event.h"
 
 namespace tracing {
 namespace {
 constexpr size_t kMaxFrameDepth = 48;
 }  // namespace
 
-NativeStackSamplerAndroid::NativeStackSamplerAndroid(
-    base::PlatformThreadId tid,
-    const StackUnwinderAndroid* unwinder)
-    : tid_(tid), unwinder_(unwinder) {}
+NativeStackSamplerAndroid::NativeStackSamplerAndroid(base::PlatformThreadId tid)
+    : tid_(tid) {}
 
 NativeStackSamplerAndroid::~NativeStackSamplerAndroid() = default;
 
@@ -24,14 +22,20 @@ std::vector<base::StackSamplingProfiler::Frame>
 NativeStackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,
     base::StackSamplingProfiler::ProfileBuilder* profile_builder) {
+  if (!unwinder_.is_initialized()) {
+    // May block on disk access. This function is executed on the profiler
+    // thread, so this will only block profiling execution.
+    TRACE_EVENT0("cpu_profiler", "StackUnwinderAndroid::Initialize");
+    unwinder_.Initialize();
+  }
   const void* pcs[kMaxFrameDepth];
-  size_t depth = unwinder_->TraceStack(tid_, pcs, kMaxFrameDepth);
+  size_t depth = unwinder_.TraceStack(tid_, pcs, kMaxFrameDepth);
   std::vector<base::StackSamplingProfiler::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
     // TODO(ssid): Add support for obtaining modules here.
-    frames.push_back(base::StackSamplingProfiler::Frame(
-        reinterpret_cast<uintptr_t>(pcs[i]), base::ModuleCache::Module()));
+    frames.emplace_back(reinterpret_cast<uintptr_t>(pcs[i]),
+                        base::ModuleCache::Module());
   }
   return frames;
 }

@@ -11,13 +11,15 @@ import com.google.android.libraries.feed.host.scheduler.SchedulerApi;
  * in Chromium.
  */
 public interface FeedScheduler extends SchedulerApi {
+    /** Cleans up native resources, should be called when no longer needed. */
     void destroy();
 
+    /** To be called whenever the browser is foregrounded. */
     void onForegrounded();
 
+    /** To be called when a background scheduling task wakes up the browser. */
     void onFixedTimer(Runnable onCompletion);
 
-    void onTaskReschedule();
-
+    /** To be called when an article is consumed, influencing future scheduling. */
     void onSuggestionConsumed();
 }

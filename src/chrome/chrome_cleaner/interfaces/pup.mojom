@@ -21,7 +21,7 @@ enum Wow64Access {
 
 // Typemapped to chrome_cleaner::RegKeyPath.
 struct RegKeyPath {
-  WindowsHandle rootkey;
+  PredefinedHandle rootkey;
   // This is only sent by URZA, which currently doesn't support registry paths
   // with embedded nulls.
   mojo_base.mojom.String16 subkey;

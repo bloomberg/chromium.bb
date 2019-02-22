@@ -12,8 +12,8 @@ import android.view.ViewGroup;
 
 import org.hamcrest.Matcher;
 
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;

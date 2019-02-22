@@ -37,9 +37,6 @@ TEST(BuildResponseTest, Simple) {
   EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &value));
   EXPECT_EQ(value, "text/plain;charset=US-ASCII");
   value.clear();
-  EXPECT_TRUE(
-      headers->GetNormalizedHeader("Access-Control-Allow-Origin", &value));
-  EXPECT_EQ(value, "*");
 }
 
 TEST(BuildResponseTest, InvalidInput) {

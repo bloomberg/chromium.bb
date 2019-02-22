@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -603,9 +603,8 @@ DocumentFragment* Range::ProcessContents(ActionType action,
   // delete all children of commonRoot between the start and end container
   Node* process_start = ChildOfCommonRootBeforeOffset(
       &original_start.Container(), original_start.Offset(), common_root);
-  if (process_start &&
-      original_start.Container() !=
-          common_root)  // processStart contains nodes before m_start.
+  // process_start contains nodes before start_.
+  if (process_start && original_start.Container() != common_root)
     process_start = process_start->nextSibling();
   Node* process_end = ChildOfCommonRootBeforeOffset(
       &original_end.Container(), original_end.Offset(), common_root);
@@ -990,7 +989,7 @@ DocumentFragment* Range::createContextualFragment(
   Document& document = start_.Container().GetDocument();
 
   String markup =
-      TrustedHTML::GetString(string_or_html, &document, exception_state);
+      GetStringFromTrustedHTML(string_or_html, &document, exception_state);
   if (!exception_state.HadException()) {
     return createContextualFragmentFromString(markup, exception_state);
   }

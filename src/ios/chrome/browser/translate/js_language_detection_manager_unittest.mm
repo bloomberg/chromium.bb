@@ -274,7 +274,8 @@ class JsLanguageDetectionManagerDetectLanguageTest
   bool CommandReceived(const base::DictionaryValue& command,
                        const GURL& url,
                        bool interacting,
-                       bool is_main_frame) {
+                       bool is_main_frame,
+                       web::WebFrame* sender_frame) {
     commands_received_.push_back(command.CreateDeepCopy());
     return true;
   }

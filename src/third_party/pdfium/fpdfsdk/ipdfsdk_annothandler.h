@@ -21,7 +21,7 @@ class CXFA_FFWidget;
 
 class IPDFSDK_AnnotHandler {
  public:
-  virtual ~IPDFSDK_AnnotHandler() {}
+  virtual ~IPDFSDK_AnnotHandler() = default;
 
   virtual bool CanAnswer(CPDFSDK_Annot* pAnnot) = 0;
   virtual CPDFSDK_Annot* NewAnnot(CPDF_Annot* pAnnot,
@@ -49,7 +49,7 @@ class IPDFSDK_AnnotHandler {
   virtual void OnDraw(CPDFSDK_PageView* pPageView,
                       CPDFSDK_Annot* pAnnot,
                       CFX_RenderDevice* pDevice,
-                      CFX_Matrix* pUser2Device,
+                      const CFX_Matrix& mtUser2Device,
                       bool bDrawAnnots) = 0;
   virtual void OnLoad(CPDFSDK_Annot* pAnnot) = 0;
 

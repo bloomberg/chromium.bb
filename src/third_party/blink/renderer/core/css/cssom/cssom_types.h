@@ -15,7 +15,7 @@ class PropertyRegistration;
 
 // This class provides utility functions for determining whether a property
 // can accept a CSSStyleValue type or instance. Its implementation is generated
-// using input from CSSProperties.json5 and the script
+// using input from css_properties.json5 and the script
 // build/scripts/make_cssom_types.py.
 class CSSOMTypes {
   STATIC_ONLY(CSSOMTypes);
@@ -34,6 +34,7 @@ class CSSOMTypes {
 
   static bool IsPropertySupported(CSSPropertyID);
   static bool PropertyCanTake(CSSPropertyID,
+                              const AtomicString& custom_property_name,
                               const PropertyRegistration*,
                               const CSSStyleValue&);
 };

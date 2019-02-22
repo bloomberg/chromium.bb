@@ -41,8 +41,7 @@ class NotificationImageRetainerTest : public ::testing::Test {
 
   base::string16 CalculateHash(const std::string& profile_id,
                                const GURL& origin) {
-    return base::UintToString16(base::Hash(base::UTF8ToUTF16(profile_id) +
-                                           base::UTF8ToUTF16(origin.spec())));
+    return base::UintToString16(base::Hash(profile_id + origin.spec()));
   }
 
  private:

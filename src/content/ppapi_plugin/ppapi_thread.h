@@ -56,7 +56,9 @@ class PpapiThread : public ChildThreadImpl,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
                     public ppapi::proxy::PluginProxyDelegate {
  public:
-  PpapiThread(const base::CommandLine& command_line, bool is_broker);
+  PpapiThread(base::RepeatingClosure quit_closure,
+              const base::CommandLine& command_line,
+              bool is_broker);
   ~PpapiThread() override;
   void Shutdown() override;
 

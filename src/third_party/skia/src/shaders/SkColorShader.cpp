@@ -56,7 +56,7 @@ SkColorShader::ColorShaderContext::ColorShaderContext(const SkColorShader& shade
 
     SkColor4f c4 = SkColor4f::FromColor(shader.fColor);
     c4.fA *= rec.fPaint->getAlpha() / 255.0f;
-    fPM4f = c4.premul();
+    fPMColor4f = c4.premul();
 
     fFlags = kConstInY32_Flag;
     if (255 == a) {
@@ -68,9 +68,9 @@ void SkColorShader::ColorShaderContext::shadeSpan(int x, int y, SkPMColor span[]
     sk_memset32(span, fPMColor, count);
 }
 
-void SkColorShader::ColorShaderContext::shadeSpan4f(int x, int y, SkPM4f span[], int count) {
+void SkColorShader::ColorShaderContext::shadeSpan4f(int x, int y, SkPMColor4f span[], int count) {
     for (int i = 0; i < count; ++i) {
-        span[i] = fPM4f;
+        span[i] = fPMColor4f;
     }
 }
 
@@ -91,7 +91,7 @@ SkShader::GradientType SkColorShader::asAGradient(GradientInfo* info) const {
 #include "effects/GrConstColorProcessor.h"
 std::unique_ptr<GrFragmentProcessor> SkColorShader::asFragmentProcessor(
         const GrFPArgs& args) const {
-    GrColor4f color = SkColorToPremulGrColor4f(fColor, *args.fDstColorSpaceInfo);
+    SkPMColor4f color = SkColorToPMColor4f(fColor, *args.fDstColorSpaceInfo);
     return GrConstColorProcessor::Make(color, GrConstColorProcessor::InputMode::kModulateA);
 }
 
@@ -171,7 +171,7 @@ SkColor4Shader::Color4Context::Color4Context(const SkColor4Shader& shader,
 
     SkColor4f c4 = shader.fColor4;
     c4.fA *= rec.fPaint->getAlpha() * (1 / 255.0f);
-    fPM4f = c4.premul();
+    fPMColor4f = c4.premul();
 
     fFlags = kConstInY32_Flag;
     if (255 == a) {
@@ -183,9 +183,9 @@ void SkColor4Shader::Color4Context::shadeSpan(int x, int y, SkPMColor span[], in
     sk_memset32(span, fPMColor, count);
 }
 
-void SkColor4Shader::Color4Context::shadeSpan4f(int x, int y, SkPM4f span[], int count) {
+void SkColor4Shader::Color4Context::shadeSpan4f(int x, int y, SkPMColor4f span[], int count) {
     for (int i = 0; i < count; ++i) {
-        span[i] = fPM4f;
+        span[i] = fPMColor4f;
     }
 }
 
@@ -210,14 +210,10 @@ SkShader::GradientType SkColor4Shader::asAGradient(GradientInfo* info) const {
 
 std::unique_ptr<GrFragmentProcessor> SkColor4Shader::asFragmentProcessor(
         const GrFPArgs& args) const {
-    auto xform = GrColorSpaceXform::Make(
-            fColorSpace.get(),                     kUnpremul_SkAlphaType,
-            args.fDstColorSpaceInfo->colorSpace(), kUnpremul_SkAlphaType);
-
-    GrColor4f color = GrColor4f::FromSkColor4f(fColor4);
-    if (xform) {
-        color = xform->apply(color);
-    }
+    SkColorSpaceXformSteps steps{ fColorSpace.get(),                     kUnpremul_SkAlphaType,
+                                  args.fDstColorSpaceInfo->colorSpace(), kUnpremul_SkAlphaType };
+    SkColor4f color = fColor4;
+    steps.apply(color.vec());
     return GrConstColorProcessor::Make(color.premul(),
                                        GrConstColorProcessor::InputMode::kModulateA);
 }

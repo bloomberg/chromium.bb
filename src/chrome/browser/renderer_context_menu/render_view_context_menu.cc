@@ -86,7 +86,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/common/experiments.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -113,7 +112,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
@@ -318,7 +316,6 @@ const struct UmaEnumCommandIdPair {
     {64, -1, IDC_WRITING_DIRECTION_LTR},
     {65, -1, IDC_WRITING_DIRECTION_RTL},
     {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
-    {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     {68, -1, IDC_ROUTE_MEDIA},
     {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
     {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
@@ -682,9 +679,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<base::string16> sorted_menu_titles;
   std::map<base::string16, std::vector<const Extension*>>
       title_to_extensions_map;
-  for (std::set<MenuItem::ExtensionKey>::iterator iter = ids.begin();
-       iter != ids.end();
-       ++iter) {
+  for (auto iter = ids.begin(); iter != ids.end(); ++iter) {
     const Extension* extension =
         service->GetExtensionById(iter->extension_id, false);
     // Platform apps have their context menus created directly in
@@ -1576,23 +1571,17 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 void RenderViewContextMenu::AppendPasswordItems() {
   bool add_separator = false;
 
-  // Don't offer saving or generating passwords in incognito profiles.
-  if (!browser_context_->IsOffTheRecord()) {
-    if (password_manager::ForceSavingExperimentEnabled()) {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
-                                      IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
-      add_separator = true;
-    }
-    password_manager::ContentPasswordManagerDriver* driver =
-        password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
-            GetRenderFrameHost());
-    if (password_manager_util::ManualPasswordGenerationEnabled(driver)) {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
-                                      IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
-      add_separator = true;
-    }
+  password_manager::ContentPasswordManagerDriver* driver =
+      password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+          GetRenderFrameHost());
+  // Don't show the item for guest or incognito profiles and also when the
+  // automatic generation feature is disabled.
+  if (password_manager_util::ManualPasswordGenerationEnabled(driver)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
+                                    IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
+    add_separator = true;
   }
-  if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled()) {
+  if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled(driver)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS,
                                     IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
     add_separator = true;
@@ -1716,8 +1705,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // Media control commands should all be disabled if the player is in an
     // error state.
     case IDC_CONTENT_CONTEXT_PLAYPAUSE:
-    case IDC_CONTENT_CONTEXT_LOOP:
       return (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
+
+    // Loop command should be disabled if the player is in an error state.
+    case IDC_CONTENT_CONTEXT_LOOP:
+      return (params_.media_flags & WebContextMenuData::kMediaCanLoop) != 0 &&
+             (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
 
     // Mute and unmute should also be disabled if the player has no audio.
     case IDC_CONTENT_CONTEXT_MUTE:
@@ -1799,7 +1792,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
-    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
       return true;
@@ -2098,11 +2090,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
       ExecProtocolHandlerSettings(event_flags);
-      break;
-
-    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
-      ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
-          ForceSavePassword();
       break;
 
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
@@ -2444,10 +2431,6 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
 
   const GURL& url = params_.link_url;
-  content::StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(
-          source_web_contents_->GetBrowserContext(),
-          render_frame_host->GetSiteInstance());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("render_view_context_menu", R"(
@@ -2472,8 +2455,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   auto dl_params = std::make_unique<DownloadUrlParameters>(
       url, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
-      render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext(), traffic_annotation);
+      render_frame_host->GetRoutingID(), traffic_annotation);
   content::Referrer referrer = CreateReferrer(url, params_);
   dl_params->set_referrer(referrer.url);
   dl_params->set_referrer_policy(

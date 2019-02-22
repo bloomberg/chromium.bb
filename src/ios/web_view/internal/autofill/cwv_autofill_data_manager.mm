@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
@@ -103,7 +105,7 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVAutofillProfile*>* profiles = [self profiles];
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                                completionHandler(profiles);
                              }));
   } else {
@@ -126,7 +128,7 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVCreditCard*>* creditCards = [self creditCards];
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                                completionHandler(creditCards);
                              }));
   } else {

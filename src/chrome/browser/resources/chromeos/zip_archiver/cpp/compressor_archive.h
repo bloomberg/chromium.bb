@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_ARCHIVE_H_
 #define CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_COMPRESSOR_ARCHIVE_H_
 
-#include "compressor_io_javascript_stream.h"
+#include <cstdint>
+#include <string>
+
+class CompressorStream;
 
 // Defines a wrapper for packing operations executed on an archive. API is not
 // meant to be thread safe and its methods shouldn't be called in parallel.

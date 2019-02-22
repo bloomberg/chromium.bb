@@ -43,6 +43,8 @@ using UniqueTid = uint32_t;
 // StringId is an offset into |string_pool_|.
 using StringId = size_t;
 
+enum RefType { kNoRef = 0, kUTID = 1, kCPU_ID = 2, kIrq = 3, kSoftIrq = 4 };
+
 // Stores a data inside a trace file in a columnar form. This makes it efficient
 // to read or search across a single field of the trace (e.g. all the thread
 // names for a given CPU).
@@ -76,17 +78,26 @@ class TraceStorage {
     uint32_t tid = 0;
   };
 
-  class SlicesPerCpu {
+  class Slices {
    public:
-    inline void AddSlice(uint64_t start_ns,
-                         uint64_t duration_ns,
-                         UniqueTid utid) {
+    inline size_t AddSlice(uint32_t cpu,
+                           uint64_t start_ns,
+                           uint64_t duration_ns,
+                           UniqueTid utid) {
+      cpus_.emplace_back(cpu);
       start_ns_.emplace_back(start_ns);
       durations_.emplace_back(duration_ns);
       utids_.emplace_back(utid);
+      return slice_count() - 1;
+    }
+
+    void set_duration(size_t index, uint64_t duration_ns) {
+      durations_[index] = duration_ns;
     }
 
     size_t slice_count() const { return start_ns_.size(); }
+
+    const std::deque<uint32_t>& cpus() const { return cpus_; }
 
     const std::deque<uint64_t>& start_ns() const { return start_ns_; }
 
@@ -95,8 +106,9 @@ class TraceStorage {
     const std::deque<UniqueTid>& utids() const { return utids_; }
 
    private:
-    // Each vector below has the same number of entries (the number of slices
+    // Each deque below has the same number of entries (the number of slices
     // in the trace for the CPU).
+    std::deque<uint32_t> cpus_;
     std::deque<uint64_t> start_ns_;
     std::deque<uint64_t> durations_;
     std::deque<UniqueTid> utids_;
@@ -145,12 +157,60 @@ class TraceStorage {
     std::deque<uint64_t> parent_stack_ids_;
   };
 
-  void ResetStorage();
+  class Counters {
+   public:
+    inline size_t AddCounter(uint64_t timestamp,
+                             uint64_t duration,
+                             StringId name_id,
+                             double value,
+                             double value_delta,
+                             int64_t ref,
+                             RefType type) {
+      timestamps_.emplace_back(timestamp);
+      durations_.emplace_back(duration);
+      name_ids_.emplace_back(name_id);
+      values_.emplace_back(value);
+      value_deltas_.emplace_back(value_delta);
+      refs_.emplace_back(ref);
+      types_.emplace_back(type);
+      return counter_count() - 1;
+    }
 
-  void AddSliceToCpu(uint32_t cpu,
-                     uint64_t start_ns,
-                     uint64_t duration_ns,
-                     UniqueTid utid);
+    void set_duration(size_t index, uint64_t duration) {
+      durations_[index] = duration;
+    }
+
+    void set_value_delta(size_t index, double value_delta) {
+      value_deltas_[index] = value_delta;
+    }
+
+    size_t counter_count() const { return timestamps_.size(); }
+
+    const std::deque<uint64_t>& timestamps() const { return timestamps_; }
+
+    const std::deque<uint64_t>& durations() const { return durations_; }
+
+    const std::deque<StringId>& name_ids() const { return name_ids_; }
+
+    const std::deque<double>& values() const { return values_; }
+
+    const std::deque<double>& value_deltas() const { return value_deltas_; }
+
+    const std::deque<int64_t>& refs() const { return refs_; }
+
+    const std::deque<RefType>& types() const { return types_; }
+
+   private:
+    std::deque<uint64_t> timestamps_;
+    std::deque<uint64_t> durations_;
+    std::deque<StringId> name_ids_;
+    std::deque<double> values_;
+    std::deque<double> value_deltas_;
+    std::deque<int64_t> refs_;
+    std::deque<RefType> types_;
+  };
+
+  void ResetStorage();
 
   UniqueTid AddEmptyThread(uint32_t tid) {
     unique_threads_.emplace_back(tid);
@@ -166,7 +226,8 @@ class TraceStorage {
 
   // Return an unqiue identifier for the contents of each string.
   // The string is copied internally and can be destroyed after this called.
-  StringId InternString(base::StringView);
+  // Virtual for testing.
+  virtual StringId InternString(base::StringView);
 
   Process* GetMutableProcess(UniquePid upid) {
     PERFETTO_DCHECK(upid > 0 && upid < unique_processes_.size());
@@ -174,16 +235,11 @@ class TraceStorage {
   }
 
   Thread* GetMutableThread(UniqueTid utid) {
-    PERFETTO_DCHECK(utid > 0 && utid < unique_threads_.size());
+    PERFETTO_DCHECK(utid < unique_threads_.size());
     return &unique_threads_[utid];
   }
 
   // Reading methods.
-  const SlicesPerCpu& SlicesForCpu(uint32_t cpu) const {
-    PERFETTO_DCHECK(cpu < cpu_events_.size());
-    return cpu_events_[cpu];
-  }
-
   const std::string& GetString(StringId id) const {
     PERFETTO_DCHECK(id < string_pool_.size());
     return string_pool_[id];
@@ -195,12 +251,19 @@ class TraceStorage {
   }
 
   const Thread& GetThread(UniqueTid utid) const {
-    PERFETTO_DCHECK(utid > 0 && utid < unique_threads_.size());
+    // Allow utid == 0 for idle thread retrieval.
+    PERFETTO_DCHECK(utid < unique_threads_.size());
     return unique_threads_[utid];
   }
 
+  const Slices& slices() const { return slices_; }
+  Slices* mutable_slices() { return &slices_; }
+
   const NestableSlices& nestable_slices() const { return nestable_slices_; }
   NestableSlices* mutable_nestable_slices() { return &nestable_slices_; }
+
+  const Counters& counters() const { return counters_; }
+  Counters* mutable_counters() { return &counters_; }
 
   // |unique_processes_| always contains at least 1 element becuase the 0th ID
   // is reserved to indicate an invalid process.
@@ -222,7 +285,7 @@ class TraceStorage {
   Stats stats_;
 
   // One entry for each CPU in the trace.
-  std::array<SlicesPerCpu, base::kMaxCpus> cpu_events_;
+  Slices slices_;
 
   // One entry for each unique string in the trace.
   std::deque<std::string> string_pool_;
@@ -238,6 +301,10 @@ class TraceStorage {
 
   // Slices coming from userspace events (e.g. Chromium TRACE_EVENT macros).
   NestableSlices nestable_slices_;
+
+  // Counter events from the trace. This includes CPU frequency events as well
+  // systrace trace_marker counter events.
+  Counters counters_;
 };
 
 }  // namespace trace_processor

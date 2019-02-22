@@ -42,9 +42,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // the page.
   class Delegate {
    public:
-    // Called when the page wants the omnibox to be focused. |state| specifies
-    // the omnibox focus state.
-    virtual void FocusOmnibox(OmniboxFocusState state) = 0;
+    // Called when the page wants the omnibox to be focused.
+    virtual void FocusOmnibox(bool focus) = 0;
 
     // Called when the EmbeddedSearch wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
@@ -73,6 +72,11 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to delete all custom links and
     // use Most Visited sites instead.
     virtual void OnResetCustomLinks() = 0;
+
+    // Called when the EmbeddedSearch wants to check if |url| resolves to an
+    // existing page.
+    virtual void OnDoesUrlResolve(const GURL& url,
+                                  DoesUrlResolveCallback callback) = 0;
 
     // Called to signal that an event has occurred on the New Tab Page at a
     // particular time since navigation start.
@@ -136,6 +140,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessDeleteCustomLink() = 0;
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
+    virtual bool ShouldProcessDoesUrlResolve() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
@@ -191,7 +196,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void OnTabDeactivated();
 
   // chrome::mojom::EmbeddedSearch:
-  void FocusOmnibox(int page_id, OmniboxFocusState state) override;
+  void FocusOmnibox(int page_id, bool focus) override;
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
   void UndoAllMostVisitedDeletions(int page_seq_no) override;
@@ -209,6 +214,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                         DeleteCustomLinkCallback callback) override;
   void UndoCustomLinkAction(int page_seq_no) override;
   void ResetCustomLinks(int page_seq_no) override;
+  void DoesUrlResolve(int page_seq_no,
+                      const GURL& url,
+                      DoesUrlResolveCallback callback) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

@@ -24,6 +24,7 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import cipd
+import isolate_storage
 import isolated_format
 import isolateserver
 import local_caching
@@ -87,10 +88,9 @@ def put_to_named_cache(manager, cache_name, file_name, contents):
 
 
 class StorageFake(object):
-  def __init__(self, files):
+  def __init__(self, files, server_ref):
     self._files = files.copy()
-    self.namespace = 'default-gzip'
-    self.location = 'http://localhost:1'
+    self._server_ref = server_ref
 
   def __enter__(self, *_):
     return self
@@ -99,8 +99,8 @@ class StorageFake(object):
     pass
 
   @property
-  def hash_algo(self):
-    return isolateserver_mock.ALGO
+  def server_ref(self):
+    return self._server_ref
 
   def async_fetch(self, channel, _priority, digest, _size, sink):
     sink([self._files[digest]])
@@ -108,7 +108,7 @@ class StorageFake(object):
 
   def upload_items(self, items_to_upload):
     # Return all except the first one.
-    return items_to_upload[1:]
+    return list(items_to_upload)[1:]
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
@@ -213,11 +213,24 @@ class RunIsolatedTest(RunIsolatedTestBase):
       self.assertNotIn('B', os.environ)
       os.environ['C'] = 'foo'
       os.environ['D'] = 'bar'
+      os.environ['E'] = 'baz'
       env = run_isolated.get_command_env(
-          '/a', None, '/b', {'A': 'a', 'B': None, 'C': None}, {'D': ['foo']})
+          '/a',
+          None,
+          '/b',
+          {
+              'A': 'a',
+              'B': None,
+              'C': None,
+              'E': '${ISOLATED_OUTDIR}/eggs'
+          },
+          {'D': ['foo']},
+          '/spam',
+          None)
       self.assertNotIn('B', env)
       self.assertNotIn('C', env)
       self.assertEqual('/b/foo:bar', env['D'])
+      self.assertEqual('/spam/eggs', env['E'])
     finally:
       os.environ = old_env
 
@@ -228,8 +241,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'command': ['foo.exe', 'cmd with space'],
         })
     isolated_hash = isolateserver_mock.hash_content(isolated)
-    def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_hash:isolated})
+    def get_storage(server_ref):
+      return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -253,8 +266,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps({'command': ['foo.exe', 'cmd w/ space']})
     isolated_hash = isolateserver_mock.hash_content(isolated)
-    def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_hash:isolated})
+    def get_storage(server_ref):
+      return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -287,12 +300,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'make_tree_deleteable', 'make_tree_writeable'):
       self.mock(file_path, i, functools.partial(add, i))
 
+    server_ref = isolate_storage.ServerRef('http://localhost:1', 'default-gzip')
     data = run_isolated.TaskData(
         command=command or [],
         relative_cwd=None,
         extra_args=[],
         isolated_hash=isolated_hash,
-        storage=StorageFake(files),
+        storage=StorageFake(files, server_ref),
         isolate_cache=local_caching.MemoryContentAddressedCache(),
         outputs=None,
         install_named_caches=init_named_caches_stub,
@@ -408,8 +422,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps({'command': ['invalid', 'command']})
     isolated_hash = isolateserver_mock.hash_content(isolated)
-    def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_hash:isolated})
+    def get_storage(server_ref):
+      return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -680,14 +694,23 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # Interestingly, because we would need to put something in the named cache
     # for it to be kept, we need the tool to write to it. This is tested in the
     # smoke test.
+    trimmed = []
+    def trim_caches(caches, root, min_free_space, max_age_secs):
+      trimmed.append(True)
+      self.assertEqual(2, len(caches))
+      self.assertTrue(root)
+      # The name cache root is increased by the sum of the two hints.
+      self.assertEqual(2*1024*1024*1024 + 1100, min_free_space)
+      self.assertEqual(1814400, max_age_secs)
+    self.mock(local_caching, 'trim_caches', trim_caches)
     nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
       '--no-log',
       '--leak-temp-dir',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
+      '--cache', os.path.join(self.tempdir, 'isolated_cache'), '100',
       '--named-cache-root', nc,
-      '--named-cache', 'cache_foo', 'foo',
-      '--named-cache', 'cache_bar', 'bar',
+      '--named-cache', 'cache_foo', 'foo', '100',
+      '--named-cache', 'cache_bar', 'bar', '1000',
       '--raw-cmd',
       '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
@@ -700,6 +723,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     for cache_name in ('cache_foo', 'cache_bar'):
       named_path = os.path.join(nc, 'named', cache_name)
       self.assertFalse(os.path.exists(named_path))
+    self.assertTrue(trimmed)
 
   def test_modified_cwd(self):
     isolated = json_dumps({
@@ -725,14 +749,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated_hash = isolateserver_mock.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
-    # Injects sys.executable.
-    self.assertEqual(
-        [
-          (
-            [sys.executable, os.path.join(u'..', 'out', 'cmd.py'), u'arg'],
-            {'cwd': self.ir_dir('some'), 'detached': True}),
-        ],
-        self.popen_calls)
+    # Injects sys.executable but on macOS, the path may be different than
+    # sys.executable due to symlinks.
+    self.assertEqual(1, len(self.popen_calls))
+    cmd, args = self.popen_calls[0]
+    self.assertEqual({'cwd': self.ir_dir('some'), 'detached': True}, args)
+    self.assertIn('python', cmd[0])
+    self.assertEqual([os.path.join(u'..', 'out', 'cmd.py'), u'arg'], cmd[1:])
 
   def test_run_tha_test_non_isolated(self):
     _ = self._run_tha_test(command=['/bin/echo', 'hello', 'world'])
@@ -773,7 +796,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       isolated_hash = isolateserver_mock.hash_content(isolated_data)
       server.add_content('default-store', script)
       server.add_content('default-store', isolated_data)
-      store = isolateserver.get_storage(server.url, 'default-store')
+      store = isolateserver.get_storage(
+          isolate_storage.ServerRef(server.url, 'default-store'))
 
       self.mock(sys, 'stdout', StringIO.StringIO())
       data = run_isolated.TaskData(
@@ -1134,7 +1158,8 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       isolated_hash = isolateserver_mock.hash_content(isolated_data)
       server.add_content('default-store', script)
       server.add_content('default-store', isolated_data)
-      store = isolateserver.get_storage(server.url, 'default-store')
+      store = isolateserver.get_storage(
+          isolate_storage.ServerRef(server.url, 'default-store'))
 
       self.mock(sys, 'stdout', StringIO.StringIO())
       data = run_isolated.TaskData(
@@ -1275,8 +1300,8 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     ]
     isolated_in_json = json_dumps({'command': sub_cmd})
     isolated_in_hash = isolateserver_mock.hash_content(isolated_in_json)
-    def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_in_hash:isolated_in_json})
+    def get_storage(server_ref):
+      return StorageFake({isolated_in_hash:isolated_in_json}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     out = os.path.join(self.tempdir, 'res.json')
@@ -1284,7 +1309,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         '--no-log',
         '--isolated', isolated_in_hash,
         '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'https://localhost:1',
+        '--isolate-server', 'http://localhost:1',
         '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
         '--json', out,
         '--root-dir', self.tempdir,

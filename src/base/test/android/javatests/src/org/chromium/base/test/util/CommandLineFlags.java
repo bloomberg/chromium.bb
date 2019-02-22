@@ -21,6 +21,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -90,8 +91,8 @@ public final class CommandLineFlags {
     public static void setUp(AnnotatedElement element) {
         CommandLine.reset();
         CommandLineInitUtil.initCommandLine(getTestCmdLineFile());
-        Set<String> enableFeatures = new HashSet<String>();
-        Set<String> disableFeatures = new HashSet<String>();
+        Set<String> enableFeatures = new HashSet<String>(getFeatureValues(ENABLE_FEATURES));
+        Set<String> disableFeatures = new HashSet<String>(getFeatureValues(DISABLE_FEATURES));
         Set<String> flags = getFlags(element);
         for (String flag : flags) {
             String[] parsedFlags = flag.split("=", 2);
@@ -172,6 +173,12 @@ public final class CommandLineFlags {
             }
             flags.removeAll(flagsToRemove);
         }
+    }
+
+    private static List<String> getFeatureValues(String flag) {
+        String value = CommandLine.getInstance().getSwitchValue(flag);
+        if (value == null) return new ArrayList<>();
+        return Arrays.asList(value.split(","));
     }
 
     private CommandLineFlags() {

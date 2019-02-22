@@ -34,7 +34,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -85,14 +85,16 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
+#include "components/image_fetcher/core/storage/image_cache.h"
+#include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/language/content/browser/geo_language_provider.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
-#include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -113,9 +115,10 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
@@ -161,7 +164,7 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_handler_impl.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_configuration_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -186,6 +189,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
+#include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
@@ -291,16 +295,11 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
-#endif
-
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "chrome/browser/ui/confirm_quit.h"
+#include "chrome/browser/ui/cocoa/confirm_quit.h"
+#include "components/os_crypt/os_crypt.h"
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
-#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -310,6 +309,10 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -328,15 +331,6 @@
 namespace {
 
 #if defined(OS_ANDROID)
-// Deprecated 8/2017.
-const char kStabilityForegroundActivityType[] =
-    "user_experience_metrics.stability.current_foreground_activity_type";
-const char kStabilityLaunchedActivityFlags[] =
-    "user_experience_metrics.stability.launched_activity_flags";
-const char kStabilityLaunchedActivityCounts[] =
-    "user_experience_metrics.stability.launched_activity_counts";
-const char kStabilityCrashedActivityCounts[] =
-    "user_experience_metrics.stability.crashed_activity_counts";
 // Deprecated 4/2018.
 const char kDismissedPhysicalWebPageSuggestions[] =
     "ntp_suggestions.physical_web.dismissed_ids";
@@ -363,6 +357,23 @@ const char kResetHasSeenWin10PromoPage[] =
     "browser.reset_has_seen_win10_promo_page";
 #endif
 
+// Deprecated 8/2018.
+const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
+const char kDnsPrefetchingHostReferralList[] =
+    "dns_prefetching.host_referral_list";
+
+// Deprecated 9/2018
+const char kGeolocationAccessToken[] = "geolocation.access_token";
+const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
+const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
+const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
+const char kTrustedDownloadSources[] = "trusted_download_sources";
+#if defined(OS_WIN)
+const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
+#endif
+const char kSupervisedUserCreationAllowed[] =
+    "profile.managed_user_creation_allowed";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -376,6 +387,16 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
   registry->RegisterListPref(kDismissedRecentOfflineTabSuggestions);
 #endif
+
+  registry->RegisterListPref(kDnsPrefetchingStartupList);
+  registry->RegisterListPref(kDnsPrefetchingHostReferralList);
+
+  registry->RegisterStringPref(kGeolocationAccessToken, std::string());
+  registry->RegisterStringPref(kGoogleServicesPasswordHash, std::string());
+  registry->RegisterIntegerPref(kModuleConflictBubbleShown, 0);
+  registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
+  registry->RegisterStringPref(kTrustedDownloadSources, std::string());
+  registry->RegisterBooleanPref(kSupervisedUserCreationAllowed, true);
 }
 
 }  // namespace
@@ -430,11 +451,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
-  // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
-  registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);
-  registry->RegisterListPref(kStabilityCrashedActivityCounts);
-  registry->RegisterListPref(kStabilityLaunchedActivityCounts);
 #else
   media_router::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
@@ -499,11 +515,11 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_MACOSX)
   confirm_quit::RegisterLocalState(registry);
+  OSCrypt::RegisterLocalPrefs(registry);
   QuitWithAppsController::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_WIN)
-  app_metro_launch::RegisterPrefs(registry);
   component_updater::RegisterPrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)
@@ -513,6 +529,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   registry->RegisterBooleanPref(kResetHasSeenWin10PromoPage, false);
+  registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -533,13 +550,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeSSLHostStateDelegate::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
-  chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
   chrome_browser_net::RegisterPredictionOptionsProfilePrefs(registry);
   chrome_prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   DocumentProvider::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
+  image_fetcher::ImageCache::RegisterProfilePrefs(registry);
   ImportantSitesUtil::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
@@ -550,8 +567,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NavigationCorrectionTabObserver::RegisterProfilePrefs(registry);
   NotifierStateTracker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
-  ntp_snippets::ForeignSessionsSuggestionsProvider::RegisterProfilePrefs(
-      registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(registry);
   ntp_snippets::RequestThrottler::RegisterProfilePrefs(registry);
@@ -565,6 +580,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry);
+  PreviewsLitePageDecider::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
   ProfileNetworkContextService::RegisterProfilePrefs(registry);
@@ -575,8 +591,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   secure_origin_whitelist::RegisterProfilePrefs(registry);
   SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
+  sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
   syncer::PerUserTopicRegistrationManager::RegisterProfilePrefs(registry);
+  syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   UINetworkQualityEstimatorService::RegisterProfilePrefs(registry);
@@ -653,6 +671,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       registry);
   ContentSuggestionsNotifierService::RegisterProfilePrefs(registry);
   DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
+  explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::SubscriptionManagerImpl::RegisterProfilePrefs(registry);
@@ -711,13 +730,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_WIN)
-  browser_switcher::prefs::RegisterProfilePrefs(registry);
   component_updater::RegisterProfilePrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
   safe_browsing::SettingsResetPromptPrefsManager::RegisterProfilePrefs(
       registry);
   safe_browsing::PostCleanupSettingsResetter::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  browser_switcher::prefs::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -736,16 +758,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflineMetricsCollectorImpl::RegisterPrefs(registry);
-  offline_pages::PrefetchBackgroundTaskHandlerImpl::RegisterPrefs(registry);
-  offline_pages::PrefetchConfigurationImpl::RegisterPrefs(registry);
+  offline_pages::prefetch_prefs::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)
   NotificationChannelsProviderAndroid::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  confirm_quit::RegisterLocalState(registry);
 #endif
 
 #if !defined(OS_ANDROID)
@@ -780,11 +797,9 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_ANDROID)
-  // Added 8/2017.
-  local_state->ClearPref(kStabilityForegroundActivityType);
-  local_state->ClearPref(kStabilityLaunchedActivityFlags);
-  local_state->ClearPref(kStabilityLaunchedActivityCounts);
-  local_state->ClearPref(kStabilityCrashedActivityCounts);
+  // Added 9/2018
+  local_state->ClearPref(
+      metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete);
 #else
   // Added 1/2018.
   local_state->ClearPref(kShowFirstRunBubbleOption);
@@ -798,6 +813,9 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_WIN)
   // Added 6/2018.
   local_state->ClearPref(kResetHasSeenWin10PromoPage);
+
+  // Added 9/2018
+  local_state->ClearPref(kLastWelcomedOSVersion);
 #endif
 }
 
@@ -823,4 +841,16 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 8/2018.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(profile_prefs);
+
+  // Added 8/2018
+  profile_prefs->ClearPref(kDnsPrefetchingStartupList);
+  profile_prefs->ClearPref(kDnsPrefetchingHostReferralList);
+
+  // Added 9/2018
+  profile_prefs->ClearPref(kGeolocationAccessToken);
+  profile_prefs->ClearPref(kGoogleServicesPasswordHash);
+  profile_prefs->ClearPref(kModuleConflictBubbleShown);
+  profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
+  profile_prefs->ClearPref(kTrustedDownloadSources);
+  profile_prefs->ClearPref(kSupervisedUserCreationAllowed);
 }

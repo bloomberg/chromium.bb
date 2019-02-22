@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from page_sets.system_health import platforms
+from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import google_login
@@ -56,6 +57,7 @@ class GooglePlayMusicDesktopStory(_MediaStory):
   """Browse the songs list in music.google.com, then play a song."""
   NAME = 'play:media:google_play_music'
   URL = 'https://music.google.com'
+  TAGS = [story_tags.YEAR_2016]
 
   PLAY_SELECTOR = '.x-scope.paper-fab-0'
   STOP_SELECTOR = '.style-scope.sj-play-button'
@@ -80,12 +82,32 @@ class SoundCloudDesktopStory(_MediaStory):
   """Load soundcloud.com, search for "Smooth Jazz", then play a song."""
   NAME = 'play:media:soundcloud'
   URL = 'https://soundcloud.com'
+  TAGS = [story_tags.YEAR_2016]
 
   PLAY_SELECTOR = '.sc-button-play.playButton.sc-button.sc-button-xlarge'
   STOP_SELECTOR = '.playControl.playControls__icon.sc-ir.playing'
   TIME_SELECTOR = '.playbackTimeline__timePassed>span[aria-hidden=true]'
   SEARCH_SELECTOR = '.headerSearch'
-  SEARCH_QUERY = 'SSmooth Jazz'  # First S for some reason gets ommited.
+  SEARCH_QUERY = 'SSmooth Jazz'  # First S for some reason gets omitted.
+
+  def _NavigateToMedia(self, action_runner):
+    self._WaitForAndClickElementBySelector(action_runner, self.SEARCH_SELECTOR)
+    action_runner.Wait(1)  # Add 1 second wait to make the browsing realistic.
+    action_runner.EnterText(self.SEARCH_QUERY)
+    action_runner.PressKey('Return')
+
+
+class SoundCloudDesktopStory2018(_MediaStory):
+  """Load soundcloud.com, search for "Smooth Jazz", then play a song."""
+  NAME = 'play:media:soundcloud:2018'
+  URL = 'https://soundcloud.com'
+  TAGS = [story_tags.YEAR_2018]
+
+  PLAY_SELECTOR = '.sc-button-play.playButton.sc-button.sc-button-xlarge'
+  STOP_SELECTOR = '.playControl.sc-ir.playing'
+  TIME_SELECTOR = '.playbackTimeline__timePassed>span[aria-hidden=true]'
+  SEARCH_SELECTOR = '.headerSearch'
+  SEARCH_QUERY = 'SSmooth Jazz'  # First S for some reason gets omitted.
 
   def _NavigateToMedia(self, action_runner):
     self._WaitForAndClickElementBySelector(action_runner, self.SEARCH_SELECTOR)

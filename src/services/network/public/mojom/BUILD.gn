@@ -82,6 +82,7 @@ mojom("mojom") {
     "fetch_api.mojom",
     "host_resolver.mojom",
     "http_request_headers.mojom",
+    "net_log.mojom",
     "network_change_manager.mojom",
     "network_context.mojom",
     "network_quality_estimator_manager.mojom",

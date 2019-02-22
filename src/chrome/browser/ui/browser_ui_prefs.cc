@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_ui_prefs.h"
 
+#include <memory>
+
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -35,7 +37,6 @@ uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
 }  // namespace
 
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   registry->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
 
 #if !defined(OS_ANDROID)
@@ -56,7 +57,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
                                 GetHomeButtonAndHomePageIsNewTabPageFlags());
 
-  registry->RegisterIntegerPref(prefs::kModuleConflictBubbleShown, 0);
   registry->RegisterInt64Pref(prefs::kDefaultBrowserLastDeclined, 0);
   bool reset_check_default = false;
 #if defined(OS_WIN)
@@ -124,4 +124,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 #else
   registry->RegisterBooleanPref(prefs::kFullscreenAllowed, true);
 #endif
+
+  registry->RegisterBooleanPref(prefs::kEnterpriseHardwarePlatformAPIEnabled,
+                                false);
 }

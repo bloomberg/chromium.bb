@@ -193,6 +193,8 @@ class BlinkTestRunner : public RenderViewObserver,
   // Returns true if the browser should capture pixels instead.
   bool CaptureLocalPixelsDump();
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
+
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();
   mojom::LayoutTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;

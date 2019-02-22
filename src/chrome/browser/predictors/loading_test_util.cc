@@ -146,8 +146,6 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
     config->max_consecutive_misses = 2;
     config->max_redirect_consecutive_misses = 2;
   }
-  config->is_origin_learning_enabled = true;
-  config->mode = LoadingPredictorConfig::LEARNING;
   config->flush_data_to_disk_delay_seconds = 0;
 }
 

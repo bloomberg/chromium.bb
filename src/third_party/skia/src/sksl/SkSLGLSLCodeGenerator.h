@@ -77,7 +77,8 @@ public:
                       OutputStream* out)
     : INHERITED(program, errors, out)
     , fLineEnding("\n")
-    , fContext(*context) {}
+    , fContext(*context)
+    , fProgramKind(program->fKind) {}
 
     bool generateCode() override;
 
@@ -150,7 +151,7 @@ protected:
 
     void writeConstructor(const Constructor& c, Precedence parentPrecedence);
 
-    void writeFieldAccess(const FieldAccess& f);
+    virtual void writeFieldAccess(const FieldAccess& f);
 
     virtual void writeSwizzle(const Swizzle& swizzle);
 

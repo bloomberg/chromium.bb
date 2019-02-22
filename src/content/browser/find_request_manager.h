@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -40,7 +40,7 @@ class CONTENT_EXPORT FindRequestManager {
   // |options|. |request_id| uniquely identifies the find request.
   void Find(int request_id,
             const base::string16& search_text,
-            const blink::WebFindOptions& options);
+            blink::mojom::FindOptionsPtr options);
 
   // Stops the active find session and clears the general highlighting of the
   // matches. |action| determines whether the last active match (if any) will be
@@ -116,13 +116,16 @@ class CONTENT_EXPORT FindRequestManager {
     base::string16 search_text;
 
     // The set of find options in effect for this find request.
-    blink::WebFindOptions options;
+    blink::mojom::FindOptionsPtr options;
 
-    FindRequest() = default;
+    FindRequest();
     FindRequest(int id,
                 const base::string16& search_text,
-                const blink::WebFindOptions& options)
-        : id(id), search_text(search_text), options(options) {}
+                blink::mojom::FindOptionsPtr options);
+    FindRequest(const FindRequest& request);
+    ~FindRequest();
+
+    FindRequest& operator=(const FindRequest& request);
   };
 
   // Resets all of the per-session state for a new find-in-page session.

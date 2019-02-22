@@ -30,14 +30,14 @@ void FindArcTasks(Profile* profile,
                   const std::vector<extensions::EntryInfo>& entries,
                   const std::vector<GURL>& file_urls,
                   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-                  const FindTasksCallback& callback);
+                  FindTasksCallback callback);
 
 // Executes the specified task by ARC.
 void ExecuteArcTask(Profile* profile,
                     const TaskDescriptor& task,
                     const std::vector<storage::FileSystemURL>& file_system_urls,
                     const std::vector<std::string>& mime_types,
-                    const FileTaskFinishedCallback& done);
+                    FileTaskFinishedCallback done);
 
 }  // namespace file_tasks
 }  // namespace file_manager

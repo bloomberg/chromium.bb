@@ -67,6 +67,11 @@ inline bool IsUseCounterEnabledForMode(CSSParserMode mode) {
   return mode != kUASheetMode;
 }
 
+// Used in CSSParser APIs to say if we should defer parsing of declaration lists
+// in style rules until we need them for CSSOM access, or for applying matched
+// rules to computed style.
+enum class CSSDeferPropertyParsing { kNo, kYes };
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_MODE_H_

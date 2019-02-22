@@ -58,6 +58,10 @@ namespace {
 // default TopSites tile (see history::PrepopulatedPage).
 const int kDefaultMostVisitedItemCount = 1;
 
+// This is the default maximum custom links we can have. The number comes from
+// ntp_tiles::CustomLinksManager.
+const int kDefaultCustomLinkMaxCount = 10;
+
 class TestMostVisitedObserver : public InstantServiceObserver {
  public:
   explicit TestMostVisitedObserver(InstantService* service)
@@ -622,7 +626,47 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, ShowsAddCustomLinkButton) {
   EXPECT_TRUE(has_add_button);
 }
 
-// TODO(851293): Add test for not showing add button when at max links.
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
+                       DontShowAddCustomLinkButtonWhenMaxLinks) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestMostVisitedObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+
+  // Get the iframe and add to maximum number of tiles.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  for (int i = kDefaultMostVisitedItemCount; i < kDefaultCustomLinkMaxCount;
+       ++i) {
+    std::string rid = std::to_string(i + 100);
+    std::string url = "https://" + rid + ".com";
+    std::string title = "url for" + rid;
+    // Add most visited tiles via the EmbeddedSearch API. rid = -1 means add new
+    // most visited tile.
+    EXPECT_TRUE(content::ExecuteScript(
+        iframe,
+        "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, '" + url +
+            "', '" + title + "')"));
+  }
+  // Confirm that there are max number of custom link tiles.
+  observer.WaitForNumberOfItems(kDefaultCustomLinkMaxCount);
+
+  // Open a new tab and check if the add button still exists
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  iframe = GetMostVisitedIframe(active_tab);
+
+  // Check there is no add button in the iframe.
+  bool no_add_button = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "document.querySelectorAll('.md-add-icon').length === 0",
+      &no_add_button));
+  EXPECT_TRUE(no_add_button);
+}
 
 // A minimal implementation of an interstitial page.
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {

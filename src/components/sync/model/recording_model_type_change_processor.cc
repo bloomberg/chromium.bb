@@ -57,6 +57,10 @@ bool RecordingModelTypeChangeProcessor::IsTrackingMetadata() {
   return is_tracking_metadata_;
 }
 
+std::string RecordingModelTypeChangeProcessor::TrackedAccountId() {
+  return "";
+}
+
 void RecordingModelTypeChangeProcessor::SetIsTrackingMetadata(
     bool is_tracking) {
   is_tracking_metadata_ = is_tracking;

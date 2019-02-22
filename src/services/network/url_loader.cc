@@ -68,6 +68,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.socket_address = response_info.socket_address;
   response->head.was_fetched_via_cache = request->was_cached();
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
@@ -320,6 +321,9 @@ URLLoader::URLLoader(
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
       first_auth_attempt_(true),
+      custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
+      custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
+      fetch_window_id_(request.fetch_window_id),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
@@ -346,6 +350,11 @@ URLLoader::URLLoader(
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->SetExtraRequestHeaders(request.headers);
+  if (!request.requested_with.empty()) {
+    // X-Requested-With header must be set here to avoid breaking CORS checks.
+    url_request_->SetExtraRequestHeaderByName("X-Requested-With",
+                                              request.requested_with, true);
+  }
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
   url_request_->SetUserData(kUserDataKey,
@@ -631,10 +640,19 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
     return;
   }
 
-  network_service_client_->OnCertificateRequested(
-      factory_params_->process_id, render_frame_id_, request_id_, cert_info,
-      base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (fetch_window_id_) {
+    network_service_client_->OnCertificateRequested(
+        fetch_window_id_, -1 /* process_id */, -1 /* routing_id */, request_id_,
+        cert_info,
+        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    network_service_client_->OnCertificateRequested(
+        base::nullopt /* window_id */, factory_params_->process_id,
+        render_frame_id_, request_id_, cert_info,
+        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void URLLoader::OnSSLCertificateError(net::URLRequest* request,
@@ -665,6 +683,20 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = kDefaultAllocationSize;
+  MojoResult result =
+      mojo::CreateDataPipe(&options, &response_body_stream_, &consumer_handle_);
+  if (result != MOJO_RESULT_OK) {
+    NotifyCompleted(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
+  DCHECK(response_body_stream_.is_valid());
+  DCHECK(consumer_handle_.is_valid());
+
   // Do not account header bytes when reporting received body bytes to client.
   reported_total_encoded_bytes_ = url_request_->GetTotalReceivedBytes();
 
@@ -684,9 +716,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     raw_response_headers_ = nullptr;
   }
 
-  mojo::DataPipe data_pipe(kDefaultAllocationSize);
-  response_body_stream_ = std::move(data_pipe.producer_handle);
-  consumer_handle_ = std::move(data_pipe.consumer_handle);
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::Bind(&URLLoader::OnResponseBodyStreamConsumerClosed,

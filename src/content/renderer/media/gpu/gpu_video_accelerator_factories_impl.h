@@ -14,11 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,7 +33,7 @@ class GpuMemoryBufferManager;
 
 namespace ui {
 class ContextProviderCommandBuffer;
-}
+}  // namespace ui
 
 namespace content {
 
@@ -58,12 +61,19 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
+      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
   base::UnguessableToken GetChannelToken() override;
   int32_t GetCommandBufferRouteId() override;
+  std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
+      media::MediaLog* media_log,
+      const media::RequestOverlayInfoCB& request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) override;
+  bool IsDecoderConfigSupported(
+      const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
@@ -96,7 +106,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // Called on the media thread. Returns the GLES2Interface unless the
   // ContextProvider has been lost, in which case it returns null.
   gpu::gles2::GLES2Interface* ContextGL() override;
-  void BindContextToTaskRunner();
   // Called on the media thread. Verifies if the ContextProvider is lost and
   // notifies the main thread of loss if it has occured, which can be seen later
   // from CheckContextProviderLost().
@@ -136,13 +145,19 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
+      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
-  void BindVideoEncodeAcceleratorProviderOnTaskRunner(
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
+  void BindOnTaskRunner(
+      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
   void SetContextProviderLost();
   void SetContextProviderLostOnMainThread();
+
+  void OnSupportedDecoderConfigs(
+      std::vector<media::mojom::SupportedVideoDecoderConfigPtr>
+          supported_configs);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -170,7 +185,13 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
+  media::mojom::InterfaceFactoryPtr interface_factory_;
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
+
+  // SupportedDecoderConfigs state.
+  mojo::InterfacePtr<media::mojom::VideoDecoder> video_decoder_;
+  base::Optional<std::vector<media::mojom::SupportedVideoDecoderConfigPtr>>
+      supported_decoder_configs_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

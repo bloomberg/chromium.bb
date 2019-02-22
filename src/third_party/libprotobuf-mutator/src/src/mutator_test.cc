@@ -218,6 +218,7 @@ class TestMutator : public Mutator {
  public:
   explicit TestMutator(bool keep_initialized) : Mutator(&random_), random_(17) {
     keep_initialized_ = keep_initialized;
+    custom_mutations_.clear();
   }
 
   // Avoids dedup logic for some tests.
@@ -521,7 +522,7 @@ TYPED_TEST(MutatorTypedTest, CrossOverRepeated) {
         {message.repeated_int32().begin(), message.repeated_int32().end()});
   }
 
-  EXPECT_EQ(1 << 6, sets.size());
+  EXPECT_EQ(1u << 6, sets.size());
 }
 
 TYPED_TEST(MutatorTypedTest, CrossOverRepeatedMessages) {
@@ -548,7 +549,7 @@ TYPED_TEST(MutatorTypedTest, CrossOverRepeatedMessages) {
       sets.insert({msg.repeated_int32().begin(), msg.repeated_int32().end()});
   }
 
-  EXPECT_EQ(1 << 6, sets.size());
+  EXPECT_EQ(1u << 6, sets.size());
 }
 
 TYPED_TEST(MutatorTypedTest, FailedMutations) {
@@ -574,7 +575,44 @@ TYPED_TEST(MutatorTypedTest, FailedMutations) {
   }
 
   // CrossOver may fail but very rare.
-  EXPECT_LT(crossovers, 100);
+  EXPECT_LT(crossovers, 100u);
+}
+
+TYPED_TEST(MutatorTypedTest, FieldMutator) {
+  constexpr char kInitialString[] = " ";
+  constexpr char kIndicatorString[] = "0123456789abcdef";
+  bool custom_mutation = false;
+  bool regular_mutation = false;
+
+  const protobuf::Descriptor* descriptor =
+    (typename TestFixture::Message()).GetDescriptor();
+  TestMutator mutator(false);
+  TestMutator::RegisterCustomMutation(
+      descriptor->FindFieldByName("optional_string"),
+      [kIndicatorString](protobuf::Message* message){
+        typename TestFixture::Message* test_message =
+            dynamic_cast<typename TestFixture::Message*>(message);
+        test_message->set_optional_string(kIndicatorString);
+      });
+
+  for (int j = 0; j < 100000; ++j) {
+    // Include this field to increase the probability of mutation.
+    typename TestFixture::Message message;
+    message.set_optional_string(kInitialString);
+    mutator.Mutate(&message, 1000);
+
+    if (message.optional_string() == kIndicatorString) {
+      custom_mutation = true;
+    } else if (message.optional_string() != kInitialString) {
+      regular_mutation = true;
+    }
+
+    if (custom_mutation && regular_mutation)
+      break;
+  }
+
+  EXPECT_TRUE(custom_mutation);
+  EXPECT_TRUE(regular_mutation);
 }
 
 TYPED_TEST(MutatorTypedTest, Serialization) {

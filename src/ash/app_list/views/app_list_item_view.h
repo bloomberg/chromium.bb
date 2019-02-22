@@ -53,11 +53,8 @@ class APP_LIST_EXPORT AppListItemView
                   bool is_in_folder);
   ~AppListItemView() override;
 
-  // Sets the icon of this image. Clips the icon into |clipped_size| if |clip|
-  // is true.
-  void SetIcon(const gfx::ImageSkia& icon,
-               bool clip,
-               const gfx::Size& clipped_size);
+  // Sets the icon of this image.
+  void SetIcon(const gfx::ImageSkia& icon);
 
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
@@ -134,7 +131,12 @@ class APP_LIST_EXPORT AppListItemView
   void OnDraggedViewEnter();
   void OnDraggedViewExit();
 
+  // Enables background blur for folder icon if |enabled| is true.
+  void SetBackgroundBlurEnabled(bool enabled);
+
  private:
+  class IconImageView;
+
   enum UIState {
     UI_STATE_NORMAL,              // Normal UI (icon + label)
     UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
@@ -221,11 +223,15 @@ class APP_LIST_EXPORT AppListItemView
   const bool is_folder_;
   const bool is_in_folder_;
 
+  // Whether context menu options have been requested. Prevents multiple
+  // requests.
+  bool waiting_for_context_menu_options_ = false;
+
   AppListItem* item_weak_;  // Owned by AppListModel. Can be NULL.
 
   AppListViewDelegate* delegate_;            // Unowned.
   AppsGridView* apps_grid_view_;             // Parent view, owns this.
-  views::ImageView* icon_;                   // Strongly typed child view.
+  IconImageView* icon_;                      // Strongly typed child view.
   views::Label* title_;                      // Strongly typed child view.
   views::ProgressBar* progress_bar_;         // Strongly typed child view.
   views::ImageView* icon_shadow_ = nullptr;  // Strongly typed child view.

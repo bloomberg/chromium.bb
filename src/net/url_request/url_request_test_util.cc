@@ -125,7 +125,6 @@ void TestURLRequestContext::Init() {
     if (http_network_session_context_)
       session_context = *http_network_session_context_;
     session_context.client_socket_factory = client_socket_factory();
-    session_context.proxy_delegate = proxy_delegate();
     session_context.host_resolver = host_resolver();
     session_context.cert_verifier = cert_verifier();
     session_context.cert_transparency_verifier = cert_transparency_verifier();
@@ -380,8 +379,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       add_header_to_first_response_(false) {}
 
 TestNetworkDelegate::~TestNetworkDelegate() {
-  for (std::map<int, int>::iterator i = next_states_.begin();
-       i != next_states_.end(); ++i) {
+  for (auto i = next_states_.begin(); i != next_states_.end(); ++i) {
     event_order_[i->first] += "~TestNetworkDelegate\n";
     EXPECT_TRUE(i->second & kStageDestruction) << event_order_[i->first];
   }
@@ -653,8 +651,9 @@ NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
 }
 
 bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
-                                          const CookieList& cookie_list) {
-  bool allow = true;
+                                          const CookieList& cookie_list,
+                                          bool allowed_from_caller) {
+  bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_GET_COOKIES)
     allow = false;
 
@@ -667,8 +666,9 @@ bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
 
 bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
                                          const net::CanonicalCookie& cookie,
-                                         CookieOptions* options) {
-  bool allow = true;
+                                         CookieOptions* options,
+                                         bool allowed_from_caller) {
+  bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_SET_COOKIE)
     allow = false;
 

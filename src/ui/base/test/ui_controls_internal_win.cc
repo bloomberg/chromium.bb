@@ -201,7 +201,8 @@ LRESULT CALLBACK InputDispatcher::MouseHook(int n_code,
   if (n_code == HC_ACTION) {
     DCHECK(current_dispatcher_);
     current_dispatcher_->DispatchedMessage(
-        w_param, reinterpret_cast<MOUSEHOOKSTRUCT*>(l_param));
+        static_cast<UINT>(w_param),
+        reinterpret_cast<MOUSEHOOKSTRUCT*>(l_param));
   }
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
@@ -402,8 +403,13 @@ bool SendKeyPressImpl(HWND window,
   AppendKeyboardInput(key, true, &input);
   AppendAcceleratorInputs(control, shift, alt, true, &input);
 
-  if (::SendInput(input.size(), input.data(), sizeof(INPUT)) != input.size())
+  if (input.size() > std::numeric_limits<UINT>::max())
     return false;
+
+  if (::SendInput(static_cast<UINT>(input.size()), input.data(),
+                  sizeof(INPUT)) != input.size()) {
+    return false;
+  }
 
   if (dispatcher)
     dispatcher->AddRef();
@@ -517,8 +523,13 @@ bool SendMouseEventsImpl(MouseButton type,
                             accelerator_state & kAlt, true, &input);
   }
 
-  if (::SendInput(input.size(), input.data(), sizeof(INPUT)) != input.size())
+  if (input.size() > std::numeric_limits<UINT>::max())
     return false;
+
+  if (::SendInput(static_cast<UINT>(input.size()), input.data(),
+                  sizeof(INPUT)) != input.size()) {
+    return false;
+  }
 
   if (dispatcher)
     dispatcher->AddRef();

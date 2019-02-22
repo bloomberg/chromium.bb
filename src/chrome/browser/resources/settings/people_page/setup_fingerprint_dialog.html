@@ -44,12 +44,15 @@
     <cr-dialog id="dialog" on-close="close"
         close-text="$i18n{close}">
       <div slot="title">$i18n{configureFingerprintTitle}</div>
-      <div slot="body" on-click="fakeScan_">
+      <div slot="body">
         <div id="messageDiv"
-            invisible$="[[!getInstructionMessage_(step_, problemMessage_)]]">
-            <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
+            invisible$="[[!getInstructionMessage_(step_, problemMessage_)]]"
+            aria-live="polite">
+          <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
         </div>
-        <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]">
+        <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]"
+            aria-label="$i18n{configureFingerprintScannerStepAriaLabel}"
+            aria-live="polite" >
         </div>
         <cr-fingerprint-progress-arc id="arc" circle-radius="100"
             hidden="[[!showArc_(step_)]]">

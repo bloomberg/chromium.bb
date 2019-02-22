@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_TEXT_FIELD_IOS_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_TEXT_FIELD_IOS_H_
 
-#import "ios/chrome/browser/ui/omnibox/clipping_textfield.h"
+#import <UIKit/UIKit.h>
 
 #include "base/strings/string16.h"
 #import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
@@ -18,7 +18,7 @@ typedef enum {
 } OmniboxTextFieldFadeStyle;
 
 // UITextField subclass to allow for adjusting borders.
-@interface OmniboxTextFieldIOS : ClippingTextField
+@interface OmniboxTextFieldIOS : UITextField
 
 // Initialize the omnibox with the given frame, font, text color, and tint
 // color.

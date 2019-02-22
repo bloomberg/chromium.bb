@@ -96,10 +96,27 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_default_app() { return is_default_app_; }
 
+  // If called, the installed extension will be considered system installed.
+  void set_is_system_app() { is_system_app_ = true; }
+
+  bool is_system_app() { return is_system_app_; }
+
   // If called, desktop shortcuts will not be created.
   void set_skip_shortcut_creation() { create_shortcuts_ = false; }
 
   bool create_shortcuts() const { return create_shortcuts_; }
+
+  // If called, the installability check won't test for a service worker.
+  void set_bypass_service_worker_check() {
+    DCHECK(is_default_app());
+    bypass_service_worker_check_ = true;
+  }
+
+  // If called, the installation will only succeed if a manifest is found.
+  void set_require_manifest() {
+    DCHECK(is_default_app());
+    require_manifest_ = true;
+  }
 
   // If called, the installed app will launch in |launch_type|. User might still
   // be able to change the launch type depending on the type of app.
@@ -174,7 +191,13 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_default_app_ = false;
 
+  bool is_system_app_ = false;
+
   bool create_shortcuts_ = true;
+
+  bool bypass_service_worker_check_ = false;
+
+  bool require_manifest_ = false;
 
   // The mechanism via which the app creation was triggered.
   WebappInstallSource install_source_;
@@ -191,7 +214,7 @@ void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info,
                                bool is_locally_installed);
 
-// Returns whether the given |url| is a valid bookmark app url.
+// Returns whether the given |url| is a valid user bookmark app url.
 bool IsValidBookmarkAppUrl(const GURL& url);
 
 }  // namespace extensions

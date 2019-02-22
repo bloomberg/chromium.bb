@@ -55,7 +55,9 @@ bool QuicDefaultPacketWriter::IsBatchMode() const {
   return false;
 }
 
-char* QuicDefaultPacketWriter::GetNextWriteLocation() const {
+char* QuicDefaultPacketWriter::GetNextWriteLocation(
+    const QuicIpAddress& self_address,
+    const QuicSocketAddress& peer_address) {
   return nullptr;
 }
 

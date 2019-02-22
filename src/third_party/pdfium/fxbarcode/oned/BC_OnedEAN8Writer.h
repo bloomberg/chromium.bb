@@ -30,19 +30,19 @@ class CBC_OnedEAN8Writer final : public CBC_OneDimWriter {
   bool CheckContentValidity(const WideStringView& contents) override;
   WideString FilterContents(const WideStringView& contents) override;
   void SetDataLength(int32_t length) override;
+  bool SetTextLocation(BC_TEXT_LOC location) override;
 
-  bool SetTextLocation(BC_TEXT_LOC location);
   int32_t CalcChecksum(const ByteString& contents);
 
- protected:
+ private:
   bool ShowChars(const WideStringView& contents,
                  CFX_RenderDevice* device,
                  const CFX_Matrix* matrix,
                  int32_t barWidth,
                  int32_t multiple) override;
 
- private:
-  int32_t m_codeWidth;
+  static constexpr int32_t kDefaultCodeWidth = 3 + (7 * 4) + 5 + (7 * 4) + 3;
+  int32_t m_codeWidth = kDefaultCodeWidth;
 };
 
 #endif  // FXBARCODE_ONED_BC_ONEDEAN8WRITER_H_

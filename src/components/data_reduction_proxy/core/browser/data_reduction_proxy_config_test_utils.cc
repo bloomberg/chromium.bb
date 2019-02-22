@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -24,14 +25,12 @@ namespace data_reduction_proxy {
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
-    network::NetworkConnectionTracker* network_connection_tracker,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(
           std::make_unique<TestDataReductionProxyParams>(),
           io_task_runner,
           net_log,
-          network_connection_tracker,
           configurator,
           event_creator) {}
 
@@ -39,15 +38,15 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
-    network::NetworkConnectionTracker* network_connection_tracker,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : DataReductionProxyConfig(io_task_runner,
-                               net_log,
-                               network_connection_tracker,
-                               std::move(config_values),
-                               configurator,
-                               event_creator),
+    : DataReductionProxyConfig(
+          io_task_runner,
+          net_log,
+          network::TestNetworkConnectionTracker::GetInstance(),
+          std::move(config_values),
+          configurator,
+          event_creator),
       tick_clock_(nullptr),
       is_captive_portal_(false),
       add_default_proxy_bypass_rules_(true) {}
@@ -146,13 +145,11 @@ MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
-    network::NetworkConnectionTracker* network_connection_tracker,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(std::move(config_values),
                                    io_task_runner,
                                    net_log,
-                                   network_connection_tracker,
                                    configurator,
                                    event_creator) {}
 

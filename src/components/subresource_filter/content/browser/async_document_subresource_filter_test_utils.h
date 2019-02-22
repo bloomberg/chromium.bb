@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 
 namespace subresource_filter {
 namespace testing {
@@ -21,16 +21,16 @@ class TestActivationStateCallbackReceiver {
   TestActivationStateCallbackReceiver();
   ~TestActivationStateCallbackReceiver();
 
-  base::Callback<void(ActivationState)> GetCallback();
+  base::OnceCallback<void(mojom::ActivationState)> GetCallback();
   void WaitForActivationDecision();
-  void ExpectReceivedOnce(const ActivationState& expected_state) const;
+  void ExpectReceivedOnce(const mojom::ActivationState& expected_state) const;
 
   int callback_count() const { return callback_count_; }
 
  private:
-  void Callback(ActivationState activation_state);
+  void Callback(mojom::ActivationState activation_state);
 
-  ActivationState last_activation_state_;
+  mojom::ActivationState last_activation_state_;
   int callback_count_ = 0;
 
   base::Closure quit_closure_;

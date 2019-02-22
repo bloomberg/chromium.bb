@@ -117,7 +117,7 @@ bool NGUnpositionedListMarker::AddToBox(
       marker_offset.block_offset);
 
   DCHECK(container_builder);
-  container_builder->AddChild(std::move(marker_layout_result), marker_offset);
+  container_builder->AddChild(*marker_layout_result, marker_offset);
 
   return true;
 }
@@ -140,7 +140,7 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
   NGLogicalOffset offset(InlineOffset(marker_size.inline_size), LayoutUnit());
 
   DCHECK(container_builder);
-  container_builder->AddChild(std::move(marker_layout_result), offset);
+  container_builder->AddChild(*marker_layout_result, offset);
 
   return marker_size.block_size;
 }

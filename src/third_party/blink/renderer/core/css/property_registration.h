@@ -29,12 +29,8 @@ class CORE_EXPORT PropertyRegistration
                                const PropertyDescriptor&,
                                ExceptionState&);
 
-  static PropertyRegistration* Create(
-      const AtomicString& name,
-      const CSSSyntaxDescriptor&,
-      bool inherits,
-      const CSSValue* initial,
-      scoped_refptr<CSSVariableData> initial_variable_data);
+  static const PropertyRegistration* From(const ExecutionContext*,
+                                          const AtomicString& property_name);
 
   const CSSSyntaxDescriptor& Syntax() const { return syntax_; }
   bool Inherits() const { return inherits_; }
@@ -60,6 +56,9 @@ class CORE_EXPORT PropertyRegistration
   const Member<const CSSValue> initial_;
   const scoped_refptr<CSSVariableData> initial_variable_data_;
   const InterpolationTypes interpolation_types_;
+
+  FRIEND_TEST_ALL_PREFIXES(CSSVariableResolverTest,
+                           NeedsResolutionClearedByResolver);
 };
 
 }  // namespace blink

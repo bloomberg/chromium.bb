@@ -31,8 +31,6 @@ FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
 
 FakeSyncClient::~FakeSyncClient() {}
 
-void FakeSyncClient::Initialize() {}
-
 SyncService* FakeSyncClient::GetSyncService() {
   return sync_service_.get();
 }
@@ -58,6 +56,10 @@ favicon::FaviconService* FakeSyncClient::GetFaviconService() {
 }
 
 history::HistoryService* FakeSyncClient::GetHistoryService() {
+  return nullptr;
+}
+
+sync_sessions::SessionSyncService* FakeSyncClient::GetSessionSyncService() {
   return nullptr;
 }
 
@@ -90,10 +92,6 @@ invalidation::InvalidationService* FakeSyncClient::GetInvalidationService() {
 
 scoped_refptr<ExtensionsActivity> FakeSyncClient::GetExtensionsActivity() {
   return scoped_refptr<ExtensionsActivity>();
-}
-
-sync_sessions::SyncSessionsClient* FakeSyncClient::GetSyncSessionsClient() {
-  return nullptr;
 }
 
 base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(

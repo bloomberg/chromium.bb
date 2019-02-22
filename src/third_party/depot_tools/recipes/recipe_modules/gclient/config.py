@@ -11,8 +11,7 @@ from . import api as gclient_api
 
 
 def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
-               PATCH_PROJECT=None, BUILDSPEC_VERSION=None,
-               **_kwargs):
+               BUILDSPEC_VERSION=None, **_kwargs):
   cache_dir = str(CACHE_DIR) if CACHE_DIR else None
   return ConfigGroup(
     solutions = ConfigList(
@@ -69,21 +68,22 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     parent_got_revision_mapping = Dict(hidden=True),
     delete_unversioned_trees = Single(bool, empty_val=True, required=False),
 
-    # Maps patch_project to (solution/path, revision).
+    # Maps canonical repo URL to (local_path, revision).
+    #  - canonical gitiles repo URL is "https://<host>/<project>"
+    #    where project does not have "/a/" prefix or ".git" suffix.
     #  - solution/path is then used to apply patches as patch root in
     #    bot_update.
     #  - if revision is given, it's passed verbatim to bot_update for
-    #    corresponding dependency. Otherwise (ie None), the patch will be
+    #    corresponding dependency. Otherwise (i.e. None), the patch will be
     #    applied on top of version pinned in DEPS.
-    # This is essentially a whitelist of which projects inside a solution
-    # can be patched automatically by bot_update based on PATCH_PROJECT
-    # property.
-    # For example, bare chromium solution has this entry in patch_projects
-    #     'angle/angle': ('src/third_party/angle', 'HEAD')
+    # This is essentially a whitelist of which repos inside a solution
+    # can be patched automatically by bot_update based on
+    # api.buildbucket.build.input.gerrit_changes[0].project
+    # For example, if bare chromium solution has this entry in repo_path_map
+    #     'https://chromium.googlesource.com/angle/angle': (
+    #       'src/third_party/angle', 'HEAD')
     # then a patch to Angle project can be applied to a chromium src's
     # checkout after first updating Angle's repo to its master's HEAD.
-    patch_projects = Dict(value_type=tuple, hidden=True),
-    # Same as the above, except the keys are full repo URLs.
     repo_path_map = Dict(value_type=tuple, hidden=True),
 
     # Check out refs/branch-heads.
@@ -104,9 +104,6 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     disable_syntax_validation = Single(bool, empty_val=False, required=False),
 
     USE_MIRROR = Static(bool(USE_MIRROR)),
-    # TODO(tandrii): remove PATCH_PROJECT field.
-    # DON'T USE THIS. WILL BE REMOVED.
-    PATCH_PROJECT = Static(str(PATCH_PROJECT), hidden=True),
     BUILDSPEC_VERSION= Static(BUILDSPEC_VERSION, hidden=True),
   )
 
@@ -297,12 +294,16 @@ def infra(c):
   soln.name = 'infra'
   soln.url = 'https://chromium.googlesource.com/infra/infra.git'
   c.got_revision_mapping['infra'] = 'got_revision'
-
-  p = c.patch_projects
-  p['infra/luci/luci-py'] = ('infra/luci', 'HEAD')
-  # TODO(phajdan.jr): remove recipes-py when it's not used for project name.
-  p['infra/luci/recipes-py'] = ('infra/recipes-py', 'HEAD')
-  p['recipe_engine'] = ('infra/recipes-py', 'HEAD')
+  c.repo_path_map.update({
+      'https://chromium.googlesource.com/infra/luci/gae': (
+          'infra/go/src/go.chromium.org/gae', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/luci-py': (
+          'infra/luci', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/luci-go': (
+          'infra/go/src/go.chromium.org/luci', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/recipes-py': (
+          'infra/recipes-py', 'HEAD')
+  })
 
 @config_ctx()
 def infra_internal(c):  # pragma: no cover
@@ -338,7 +339,6 @@ def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
   c.revisions['infra'] = 'origin/master'
-  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/luci'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
@@ -348,7 +348,6 @@ def luci_py(c):
 @config_ctx(includes=['infra'])
 def recipes_py(c):
   c.revisions['infra'] = 'origin/master'
-  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/recipes-py'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
@@ -418,3 +417,4 @@ def dawn(c):
   soln = c.solutions.add()
   soln.name = 'dawn'
   soln.url = 'https://dawn.googlesource.com/dawn.git'
+  c.got_revision_mapping['dawn'] = 'got_revision'

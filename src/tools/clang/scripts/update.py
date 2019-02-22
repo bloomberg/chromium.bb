@@ -27,7 +27,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '340925'
+CLANG_REVISION = '344066'
 
 use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
                          in ('1', 'YES'))
@@ -71,6 +71,8 @@ STAMP_FILE = os.path.normpath(
 VERSION = '8.0.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
+FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
+                               'sdk')
 
 # URL for pre-built binaries.
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
@@ -483,6 +485,16 @@ def UpdateClang(args):
     print 'for how to install the NDK, or pass --without-android.'
     return 1
 
+  if args.with_fuchsia and not os.path.exists(FUCHSIA_SDK_DIR):
+    print 'Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR
+    print 'The Fuchsia SDK is needed to build libclang_rt for Fuchsia.'
+    print 'Install the Fuchsia SDK by adding fuchsia to the '
+    print 'target_os section in your .gclient and running hooks, '
+    print 'or pass --without-fuchsia.'
+    print 'https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia_build_instructions.md'
+    print 'for general Fuchsia build instructions.'
+    return 1
+
   print 'Locally building Clang %s...' % PACKAGE_VERSION
 
   AddCMakeToPath(args)
@@ -816,6 +828,57 @@ def UpdateClang(args):
       if os.path.exists(lib_path):
         shutil.copy(lib_path, rt_lib_dst_dir)
 
+  if args.with_fuchsia:
+    # Fuchsia links against libclang_rt.builtins-<arch>.a instead of libgcc.a.
+    for target_arch in ['aarch64', 'x86_64']:
+      fuchsia_arch_name = {'aarch64': 'arm64', 'x86_64': 'x64'}[target_arch]
+      toolchain_dir = os.path.join(
+          FUCHSIA_SDK_DIR, 'arch', fuchsia_arch_name, 'sysroot')
+      # Build clang_rt runtime for Fuchsia in a separate build tree.
+      build_dir = os.path.join(LLVM_BUILD_DIR, 'fuchsia-' + target_arch)
+      if not os.path.exists(build_dir):
+        os.mkdir(os.path.join(build_dir))
+      os.chdir(build_dir)
+      target_spec = target_arch + '-fuchsia'
+      # TODO(thakis): Might have to pass -B here once sysroot contains
+      # binaries (e.g. gas for arm64?)
+      fuchsia_args = base_cmake_args + [
+        '-DLLVM_ENABLE_THREADS=OFF',
+        '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
+        '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
+        '-DCMAKE_LINKER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
+        '-DCMAKE_AR=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-ar'),
+        '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
+        '-DCMAKE_SYSTEM_NAME=Fuchsia',
+        '-DCMAKE_C_COMPILER_TARGET=%s-fuchsia' % target_arch,
+        '-DCMAKE_ASM_COMPILER_TARGET=%s-fuchsia' % target_arch,
+        '-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON',
+        '-DCMAKE_SYSROOT=%s' % toolchain_dir,
+        # TODO(thakis|scottmg): Use PER_TARGET_RUNTIME_DIR for all platforms.
+        # https://crbug.com/882485.
+        '-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON',
+
+        # These are necessary because otherwise CMake tries to build an
+        # executable to test to see if the compiler is working, but in doing so,
+        # it links against the builtins.a that we're about to build.
+        '-DCMAKE_C_COMPILER_WORKS=ON',
+        '-DCMAKE_ASM_COMPILER_WORKS=ON',
+        ]
+      RmCmakeCache('.')
+      RunCommand(['cmake'] +
+                 fuchsia_args +
+                 [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
+      builtins_a = 'libclang_rt.builtins.a'
+      RunCommand(['ninja', builtins_a])
+
+      # And copy it into the main build tree.
+      fuchsia_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
+                                         VERSION, target_spec, 'lib')
+      if not os.path.exists(fuchsia_lib_dst_dir):
+        os.makedirs(fuchsia_lib_dst_dir)
+      CopyFile(os.path.join(build_dir, target_spec, 'lib', builtins_a),
+               fuchsia_lib_dst_dir)
+
   # Run tests.
   if args.run_tests or use_head_revision:
     os.chdir(LLVM_BUILD_DIR)
@@ -869,6 +932,10 @@ def main():
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android',
                       default=sys.platform.startswith('linux'))
+  parser.add_argument('--without-fuchsia', action='store_false',
+                      help='don\'t build Fuchsia clang_rt runtime (linux/mac)',
+                      dest='with_fuchsia',
+                      default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
   if args.lto_lld and not args.bootstrap:
@@ -921,6 +988,8 @@ def main():
     if 'OS=android' not in os.environ.get('GYP_DEFINES', ''):
       # Only build the Android ASan rt on ToT bots when targetting Android.
       args.with_android = False
+    # Don't build fuchsia runtime on ToT bots at all.
+    args.with_fuchsia = False
 
   return UpdateClang(args)
 

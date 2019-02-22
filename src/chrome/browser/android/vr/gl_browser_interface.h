@@ -9,7 +9,6 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "chrome/browser/vr/assets_load_status.h"
-#include "chrome/browser/vr/render_loop_browser_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -22,8 +21,7 @@ class SurfaceTexture;
 
 namespace vr {
 
-// VrShellGl talks to VrShell through this interface. This could be split up if
-// VrShellGl is refactored into components.
+// BrowserRenderer and its delegates talk to VrShell through this interface.
 class GlBrowserInterface {
  public:
   virtual ~GlBrowserInterface() {}

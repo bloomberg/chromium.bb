@@ -204,9 +204,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
-  if (IsCrostiniUIAllowedForProfile(profile)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
     AddSettingsPageUIHandler(
-        std::make_unique<chromeos::settings::CrostiniHandler>());
+        std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::CupsPrintersHandler>(web_ui));
@@ -219,13 +219,15 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
-  if (base::FeatureList::IsEnabled(
+  if (!profile->IsGuestSession() &&
+      base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
       base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSettings) &&
       base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
+            profile->GetPrefs(),
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
                 GetForProfile(profile),
             std::make_unique<
@@ -244,7 +246,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::InternetHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<TtsHandler>());
 #else
-  AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>(web_ui));
+  AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SystemHandler>());
 #endif
@@ -323,7 +325,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           ash::stylus_utils::HasInternalStylus());
 
   html_source->AddBoolean("showCrostini",
-                          IsCrostiniUIAllowedForProfile(profile));
+                          crostini::IsCrostiniUIAllowedForProfile(profile));
 
   // TODO(crbug.com/868747): Show an explanatory message instead of hiding the
   // storage management info.

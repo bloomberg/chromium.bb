@@ -193,6 +193,22 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatching', function() {
   assertEquals(container2, result[0]);
 });
 
+TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatchingWithInputs',
+    function() {
+  let rect = {left: 0, top: 0, width: 100, height: 100};
+  let rootNode = {root: {}, state: {}, role: 'rootWebArea',
+      location: {left: 0, top: 0, width: 600, height: 600}};
+  let checkbox = {root: rootNode, parent: rootNode, role: 'checkBox', state: {},
+      location: {left: 0, top: 0, width: 200, height: 200}, checked: 'true'};
+  rootNode.children = [checkbox];
+  rootNode.firstChild = checkbox;
+
+  let result = [];
+  assertTrue(NodeUtils.findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(checkbox, result[0]);
+});
+
 TEST_F('SelectToSpeakNodeUtilsUnitTest',
     'getDeepEquivalentForSelectionNoChildren', function() {
   let node = {name: 'Hello, world', children: []};

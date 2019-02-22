@@ -4,8 +4,10 @@
 
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 
+#include "base/task/post_task.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "ui/android/window_android.h"
@@ -54,8 +56,8 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
   frame_futures_.pop_front();
 
   if (compositor_frame) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SynchronousCompositorSyncCallBridge::
                            ProcessFrameMetadataOnUIThread,
                        this, metadata_version,
@@ -85,7 +87,7 @@ bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY)
     return false;
-  DCHECK(!begin_frame_response_valid_);
+  CHECK(!begin_frame_response_valid_);
   if (window_android_in_vsync_) {
     DCHECK_EQ(window_android_in_vsync_, window_android);
     return true;

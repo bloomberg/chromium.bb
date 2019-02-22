@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/common/chrome_features.h"
@@ -26,6 +27,7 @@
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -34,7 +36,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/url_pattern.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "url/gurl.h"
@@ -437,8 +439,8 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
         drp_test_context_->GetDataReductionProxyEnabledPrefName());
     settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        drp_test_context_->request_context_getter(),
-        nullptr /* url_loader_factory */,
+        drp_test_context_->request_context_getter(), profile(),
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
         std::make_unique<data_reduction_proxy::DataStore>(),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
@@ -592,4 +594,42 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
   suggested_filename =
       content::WebContentsTester::For(web_contents())->GetSuggestedFileName();
   EXPECT_EQ(kTestSuggestedFileName, suggested_filename);
+}
+
+// Verify that "Show all passwords" is displayed on a password field.
+TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
+  // Set up password manager stuff.
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      web_contents(), nullptr);
+  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+      web_contents())
+      ->RenderFrameCreated(web_contents()->GetMainFrame());
+
+  content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
+  params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  menu->Init();
+
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
+}
+
+// Verify that "Show all passwords" is displayed on a password field in
+// Incognito.
+TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
+  profile()->ForceIncognito(true);
+  // Set up password manager stuff.
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      web_contents(), nullptr);
+  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+      web_contents())
+      ->RenderFrameCreated(web_contents()->GetMainFrame());
+
+  content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
+  params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  menu->Init();
+
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
 }

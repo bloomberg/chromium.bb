@@ -6,7 +6,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 component("cbor") {
   sources = [
-    "cbor_binary.h",
+    "cbor_constants.h",
     "cbor_reader.cc",
     "cbor_reader.h",
     "cbor_values.cc",

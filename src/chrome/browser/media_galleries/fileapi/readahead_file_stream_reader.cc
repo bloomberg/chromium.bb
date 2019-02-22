@@ -40,7 +40,7 @@ int ReadaheadFileStreamReader::Read(net::IOBuffer* buf,
   ReadFromSourceIfNeeded();
 
   scoped_refptr<net::DrainableIOBuffer> sink =
-      new net::DrainableIOBuffer(buf, buf_len);
+      base::MakeRefCounted<net::DrainableIOBuffer>(buf, buf_len);
   int result = FinishReadFromCacheOrStoredError(sink.get());
 
   // We are waiting for an source read to complete, so save the request.
@@ -104,7 +104,8 @@ void ReadaheadFileStreamReader::ReadFromSourceIfNeeded() {
 
   source_has_pending_read_ = true;
 
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kBufferSize));
+  scoped_refptr<net::IOBuffer> buf =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   int result = source_->Read(
       buf.get(), kBufferSize,
       base::Bind(&ReadaheadFileStreamReader::OnFinishReadFromSource,
@@ -122,8 +123,8 @@ void ReadaheadFileStreamReader::OnFinishReadFromSource(net::IOBuffer* buf,
 
   // Either store the data read from |source_|, or store the error code.
   if (result > 0) {
-    scoped_refptr<net::DrainableIOBuffer> drainable_buffer(
-        new net::DrainableIOBuffer(buf, result));
+    scoped_refptr<net::DrainableIOBuffer> drainable_buffer =
+        base::MakeRefCounted<net::DrainableIOBuffer>(buf, result);
     buffers_.push(drainable_buffer);
     ReadFromSourceIfNeeded();
   } else {

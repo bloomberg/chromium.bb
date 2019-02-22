@@ -22,13 +22,14 @@ namespace crazy {
 
 class LineReader {
  public:
-  LineReader();
-  explicit LineReader(const char* path);
-  ~LineReader();
+  // Construct new instance. |path| is the input file path, and
+  // |capacity| is the initial internal buffer capacity. Use a larger capacity
+  // if you expect the input file to be large, in order to speed up parsing.
+  // If opening the file fails, GetNextLine() will simply return false on
+  // the first call.
+  LineReader(const char* path, size_t capacity = 128);
 
-  // Open a new file for testing. Doesn't fail. If there was an error
-  // opening the file, GetNextLine() will simply return false.
-  void Open(const char* file_path);
+  ~LineReader();
 
   // Grab next line. Returns true on success, or false otherwise.
   bool GetNextLine();
@@ -43,15 +44,13 @@ class LineReader {
   size_t length() const;
 
  private:
-  void Reset(bool eof);
-
   FileDescriptor fd_;
-  bool eof_;
-  size_t line_start_;
-  size_t line_len_;
-  size_t buff_size_;
-  size_t buff_capacity_;
-  char* buff_;
+  bool eof_ = false;
+  size_t line_start_ = 0;
+  size_t line_len_ = 0;
+  size_t buff_size_ = 0;
+  size_t buff_capacity_ = 0;
+  char* buff_ = nullptr;
 };
 
 }  // namespace crazy

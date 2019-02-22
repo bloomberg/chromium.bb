@@ -137,8 +137,7 @@ SyncServiceCrypto::SyncServiceCrypto(
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
-      passphrase_key_derivation_params_(
-          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy")),
+      passphrase_key_derivation_params_(KeyDerivationParams::CreateForPbkdf2()),
       weak_factory_(this) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);

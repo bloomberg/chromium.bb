@@ -26,14 +26,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for WebContentsAccessibility. Actually tests WebContentsAccessibilityImpl that
@@ -64,8 +66,7 @@ public class WebContentsAccessibilityTest {
      * returns something not null.
      */
     private AccessibilityNodeProvider enableAccessibilityAndWaitForNodeProvider() {
-        final WebContentsAccessibilityImpl wcax =
-                WebContentsAccessibilityImpl.fromWebContents(mActivityTestRule.getWebContents());
+        final WebContentsAccessibilityImpl wcax = mActivityTestRule.getWebContentsAccessibility();
         wcax.setState(true);
         wcax.setAccessibilityEnabledForTesting();
 
@@ -220,7 +221,8 @@ public class WebContentsAccessibilityTest {
             }
         });
 
-        int virtualViewId = findNodeMatching(provider, View.NO_ID, matcher);
+        int virtualViewId = ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> findNodeMatching(provider, View.NO_ID, matcher));
         Assert.assertNotEquals(View.NO_ID, virtualViewId);
         return virtualViewId;
     }
@@ -313,11 +315,11 @@ public class WebContentsAccessibilityTest {
                     }
                 });
 
-        boolean result1 = provider.performAction(
-                editFieldVirtualViewId, AccessibilityNodeInfo.ACTION_FOCUS, null);
-        boolean result2 = provider.performAction(
-                editFieldVirtualViewId, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
-        boolean result3 = provider.performAction(editFieldVirtualViewId,
+        boolean result1 = performActionOnUiThread(
+                provider, editFieldVirtualViewId, AccessibilityNodeInfo.ACTION_FOCUS, null);
+        boolean result2 = performActionOnUiThread(provider, editFieldVirtualViewId,
+                AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+        boolean result3 = performActionOnUiThread(provider, editFieldVirtualViewId,
                 AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, null);
 
         // Assert all actions are performed successfully.
@@ -339,18 +341,24 @@ public class WebContentsAccessibilityTest {
 
         // Simulate swipe left.
         for (int i = 3; i >= 0; i--) {
-            boolean result = provider.performAction(editFieldVirtualViewId,
+            boolean result = performActionOnUiThread(provider, editFieldVirtualViewId,
                     AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, args);
             // Assert that the index of the character traversed is correct.
             Assert.assertEquals(i, mostRecentCharIndex.value);
         }
         // Simulate swipe right.
         for (int i = 0; i <= 3; i++) {
-            boolean result = provider.performAction(editFieldVirtualViewId,
+            boolean result = performActionOnUiThread(provider, editFieldVirtualViewId,
                     AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY, args);
             // Assert that the index of the character traversed is correct.
             Assert.assertEquals(i, mostRecentCharIndex.value);
         }
+    }
+
+    private static boolean performActionOnUiThread(AccessibilityNodeProvider provider, int viewId,
+            int action, Bundle args) throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> provider.performAction(viewId, action, args));
     }
 
     /**

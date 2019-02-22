@@ -34,7 +34,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/process/memory.h"
-#include "base/scoped_clear_errno.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/apple_apsl/CFBase.h"

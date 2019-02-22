@@ -18,53 +18,6 @@ login.createScreen('EulaScreen', 'eula', function() {
         '}'
   };
 
-  /**
-   * Load text/html contents from the given url into the given webview. The
-   * contents is loaded via XHR and is sent to webview via data url so that it
-   * is properly sandboxed.
-   *
-   * @param {!WebView} webview Webview element to host the terms.
-   * @param {!string} url URL to load terms contents.
-   */
-  function loadUrlToWebview(webview, url) {
-    assert(webview.tagName === 'WEBVIEW');
-
-    var onError = function() {
-      webview.src = 'about:blank';
-    };
-
-    var setContents = function(contents) {
-      webview.src =
-          'data:text/html;charset=utf-8,' + encodeURIComponent(contents);
-    };
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.setRequestHeader('Accept', 'text/html');
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState != 4)
-        return;
-      if (xhr.status != 200) {
-        onError();
-        return;
-      }
-
-      var contentType = xhr.getResponseHeader('Content-Type');
-      if (contentType && !/text\/html/.test(contentType)) {
-        onError();
-        return;
-      }
-
-      setContents(xhr.response);
-    };
-
-    try {
-      xhr.send();
-    } catch (e) {
-      onError();
-    }
-  }
-
   // A class to wrap online contents loading for a webview. A PendingLoad is
   // constructed with a target webview, an url to load, a load timeout and an
   // error callback. It attaches to a "pendingLoad" property of |webview| after
@@ -238,7 +191,8 @@ login.createScreen('EulaScreen', 'eula', function() {
       var TERMS_URL = 'chrome://terms';
 
       var loadBundledEula = function() {
-        loadUrlToWebview(webview, TERMS_URL);
+        WebViewHelper.loadUrlContentToWebView(
+            webview, TERMS_URL, WebViewHelper.ContentType.HTML);
       };
 
       webview.addContentScripts([{

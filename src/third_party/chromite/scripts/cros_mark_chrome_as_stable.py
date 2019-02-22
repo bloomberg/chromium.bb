@@ -53,9 +53,6 @@ _CHROME_VERSION_URL = ('http://omahaproxy.appspot.com/changelog?'
 _REV_TYPES_FOR_LINKS = [constants.CHROME_REV_LATEST,
                         constants.CHROME_REV_STICKY]
 
-# TODO(szager): This is inaccurate, but is it safe to change?  I have no idea.
-_CHROME_SVN_TAG = 'CROS_SVN_COMMIT'
-
 
 def _GetVersionContents(chrome_version_info):
   """Returns the current Chromium version, from the contents of a VERSION file.
@@ -329,7 +326,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
 
 
 def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
-                             chrome_rev, chrome_version, commit, package_dir):
+                             chrome_rev, chrome_version, package_dir):
   r"""Uprevs the chrome ebuild specified by chrome_rev.
 
   This is the main function that uprevs the chrome_rev from a stable candidate
@@ -352,7 +349,6 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
         are release candidates for the next sticky version.
       constants.CHROME_REV_STICKY -  Revs the sticky version.
     chrome_version: The \d.\d.\d.\d version of Chrome.
-    commit: Used with constants.CHROME_REV_TOT.  The git revision of chrome.
     package_dir: Path to the chromeos-chrome package dir.
 
   Returns:
@@ -386,13 +382,9 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
     pf = '%s-%s_%s-r1' % (chrome_pn, chrome_version, suffix)
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
-  chrome_variables = dict()
-  if commit:
-    chrome_variables[_CHROME_SVN_TAG] = commit
-
   portage_util.EBuild.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path,
-      chrome_variables, make_stable=mark_stable)
+      {}, make_stable=mark_stable)
   new_ebuild = ChromeEBuild(new_ebuild_path)
 
   # Determine whether this is ebuild is redundant.
@@ -451,7 +443,6 @@ def main(argv):
   overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
   chrome_package_dir = os.path.join(overlay_dir, constants.CHROME_CP)
   version_to_uprev = None
-  commit_to_use = None
   sticky_branch = None
 
   (unstable_ebuild, stable_ebuilds) = FindChromeCandidates(chrome_package_dir)
@@ -463,7 +454,6 @@ def main(argv):
       chrome_root = os.path.join(os.environ['HOME'], 'chrome_root')
 
     version_to_uprev = _GetTipOfTrunkVersionFile(chrome_root)
-    commit_to_use = 'Unknown'
     logging.info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
     if '.' in options.force_version:
@@ -514,7 +504,7 @@ def main(argv):
 
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, 'chromeos-chrome', chrome_rev,
-      version_to_uprev, commit_to_use, chrome_package_dir)
+      version_to_uprev, chrome_package_dir)
   if chrome_version_atom:
     if options.boards:
       cros_mark_as_stable.CleanStalePackages(options.srcroot,
@@ -534,7 +524,7 @@ def main(argv):
                                              other_unstable_ebuild,
                                              other_ebuild_name,
                                              chrome_rev, version_to_uprev,
-                                             commit_to_use, other_package_dir)
+                                             other_package_dir)
       if revved_atom and options.boards:
         cros_mark_as_stable.CleanStalePackages(options.srcroot,
                                                options.boards.split(':'),

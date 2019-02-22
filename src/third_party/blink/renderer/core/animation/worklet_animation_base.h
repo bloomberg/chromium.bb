@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -24,13 +25,16 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
 
   // Updates the animation on the compositor side to reflect the main thread
   // state.
-  //
-  // Returns true if animation is started on compositor and should now start
-  // receiving timing update requests.
-  virtual bool UpdateCompositingState() = 0;
+  virtual void UpdateCompositingState() = 0;
+  virtual void InvalidateCompositingState() = 0;
 
   virtual Document* GetDocument() const = 0;
   virtual KeyframeEffect* GetEffect() const = 0;
+  virtual const WorkletAnimationId& GetWorkletAnimationId() const = 0;
+  virtual bool IsActiveAnimation() const = 0;
+  virtual void UpdateInputState(AnimationWorkletDispatcherInput*) = 0;
+  virtual void SetOutputState(
+      const AnimationWorkletOutput::AnimationState&) = 0;
   virtual AnimationTimeline* GetTimeline() const = 0;
 };
 

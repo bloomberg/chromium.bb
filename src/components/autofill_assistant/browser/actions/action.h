@@ -15,11 +15,15 @@ class ActionDelegate;
 // An action that performs a single step of a script on the website.
 class Action {
  public:
-  virtual ~Action() = default;
+  virtual ~Action();
 
-  // Callback returns whether process action is succeed or not.
+  // Callback runs after this action is executed, pass the result of this action
+  // through a ProcessedActionProto object.
   // Delegate should outlive this object.
-  using ProcessActionCallback = base::OnceCallback<void(bool)>;
+  using ProcessActionCallback =
+      base::OnceCallback<void(std::unique_ptr<ProcessedActionProto>)>;
+  // ProcessAction should create a processed_action_proto_ to be passed to the
+  // callback.
   virtual void ProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) = 0;
 
@@ -27,9 +31,14 @@ class Action {
 
  protected:
   explicit Action(const ActionProto& proto);
+  void UpdateProcessedAction(ProcessedActionStatusProto status);
 
   const ActionProto proto_;
+
+  // Accumulate any result of this action during ProcessAction. Is only valid
+  // during a run of ProcessAction.
+  std::unique_ptr<ProcessedActionProto> processed_action_proto_;
 };
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_

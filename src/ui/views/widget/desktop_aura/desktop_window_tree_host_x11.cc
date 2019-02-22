@@ -476,8 +476,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // If we have children, close them. Use a copy for iteration because they'll
   // remove themselves.
   std::set<DesktopWindowTreeHostX11*> window_children_copy = window_children_;
-  for (std::set<DesktopWindowTreeHostX11*>::iterator it =
-           window_children_copy.begin(); it != window_children_copy.end();
+  for (auto it = window_children_copy.begin(); it != window_children_copy.end();
        ++it) {
     (*it)->CloseNow();
   }
@@ -1006,7 +1005,6 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;
   is_fullscreen_ = fullscreen;
-  OnFullscreenStateChanged();
   if (is_fullscreen_)
     delayed_resize_task_.Cancel();
 
@@ -1372,10 +1370,6 @@ void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
   }
 }
 
-void DesktopWindowTreeHostX11::OnMaximizedStateChanged() {}
-
-void DesktopWindowTreeHostX11::OnFullscreenStateChanged() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
@@ -1677,12 +1671,10 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
 void DesktopWindowTreeHostX11::UpdateWindowProperties(
     const base::flat_set<XAtom>& new_window_properties) {
   bool was_minimized = IsMinimized();
-  bool was_maximized = IsMaximized();
 
   window_properties_ = new_window_properties;
 
   bool is_minimized = IsMinimized();
-  bool is_maximized = IsMaximized();
 
   // Propagate the window minimization information to the content window, so
   // the render side can update its visibility properly. OnWMStateUpdated() is
@@ -1728,9 +1720,6 @@ void DesktopWindowTreeHostX11::UpdateWindowProperties(
 
   is_always_on_top_ = ui::HasWMSpecProperty(
       window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
-
-  if (was_maximized != is_maximized)
-    OnMaximizedStateChanged();
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is
@@ -1935,7 +1924,7 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
   int height = rep.GetHeight();
   data->push_back(height);
 
-  const SkBitmap& bitmap = rep.sk_bitmap();
+  const SkBitmap& bitmap = rep.GetBitmap();
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x)
@@ -2367,7 +2356,7 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-std::unique_ptr<base::OnceClosure>
+std::unique_ptr<base::Closure>
 DesktopWindowTreeHostX11::DisableEventListening() {
   // Allows to open multiple file-pickers. See https://crbug.com/678982
   modal_dialog_counter_++;
@@ -2378,9 +2367,9 @@ DesktopWindowTreeHostX11::DisableEventListening() {
         window(), std::make_unique<aura::NullWindowTargeter>());
   }
 
-  return std::make_unique<base::OnceClosure>(
-      base::BindOnce(&DesktopWindowTreeHostX11::EnableEventListening,
-                     weak_factory_.GetWeakPtr()));
+  return std::make_unique<base::Closure>(
+      base::Bind(&DesktopWindowTreeHostX11::EnableEventListening,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DesktopWindowTreeHostX11::EnableEventListening() {

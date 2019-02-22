@@ -25,8 +25,6 @@
 /** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
-/** @const */ var SCREEN_CREATE_SUPERVISED_USER_FLOW =
-    'supervised-user-creation';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_ARC_KIOSK_SPLASH = 'arc-kiosk-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
@@ -73,7 +71,7 @@
   GAIA_SIGNIN: 1,
   ACCOUNT_PICKER: 2,
   WRONG_HWID_WARNING: 3,
-  SUPERVISED_USER_CREATION_FLOW: 4,
+  DEPRECATED_SUPERVISED_USER_CREATION_FLOW: 4,
   SAML_PASSWORD_CONFIRM: 5,
   PASSWORD_CHANGED: 6,
   ENROLLMENT: 7,
@@ -85,7 +83,6 @@
   UNKNOWN: 'ui-state-unknown',
   UPDATE: 'ui-state-update',
   SIGNIN: 'ui-state-signin',
-  SUPERVISED_USER_CREATION_FLOW: 'ui-state-supervised',
   KIOSK_MODE: 'ui-state-kiosk-mode',
   LOCAL_STATE_ERROR: 'ui-state-local-state-error',
   AUTO_ENROLLMENT_ERROR: 'ui-state-auto-enrollment-error',
@@ -273,9 +270,9 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Stored OOBE configuration for newly registered screens.
-     * @type {dictionary}
+     * @type {!OobeTypes.OobeConfiguration}
      */
-    oobe_configuration_: {},
+    oobe_configuration_: undefined,
 
     /**
      * Detects multi-tap gesture that invokes demo mode setup in OOBE.
@@ -415,7 +412,7 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Returns current OOBE configuration.
-     * @return {dictionary}
+     * @return {!OobeTypes.OobeConfiguration}
      */
     getOobeConfiguration: function() {
       return this.oobe_configuration_;
@@ -796,8 +793,8 @@ cr.define('cr.ui.login', function() {
       $('header-sections').appendChild(header);
       this.appendButtons_(el.buttons, screenId);
 
-      if (el.updateOobeConfiguration)
-        el.updateOobeConfiguration(oobe_configuration_);
+      if (el.updateOobeConfiguration && this.oobe_configuration_)
+        el.updateOobeConfiguration(this.oobe_configuration_);
     },
 
     /**
@@ -879,16 +876,16 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Updates Oobe configuration for screens.
-     * @param {dictionary} configuration OOBE configuration.
+     * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
     updateOobeConfiguration_: function(configuration) {
+      this.oobe_configuration_ = configuration;
       for (let i = 0; i < this.screens_.length; ++i) {
         let screenId = this.screens_[i];
         var screen = $(screenId);
         if (screen.updateOobeConfiguration)
           screen.updateOobeConfiguration(configuration);
       }
-      this.oobe_configuration_ = configuration;
     },
 
     /**
@@ -1260,13 +1257,6 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.showPasswordChangedScreen = function(showError, email) {
     login.PasswordChangedScreen.show(showError, email);
-  };
-
-  /**
-   * Shows dialog to create a supervised user.
-   */
-  DisplayManager.showSupervisedUserCreationScreen = function() {
-    login.SupervisedUserCreationScreen.show();
   };
 
   /**

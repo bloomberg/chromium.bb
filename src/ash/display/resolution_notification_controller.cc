@@ -285,18 +285,11 @@ void ResolutionNotificationController::OnTimerTick() {
     CreateOrUpdateNotification(false);
 }
 
-void ResolutionNotificationController::OnDisplayAdded(
-    const display::Display& new_display) {}
-
 void ResolutionNotificationController::OnDisplayRemoved(
     const display::Display& old_display) {
   if (change_info_ && change_info_->display_id == old_display.id())
     RevertResolutionChange(true /* display_was_removed */);
 }
-
-void ResolutionNotificationController::OnDisplayMetricsChanged(
-    const display::Display&,
-    uint32_t) {}
 
 void ResolutionNotificationController::OnDisplayConfigurationChanged() {
   if (!change_info_)

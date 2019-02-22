@@ -693,7 +693,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
-      'build_type', 'metadata_url', 'toolchain_url')
+      'build_type', 'metadata_url', 'toolchain_url', 'branch')
 
   _SQL_FETCH_ANNOTATIONS = (
       'SELECT aT.build_id, aT.last_updated, last_annotator, '
@@ -730,10 +730,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  timeout_seconds=None, important=None, buildbucket_id=None):
+                  timeout_seconds=None, important=None, buildbucket_id=None,
+                  branch=None):
     """Insert a build row.
 
     Args:
@@ -749,6 +750,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       important: (Optional) If provided, the |important| value for this build.
       buildbucket_id: (Optional) If provided, the |buildbucket_id| value for
                        this build.
+      branch: (Optional) Manifest branch name of this build.
     """
     values = {
         'builder_name': builder_name,
@@ -760,7 +762,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'start_time': sqlalchemy.func.current_timestamp(),
         'master_build_id': master_build_id,
         'important': important,
-        'buildbucket_id': buildbucket_id
+        'buildbucket_id': buildbucket_id,
+        'branch': branch,
     }
     if timeout_seconds is not None:
       now = self.GetTime()
@@ -961,7 +964,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     return self._InsertMany('buildRequestTable', values)
 
-  @minimum_schema(56)
+  @minimum_schema(65)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -984,7 +987,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'build_type': d.get('build_type'),
                          'important': d.get('important'),
                          'unibuild': d.get('unibuild', False),
-                         'suite_scheduling': d.get('suite_scheduling', False)})
+                         'suite_scheduling': d.get('suite_scheduling', False),
+                         'branch': d.get('branch')})
 
   @minimum_schema(2)
   def GetMetadata(self, build_id):
@@ -1152,14 +1156,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'WHERE (build_id, child_config) = (%d, "%s")' %
         (status, build_id, child_config))
 
-  @minimum_schema(50)
+  @minimum_schema(65)
   def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
     status = self._SelectWhere('buildTable',
                                'buildbucket_id = "%s"' % buildbucket_id,
                                self.BUILD_STATUS_KEYS)
     return status[0] if status else None
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildStatus(self, build_id):
     """Gets the status of the build.
 
@@ -1173,7 +1177,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     statuses = self.GetBuildStatuses([build_id])
     return statuses[0] if statuses else None
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildStatuses(self, build_ids):
     """Gets the statuses of the builds.
 
@@ -1244,7 +1248,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         ['id', 'build_id', 'name', 'board', 'status',
          'last_updated', 'start_time', 'finish_time', 'final'])
 
-  @minimum_schema(43)
+  @minimum_schema(65)
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the statuses of slave builders to given build.
 
@@ -1454,7 +1458,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     deadline_past = (r[0][0] == 0)
     return 0 if deadline_past else abs(time_remaining.total_seconds())
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       milestone_version=None, platform_version=None,
@@ -1507,7 +1511,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         waterfall=waterfall, buildbot_generation=buildbot_generation,
         final=final, reverse=reverse)
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
                        milestone_version=None, platform_version=None,
@@ -1666,7 +1670,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
             for values in results]
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
     """Returns basic information about most recent completed build.
 
@@ -1984,6 +1988,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       A list of HWTest result dictionaries, where each dictionary contains keys
         id, build_id, test_name and status.
     """
+    if not build_ids:
+      raise AssertionError("Build ID's are empty.")
+
     q = ('SELECT * from hwTestResultTable WHERE build_id IN (%s)' %
          ','.join(str(int(x)) for x in build_ids))
     results = self._Execute(q).fetchall()

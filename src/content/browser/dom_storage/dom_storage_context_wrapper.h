@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
@@ -57,8 +58,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
-  void GetLocalStorageUsage(
-      const GetLocalStorageUsageCallback& callback) override;
+  void GetLocalStorageUsage(GetLocalStorageUsageCallback callback) override;
   void GetSessionStorageUsage(GetSessionStorageUsageCallback callback) override;
   void DeleteLocalStorage(const GURL& origin,
                           base::OnceClosure callback) override;
@@ -143,7 +143,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // Profile wasn't destructed. This map allows the restored session to re-use
   // the SessionStorageNamespaceImpl objects that are still alive thanks to the
   // sessions component.
-  std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_;
+  std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_
+      GUARDED_BY(alive_namespaces_lock_);
   mutable base::Lock alive_namespaces_lock_;
 
   base::FilePath legacy_localstorage_path_;

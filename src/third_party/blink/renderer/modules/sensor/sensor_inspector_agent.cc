@@ -13,8 +13,8 @@
 
 namespace blink {
 
-SensorInspectorAgent::SensorInspectorAgent(LocalFrame* frame)
-    : provider_(SensorProviderProxy::From(frame)) {}
+SensorInspectorAgent::SensorInspectorAgent(Document* document)
+    : provider_(SensorProviderProxy::From(document)) {}
 
 void SensorInspectorAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(provider_);
@@ -59,11 +59,24 @@ const char kInspectorConsoleMessage[] =
 
 }  // namespace
 
+void SensorInspectorAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
+  Document* current_document = provider_->GetSupplementable();
+  Document* new_document = frame->GetDocument();
+  if (current_document != new_document) {
+    // We need to manually reset |provider_| to drop the strong reference it
+    // has to an old document that would otherwise be prevented from being
+    // deleted.
+    bool inspector_mode = provider_->inspector_mode();
+    provider_ = SensorProviderProxy::From(new_document);
+    provider_->set_inspector_mode(inspector_mode);
+  }
+}
+
 void SensorInspectorAgent::SetOrientationSensorOverride(double alpha,
                                                         double beta,
                                                         double gamma) {
   if (!provider_->inspector_mode()) {
-    Document* document = provider_->GetSupplementable()->GetDocument();
+    Document* document = provider_->GetSupplementable();
     if (document) {
       ConsoleMessage* console_message = ConsoleMessage::Create(
           kJSMessageSource, kInfoMessageLevel, kInspectorConsoleMessage);

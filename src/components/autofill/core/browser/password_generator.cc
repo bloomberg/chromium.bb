@@ -16,6 +16,10 @@
 
 namespace autofill {
 
+// The default length for a generated password. Keep this the same as the
+// default length known to the classification pipeline on the autofill
+// crowd-sourcing server. (The server predicts password lengths only if the
+// prediction is smaller than the default.)
 const uint32_t kDefaultPasswordLength = 15;
 
 namespace {

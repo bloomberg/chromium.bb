@@ -181,6 +181,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // successful.
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
 
+  // Initializes the display::Screen instance on X11.
+  virtual void SetScreenInstance();
+
   // BrowserTestBase:
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;

@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -28,6 +29,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -35,6 +37,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
@@ -52,7 +55,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -68,6 +70,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/url_constants.h"
@@ -288,9 +291,11 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    const base::TimeTicks& navigation_start,
+    base::TimeTicks navigation_start,
     NavigationControllerImpl* controller,
-    std::unique_ptr<NavigationUIData> navigation_ui_data) {
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
+    base::TimeTicks input_start,
+    WasActivatedOption was_activated) {
   // A form submission happens either because the navigation is a
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
@@ -323,7 +328,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
       frame_entry, request_body, dest_url, dest_referrer, navigation_type,
-      previews_state, navigation_start);
+      previews_state, navigation_start, input_start);
 
   RequestNavigationParams request_params =
       entry.ConstructRequestNavigationParams(
@@ -335,19 +340,21 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount());
   request_params.post_content_type = post_content_type;
+  request_params.was_activated = was_activated;
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
       mojom::BeginNavigationParams::New(
           entry.extra_headers(), net::LOAD_NORMAL,
-          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+          false /* skip_service_worker */,
+          blink::mojom::RequestContextType::LOCATION,
           blink::WebMixedContentContextType::kBlockable, is_form_submission,
           GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, initiator,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */),
       request_params, browser_initiated, false /* from_begin_navigation */,
-      &frame_entry, &entry, std::move(navigation_ui_data), nullptr));
+      &frame_entry, &entry, std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
   return navigation_request;
@@ -363,7 +370,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     int current_history_list_length,
     bool override_user_agent,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated fragment-navigations never take place in the browser,
   //   even with PlzNavigate.
@@ -398,7 +406,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       true,   // from_begin_navigation
       nullptr, entry,
       nullptr,  // navigation_ui_data
-      std::move(navigation_client)));
+      std::move(navigation_client), std::move(navigation_initiator)));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   return navigation_request;
@@ -414,7 +422,8 @@ NavigationRequest::NavigationRequest(
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client)
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       begin_params_(std::move(begin_params)),
@@ -535,7 +544,9 @@ NavigationRequest::NavigationRequest(
   begin_params_->headers = headers.ToString();
 
   initiator_csp_context_.reset(new InitiatorCSPContext(
-      common_params_.initiator_csp, common_params_.initiator_self_source));
+      common_params_.initiator_csp_info.initiator_csp,
+      common_params_.initiator_csp_info.initiator_self_source,
+      std::move(navigation_initiator)));
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -593,8 +604,8 @@ void NavigationRequest::BeginNavigation() {
   // otherwise block. Similarly, the NavigationHandle is created afterwards, so
   // that it gets the request URL after potentially being modified by CSP.
   net::Error net_error = CheckContentSecurityPolicy(
-      false /* is redirect */, false /* url_upgraded_after_redirect */,
-      false /* is_response_check */);
+      false /* has_followed redirect */,
+      false /* url_upgraded_after_redirect */, false /* is_response_check */);
   if (net_error != net::OK) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailedInternal().
@@ -687,7 +698,7 @@ void NavigationRequest::CreateNavigationHandle() {
               common_params_.navigation_type),
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
-          common_params_.should_check_main_world_csp,
+          common_params_.initiator_csp_info.should_check_main_world_csp,
           begin_params_->is_form_submission, std::move(navigation_ui_data_),
           common_params_.method, std::move(headers), common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
@@ -853,9 +864,10 @@ void NavigationRequest::OnRequestRedirected(
   // Check Content Security Policy before the NavigationThrottles run. This
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block.
-  net::Error net_error = CheckContentSecurityPolicy(
-      true /* is redirect */, redirect_info.insecure_scheme_was_upgraded,
-      false /* is_response_check */);
+  net::Error net_error =
+      CheckContentSecurityPolicy(true /* has_followed_redirect */,
+                                 redirect_info.insecure_scheme_was_upgraded,
+                                 false /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net_error), false /*skip_throttles*/,
@@ -959,6 +971,16 @@ void NavigationRequest::OnResponseStarted(
           ? navigation_handle_->appcache_handle()->appcache_host_id()
           : kAppCacheNoHostId;
 
+  // Update fetch start timing. While NavigationRequest updates fetch start
+  // timing for redirects, it's not aware of service worker interception so
+  // fetch start timing could happen earlier than worker start timing. Use
+  // worker ready time if it is greater than the current value to make sure
+  // fetch start timing always comes after worker start timing (if a service
+  // worker intercepted the navigation).
+  request_params_.navigation_timing.fetch_start =
+      std::max(request_params_.navigation_timing.fetch_start,
+               response->head.service_worker_ready_time);
+
   // A navigation is user activated if it contains a user gesture or the frame
   // received a gesture and the navigation is renderer initiated. If the
   // navigation is browser initiated, it has to come from the context menu.
@@ -966,7 +988,7 @@ void NavigationRequest::OnResponseStarted(
   // `ShouldPropagateUserActivation` requirements (same eTLD+1).
   // There are two different checks:
   // 1. if the `frame_tree_node_` has an origin and is following the rules above
-  //    with the target URL, it is used and the bit is set iif the navigation is
+  //    with the target URL, it is used and the bit is set if the navigation is
   //    renderer initiated and the `frame_tree_node_` had a gesture. This should
   //    apply to same page navigations and is preferred over using the referrer
   //    as it can be changed.
@@ -976,23 +998,28 @@ void NavigationRequest::OnResponseStarted(
   //    context menu. This should apply to pages that open in a new tab and we
   //    have to follow the referrer. It means that the activation might not be
   //    transmitted if it should have.
-  request_params_.was_activated = false;
-  if (navigation_handle_->IsRendererInitiated() &&
-      frame_tree_node_->has_received_user_gesture() &&
-      ShouldPropagateUserActivation(
-          frame_tree_node_->current_origin(),
-          url::Origin::Create(navigation_handle_->GetURL()))) {
-    request_params_.was_activated = true;
-    // TODO(805871): the next check is relying on
-    // navigation_handle_->GetReferrer() but should ideally use a more reliable
-    // source for the originating URL when the navigation is renderer initiated.
-  } else if (((navigation_handle_->HasUserGesture() &&
-               navigation_handle_->IsRendererInitiated()) ||
-              navigation_handle_->WasStartedFromContextMenu()) &&
-             ShouldPropagateUserActivation(
-                 url::Origin::Create(navigation_handle_->GetReferrer().url),
-                 url::Origin::Create(navigation_handle_->GetURL()))) {
-    request_params_.was_activated = true;
+  if (request_params_.was_activated == WasActivatedOption::kUnknown) {
+    request_params_.was_activated = WasActivatedOption::kNo;
+
+    if (navigation_handle_->IsRendererInitiated() &&
+        (frame_tree_node_->has_received_user_gesture() ||
+         frame_tree_node_->has_received_user_gesture_before_nav()) &&
+        ShouldPropagateUserActivation(
+            frame_tree_node_->current_origin(),
+            url::Origin::Create(navigation_handle_->GetURL()))) {
+      request_params_.was_activated = WasActivatedOption::kYes;
+      // TODO(805871): the next check is relying on
+      // navigation_handle_->GetReferrer() but should ideally use a more
+      // reliable source for the originating URL when the navigation is renderer
+      // initiated.
+    } else if (((navigation_handle_->HasUserGesture() &&
+                 navigation_handle_->IsRendererInitiated()) ||
+                navigation_handle_->WasStartedFromContextMenu()) &&
+               ShouldPropagateUserActivation(
+                   url::Origin::Create(navigation_handle_->GetReferrer().url),
+                   url::Origin::Create(navigation_handle_->GetURL()))) {
+      request_params_.was_activated = WasActivatedOption::kYes;
+    }
   }
 
   // Update the previews state of the request.
@@ -1089,7 +1116,7 @@ void NavigationRequest::OnResponseStarted(
   // redirect or not in order to perform its checks. This is the reason
   // why we need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
-      navigation_handle_->WasServerRedirect(),
+      navigation_handle_->WasServerRedirect() /* has_followed_redirect */,
       false /* url_upgraded_after_redirect */, true /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
@@ -1107,7 +1134,7 @@ void NavigationRequest::OnResponseStarted(
       render_frame_host, response->head.headers.get(),
       response->head.connection_info, response->head.socket_address, ssl_info_,
       request_id, common_params_.should_replace_current_entry, is_download,
-      is_stream,
+      is_stream, response->head.is_signed_exchange_inner_response,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }
@@ -1227,12 +1254,6 @@ bool NavigationRequest::ShouldKeepErrorPageInCurrentProcess(int net_error) {
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
-  if (frame_tree_node_->IsMainFrame()) {
-    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
-        "navigation", "Navigation timeToNetworkStack", navigation_handle_.get(),
-        timestamp);
-  }
-
   frame_tree_node_->navigator()->LogResourceRequestTime(timestamp,
                                                         common_params_.url);
 }
@@ -1267,8 +1288,8 @@ void NavigationRequest::OnStartChecksComplete(
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
     // then this could cause reentrancy into NavigationController. So use a
     // PostTask to avoid that.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &NavigationRequest::OnRequestFailedInternal,
             weak_factory_.GetWeakPtr(),
@@ -1344,7 +1365,7 @@ void NavigationRequest::OnStartChecksComplete(
           : frame_tree_node_->frame_tree()->root()->current_url();
 
   // Walk the ancestor chain to determine whether all frames are same-site. If
-  // not, the |site_for_cookies| is set to an opaque URL.
+  // not, the |site_for_cookies| is set to an empty URL.
   //
   // TODO(mkwst): This is incorrect. It ought to use the definition from
   // 'Document::SiteForCookies()' in Blink, which special-cases extension
@@ -1364,7 +1385,7 @@ void NavigationRequest::OnStartChecksComplete(
       (ancestors_are_same_site || !base_url.is_empty())
           ? (frame_tree_node_->IsMainFrame() ? common_params_.url
                                              : top_document_url)
-          : GURL("data:,");
+          : GURL::EmptyGURL();
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();
@@ -1680,7 +1701,7 @@ void NavigationRequest::CommitNavigation() {
 bool NavigationRequest::IsAllowedByCSPDirective(
     CSPContext* context,
     CSPDirective::Name directive,
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
@@ -1697,25 +1718,26 @@ bool NavigationRequest::IsAllowedByCSPDirective(
     url = common_params_.url;
   }
   return context->IsAllowedByCsp(
-      directive, url, is_redirect, is_response_check,
+      directive, url, has_followed_redirect, is_response_check,
       common_params_.source_location.value_or(SourceLocation()), disposition,
       begin_params_->is_form_submission);
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(
     RenderFrameHostImpl* parent,
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
   bool navigate_to_allowed = IsAllowedByCSPDirective(
-      initiator_csp_context_.get(), CSPDirective::NavigateTo, is_redirect,
-      url_upgraded_after_redirect, is_response_check, disposition);
+      initiator_csp_context_.get(), CSPDirective::NavigateTo,
+      has_followed_redirect, url_upgraded_after_redirect, is_response_check,
+      disposition);
 
   bool frame_src_allowed = true;
   if (parent) {
     frame_src_allowed = IsAllowedByCSPDirective(
-        parent, CSPDirective::FrameSrc, is_redirect,
+        parent, CSPDirective::FrameSrc, has_followed_redirect,
         url_upgraded_after_redirect, is_response_check, disposition);
   }
 
@@ -1735,13 +1757,13 @@ net::Error NavigationRequest::CheckCSPDirectives(
 }
 
 net::Error NavigationRequest::CheckContentSecurityPolicy(
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check) {
   if (common_params_.url.SchemeIs(url::kAboutScheme))
     return net::OK;
 
-  if (common_params_.should_check_main_world_csp ==
+  if (common_params_.initiator_csp_info.should_check_main_world_csp ==
       CSPDisposition::DO_NOT_CHECK) {
     return net::OK;
   }
@@ -1767,13 +1789,13 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   // This sequence of events allows site owners to learn about (via step 1) any
   // requests that are upgraded in step 2.
 
-  net::Error report_only_csp_status =
-      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
-                         is_response_check, CSPContext::CHECK_REPORT_ONLY_CSP);
+  net::Error report_only_csp_status = CheckCSPDirectives(
+      parent, has_followed_redirect, url_upgraded_after_redirect,
+      is_response_check, CSPContext::CHECK_REPORT_ONLY_CSP);
 
   // upgrade-insecure-requests is handled in the network code for redirects,
   // only do the upgrade here if this is not a redirect.
-  if (!is_redirect && !frame_tree_node()->IsMainFrame()) {
+  if (!has_followed_redirect && !frame_tree_node()->IsMainFrame()) {
     if (parent &&
         parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
       upgrade_if_insecure_ = true;
@@ -1782,9 +1804,9 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     }
   }
 
-  net::Error enforced_csp_status =
-      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
-                         is_response_check, CSPContext::CHECK_ENFORCED_CSP);
+  net::Error enforced_csp_status = CheckCSPDirectives(
+      parent, has_followed_redirect, url_upgraded_after_redirect,
+      is_response_check, CSPContext::CHECK_ENFORCED_CSP);
   if (enforced_csp_status != net::OK)
     return enforced_csp_status;
   return report_only_csp_status;

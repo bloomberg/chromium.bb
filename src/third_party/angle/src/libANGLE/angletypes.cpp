@@ -110,17 +110,17 @@ SamplerState::SamplerState()
 {
     memset(this, 0, sizeof(SamplerState));
 
-    minFilter     = GL_NEAREST_MIPMAP_LINEAR;
-    magFilter     = GL_LINEAR;
-    wrapS         = GL_REPEAT;
-    wrapT         = GL_REPEAT;
-    wrapR         = GL_REPEAT;
-    maxAnisotropy = 1.0f;
-    minLod        = -1000.0f;
-    maxLod        = 1000.0f;
-    compareMode   = GL_NONE;
-    compareFunc   = GL_LEQUAL;
-    sRGBDecode    = GL_DECODE_EXT;
+    setMinFilter(GL_NEAREST_MIPMAP_LINEAR);
+    setMagFilter(GL_LINEAR);
+    setWrapS(GL_REPEAT);
+    setWrapT(GL_REPEAT);
+    setWrapR(GL_REPEAT);
+    setMaxAnisotropy(1.0f);
+    setMinLod(-1000.0f);
+    setMaxLod(1000.0f);
+    setCompareMode(GL_NONE);
+    setCompareFunc(GL_LEQUAL);
+    setSRGBDecode(GL_DECODE_EXT);
 }
 
 SamplerState::SamplerState(const SamplerState &other) = default;
@@ -134,12 +134,79 @@ SamplerState SamplerState::CreateDefaultForTarget(TextureType type)
     // default min filter is GL_LINEAR and the default s and t wrap modes are GL_CLAMP_TO_EDGE.
     if (type == TextureType::External || type == TextureType::Rectangle)
     {
-        state.minFilter = GL_LINEAR;
-        state.wrapS     = GL_CLAMP_TO_EDGE;
-        state.wrapT     = GL_CLAMP_TO_EDGE;
+        state.mMinFilter = GL_LINEAR;
+        state.mWrapS     = GL_CLAMP_TO_EDGE;
+        state.mWrapT     = GL_CLAMP_TO_EDGE;
     }
 
     return state;
+}
+
+void SamplerState::setMinFilter(GLenum minFilter)
+{
+    mMinFilter                    = minFilter;
+    mCompleteness.typed.minFilter = static_cast<uint8_t>(FromGLenum<FilterMode>(minFilter));
+}
+
+void SamplerState::setMagFilter(GLenum magFilter)
+{
+    mMagFilter                    = magFilter;
+    mCompleteness.typed.magFilter = static_cast<uint8_t>(FromGLenum<FilterMode>(magFilter));
+}
+
+void SamplerState::setWrapS(GLenum wrapS)
+{
+    mWrapS                    = wrapS;
+    mCompleteness.typed.wrapS = static_cast<uint8_t>(FromGLenum<WrapMode>(wrapS));
+}
+
+void SamplerState::setWrapT(GLenum wrapT)
+{
+    mWrapT = wrapT;
+    updateWrapTCompareMode();
+}
+
+void SamplerState::setWrapR(GLenum wrapR)
+{
+    mWrapR = wrapR;
+}
+
+void SamplerState::setMaxAnisotropy(float maxAnisotropy)
+{
+    mMaxAnisotropy = maxAnisotropy;
+}
+
+void SamplerState::setMinLod(GLfloat minLod)
+{
+    mMinLod = minLod;
+}
+
+void SamplerState::setMaxLod(GLfloat maxLod)
+{
+    mMaxLod = maxLod;
+}
+
+void SamplerState::setCompareMode(GLenum compareMode)
+{
+    mCompareMode = compareMode;
+    updateWrapTCompareMode();
+}
+
+void SamplerState::setCompareFunc(GLenum compareFunc)
+{
+    mCompareFunc = compareFunc;
+}
+
+void SamplerState::setSRGBDecode(GLenum sRGBDecode)
+{
+    mSRGBDecode = sRGBDecode;
+}
+
+void SamplerState::updateWrapTCompareMode()
+{
+    uint8_t wrap    = static_cast<uint8_t>(FromGLenum<WrapMode>(mWrapT));
+    uint8_t compare = static_cast<uint8_t>(mCompareMode == GL_NONE ? 0x10 : 0x00);
+    mCompleteness.typed.wrapTCompareMode = wrap | compare;
 }
 
 ImageUnit::ImageUnit()
@@ -215,6 +282,12 @@ bool Box::operator==(const Box &other) const
 bool Box::operator!=(const Box &other) const
 {
     return !(*this == other);
+}
+
+Rectangle Box::toRect() const
+{
+    ASSERT(z == 0 && depth == 1);
+    return Rectangle(x, y, width, height);
 }
 
 bool operator==(const Offset &a, const Offset &b)

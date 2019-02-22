@@ -1170,16 +1170,14 @@ static bool ConsumeGradientColorStops(CSSParserTokenRange& range,
       return false;
     gradient->AddStop(stop);
 
-    if (RuntimeEnabledFeatures::MultipleColorStopPositionsEnabled()) {
-      if (!stop.color_ || !stop.offset_)
-        continue;
+    if (!stop.color_ || !stop.offset_)
+      continue;
 
-      // Optional second position.
-      stop.offset_ = consume_position_func(range, context, kValueRangeAll,
-                                           UnitlessQuirk::kForbid);
-      if (stop.offset_)
-        gradient->AddStop(stop);
-    }
+    // Optional second position.
+    stop.offset_ = consume_position_func(range, context, kValueRangeAll,
+                                         UnitlessQuirk::kForbid);
+    if (stop.offset_)
+      gradient->AddStop(stop);
   } while (ConsumeCommaIncludingWhitespace(range));
 
   // The last color stop cannot be a color hint.

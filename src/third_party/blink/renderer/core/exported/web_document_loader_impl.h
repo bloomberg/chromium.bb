@@ -82,6 +82,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void ResumeParser() override;
   bool IsArchive() const override;
   WebArchiveInfo GetArchiveInfo() const override;
+  bool HadUserGesture() const override;
 
   void Trace(blink::Visitor*) override;
 
@@ -93,7 +94,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
       ClientRedirectPolicy,
       const base::UnguessableToken& devtools_navigation_token);
   ~WebDocumentLoaderImpl() override;
-  void DetachFromFrame() override;
+  void DetachFromFrame(bool flush_microtask_queue) override;
   String DebugName() const override { return "WebDocumentLoaderImpl"; }
 
   // Mutable because the const getters will magically sync these to the

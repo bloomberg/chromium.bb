@@ -44,18 +44,19 @@ class RequestBuilder {
   virtual ~RequestBuilder() {}
 
   virtual void CreateRequest(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefetchRequestFinishedCallback callback) = 0;
 };
 
 class GeneratePageBundleRequestBuilder : public RequestBuilder {
  public:
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) override {
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) override {
     std::vector<std::string> pages = {kTestURL, kTestURL2};
     fetcher_.reset(new GeneratePageBundleRequest(
         kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages, kTestChannel,
-        request_context_getter, std::move(callback)));
+        url_loader_factory, std::move(callback)));
   }
 
  private:
@@ -64,10 +65,11 @@ class GeneratePageBundleRequestBuilder : public RequestBuilder {
 
 class GetOperationRequestBuilder : public RequestBuilder {
  public:
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) override {
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) override {
     fetcher_.reset(new GetOperationRequest(kTestOperationName, kTestChannel,
-                                           request_context_getter,
+                                           url_loader_factory,
                                            std::move(callback)));
   }
 
@@ -159,10 +161,10 @@ class PrefetchRequestOperationResponseTestBuilder {
   PrefetchRequestOperationResponseTestBuilder() {}
   virtual ~PrefetchRequestOperationResponseTestBuilder() {}
 
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) {
-    request_builder_->CreateRequest(request_context_getter,
-                                    std::move(callback));
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) {
+    request_builder_->CreateRequest(url_loader_factory, std::move(callback));
   }
 
   std::string BuildFromAny(const std::string& any_type_url,
@@ -254,7 +256,7 @@ class PrefetchRequestOperationResponseTest : public PrefetchRequestTestBase {
  private:
   PrefetchRequestStatus SendWithResponse(const std::string& response_data) {
     base::MockCallback<PrefetchRequestFinishedCallback> callback;
-    builder_.CreateRequest(request_context(), callback.Get());
+    builder_.CreateRequest(shared_url_loader_factory(), callback.Get());
 
     PrefetchRequestStatus status;
     operation_name_.clear();
@@ -263,6 +265,7 @@ class PrefetchRequestOperationResponseTest : public PrefetchRequestTestBase {
         .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name_),
                         SaveArg<2>(&pages_)));
     RespondWithData(response_data);
+    RunUntilIdle();
     return status;
   }
 
@@ -280,7 +283,7 @@ typedef testing::Types<GeneratePageBundleRequestDoneOperationBuilder,
 TYPED_TEST_CASE(PrefetchRequestOperationResponseTest, MyTypes);
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             // No error is set for OK. Thus this will cause the operation
             // being filled with only done flag.
             this->SendWithErrorResponse(proto::OK, ""));
@@ -289,21 +292,21 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, ErrorValue) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithErrorResponse(proto::UNKNOWN, kErrorMessage));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidTypeUrl) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithAnyResponse("foo", ""));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidValue) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithAnyResponse(kPageBundleTypeURL, "foo"));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -311,7 +314,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidValue) {
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyPageBundle) {
   proto::PageBundle bundle;
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -320,7 +323,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyPageBundle) {
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyArchive) {
   proto::PageBundle bundle;
   bundle.add_archives();
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -331,7 +334,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, NoPageInfo) {
   proto::Archive* archive = bundle.add_archives();
   archive->set_body_name(kTestBodyName);
   archive->set_body_length(kTestBodyLength);
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -342,7 +345,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, MissingPageInfoUrl) {
   proto::Archive* archive = bundle.add_archives();
   proto::PageInfo* page_info = archive->add_page_infos();
   page_info->set_redirect_url(kTestURL);
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -362,7 +365,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, SinglePage) {
   page_info->mutable_render_time()->set_seconds(ms_since_epoch / 1000);
   page_info->mutable_render_time()->set_nanos((ms_since_epoch % 1000) *
                                               1000000);
-  EXPECT_EQ(PrefetchRequestStatus::SUCCESS,
+  EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(kTestOperationName, this->operation_name());
   ASSERT_EQ(1u, this->pages().size());
@@ -408,7 +411,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, MultiplePages) {
   page_info->mutable_render_time()->set_nanos((ms_since_epoch % 1000) *
                                               1000000);
 
-  EXPECT_EQ(PrefetchRequestStatus::SUCCESS,
+  EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(kTestOperationName, this->operation_name());
   ASSERT_EQ(4u, this->pages().size());

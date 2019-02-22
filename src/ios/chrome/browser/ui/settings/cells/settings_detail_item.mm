@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -102,26 +101,17 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     _textLabel.backgroundColor = [UIColor clearColor];
     [contentView addSubview:_textLabel];
 
     _detailTextLabel = [[UILabel alloc] init];
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _detailTextLabel.font = [UIFont systemFontOfSize:kUIKitDetailFontSize];
+    _detailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
     _detailTextLabel.backgroundColor = [UIColor clearColor];
     [contentView addSubview:_detailTextLabel];
-
-    // Fonts and colors vary based on whether the settings reboot is enabled.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
-      _detailTextLabel.font = [UIFont systemFontOfSize:kUIKitDetailFontSize];
-      _detailTextLabel.textColor = UIColorFromRGB(kUIKitDetailTextColor);
-    } else {
-      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
-      _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
-    }
 
     // Set up the width constraints. They are activated here and updated in
     // layoutSubviews.
@@ -176,12 +166,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 - (void)setIconImage:(UIImage*)image {
   BOOL hidden = (image == nil);
-
-  // If the settings reboot is not enabled, the icon must always be hidden.
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    hidden = YES;
-  }
-
   if (hidden == _iconImageView.hidden) {
     return;
   }

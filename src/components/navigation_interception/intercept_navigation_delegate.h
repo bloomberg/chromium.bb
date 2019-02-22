@@ -17,10 +17,6 @@ class NavigationThrottle;
 class WebContents;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace navigation_interception {
 
 class NavigationParams;
@@ -54,10 +50,6 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   // the InterceptNavigationDelegate.
   static std::unique_ptr<content::NavigationThrottle> CreateThrottleFor(
       content::NavigationHandle* handle);
-
-  // Updates information to determine whether to have user gesture carryover or
-  // not.
-  static void UpdateUserGestureCarryoverInfo(net::URLRequest* request);
 
   virtual bool ShouldIgnoreNavigation(
       const NavigationParams& navigation_params);

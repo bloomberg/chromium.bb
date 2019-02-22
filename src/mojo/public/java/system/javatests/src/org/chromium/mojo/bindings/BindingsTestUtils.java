@@ -59,7 +59,7 @@ public class BindingsTestUtils {
      * {@link ConnectionErrorHandler} that records any error it received.
      */
     public static class CapturingErrorHandler implements ConnectionErrorHandler {
-        private MojoException mLastMojoException = null;
+        private MojoException mLastMojoException;
 
         /**
          * @see ConnectionErrorHandler#onConnectionError(MojoException)

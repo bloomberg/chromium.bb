@@ -200,7 +200,8 @@ class SocketTunnel {
   }
 
   void Pump(net::StreamSocket* from, net::StreamSocket* to) {
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(kBufferSize);
     int result = from->Read(
         buffer.get(),
         kBufferSize,
@@ -373,11 +374,10 @@ void PortForwardingController::Connection::SerializeChanges(
     const ForwardingMap& old_map,
     const ForwardingMap& new_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (ForwardingMap::const_iterator new_it(new_map.begin());
-      new_it != new_map.end(); ++new_it) {
+  for (auto new_it(new_map.begin()); new_it != new_map.end(); ++new_it) {
     int port = new_it->first;
     const std::string& location = new_it->second;
-    ForwardingMap::const_iterator old_it = old_map.find(port);
+    auto old_it = old_map.find(port);
     if (old_it != old_map.end() && old_it->second == location)
       continue;  // The port points to the same location in both configs, skip.
 
@@ -405,7 +405,7 @@ void PortForwardingController::Connection::SendCommand(
     port_status_[port] = kStatusConnecting;
 #endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   } else {
-    PortStatusMap::iterator it = port_status_.find(port);
+    auto it = port_status_.find(port);
     if (it != port_status_.end() && it->second == kStatusError) {
       // The bind command failed on this port, do not attempt unbind.
       port_status_.erase(it);
@@ -430,7 +430,7 @@ bool PortForwardingController::Connection::ProcessResponse(
   if (!ParseResponse(message, &id, &error_code))
     return false;
 
-  CommandCallbackMap::iterator it = pending_responses_.find(id);
+  auto it = pending_responses_.find(id);
   if (it == pending_responses_.end())
     return false;
 
@@ -446,7 +446,7 @@ void PortForwardingController::Connection::ProcessBindResponse(
 
 void PortForwardingController::Connection::ProcessUnbindResponse(
     int port, PortStatus status) {
-  PortStatusMap::iterator it = port_status_.find(port);
+  auto it = port_status_.find(port);
   if (it == port_status_.end())
     return;
   if (status == kStatusError)
@@ -491,7 +491,7 @@ void PortForwardingController::Connection::OnFrameRead(
       !params->GetString(kConnectionIdParam, &connection_id))
     return;
 
-  std::map<int, std::string>::iterator it = forwarding_map_.find(port);
+  auto it = forwarding_map_.find(port);
   if (it == forwarding_map_.end())
     return;
 
@@ -535,7 +535,7 @@ PortForwardingController::DeviceListChanged(
         pair.second);
     if (!remote_device->is_connected())
       continue;
-    Registry::iterator rit = registry_.find(remote_device->serial());
+    auto rit = registry_.find(remote_device->serial());
     if (rit == registry_.end()) {
       if (remote_device->browsers().size() > 0) {
         new Connection(&registry_, device, remote_device->browsers()[0],
@@ -578,6 +578,6 @@ void PortForwardingController::OnPrefsChange() {
 }
 
 void PortForwardingController::UpdateConnections() {
-  for (Registry::iterator it = registry_.begin(); it != registry_.end(); ++it)
+  for (auto it = registry_.begin(); it != registry_.end(); ++it)
     it->second->UpdateForwardingMap(forwarding_map_);
 }

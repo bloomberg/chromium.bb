@@ -4,7 +4,6 @@
 
 #include "ios/web/web_state/web_frames_manager_impl.h"
 
-#include "base/base64.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/web_state/web_frame_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,25 +13,12 @@
 #error "This file requires ARC support."
 #endif
 
-using crypto::SymmetricKey;
-
 namespace {
-
-// A base64 encoded sample key.
-const char kFrameKey[] = "d1uJzdvOFIUT5kEpK4o+x5JCaSlYT/a45ISU7S9EzTo=";
 
 // Returns true if |web_frame| is contained in |frames|.
 bool ContainsWebFrame(std::set<web::WebFrame*> frames,
                       web::WebFrame* web_frame) {
   return frames.end() != std::find(frames.begin(), frames.end(), web_frame);
-}
-
-// Returns a key which can be used to create a WebFrame.
-std::unique_ptr<SymmetricKey> CreateKey() {
-  std::string decoded_frame_key_string;
-  base::Base64Decode(kFrameKey, &decoded_frame_key_string);
-  return crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
-                                      decoded_frame_key_string);
 }
 
 }  // namespace
@@ -54,8 +40,7 @@ class WebFramesManagerImplTest : public PlatformTest {
 TEST_F(WebFramesManagerImplTest, GetMainWebFrame) {
   GURL security_origin;
   auto web_frame = std::make_unique<WebFrameImpl>(
-      "web_frame", CreateKey(), /*initial_message_id=*/0,
-      /*is_main_frame=*/true, security_origin, &test_web_state_);
+      "web_frame", /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* web_frame_ptr = web_frame.get();
 
   frames_manager_->AddFrame(std::move(web_frame));
@@ -72,9 +57,9 @@ TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
 
   GURL security_origin;
   const std::string web_frame_frame_id = "web_frame";
-  auto web_frame = std::make_unique<WebFrameImpl>(
-      web_frame_frame_id, CreateKey(), /*initial_message_id=*/0,
-      /*is_main_frame=*/true, security_origin, &test_web_state_);
+  auto web_frame =
+      std::make_unique<WebFrameImpl>(web_frame_frame_id, /*is_main_frame=*/true,
+                                     security_origin, &test_web_state_);
 
   frames_manager_->AddFrame(std::move(web_frame));
   frames_manager_->RemoveFrameWithId(web_frame_frame_id);
@@ -88,13 +73,13 @@ TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
 TEST_F(WebFramesManagerImplTest, AddFrames) {
   GURL security_origin;
   auto main_web_frame = std::make_unique<WebFrameImpl>(
-      "main_web_frame", CreateKey(), /*initial_message_id=*/0,
+      "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
   frames_manager_->AddFrame(std::move(main_web_frame));
 
   auto child_web_frame = std::make_unique<WebFrameImpl>(
-      "child_web_frame", CreateKey(), /*initial_message_id=*/0,
+      "child_web_frame",
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* child_web_frame_ptr = child_web_frame.get();
   frames_manager_->AddFrame(std::move(child_web_frame));
@@ -109,19 +94,19 @@ TEST_F(WebFramesManagerImplTest, AddFrames) {
 TEST_F(WebFramesManagerImplTest, RemoveFrame) {
   GURL security_origin;
   auto main_web_frame = std::make_unique<WebFrameImpl>(
-      "main_web_frame", CreateKey(), /*initial_message_id=*/0,
+      "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
   frames_manager_->AddFrame(std::move(main_web_frame));
 
   const std::string child_web_frame_1_frame_id = "child_web_frame_1_frame_id";
   auto child_web_frame_1 = std::make_unique<WebFrameImpl>(
-      child_web_frame_1_frame_id, CreateKey(), /*initial_message_id=*/0,
+      child_web_frame_1_frame_id,
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   frames_manager_->AddFrame(std::move(child_web_frame_1));
 
   auto child_web_frame_2 = std::make_unique<WebFrameImpl>(
-      "child_web_frame_2", CreateKey(), /*initial_message_id=*/0,
+      "child_web_frame_2",
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* child_web_frame_2_ptr = child_web_frame_2.get();
   frames_manager_->AddFrame(std::move(child_web_frame_2));
@@ -138,10 +123,10 @@ TEST_F(WebFramesManagerImplTest, RemoveFrame) {
 TEST_F(WebFramesManagerImplTest, RemoveAllFrames) {
   GURL security_origin;
   frames_manager_->AddFrame(std::make_unique<WebFrameImpl>(
-      "main_web_frame", CreateKey(), /*initial_message_id=*/0,
+      "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_));
   frames_manager_->AddFrame(std::make_unique<WebFrameImpl>(
-      "web_frame", CreateKey(), /*initial_message_id=*/0,
+      "web_frame",
       /*is_main_frame=*/false, security_origin, &test_web_state_));
 
   ASSERT_EQ(2ul, frames_manager_->GetAllWebFrames().size());
@@ -156,7 +141,7 @@ TEST_F(WebFramesManagerImplTest, RemoveNonexistantFrame) {
   GURL security_origin;
   const std::string main_web_frame_frame_id = "main_web_frame";
   auto main_web_frame = std::make_unique<WebFrameImpl>(
-      main_web_frame_frame_id, CreateKey(), /*initial_message_id=*/0,
+      main_web_frame_frame_id,
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
 
@@ -177,7 +162,7 @@ TEST_F(WebFramesManagerImplTest, GetFrameWithId) {
 
   const std::string web_frame_frame_id = "web_frame_frame_id";
   auto web_frame = std::make_unique<WebFrameImpl>(
-      web_frame_frame_id, CreateKey(), /*initial_message_id=*/0,
+      web_frame_frame_id,
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* web_frame_ptr = web_frame.get();
   frames_manager_->AddFrame(std::move(web_frame));

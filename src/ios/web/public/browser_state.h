@@ -23,8 +23,6 @@ class URLRequestContextGetter;
 }
 
 namespace network {
-class NetworkChangeManager;
-class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
@@ -69,9 +67,6 @@ class BrowserState : public base::SupportsUserData {
 
   // Returns a CookieManager that is backed by GetRequestContext.
   network::mojom::CookieManager* GetCookieManager();
-
-  // Returns the NetworkConnectionTracker instance for this BrowserState.
-  network::NetworkConnectionTracker* GetNetworkConnectionTracker();
 
   // Binds a ProxyResolvingSocketFactory request to NetworkContext.
   void GetProxyResolvingSocketFactory(
@@ -134,12 +129,6 @@ class BrowserState : public base::SupportsUserData {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
   network::mojom::NetworkContextPtr network_context_;
-
-  // Acts as a proxy between the NetworkChangeNotifier and
-  // NetworkConnectionTracker.
-  std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
 
   // Owns the network::NetworkContext that backs |url_loader_factory_|. Created
   // on the UI thread, destroyed on the IO thread.

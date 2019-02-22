@@ -40,19 +40,19 @@ const int64_t kNonExistentResourceId = 12;
 const int64_t kResourceSize = 100;
 
 void DidStoreRegistration(blink::ServiceWorkerStatusCode* status_out,
-                          const base::Closure& quit_closure,
+                          base::OnceClosure quit_closure,
                           blink::ServiceWorkerStatusCode status) {
   *status_out = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void DidFindRegistration(
     blink::ServiceWorkerStatusCode* status_out,
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   *status_out = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace
@@ -96,6 +96,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(options, kRegistrationId,
                                                   context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
+                                        blink::mojom::ScriptType::kClassic,
                                         kVersionId, context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
     resources.push_back(main_script_);
@@ -113,7 +114,8 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     const char kHttpBody[] = "Hello";
     const int length = arraysize(kHttpBody);
     std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
-    scoped_refptr<net::IOBuffer> body(new net::WrappedIOBuffer(kHttpBody));
+    scoped_refptr<net::IOBuffer> body =
+        base::MakeRefCounted<net::WrappedIOBuffer>(kHttpBody);
 
     std::unique_ptr<ServiceWorkerResponseWriter> writer =
         context()->storage()->CreateResponseWriter(resource_id);

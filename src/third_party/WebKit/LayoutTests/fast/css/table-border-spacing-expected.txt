@@ -29,4 +29,3 @@ PASS document.getElementById("missing-border-spacing").style.borderSpacing is ""
 PASS cssRule("#missing-stylesheet-border-spacing").style.borderSpacing is ""
 
 TEST COMPLETE
-

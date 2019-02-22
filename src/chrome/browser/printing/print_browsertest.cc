@@ -105,8 +105,8 @@ class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   void CheckMessage(int document_cookie,
                     const PrintHostMsg_DidPrintContent_Params& param) {
     EXPECT_EQ(document_cookie, document_cookie_);
-    EXPECT_TRUE(param.metafile_data_handle.IsValid());
-    EXPECT_GT(param.data_size, 0u);
+    ASSERT_TRUE(param.metafile_data_region.IsValid());
+    EXPECT_GT(param.metafile_data_region.GetSize(), 0U);
   }
 
   const int document_cookie_;

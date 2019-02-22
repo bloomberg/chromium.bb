@@ -195,7 +195,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   id<GREYMatcher> newTab =
-      grey_kindOfClass(NSClassFromString(@"NewTabPageView"));
+      grey_kindOfClass(NSClassFromString(@"ContentSuggestionsHeaderView"));
   [[EarlGrey selectElementWithMatcher:newTab]
       assertWithMatcher:grey_sufficientlyVisible()];
 }

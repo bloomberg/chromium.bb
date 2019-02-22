@@ -63,7 +63,7 @@ void MockBackgroundFetchDelegate::GetPermissionForOrigin(
     GetPermissionForOriginCallback callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), true /* has_permission */));
+      base::BindOnce(std::move(callback), BackgroundFetchPermission::ALLOWED));
 }
 
 void MockBackgroundFetchDelegate::GetIconDisplaySize(
@@ -95,14 +95,12 @@ void MockBackgroundFetchDelegate::DownloadUrl(
   std::unique_ptr<TestResponse> test_response = std::move(url_iter->second);
   url_responses_.erase(url_iter);
 
-  std::unique_ptr<BackgroundFetchResponse> response =
-      std::make_unique<BackgroundFetchResponse>(std::vector<GURL>({url}),
-                                                test_response->headers);
-
   PostAbortCheckingTask(
       job_unique_id,
       base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadStarted,
-                     client(), job_unique_id, guid, std::move(response)));
+                     client(), job_unique_id, guid,
+                     std::make_unique<BackgroundFetchResponse>(
+                         std::vector<GURL>({url}), test_response->headers)));
 
   if (test_response->data.size()) {
     // Report progress at 50% complete.
@@ -140,16 +138,20 @@ void MockBackgroundFetchDelegate::DownloadUrl(
             &BackgroundFetchDelegate::Client::OnDownloadComplete, client(),
             job_unique_id, guid,
             std::make_unique<BackgroundFetchResult>(
+                std::make_unique<BackgroundFetchResponse>(
+                    std::vector<GURL>({url}), test_response->headers),
                 base::Time::Now(), response_path,
                 base::nullopt /* blob_handle */, test_response->data.size())));
   } else {
+    auto response = std::make_unique<BackgroundFetchResponse>(
+        std::vector<GURL>({url}), test_response->headers);
+    auto result = std::make_unique<BackgroundFetchResult>(
+        std::move(response), base::Time::Now(),
+        BackgroundFetchResult::FailureReason::FETCH_ERROR);
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
-                       client(), job_unique_id, guid,
-                       std::make_unique<BackgroundFetchResult>(
-                           base::Time::Now(),
-                           BackgroundFetchResult::FailureReason::UNKNOWN)));
+                       client(), job_unique_id, guid, std::move(result)));
   }
 
   seen_guids_.insert(guid);

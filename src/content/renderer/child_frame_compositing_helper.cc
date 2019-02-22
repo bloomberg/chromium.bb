@@ -39,7 +39,7 @@ void ChildFrameCompositingHelper::ChildFrameGone(
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
       cc::SolidColorLayer::Create();
   crashed_layer->SetMasksToBounds(true);
-  crashed_layer->SetBackgroundColor(SK_ColorBLACK);
+  crashed_layer->SetBackgroundColor(SK_ColorGRAY);
 
   if (child_frame_compositor_->GetLayer()) {
     SkBitmap* sad_bitmap = child_frame_compositor_->GetSadPageBitmap();
@@ -67,7 +67,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
 
   bool prevent_contents_opaque_changes = false;
   child_frame_compositor_->SetLayer(std::move(crashed_layer),
-                                    prevent_contents_opaque_changes);
+                                    prevent_contents_opaque_changes,
+                                    false /* is_surface_layer */);
 }
 
 void ChildFrameCompositingHelper::SetPrimarySurfaceId(
@@ -91,7 +92,8 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   // about the child surface's opacity. https://crbug.com/629851.
   bool prevent_contents_opaque_changes = true;
   child_frame_compositor_->SetLayer(surface_layer_,
-                                    prevent_contents_opaque_changes);
+                                    prevent_contents_opaque_changes,
+                                    true /* is_surface_layer */);
 
   UpdateVisibility(true);
 

@@ -257,6 +257,12 @@ gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {
   return viewport_rect_for_tile_priority;
 }
 
+void BrowserViewRenderer::ReturnedResourceAvailable(
+    CompositorFrameConsumer* compositor_frame_consumer) {
+  DCHECK(compositor_frame_consumers_.count(compositor_frame_consumer));
+  ReturnResourceFromParent(compositor_frame_consumer);
+}
+
 void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
     CompositorFrameConsumer* compositor_frame_consumer) {
   DCHECK(compositor_frame_consumer);

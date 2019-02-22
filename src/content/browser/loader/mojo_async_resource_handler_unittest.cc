@@ -492,7 +492,8 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillStart) {
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
-  scoped_refptr<net::IOBufferWithSize> metadata = new net::IOBufferWithSize(5);
+  scoped_refptr<net::IOBufferWithSize> metadata =
+      base::MakeRefCounted<net::IOBufferWithSize>(5);
   memcpy(metadata->data(), "hello", 5);
   handler_->SetMetadata(metadata);
 

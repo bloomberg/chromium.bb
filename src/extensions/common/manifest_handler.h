@@ -133,6 +133,8 @@ class ManifestHandlerRegistry {
   friend struct base::LazyInstanceTraitsBase<ManifestHandlerRegistry>;
   FRIEND_TEST_ALL_PREFIXES(ManifestHandlerPerfTest, MANUAL_CommonInitialize);
   FRIEND_TEST_ALL_PREFIXES(ManifestHandlerPerfTest, MANUAL_LookupTest);
+  FRIEND_TEST_ALL_PREFIXES(ManifestHandlerPerfTest,
+                           MANUAL_CommonMeasureFinalization);
   FRIEND_TEST_ALL_PREFIXES(ChromeExtensionsClientTest,
                            CheckManifestHandlerRegistryForOverflow);
 

@@ -29,10 +29,10 @@ cast_source_set("browser") {
     "cast_browser_process.h",
     "cast_content_browser_client.cc",
     "cast_content_browser_client.h",
+    "cast_content_gesture_handler.cc",
+    "cast_content_gesture_handler.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
-    "cast_gesture_dispatcher.cc",
-    "cast_gesture_dispatcher.h",
     "cast_http_user_agent_settings.cc",
     "cast_http_user_agent_settings.h",
     "cast_media_blocker.cc",
@@ -57,6 +57,8 @@ cast_source_set("browser") {
     "cast_web_view_default.h",
     "cast_web_view_factory.cc",
     "cast_web_view_factory.h",
+    "default_navigation_throttle.cc",
+    "default_navigation_throttle.h",
     "devtools/cast_devtools_manager_delegate.cc",
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
@@ -298,8 +300,6 @@ cast_source_set("browser") {
         "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
         "ui/aura/accessibility/automation_manager_aura.h",
-        "ui/aura/accessibility/ax_root_obj_wrapper.cc",
-        "ui/aura/accessibility/ax_root_obj_wrapper.h",
         "ui/aura/accessibility/ax_tree_source_aura.cc",
         "ui/aura/accessibility/ax_tree_source_aura.h",
       ]
@@ -332,6 +332,7 @@ cast_source_set("browser") {
 # This target should only include interfaces which are required for unit tests.
 cast_source_set("public") {
   sources = [
+    "cast_content_window.cc",
     "cast_content_window.h",
     "cast_web_view.cc",
     "cast_web_view.h",
@@ -443,7 +444,7 @@ cast_source_set("test_support") {
 cast_source_set("browsertests") {
   testonly = true
   sources = [
-    "cast_gesture_dispatcher_test.cc",
+    "cast_content_gesture_handler_test.cc",
     "cast_media_blocker_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",

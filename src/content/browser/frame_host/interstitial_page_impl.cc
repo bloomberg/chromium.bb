@@ -92,7 +92,7 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
   void TakeFocus(bool reverse) override;
   int GetTopControlsHeight() const override;
   int GetBottomControlsHeight() const override;
-  bool DoBrowserControlsShrinkBlinkSize() const override;
+  bool DoBrowserControlsShrinkRendererSize() const override;
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
                            const gfx::Rect& selection_rect,
@@ -310,8 +310,7 @@ void InterstitialPageImpl::Hide() {
 
   static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSecurityState();
 
-  InterstitialPageMap::iterator iter =
-      g_web_contents_to_interstitial_page->find(web_contents_);
+  auto iter = g_web_contents_to_interstitial_page->find(web_contents_);
   DCHECK(iter != g_web_contents_to_interstitial_page->end());
   if (iter != g_web_contents_to_interstitial_page->end())
     g_web_contents_to_interstitial_page->erase(iter);
@@ -805,8 +804,7 @@ Visibility InterstitialPageImpl::GetVisibility() const {
 
 void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
                                            int32_t route_id,
-                                           mojom::WidgetPtr widget,
-                                           blink::WebPopupType popup_type) {
+                                           mojom::WidgetPtr widget) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 
@@ -1026,14 +1024,14 @@ int InterstitialPageImpl::InterstitialPageRVHDelegateView::
 }
 
 bool InterstitialPageImpl::InterstitialPageRVHDelegateView::
-    DoBrowserControlsShrinkBlinkSize() const {
+    DoBrowserControlsShrinkRendererSize() const {
   if (!interstitial_page_->web_contents())
     return false;
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
   if (!web_contents || !web_contents->GetDelegateView())
     return false;
-  return web_contents->GetDelegateView()->DoBrowserControlsShrinkBlinkSize();
+  return web_contents->GetDelegateView()->DoBrowserControlsShrinkRendererSize();
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::OnFindReply(

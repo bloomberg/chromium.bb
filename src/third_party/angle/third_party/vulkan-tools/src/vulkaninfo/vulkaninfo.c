@@ -210,8 +210,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DbgCallback(VkFlags msgFlags, VkDebugRepor
         sprintf(message, "DEBUG: [%s] Code %d : %s", pLayerPrefix, msgCode, pMsg);
     }
 
-    printf("%s\n", message);
-    fflush(stdout);
+    fprintf(stderr, "%s\n", message);
+    fflush(stderr);
     free(message);
 
     /*
@@ -631,7 +631,7 @@ void PrintHtmlHeader(FILE *out) {
     fprintf(out, "<!doctype html>\n");
     fprintf(out, "<html>\n");
     fprintf(out, "\t<head>\n");
-    fprintf(out, "\t\t<title>Vulkan Info</title>\n");
+    fprintf(out, "\t\t<title>vulkaninfo</title>\n");
     fprintf(out, "\t\t<style type='text/css'>\n");
     fprintf(out, "\t\thtml {\n");
     fprintf(out, "\t\t\tbackground-color: #0b1e48;\n");
@@ -713,7 +713,7 @@ void PrintHtmlHeader(FILE *out) {
     fprintf(out, "\t</head>\n");
     fprintf(out, "\t<body>\n");
     fprintf(out, "\t\t<div id='header'>\n");
-    fprintf(out, "\t\t\t<h1>Vulkan Info</h1>\n");
+    fprintf(out, "\t\t\t<h1>vulkaninfo</h1>\n");
     fprintf(out, "\t\t</div>\n");
     fprintf(out, "\t\t<div id='wrapper'>\n");
 }
@@ -758,6 +758,7 @@ static void AppCreateInstance(struct AppInstance *inst) {
     const char *info_instance_extensions[] = {VK_EXT_DISPLAY_SURFACE_COUNTER_EXTENSION_NAME,
                                               VK_KHR_DISPLAY_EXTENSION_NAME,
                                               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+                                              VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
                                               VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
                                               VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
                                               VK_KHR_SURFACE_EXTENSION_NAME,
@@ -887,7 +888,8 @@ static void AppGpuInit(struct AppGpu *gpu, struct AppInstance *inst, uint32_t id
             {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR,
              .mem_size = sizeof(VkPhysicalDeviceMultiviewPropertiesKHR)},
             {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR,
-             .mem_size = sizeof(VkPhysicalDeviceMaintenance3PropertiesKHR)}};
+             .mem_size = sizeof(VkPhysicalDeviceMaintenance3PropertiesKHR)},
+            {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR, .mem_size = sizeof(VkPhysicalDeviceIDPropertiesKHR)}};
 
         uint32_t chain_info_len = ARRAY_SIZE(chain_info);
 
@@ -974,6 +976,8 @@ static void AppGpuInit(struct AppGpu *gpu, struct AppInstance *inst, uint32_t id
         inst->vkGetPhysicalDeviceMemoryProperties2KHR(gpu->obj, &gpu->memory_props2);
 
         struct pNextChainBuildingBlockInfo chain_info[] = {
+            {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR,
+             .mem_size = sizeof(VkPhysicalDevice8BitStorageFeaturesKHR)},
             {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
              .mem_size = sizeof(VkPhysicalDevice16BitStorageFeaturesKHR)},
             {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR,
@@ -1229,7 +1233,7 @@ static void AppCreateMacOSSurface(struct AppInstance *inst) {
     surface.pNext = NULL;
     surface.flags = 0;
     surface.pView = inst->window;
-    
+
     err = vkCreateMacOSSurfaceMVK(inst->instance, &surface, NULL, &inst->surface);
     assert(!err);
 }
@@ -1257,7 +1261,7 @@ static int AppDumpSurfaceFormats(struct AppInstance *inst, struct AppGpu *gpu, F
     assert(!err);
 
     if (html_output) {
-        fprintf(out, "\t\t\t\t<details><summary>Formats: count = <div class='val'>%d</div></summary>", format_count);
+        fprintf(out, "\t\t\t\t\t<details><summary>Formats: count = <div class='val'>%d</div></summary>", format_count);
         if (format_count > 0) {
             fprintf(out, "\n");
         } else {
@@ -1268,14 +1272,14 @@ static int AppDumpSurfaceFormats(struct AppInstance *inst, struct AppGpu *gpu, F
     }
     for (uint32_t i = 0; i < format_count; ++i) {
         if (html_output) {
-            fprintf(out, "\t\t\t\t\t<details><summary><div class='type'>%s</div></summary></details>\n",
+            fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>%s</div></summary></details>\n",
                     VkFormatString(surf_formats[i].format));
         } else if (human_readable_output) {
             printf("\t%s\n", VkFormatString(surf_formats[i].format));
         }
     }
     if (format_count > 0 && html_output) {
-        fprintf(out, "\t\t\t\t</details>\n");
+        fprintf(out, "\t\t\t\t\t</details>\n");
     }
 
     fflush(out);
@@ -1299,7 +1303,7 @@ static int AppDumpSurfacePresentModes(struct AppInstance *inst, struct AppGpu *g
     assert(!err);
 
     if (html_output) {
-        fprintf(out, "\t\t\t\t<details><summary>Present Modes: count = <div class='val'>%d</div></summary>", present_mode_count);
+        fprintf(out, "\t\t\t\t\t<details><summary>Present Modes: count = <div class='val'>%d</div></summary>", present_mode_count);
         if (present_mode_count > 0) {
             fprintf(out, "\n");
         } else {
@@ -1310,14 +1314,14 @@ static int AppDumpSurfacePresentModes(struct AppInstance *inst, struct AppGpu *g
     }
     for (uint32_t i = 0; i < present_mode_count; ++i) {
         if (html_output) {
-            fprintf(out, "\t\t\t\t\t<details><summary><div class='type'>%s</div></summary></details>\n",
+            fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>%s</div></summary></details>\n",
                     VkPresentModeString(surf_present_modes[i]));
         } else if (human_readable_output) {
             printf("\t%s\n", VkPresentModeString(surf_present_modes[i]));
         }
     }
     if (present_mode_count > 0 && html_output) {
-        fprintf(out, "\t\t\t\t</details>\n");
+        fprintf(out, "\t\t\t\t\t</details>\n");
     }
 
     fflush(out);
@@ -1332,124 +1336,124 @@ static void AppDumpSurfaceCapabilities(struct AppInstance *inst, struct AppGpu *
         inst->vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu->obj, inst->surface, &inst->surface_capabilities);
 
         if (html_output) {
-            fprintf(out, "\t\t\t\t<details><summary>VkSurfaceCapabilitiesKHR</summary>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>minImageCount = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageCount);
-            fprintf(out, "\t\t\t\t\t<details><summary>maxImageCount = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageCount);
-            fprintf(out, "\t\t\t\t\t<details><summary>currentExtent</summary>\n");
-            fprintf(out, "\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.currentExtent.width);
-            fprintf(out, "\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.currentExtent.height);
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>minImageExtent</summary>\n");
-            fprintf(out, "\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageExtent.width);
-            fprintf(out, "\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageExtent.height);
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>maxImageExtent</summary>\n");
-            fprintf(out, "\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageExtent.width);
-            fprintf(out, "\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageExtent.height);
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>maxImageArrayLayers = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageArrayLayers);
-            fprintf(out, "\t\t\t\t\t<details><summary>supportedTransform</summary>\n");
+            fprintf(out, "\t\t\t\t\t<details><summary>VkSurfaceCapabilitiesKHR</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>minImageCount = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageCount);
+            fprintf(out, "\t\t\t\t\t\t<details><summary>maxImageCount = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageCount);
+            fprintf(out, "\t\t\t\t\t\t<details><summary>currentExtent</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.currentExtent.width);
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.currentExtent.height);
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>minImageExtent</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageExtent.width);
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.minImageExtent.height);
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>maxImageExtent</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>width = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageExtent.width);
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>height = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageExtent.height);
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>maxImageArrayLayers = <div class='val'>%u</div></summary></details>\n", inst->surface_capabilities.maxImageArrayLayers);
+            fprintf(out, "\t\t\t\t\t\t<details><summary>supportedTransform</summary>\n");
             if (inst->surface_capabilities.supportedTransforms == 0) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR</div></summary></details>\n");
             }
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>currentTransform</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>currentTransform</summary>\n");
             if (inst->surface_capabilities.currentTransform == 0) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
             }
             if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR</div></summary></details>\n");
             } else if (inst->surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR</div></summary></details>\n");
             }
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>supportedCompositeAlpha</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>supportedCompositeAlpha</summary>\n");
             if (inst->surface_capabilities.supportedCompositeAlpha == 0) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
             }
             if (inst->surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR</div></summary></details>\n");
             }
-            fprintf(out, "\t\t\t\t\t</details>\n");
-            fprintf(out, "\t\t\t\t\t<details><summary>supportedUsageFlags</summary>\n");
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t<details><summary>supportedUsageFlags</summary>\n");
             if (inst->surface_capabilities.supportedUsageFlags == 0) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_DST_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_DST_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_SAMPLED_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_SAMPLED_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_STORAGE_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_STORAGE_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_STORAGE_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</div></summary></details>\n");
             }
             if (inst->surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT) {
-                fprintf(out, "\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</div></summary></details>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</div></summary></details>\n");
             }
-            fprintf(out, "\t\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t\t</details>\n");
         } else if (human_readable_output) {
             printf("\nVkSurfaceCapabilitiesKHR:\n");
             printf("=========================\n");
@@ -1514,16 +1518,16 @@ static void AppDumpSurfaceCapabilities(struct AppInstance *inst, struct AppGpu *
             inst->vkGetPhysicalDeviceSurfaceCapabilities2EXT(gpu->obj, inst->surface, &inst->surface_capabilities2_ext);
 
             if (html_output) {
-                fprintf(out, "\t\t\t\t\t<details><summary>VkSurfaceCapabilities2EXT</summary>\n");
-                fprintf(out, "\t\t\t\t\t\t<details><summary>supportedSurfaceCounters</summary>\n");
+                fprintf(out, "\t\t\t\t\t\t<details><summary>VkSurfaceCapabilities2EXT</summary>\n");
+                fprintf(out, "\t\t\t\t\t\t\t<details><summary>supportedSurfaceCounters</summary>\n");
                 if (inst->surface_capabilities2_ext.supportedSurfaceCounters == 0) {
-                    fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                    fprintf(out, "\t\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
                 }
                 if (inst->surface_capabilities2_ext.supportedSurfaceCounters & VK_SURFACE_COUNTER_VBLANK_EXT) {
-                    fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_COUNTER_VBLANK_EXT</div></summary></details>\n");
+                    fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_SURFACE_COUNTER_VBLANK_EXT</div></summary></details>\n");
                 }
+                fprintf(out, "\t\t\t\t\t\t\t</details>\n");
                 fprintf(out, "\t\t\t\t\t\t</details>\n");
-                fprintf(out, "\t\t\t\t\t</details>\n");
             } else if (human_readable_output) {
                 printf("\nVkSurfaceCapabilities2EXT:\n");
                 printf("==========================\n");
@@ -1562,37 +1566,37 @@ static void AppDumpSurfaceCapabilities(struct AppInstance *inst, struct AppGpu *
                 if (work->sType == VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR) {
                     VkSharedPresentSurfaceCapabilitiesKHR* shared_surface_capabilities = (VkSharedPresentSurfaceCapabilitiesKHR*)place;
                     if (html_output) {
-                        fprintf(out, "\t\t\t\t\t<details><summary>VkSharedPresentSurfaceCapabilitiesKHR</summary>\n");
-                        fprintf(out, "\t\t\t\t\t\t<details><summary>sharedPresentSupportedUsageFlags</summary>\n");
+                        fprintf(out, "\t\t\t\t\t\t<details><summary>VkSharedPresentSurfaceCapabilitiesKHR</summary>\n");
+                        fprintf(out, "\t\t\t\t\t\t\t<details><summary>sharedPresentSupportedUsageFlags</summary>\n");
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags == 0) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary>None</summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_DST_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSFER_DST_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_SAMPLED_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_SAMPLED_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_STORAGE_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_STORAGE_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_STORAGE_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</div></summary></details>\n");
                         }
                         if (shared_surface_capabilities->sharedPresentSupportedUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT) {
-                            fprintf(out, "\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</div></summary></details>\n");
+                            fprintf(out, "\t\t\t\t\t\t\t\t<details><summary><div class='type'>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</div></summary></details>\n");
                         }
+                        fprintf(out, "\t\t\t\t\t\t\t</details>\n");
                         fprintf(out, "\t\t\t\t\t\t</details>\n");
-                        fprintf(out, "\t\t\t\t\t</details>\n");
                     } else if (human_readable_output) {
                         printf("\nVkSharedPresentSurfaceCapabilitiesKHR:\n");
                         printf("========================================\n");
@@ -1612,7 +1616,7 @@ static void AppDumpSurfaceCapabilities(struct AppInstance *inst, struct AppGpu *
             }
         }
         if (html_output) {
-            fprintf(out, "\t\t\t\t</details>\n");
+            fprintf(out, "\t\t\t\t\t</details>\n");
         }
     }
 }
@@ -1935,7 +1939,23 @@ static void AppGpuDumpFeatures(const struct AppGpu *gpu, FILE *out) {
         void *place = gpu->features2.pNext;
         while (place) {
             struct VkStructureHeader *structure = (struct VkStructureHeader*) place;
-            if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR && CheckPhysicalDeviceExtensionIncluded(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, gpu->device_extensions, gpu->device_extension_count)) {
+            if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR && CheckPhysicalDeviceExtensionIncluded(VK_KHR_8BIT_STORAGE_EXTENSION_NAME, gpu->device_extensions, gpu->device_extension_count)) {
+                VkPhysicalDevice8BitStorageFeaturesKHR *b8_store_features = (VkPhysicalDevice8BitStorageFeaturesKHR*)structure;
+                if (html_output) {
+                    fprintf(out, "\n\t\t\t\t\t<details><summary>VkPhysicalDevice8BitStorageFeatures</summary>\n");
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>storageBuffer8BitAccess           = <div class='val'>%u</div></summary></details>\n", b8_store_features->storageBuffer8BitAccess);
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>uniformAndStorageBuffer8BitAccess = <div class='val'>%u</div></summary></details>\n", b8_store_features->uniformAndStorageBuffer8BitAccess);
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>storagePushConstant8              = <div class='val'>%u</div></summary></details>\n", b8_store_features->storagePushConstant8);
+                    fprintf(out, "\t\t\t\t\t</details>\n");
+                }
+                else if (human_readable_output) {
+                    printf("\nVkPhysicalDevice8BitStorageFeatures:\n");
+                    printf("=====================================\n");
+                    printf("\tstorageBuffer8BitAccess           = %u\n", b8_store_features->storageBuffer8BitAccess);
+                    printf("\tuniformAndStorageBuffer8BitAccess = %u\n", b8_store_features->uniformAndStorageBuffer8BitAccess);
+                    printf("\tstoragePushConstant8              = %u\n", b8_store_features->storagePushConstant8);
+                }
+            } else if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR && CheckPhysicalDeviceExtensionIncluded(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, gpu->device_extensions, gpu->device_extension_count)) {
                 VkPhysicalDevice16BitStorageFeaturesKHR *b16_store_features = (VkPhysicalDevice16BitStorageFeaturesKHR*)structure;
                 if (html_output) {
                     fprintf(out, "\n\t\t\t\t\t<details><summary>VkPhysicalDevice16BitStorageFeatures</summary>\n");
@@ -2110,19 +2130,19 @@ static void AppDumpLimits(const VkPhysicalDeviceLimits *limits, FILE *out) {
         fprintf(out, "\t\t\t\t\t\t<details><summary>maxViewports                            = <div class='val'>%u</div></summary></details>\n",                 limits->maxViewports                           );
         fprintf(out, "\t\t\t\t\t\t<details><summary>maxViewportDimensions[0]                = <div class='val'>%u</div></summary></details>\n",                 limits->maxViewportDimensions[0]               );
         fprintf(out, "\t\t\t\t\t\t<details><summary>maxViewportDimensions[1]                = <div class='val'>%u</div></summary></details>\n",                 limits->maxViewportDimensions[1]               );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>viewportBoundsRange[0]                  =<div class='val'>%13f</div></summary></details>\n",                limits->viewportBoundsRange[0]                 );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>viewportBoundsRange[1]                  =<div class='val'>%13f</div></summary></details>\n",                limits->viewportBoundsRange[1]                 );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>viewportBoundsRange[0]                  = <div class='val'>%13f</div></summary></details>\n",               limits->viewportBoundsRange[0]                 );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>viewportBoundsRange[1]                  = <div class='val'>%13f</div></summary></details>\n",               limits->viewportBoundsRange[1]                 );
         fprintf(out, "\t\t\t\t\t\t<details><summary>viewportSubPixelBits                    = <div class='val'>%u</div></summary></details>\n",                 limits->viewportSubPixelBits                   );
         fprintf(out, "\t\t\t\t\t\t<details><summary>minMemoryMapAlignment                   = <div class='val'>" PRINTF_SIZE_T_SPECIFIER "</div></summary></details>\n", limits->minMemoryMapAlignment         );
         fprintf(out, "\t\t\t\t\t\t<details><summary>minTexelBufferOffsetAlignment           = <div class='val'>0x%" PRIxLEAST64 "</div></summary></details>\n", limits->minTexelBufferOffsetAlignment          );
         fprintf(out, "\t\t\t\t\t\t<details><summary>minUniformBufferOffsetAlignment         = <div class='val'>0x%" PRIxLEAST64 "</div></summary></details>\n", limits->minUniformBufferOffsetAlignment        );
         fprintf(out, "\t\t\t\t\t\t<details><summary>minStorageBufferOffsetAlignment         = <div class='val'>0x%" PRIxLEAST64 "</div></summary></details>\n", limits->minStorageBufferOffsetAlignment        );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>minTexelOffset                          =<div class='val'>%3d</div></summary></details>\n",                 limits->minTexelOffset                         );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>maxTexelOffset                          =<div class='val'>%3d</div></summary></details>\n",                 limits->maxTexelOffset                         );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>minTexelGatherOffset                    =<div class='val'>%3d</div></summary></details>\n",                 limits->minTexelGatherOffset                   );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>maxTexelGatherOffset                    =<div class='val'>%3d</div></summary></details>\n",                 limits->maxTexelGatherOffset                   );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>minInterpolationOffset                  =<div class='val'>%9f</div></summary></details>\n",                 limits->minInterpolationOffset                 );
-        fprintf(out, "\t\t\t\t\t\t<details><summary>maxInterpolationOffset                  =<div class='val'>%9f</div></summary></details>\n",                 limits->maxInterpolationOffset                 );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>minTexelOffset                          = <div class='val'>%3d</div></summary></details>\n",                limits->minTexelOffset                         );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>maxTexelOffset                          = <div class='val'>%3d</div></summary></details>\n",                limits->maxTexelOffset                         );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>minTexelGatherOffset                    = <div class='val'>%3d</div></summary></details>\n",                limits->minTexelGatherOffset                   );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>maxTexelGatherOffset                    = <div class='val'>%3d</div></summary></details>\n",                limits->maxTexelGatherOffset                   );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>minInterpolationOffset                  = <div class='val'>%9f</div></summary></details>\n",                limits->minInterpolationOffset                 );
+        fprintf(out, "\t\t\t\t\t\t<details><summary>maxInterpolationOffset                  = <div class='val'>%9f</div></summary></details>\n",                limits->maxInterpolationOffset                 );
         fprintf(out, "\t\t\t\t\t\t<details><summary>subPixelInterpolationOffsetBits         = <div class='val'>%u</div></summary></details>\n",                 limits->subPixelInterpolationOffsetBits        );
         fprintf(out, "\t\t\t\t\t\t<details><summary>maxFramebufferWidth                     = <div class='val'>%u</div></summary></details>\n",                 limits->maxFramebufferWidth                    );
         fprintf(out, "\t\t\t\t\t\t<details><summary>maxFramebufferHeight                    = <div class='val'>%u</div></summary></details>\n",                 limits->maxFramebufferHeight                   );
@@ -2228,19 +2248,19 @@ static void AppDumpLimits(const VkPhysicalDeviceLimits *limits, FILE *out) {
         printf("\t\tmaxViewports                            = %u\n",                 limits->maxViewports                           );
         printf("\t\tmaxViewportDimensions[0]                = %u\n",                 limits->maxViewportDimensions[0]               );
         printf("\t\tmaxViewportDimensions[1]                = %u\n",                 limits->maxViewportDimensions[1]               );
-        printf("\t\tviewportBoundsRange[0]                  =%13f\n",                limits->viewportBoundsRange[0]                 );
-        printf("\t\tviewportBoundsRange[1]                  =%13f\n",                limits->viewportBoundsRange[1]                 );
+        printf("\t\tviewportBoundsRange[0]                  = %13f\n",               limits->viewportBoundsRange[0]                 );
+        printf("\t\tviewportBoundsRange[1]                  = %13f\n",               limits->viewportBoundsRange[1]                 );
         printf("\t\tviewportSubPixelBits                    = %u\n",                 limits->viewportSubPixelBits                   );
         printf("\t\tminMemoryMapAlignment                   = " PRINTF_SIZE_T_SPECIFIER "\n", limits->minMemoryMapAlignment         );
         printf("\t\tminTexelBufferOffsetAlignment           = 0x%" PRIxLEAST64 "\n", limits->minTexelBufferOffsetAlignment          );
         printf("\t\tminUniformBufferOffsetAlignment         = 0x%" PRIxLEAST64 "\n", limits->minUniformBufferOffsetAlignment        );
         printf("\t\tminStorageBufferOffsetAlignment         = 0x%" PRIxLEAST64 "\n", limits->minStorageBufferOffsetAlignment        );
-        printf("\t\tminTexelOffset                          =%3d\n",                 limits->minTexelOffset                         );
-        printf("\t\tmaxTexelOffset                          =%3d\n",                 limits->maxTexelOffset                         );
-        printf("\t\tminTexelGatherOffset                    =%3d\n",                 limits->minTexelGatherOffset                   );
-        printf("\t\tmaxTexelGatherOffset                    =%3d\n",                 limits->maxTexelGatherOffset                   );
-        printf("\t\tminInterpolationOffset                  =%9f\n",                 limits->minInterpolationOffset                 );
-        printf("\t\tmaxInterpolationOffset                  =%9f\n",                 limits->maxInterpolationOffset                 );
+        printf("\t\tminTexelOffset                          = %3d\n",                limits->minTexelOffset                         );
+        printf("\t\tmaxTexelOffset                          = %3d\n",                limits->maxTexelOffset                         );
+        printf("\t\tminTexelGatherOffset                    = %3d\n",                limits->minTexelGatherOffset                   );
+        printf("\t\tmaxTexelGatherOffset                    = %3d\n",                limits->maxTexelGatherOffset                   );
+        printf("\t\tminInterpolationOffset                  = %9f\n",                limits->minInterpolationOffset                 );
+        printf("\t\tmaxInterpolationOffset                  = %9f\n",                limits->maxInterpolationOffset                 );
         printf("\t\tsubPixelInterpolationOffsetBits         = %u\n",                 limits->subPixelInterpolationOffsetBits        );
         printf("\t\tmaxFramebufferWidth                     = %u\n",                 limits->maxFramebufferWidth                    );
         printf("\t\tmaxFramebufferHeight                    = %u\n",                 limits->maxFramebufferHeight                   );
@@ -2563,6 +2583,116 @@ static void AppGpuDumpProps(const struct AppGpu *gpu, FILE *out) {
                     printf("=======================================\n");
                     printf("\tmaxPerSetDescriptors    = %" PRIuLEAST32 "\n", maintenance3_props->maxPerSetDescriptors   );
                     printf("\tmaxMemoryAllocationSize = %" PRIuLEAST64 "\n", maintenance3_props->maxMemoryAllocationSize);
+                }
+            } else if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR) {
+                const VkPhysicalDeviceIDPropertiesKHR *id_props = (VkPhysicalDeviceIDPropertiesKHR*)structure;
+                if (html_output) {
+                    fprintf(out, "\n\t\t\t\t\t<details><summary>VkPhysicalDeviceIDProperties</summary>\n");
+                    // Visual Studio 2013's printf does not support the "hh"
+                    // length modifier so cast the operands and use field width
+                    // "2" to fake it.
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>deviceUUID      = <div class='val'>%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x</div></summary></details>\n",
+                            (uint32_t)id_props->deviceUUID[0],
+                            (uint32_t)id_props->deviceUUID[1],
+                            (uint32_t)id_props->deviceUUID[2],
+                            (uint32_t)id_props->deviceUUID[3],
+                            (uint32_t)id_props->deviceUUID[4],
+                            (uint32_t)id_props->deviceUUID[5],
+                            (uint32_t)id_props->deviceUUID[6],
+                            (uint32_t)id_props->deviceUUID[7],
+                            (uint32_t)id_props->deviceUUID[8],
+                            (uint32_t)id_props->deviceUUID[9],
+                            (uint32_t)id_props->deviceUUID[10],
+                            (uint32_t)id_props->deviceUUID[11],
+                            (uint32_t)id_props->deviceUUID[12],
+                            (uint32_t)id_props->deviceUUID[13],
+                            (uint32_t)id_props->deviceUUID[14],
+                            (uint32_t)id_props->deviceUUID[15]);
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>driverUUID      = <div class='val'>%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x</div></summary></details>\n",
+                            (uint32_t)id_props->driverUUID[0],
+                            (uint32_t)id_props->driverUUID[1],
+                            (uint32_t)id_props->driverUUID[2],
+                            (uint32_t)id_props->driverUUID[3],
+                            (uint32_t)id_props->driverUUID[4],
+                            (uint32_t)id_props->driverUUID[5],
+                            (uint32_t)id_props->driverUUID[6],
+                            (uint32_t)id_props->driverUUID[7],
+                            (uint32_t)id_props->driverUUID[8],
+                            (uint32_t)id_props->driverUUID[9],
+                            (uint32_t)id_props->driverUUID[10],
+                            (uint32_t)id_props->driverUUID[11],
+                            (uint32_t)id_props->driverUUID[12],
+                            (uint32_t)id_props->driverUUID[13],
+                            (uint32_t)id_props->driverUUID[14],
+                            (uint32_t)id_props->driverUUID[15]);
+                    fprintf(out, "\t\t\t\t\t\t<details><summary>deviceLUIDValid = <div class='val'>%s</div></summary></details>\n",
+                            id_props->deviceLUIDValid ? "true" : "false" );
+                    if (id_props->deviceLUIDValid) {
+                        fprintf(out, "\t\t\t\t\t\t<details><summary>deviceLUID      = <div class='val'>%02x%02x%02x%02x-%02x%02x%02x%02x</div></summary></details>\n",
+                                (uint32_t)id_props->deviceLUID[0],
+                                (uint32_t)id_props->deviceLUID[1],
+                                (uint32_t)id_props->deviceLUID[2],
+                                (uint32_t)id_props->deviceLUID[3],
+                                (uint32_t)id_props->deviceLUID[4],
+                                (uint32_t)id_props->deviceLUID[5],
+                                (uint32_t)id_props->deviceLUID[6],
+                                (uint32_t)id_props->deviceLUID[7]);
+                        fprintf(out, "\t\t\t\t\t\t<details><summary>deviceNodeMask  = <div class='val'>0x%08x</div></summary></details>\n",
+                                id_props->deviceNodeMask);
+                    }
+                    fprintf(out, "\t\t\t\t\t</details>\n");
+                } else if (human_readable_output) {
+                    printf("\nVkPhysicalDeviceIDProperties:\n");
+                    printf("=========================================\n");
+                    printf("\tdeviceUUID      = %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+                            (uint32_t)id_props->deviceUUID[0],
+                            (uint32_t)id_props->deviceUUID[1],
+                            (uint32_t)id_props->deviceUUID[2],
+                            (uint32_t)id_props->deviceUUID[3],
+                            (uint32_t)id_props->deviceUUID[4],
+                            (uint32_t)id_props->deviceUUID[5],
+                            (uint32_t)id_props->deviceUUID[6],
+                            (uint32_t)id_props->deviceUUID[7],
+                            (uint32_t)id_props->deviceUUID[8],
+                            (uint32_t)id_props->deviceUUID[9],
+                            (uint32_t)id_props->deviceUUID[10],
+                            (uint32_t)id_props->deviceUUID[11],
+                            (uint32_t)id_props->deviceUUID[12],
+                            (uint32_t)id_props->deviceUUID[13],
+                            (uint32_t)id_props->deviceUUID[14],
+                            (uint32_t)id_props->deviceUUID[15]);
+                    printf("\tdriverUUID      = %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+                            (uint32_t)id_props->driverUUID[0],
+                            (uint32_t)id_props->driverUUID[1],
+                            (uint32_t)id_props->driverUUID[2],
+                            (uint32_t)id_props->driverUUID[3],
+                            (uint32_t)id_props->driverUUID[4],
+                            (uint32_t)id_props->driverUUID[5],
+                            (uint32_t)id_props->driverUUID[6],
+                            (uint32_t)id_props->driverUUID[7],
+                            (uint32_t)id_props->driverUUID[8],
+                            (uint32_t)id_props->driverUUID[9],
+                            (uint32_t)id_props->driverUUID[10],
+                            (uint32_t)id_props->driverUUID[11],
+                            (uint32_t)id_props->driverUUID[12],
+                            (uint32_t)id_props->driverUUID[13],
+                            (uint32_t)id_props->driverUUID[14],
+                            (uint32_t)id_props->driverUUID[15]);
+                    printf("\tdeviceLUIDValid = %s\n",
+                           id_props->deviceLUIDValid ? "true" : "false" );
+                    if (id_props->deviceLUIDValid) {
+                        printf("\tdeviceLUID      = %02x%02x%02x%02x-%02x%02x%02x%02x\n",
+                                (uint32_t)id_props->deviceLUID[0],
+                                (uint32_t)id_props->deviceLUID[1],
+                                (uint32_t)id_props->deviceLUID[2],
+                                (uint32_t)id_props->deviceLUID[3],
+                                (uint32_t)id_props->deviceLUID[4],
+                                (uint32_t)id_props->deviceLUID[5],
+                                (uint32_t)id_props->deviceLUID[6],
+                                (uint32_t)id_props->deviceLUID[7]);
+                        printf("\tdeviceNodeMask  = 0x%08x\n",
+                                id_props->deviceNodeMask);
+                    }
                 }
             }
             place = structure->pNext;
@@ -2912,7 +3042,6 @@ static void AppGpuDumpMemoryProps(const struct AppGpu *gpu, FILE *out) {
 
 static void AppGpuDump(const struct AppGpu *gpu, FILE *out) {
     if (html_output) {
-        fprintf(out, "\t\t\t<details><summary>Device Properties and Extensions</summary>\n");
         fprintf(out, "\t\t\t\t<details><summary>GPU%u</summary>\n", gpu->id);
     } else if (human_readable_output) {
         printf("\nDevice Properties and Extensions :\n");
@@ -2965,7 +3094,6 @@ static void AppGpuDump(const struct AppGpu *gpu, FILE *out) {
     AppDevDump(gpu, out);
     if (html_output) {
         fprintf(out, "\t\t\t\t</details>\n");
-        fprintf(out, "\t\t\t</details>\n");
     }
 }
 
@@ -3208,9 +3336,9 @@ int main(int argc, char **argv) {
         PrintHtmlHeader(out);
         fprintf(out, "\t\t\t<details><summary>");
     } else if (human_readable_output) {
-        printf("===========\n");
-        printf("VULKAN INFO\n");
-        printf("===========\n\n");
+        printf("==========\n");
+        printf("VULKANINFO\n");
+        printf("==========\n\n");
     }
     if (html_output || human_readable_output) {
         fprintf(out, "Vulkan Instance Version: ");
@@ -3337,7 +3465,6 @@ int main(int argc, char **argv) {
             AppGetPhysicalDeviceLayerExtensions(&gpus[j], layer_name, &count, &props);
             if (html_output) {
                 AppDumpExtensions("\t\t\t", "Layer-Device", count, props, out);
-                fprintf(out, "\t\t\t\t\t</details>\n");
             } else if (human_readable_output) {
                 AppDumpExtensions("\t\t", "Layer-Device", count, props, out);
             }
@@ -3345,6 +3472,7 @@ int main(int argc, char **argv) {
         }
 
         if (html_output) {
+            fprintf(out, "\t\t\t\t\t</details>\n");
             fprintf(out, "\t\t\t\t</details>\n");
         } else if (human_readable_output) {
             printf("\n");
@@ -3395,9 +3523,9 @@ int main(int argc, char **argv) {
         for (uint32_t i = 0; i < gpu_count; ++i) {
             AppCreateWin32Surface(&inst);
             if (html_output) {
-                fprintf(out, "\t\t\t\t<details><summary>GPU id : <div class='val'>%u</div> (%s)</summary></details>\n", i,
+                fprintf(out, "\t\t\t\t<details><summary>GPU id : <div class='val'>%u</div> (%s)</summary>\n", i,
                         gpus[i].props.deviceName);
-                fprintf(out, "\t\t\t\t<details><summary>Surface type : <div class='type'>%s</div></summary></details>\n",
+                fprintf(out, "\t\t\t\t\t<details><summary>Surface type : <div class='type'>%s</div></summary></details>\n",
                         VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
             } else if (human_readable_output) {
                 printf("GPU id       : %u (%s)\n", i, gpus[i].props.deviceName);
@@ -3407,6 +3535,9 @@ int main(int argc, char **argv) {
             present_mode_count += AppDumpSurfacePresentModes(&inst, &gpus[i], out);
             AppDumpSurfaceCapabilities(&inst, &gpus[i], out);
             AppDestroySurface(&inst);
+            if (html_output) {
+                fprintf(out, "\t\t\t\t</details>\n");
+            }
         }
         AppDestroyWin32Window(&inst);
     }
@@ -3536,6 +3667,10 @@ int main(int argc, char **argv) {
         free(groups);
     }
 
+    if (html_output) {
+        fprintf(out, "\t\t\t<details><summary>Device Properties and Extensions</summary>\n");
+    }
+
     for (uint32_t i = 0; i < gpu_count; ++i) {
         if (json_output && selected_gpu != i) {
             // Toggle json_output to allow html output without json output
@@ -3548,6 +3683,10 @@ int main(int argc, char **argv) {
         if (human_readable_output) {
             printf("\n\n");
         }
+    }
+
+    if (html_output) {
+        fprintf(out, "\t\t\t</details>\n");
     }
 
     for (uint32_t i = 0; i < gpu_count; ++i) {

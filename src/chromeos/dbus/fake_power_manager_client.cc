@@ -38,6 +38,18 @@ void ArcTimerExpirationCallback(int expiration_fd) {
   }
 }
 
+power_manager::BacklightBrightnessChange_Cause RequestCauseToChangeCause(
+    power_manager::SetBacklightBrightnessRequest_Cause cause) {
+  switch (cause) {
+    case power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST:
+      return power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+    case power_manager::SetBacklightBrightnessRequest_Cause_MODEL:
+      return power_manager::BacklightBrightnessChange_Cause_MODEL;
+  }
+  NOTREACHED() << "Unhandled brightness request cause " << cause;
+  return power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+}
+
 }  // namespace
 
 FakePowerManagerClient::FakePowerManagerClient()
@@ -68,6 +80,12 @@ bool FakePowerManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void FakePowerManagerClient::WaitForServiceToBeAvailable(
+    WaitForServiceToBeAvailableCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakePowerManagerClient::SetRenderProcessManagerDelegate(
     base::WeakPtr<RenderProcessManagerDelegate> delegate) {
   render_process_manager_delegate_ = delegate;
@@ -77,14 +95,14 @@ void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {}
 
 void FakePowerManagerClient::IncreaseScreenBrightness() {}
 
-void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
-                                                        bool gradual) {
-  screen_brightness_percent_ = percent;
-  requested_screen_brightness_percent_ = percent;
+void FakePowerManagerClient::SetScreenBrightness(
+    const power_manager::SetBacklightBrightnessRequest& request) {
+  screen_brightness_percent_ = request.percent();
+  requested_screen_brightness_percent_ = request.percent();
 
   power_manager::BacklightBrightnessChange change;
-  change.set_percent(percent);
-  change.set_cause(power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+  change.set_percent(request.percent());
+  change.set_cause(RequestCauseToChangeCause(request.cause()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakePowerManagerClient::SendScreenBrightnessChanged,

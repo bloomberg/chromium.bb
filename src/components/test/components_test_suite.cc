@@ -21,7 +21,9 @@
 #include "ui/base/ui_base_paths.h"
 #include "url/url_util.h"
 
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+#include "components/test/ios_components_test_initializer.h"
+#else
 #include "content/public/common/content_client.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -110,19 +112,25 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
   ~ComponentsUnitTestEventListener() override {}
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+    ios_initializer_.reset(new IosComponentsTestInitializer());
+#else
     content_initializer_.reset(new content::TestContentClientInitializer());
 #endif
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+    ios_initializer_.reset();
+#else
     content_initializer_.reset();
 #endif
   }
 
  private:
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
+  std::unique_ptr<IosComponentsTestInitializer> ios_initializer_;
+#else
   std::unique_ptr<content::TestContentClientInitializer> content_initializer_;
 #endif
 

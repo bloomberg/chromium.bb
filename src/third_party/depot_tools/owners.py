@@ -11,19 +11,22 @@ so you may need approval from both an OWNER and a reviewer in many cases.
 
 The syntax of the OWNERS file is, roughly:
 
-lines     := (\s* line? \s* comment? \s* "\n")*
+lines      := (\s* line? \s* comment? \s* "\n")*
 
-line      := directive
-          | "per-file" \s+ glob \s* "=" \s* directive
+line       := directive
+           | "per-file" \s+ glob \s* "=" \s* directive
 
-directive := "set noparent"
-          |  "file:" glob
-          |  email_address
-          |  "*"
+directive  := "set noparent"
+           |  "file:" owner_file
+           |  email_address
+           |  "*"
 
-glob      := [a-zA-Z0-9_-*?]+
+glob       := [a-zA-Z0-9_-*?]+
 
-comment   := "#" [^"\n"]*
+comment    := "#" [^"\n"]*
+
+owner_file := "OWNERS"
+           |  [^"\n"]* "_OWNERS"
 
 Email addresses must follow the foo@bar.com short form (exact syntax given
 in BASIC_EMAIL_REGEXP, below). Filename globs follow the simple unix
@@ -48,7 +51,8 @@ glob.
 If the "file:" directive is used, the referred to OWNERS file will be parsed and
 considered when determining the valid set of OWNERS. If the filename starts with
 "//" it is relative to the root of the repository, otherwise it is relative to
-the current file
+the current file. The referred to file *must* be named OWNERS or end in a suffix
+of _OWNERS.
 
 Examples for all of these combinations can be found in tests/owners_unittest.py.
 """
@@ -356,7 +360,7 @@ class Database(object):
     if directive == 'set noparent':
       self._stop_looking.add(owned_paths)
     elif directive.startswith('file:'):
-      include_file = self._resolve_include(directive[5:], owners_path)
+      include_file = self._resolve_include(directive[5:], owners_path, lineno)
       if not include_file:
         raise SyntaxErrorInOwnersFile(owners_path, lineno,
             ('%s does not refer to an existing file.' % directive[5:]))
@@ -376,7 +380,7 @@ class Database(object):
           ('"%s" is not a "set noparent", file include, "*", '
            'or an email address.' % (directive,)))
 
-  def _resolve_include(self, path, start):
+  def _resolve_include(self, path, start, lineno):
     if path.startswith('//'):
       include_path = path[2:]
     else:
@@ -388,6 +392,13 @@ class Database(object):
       return include_path
 
     owners_path = self.os_path.join(self.root, include_path)
+    # Paths included via "file:" must end in OWNERS or _OWNERS. Files that can
+    # affect ownership have a different set of ownership rules, so that users
+    # cannot self-approve changes adding themselves to an OWNERS file.
+    if not (owners_path.endswith('/OWNERS') or owners_path.endswith('_OWNERS')):
+      raise SyntaxErrorInOwnersFile(start, lineno, 'file: include must specify '
+                                    'a file named OWNERS or ending in _OWNERS')
+
     if not self.os_path.exists(owners_path):
       return None
 
@@ -416,7 +427,7 @@ class Database(object):
         owners.add(line)
         continue
       if line.startswith('file:'):
-        sub_include_file = self._resolve_include(line[5:], include_file)
+        sub_include_file = self._resolve_include(line[5:], include_file, lineno)
         sub_owners = self._read_just_the_owners(sub_include_file)
         owners.update(sub_owners)
         continue

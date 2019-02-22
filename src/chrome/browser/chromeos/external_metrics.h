@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 
 namespace metrics {
 class MetricSample;
@@ -42,8 +43,9 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
   friend class ExternalMetricsTest;
 
-  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, CanReceiveHistogram);
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, CustomInterval);
   FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, HandleMissingFile);
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, CanReceiveHistogram);
   FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest,
                            IncorrectHistogramsAreDiscarded);
 
@@ -88,6 +90,9 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // File used by libmetrics to send metrics to Chrome.
   std::string uma_events_file_;
+
+  // Interval between metrics being read from |uma_events_file_|.
+  base::TimeDelta collection_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalMetrics);
 };

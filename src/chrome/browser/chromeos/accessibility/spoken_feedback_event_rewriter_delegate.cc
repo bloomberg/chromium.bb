@@ -46,6 +46,17 @@ void SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
   chromeos::ForwardKeyToExtension(*(event->AsKeyEvent()), host);
 }
 
+void SpokenFeedbackEventRewriterDelegate::DispatchMouseEventToChromeVox(
+    std::unique_ptr<ui::Event> event) {
+  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
+      extension_misc::kChromeVoxExtensionId);
+  if (!host)
+    return;
+
+  // Forward the event to ChromeVox's background page.
+  chromeos::ForwardMouseToExtension(*(event->AsMouseEvent()), host);
+}
+
 bool SpokenFeedbackEventRewriterDelegate::ShouldDispatchKeyEventToChromeVox(
     const ui::Event* event) const {
   chromeos::AccessibilityManager* accessibility_manager =

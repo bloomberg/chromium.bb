@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
@@ -14,6 +15,13 @@ using testing::_;
 using testing::Return;
 
 namespace chromecast {
+
+namespace {
+
+constexpr base::TimeDelta kTimeoutWindow = base::TimeDelta::FromSeconds(3);
+const size_t kMaxSwipesWithinTimeout = 3;
+
+}  // namespace
 
 class MockCastGestureHandler : public CastGestureHandler {
  public:
@@ -34,13 +42,16 @@ class CastSystemGestureDispatcherTest : public testing::Test {
   ~CastSystemGestureDispatcherTest() override = default;
 
   void SetUp() override {
-    gesture_dispatcher_ = std::make_unique<CastSystemGestureDispatcher>();
+    test_clock_ = std::make_unique<base::SimpleTestTickClock>();
+    gesture_dispatcher_ =
+        std::make_unique<CastSystemGestureDispatcher>(test_clock_.get());
   }
 
   void TearDown() override { gesture_dispatcher_.reset(); }
 
  protected:
   std::unique_ptr<CastSystemGestureDispatcher> gesture_dispatcher_;
+  std::unique_ptr<base::SimpleTestTickClock> test_clock_;
 };
 
 TEST_F(CastSystemGestureDispatcherTest, SingleHandler) {
@@ -106,6 +117,7 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleHandlersByPriority) {
   EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
   gesture_dispatcher_->HandleSideSwipe(event, origin, point);
 
+  test_clock_->Advance(kTimeoutWindow);
   // Test when the higher priority handler can't handle the event. Lower
   // priority handler should get it instead.
   origin = CastSideSwipeOrigin::BOTTOM;
@@ -113,11 +125,90 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleHandlersByPriority) {
   EXPECT_CALL(handler_1, HandleSideSwipe(event, origin, point));
   EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
   gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+  test_clock_->Advance(kTimeoutWindow);
 
   // Test when no handlers can handle the event.
   ON_CALL(handler_1, CanHandleSwipe(origin)).WillByDefault(Return(false));
   EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
   EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
+  gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+  test_clock_->Advance(kTimeoutWindow);
+
+  gesture_dispatcher_->RemoveGestureHandler(&handler_2);
+  gesture_dispatcher_->RemoveGestureHandler(&handler_1);
+}
+
+TEST_F(CastSystemGestureDispatcherTest, MultipleBackSwipesToRootUi) {
+  MockCastGestureHandler handler_1;
+  MockCastGestureHandler handler_2;
+  ON_CALL(handler_1, GetPriority())
+      .WillByDefault(Return(CastGestureHandler::Priority::ROOT_UI));
+  ON_CALL(handler_2, GetPriority())
+      .WillByDefault(Return(CastGestureHandler::Priority::MAIN_ACTIVITY));
+
+  gesture_dispatcher_->AddGestureHandler(&handler_1);
+  gesture_dispatcher_->AddGestureHandler(&handler_2);
+
+  // Higher priority handler should get the event.
+  ON_CALL(handler_1, CanHandleSwipe(_)).WillByDefault(Return(true));
+  ON_CALL(handler_2, CanHandleSwipe(_)).WillByDefault(Return(true));
+  CastSideSwipeEvent event = CastSideSwipeEvent::BEGIN;
+  CastSideSwipeOrigin origin = CastSideSwipeOrigin::TOP;
+  gfx::Point point(0, 0);
+
+  // Swipe gestures from any other edge but LEFT will always hit the main target
+  // handler.
+  for (size_t i = 0; i < 2 * kMaxSwipesWithinTimeout; ++i) {
+    EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
+    EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
+    gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+  }
+
+  // Now test LEFT events.
+  origin = CastSideSwipeOrigin::LEFT;
+  // Trigger N - 1 events within the recent events timeout window.
+  for (size_t i = 0; i < kMaxSwipesWithinTimeout - 1; ++i) {
+    EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
+    EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
+    gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+    base::TimeDelta time_between_events =
+        (kTimeoutWindow - base::TimeDelta::FromSeconds(1)) /
+        (kMaxSwipesWithinTimeout - 1);
+    test_clock_->Advance(time_between_events);
+  }
+
+  // The Nth event will go to the root UI, since there were N BEGIN events that
+  // happened in rapid succession. This means the main activity is probably not
+  // handling the events properly, and we should defer to the root UI which is
+  // assumed to behave properly.
+  event = CastSideSwipeEvent::BEGIN;
+  EXPECT_CALL(handler_1, HandleSideSwipe(event, origin, point));
+  EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
+  gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+
+  // CONTINUE events still go to the root UI.
+  event = CastSideSwipeEvent::CONTINUE;
+  EXPECT_CALL(handler_1, HandleSideSwipe(event, origin, point));
+  EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
+  gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+
+  // All events will go to the root UI until the next BEGIN event after the
+  // 3-event timeout.
+  event = CastSideSwipeEvent::CONTINUE;
+  EXPECT_CALL(handler_1, HandleSideSwipe(event, origin, point));
+  EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
+  gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+
+  event = CastSideSwipeEvent::END;
+  EXPECT_CALL(handler_1, HandleSideSwipe(event, origin, point));
+  EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
+  gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+
+  // The next event will behave as normal; the timeout period restarts after
+  // the END swipe event.
+  event = CastSideSwipeEvent::BEGIN;
+  EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
+  EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
   gesture_dispatcher_->HandleSideSwipe(event, origin, point);
 
   gesture_dispatcher_->RemoveGestureHandler(&handler_2);

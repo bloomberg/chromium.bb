@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">कुंजी ढूंढें, फिर लिखने के लिए उठाएं</translation>
 <translation id="1012173283529841972">सूची आइटम</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">दो उंगलियों से दाईं ओर स्वाइप करें</translation>
 <translation id="1022586497894531524">क्या आप ChromeVox के बोलकर दिए जाने वाले जवाब का पहली बार उपयोग कर रहे हैं? यह झटपट ट्यूटोरियल ChromeVox के साथ शुरुआत करने के लिए ज़रूरी बातें समझाता है.</translation>
 <translation id="1023866615269196768">स्पैन किया हुआ.</translation>
 <translation id="1025074108959230262">रोचक मोड अक्षम</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">ध्वनि फ़ीडबैक (ईयरकॉन) चालू या बंद करें.</translation>
 <translation id="1108651818222110612">सबटाइटल</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">दो उंगलियों से ऊपर स्वाइप करें</translation>
 <translation id="1124771028211010580">वर्तमान प्रदर्शन शैली साथ-साथ है.</translation>
 <translation id="113582498867142724"><ph name="NUM" /> आइटम के साथ <ph name="TAG" /> संकलन</translation>
 <translation id="1155043339247954670">कोई अगला सूची आइटम नहीं.</translation>
@@ -91,6 +93,7 @@
 <translation id="1722567105086139392">लिंक</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">अगला ग्राफ़िक</translation>
+<translation id="1765245556747822181">एक उंगली से ऊपर स्वाइप करें</translation>
 <translation id="1781173782405573156">Pass through कुंजी</translation>
 <translation id="1787176709638001873">पासवर्ड संपादन लेख</translation>
 <translation id="1802710350767629429">अपडेट नोट दिखाएं</translation>
@@ -137,6 +140,7 @@
 <translation id="2223693656926968778">वर्तमान आइटम पर कार्रवाई करें</translation>
 <translation id="225732394367814946">बोली की दर बढ़ाएं</translation>
 <translation id="2267945578749931355">अगला वर्ण</translation>
+<translation id="2278490101488436824">तीन उंगलियों से बाईं ओर स्वाइप करें</translation>
 <translation id="2281234842553884450">पिछला स्लाइडर</translation>
 <translation id="2294136146931447363">इटैलिक शुरू</translation>
 <translation id="2311237334957139798">पिछले विवरण ले जाएं</translation>
@@ -209,17 +213,20 @@
 <translation id="2864481629947106776">पिछला लिंक</translation>
 <translation id="2867808975387772810">संदर्भ सूची</translation>
 <translation id="2873259058405069099">तालिका के प्रारंभ पर जाएं</translation>
+<translation id="2879867157561757640">तीन उंगलियों से नीचे स्वाइप करें</translation>
 <translation id="288178314850623291">सीधे किसी खास तरह के आइटम पर पहुंचने के लिए 'जंप कमांड' का इस्तेमाल करें. एक शीर्षक से दूसरे शीर्षक पर सीधे जाने के लिए, Search + H या पिछले शीर्षक पर वापस जाने के लिए Search + Shift + H दबाएं.</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
 <translation id="2909478709401302630">सुपरस्क्रिप्ट का शुरुआती हिस्सा</translation>
 <translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
+<translation id="2912405967290226587">तीन उंगलियों से दाईं ओर स्वाइप करें</translation>
 <translation id="2932083475399492303">संरचनात्मक या लेआउट के बीच रेखा प्रकार टॉगल करें</translation>
 <translation id="2944762337049891859">पेज लोड हो जाने के बाद अपने आप उसे पढ़ेंं.</translation>
 <translation id="2964026537669811554">शीर्षक समूह</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{टैब}one{# टैब}other{# टैब}}</translation>
 <translation id="2972078295414139404">पहले देखा गया कोई लिंक नहीं.</translation>
 <translation id="2972205263822847197">टूल टिप</translation>
+<translation id="297825089465017871">दो उंगलियों से बाईं ओर स्वाइप करें</translation>
 <translation id="2998131015536248178">पिछला वर्ण</translation>
 <translation id="2999559350546931576">पिच घटाएं</translation>
 <translation id="2999945368667127852">कोई अगला मीडिया विजेट नहीं.</translation>
@@ -231,6 +238,7 @@
 <translation id="3046838483509668188">ChromeVox विकल्प</translation>
 <translation id="3047143736589213134">प्रयोगात्‍मक कीमैप</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />, मेनू खुल गया</translation>
+<translation id="3070245424257836917">तीन उंगलियों से ऊपर स्वाइप करें</translation>
 <translation id="3078345202707391975">अगले स्तर 2 का शीर्षक</translation>
 <translation id="3078740164268491126">तालिका</translation>
 <translation id="3082249673510793544">पीछे की ओर स्क्रोल करें</translation>
@@ -343,6 +351,7 @@
 <translation id="3599054940393788245">गणना में नहीं</translation>
 <translation id="360241989769010433">धन्यवाद</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
+<translation id="3622350485154495700">एक उंगली से दो बार टैप करें</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{बैकटिक}one{# बैकटिक}other{# बैकटिक}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{डॉलर}one{# डॉलर चिह्न}other{# डॉलर चिह्न}}</translation>
@@ -372,6 +381,7 @@
 <translation id="3914173277599553213">आवश्यक</translation>
 <translation id="3914732343065571127">ChromeVox का निर्देश संदर्भ</translation>
 <translation id="3930498801443296724">पुलकोट</translation>
+<translation id="3941269780691800708">माउस के नीचे वाला टेक्स्ट बोलें</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थान से पढ़ना प्रारंभ करें</translation>
 <translation id="4004802134384979325">चेक किया गया</translation>
 <translation id="4006140876663370126">img</translation>
@@ -462,6 +472,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">पिछला थानचिह्न</translation>
 <translation id="4696413482802371445">कोई अगला स्‍तर 5 शीर्षक नहीं.</translation>
+<translation id="4710166929009737753">एक उंगली से दाईं ओर स्वाइप करें</translation>
 <translation id="4729095194763193578">पिछली तालिका पंक्ति</translation>
 <translation id="4736221692378411923">अगस्त</translation>
 <translation id="4740661827607246557">सहायता आदेश</translation>
@@ -474,6 +485,7 @@
 <translation id="4826415162591436065">आगे की ओर नेविगेट करें</translation>
 <translation id="4826604887384865800">अगला जंप</translation>
 <translation id="4827410568042294688">अचयनित</translation>
+<translation id="4838490795649708173">चार उंगलियों से टैप करें</translation>
 <translation id="4839925464551908214">पिछली पंक्ति पर जाएं</translation>
 <translation id="4842108708071771135">कोई अगला ब्लॉककोट नहीं.</translation>
 <translation id="4844625982113518938">किसी भी कुंजी का नाम जानने के लिए उसे दबाएं. Ctrl+W से जानें मोड बंद हो जाएगा.</translation>
@@ -610,6 +622,7 @@
 <translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या अधिक संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5788275253279308023">गुप्‍त विंडो, <ph name="TITLE" />, टैब</translation>
+<translation id="5805940204952508776">दो उंगलियों से टैप करें</translation>
 <translation id="5806206155699461681">चुनिंदा साइटों (जैसे 'Google सर्च') को बेहतर बनाएं.</translation>
 <translation id="5819072574982403430">ट्री आइटम</translation>
 <translation id="5826479389509458994">पंक्ति <ph name="ROW" /> स्तंभ <ph name="COL" /></translation>
@@ -714,8 +727,10 @@
 <translation id="6786800275320335305">लेख</translation>
 <translation id="6787839852456839824">कीबोर्ड शॉर्टकट</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6826226459053491773">दो उंगलियों से नीचे स्वाइप करें</translation>
 <translation id="6833103209700200188">पादलेख</translation>
 <translation id="6858047746862060282">प्रस्तावना</translation>
+<translation id="6859876496651143278">एक उंगली से बाईं ओर स्वाइप करें</translation>
 <translation id="6871161210040114857">केस को अनदेखा करना.</translation>
 <translation id="6877435256196695200">कोई अगला ग्राफ़िक नहीं.</translation>
 <translation id="6897341342232909480">बाएं ले जाएं</translation>
@@ -965,6 +980,7 @@
 <translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
 <translation id="930275611743429116">चयन प्रारंभ या समाप्त करें.</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
+<translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
 <translation id="973955474346881951">स्टिकी मोड चालू/बंद करें</translation>
 <translation id="976849232629612000">कोई आइटम नहीं.</translation>

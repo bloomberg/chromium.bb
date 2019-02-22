@@ -4,41 +4,52 @@
 
 #include "content/browser/media/session/audio_focus_observer.h"
 
-#include "build/build_config.h"
-#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
 AudioFocusObserver::AudioFocusObserver() : binding_(this) {}
 
 void AudioFocusObserver::RegisterAudioFocusObserver() {
-  if (observer_id_.has_value())
+  ConnectToService();
+
+  if (!audio_focus_ptr_.is_bound() || audio_focus_ptr_.encountered_error())
     return;
 
-#if !defined(OS_ANDROID)
-  // TODO(https://crbug.com/873320): Add support for Android.
+  if (binding_.is_bound())
+    return;
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   media_session::mojom::AudioFocusObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
-  observer_id_ =
-      AudioFocusManager::GetInstance()->AddObserver(std::move(observer));
-#endif
+  audio_focus_ptr_->AddObserver(std::move(observer));
 }
 
 void AudioFocusObserver::UnregisterAudioFocusObserver() {
-  if (!observer_id_.has_value())
-    return;
-
-#if !defined(OS_ANDROID)
-  // TODO(https://crbug.com/873320): Add support for Android.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   binding_.Close();
-  AudioFocusManager::GetInstance()->RemoveObserver(observer_id_.value());
-#endif
+}
 
-  observer_id_.reset();
+void AudioFocusObserver::ConnectToService() {
+  if (audio_focus_ptr_.encountered_error())
+    audio_focus_ptr_.reset();
+
+  if (audio_focus_ptr_.is_bound())
+    return;
+
+  ServiceManagerConnection* connection =
+      ServiceManagerConnection::GetForProcess();
+
+  if (!connection)
+    return;
+
+  service_manager::Connector* connector = connection->GetConnector();
+  connector->BindInterface(media_session::mojom::kServiceName,
+                           mojo::MakeRequest(&audio_focus_ptr_));
 }
 
 AudioFocusObserver::~AudioFocusObserver() = default;

@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #else
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -778,11 +779,12 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
   bool delete_profile = false;
   args->GetBoolean(0, &delete_profile);
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  if (signin_manager->IsSignoutProhibited()) {
+  if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
     // If the user cannot signout, the profile must be destroyed.
     DCHECK(delete_profile);
   } else {
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
     if (signin_manager->IsAuthenticated()) {
       if (GetSyncService())
         ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
@@ -957,7 +959,7 @@ PeopleHandler::GetSyncStatusDictionary() {
   DCHECK(signin);
 #if !defined(OS_CHROMEOS)
   // Signout is not allowed if the user has policy (crbug.com/172204).
-  if (SigninManagerFactory::GetForProfile(profile_)->IsSignoutProhibited()) {
+  if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
     std::string username = signin->GetAuthenticatedAccountInfo().email;
 
     // If there is no one logged in or if the profile name is empty then the

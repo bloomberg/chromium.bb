@@ -194,7 +194,8 @@ void populateFrameTimes(FrameTimes* frameTimes, TimestampInfoMap& map, const std
 
 bool timestampValid (EGLnsecsANDROID timestamp)
 {
-	return (timestamp >= 0) || (timestamp == EGL_TIMESTAMP_PENDING_ANDROID);
+	// \todo [2017-10-19 brianderson] Don't consider 0 invalid once kernel fix is in.
+	return (timestamp > 0) || (timestamp == EGL_TIMESTAMP_PENDING_ANDROID);
 }
 
 bool timestampPending (EGLnsecsANDROID timestamp)
@@ -241,7 +242,7 @@ void verifySingleFrame (const FrameTimes& frameTimes, tcu::ResultCollector& resu
 	// be sure that the readsDone time must be after the renderingComplete time.
     // It may also be equal to the renderingComplete time if no reads were
     // peformed.
-	if (verifyReadsDone)
+	if (verifyReadsDone && timestampValid(frameTimes.readsDone))
 		check_le(result, frameTimes.renderingComplete, frameTimes.readsDone, "Buffer rendering completed after reads completed.");
 
 	// Verify CPU/GPU dependencies
@@ -262,7 +263,8 @@ void verifyNeighboringFrames (const FrameTimes& frame1, const FrameTimes& frame2
 	check_lt(result, frame1.dequeueReady, frame2.dequeueReady, "Dequeue ready times not monotonic.");
 
 	// GPU timeline.
-	check_lt(result, frame1.renderingComplete, frame2.renderingComplete, "Rendering complete times not monotonic.");
+	// Same rendering complete time is fine.
+	check_le(result, frame1.renderingComplete, frame2.renderingComplete, "Rendering complete times not monotonic.");
 
 	if (timestampValid(frame1.firstCompositionGpuFinished) && timestampValid(frame2.firstCompositionGpuFinished))
 		check_lt(result, frame1.firstCompositionGpuFinished, frame2.firstCompositionGpuFinished, "Composition GPU work complete times not monotonic.");

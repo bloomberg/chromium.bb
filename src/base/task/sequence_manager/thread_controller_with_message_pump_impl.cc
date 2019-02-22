@@ -43,6 +43,12 @@ void ThreadControllerWithMessagePumpImpl::SetSequencedTaskSource(
   main_thread_only().task_source = task_source;
 }
 
+void ThreadControllerWithMessagePumpImpl::SetMessageLoop(
+    MessageLoop* message_loop) {
+  NOTREACHED()
+      << "ThreadControllerWithMessagePumpImpl doesn't support MessageLoops";
+}
+
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
     int work_batch_size) {
   DCHECK_GE(work_batch_size, 1);

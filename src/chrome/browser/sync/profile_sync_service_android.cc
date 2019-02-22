@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,6 +35,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/syncable/read_transaction.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google/cacheinvalidation/types.pb.h"
@@ -172,7 +174,7 @@ jboolean ProfileSyncServiceAndroid::IsSyncActive(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsSyncActive();
+  return sync_service_->IsSyncFeatureActive();
 }
 
 jboolean ProfileSyncServiceAndroid::IsEngineInitialized(
@@ -410,7 +412,8 @@ void ProfileSyncServiceAndroid::SetSyncSessionsId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   std::string machine_tag = ConvertJavaStringToUTF8(env, tag);
-  sync_prefs_->SetSyncSessionsGUID(machine_tag);
+  SessionSyncServiceFactory::GetForProfile(profile_)->SetSyncSessionsGUID(
+      machine_tag);
 }
 
 jboolean ProfileSyncServiceAndroid::HasKeepEverythingSynced(

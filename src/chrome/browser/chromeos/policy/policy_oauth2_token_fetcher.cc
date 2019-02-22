@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -45,10 +47,6 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
 
  private:
   // PolicyOAuth2TokenFetcher overrides.
-  void StartWithSigninURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory,
-      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
-      const TokenCallback& callback) override;
   void StartWithAuthCode(
       const std::string& auth_code,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
@@ -99,7 +97,6 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
   // Auth code which is used to retreive a refresh token.
   std::string auth_code_;
 
-  scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
   std::unique_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
   std::unique_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
@@ -129,18 +126,6 @@ PolicyOAuth2TokenFetcherImpl::PolicyOAuth2TokenFetcherImpl()
     : weak_ptr_factory_(this) {}
 
 PolicyOAuth2TokenFetcherImpl::~PolicyOAuth2TokenFetcherImpl() {}
-
-void PolicyOAuth2TokenFetcherImpl::StartWithSigninURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory,
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
-    const TokenCallback& callback) {
-  DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
-
-  auth_url_loader_factory_ = auth_url_loader_factory;
-  system_url_loader_factory_ = system_url_loader_factory;
-  callback_ = callback;
-  StartFetchingRefreshToken();
-}
 
 void PolicyOAuth2TokenFetcherImpl::StartWithAuthCode(
     const std::string& auth_code,
@@ -177,16 +162,10 @@ void PolicyOAuth2TokenFetcherImpl::StartFetchingRefreshToken() {
     return;
   }
 
-  if (auth_code_.empty()) {
-    refresh_token_fetcher_.reset(new GaiaAuthFetcher(
-        this, GaiaConstants::kChromeSource, auth_url_loader_factory_));
-    refresh_token_fetcher_->DeprecatedStartCookieForOAuthLoginTokenExchange(
-        std::string());
-  } else {
-    refresh_token_fetcher_.reset(new GaiaAuthFetcher(
-        this, GaiaConstants::kChromeSource, system_url_loader_factory_));
-    refresh_token_fetcher_->StartAuthCodeForOAuth2TokenExchange(auth_code_);
-  }
+  DCHECK(!auth_code_.empty());
+  refresh_token_fetcher_.reset(new GaiaAuthFetcher(
+      this, GaiaConstants::kChromeSource, system_url_loader_factory_));
+  refresh_token_fetcher_->StartAuthCodeForOAuth2TokenExchange(auth_code_);
 }
 
 void PolicyOAuth2TokenFetcherImpl::StartFetchingAccessToken() {
@@ -241,8 +220,8 @@ void PolicyOAuth2TokenFetcherImpl::RetryOnError(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error.IsTransientError() && retry_count_ < kMaxRequestAttemptCount) {
     retry_count_++;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE, task,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI}, task,
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
@@ -271,14 +250,6 @@ class PolicyOAuth2TokenFetcherFake : public PolicyOAuth2TokenFetcher {
   ~PolicyOAuth2TokenFetcherFake() override {}
 
  private:
-  // PolicyOAuth2TokenFetcher overrides.
-  void StartWithSigninURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory,
-      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
-      const TokenCallback& callback) override {
-    ForwardPolicyToken(callback);
-  }
-
   void StartWithAuthCode(
       const std::string& auth_code,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,

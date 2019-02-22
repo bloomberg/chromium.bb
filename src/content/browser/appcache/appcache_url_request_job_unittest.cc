@@ -147,7 +147,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
    public:
     explicit MockURLRequestDelegate(AppCacheURLRequestJobTest* test)
         : test_(test),
-          received_data_(new net::IOBuffer(kNumBlocks * kBlockSize)),
+          received_data_(
+              base::MakeRefCounted<net::IOBuffer>(kNumBlocks * kBlockSize)),
           did_receive_headers_(false),
           amount_received_(0),
           kill_after_amount_received_(0),
@@ -197,8 +198,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     void ReadSome(net::URLRequest* request) {
       DCHECK(amount_received_ + kBlockSize <= kNumBlocks * kBlockSize);
-      scoped_refptr<IOBuffer> wrapped_buffer(
-          new net::WrappedIOBuffer(received_data_->data() + amount_received_));
+      scoped_refptr<IOBuffer> wrapped_buffer =
+          base::MakeRefCounted<net::WrappedIOBuffer>(received_data_->data() +
+                                                     amount_received_);
       EXPECT_EQ(net::ERR_IO_PENDING,
                 request->Read(wrapped_buffer.get(), kBlockSize));
     }
@@ -620,7 +622,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
                        base::Unretained(this), false));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_ = service_->storage()->CreateResponseWriter(GURL());
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
     // Continues async
@@ -692,7 +694,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
                        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_ = service_->storage()->CreateResponseWriter(GURL());
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
     // Continues async
@@ -702,7 +704,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 3, 1k blocks
     static const char kHttpHeaders[] =
         "HTTP/1.0 200 OK\0Content-Length: 3072\0\0";
-    scoped_refptr<IOBuffer> body(new IOBuffer(kBlockSize * 3));
+    scoped_refptr<IOBuffer> body =
+        base::MakeRefCounted<IOBuffer>(kBlockSize * 3);
     char* p = body->data();
     for (int i = 0; i < 3; ++i, p += kBlockSize)
       FillData(i + 1, p, kBlockSize);
@@ -734,7 +737,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
                        base::Unretained(this)));
     PushNextTask(base::BindOnce(&AppCacheURLRequestJobTest::MakeRangeRequest,
                                 base::Unretained(this)));
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_ = service_->storage()->CreateResponseWriter(GURL());
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
     // Continues async
@@ -801,7 +804,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
                        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_ = service_->storage()->CreateResponseWriter(GURL());
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
 
@@ -829,7 +832,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
                        base::Unretained(this), true));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_ = service_->storage()->CreateResponseWriter(GURL());
     written_response_id_ = writer_->response_id();
     WriteLargeResponse();
 

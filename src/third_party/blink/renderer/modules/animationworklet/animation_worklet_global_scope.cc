@@ -7,8 +7,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -23,9 +24,9 @@ void UpdateAnimation(Animator* animator,
                      ScriptState* script_state,
                      WorkletAnimationId id,
                      double current_time,
-                     CompositorMutatorOutputState* result) {
-  CompositorMutatorOutputState::AnimationState animation_output(id,
-                                                                base::nullopt);
+                     AnimationWorkletDispatcherOutput* result) {
+  AnimationWorkletDispatcherOutput::AnimationState animation_output(
+      id, base::nullopt);
   if (animator->Animate(script_state, current_time, &animation_output)) {
     result->animations.push_back(std::move(animation_output));
   }
@@ -35,25 +36,23 @@ void UpdateAnimation(Animator* animator,
 
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerThread* thread) {
-  return new AnimationWorkletGlobalScope(std::move(creation_params), isolate,
-                                         thread);
+  return new AnimationWorkletGlobalScope(std::move(creation_params), thread);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerThread* thread)
-    : ThreadedWorkletGlobalScope(std::move(creation_params), isolate, thread) {
-}
+    : WorkletGlobalScope(std::move(creation_params),
+                         thread->GetWorkerReportingProxy(),
+                         thread) {}
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
 void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(animator_definitions_);
   visitor->Trace(animators_);
-  ThreadedWorkletGlobalScope::Trace(visitor);
+  WorkletGlobalScope::Trace(visitor);
 }
 
 void AnimationWorkletGlobalScope::Dispose() {
@@ -61,7 +60,7 @@ void AnimationWorkletGlobalScope::Dispose() {
   if (AnimationWorkletProxyClient* proxy_client =
           AnimationWorkletProxyClient::From(Clients()))
     proxy_client->Dispose();
-  ThreadedWorkletGlobalScope::Dispose();
+  WorkletGlobalScope::Dispose();
 }
 
 Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
@@ -117,6 +116,15 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
 
     UpdateAnimation(animator, script_state, animation.worklet_animation_id,
                     animation.current_time, result.get());
+  }
+
+  for (const auto& worklet_animation_id : mutator_input.peeked_animations) {
+    int id = worklet_animation_id.animation_id;
+    Animator* animator = animators_.at(id);
+
+    result->animations.emplace_back(
+        worklet_animation_id,
+        animator ? animator->GetLastLocalTime() : base::nullopt);
   }
 
   return result;
@@ -190,9 +198,11 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
   if (options && options->GetData())
     value = options->GetData()->Deserialize(isolate);
 
-  v8::Local<v8::Object> instance;
-  if (!V8ObjectConstructor::NewInstance(isolate, constructor,
-                                        !value.IsEmpty() ? 1 : 0, &value)
+  v8::Local<v8::Value> instance;
+  if (!V8ScriptRunner::CallAsConstructor(
+           isolate, constructor,
+           ExecutionContext::From(ScriptController()->GetScriptState()),
+           !value.IsEmpty() ? 1 : 0, &value)
            .ToLocal(&instance))
     return nullptr;
 

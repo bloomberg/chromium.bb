@@ -24,7 +24,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirroringService final
     : public service_manager::Service,
       public mojom::MirroringService {
  public:
-  MirroringService();
+  explicit MirroringService(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~MirroringService() override;
 
  private:
@@ -46,6 +47,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirroringService final
              mojom::CastMessageChannelPtr outbound_channel,
              mojom::CastMessageChannelRequest inbound_channel) override;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MirroringService> bindings_;

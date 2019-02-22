@@ -1193,20 +1193,26 @@ bool GLES2Implementation::GetQueryObjectValueHelper(const char* function_name,
   }
 
   bool valid_value = false;
+  const bool flush_if_pending =
+      pname != GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT;
   switch (pname) {
     case GL_QUERY_RESULT_EXT:
-      if (!query->CheckResultsAvailable(helper_)) {
+      if (!query->CheckResultsAvailable(helper_, flush_if_pending)) {
         helper_->WaitForToken(query->token());
-        if (!query->CheckResultsAvailable(helper_)) {
+        if (!query->CheckResultsAvailable(helper_, flush_if_pending)) {
           FinishHelper();
-          CHECK(query->CheckResultsAvailable(helper_));
+          CHECK(query->CheckResultsAvailable(helper_, flush_if_pending));
         }
       }
       *params = query->GetResult();
       valid_value = true;
       break;
     case GL_QUERY_RESULT_AVAILABLE_EXT:
-      *params = query->CheckResultsAvailable(helper_);
+      *params = query->CheckResultsAvailable(helper_, flush_if_pending);
+      valid_value = true;
+      break;
+    case GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT:
+      *params = query->CheckResultsAvailable(helper_, flush_if_pending);
       valid_value = true;
       break;
     default:
@@ -6317,15 +6323,6 @@ namespace {
 bool CreateImageValidInternalFormat(GLenum internalformat,
                                     const Capabilities& capabilities) {
   switch (internalformat) {
-    case GL_ATC_RGB_AMD:
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return capabilities.texture_format_atc;
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return capabilities.texture_format_dxt1;
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return capabilities.texture_format_dxt5;
-    case GL_ETC1_RGB8_OES:
-      return capabilities.texture_format_etc1;
     case GL_R16_EXT:
       return capabilities.texture_norm16;
     case GL_RGB10_A2_EXT:

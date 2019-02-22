@@ -26,12 +26,22 @@ cr.define('media_router_container_test_base', function() {
      *     should be visible.
      */
     var checkElementsVisibleWithId = function(elementIdList) {
-      for (var i = 0; i < elementIdList.length; i++)
-        checkElementVisibleWithId(true, elementIdList[i]);
+      for (var id of elementIdList)
+        checkElementVisibleWithId(true, id);
 
-      for (var j = 0; j < hiddenCheckElementIdList.length; j++) {
-        if (elementIdList.indexOf(hiddenCheckElementIdList[j]) == -1)
-          checkElementVisibleWithId(false, hiddenCheckElementIdList[j]);
+      for (id of hiddenCheckElementIdList) {
+        if (!elementIdList.includes(id)) {
+          if (id === 'first-run-flow-cloud-pref' &&
+              !elementIdList.includes('first-run-flow')) {
+            // If 'first-run-flow' is already expected to be hidden, don't check
+            // first-run-flow-cloud-pref which is a child of it. Polymer2
+            // optimizes <dom-if>s that are false, by no longer updating its
+            // contents.
+            continue;
+          }
+
+          checkElementVisibleWithId(false, id);
+        }
       }
     };
 

@@ -76,7 +76,7 @@ TEST(%s, %s) { }
 
 
 # Timeout constants.
-NCTEST_TERMINATE_TIMEOUT_SEC = 60
+NCTEST_TERMINATE_TIMEOUT_SEC = 120
 NCTEST_KILL_TIMEOUT_SEC = NCTEST_TERMINATE_TIMEOUT_SEC + 2
 BUSY_LOOP_MAX_TIME_SEC = NCTEST_KILL_TIMEOUT_SEC * 2
 
@@ -466,9 +466,10 @@ def main():
   finished_tests = sorted(finished_tests, key=lambda test: test['name'])
   for test in finished_tests:
     if test['name'] == 'NCTEST_SANITY':
-      _, stderr = test['proc'].communicate()
+      stdout, stderr = test['proc'].communicate()
       return_code = test['proc'].poll()
       if return_code != 0:
+        sys.stdout.write(stdout)
         sys.stderr.write(stderr)
       continue
     ProcessTestResult(resultfile, resultlog, test)
@@ -483,6 +484,10 @@ def main():
       fd.write(resultfile.getvalue())
 
   resultfile.close()
+  if return_code != 0:
+    print ("No-compile driver failure with return_code %d. Result log:" %
+           return_code)
+    print resultlog.getvalue()
   sys.exit(return_code)
 
 

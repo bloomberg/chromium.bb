@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -302,6 +303,68 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_SUPPRESS_INFOBAR);
   }
+}
+
+// static
+std::string TranslateManager::GetManualTargetLanguage(
+    const std::string& source_code,
+    const LanguageState& language_state,
+    translate::TranslatePrefs* prefs,
+    language::LanguageModel* language_model) {
+  if (language_state.IsPageTranslated()) {
+    return language_state.current_language();
+  } else {
+    const std::set<std::string>& skipped_languages =
+        GetSkippedLanguagesForExperiments(source_code, prefs);
+    return GetTargetLanguage(prefs, language_model, skipped_languages);
+  }
+}
+
+bool TranslateManager::CanManuallyTranslate() {
+  if (!base::FeatureList::IsEnabled(translate::kTranslateUI) ||
+      net::NetworkChangeNotifier::IsOffline() ||
+      (!ignore_missing_key_for_testing_ &&
+       !::google_apis::HasAPIKeyConfigured()))
+    return false;
+
+  // MHTML pages currently cannot be translated (crbug.com/217945).
+  if (translate_driver_->GetContentsMimeType() == "multipart/related" ||
+      !translate_client_->IsTranslatableURL(
+          translate_driver_->GetVisibleURL()) ||
+      !language_state_.page_needs_translation())
+    return false;
+
+  const std::string source_language = language_state_.original_language();
+  if (source_language.empty() ||
+      source_language == translate::kUnknownLanguageCode)
+    return false;
+
+  std::unique_ptr<TranslatePrefs> translate_prefs(
+      translate_client_->GetTranslatePrefs());
+  const std::string target_lang = GetManualTargetLanguage(
+      TranslateDownloadManager::GetLanguageCode(source_language),
+      language_state_, translate_prefs.get(), language_model_);
+  if (target_lang.empty())
+    return false;
+
+  return true;
+}
+
+void TranslateManager::InitiateManualTranslation() {
+  std::unique_ptr<TranslatePrefs> translate_prefs(
+      translate_client_->GetTranslatePrefs());
+  const std::string source_code = TranslateDownloadManager::GetLanguageCode(
+      language_state_.original_language());
+  const std::string target_lang = GetManualTargetLanguage(
+      source_code, language_state_, translate_prefs.get(), language_model_);
+
+  language_state_.SetTranslateEnabled(true);
+  const translate::TranslateStep step =
+      language_state_.IsPageTranslated()
+          ? translate::TRANSLATE_STEP_AFTER_TRANSLATE
+          : translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
+  translate_client_->ShowTranslateUI(step, source_code, target_lang,
+                                     TranslateErrors::NONE, false);
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
@@ -630,10 +693,27 @@ bool TranslateManager::ShouldSuppressBubbleUI(
 
 void TranslateManager::AddTargetLanguageToAcceptLanguages(
     const std::string& target_language_code) {
+  std::string target_language, tail;
+  // |target_language_code| should satisfy BCP47 and consist of a language code
+  // and an optional region code joined by an hyphen.
+  language::SplitIntoMainAndTail(target_language_code, &target_language, &tail);
+
+  std::function<bool(const std::string&)> is_redundant;
+  if (tail.empty()) {
+    is_redundant = [&target_language](const std::string& language) {
+      return language::ExtractBaseLanguage(language) == target_language;
+    };
+  } else {
+    is_redundant = [&target_language_code](const std::string& language) {
+      return language == target_language_code;
+    };
+  }
+
   auto prefs = translate_client_->GetTranslatePrefs();
   std::vector<std::string> languages;
   prefs->GetLanguageList(&languages);
-  if (!base::ContainsValue(languages, target_language_code)) {
+
+  if (std::none_of(languages.begin(), languages.end(), is_redundant)) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
   }
 }

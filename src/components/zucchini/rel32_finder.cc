@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
+
 namespace zucchini {
 
 /******** Abs32GapFinder ********/
@@ -22,7 +24,8 @@ Abs32GapFinder::Abs32GapFinder(ConstBufferView image,
   DCHECK_GE(region.begin(), image.begin());
   DCHECK_LE(region.end(), image.end());
 
-  const offset_t begin_offset = region.begin() - image.begin();
+  const offset_t begin_offset =
+      base::checked_cast<offset_t>(region.begin() - image.begin());
   // Find the first |abs32_current_| with |*abs32_current_ >= begin_offset|.
   abs32_current_ = std::lower_bound(abs32_locations.begin(),
                                     abs32_locations.end(), begin_offset);

@@ -81,8 +81,6 @@ def RunSteps(api):
 
   api.gclient.runhooks()
 
-  assert not api.gclient.is_blink_mode
-
 
 def GenTests(api):
   yield api.test('basic')

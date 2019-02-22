@@ -58,6 +58,7 @@ class AudioTrackList;
 class AutoplayPolicy;
 class ContentType;
 class CueTimeline;
+class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class EventQueue;
@@ -93,6 +94,9 @@ class CORE_EXPORT HTMLMediaElement
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
 
   enum class RecordMetricsBehavior { kDoNotRecord, kDoRecord };
@@ -122,6 +126,8 @@ class CORE_EXPORT HTMLMediaElement
   bool HasAudio() const;
 
   bool SupportsSave() const;
+
+  bool SupportsLoop() const;
 
   cc::Layer* CcLayer() const;
 
@@ -200,8 +206,8 @@ class CORE_EXPORT HTMLMediaElement
   void FlingingStopped();
 
   // statistics
-  unsigned webkitAudioDecodedByteCount() const;
-  unsigned webkitVideoDecodedByteCount() const;
+  uint64_t webkitAudioDecodedByteCount() const;
+  uint64_t webkitVideoDecodedByteCount() const;
 
   // media source extensions
   void CloseMediaSource();
@@ -263,11 +269,6 @@ class CORE_EXPORT HTMLMediaElement
   // ensures that both implementations return document, so return the result
   // of one of them here.
   using HTMLElement::GetExecutionContext;
-
-  bool HasSingleSecurityOrigin() const {
-    return GetWebMediaPlayer() ? GetWebMediaPlayer()->HasSingleSecurityOrigin()
-                               : true;
-  }
 
   bool IsFullscreen() const;
   virtual bool UsesOverlayFullscreenVideo() const { return false; }
@@ -364,6 +365,7 @@ class CORE_EXPORT HTMLMediaElement
 
  private:
   // Friend class for testing.
+  friend class ContextMenuControllerTest;
   friend class MediaElementFillingViewportTest;
 
   void ResetMediaPlayerAndMediaSource();
@@ -554,11 +556,16 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
+  void OnVisibilityChangedForLazyLoad(bool);
+
+  void OnRemovedFromDocumentTimerFired(TimerBase*);
+
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
   TaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
   TaskRunnerTimer<HTMLMediaElement> check_viewport_intersection_timer_;
+  TaskRunnerTimer<HTMLMediaElement> removed_from_document_timer_;
 
   Member<TimeRanges> played_time_ranges_;
   Member<EventQueue> async_event_queue_;
@@ -747,6 +754,8 @@ class CORE_EXPORT HTMLMediaElement
 
   Member<MediaControls> media_controls_;
   Member<HTMLMediaElementControlsList> controls_list_;
+
+  Member<ElementVisibilityObserver> lazy_load_visibility_observer_;
 
   static URLRegistry* media_stream_registry_;
 };

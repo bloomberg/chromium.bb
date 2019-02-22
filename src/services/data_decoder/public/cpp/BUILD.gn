@@ -19,6 +19,8 @@ source_set("cpp") {
     "safe_xml_parser.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     "//services/data_decoder/public/mojom",
     "//services/service_manager/public/cpp",

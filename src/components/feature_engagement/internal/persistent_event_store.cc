@@ -13,7 +13,7 @@ namespace feature_engagement {
 namespace {
 // Corresponds to a UMA suffix "LevelDBOpenResults" in histograms.xml.
 // Please do not change.
-const char kDatabaseUMAName[] = "FeatureEngagementTrackerEventStore";
+const char kDBUMAName[] = "FeatureEngagementTrackerEventStore";
 
 using KeyEventPair = std::pair<std::string, Event>;
 using KeyEventList = std::vector<KeyEventPair>;
@@ -37,8 +37,7 @@ PersistentEventStore::~PersistentEventStore() = default;
 void PersistentEventStore::Load(const OnLoadedCallback& callback) {
   DCHECK(!ready_);
 
-  db_->Init(kDatabaseUMAName, storage_dir_,
-            leveldb_proto::CreateSimpleOptions(),
+  db_->Init(kDBUMAName, storage_dir_, leveldb_proto::CreateSimpleOptions(),
             base::BindOnce(&PersistentEventStore::OnInitComplete,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }

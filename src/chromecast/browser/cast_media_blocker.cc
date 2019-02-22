@@ -95,7 +95,7 @@ void CastMediaBlocker::Suspend() {
     return;
 
   LOG(INFO) << "Suspending media session.";
-  media_session()->Suspend(content::MediaSession::SuspendType::SYSTEM);
+  media_session()->Suspend(content::MediaSession::SuspendType::kSystem);
 }
 
 void CastMediaBlocker::Resume() {
@@ -103,7 +103,7 @@ void CastMediaBlocker::Resume() {
     return;
 
   LOG(INFO) << "Resuming media session.";
-  media_session()->Resume(content::MediaSession::SuspendType::SYSTEM);
+  media_session()->Resume(content::MediaSession::SuspendType::kSystem);
 }
 
 }  // namespace shell

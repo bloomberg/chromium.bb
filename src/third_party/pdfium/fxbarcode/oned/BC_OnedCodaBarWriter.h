@@ -30,19 +30,19 @@ class CBC_OnedCodaBarWriter final : public CBC_OneDimWriter {
   bool CheckContentValidity(const WideStringView& contents) override;
   WideString FilterContents(const WideStringView& contents) override;
   void SetDataLength(int32_t length) override;
+  bool SetTextLocation(BC_TEXT_LOC location) override;
+  bool SetWideNarrowRatio(int8_t ratio) override;
+  bool SetStartChar(char start) override;
+  bool SetEndChar(char end) override;
 
-  virtual bool SetStartChar(char start);
-  virtual bool SetEndChar(char end);
-  virtual bool SetTextLocation(BC_TEXT_LOC location);
-  virtual bool SetWideNarrowRatio(int8_t ratio);
   virtual bool FindChar(wchar_t ch, bool isContent);
 
   WideString encodedContents(const WideStringView& contents);
 
  private:
-  char m_chStart;
-  char m_chEnd;
-  int8_t m_iWideNarrRatio;
+  char m_chStart = 'A';
+  char m_chEnd = 'B';
+  int8_t m_iWideNarrRatio = 2;
 };
 
 #endif  // FXBARCODE_ONED_BC_ONEDCODABARWRITER_H_

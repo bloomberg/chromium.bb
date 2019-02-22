@@ -63,12 +63,12 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% for feature_name, member_list in origin_trial_member_list | groupby('runtime_enabled_feature_name') %}
   {% filter runtime_enabled(feature_name) %}
   {% for member in member_list %}
-  v8::Local<v8::Value> {{member.name}}Value;
-  if (!v8Object->Get(context, keys[{{members.index(member)}}].Get(isolate)).ToLocal(&{{member.name}}Value)) {
+  v8::Local<v8::Value> {{member.v8_value}};
+  if (!v8Object->Get(context, keys[{{members.index(member)}}].Get(isolate)).ToLocal(&{{member.v8_value}})) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
-  if ({{member.name}}Value.IsEmpty() || {{member.name}}Value->IsUndefined()) {
+  if ({{member.v8_value}}.IsEmpty() || {{member.v8_value}}->IsUndefined()) {
     {% if member.is_required %}
     exceptionState.ThrowTypeError("required member {{member.name}} is undefined.");
     return;
@@ -76,7 +76,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     // Do nothing.
     {% endif %}
   {% if member.is_nullable and not member.is_string_type %}{# String types handle null via V8StringResource #}
-  } else if ({{member.name}}Value->IsNull()) {
+  } else if ({{member.v8_value}}->IsNull()) {
     impl.{{member.null_setter_name}}();
   {% endif %}
   } else {
@@ -85,22 +85,22 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% endif %}
     {{v8_value_to_local_cpp_value(member) | trim | indent}}
     {% if member.is_interface_type %}
-    if (!{{member.name}}CppValue) {
+    if (!{{member.cpp_value}}) {
       exceptionState.ThrowTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
       return;
     }
     {% endif %}
     {% if member.enum_values %}
     {{declare_enum_validation_variable(member.enum_values) | trim | indent}}
-    if (!IsValidEnum({{member.name}}CppValue, validValues, base::size(validValues), "{{member.enum_type}}", exceptionState))
+    if (!IsValidEnum({{member.cpp_value}}, validValues, base::size(validValues), "{{member.enum_type}}", exceptionState))
       return;
     {% elif member.is_object %}
-    if (!{{member.name}}CppValue.IsObject()) {
+    if (!{{member.cpp_value}}.IsObject()) {
       exceptionState.ThrowTypeError("member {{member.name}} is not an object.");
       return;
     }
     {% endif %}
-    impl.{{member.setter_name}}({{member.name}}CppValue);
+    impl.{{member.setter_name}}({{member.cpp_value}});
   }
 
   {% endfor %}
@@ -138,33 +138,33 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
   {% for feature_name, member_list in origin_trial_member_list | groupby('runtime_enabled_feature_name') %}
   {% filter runtime_enabled(feature_name) %}
   {% for member in member_list %}
-  v8::Local<v8::Value> {{member.name}}Value;
-  bool {{member.name}}HasValueOrDefault = false;
+  v8::Local<v8::Value> {{member.v8_value}};
+  bool {{member.has_value_or_default}} = false;
   if (impl.{{member.has_method_name}}()) {
     {% if member.is_object %}
     DCHECK(impl.{{member.getter_name}}().IsObject());
     {% endif %}
-    {{member.name}}Value = {{member.cpp_value_to_v8_value}};
-    {{member.name}}HasValueOrDefault = true;
+    {{member.v8_value}} = {{member.cpp_value_to_v8_value}};
+    {{member.has_value_or_default}} = true;
   {% if member.v8_default_value %}
   } else {
-    {{member.name}}Value = {{member.v8_default_value}};
-    {{member.name}}HasValueOrDefault = true;
+    {{member.v8_value}} = {{member.v8_default_value}};
+    {{member.has_value_or_default}} = true;
   {% elif member.is_nullable and not member.has_explicit_presence %}
   } else {
-    {{member.name}}Value = v8::Null(isolate);
-    {{member.name}}HasValueOrDefault = true;
+    {{member.v8_value}} = v8::Null(isolate);
+    {{member.has_value_or_default}} = true;
   {% elif member.is_required %}
   } else {
     NOTREACHED();
   {% endif %}
   }
-  {# The HasValueOrDefault variable will be optimized out.
+  {# The _has_value_or_default variable will be optimized out.
      If there is a default value, the compiler will notice that all branches set it to true.
      If there is not, then the compiler will inline this call into the only branch that sets it to true.
      Either way, the code is efficient and the variable is completely elided. #}
-  if ({{member.name}}HasValueOrDefault &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[{{members.index(member)}}].Get(isolate), {{member.name}}Value))) {
+  if ({{member.has_value_or_default}} &&
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[{{members.index(member)}}].Get(isolate), {{member.v8_value}}))) {
     return false;
   }
 

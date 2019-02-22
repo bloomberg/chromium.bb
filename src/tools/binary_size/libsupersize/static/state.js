@@ -333,34 +333,34 @@ function _makeSizeTextGetter() {
       });
 
       return {
-        element: document.createTextNode(methodStr),
         description: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
+        element: document.createTextNode(methodStr),
         value: methodCount,
       };
+
     } else {
       const bytes = node.size;
-      let unit = state.get('byteunit');
-      let suffix = _BYTE_UNITS[unit];
-      if (suffix == null) {
-        unit = 'MiB';
-        suffix = _BYTE_UNITS.MiB;
+
+      const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
+      let description = `${bytesGrouped} bytes`;
+      if (node.numAliases && node.numAliases > 1) {
+        description += ` for 1 of ${node.numAliases} aliases`;
       }
 
-      // Format the bytes as a number with 2 digits after the decimal point
+      const unit = state.get('byteunit') || 'KiB';
+      const suffix = _BYTE_UNITS[unit];
+      // Format |bytes| as a number with 2 digits after the decimal point
       const text = (bytes / suffix).toLocaleString(_LOCALE, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
       const textNode = document.createTextNode(`${text} `);
-
       // Display the suffix with a smaller font
       const suffixElement = dom.textElement('small', unit);
 
-      const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
-
       return {
+        description,
         element: dom.createFragment([textNode, suffixElement]),
-        description: `${bytesGrouped} bytes`,
         value: bytes,
       };
     }

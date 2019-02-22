@@ -110,6 +110,12 @@ void SoftwareFeatureManagerImpl::FindEligibleDevices(
   request->set_feature(
       cryptauth::SoftwareFeatureEnumToString(software_feature));
 
+  // For historical reasons, the Bluetooth address is abused to mark a which
+  // feature should receive a GCM callback. Read more at
+  // https://crbug.com/883915.
+  request->set_callback_bluetooth_address(
+      SoftwareFeatureEnumToStringAllCaps(software_feature));
+
   pending_requests_.emplace(std::make_unique<Request>(
       std::move(request), success_callback, error_callback));
   ProcessRequestQueue();

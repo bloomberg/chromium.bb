@@ -75,7 +75,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
-      lock_manager_(task_runner, this),
+      lock_manager_(task_runner),
       context_creation_weak_ptr_factory_(this) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
@@ -201,7 +201,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   params.settings = &settings;
   params.main_task_runner = task_runner_;
   params.mutator_host = animation_host_.get();
-  host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
 
   if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers) &&
       host_->GetInputHandler()) {
@@ -445,16 +445,6 @@ bool Compositor::GetScrollOffsetForLayer(cc::ElementId element_id,
          input_handler->GetScrollOffsetForLayer(element_id, offset);
 }
 
-void Compositor::SetAuthoritativeVSyncInterval(
-    const base::TimeDelta& interval) {
-  DCHECK_GT(interval.InMillisecondsF(), 0);
-  refresh_rate_ =
-      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
-  if (context_factory_private_)
-    context_factory_private_->SetAuthoritativeVSyncInterval(this, interval);
-  vsync_manager_->SetAuthoritativeVSyncInterval(interval);
-}
-
 void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
                                            base::TimeDelta interval) {
   static bool is_frame_rate_limit_disabled =
@@ -596,8 +586,8 @@ static void SendDamagedRectsRecursive(ui::Layer* layer) {
     SendDamagedRectsRecursive(child);
 }
 
-void Compositor::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
-  if (!root_layer() || requested_update == VisualStateUpdate::kPrePaint)
+void Compositor::UpdateLayerTreeHost() {
+  if (!root_layer())
     return;
   SendDamagedRectsRecursive(root_layer());
 }
@@ -659,10 +649,6 @@ const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
 void Compositor::SetLayerTreeDebugState(
     const cc::LayerTreeDebugState& debug_state) {
   host_->SetDebugState(debug_state);
-}
-
-void Compositor::OnCompositorLockStateChanged(bool locked) {
-  host_->SetDeferCommits(locked);
 }
 
 void Compositor::RequestPresentationTimeForNextFrame(

@@ -14,6 +14,7 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "media/base/limits.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -26,8 +27,8 @@ using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
 
 // Number of default settings to be used as final tie-breaking criteria for
 // settings that are equally good at satisfying constraints:
-// device ID, power-line frequency, noise reduction, resolution and frame rate.
-const int kNumDefaultDistanceEntries = 5;
+// device ID, noise reduction, resolution and frame rate.
+const int kNumDefaultDistanceEntries = 4;
 
 // The minimum aspect ratio to be supported by sources.
 const double kMinSourceAspectRatio = 0.05;
@@ -53,21 +54,16 @@ struct Candidate {
             const std::string& group_id,
             const media::VideoCaptureFormat& format,
             media::VideoFacingMode facing_mode,
-            media::PowerLineFrequency power_line_frequency,
             const base::Optional<bool>& noise_reduction)
       : device_id_(device_id),
         group_id_(group_id),
         format_(format),
         facing_mode_(facing_mode),
-        power_line_frequency_(power_line_frequency),
         noise_reduction_(noise_reduction) {}
 
   // These accessor-like methods transform types to what Blink constraint
   // classes expect.
   blink::WebString GetFacingMode() const { return ToWebString(facing_mode_); }
-  long GetPowerLineFrequency() const {
-    return static_cast<long>(power_line_frequency_);
-  }
   blink::WebString GetDeviceId() const {
     return blink::WebString::FromASCII(device_id_.data());
   }
@@ -83,9 +79,6 @@ struct Candidate {
   const std::string& device_id() const { return device_id_; }
   const std::string& group_id() const { return group_id_; }
   media::VideoFacingMode facing_mode() const { return facing_mode_; }
-  media::PowerLineFrequency power_line_frequency() const {
-    return power_line_frequency_;
-  }
   const base::Optional<bool>& noise_reduction() const {
     return noise_reduction_;
   }
@@ -95,7 +88,6 @@ struct Candidate {
   std::string group_id_;
   media::VideoCaptureFormat format_;
   media::VideoFacingMode facing_mode_;
-  media::PowerLineFrequency power_line_frequency_;
   base::Optional<bool> noise_reduction_;
 };
 
@@ -184,7 +176,6 @@ VideoCaptureSettings ComputeVideoDeviceCaptureSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format = candidate.format();
-  capture_params.power_line_frequency = candidate.power_line_frequency();
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, constrained_format.constrained_resolution(),
       constrained_format.constrained_frame_rate(),
@@ -408,32 +399,6 @@ double AspectRatioConstraintSourceDistance(
   return 0.0;
 }
 
-// Returns a custom distance function suitable for the googPowerLineFrequency
-// constraint, given  a |constraint| and a candidate value |source_value|.
-// The distance is HUGE_VAL if |source_value| cannot satisfy |constraint|.
-// Otherwise, the distance is zero.
-double PowerLineFrequencyConstraintSourceDistance(
-    const blink::LongConstraint& constraint,
-    media::PowerLineFrequency source_value,
-    const char** failed_constraint_name) {
-  bool constraint_has_min = ConstraintHasMin(constraint);
-  bool constraint_has_max = ConstraintHasMax(constraint);
-  long constraint_min = constraint_has_min ? ConstraintMin(constraint) : -1L;
-  long constraint_max = constraint_has_max ? ConstraintMax(constraint) : -1L;
-  long source_value_long = static_cast<long>(source_value);
-
-  if ((constraint_has_max && source_value_long > constraint_max) ||
-      (constraint_has_min && source_value_long < constraint_min) ||
-      (constraint_has_min && constraint_has_max &&
-       constraint_min > constraint_max)) {
-    if (failed_constraint_name)
-      *failed_constraint_name = constraint.GetName();
-    return HUGE_VAL;
-  }
-
-  return 0.0;
-}
-
 // Returns a custom distance function suitable for the googNoiseReduction
 // constraint, given  a |constraint| and a candidate value |value|.
 // The distance is HUGE_VAL if |candidate_value| cannot satisfy |constraint|.
@@ -519,9 +484,6 @@ double CandidateSourceDistance(
                               failed_constraint_name) +
          FormatSourceDistance(candidate.format(), constrained_format,
                               constraint_set, failed_constraint_name) +
-         PowerLineFrequencyConstraintSourceDistance(
-             constraint_set.goog_power_line_frequency,
-             candidate.power_line_frequency(), failed_constraint_name) +
          NoiseReductionConstraintSourceDistance(
              constraint_set.goog_noise_reduction, candidate.noise_reduction(),
              failed_constraint_name);
@@ -626,23 +588,6 @@ double FrameRateConstraintNativeFitnessDistance(
 }
 
 // Returns the fitness distance between |value| and |constraint| for the
-// googPowerLineFrequency constraint.
-// Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
-double PowerLineFrequencyConstraintFitnessDistance(
-    long value,
-    const blink::LongConstraint& constraint) {
-  if (!constraint.HasIdeal())
-    return 0.0;
-
-  // This constraint is of type long, but it behaves as an enum. Thus, values
-  // equal to ideal have fitness 0.0 and any other values have fitness 1.0.
-  if (value == constraint.Ideal())
-    return 0.0;
-
-  return 1.0;
-}
-
-// Returns the fitness distance between |value| and |constraint| for the
 // googNoiseReduction constraint.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double NoiseReductionConstraintFitnessDistance(
@@ -678,9 +623,6 @@ double CandidateFitnessDistance(
                                              constraint_set.facing_mode);
   fitness += StringConstraintFitnessDistance(candidate.GetVideoKind(),
                                              constraint_set.video_kind);
-  fitness += PowerLineFrequencyConstraintFitnessDistance(
-      candidate.GetPowerLineFrequency(),
-      constraint_set.goog_power_line_frequency);
   fitness += NoiseReductionConstraintFitnessDistance(
       candidate.noise_reduction(), constraint_set.goog_noise_reduction);
   // No need to pass minimum value to compute fitness for range-based
@@ -740,14 +682,6 @@ void AppendDistanceFromDefault(
     }
   }
 
-  // Prefer default power-line frequency.
-  double power_line_frequency_distance =
-      candidate.power_line_frequency() ==
-              media::PowerLineFrequency::FREQUENCY_DEFAULT
-          ? 0.0
-          : HUGE_VAL;
-  distance_vector->push_back(power_line_frequency_distance);
-
   // Prefer not having a specific noise-reduction value and let the lower-layers
   // implementation choose a noise-reduction strategy.
   double noise_reduction_distance =
@@ -790,6 +724,33 @@ blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
       return blink::WebMediaStreamTrack::FacingMode::kEnvironment;
     default:
       return blink::WebMediaStreamTrack::FacingMode::kNone;
+  }
+}
+
+blink::WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
+    media::mojom::DisplayCaptureSurfaceType display_surface) {
+  switch (display_surface) {
+    case media::mojom::DisplayCaptureSurfaceType::MONITOR:
+      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor;
+    case media::mojom::DisplayCaptureSurfaceType::WINDOW:
+      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow;
+    case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
+      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::
+          kApplication;
+    case media::mojom::DisplayCaptureSurfaceType::BROWSER:
+      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser;
+  }
+}
+
+blink::WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
+    media::mojom::CursorCaptureType cursor) {
+  switch (cursor) {
+    case media::mojom::CursorCaptureType::NEVER:
+      return blink::WebMediaStreamTrack::CursorCaptureType::kNever;
+    case media::mojom::CursorCaptureType::ALWAYS:
+      return blink::WebMediaStreamTrack::CursorCaptureType::kAlways;
+    case media::mojom::CursorCaptureType::MOTION:
+      return blink::WebMediaStreamTrack::CursorCaptureType::kMotion;
   }
 }
 
@@ -849,75 +810,63 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
       if (!constrained_format.ApplyConstraintSet(constraints.Basic()))
         continue;
 
-      for (auto& power_line_frequency : capabilities.power_line_capabilities) {
-        double basic_power_line_frequency_distance =
-            PowerLineFrequencyConstraintSourceDistance(
-                constraints.Basic().goog_power_line_frequency,
-                power_line_frequency, &failed_constraint_name);
-        if (!std::isfinite(basic_power_line_frequency_distance))
+      for (auto& noise_reduction : capabilities.noise_reduction_capabilities) {
+        double basic_noise_reduction_distance =
+            NoiseReductionConstraintSourceDistance(
+                constraints.Basic().goog_noise_reduction, noise_reduction,
+                &failed_constraint_name);
+        if (!std::isfinite(basic_noise_reduction_distance))
           continue;
 
-        for (auto& noise_reduction :
-             capabilities.noise_reduction_capabilities) {
-          double basic_noise_reduction_distance =
-              NoiseReductionConstraintSourceDistance(
-                  constraints.Basic().goog_noise_reduction, noise_reduction,
-                  &failed_constraint_name);
-          if (!std::isfinite(basic_noise_reduction_distance))
-            continue;
+        // The candidate satisfies the basic constraint set.
+        double candidate_basic_custom_distance = basic_device_distance +
+                                                 basic_format_distance +
+                                                 basic_noise_reduction_distance;
+        DCHECK(std::isfinite(candidate_basic_custom_distance));
 
-          // The candidate satisfies the basic constraint set.
-          double candidate_basic_custom_distance =
-              basic_device_distance + basic_format_distance +
-              basic_power_line_frequency_distance +
-              basic_noise_reduction_distance;
-          DCHECK(std::isfinite(candidate_basic_custom_distance));
+        // Temporary vector to save custom distances for advanced constraints.
+        // Custom distances must be added to the candidate distance vector
+        // after all the spec-mandated values.
+        DistanceVector advanced_custom_distance_vector;
+        Candidate candidate(device->device_id, device->group_id, format,
+                            device->facing_mode, noise_reduction);
+        DistanceVector candidate_distance_vector;
+        // First criteria for valid candidates is satisfaction of advanced
+        // constraint sets.
+        for (const auto& advanced_set : constraints.Advanced()) {
+          double custom_distance = CandidateSourceDistance(
+              candidate, constrained_format, advanced_set, nullptr);
+          if (!constrained_format.ApplyConstraintSet(advanced_set))
+            custom_distance = HUGE_VAL;
+          advanced_custom_distance_vector.push_back(custom_distance);
+          double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
+          candidate_distance_vector.push_back(spec_distance);
+        }
 
-          // Temporary vector to save custom distances for advanced constraints.
-          // Custom distances must be added to the candidate distance vector
-          // after all the spec-mandated values.
-          DistanceVector advanced_custom_distance_vector;
-          Candidate candidate(device->device_id, device->group_id, format,
-                              device->facing_mode, power_line_frequency,
-                              noise_reduction);
-          DistanceVector candidate_distance_vector;
-          // First criteria for valid candidates is satisfaction of advanced
-          // constraint sets.
-          for (const auto& advanced_set : constraints.Advanced()) {
-            double custom_distance = CandidateSourceDistance(
-                candidate, constrained_format, advanced_set, nullptr);
-            if (!constrained_format.ApplyConstraintSet(advanced_set))
-              custom_distance = HUGE_VAL;
-            advanced_custom_distance_vector.push_back(custom_distance);
-            double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
-            candidate_distance_vector.push_back(spec_distance);
-          }
+        // Second criterion is fitness distance.
+        candidate_distance_vector.push_back(CandidateFitnessDistance(
+            candidate, constrained_format, constraints.Basic()));
 
-          // Second criterion is fitness distance.
-          candidate_distance_vector.push_back(CandidateFitnessDistance(
-              candidate, constrained_format, constraints.Basic()));
+        // Third criteria are custom distances to constraint sets.
+        candidate_distance_vector.push_back(candidate_basic_custom_distance);
+        std::copy(advanced_custom_distance_vector.begin(),
+                  advanced_custom_distance_vector.end(),
+                  std::back_inserter(candidate_distance_vector));
 
-          // Third criteria are custom distances to constraint sets.
-          candidate_distance_vector.push_back(candidate_basic_custom_distance);
-          std::copy(advanced_custom_distance_vector.begin(),
-                    advanced_custom_distance_vector.end(),
-                    std::back_inserter(candidate_distance_vector));
+        // Fourth criteria is native fitness distance.
+        candidate_distance_vector.push_back(CandidateNativeFitnessDistance(
+            constrained_format, constraints.Basic()));
 
-          // Fourth criteria is native fitness distance.
-          candidate_distance_vector.push_back(CandidateNativeFitnessDistance(
-              constrained_format, constraints.Basic()));
+        // Final criteria are custom distances to default settings.
+        AppendDistanceFromDefault(candidate, capabilities, default_width,
+                                  default_height, default_frame_rate,
+                                  &candidate_distance_vector);
 
-          // Final criteria are custom distances to default settings.
-          AppendDistanceFromDefault(candidate, capabilities, default_width,
-                                    default_height, default_frame_rate,
-                                    &candidate_distance_vector);
-
-          DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());
-          if (candidate_distance_vector < best_distance) {
-            best_distance = candidate_distance_vector;
-            result = ComputeVideoDeviceCaptureSettings(
-                candidate, constrained_format, constraints.Basic());
-          }
+        DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());
+        if (candidate_distance_vector < best_distance) {
+          best_distance = candidate_distance_vector;
+          result = ComputeVideoDeviceCaptureSettings(
+              candidate, constrained_format, constraints.Basic());
         }
       }
     }

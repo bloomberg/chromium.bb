@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Each;
 
 namespace viz {
 namespace {
@@ -86,6 +87,8 @@ INSTANTIATE_TEST_CASE_P(ClientResourceProviderTests,
 class MockReleaseCallback {
  public:
   MOCK_METHOD2(Released, void(const gpu::SyncToken& token, bool lost));
+  MOCK_METHOD3(ReleasedWithId,
+               void(ResourceId id, const gpu::SyncToken& token, bool lost));
 };
 
 TEST_P(ClientResourceProviderTest, TransferableResourceReleased) {
@@ -236,6 +239,65 @@ TEST_P(ClientResourceProviderTest,
 
   EXPECT_CALL(release, Released(_, true));
   DestroyProvider();
+}
+
+TEST_P(ClientResourceProviderTest, TransferableResourceSendToParentManyUnsent) {
+  MockReleaseCallback release;
+
+  // 5 resources to have 2 before and 2 after the one being sent and returned,
+  // to verify the data structures are treated correctly when removing from the
+  // middle. 1 after is not enough as that one will replace the resource being
+  // removed and misses some edge cases. We want another resource after that in
+  // the structure to verify it is also not treated incorrectly.
+  struct Data {
+    TransferableResource tran;
+    ResourceId id;
+  } data[5];
+  for (int i = 0; i < 5; ++i) {
+    data[i].tran = MakeTransferableResource(use_gpu(), 'a', 15);
+    data[i].id = provider().ImportResource(
+        data[i].tran,
+        SingleReleaseCallback::Create(base::BindOnce(
+            &MockReleaseCallback::Released, base::Unretained(&release))));
+  }
+  std::sort(std::begin(data), std::end(data),
+            [](const Data& a, const Data& b) { return a.id < b.id; });
+
+  // Export the resource.
+  std::vector<ResourceId> to_send = {data[2].id};
+  std::vector<TransferableResource> exported;
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
+  ASSERT_EQ(exported.size(), 1u);
+
+  // Exported resource matches except for the id which was mapped
+  // to the local ResourceProvider, and the sync token should be
+  // verified if it's a gpu resource.
+  gpu::SyncToken verified_sync_token = data[2].tran.mailbox_holder.sync_token;
+  if (!data[2].tran.is_software)
+    verified_sync_token.SetVerifyFlush();
+
+  // Exported resources are not released when removed, until the export returns.
+  EXPECT_CALL(release, Released(_, _)).Times(0);
+  provider().RemoveImportedResource(data[2].id);
+
+  // Return the resource, with a sync token if using gpu.
+  std::vector<ReturnedResource> returned;
+  returned.push_back({});
+  returned.back().id = exported[0].id;
+  if (use_gpu())
+    returned.back().sync_token = SyncTokenFromUInt(31);
+  returned.back().count = 1;
+  returned.back().lost = false;
+
+  // The sync token is given to the ReleaseCallback.
+  EXPECT_CALL(release, Released(returned[0].sync_token, false));
+  provider().ReceiveReturnsFromParent(returned);
+
+  EXPECT_CALL(release, Released(_, false)).Times(4);
+  provider().RemoveImportedResource(data[0].id);
+  provider().RemoveImportedResource(data[1].id);
+  provider().RemoveImportedResource(data[3].id);
+  provider().RemoveImportedResource(data[4].id);
 }
 
 TEST_P(ClientResourceProviderTest, TransferableResourceRemovedAfterReturn) {
@@ -554,7 +616,7 @@ TEST_P(ClientResourceProviderTest, ReleaseExportedResourcesThenRemove) {
   provider().PrepareSendToParent({resource}, &list, context_provider());
   EXPECT_EQ(1u, list.size());
 
-  // Drop any exported resources. Yhey are now considered lost for gpu
+  // Drop any exported resources. They are now considered lost for gpu
   // compositing, since gpu resources are modified (in their metadata) while
   // being used by the parent.
   provider().ReleaseAllExportedResources(use_gpu());
@@ -565,6 +627,193 @@ TEST_P(ClientResourceProviderTest, ReleaseExportedResourcesThenRemove) {
   provider().RemoveImportedResource(resource);
 
   EXPECT_CALL(release, Released(_, _)).Times(0);
+}
+
+TEST_P(ClientResourceProviderTest, ReleaseMultipleResources) {
+  MockReleaseCallback release;
+
+  // Make 5 resources, put them in a non-sorted order.
+  ResourceId resources[5];
+  for (int i = 0; i < 5; ++i) {
+    TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 1 + i);
+    resources[i] = provider().ImportResource(
+        tran, SingleReleaseCallback::Create(
+                  base::BindOnce(&MockReleaseCallback::ReleasedWithId,
+                                 base::Unretained(&release), i)));
+  }
+
+  // Transfer some resources to the parent, but not in the sorted order.
+  std::vector<TransferableResource> list;
+  provider().PrepareSendToParent({resources[2], resources[0], resources[4]},
+                                 &list, context_provider());
+  EXPECT_EQ(3u, list.size());
+
+  // Receive them back. Since these are not in the same order they were
+  // inserted originally, we verify the ClientResourceProvider can handle
+  // resources being returned (in a group) that are not at the front/back
+  // of its internal storage. IOW This shouldn't crash or corrupt state.
+  std::vector<ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.push_back(list[1].ToReturnedResource());
+  returned_to_child.push_back(list[2].ToReturnedResource());
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // Remove them from the ClientResourceProvider, they should be returned as
+  // they're no longer exported.
+  EXPECT_CALL(release, ReleasedWithId(0, _, false));
+  provider().RemoveImportedResource(resources[0]);
+  EXPECT_CALL(release, ReleasedWithId(2, _, false));
+  provider().RemoveImportedResource(resources[2]);
+  EXPECT_CALL(release, ReleasedWithId(4, _, false));
+  provider().RemoveImportedResource(resources[4]);
+
+  // These were never exported.
+  EXPECT_CALL(release, ReleasedWithId(1, _, false));
+  EXPECT_CALL(release, ReleasedWithId(3, _, false));
+  provider().RemoveImportedResource(resources[1]);
+  provider().RemoveImportedResource(resources[3]);
+
+  EXPECT_CALL(release, Released(_, false)).Times(0);
+}
+
+TEST_P(ClientResourceProviderTest, ReleaseMultipleResourcesBeforeReturn) {
+  MockReleaseCallback release;
+
+  // Make 5 resources, put them in a non-sorted order.
+  ResourceId resources[5];
+  for (int i = 0; i < 5; ++i) {
+    TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 1 + i);
+    resources[i] = provider().ImportResource(
+        tran, SingleReleaseCallback::Create(
+                  base::BindOnce(&MockReleaseCallback::ReleasedWithId,
+                                 base::Unretained(&release), i)));
+  }
+
+  // Transfer some resources to the parent, but not in the sorted order.
+  std::vector<TransferableResource> list;
+  provider().PrepareSendToParent({resources[2], resources[0], resources[4]},
+                                 &list, context_provider());
+  EXPECT_EQ(3u, list.size());
+
+  // Remove the exported resources from the ClientResourceProvider, they should
+  // not yet be returned, since they are exported.
+  provider().RemoveImportedResource(resources[0]);
+  provider().RemoveImportedResource(resources[2]);
+  provider().RemoveImportedResource(resources[4]);
+
+  // Receive them back now. Since these are not in the same order they were
+  // inserted originally, we verify the ClientResourceProvider can handle
+  // resources being returned (in a group) that are not at the front/back
+  // of its internal storage. IOW This shouldn't crash or corrupt state.
+  std::vector<ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.push_back(list[1].ToReturnedResource());
+  returned_to_child.push_back(list[2].ToReturnedResource());
+  // The resources are returned immediately since they were previously removed.
+  EXPECT_CALL(release, ReleasedWithId(0, _, false));
+  EXPECT_CALL(release, ReleasedWithId(2, _, false));
+  EXPECT_CALL(release, ReleasedWithId(4, _, false));
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // These were never exported.
+  EXPECT_CALL(release, ReleasedWithId(1, _, false));
+  EXPECT_CALL(release, ReleasedWithId(3, _, false));
+  provider().RemoveImportedResource(resources[1]);
+  provider().RemoveImportedResource(resources[3]);
+
+  EXPECT_CALL(release, Released(_, false)).Times(0);
+}
+
+TEST_P(ClientResourceProviderTest, ReturnDuplicateResourceBeforeRemove) {
+  MockReleaseCallback release;
+
+  // Make 5 resources, put them in a non-sorted order.
+  ResourceId resources[5];
+  for (int i = 0; i < 5; ++i) {
+    TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 1 + i);
+    resources[i] = provider().ImportResource(
+        tran, SingleReleaseCallback::Create(
+                  base::BindOnce(&MockReleaseCallback::ReleasedWithId,
+                                 base::Unretained(&release), i)));
+  }
+
+  // Transfer a resource to the parent, do it twice.
+  std::vector<TransferableResource> list;
+  provider().PrepareSendToParent({resources[2]}, &list, context_provider());
+  list.clear();
+  provider().PrepareSendToParent({resources[2]}, &list, context_provider());
+
+  // Receive the resource back. It's possible that the parent may return
+  // the same ResourceId multiple times in the same message, which we test
+  // for here.
+  std::vector<ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // Remove it from the ClientResourceProvider, it should be returned as
+  // it's no longer exported.
+  EXPECT_CALL(release, ReleasedWithId(2, _, false));
+  provider().RemoveImportedResource(resources[2]);
+
+  // These were never exported.
+  EXPECT_CALL(release, ReleasedWithId(0, _, false));
+  EXPECT_CALL(release, ReleasedWithId(1, _, false));
+  EXPECT_CALL(release, ReleasedWithId(3, _, false));
+  EXPECT_CALL(release, ReleasedWithId(4, _, false));
+  provider().RemoveImportedResource(resources[0]);
+  provider().RemoveImportedResource(resources[1]);
+  provider().RemoveImportedResource(resources[3]);
+  provider().RemoveImportedResource(resources[4]);
+
+  EXPECT_CALL(release, Released(_, false)).Times(0);
+}
+
+TEST_P(ClientResourceProviderTest, ReturnDuplicateResourceAfterRemove) {
+  MockReleaseCallback release;
+
+  // Make 5 resources, put them in a non-sorted order.
+  ResourceId resources[5];
+  for (int i = 0; i < 5; ++i) {
+    TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 1 + i);
+    resources[i] = provider().ImportResource(
+        tran, SingleReleaseCallback::Create(
+                  base::BindOnce(&MockReleaseCallback::ReleasedWithId,
+                                 base::Unretained(&release), i)));
+  }
+
+  // Transfer a resource to the parent, do it twice.
+  std::vector<TransferableResource> list;
+  provider().PrepareSendToParent({resources[2]}, &list, context_provider());
+  list.clear();
+  provider().PrepareSendToParent({resources[2]}, &list, context_provider());
+
+  // Remove it from the ClientResourceProvider, it should not be returned yet
+  // as it's still exported.
+  provider().RemoveImportedResource(resources[2]);
+
+  // Receive the resource back. It's possible that the parent may return
+  // the same ResourceId multiple times in the same message, which we test
+  // for here.
+  std::vector<ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  // Once no longer exported, since it was removed earlier, it will be returned
+  // immediately.
+  EXPECT_CALL(release, ReleasedWithId(2, _, false));
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // These were never exported.
+  EXPECT_CALL(release, ReleasedWithId(0, _, false));
+  EXPECT_CALL(release, ReleasedWithId(1, _, false));
+  EXPECT_CALL(release, ReleasedWithId(3, _, false));
+  EXPECT_CALL(release, ReleasedWithId(4, _, false));
+  provider().RemoveImportedResource(resources[0]);
+  provider().RemoveImportedResource(resources[1]);
+  provider().RemoveImportedResource(resources[3]);
+  provider().RemoveImportedResource(resources[4]);
+
+  EXPECT_CALL(release, Released(_, false)).Times(0);
 }
 
 }  // namespace

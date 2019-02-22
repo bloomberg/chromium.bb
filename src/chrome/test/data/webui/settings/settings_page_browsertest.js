@@ -51,7 +51,8 @@ SettingsPageBrowserTest.prototype = {
    * Toggles the Advanced sections.
    */
   toggleAdvanced: function() {
-    const settingsMain = document.querySelector('* /deep/ settings-main');
+    const settingsMain =
+        document.querySelector('settings-ui').$$('settings-main');
     assert(!!settingsMain);
     settingsMain.advancedToggleExpanded = !settingsMain.advancedToggleExpanded;
     Polymer.dom.flush();
@@ -103,7 +104,8 @@ SettingsPageBrowserTest.prototype = {
    */
   verifySubpagesHidden: function(section) {
     // Check if there are sub-pages to verify.
-    const pages = section.querySelector('* /deep/ settings-animated-pages');
+    const pages = section.firstElementChild.shadowRoot.querySelector(
+        'settings-animated-pages');
     if (!pages)
       return;
 

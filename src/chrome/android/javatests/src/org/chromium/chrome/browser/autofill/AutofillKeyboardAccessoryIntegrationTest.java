@@ -32,11 +32,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.UiUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -128,7 +127,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 ()
-                        -> UiUtils.isKeyboardShowing(
+                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
         Assert.assertTrue("Keyboard accessory should be showing.", isAccessoryVisible());
     }
@@ -147,7 +146,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 ()
-                        -> UiUtils.isKeyboardShowing(
+                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
 
         ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
@@ -173,7 +172,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 ()
-                        -> UiUtils.isKeyboardShowing(
+                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
         Assert.assertTrue("Keyboard accessory should be visible.", isAccessoryVisible());
 
@@ -181,7 +180,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(false,
                 ()
-                        -> UiUtils.isKeyboardShowing(
+                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
         Assert.assertTrue("Keyboard accessory should be hidden.", isAccessoryGone());
     }

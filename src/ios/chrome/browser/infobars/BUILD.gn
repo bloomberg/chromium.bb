@@ -29,7 +29,7 @@ source_set("infobars") {
   deps = [
     "//base",
     "//components/translate/core/browser",
-    "//ios/chrome/browser/ui/infobars",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/common",
     "//ios/web",
     "//ui/base",

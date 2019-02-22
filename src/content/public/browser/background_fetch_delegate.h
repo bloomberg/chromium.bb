@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -38,14 +39,16 @@ struct BackgroundFetchResponse;
 struct BackgroundFetchResult;
 struct BackgroundFetchDescription;
 
-// Various reasons a Background Fetch can get aborted.
-enum class BackgroundFetchReasonToAbort {
-  NONE,
-  CANCELLED_FROM_UI,
-  ABORTED_BY_DEVELOPER,
-  TOTAL_DOWNLOAD_SIZE_EXCEEDED,
-  SERVICE_WORKER_UNAVAILABLE,
-  QUOTA_EXCEEDED,
+enum class BackgroundFetchPermission {
+  // Background Fetch is allowed.
+  ALLOWED,
+
+  // Background Fetch should be started in a paused state, to let the user
+  // decide whether to continue.
+  ASK,
+
+  // Background Fetch is blocked.
+  BLOCKED,
 };
 
 // Interface for launching background fetches. Implementing classes would
@@ -55,7 +58,8 @@ enum class BackgroundFetchReasonToAbort {
 class CONTENT_EXPORT BackgroundFetchDelegate {
  public:
   using GetIconDisplaySizeCallback = base::OnceCallback<void(const gfx::Size&)>;
-  using GetPermissionForOriginCallback = base::OnceCallback<void(bool)>;
+  using GetPermissionForOriginCallback =
+      base::OnceCallback<void(BackgroundFetchPermission)>;
 
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.
@@ -67,7 +71,7 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // e.g. because the user clicked cancel on a notification.
     virtual void OnJobCancelled(
         const std::string& job_unique_id,
-        BackgroundFetchReasonToAbort reason_to_abort) = 0;
+        blink::mojom::BackgroundFetchFailureReason reason_to_abort) = 0;
 
     // Called after the download has started with the initial response
     // (including headers and URL chain). Always called on the UI thread.

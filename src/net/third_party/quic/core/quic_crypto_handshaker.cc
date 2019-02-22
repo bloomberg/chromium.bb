@@ -21,12 +21,11 @@ QuicCryptoHandshaker::~QuicCryptoHandshaker() {}
 
 void QuicCryptoHandshaker::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  QUIC_DVLOG(1) << ENDPOINT << "Sending "
-                << message.DebugString(session()->perspective());
+  QUIC_DVLOG(1) << ENDPOINT << "Sending " << message.DebugString();
   session()->NeuterUnencryptedData();
   session()->OnCryptoHandshakeMessageSent(message);
   last_sent_handshake_message_tag_ = message.tag();
-  const QuicData& data = message.GetSerialized(session()->perspective());
+  const QuicData& data = message.GetSerialized();
   stream_->WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
                              nullptr);
 }
@@ -38,8 +37,7 @@ void QuicCryptoHandshaker::OnError(CryptoFramer* framer) {
 
 void QuicCryptoHandshaker::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  QUIC_DVLOG(1) << ENDPOINT << "Received "
-                << message.DebugString(session()->perspective());
+  QUIC_DVLOG(1) << ENDPOINT << "Received " << message.DebugString();
   session()->OnCryptoHandshakeMessageReceived(message);
 }
 

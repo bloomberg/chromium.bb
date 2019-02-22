@@ -51,7 +51,8 @@ std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
     MessageLoop* message_loop,
     const TickClock* time_source) {
   return WrapUnique(new ThreadControllerImpl(
-      message_loop, message_loop->task_runner(), time_source));
+      message_loop, message_loop ? message_loop->task_runner() : nullptr,
+      time_source));
 }
 
 void ThreadControllerImpl::SetSequencedTaskSource(
@@ -136,6 +137,9 @@ const TickClock* ThreadControllerImpl::GetClock() {
 
 void ThreadControllerImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
+#if DCHECK_IS_ON()
+  default_task_runner_set_ = true;
+#endif
   if (!message_loop_)
     return;
   message_loop_->SetTaskRunner(task_runner);
@@ -145,6 +149,17 @@ void ThreadControllerImpl::RestoreDefaultTaskRunner() {
   if (!message_loop_)
     return;
   message_loop_->SetTaskRunner(message_loop_task_runner_);
+}
+
+void ThreadControllerImpl::SetMessageLoop(MessageLoop* message_loop) {
+  DCHECK(!message_loop_);
+  DCHECK(message_loop);
+#if DCHECK_IS_ON()
+  DCHECK(!default_task_runner_set_) << "This would undo SetDefaultTaskRunner";
+#endif
+  message_loop_ = message_loop;
+  task_runner_ = message_loop->task_runner();
+  message_loop_task_runner_ = message_loop->task_runner();
 }
 
 void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
@@ -175,6 +190,9 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
     {
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
+      // Trace-parsing tools (Lighthouse, etc) consume this event to determine
+      // long tasks. See https://crbug.com/874982
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("lighthouse"), "RunTask");
       task_annotator_.RunTask("ThreadControllerImpl::RunTask", &*task);
     }
 

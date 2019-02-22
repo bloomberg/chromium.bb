@@ -80,21 +80,21 @@ FontResource* FontResource::Fetch(FetchParameters& params,
                                   FontResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
-  params.SetRequestContext(WebURLRequest::kRequestContextFont);
+  params.SetRequestContext(mojom::RequestContextType::FONT);
   return ToFontResource(
       fetcher->RequestResource(params, FontResourceFactory(), client));
 }
 
 FontResource::FontResource(const ResourceRequest& resource_request,
                            const ResourceLoaderOptions& options)
-    : Resource(resource_request, kFont, options),
+    : Resource(resource_request, ResourceType::kFont, options),
       load_limit_state_(kLoadNotStarted),
       cors_failed_(false) {}
 
 FontResource::~FontResource() = default;
 
 void FontResource::DidAddClient(ResourceClient* c) {
-  DCHECK(FontResourceClient::IsExpectedType(c));
+  DCHECK(c->IsFontResourceClient());
   Resource::DidAddClient(c);
 
   // Block client callbacks if currently loading from cache.

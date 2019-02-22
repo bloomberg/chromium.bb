@@ -7,8 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
@@ -56,11 +61,17 @@ std::unique_ptr<WebRunnerNetLog> CreateNetLog() {
   return result;
 }
 
-WebRunnerBrowserContext::WebRunnerBrowserContext(base::FilePath data_dir_path)
-    : data_dir_path_(std::move(data_dir_path)),
-      net_log_(CreateNetLog()),
-      resource_context_(new ResourceContext()) {
-  BrowserContext::Initialize(this, GetPath());
+WebRunnerBrowserContext::WebRunnerBrowserContext(bool force_incognito)
+    : net_log_(CreateNetLog()), resource_context_(new ResourceContext()) {
+  if (!force_incognito) {
+    base::PathService::Get(base::DIR_APP_DATA, &data_dir_path_);
+    if (!base::PathExists(data_dir_path_)) {
+      // Run in incognito mode if /data doesn't exist.
+      data_dir_path_.clear();
+    }
+  }
+
+  BrowserContext::Initialize(this, data_dir_path_);
 }
 
 WebRunnerBrowserContext::~WebRunnerBrowserContext() {
@@ -147,10 +158,10 @@ net::URLRequestContextGetter* WebRunnerBrowserContext::CreateRequestContext(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!url_request_getter_);
   url_request_getter_ = new WebRunnerURLRequestContextGetter(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       net_log_.get(), std::move(*protocol_handlers),
-      std::move(request_interceptors));
+      std::move(request_interceptors), data_dir_path_);
   resource_context_->set_url_request_context_getter(url_request_getter_);
   return url_request_getter_.get();
 }

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
@@ -25,7 +25,7 @@ class ScriptState;
 class Animator final : public GarbageCollectedFinalized<Animator>,
                        public NameClient {
  public:
-  Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Object> instance);
+  Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Value> instance);
   ~Animator();
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "Animator"; }
@@ -35,13 +35,16 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   // the output state with new updates.
   bool Animate(ScriptState*,
                double current_time,
-               CompositorMutatorOutputState::AnimationState*);
+               AnimationWorkletDispatcherOutput::AnimationState*);
+  base::Optional<TimeDelta> GetLastLocalTime() const {
+    return effect_->local_time();
+  }
 
  private:
   // This object keeps the definition object, and animator instance alive.
   // It participates in wrapper tracing as it holds onto V8 wrappers.
   TraceWrapperMember<AnimatorDefinition> definition_;
-  TraceWrapperV8Reference<v8::Object> instance_;
+  TraceWrapperV8Reference<v8::Value> instance_;
 
   Member<EffectProxy> effect_;
 };

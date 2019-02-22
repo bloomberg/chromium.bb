@@ -22,6 +22,17 @@ def create_asset(target_dir):
   subprocess.check_call(
       ['go', 'get', '-u', '-t', 'go.skia.org/infra/...'],
       env=env)
+  # There's a broken symlink which causes a lot of problems. Delete it.
+  bad_symlink = os.path.join(
+      target_dir, 'src', 'go.chromium.org', 'luci', 'machine-db', 'appengine',
+      'frontend', 'bower_components')
+  os.remove(bad_symlink)
+
+  # Install additional dependencies via the install_go_deps.sh script.
+  script = os.path.join(
+      target_dir, 'src', 'go.skia.org', 'infra', 'scripts',
+      'install_go_deps.sh')
+  subprocess.check_call(script, env=env)
 
 
 def main():

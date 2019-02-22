@@ -36,6 +36,9 @@ class HTMLBaseElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLBaseElement);
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   KURL href() const;
   void href(USVStringOrTrustedURL&) const;
   void setHref(const USVStringOrTrustedURL&, ExceptionState&);

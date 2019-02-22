@@ -220,7 +220,15 @@ def _ExecuteTool(toolname, tool_args, build_directory, compdb_entry):
         # Windows. We don't need to do this here, and it results in lots of spam
         # and a massive log file, so we strip it.
         and a != '/showIncludes'
+        # -MMD has the same purpose on non-Windows. It may have a corresponding
+        # '-MF <filename>', which we strip below.
+        and a != '-MMD'
   ])
+
+  for i, arg in enumerate(args):
+    if arg == '-MF':
+      del args[i:i+2]
+      break
 
   # shlex.split escapes double qoutes in non-Posix mode, so we need to strip
   # them back.

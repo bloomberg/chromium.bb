@@ -2928,16 +2928,11 @@
     },
     {
       "id":273,
-      "cr_bugs": [866613],
+      "cr_bugs": [866613, 860021],
       "description": "Frequent crashes on Adreno (TM) on L and below",
       "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
+        "type": "android"
       },
-      "gl_renderer": "Adreno.*",
       "features": [
         "use_es2_for_oopr"
       ]
@@ -2958,13 +2953,9 @@
     {
       "id":275,
       "cr_bugs": [838725],
-      "description": "Disable AImageReader on ARM GPUs for Android O+ because of gpu hang",
+      "description": "Disable AImageReader on ARM GPUs as its buggy.",
       "os": {
-        "type": "android",
-        "version": {
-          "op": ">=",
-          "value": "8.0"
-        }
+        "type": "android"
       },
       "gl_vendor": "ARM.*",
       "features": [
@@ -3010,6 +3001,43 @@
       "device_id": ["0x6900"],
       "features": [
         "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 279,
+      "description": "WindowServer crashes on VMWare bots using CA renderer",
+      "cr_bugs": [828031],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x15ad",
+      "multi_gpu_category": "any",
+      "features": [
+        "disable_overlay_ca_layers"
+      ]
+    },
+    {
+      "id":281,
+      "cr_bugs": [838725],
+      "description": "Disable AImageReader on Imagination Technologies GPU as its buggy.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination Technologies.*",
+      "features": [
+        "disable_aimagereader"
+      ]
+    },
+    {
+      "id":282,
+      "cr_bugs": [838725],
+      "description": "Disable AImageReader on NVIDIA GPU for as its buggy.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "disable_aimagereader"
       ]
     }
   ]

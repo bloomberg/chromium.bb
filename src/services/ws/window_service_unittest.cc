@@ -9,9 +9,11 @@
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
+#include "services/ws/test_wm.mojom.h"
+#include "services/ws/window_manager_interface.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
@@ -61,6 +63,87 @@ TEST(WindowServiceTest, DeleteWithClients) {
 
   // Destroying the |window_service| should remove all the WindowTrees and
   // ensure a DCHECK isn't hit in ~WindowTree.
+}
+
+// Implementation of mojom::TestWm that sets a boolean when DoIt() is called.
+class TestWm : public WindowManagerInterface, public test::mojom::TestWm {
+ public:
+  TestWm(mojo::ScopedInterfaceEndpointHandle handle, bool* do_it_called)
+      : binding_(this,
+                 mojo::AssociatedInterfaceRequest<test::mojom::TestWm>(
+                     std::move(handle))),
+        do_it_called_(do_it_called) {}
+
+  // test::mojom::TestWm:
+  void DoIt() override { *do_it_called_ = true; }
+
+ private:
+  mojo::AssociatedBinding<test::mojom::TestWm> binding_;
+  bool* do_it_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWm);
+};
+
+// Subclass os TestWindowServiceDelegate that creates TestWm.
+class TestWindowServiceDelegateWithInterface
+    : public TestWindowServiceDelegate {
+ public:
+  TestWindowServiceDelegateWithInterface() = default;
+  ~TestWindowServiceDelegateWithInterface() override = default;
+
+  bool do_it_called() const { return do_it_called_; }
+
+  // TestWindowServiceDelegate:
+  std::unique_ptr<WindowManagerInterface> CreateWindowManagerInterface(
+      WindowTree* window_tree,
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle) override {
+    if (name != test::mojom::TestWm::Name_)
+      return nullptr;
+
+    return std::make_unique<TestWm>(std::move(handle), &do_it_called_);
+  }
+
+ private:
+  bool do_it_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegateWithInterface);
+};
+
+TEST(WindowServiceTest, GetWindowManagerInterface) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  // Create another WindowService.
+  TestWindowServiceDelegateWithInterface test_window_service_delegate;
+  std::unique_ptr<WindowService> window_service_ptr =
+      std::make_unique<WindowService>(&test_window_service_delegate, nullptr,
+                                      test_setup.focus_controller());
+  std::unique_ptr<service_manager::TestConnectorFactory> factory =
+      service_manager::TestConnectorFactory::CreateForUniqueService(
+          std::move(window_service_ptr));
+  std::unique_ptr<service_manager::Connector> connector =
+      factory->CreateConnector();
+
+  // Connect to |window_service| and ask for a new WindowTree.
+  mojom::WindowTreeFactoryPtr window_tree_factory;
+  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  mojom::WindowTreePtr window_tree;
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  window_tree_factory->CreateWindowTree(MakeRequest(&window_tree),
+                                        std::move(client));
+
+  // Request the TestWm interface and call a function on it.
+  mojom::WindowManagerAssociatedPtr wm;
+  window_tree->BindWindowManagerInterface(test::mojom::TestWm::Name_,
+                                          MakeRequest(&wm));
+  test::mojom::TestWmAssociatedPtr test_wm(
+      mojo::AssociatedInterfacePtrInfo<test::mojom::TestWm>(
+          wm.PassInterface().PassHandle(), test::mojom::TestWm::Version_));
+  test_wm->DoIt();
+  test_wm.FlushForTesting();
+  EXPECT_TRUE(test_window_service_delegate.do_it_called());
 }
 
 // Test client ids assigned to window trees that connect to the window service.

@@ -119,6 +119,11 @@ One advantage is that callgrind can generate `callgrind.out` files (by passing
 can be analyzed to find the cause of a regression. KCachegrind is a good
 visualizer for these files.
 
+#### none
+
+Run without any profiler, giving a performance score of 1 always. useful for
+running image comparisons or debugging the script.
+
 ### Common Options
 
 Arguments commonly passed to safetynet_compare.py.
@@ -159,4 +164,43 @@ will be cached, if --this-repo is not enabled. Defaults to /tmp.
 
 ## Setup a nightly job
 
-TODO: Complete with safetynet_job.py setup and usage.
+Create a separate checkout of pdfium in a new directory, for example `~/job`.
+The safetynet_job.py script will run from this directory. This checkout needs to
+be `git pull`'ed when there are changes to the SafetyNet scripts, but otherwise
+it can be left alone.
+
+Create a directory to contain the job results, for example `~/job_results`. In
+each run, a `.log` file with the results will be written to this directory and a
+subdirectory will be created with the other artifacts.
+
+Setup a cron job to run safetynet_job.py nightly. The example below runs it at
+1:42 AM, over the corpus in two directories: `~/pdf_samples/thousand_pdfs` and
+`~/pdf_samples/i18n`
+
+```shell
+@ crontab -e
+42 1 * * * bash -lc '~/job/pdfium/testing/tools/safetynet_job.py ~/job_results ~/pdf_samples/thousand_pdfs ~/pdf_samples/i18n --output-to-log >> ~/job_results/cron_nightly.log 2>&1'
+```
+
+The first time the job runs, it will just create a checkpoint as
+`~/job_results/last_revision_covered`. From then on, since a checkpoint is
+available, each run will compare performance with the last checkpoint and update
+the checkpoint.
+
+## Run image comparison
+
+Pass the `--png-dir` option pointing at an output directory to compare the output
+images from rendering the "before" and the "after" branches with pdfium_test.
+
+```shell
+$ mkdir ~/output_images
+$ testing/tools/safetynet_compare.py ~/pdf_samples --branch-before before_visual_changes --branch-after after_visual_changes --png-dir ~/output_images
+```
+
+This will output and automatically open a `~/output_images/compare.html` file
+showing the before/after and the diff. Hover the mouse cursor over the
+before/after image on the left for an easier visual comparison. The "before"
+image is displayed until the cursor hovers over the image, which is then
+replaced with the "after" image.
+
+It is recommended to use `--profiler=none` with this option.

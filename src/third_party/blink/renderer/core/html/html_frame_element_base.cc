@@ -158,7 +158,9 @@ void HTMLFrameElementBase::ParseAttribute(
     // FIXME: should <frame> elements have beforeunload handlers?
     SetAttributeEventListener(
         EventTypeNames::beforeunload,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+        CreateAttributeEventListener(
+            this, name, value,
+            JSEventHandler::HandlerType::kOnBeforeUnloadEventHandler));
   } else {
     HTMLFrameOwnerElement::ParseAttribute(params);
   }

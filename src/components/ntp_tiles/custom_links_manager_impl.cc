@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -32,6 +33,13 @@ CustomLinksManagerImpl::CustomLinksManagerImpl(
     history_service_observer_.Add(history_service);
   if (IsInitialized())
     current_links_ = store_.RetrieveLinks();
+
+  base::RepeatingClosure callback =
+      base::BindRepeating(&CustomLinksManagerImpl::OnPreferenceChanged,
+                          weak_ptr_factory_.GetWeakPtr());
+  pref_change_registrar_.Init(prefs_);
+  pref_change_registrar_.Add(prefs::kCustomLinksInitialized, callback);
+  pref_change_registrar_.Add(prefs::kCustomLinksList, callback);
 }
 
 CustomLinksManagerImpl::~CustomLinksManagerImpl() = default;
@@ -43,14 +51,20 @@ bool CustomLinksManagerImpl::Initialize(const NTPTilesVector& tiles) {
   for (const NTPTile& tile : tiles)
     current_links_.emplace_back(Link{tile.url, tile.title, true});
 
-  store_.StoreLinks(current_links_);
-  prefs_->SetBoolean(prefs::kCustomLinksInitialized, true);
+  {
+    base::AutoReset<bool> auto_reset(&updating_preferences_, true);
+    prefs_->SetBoolean(prefs::kCustomLinksInitialized, true);
+  }
+  StoreLinks();
   return true;
 }
 
 void CustomLinksManagerImpl::Uninitialize() {
+  {
+    base::AutoReset<bool> auto_reset(&updating_preferences_, true);
+    prefs_->SetBoolean(prefs::kCustomLinksInitialized, false);
+  }
   ClearLinks();
-  prefs_->SetBoolean(prefs::kCustomLinksInitialized, false);
 }
 
 bool CustomLinksManagerImpl::IsInitialized() const {
@@ -74,13 +88,14 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
 
   previous_links_ = current_links_;
   current_links_.emplace_back(Link{url, title, false});
-  store_.StoreLinks(current_links_);
+  StoreLinks();
   return true;
 }
 
 bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title) {
+                                        const base::string16& new_title,
+                                        bool is_user_action) {
   if (!IsInitialized() || !url.is_valid() ||
       (new_url.is_empty() && new_title.empty())) {
     return false;
@@ -98,7 +113,10 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     return false;
 
   // At this point, we will be modifying at least one of the values.
-  previous_links_ = current_links_;
+  if (is_user_action) {
+    // Save the previous state since this was a user update.
+    previous_links_ = current_links_;
+  }
 
   if (!new_url.is_empty())
     it->url = new_url;
@@ -106,7 +124,7 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     it->title = new_title;
   it->is_most_visited = false;
 
-  store_.StoreLinks(current_links_);
+  StoreLinks();
   return true;
 }
 
@@ -120,7 +138,7 @@ bool CustomLinksManagerImpl::DeleteLink(const GURL& url) {
 
   previous_links_ = current_links_;
   current_links_.erase(it);
-  store_.StoreLinks(current_links_);
+  StoreLinks();
   return true;
 }
 
@@ -131,14 +149,22 @@ bool CustomLinksManagerImpl::UndoAction() {
   // Replace the current links with the previous state.
   current_links_ = *previous_links_;
   previous_links_ = base::nullopt;
-  store_.StoreLinks(current_links_);
+  StoreLinks();
   return true;
 }
 
 void CustomLinksManagerImpl::ClearLinks() {
-  store_.ClearLinks();
+  {
+    base::AutoReset<bool> auto_reset(&updating_preferences_, true);
+    store_.ClearLinks();
+  }
   current_links_.clear();
   previous_links_ = base::nullopt;
+}
+
+void CustomLinksManagerImpl::StoreLinks() {
+  base::AutoReset<bool> auto_reset(&updating_preferences_, true);
+  store_.StoreLinks(current_links_);
 }
 
 std::vector<CustomLinksManager::Link>::iterator
@@ -172,7 +198,7 @@ void CustomLinksManagerImpl::OnURLsDeleted(
         current_links_.erase(it);
     }
   }
-  store_.StoreLinks(current_links_);
+  StoreLinks();
   previous_links_ = base::nullopt;
 
   // Alert MostVisitedSites that some links have been deleted.
@@ -185,10 +211,24 @@ void CustomLinksManagerImpl::HistoryServiceBeingDeleted(
   history_service_observer_.RemoveAll();
 }
 
+void CustomLinksManagerImpl::OnPreferenceChanged() {
+  if (updating_preferences_)
+    return;
+
+  if (IsInitialized())
+    current_links_ = store_.RetrieveLinks();
+  else
+    current_links_.clear();
+  previous_links_ = base::nullopt;
+  callback_list_.Notify();
+}
+
 // static
 void CustomLinksManagerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kCustomLinksInitialized, false);
+  user_prefs->RegisterBooleanPref(
+      prefs::kCustomLinksInitialized, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   CustomLinksStore::RegisterProfilePrefs(user_prefs);
 }
 

@@ -37,6 +37,17 @@ TEST_F(FPDFTransformEmbedderTest, GetBoundingBoxes) {
     EXPECT_EQ(150, cropbox_right);
     EXPECT_EQ(150, cropbox_top);
 
+    float artbox_left;
+    float artbox_bottom;
+    float artbox_right;
+    float artbox_top;
+    EXPECT_TRUE(FPDFPage_GetArtBox(page, &artbox_left, &artbox_bottom,
+                                   &artbox_right, &artbox_top));
+    EXPECT_EQ(50, artbox_left);
+    EXPECT_EQ(60, artbox_bottom);
+    EXPECT_EQ(135, artbox_right);
+    EXPECT_EQ(140, artbox_top);
+
     UnloadPage(page);
   }
 
@@ -76,6 +87,17 @@ TEST_F(FPDFTransformEmbedderTest, GetBoundingBoxes) {
                                      &cropbox_right, nullptr));
     EXPECT_FALSE(FPDFPage_GetCropBox(page, nullptr, nullptr, nullptr, nullptr));
 
+    float artbox_left;
+    float artbox_bottom;
+    float artbox_right;
+    float artbox_top;
+    EXPECT_TRUE(FPDFPage_GetArtBox(page, &artbox_left, &artbox_bottom,
+                                   &artbox_right, &artbox_top));
+    EXPECT_EQ(140, artbox_left);
+    EXPECT_EQ(145, artbox_bottom);
+    EXPECT_EQ(65, artbox_right);
+    EXPECT_EQ(70, artbox_top);
+
     UnloadPage(page);
   }
 }
@@ -94,6 +116,47 @@ TEST_F(FPDFTransformEmbedderTest, NoCropBox) {
   EXPECT_FALSE(FPDFPage_GetCropBox(page, &left, &bottom, &right, &top));
   EXPECT_EQ(-1.0f, left);
   EXPECT_EQ(-2.0f, bottom);
+  EXPECT_EQ(3.0f, right);
+  EXPECT_EQ(0.0f, top);
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTransformEmbedderTest, ClipPath) {
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_CLIPPATH clip = FPDF_CreateClipPath(10.0f, 10.0f, 90.0f, 90.0f);
+  EXPECT_TRUE(clip);
+
+  // NULL arg call is a no-op.
+  FPDFPage_InsertClipPath(nullptr, clip);
+
+  // Do actual work.
+  FPDFPage_InsertClipPath(page, clip);
+
+  // TODO(tsepez): test how inserting path affects page rendering.
+
+  FPDF_DestroyClipPath(clip);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTransformEmbedderTest, NoArtBox) {
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+  ASSERT_EQ(1, FPDF_GetPageCount(document()));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  float left = -1.0f;
+  float bottom = -1.0f;
+  float right = 3.0f;
+  float top = 0.0f;
+  EXPECT_FALSE(FPDFPage_GetArtBox(page, &left, &bottom, &right, &top));
+  EXPECT_EQ(-1.0f, left);
+  EXPECT_EQ(-1.0f, bottom);
   EXPECT_EQ(3.0f, right);
   EXPECT_EQ(0.0f, top);
 

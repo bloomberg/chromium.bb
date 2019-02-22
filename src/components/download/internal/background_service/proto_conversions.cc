@@ -289,6 +289,15 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
   entry.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag({proto.traffic_annotation()});
   entry.bytes_downloaded = proto.bytes_downloaded();
+  for (const auto& url : proto.url_chain())
+    entry.url_chain.emplace_back(url);
+  if (!proto.response_headers().empty()) {
+    entry.response_headers =
+        base::MakeRefCounted<const net::HttpResponseHeaders>(
+            proto.response_headers());
+  }
+  entry.did_received_response = proto.did_received_response();
+  entry.require_response_headers = proto.require_response_headers();
 
   return entry;
 }
@@ -313,6 +322,13 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
   proto.set_has_upload_data(entry.has_upload_data);
   proto.set_traffic_annotation(entry.traffic_annotation.unique_id_hash_code);
   proto.set_bytes_downloaded(entry.bytes_downloaded);
+  for (const auto& url : entry.url_chain)
+    proto.add_url_chain(url.spec());
+  if (entry.response_headers)
+    proto.set_response_headers(entry.response_headers->raw_headers());
+  proto.set_did_received_response(entry.did_received_response);
+  proto.set_require_response_headers(entry.require_response_headers);
+
   return proto;
 }
 

@@ -34,6 +34,9 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
       const std::vector<PictureInPictureControlInfo>&) override {}
   void RegisterPictureInPictureWindowResizeCallback(
       PipWindowResizedCallback) override {}
+  SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
+    return SurfaceLayerMode::kNever;
+  }
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
   void SetSinkId(const WebString& sink_id,
@@ -50,9 +53,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
   WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override { return false; }
-  bool DidGetOpaqueResponseFromServiceWorker() const override { return false; }
-  bool HasSingleSecurityOrigin() const override { return true; }
-  bool DidPassCORSAccessCheck() const override { return true; }
+  bool WouldTaintOrigin() const override { return false; }
   double MediaTimeForTimeValue(double time_value) const override {
     return time_value;
   };

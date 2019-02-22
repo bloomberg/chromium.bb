@@ -51,10 +51,6 @@ void WebRuntimeFeatures::EnableWebBluetooth(bool enable) {
   RuntimeEnabledFeatures::SetWebBluetoothEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebAssemblyStreaming(bool enable) {
-  RuntimeEnabledFeatures::SetWebAssemblyStreamingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebNfc(bool enable) {
   RuntimeEnabledFeatures::SetWebNFCEnabled(enable);
 }
@@ -180,6 +176,10 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableJankTracking(bool enable) {
+  RuntimeEnabledFeatures::SetJankTrackingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {
   RuntimeEnabledFeatures::SetLayeredAPIEnabled(enable);
 }
@@ -204,10 +204,6 @@ void WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(bool enable) {
   RuntimeEnabledFeatures::SetLazyImageVisibleLoadTimeMetricsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableLazyParseCSS(bool enable) {
-  RuntimeEnabledFeatures::SetLazyParseCSSEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableMediaCapture(bool enable) {
   RuntimeEnabledFeatures::SetMediaCaptureEnabled(enable);
 }
@@ -220,12 +216,12 @@ void WebRuntimeFeatures::EnableModernMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetModernMediaControlsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableModuleScriptsDynamicImport(bool enable) {
-  RuntimeEnabledFeatures::SetModuleScriptsDynamicImportEnabled(enable);
+void WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(bool enable) {
+  RuntimeEnabledFeatures::SetNoHoverAfterLayoutChangeEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableModuleScriptsImportMetaUrl(bool enable) {
-  RuntimeEnabledFeatures::SetModuleScriptsImportMetaUrlEnabled(enable);
+void WebRuntimeFeatures::EnableNoHoverDuringScroll(bool enable) {
+  RuntimeEnabledFeatures::SetNoHoverDuringScrollEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableNotificationConstructor(bool enable) {
@@ -514,6 +510,10 @@ void WebRuntimeFeatures::EnableWebAuth(bool enable) {
   RuntimeEnabledFeatures::SetWebAuthEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebAuthGetTransports(bool enable) {
+  RuntimeEnabledFeatures::SetWebAuthGetTransportsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(bool enable) {
   RuntimeEnabledFeatures::SetClientPlaceholdersForServerLoFiEnabled(enable);
 }
@@ -570,6 +570,10 @@ void WebRuntimeFeatures::EnableMediaControlsExpandGesture(bool enable) {
 
 void WebRuntimeFeatures::EnableHrefTranslate(bool enable) {
   RuntimeEnabledFeatures::SetHrefTranslateEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
+  RuntimeEnabledFeatures::SetBackgroundFetchEnabled(enable);
 }
 
 }  // namespace blink

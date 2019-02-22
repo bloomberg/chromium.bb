@@ -42,7 +42,7 @@
                     android:paddingEnd="@dimen/signin_chooser_padding"
                     android:paddingBottom="@dimen/signin_chooser_padding"
                     android:background="@color/signin_head_background"
-                    android:textAppearance="@style/BlackHeadline1"
+                    android:textAppearance="@style/BlackHeadline"
                     android:text="@string/sign_in_to_chrome"/>
 
                 <View style="@style/HorizontalDivider"/>
@@ -97,7 +97,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:textAppearance="@style/BlackHeadline1"
+                        android:textAppearance="@style/BlackHeadline"
                         android:ellipsize="end"
                         android:maxLines="1"/>
 

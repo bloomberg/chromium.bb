@@ -22,6 +22,10 @@
     __builtin_unreachable();                                                   \
   }
 
+extern "C" {
+void abort_report_np(const char*, ...);
+}
+
 namespace sandbox {
 
 namespace logging {
@@ -118,6 +122,17 @@ void DoLogging(Level level,
     SendAslLog(level, "warning: previous log message truncated");
 }
 
+void AnnotateCrash(const char* fmt, va_list args) {
+  if (__builtin_available(macOS 10.11, *)) {
+    char message[4096];
+    int ret = vsnprintf(message, sizeof(message), fmt, args);
+
+    if (ret >= 0) {
+      abort_report_np(message);
+    }
+  }
+}
+
 }  // namespace
 
 void Info(const char* fmt, ...) {
@@ -147,6 +162,10 @@ void Fatal(const char* fmt, ...) {
   DoLogging(Level::FATAL, fmt, args, nullptr);
   va_end(args);
 
+  va_start(args, fmt);
+  AnnotateCrash(fmt, args);
+  va_end(args);
+
   ABORT();
 }
 
@@ -163,6 +182,10 @@ void PFatal(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   DoLogging(Level::FATAL, fmt, args, &error);
+  va_end(args);
+
+  va_start(args, fmt);
+  AnnotateCrash(fmt, args);
   va_end(args);
 
   ABORT();

@@ -28,6 +28,14 @@ message MediaPerception {
   // A single AudioVisualPerception message or array of audio-visual
   // perceptions.
   repeated AudioVisualPerception audio_visual_perception = 4;
+
+  // Stores metadata such as version of media perception features.
+  optional Metadata metadata = 5;
+}
+
+// Stores metadata such as version of media perception features.
+message Metadata {
+  optional string visual_experience_controller_version = 1;
 }
 
 // Used to transmit a history of image frames and their associated annotations.
@@ -79,6 +87,17 @@ message State {
   // Corners and aspect ratio of the whiteboard in the image frame. Should only
   // be set when setting state to running and configuration to whiteboard.
   optional Whiteboard whiteboard = 5;
+
+  enum Feature {
+    // UNSET is not a real feature value.
+    FEATURE_UNSET = 0;
+    FEATURE_AUTOZOOM = 1;
+    FEATURE_HOTWORD_DETECTION = 2;
+    FEATURE_OCCUPANCY_DETECTION = 3;
+  }
+
+  // A list of enabled media perception features.
+  repeated Feature features = 6;
 }
 
 // This is the output of the MediaPerceptionSinkCalculator.
@@ -91,6 +110,9 @@ message PerceptionSample {
   optional AudioPerception audio_perception = 3;
 
   optional AudioVisualPerception audio_visual_perception = 4;
+
+  // Stores metadata such as version of media perception features.
+  optional Metadata metadata = 5;
 }
 
 // Perception results based on both audio and video inputs.

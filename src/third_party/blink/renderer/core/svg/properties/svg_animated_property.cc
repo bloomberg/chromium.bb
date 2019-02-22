@@ -38,12 +38,14 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
     AnimatedPropertyType type,
     SVGElement* context_element,
     const QualifiedName& attribute_name,
-    CSSPropertyID css_property_id)
+    CSSPropertyID css_property_id,
+    unsigned initial_value)
     : type_(type),
       // Cast to avoid warnings about unsafe bitfield truncations of the CSS
       // property enum. CSS properties that don't fit in this bitfield are never
       // used here. See static_assert in header.
       css_property_id_(static_cast<unsigned>(css_property_id)),
+      initial_value_storage_(initial_value),
       base_value_needs_synchronization_(false),
       context_element_(context_element),
       attribute_name_(attribute_name) {
@@ -51,6 +53,7 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
   DCHECK(attribute_name_ != QualifiedName::Null());
   DCHECK_EQ(this->GetType(), type);
   DCHECK_EQ(this->CssPropertyId(), css_property_id);
+  DCHECK_EQ(initial_value_storage_, initial_value);
 }
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() = default;

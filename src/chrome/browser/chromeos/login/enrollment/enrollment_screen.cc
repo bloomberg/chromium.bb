@@ -12,6 +12,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -314,6 +315,22 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
 
 void EnrollmentScreen::OnMultipleLicensesAvailable(
     const EnrollmentLicenseMap& licenses) {
+  if (GetConfiguration()) {
+    auto* license_type_value = GetConfiguration()->FindKeyOfType(
+        configuration::kEnrollmentLicenseType, base::Value::Type::STRING);
+    if (license_type_value) {
+      const std::string& license_type = license_type_value->GetString();
+      for (const auto& it : licenses) {
+        if (license_type == GetLicenseIdByType(it.first) && it.second > 0) {
+          VLOG(1) << "Using License type from configuration " << license_type;
+          OnLicenseTypeSelected(license_type);
+          return;
+        }
+      }
+      VLOG(1) << "No licenses for License type from configuration "
+              << license_type;
+    }
+  }
   base::DictionaryValue license_dict;
   for (const auto& it : licenses)
     license_dict.SetInteger(GetLicenseIdByType(it.first), it.second);
@@ -403,12 +420,45 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       connector->GetDeviceCloudPolicyManager();
 
+  std::string asset_id;
+  std::string location;
+
+  if (GetConfiguration()) {
+    auto* asset_id_value = GetConfiguration()->FindKeyOfType(
+        configuration::kEnrollmentAssetId, base::Value::Type::STRING);
+    if (asset_id_value) {
+      VLOG(1) << "Using Asset ID from configuration "
+              << asset_id_value->GetString();
+      asset_id = asset_id_value->GetString();
+    }
+    auto* location_value = GetConfiguration()->FindKeyOfType(
+        configuration::kEnrollmentLocation, base::Value::Type::STRING);
+    if (location_value) {
+      VLOG(1) << "Using Location from configuration "
+              << location_value->GetString();
+      location = location_value->GetString();
+    }
+  }
+
   policy::CloudPolicyStore* store = policy_manager->core()->store();
 
   const enterprise_management::PolicyData* policy = store->policy();
 
-  std::string asset_id = policy ? policy->annotated_asset_id() : std::string();
-  std::string location = policy ? policy->annotated_location() : std::string();
+  if (policy) {
+    asset_id = policy->annotated_asset_id();
+    location = policy->annotated_location();
+  }
+
+  if (GetConfiguration()) {
+    auto* auto_attributes = GetConfiguration()->FindKeyOfType(
+        configuration::kEnrollmentAutoAttributes, base::Value::Type::BOOLEAN);
+    if (auto_attributes && auto_attributes->GetBool()) {
+      VLOG(1) << "Automatically accept attributes";
+      OnDeviceAttributeProvided(asset_id, location);
+      return;
+    }
+  }
+
   view_->ShowAttributePromptScreen(asset_id, location);
 }
 

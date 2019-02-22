@@ -4,12 +4,19 @@
 
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
@@ -17,13 +24,16 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,24 +47,68 @@ const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
-TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
+TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   content::TestBrowserThreadBundle thread_bundle;
+  content::TestServiceManagerContext service_manager_context;
+
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
+
+  EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
+                             &profile, "/home/chronos/user/Downloads"));
   EXPECT_EQ("Downloads",
-            GetDownloadLocationText(&profile, "/home/chronos/user/Downloads"));
-  EXPECT_EQ("Downloads",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile, "/home/chronos/u-0123456789abcdef/Downloads"));
-  EXPECT_EQ("Google Drive \u203a foo",
-            GetDownloadLocationText(
-                &profile, "/special/drive-0123456789abcdef/root/foo"));
   EXPECT_EQ("Play files \u203a foo \u203a bar",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));
   EXPECT_EQ("Linux files \u203a foo",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile,
                 "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
+
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(chromeos::features::kDriveFs);
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
+    EXPECT_EQ("Google Drive \u203a foo",
+              GetPathDisplayTextForSettings(
+                  &profile, "/special/drive-0123456789abcdef/root/foo"));
+    EXPECT_EQ(
+        "Team Drives \u203a A Team Drive \u203a foo",
+        GetPathDisplayTextForSettings(
+            &profile,
+            "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
+  }
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(chromeos::features::kDriveFs);
+    chromeos::disks::DiskMountManager::InitializeForTesting(
+        new FakeDiskMountManager);
+    TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
+    chromeos::FakeChromeUserManager user_manager;
+    AccountId account_id =
+        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345");
+    const auto* user = user_manager.AddUser(account_id);
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, &profile2);
+    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        const_cast<user_manager::User*>(user));
+    PrefService* prefs = profile2.GetPrefs();
+    prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
+    EXPECT_EQ(
+        "Google Drive \u203a foo",
+        GetPathDisplayTextForSettings(
+            &profile2,
+            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
+    EXPECT_EQ("Team Drives \u203a A Team Drive \u203a foo",
+              GetPathDisplayTextForSettings(
+                  &profile2,
+                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                  "team_drives/A Team Drive/foo"));
+  }
+  chromeos::disks::DiskMountManager::Shutdown();
 }
 
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
@@ -93,6 +147,33 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
       &profile,
       base::FilePath::FromUTF8Unsafe("/home/chronos/user/dl"),
       &path));
+}
+
+TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  TestingProfile profile;
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+
+  // Register crostini and downloads.
+  mount_points->RegisterFileSystem(
+      GetCrostiniMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), GetCrostiniMountDirectory(&profile));
+  mount_points->RegisterFileSystem(
+      GetDownloadsMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), GetDownloadsFolderForProfile(&profile));
+
+  EXPECT_EQ("/home/testing_profile/path/in/crostini",
+            ConvertFileSystemURLToPathInsideCrostini(
+                &profile, mount_points->CreateExternalFileSystemURL(
+                              GURL(), "crostini_test_termina_penguin",
+                              base::FilePath("path/in/crostini"))));
+  EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads",
+            ConvertFileSystemURLToPathInsideCrostini(
+                &profile,
+                mount_points->CreateExternalFileSystemURL(
+                    GURL(), "Downloads", base::FilePath("path/in/downloads"))));
 }
 
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
@@ -134,7 +215,8 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
     arc_service_manager_->set_browser_context(primary_profile);
     arc::ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
-        primary_profile, &CreateFileSystemOperationRunnerForTesting);
+        primary_profile,
+        base::BindRepeating(&CreateFileSystemOperationRunnerForTesting));
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
     arc::WaitForInstanceReady(

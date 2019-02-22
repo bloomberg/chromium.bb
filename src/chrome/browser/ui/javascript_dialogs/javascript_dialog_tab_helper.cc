@@ -150,7 +150,8 @@ base::WeakPtr<JavaScriptDialog> CreateNewDialog(
 #if defined(OS_ANDROID)
   return JavaScriptDialogAndroid::Create(
       parent_web_contents, alerting_web_contents, title, dialog_type,
-      message_text, default_prompt_text, std::move(dialog_callback));
+      message_text, default_prompt_text, std::move(dialog_callback),
+      std::move(dialog_closed_callback));
 #else
   return JavaScriptDialogViews::Create(
       parent_web_contents, alerting_web_contents, title, dialog_type,

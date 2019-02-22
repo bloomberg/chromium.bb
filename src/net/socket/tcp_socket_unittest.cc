@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
@@ -31,6 +32,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+// For getsockopt() call.
+#if defined(OS_WIN)
+#include <winsock2.h>
+#else  // !defined(OS_WIN)
+#include <sys/socket.h>
+#endif  //  !defined(OS_WIN)
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -586,6 +594,85 @@ TEST_F(TCPSocketTest, CancelPendingReadIfReady) {
 
   ASSERT_EQ(msg_size, read_result);
   ASSERT_EQ(0, memcmp(&kMsg, read_buffer->data(), msg_size));
+}
+
+// Tests that setting a socket option in the BeforeConnectCallback works. With
+// real sockets, socket options often have to be set before the connect() call,
+// and the BeforeConnectCallback is the only way to do that, with a
+// TCPClientSocket.
+TEST_F(TCPSocketTest, BeforeConnectCallback) {
+  // A receive buffer size that is between max and minimum buffer size limits,
+  // and weird enough to likely not be a default value.
+  const int kReceiveBufferSize = 32 * 1024 + 1117;
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  EXPECT_THAT(socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()),
+              IsError(ERR_IO_PENDING));
+
+  TestCompletionCallback connect_callback;
+  TCPClientSocket connecting_socket(local_address_list(), nullptr, nullptr,
+                                    NetLogSource());
+
+  connecting_socket.SetBeforeConnectCallback(base::BindLambdaForTesting([&] {
+    EXPECT_FALSE(connecting_socket.IsConnected());
+    int result = connecting_socket.SetReceiveBufferSize(kReceiveBufferSize);
+    EXPECT_THAT(result, IsOk());
+    return result;
+  }));
+  int connect_result = connecting_socket.Connect(connect_callback.callback());
+
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  int actual_size = 0;
+  socklen_t actual_size_len = sizeof(actual_size);
+  int os_result = getsockopt(
+      connecting_socket.SocketDescriptorForTesting(), SOL_SOCKET, SO_RCVBUF,
+      reinterpret_cast<char*>(&actual_size), &actual_size_len);
+  ASSERT_EQ(0, os_result);
+// Linux platforms generally allocate twice as much buffer size is requested to
+// account for internal kernel data structures.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  EXPECT_EQ(2 * kReceiveBufferSize, actual_size);
+// Unfortunately, Apple platform behavior doesn't seem to be documented, and
+// doesn't match behavior on any other platforms.
+#elif !defined(OS_IOS) && !defined(OS_MACOSX)
+  EXPECT_EQ(kReceiveBufferSize, actual_size);
+#endif
+}
+
+TEST_F(TCPSocketTest, BeforeConnectCallbackFails) {
+  // Setting up a server isn't strictly necessary, but it does allow checking
+  // the server was never connected to.
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  EXPECT_THAT(socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()),
+              IsError(ERR_IO_PENDING));
+
+  TestCompletionCallback connect_callback;
+  TCPClientSocket connecting_socket(local_address_list(), nullptr, nullptr,
+                                    NetLogSource());
+
+  // Set a callback that returns a nonsensical error, and make sure it's
+  // returned.
+  connecting_socket.SetBeforeConnectCallback(base::BindRepeating(
+      [] { return static_cast<int>(net::ERR_NAME_NOT_RESOLVED); }));
+  int connect_result = connecting_socket.Connect(connect_callback.callback());
+  EXPECT_THAT(connect_callback.GetResult(connect_result),
+              IsError(net::ERR_NAME_NOT_RESOLVED));
+
+  // Best effort check that the socket wasn't accepted - may flakily pass on
+  // regression, unfortunately.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(accept_callback.have_result());
 }
 
 // These tests require kernel support for tcp_info struct, and so they are

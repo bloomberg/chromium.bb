@@ -7,31 +7,6 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("safe_browsing") {
   sources = [
-    "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
-    "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
-    "chrome_cleaner/chrome_cleaner_controller_win.h",
-    "chrome_cleaner/chrome_cleaner_extensions_util_win.h",
-    "chrome_cleaner/chrome_cleaner_fetcher_win.cc",
-    "chrome_cleaner/chrome_cleaner_fetcher_win.h",
-    "chrome_cleaner/chrome_cleaner_navigation_util_win.cc",
-    "chrome_cleaner/chrome_cleaner_navigation_util_win.h",
-    "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.cc",
-    "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h",
-    "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_win.h",
-    "chrome_cleaner/chrome_cleaner_runner_win.cc",
-    "chrome_cleaner/chrome_cleaner_runner_win.h",
-    "chrome_cleaner/chrome_cleaner_scanner_results.cc",
-    "chrome_cleaner/chrome_cleaner_scanner_results.h",
-    "chrome_cleaner/reporter_runner_win.cc",
-    "chrome_cleaner/reporter_runner_win.h",
-    "chrome_cleaner/settings_resetter_win.cc",
-    "chrome_cleaner/settings_resetter_win.h",
-    "chrome_cleaner/srt_chrome_prompt_impl.cc",
-    "chrome_cleaner/srt_chrome_prompt_impl.h",
-    "chrome_cleaner/srt_client_info_win.cc",
-    "chrome_cleaner/srt_client_info_win.h",
-    "chrome_cleaner/srt_field_trial_win.cc",
-    "chrome_cleaner/srt_field_trial_win.h",
     "safe_browsing_controller_client.cc",
     "safe_browsing_controller_client.h",
     "safe_browsing_tab_observer.cc",
@@ -50,9 +25,34 @@ static_library("safe_browsing") {
 
   if (enable_extensions) {
     sources += [
+      "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
+      "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
+      "chrome_cleaner/chrome_cleaner_controller_win.h",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.cc",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h",
       "chrome_cleaner/chrome_cleaner_dialog_controller_win.h",
+      "chrome_cleaner/chrome_cleaner_extensions_util_win.h",
+      "chrome_cleaner/chrome_cleaner_fetcher_win.cc",
+      "chrome_cleaner/chrome_cleaner_fetcher_win.h",
+      "chrome_cleaner/chrome_cleaner_navigation_util_win.cc",
+      "chrome_cleaner/chrome_cleaner_navigation_util_win.h",
+      "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.cc",
+      "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h",
+      "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_win.h",
+      "chrome_cleaner/chrome_cleaner_runner_win.cc",
+      "chrome_cleaner/chrome_cleaner_runner_win.h",
+      "chrome_cleaner/chrome_cleaner_scanner_results.cc",
+      "chrome_cleaner/chrome_cleaner_scanner_results.h",
+      "chrome_cleaner/reporter_runner_win.cc",
+      "chrome_cleaner/reporter_runner_win.h",
+      "chrome_cleaner/settings_resetter_win.cc",
+      "chrome_cleaner/settings_resetter_win.h",
+      "chrome_cleaner/srt_chrome_prompt_impl.cc",
+      "chrome_cleaner/srt_chrome_prompt_impl.h",
+      "chrome_cleaner/srt_client_info_win.cc",
+      "chrome_cleaner/srt_client_info_win.h",
+      "chrome_cleaner/srt_field_trial_win.cc",
+      "chrome_cleaner/srt_field_trial_win.h",
       "settings_reset_prompt/default_settings_fetcher.cc",
       "settings_reset_prompt/default_settings_fetcher.h",
       "settings_reset_prompt/settings_reset_prompt_config.cc",
@@ -98,8 +98,6 @@ static_library("safe_browsing") {
       "services_delegate.h",
       "test_safe_browsing_blocking_page_quiet.cc",
       "test_safe_browsing_blocking_page_quiet.h",
-      "test_safe_browsing_service.cc",
-      "test_safe_browsing_service.h",
       "trigger_creator.cc",
       "trigger_creator.h",
       "ui_manager.cc",
@@ -142,8 +140,6 @@ static_library("safe_browsing") {
         "client_side_model_loader.h",
         "download_protection/check_client_download_request.cc",
         "download_protection/check_client_download_request.h",
-        "download_protection/disk_image_type_sniffer_mac.cc",
-        "download_protection/disk_image_type_sniffer_mac.h",
         "download_protection/download_feedback.cc",
         "download_protection/download_feedback.h",
         "download_protection/download_feedback_service.cc",
@@ -214,6 +210,7 @@ static_library("safe_browsing") {
       ]
       deps += [
         ":advanced_protection",
+        "//chrome/common/safe_browsing:disk_image_type_sniffer_mac",
         "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser:browser",
         "//components/language/core/common:common",
@@ -254,4 +251,18 @@ static_library("advanced_protection") {
     "//components/signin/core/browser:browser",
     "//content/public/browser:browser",
   ]
+}
+
+source_set("test_support") {
+  if (safe_browsing_mode != 0) {
+    sources = [
+      "test_safe_browsing_service.cc",
+      "test_safe_browsing_service.h",
+    ]
+
+    deps = [
+      "//chrome/common/safe_browsing:proto",
+      "//content/public/browser:browser",
+    ]
+  }
 }

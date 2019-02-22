@@ -64,12 +64,12 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // Removes an observer if added.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // IsContainerStartedSignalConnected must return true before StartContainer
+  // IsContainerStartedSignalConnected must return true before StartLxdContainer
   // is called.
   virtual bool IsContainerStartedSignalConnected() = 0;
 
-  // IsContainerShutdownSignalConnected must return true before StartContainer
-  // is called.
+  // IsContainerShutdownSignalConnected must return true before
+  // StartLxdContainer is called.
   virtual bool IsContainerShutdownSignalConnected() = 0;
 
   // This should be true prior to calling InstallLinuxPackage.

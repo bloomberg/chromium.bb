@@ -25,7 +25,9 @@ Tests DOMSnapshot.getSnapshot method.
           "lineNumber": 43,
           "columnNumber": 46
         }
-      ]
+      ],
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
     },
     {
       "nodeType": 1,
@@ -448,7 +450,9 @@ Tests DOMSnapshot.getSnapshot method.
       "documentURL": "<string>",
       "baseURL": "<string>",
       "documentEncoding": "windows-1252",
-      "frameId": "<string>"
+      "frameId": "<string>",
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
     },
     {
       "nodeType": 1,
@@ -759,7 +763,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 0,
         "y": 0,
         "width": 785,
-        "height": 1135
+        "height": 1134.875
       },
       "styleIndex": 0,
       "isStackingContext": true
@@ -770,7 +774,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 8,
         "y": 8,
         "width": 769,
-        "height": 1119
+        "height": 1118.875
       },
       "styleIndex": 1
     },
@@ -801,7 +805,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 8,
         "y": 208,
         "width": 769,
-        "height": 919
+        "height": 918.875
       },
       "styleIndex": 4
     },
@@ -1423,9 +1427,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 50,
       "boundingBox": {
         "x": 8,
-        "y": 1057,
+        "y": 1057.4375,
         "width": 769,
-        "height": 33
+        "height": 32
       },
       "styleIndex": 17
     },
@@ -1433,9 +1437,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 55,
       "boundingBox": {
         "x": 8,
-        "y": 1057,
+        "y": 1057.4375,
         "width": 769,
-        "height": 33
+        "height": 32
       },
       "styleIndex": 17
     },
@@ -1443,9 +1447,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 56,
       "boundingBox": {
         "x": 8,
-        "y": 1057,
+        "y": 1057.4375,
         "width": 769,
-        "height": 33
+        "height": 32
       },
       "styleIndex": 17
     },
@@ -1453,9 +1457,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 57,
       "boundingBox": {
         "x": 8,
-        "y": 1057,
+        "y": 1057.4375,
         "width": 96,
-        "height": 33
+        "height": 32
       },
       "layoutText": "Hi!",
       "inlineTextNodes": [
@@ -1476,9 +1480,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 60,
       "boundingBox": {
         "x": 8,
-        "y": 1110,
+        "y": 1110.875,
         "width": 144,
-        "height": 17
+        "height": 16
       },
       "styleIndex": 19
     },
@@ -1486,9 +1490,9 @@ Tests DOMSnapshot.getSnapshot method.
       "domNodeIndex": 61,
       "boundingBox": {
         "x": 8,
-        "y": 1110,
+        "y": 1110.875,
         "width": 144,
-        "height": 17
+        "height": 16
       },
       "layoutText": "Click ME!",
       "inlineTextNodes": [

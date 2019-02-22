@@ -24,7 +24,7 @@ namespace blink {
 class XMLHttpRequest;
 
 class CORE_EXPORT XMLHttpRequestOrString final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   XMLHttpRequestOrString();
   bool IsNull() const { return type_ == SpecificType::kNone; }

@@ -5,7 +5,6 @@
 #include "ash/wm/top_level_window_factory.h"
 
 #include "ash/disconnected_app_handler.h"
-#include "ash/frame/detached_title_area_renderer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -44,27 +43,20 @@ bool IsFullscreen(aura::PropertyConverter* property_converter,
           ui::SHOW_STATE_FULLSCREEN);
 }
 
-bool ShouldRenderTitleArea(
-    aura::PropertyConverter* property_converter,
-    const std::map<std::string, std::vector<uint8_t>>& properties) {
-  auto iter = properties.find(
-      ws::mojom::WindowManager::kRenderParentTitleArea_Property);
-  if (iter == properties.end())
-    return false;
-
-  aura::PropertyConverter::PrimitiveType value = 0;
-  return property_converter->GetPropertyValueFromTransportValue(
-             ws::mojom::WindowManager::kRenderParentTitleArea_Property,
-             iter->second, &value) &&
-         value == 1;
-}
-
 // Returns the RootWindowController where new top levels are created.
 // |properties| is the properties supplied during window creation.
 RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  // If a specific display was requested, use it.
-  const int64_t display_id = GetInitialDisplayId(*properties);
+  // If a specific display was requested, use it. If no display was requested,
+  // choose one based on the requested initial bounds.
+  int64_t display_id = GetInitialDisplayId(*properties);
+  gfx::Rect requested_bounds;
+  if (display_id == display::kInvalidDisplayId &&
+      GetInitialBounds(*properties, &requested_bounds)) {
+    display_id =
+        display::Screen::GetScreen()->GetDisplayMatching(requested_bounds).id();
+  }
+
   if (display_id != display::kInvalidDisplayId) {
     for (RootWindowController* root_window_controller :
          RootWindowController::root_window_controllers()) {
@@ -74,6 +66,7 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
       }
     }
   }
+
   return RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
@@ -154,20 +147,6 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                                      window_type, property_converter,
                                      properties);
     return non_client_frame_controller->window();
-  }
-
-  if (window_type == ws::mojom::WindowType::POPUP &&
-      ShouldRenderTitleArea(property_converter, *properties)) {
-    // Pick a parent so display information is obtained. Will pick the real one
-    // once transient parent found.
-    aura::Window* unparented_control_container =
-        root_window_controller->GetRootWindow()->GetChildById(
-            kShellWindowId_UnparentedControlContainer);
-    // DetachedTitleAreaRendererForClient is owned by the client.
-    DetachedTitleAreaRendererForClient* renderer =
-        new DetachedTitleAreaRendererForClient(unparented_control_container,
-                                               property_converter, properties);
-    return renderer->widget()->GetNativeView();
   }
 
   // WindowDelegateImpl() deletes itself when the associated window is

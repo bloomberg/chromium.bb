@@ -79,7 +79,7 @@
 
 // Generates a UMA histogram of the given type, generating the proper name for
 // it (asking backend_->HistogramName), and adding the provided sample.
-// For example, to generate a regualar UMA_HISTOGRAM_COUNTS, this macro would
+// For example, to generate a regualar UMA_HISTOGRAM_COUNTS_1M, this macro would
 // be used as:
 //  CACHE_UMA(COUNTS, "MyName", 0, 20);
 //  CACHE_UMA(COUNTS, "MyExperiment", 530, 55);

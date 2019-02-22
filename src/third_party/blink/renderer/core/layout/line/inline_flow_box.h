@@ -105,14 +105,6 @@ class InlineFlowBox : public InlineBox {
   InlineBox* FirstLeafChild() const;
   InlineBox* LastLeafChild() const;
 
-  typedef void (*CustomInlineBoxRangeReverse)(
-      Vector<InlineBox*>::iterator first,
-      Vector<InlineBox*>::iterator last);
-  void CollectLeafBoxesInLogicalOrder(
-      Vector<InlineBox*>&,
-      CustomInlineBoxRangeReverse custom_reverse_implementation =
-          nullptr) const;
-
   DISABLE_CFI_PERF
   void SetConstructed() final {
     InlineBox::SetConstructed();
@@ -386,19 +378,15 @@ class InlineFlowBox : public InlineBox {
     is_first_after_page_break_ = is_first_after_page_break;
   }
 
-  // Some callers (LayoutListItem) needs to set extra overflow on their line
-  // box.
-  void OverrideOverflowFromLogicalRects(
-      const LayoutRect& logical_layout_overflow,
+  void OverrideVisualOverflowFromLogicalRect(
       const LayoutRect& logical_visual_overflow,
       LayoutUnit line_top,
-      LayoutUnit line_bottom) {
-    // If we are setting an overflow, then we can't pretend not to have an
-    // overflow.
-    ClearKnownToHaveNoOverflow();
-    SetOverflowFromLogicalRects(logical_layout_overflow,
-                                logical_visual_overflow, line_top, line_bottom);
-  }
+      LayoutUnit line_bottom);
+
+  void OverrideLayoutOverflowFromLogicalRect(
+      const LayoutRect& logical_layout_overflow,
+      LayoutUnit line_top,
+      LayoutUnit line_bottom);
 
   LayoutUnit FarthestPositionForUnderline(LineLayoutItem decorating_box,
                                           FontVerticalPositionType,
@@ -441,10 +429,14 @@ class InlineFlowBox : public InlineBox {
   void SetLayoutOverflow(const LayoutRect&, const LayoutRect&);
   void SetVisualOverflow(const LayoutRect&, const LayoutRect&);
 
-  void SetOverflowFromLogicalRects(const LayoutRect& logical_layout_overflow,
-                                   const LayoutRect& logical_visual_overflow,
-                                   LayoutUnit line_top,
-                                   LayoutUnit line_bottom);
+  void SetLayoutOverflowFromLogicalRect(
+      const LayoutRect& logical_layout_overflow,
+      LayoutUnit line_top,
+      LayoutUnit line_bottom);
+  void SetVisualOverflowFromLogicalRect(
+      const LayoutRect& logical_visual_overflow,
+      LayoutUnit line_top,
+      LayoutUnit line_bottom);
 
  protected:
   std::unique_ptr<SimpleOverflowModel> overflow_;

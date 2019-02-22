@@ -92,6 +92,8 @@ const MultiDeviceFeatureBehaviorImpl = {
    */
   getFeatureName: function(feature) {
     switch (feature) {
+      case settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE:
+        return this.i18n('multideviceSetupItemHeading');
       case settings.MultiDeviceFeature.INSTANT_TETHERING:
         return this.i18n('multideviceInstantTetheringItemTitle');
       case settings.MultiDeviceFeature.MESSAGES:
@@ -132,6 +134,8 @@ const MultiDeviceFeatureBehaviorImpl = {
     switch (feature) {
       case settings.MultiDeviceFeature.SMART_LOCK:
         return this.i18nAdvanced('multideviceSmartLockItemSummary');
+      case settings.MultiDeviceFeature.INSTANT_TETHERING:
+        return this.i18nAdvanced('multideviceInstantTetheringItemSummary');
       case settings.MultiDeviceFeature.MESSAGES:
         return this.i18nAdvanced('multideviceAndroidMessagesItemSummary');
       default:

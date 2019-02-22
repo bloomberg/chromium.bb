@@ -11,13 +11,10 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AccountId;
 class ScopedKeepAlive;
-
-namespace wm {
-class ScopedDragDropDisabler;
-}
 
 namespace chromeos {
 
@@ -100,12 +97,11 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // still in the process of cleaning up after login (http://crbug.com/134463).
   bool shutting_down_ = false;
 
+  // Used to make sure Finalize() is not called twice.
+  bool is_finalizing_ = false;
+
   // Make sure chrome won't exit while we are at login/oobe screen.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
-
-  // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
-  // during a login session and restored afterwards.
-  std::unique_ptr<wm::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;

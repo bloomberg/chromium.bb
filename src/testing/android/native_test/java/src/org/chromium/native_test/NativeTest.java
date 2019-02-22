@@ -44,7 +44,7 @@ public class NativeTest {
     private String mCommandLineFilePath;
     private StringBuilder mCommandLineFlags = new StringBuilder();
     private TestStatusReporter mReporter;
-    private boolean mRunInSubThread = false;
+    private boolean mRunInSubThread;
     private String mStdoutFilePath;
 
     private static class ReportingUncaughtExceptionHandler

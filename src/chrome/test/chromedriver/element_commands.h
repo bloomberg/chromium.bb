@@ -129,6 +129,13 @@ Status ExecuteGetElementValue(Session* session,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value);
 
+// Returns the value of a given element property.
+Status ExecuteGetElementProperty(Session* session,
+                              WebView* web_view,
+                              const std::string& element_id,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value);
+
 // Returns the lower case tag name of a given element.
 Status ExecuteGetElementTagName(Session* session,
                                 WebView* web_view,
@@ -201,5 +208,12 @@ Status ExecuteElementEquals(Session* session,
                             const std::string& element_id,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value);
+
+// Retrieves a screenshot of a specific element
+Status ExecuteElementScreenshot(Session* session,
+                                WebView* web_view,
+                                const std::string& element_id,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_ELEMENT_COMMANDS_H_

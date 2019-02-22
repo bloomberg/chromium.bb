@@ -55,7 +55,7 @@ class AXMenuListOption final : public AXMockObject {
   void Detach() override;
   bool IsDetached() const override { return !element_; }
   LocalFrameView* DocumentFrameView() const override;
-  AccessibilityRole RoleValue() const override;
+  ax::mojom::Role RoleValue() const override;
   bool CanHaveChildren() const override { return false; }
   AXObject* ComputeParent() const override;
 
@@ -72,7 +72,7 @@ class AXMenuListOption final : public AXMockObject {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;

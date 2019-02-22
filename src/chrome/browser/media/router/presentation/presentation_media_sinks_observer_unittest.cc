@@ -12,6 +12,7 @@
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -45,6 +46,10 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
     observer_.reset();
   }
 
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+ public:
   MockMediaRouter router_;
   MockScreenAvailabilityListener listener_;
   std::unique_ptr<PresentationMediaSinksObserver> observer_;

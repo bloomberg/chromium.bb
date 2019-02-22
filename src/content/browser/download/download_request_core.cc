@@ -40,6 +40,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -126,12 +127,14 @@ const int DownloadRequestCore::kDownloadByteStreamSize = 100 * 1024;
 // static
 std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
     bool is_new_download,
-    download::DownloadUrlParameters* params) {
+    download::DownloadUrlParameters* params,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(is_new_download || !params->content_initiated())
       << "Content initiated downloads should be a new download";
 
-  std::unique_ptr<net::URLRequest> request = CreateURLRequestOnIOThread(params);
+  std::unique_ptr<net::URLRequest> request =
+      CreateURLRequestOnIOThread(params, std::move(url_request_context_getter));
 
   DownloadRequestData::Attach(request.get(), params, is_new_download);
   return request;
@@ -340,7 +343,7 @@ bool DownloadRequestCore::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   DCHECK(!read_buffer_.get());
 
   *buf_size = kReadBufSize;
-  read_buffer_ = new net::IOBuffer(*buf_size);
+  read_buffer_ = base::MakeRefCounted<net::IOBuffer>(*buf_size);
   *buf = read_buffer_.get();
   return true;
 }

@@ -44,7 +44,7 @@ Polymer({
                              .ADVANCED_SETTINGS_DIALOG_SHOWN);
     // This async() call is a workaround to prevent a DCHECK - see
     // https://crbug.com/804047.
-    // TODO (rbpotter): Remove after Polymer2 migration is complete.
+    // TODO(rbpotter): Remove after Polymer2 migration is complete.
     this.async(() => {
       this.$.dialog.showModal();
     }, 1);

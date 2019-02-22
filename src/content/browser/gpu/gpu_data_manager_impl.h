@@ -17,11 +17,14 @@
 #include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/three_d_api_types.h"
 #include "gpu/config/gpu_control_list.h"
+#include "gpu/config/gpu_domain_guilt.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_mode.h"
@@ -43,24 +46,6 @@ class GpuDataManagerImplPrivate;
 
 class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
  public:
-  // Indicates the guilt level of a domain which caused a GPU reset.
-  // If a domain is 100% known to be guilty of resetting the GPU, then
-  // it will generally not cause other domains' use of 3D APIs to be
-  // blocked, unless system stability would be compromised.
-  enum DomainGuilt {
-    DOMAIN_GUILT_KNOWN,
-    DOMAIN_GUILT_UNKNOWN
-  };
-
-  // Indicates the reason that access to a given client API (like
-  // WebGL or Pepper 3D) was blocked or not. This state is distinct
-  // from blacklisting of an entire feature.
-  enum DomainBlockStatus {
-    DOMAIN_BLOCK_STATUS_BLOCKED,
-    DOMAIN_BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
-    DOMAIN_BLOCK_STATUS_NOT_BLOCKED
-  };
-
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
 
@@ -89,12 +74,14 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
-  // Only update if the current GPUInfo is not finalized.  If blacklist is
-  // loaded, run through blacklist and update blacklisted features.
   void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
-
+#if defined(OS_WIN)
+  void UpdateDx12VulkanInfo(
+      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
+#endif
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -132,7 +119,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   //
   // The given URL may be a partial URL (including at least the host)
   // or a full URL to a page.
-  void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt);
+  void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt);
   bool Are3DAPIsBlocked(const GURL& top_origin_url,
                         int render_process_id,
                         int render_frame_id,
@@ -176,7 +163,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   ~GpuDataManagerImpl() override;
 
   mutable base::Lock lock_;
-  std::unique_ptr<GpuDataManagerImplPrivate> private_;
+  std::unique_ptr<GpuDataManagerImplPrivate> private_ GUARDED_BY(lock_)
+      PT_GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

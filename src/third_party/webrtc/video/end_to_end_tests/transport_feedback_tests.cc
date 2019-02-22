@@ -37,9 +37,8 @@ class TransportFeedbackEndToEndTest
 INSTANTIATE_TEST_CASE_P(
     FieldTrials,
     TransportFeedbackEndToEndTest,
-    ::testing::Values("WebRTC-RoundRobinPacing/Disabled/",
-                      "WebRTC-RoundRobinPacing/Enabled/",
-                      "WebRTC-TaskQueueCongestionControl/Enabled/"));
+    ::testing::Values("WebRTC-TaskQueueCongestionControl/Enabled/",
+                      "WebRTC-TaskQueueCongestionControl/Disabled/"));
 
 TEST_P(TransportFeedbackEndToEndTest, AssignsTransportSequenceNumbers) {
   static const int kExtensionId = 5;
@@ -56,7 +55,7 @@ TEST_P(TransportFeedbackEndToEndTest, AssignsTransportSequenceNumbers) {
                           absl::make_unique<FakeNetworkPipe>(
                               Clock::GetRealTimeClock(),
                               absl::make_unique<SimulatedNetwork>(
-                                  DefaultNetworkSimulationConfig())),
+                                  BuiltInNetworkBehaviorConfig())),
                           sender_call,
                           payload_type_map),
           done_(false, false),

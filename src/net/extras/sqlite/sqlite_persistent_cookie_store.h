@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/log/net_log_with_source.h"
 
@@ -25,10 +27,14 @@ namespace net {
 class CanonicalCookie;
 class CookieCryptoDelegate;
 
+// Returns recommended task priority for |background_task_runner|.
+base::TaskPriority COMPONENT_EXPORT(NET_EXTRAS)
+    GetCookieStoreBackgroundSequencePriority();
+
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
 // of the parent class |CookieMonster::PersistentCookieStore|.
-class SQLitePersistentCookieStore
+class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:
   // Contains the origin and a bool indicating whether or not the
@@ -59,6 +65,11 @@ class SQLitePersistentCookieStore
   void SetForceKeepSessionState() override;
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
   void Flush(base::OnceClosure callback) override;
+
+  // Returns how many operations are currently queued. For test use only;
+  // and the background thread needs to be wedged for accessing this to be
+  // non-racey. Also requires the client thread to be current.
+  size_t GetQueueLengthForTesting();
 
  private:
   ~SQLitePersistentCookieStore() override;

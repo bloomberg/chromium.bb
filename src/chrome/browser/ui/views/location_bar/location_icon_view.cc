@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/label.h"
 
 using content::WebContents;
@@ -46,7 +45,7 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
     text = OmniboxView::SanitizeTextForPaste(text);
     OmniboxEditModel* model = location_bar_->GetOmniboxView()->model();
     if (model->CanPasteAndGo(text))
-      model->PasteAndGo(text);
+      model->PasteAndGo(text, event.time_stamp());
   }
 
   IconLabelBubbleView::OnMousePressed(event);
@@ -77,16 +76,14 @@ bool LocationIconView::ShouldShowSeparator() const {
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
     return false;
 
-  return ui::MaterialDesignController::IsRefreshUi() &&
-         !location_bar_->GetOmniboxView()->IsEditingOrEmpty();
+  return !location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShouldShowExtraEndSpace() const {
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
     return false;
 
-  return ui::MaterialDesignController::IsRefreshUi() &&
-         location_bar_->GetOmniboxView()->IsEditingOrEmpty();
+  return location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {
@@ -94,6 +91,10 @@ bool LocationIconView::ShowBubble(const ui::Event& event) {
   if (!contents)
     return false;
   return location_bar_->ShowPageInfoDialog(contents);
+}
+
+SkColor LocationIconView::GetInkDropBaseColor() const {
+  return location_bar_->GetIconInkDropColor();
 }
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

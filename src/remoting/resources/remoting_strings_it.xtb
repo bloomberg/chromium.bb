@@ -102,7 +102,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3171922709365450819">Questo dispositivo non è supportato da questo client perché richiede l'autenticazione di terze parti.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3212472844831225214">• Aggiunto il supporto per Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Invia queste istruzioni tramite email</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="3286521253923406898">Controller host Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="8548209692293300397">Hai già eseguito l'accesso come <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN" />accedi a Google Chrome<ph name="LINK_END" /> con tale account e installa di nuovo Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">Media</translation>
+<translation id="8705151241155781642">• È stato aggiunto il supporto di Android 9.0 Pie.
+• Supporto della regolazione della risoluzione del desktop remoto in base allo schermo del dispositivo Android.</translation>
 <translation id="8712909229180978490">Non riesco a trovare i miei file salvati online su Google Drive.</translation>
 <translation id="8743328882720071828">Vuoi consentire a <ph name="CLIENT_USERNAME" /> di visualizzare e controllare il tuo computer?</translation>
 <translation id="8747048596626351634">La sessione si è arrestata in modo anomalo o non si è avviata. Se sul computer remoto esiste la sessione ~/.chrome-remote-desktop-session, assicurati che avvii un processo in primo piano con esecuzione prolungata come un ambiente desktop o gestione finestre.</translation>

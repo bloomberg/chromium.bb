@@ -10,6 +10,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,9 +29,16 @@ constexpr char kTestUserAgentString[] =
 constexpr char kSourceId[] = "sourceId";
 constexpr char kDestinationId[] = "destinationId";
 
+std::unique_ptr<base::Value> GetDictionaryFromCastMessage(
+    const CastMessage& message) {
+  if (!message.has_payload_utf8())
+    return nullptr;
+
+  return base::JSONReader::Read(message.payload_utf8());
+}
+
 CastMessageType GetMessageType(const CastMessage& message) {
-  std::unique_ptr<base::Value> dict =
-      base::JSONReader::Read(message.payload_utf8());
+  std::unique_ptr<base::Value> dict = GetDictionaryFromCastMessage(message);
   if (!dict)
     return CastMessageType::kOther;
 
@@ -47,8 +57,11 @@ class CastMessageHandlerTest : public testing::Test {
   CastMessageHandlerTest()
       : environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP),
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
+                 /* connector */ nullptr,
+                 "batchId",
                  kTestUserAgentString,
                  "66.0.3331.0",
                  "en-US") {
@@ -64,12 +77,21 @@ class CastMessageHandlerTest : public testing::Test {
 
   void OnError(ChannelError error) { handler_.OnError(cast_socket_, error); }
 
-  MOCK_METHOD2(OnAppAvailability,
+  void OnAppAvailability(const std::string& app_id,
+                         GetAppAvailabilityResult result) {
+    if (run_loop_)
+      run_loop_->Quit();
+    DoOnAppAvailability(app_id, result);
+  }
+
+  MOCK_METHOD2(DoOnAppAvailability,
                void(const std::string& app_id,
                     GetAppAvailabilityResult result));
 
   void ExpectSessionLaunchResult(LaunchSessionResponse::Result expected_result,
                                  LaunchSessionResponse response) {
+    if (run_loop_)
+      run_loop_->Quit();
     ++session_launch_response_count_;
     EXPECT_EQ(expected_result, response.result);
     if (response.result == LaunchSessionResponse::Result::kOk)
@@ -78,7 +100,10 @@ class CastMessageHandlerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   MockCastSocketService cast_socket_service_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   CastMessageHandler handler_;
   MockCastSocket cast_socket_;
   int session_launch_response_count_ = 0;
@@ -129,8 +154,8 @@ TEST_F(CastMessageHandlerTest, RecreateVirtualConnectionAfterError) {
   EXPECT_EQ(CastMessageType::kGetAppAvailability,
             GetMessageType(app_availability_request));
 
-  EXPECT_CALL(
-      *this, OnAppAvailability("AAAAAAAA", GetAppAvailabilityResult::kUnknown));
+  EXPECT_CALL(*this, DoOnAppAvailability("AAAAAAAA",
+                                         GetAppAvailabilityResult::kUnknown));
   OnError(ChannelError::TRANSPORT_ERROR);
 
   EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
@@ -148,8 +173,8 @@ TEST_F(CastMessageHandlerTest, RecreateVirtualConnectionAfterError) {
             GetMessageType(app_availability_request));
   // The callback is invoked with kUnknown before the PendingRequests is
   // destroyed.
-  EXPECT_CALL(
-      *this, OnAppAvailability("BBBBBBBB", GetAppAvailabilityResult::kUnknown));
+  EXPECT_CALL(*this, DoOnAppAvailability("BBBBBBBB",
+                                         GetAppAvailabilityResult::kUnknown));
 }
 
 TEST_F(CastMessageHandlerTest, RequestAppAvailability) {
@@ -189,9 +214,11 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailability) {
                          "\"APP_AVAILABLE\"}}",
                          request_id));
 
-  EXPECT_CALL(*this, OnAppAvailability("ABCDEFAB",
-                                       GetAppAvailabilityResult::kAvailable));
+  run_loop_ = std::make_unique<base::RunLoop>();
+  EXPECT_CALL(*this, DoOnAppAvailability("ABCDEFAB",
+                                         GetAppAvailabilityResult::kAvailable));
   OnMessage(response);
+  run_loop_->Run();
 }
 
 TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
@@ -200,8 +227,8 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
       &cast_socket_, "ABCDEFAB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
-  EXPECT_CALL(
-      *this, OnAppAvailability("ABCDEFAB", GetAppAvailabilityResult::kUnknown));
+  EXPECT_CALL(*this, DoOnAppAvailability("ABCDEFAB",
+                                         GetAppAvailabilityResult::kUnknown));
   environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
@@ -248,6 +275,8 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
       "type": "CLOSE"
   })");
   OnMessage(response);
+  // Wait for message to be parsed and handled.
+  environment_.RunUntilIdle();
 
   // Re-open virtual connection should cause message to be sent.
   EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _));
@@ -293,7 +322,9 @@ TEST_F(CastMessageHandlerTest, LaunchSession) {
                          "}",
                          request_id));
 
+  run_loop_ = std::make_unique<base::RunLoop>();
   OnMessage(response);
+  run_loop_->Run();
   EXPECT_EQ(1, session_launch_response_count_);
 }
 

@@ -24,6 +24,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -37,7 +38,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
@@ -107,21 +107,17 @@ base::TimeDelta GetCheckForUpgradeDelay() {
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
 base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::Version installed_version;
 #if defined(OS_WIN)
   // Get the version of the currently *installed* instance of Chrome,
   // which might be newer than the *running* instance if we have been
   // upgraded in the background.
-  bool system_install = !InstallUtil::IsPerUserInstall();
-
-  installed_version = InstallUtil::GetChromeVersion(system_install);
-  if (critical_update && installed_version.IsValid()) {
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    InstallUtil::GetCriticalUpdateVersion(dist, system_install,
-                                          critical_update);
-  }
+  installed_version =
+      InstallUtil::GetChromeVersion(!InstallUtil::IsPerUserInstall());
+  if (critical_update && installed_version.IsValid())
+    *critical_update = InstallUtil::GetCriticalUpdateVersion();
 #elif defined(OS_MACOSX)
   installed_version = base::Version(
       base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));

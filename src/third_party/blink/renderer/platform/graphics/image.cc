@@ -73,11 +73,19 @@ Image* Image::NullImage() {
 }
 
 // static
-cc::ImageDecodeCache& Image::SharedCCDecodeCache() {
+cc::ImageDecodeCache& Image::SharedCCDecodeCache(SkColorType color_type) {
   // This denotes the allocated locked memory budget for the cache used for
   // book-keeping. The cache indicates when the total memory locked exceeds this
   // budget in cc::DecodedDrawImage.
+  DCHECK(color_type == kN32_SkColorType || color_type == kRGBA_F16_SkColorType);
   static const size_t kLockedMemoryLimitBytes = 64 * 1024 * 1024;
+  if (color_type == kRGBA_F16_SkColorType) {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        cc::SoftwareImageDecodeCache, image_decode_cache,
+        (kRGBA_F16_SkColorType, kLockedMemoryLimitBytes,
+         PaintImage::kDefaultGeneratorClientId));
+    return image_decode_cache;
+  }
   DEFINE_THREAD_SAFE_STATIC_LOCAL(cc::SoftwareImageDecodeCache,
                                   image_decode_cache,
                                   (kN32_SkColorType, kLockedMemoryLimitBytes,

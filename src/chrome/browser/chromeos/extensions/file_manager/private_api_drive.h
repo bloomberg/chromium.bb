@@ -141,6 +141,8 @@ class FileManagerPrivateSearchDriveFunction
       const GURL& next_link,
       std::unique_ptr<std::vector<drive::SearchResultInfo>> result_paths);
 
+  void OnSearchDriveFs(std::unique_ptr<base::ListValue> results);
+
   // Called when |result_paths| in OnSearch() are converted to a list of
   // entry definitions.
   void OnEntryDefinitionList(
@@ -148,6 +150,9 @@ class FileManagerPrivateSearchDriveFunction
       std::unique_ptr<SearchResultInfoList> search_result_info_list,
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
+
+  base::TimeTicks operation_start_;
+  bool is_offline_;
 };
 
 // Similar to FileManagerPrivateSearchDriveFunction but this one is used for
@@ -155,6 +160,12 @@ class FileManagerPrivateSearchDriveFunction
 class FileManagerPrivateSearchDriveMetadataFunction
     : public LoggedAsyncExtensionFunction {
  public:
+  enum class SearchType {
+    kText,
+    kSharedWithMe,
+    kOffline,
+  };
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchDriveMetadata",
                              FILEMANAGERPRIVATE_SEARCHDRIVEMETADATA)
 
@@ -169,6 +180,9 @@ class FileManagerPrivateSearchDriveMetadataFunction
       drive::FileError error,
       std::unique_ptr<drive::MetadataSearchResultVector> results);
 
+  void OnSearchDriveFs(const std::string& query_text,
+                       std::unique_ptr<base::ListValue> results);
+
   // Called when |results| in OnSearchMetadata() are converted to a list of
   // entry definitions.
   void OnEntryDefinitionList(
@@ -176,6 +190,10 @@ class FileManagerPrivateSearchDriveMetadataFunction
           search_result_info_list,
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
+
+  base::TimeTicks operation_start_;
+  SearchType search_type_;
+  bool is_offline_;
 };
 
 // Implements the chrome.fileManagerPrivate.getDriveConnectionState method.
@@ -208,24 +226,6 @@ class FileManagerPrivateRequestAccessTokenFunction
   // Callback with a cached auth token (if available) or a fetched one.
   void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
-};
-
-// Implements the chrome.fileManagerPrivate.getShareUrl method.
-class FileManagerPrivateInternalGetShareUrlFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getShareUrl",
-                             FILEMANAGERPRIVATEINTERNAL_GETSHAREURL)
-
- protected:
-  ~FileManagerPrivateInternalGetShareUrlFunction() override = default;
-
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
-
-  // Callback with an url to the sharing dialog as |share_url|, called by
-  // FileSystem::GetShareUrl.
-  void OnGetShareUrl(drive::FileError error, const GURL& share_url);
 };
 
 // Implements the chrome.fileManagerPrivate.requestDriveShare method.
@@ -279,6 +279,26 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
  private:
   GURL download_url_;
   std::unique_ptr<google_apis::AuthService> auth_service_;
+};
+
+class FileManagerPrivateInternalGetThumbnailFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getThumbnail",
+                             FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL)
+
+  FileManagerPrivateInternalGetThumbnailFunction();
+
+ protected:
+  ~FileManagerPrivateInternalGetThumbnailFunction() override;
+
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void GotThumbnail(const base::Optional<std::vector<uint8_t>>& data);
+
+  void SendEncodedThumbnail(std::string thumbnail_data_url);
 };
 
 }  // namespace extensions

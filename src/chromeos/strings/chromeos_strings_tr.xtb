@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1510238584712386396">Başlatıcı</translation>
+<translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
+<translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2083960536266308407">Ekranda hiçbir şey bulunamadı</translation>
+<translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
+<translation id="2805756323405976993">Uygulamalar</translation>
+<translation id="2872961005593481000">Kapat</translation>
+<translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="5212543919916444558">Ekranınızda size yardımcı olabileceğim bir şey bulamıyorum.
 Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
-<translation id="6674412557034343536">zamanlayıcıyı durdur</translation>
-<translation id="8626219642120025691">Zamanlayıcı sona erdi</translation>
+<translation id="5222676887888702881">Çıkış</translation>
+<translation id="5457599981699367932">Misafir olarak Göz At</translation>
+<translation id="54609108002486618">Yönetilen</translation>
+<translation id="5832805196449965646">Kişi Ekle</translation>
+<translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="7222902781030499995">Kronometreyi durdur</translation>
+<translation id="7658239707568436148">İptal</translation>
+<translation id="7837740436429729974">Süre doldu</translation>
 <translation id="8898978413391960553">00:00 sn.</translation>
+<translation id="9111102763498581341">Kilidi Aç</translation>
 </translationbundle>

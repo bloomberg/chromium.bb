@@ -70,4 +70,24 @@ cURL Windows: curl "http://example.org/path" -H "Cookie: _x=fdsfs; aA=fdsfdsf; F
 cURL Unix: curl 'http://example.org/path' -H 'Cookie: _x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117' --compressed
 Powershell: Invoke-WebRequest -Uri "http://example.org/path" -Headers @{"Cookie"="_x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117"}
 fetch: fetch("http://example.org/path", {"credentials":"include","method":"GET","mode":"cors"});
+cURL Windows: 
+cURL Unix: 
+Powershell: 
+fetch: 
+cURL Windows: 
+cURL Unix: 
+Powershell: 
+fetch: 
+cURL Windows: 
+cURL Unix: 
+Powershell: 
+fetch: 
+cURL Windows: curl "http://example.org/path" -H "Content-Type: foo/bar" --data-binary "baz" --compressed
+cURL Unix: curl 'http://example.org/path' -H 'Content-Type: foo/bar' --data-binary 'baz' --compressed
+Powershell: Invoke-WebRequest -Uri "http://example.org/path" -Method "POST" -ContentType "foo/bar" -Body "baz"
+fetch: fetch("http://example.org/path", {"credentials":"omit","headers":{"content-type":"foo/bar"},"body":"baz","method":"POST","mode":"cors"});
+cURL Windows: curl "http://example.org/path" -H "Content-Type: foo/bar" --data-binary "baz" --compressed
+cURL Unix: curl 'http://example.org/path' -H 'Content-Type: foo/bar' --data-binary 'baz' --compressed
+Powershell: Invoke-WebRequest -Uri "http://example.org/path" -Method "POST" -ContentType "foo/bar" -Body "baz"
+fetch: fetch("http://example.org/path", {"credentials":"omit","headers":{"content-type":"foo/bar"},"body":"baz","method":"POST","mode":"cors"});
 

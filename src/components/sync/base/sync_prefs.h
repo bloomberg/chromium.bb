@@ -40,15 +40,6 @@ class SyncPrefObserver {
   virtual ~SyncPrefObserver();
 };
 
-// Use this for the unique machine tag used for session sync.
-class SessionSyncPrefs {
- public:
-  virtual ~SessionSyncPrefs();
-
-  virtual std::string GetSyncSessionsGUID() const = 0;
-  virtual void SetSyncSessionsGUID(const std::string& guid) = 0;
-};
-
 // Use this for crypto/passphrase-related parts of sync prefs.
 class CryptoSyncPrefs {
  public:
@@ -90,8 +81,7 @@ class CryptoSyncPrefs {
 //   sync_setup_wizard.cc
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
-class SyncPrefs : public SessionSyncPrefs,
-                  public CryptoSyncPrefs,
+class SyncPrefs : public CryptoSyncPrefs,
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
   // |pref_service| may not be null.
@@ -177,10 +167,6 @@ class SyncPrefs : public SessionSyncPrefs,
   // passphrase.
   std::string GetKeystoreEncryptionBootstrapToken() const override;
   void SetKeystoreEncryptionBootstrapToken(const std::string& token) override;
-
-  // Use this for the unique machine tag used for session sync.
-  std::string GetSyncSessionsGUID() const override;
-  void SetSyncSessionsGUID(const std::string& guid) override;
 
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForDataType(ModelType type);

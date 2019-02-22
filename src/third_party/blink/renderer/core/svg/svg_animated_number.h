@@ -49,6 +49,13 @@ class SVGAnimatedNumber : public ScriptWrappable,
  public:
   static SVGAnimatedNumber* Create(SVGElement* context_element,
                                    const QualifiedName& attribute_name,
+                                   float initial_number) {
+    SVGNumber* initial_value = SVGNumber::Create(initial_number);
+    return new SVGAnimatedNumber(context_element, attribute_name,
+                                 initial_value);
+  }
+  static SVGAnimatedNumber* Create(SVGElement* context_element,
+                                   const QualifiedName& attribute_name,
                                    SVGNumber* initial_value) {
     return new SVGAnimatedNumber(context_element, attribute_name,
                                  initial_value);
@@ -67,9 +74,12 @@ class SVGAnimatedNumber : public ScriptWrappable,
   SVGAnimatedNumber(SVGElement* context_element,
                     const QualifiedName& attribute_name,
                     SVGNumber* initial_value)
-      : SVGAnimatedProperty<SVGNumber>(context_element,
-                                       attribute_name,
-                                       initial_value),
+      : SVGAnimatedProperty<SVGNumber>(
+            context_element,
+            attribute_name,
+            initial_value,
+            CSSPropertyInvalid,
+            static_cast<unsigned>(initial_value->Value())),
         parent_number_optional_number_(nullptr) {}
 
   Member<SVGAnimatedNumberOptionalNumber> parent_number_optional_number_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -409,7 +409,7 @@ interface BluetoothHost {
       => (BluetoothGattStatus status);
 };
 
-// Next Method ID: 21
+// Next Method ID: 22
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -432,9 +432,14 @@ interface BluetoothInstance {
                       BluetoothAclState state);
 
   // Bluetooth Gatt Client callbacks
-  [MinVersion=1] OnLEDeviceFound@7(BluetoothAddress addr,
-                                   int32 rssi,
-                                   array<BluetoothAdvertisingData> adv_data);
+  // TODO(b/111367421): Remove this when no active device running Android N.
+  [MinVersion=1] OnLEDeviceFoundForN@7(
+      BluetoothAddress addr,
+      int32 rssi,
+      array<BluetoothAdvertisingData> adv_data);
+  [MinVersion=13] OnLEDeviceFound@21(BluetoothAddress addr,
+                                     int32 rssi,
+                                     array<uint8> eir);
   [MinVersion=1] OnLEConnectionStateChange@8(BluetoothAddress remote_addr,
                                              bool connected);
   [MinVersion=4] OnLEDeviceAddressChange@16(BluetoothAddress old_addr,

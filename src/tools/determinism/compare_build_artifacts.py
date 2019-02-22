@@ -265,7 +265,12 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
       ' '.join(epoch_hex[i:i+2] for i in xrange(0, len(epoch_hex), 2)))
 
   with open(os.path.join(BASE_DIR, 'deterministic_build_whitelist.pyl')) as f:
-    whitelist = frozenset(ast.literal_eval(f.read())[target_platform])
+    raw_whitelist = ast.literal_eval(f.read())
+    whitelist_list = raw_whitelist[target_platform]
+    if re.search(r'\bis_component_build\s*=\s*true\b',
+                 open(os.path.join(first_dir, 'args.gn')).read()):
+      whitelist_list += raw_whitelist.get(target_platform + '_component', [])
+    whitelist = frozenset(whitelist_list)
 
   if use_isolate_files:
     first_list = get_files_to_compare_using_isolate(first_dir)

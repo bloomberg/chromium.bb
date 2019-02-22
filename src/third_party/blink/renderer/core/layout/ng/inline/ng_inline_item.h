@@ -26,6 +26,8 @@ class LayoutObject;
 // In this representation TextNodes are merged up into their parent inline
 // element where possible.
 class CORE_EXPORT NGInlineItem {
+  DISALLOW_NEW();
+
  public:
   enum NGInlineItemType {
     kText,
@@ -90,6 +92,7 @@ class CORE_EXPORT NGInlineItem {
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
   bool ShouldCreateBoxFragment() const { return should_create_box_fragment_; }
+  void SetShouldCreateBoxFragment() { should_create_box_fragment_ = true; }
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
@@ -123,6 +126,14 @@ class CORE_EXPORT NGInlineItem {
     return static_cast<NGCollapseType>(end_collapse_type_);
   }
   void SetEndCollapseType(NGCollapseType type);
+
+  // True if this item was generated (not in DOM).
+  // NGInlineItemsBuilder may generate break opportunitites to express the
+  // context that are lost during the whitespace collapsing. This item is used
+  // during the line breaking and layout, but is not supposed to generate
+  // fragments.
+  bool IsGenerated() const { return is_generated_; }
+  void SetIsGenerated() { is_generated_ = true; }
 
   // Whether the end collapsible space run contains a newline.
   // Valid only when kCollapsible or kCollapsed.
@@ -190,6 +201,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
+  unsigned is_generated_ : 1;
   friend class NGInlineNode;
 };
 
@@ -206,6 +218,9 @@ inline void NGInlineItem::AssertEndOffset(unsigned offset) const {
 // Represents a text content with a list of NGInlineItem. A node may have an
 // additional NGInlineItemsData for ::first-line pseudo element.
 struct CORE_EXPORT NGInlineItemsData {
+  USING_FAST_MALLOC(NGInlineItemsData);
+
+ public:
   // Text content for all inline items represented by a single NGInlineNode.
   // Encoded either as UTF-16 or latin-1 depending on the content.
   String text_content;

@@ -132,7 +132,7 @@ struct PageLoadTiming {
   ParseTiming parse_timing;
   // Time between user input and navigation start. This is set for navigations
   // where the input start timing is known; currently when the navigation is
-  // initiated by a link click in the renderer.
+  // initiated by a link click in the renderer, or from the desktop omnibox.
   mojo_base.mojom.TimeDelta? input_to_navigation_start;
 
   // If you add additional members, also be sure to update page_load_timing.h.
@@ -167,12 +167,31 @@ struct ResourceDataUpdate {
   // is the aggregate of the |delta_bytes| from each timing update.
   int64 received_data_length = 0;
 
+  // The length of the response body for the resource before removing any
+  // content encodings.
+  int64 encoded_body_length = 0;
+
   // Whether this resource load has completed.
   bool is_complete;
 
   // Compression ratio estimated from the response headers if data saver was
   // used.
   double data_reduction_proxy_compression_ratio_estimate;
+
+  // Whether this resource was tagged as an ad in the renderer. This flag can
+  // be set to true at any point during a resource load. A more recent
+  // ResourceDataUpdate can have a different flag than the previous update.
+  // Once this is set to true, it will be true for all future updates.
+  bool reported_as_ad_resource;
+
+  // Whether this resource was loaded in the top-level frame.
+  bool is_main_frame_resource;
+
+  // Whether this resource was fetched from the http cache.
+  bool was_fetched_via_cache;
+
+  // Mime type for the resource found in the network response header.
+  string mime_type;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the

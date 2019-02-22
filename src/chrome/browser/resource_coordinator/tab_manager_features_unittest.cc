@@ -60,7 +60,8 @@ class TabManagerFeaturesTest : public testing::Test {
       base::TimeDelta high_occluded_timeout,
       base::TimeDelta freeze_timeout,
       base::TimeDelta unfreeze_timeout,
-      base::TimeDelta refreeze_timeout) {
+      base::TimeDelta refreeze_timeout,
+      bool disable_heuristics_protections) {
     ProactiveTabFreezeAndDiscardParams params =
         GetProactiveTabFreezeAndDiscardParams(memory_in_gb);
 
@@ -85,6 +86,9 @@ class TabManagerFeaturesTest : public testing::Test {
     EXPECT_EQ(freeze_timeout, params.freeze_timeout);
     EXPECT_EQ(unfreeze_timeout, params.unfreeze_timeout);
     EXPECT_EQ(refreeze_timeout, params.refreeze_timeout);
+
+    EXPECT_EQ(disable_heuristics_protections,
+              params.disable_heuristics_protections);
   }
 
   void ExpectSiteCharacteristicsDatabaseParams(
@@ -137,41 +141,74 @@ class TabManagerFeaturesTest : public testing::Test {
   void ExpectDefaultProactiveTabFreezeAndDiscardParams() {
     int memory_in_gb = 4;
     ExpectProactiveTabFreezeAndDiscardParams(
-        kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault,
-        kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault,
-        kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault,
-        kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault,
-        kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault *
+        ProactiveTabFreezeAndDiscardParams::kShouldProactivelyDiscard
+            .default_value,
+        ProactiveTabFreezeAndDiscardParams::kShouldPeriodicallyUnfreeze
+            .default_value,
+        ProactiveTabFreezeAndDiscardParams::
+            kShouldProtectTabsSharingBrowsingInstance.default_value,
+        ProactiveTabFreezeAndDiscardParams::kLowLoadedTabCount.default_value,
+        ProactiveTabFreezeAndDiscardParams::kModerateLoadedTabsPerGbRam
+                .default_value *
             memory_in_gb,
-        kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault, memory_in_gb,
-        kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault,
-        kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault,
-        kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault,
-        kProactiveTabFreezeAndDiscard_FreezeTimeoutDefault,
-        kProactiveTabFreezeAndDiscard_UnfreezeTimeoutDefault,
-        kProactiveTabFreezeAndDiscard_RefreezeTimeoutDefault);
+        ProactiveTabFreezeAndDiscardParams::kHighLoadedTabCount.default_value,
+        memory_in_gb,
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kLowOccludedTimeout
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kModerateOccludedTimeout
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kHighOccludedTimeout
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kFreezeTimeout.default_value),
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kUnfreezeTimeout.default_value),
+        base::TimeDelta::FromSeconds(
+            ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.default_value),
+        ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections
+            .default_value);
   }
 
   void ExpectDefaultSiteCharacteristicsDatabaseParams() {
     ExpectSiteCharacteristicsDatabaseParams(
-        kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default,
-        kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default,
-        kSiteCharacteristicsDb_AudioUsageObservationWindow_Default,
-        kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default,
-        kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default,
-        kSiteCharacteristicsDb_AudioUsageGracePeriod_Default);
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::
+                kNotificationsUsageObservationWindow.default_value),
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangeGracePeriod
+                .default_value),
+        base::TimeDelta::FromSeconds(
+            SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod
+                .default_value));
   }
 
   void ExpectDefaultInfiniteSessionRestoreParams() {
     ExpectInfiniteSessionRestoreParams(
-        kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault,
-        kInfiniteSessionRestore_MaxSimultaneousTabLoadsDefault,
-        kInfiniteSessionRestore_CoresPerSimultaneousTabLoadDefault,
-        kInfiniteSessionRestore_MinTabsToRestoreDefault,
-        kInfiniteSessionRestore_MaxTabsToRestoreDefault,
-        kInfiniteSessionRestore_MbFreeMemoryPerTabToRestoreDefault,
-        kInfiniteSessionRestore_MaxTimeSinceLastUseToRestoreDefault,
-        kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault);
+        InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.default_value,
+        InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.default_value,
+        InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad
+            .default_value,
+        InfiniteSessionRestoreParams::kMinTabsToRestore.default_value,
+        InfiniteSessionRestoreParams::kMaxTabsToRestore.default_value,
+        InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore
+            .default_value,
+        base::TimeDelta::FromSeconds(
+            InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore
+                .default_value),
+        InfiniteSessionRestoreParams::kMinSiteEngagementToRestore
+            .default_value);
   }
 
  private:
@@ -195,43 +232,55 @@ TEST_F(TabManagerFeaturesTest,
 
 TEST_F(TabManagerFeaturesTest,
        GetProactiveTabFreezeAndDiscardParamsInvalidGoesToDefault) {
-  SetParam(kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, "blah");
-  SetParam(kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
+  SetParam(ProactiveTabFreezeAndDiscardParams::kShouldProactivelyDiscard.name,
            "blah");
-  SetParam(
-      kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam,
-      "bleh");
-  SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "ab");
-  SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam,
+  SetParam(ProactiveTabFreezeAndDiscardParams::kShouldPeriodicallyUnfreeze.name,
+           "blah");
+  SetParam(ProactiveTabFreezeAndDiscardParams::
+               kShouldProtectTabsSharingBrowsingInstance.name,
+           "bleh");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kLowLoadedTabCount.name, "ab");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kModerateLoadedTabsPerGbRam.name,
            "27.8");
-  SetParam(kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam, "4e8");
-  SetParam(kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam, "---");
-  SetParam(kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam, " ");
-  SetParam(kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam, "");
-  SetParam(kProactiveTabFreezeAndDiscard_FreezeTimeoutParam, "b");
-  SetParam(kProactiveTabFreezeAndDiscard_UnfreezeTimeoutParam, "i");
-  SetParam(kProactiveTabFreezeAndDiscard_RefreezeTimeoutParam, "m");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kHighLoadedTabCount.name, "4e8");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kLowOccludedTimeout.name, "---");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kModerateOccludedTimeout.name,
+           " ");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kHighOccludedTimeout.name, "");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kFreezeTimeout.name, "b");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kUnfreezeTimeout.name, "i");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.name, "m");
+  SetParam(
+      ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections.name,
+      "bleh");
   EnableProactiveTabFreezeAndDiscard();
   ExpectDefaultProactiveTabFreezeAndDiscardParams();
 }
 
 TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
-  SetParam(kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, "true");
-  SetParam(kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
+  SetParam(ProactiveTabFreezeAndDiscardParams::kShouldProactivelyDiscard.name,
            "true");
-  SetParam(
-      kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam,
-      "true");
-  SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "7");
-  SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam, "4");
-  SetParam(kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam, "42");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kShouldPeriodicallyUnfreeze.name,
+           "true");
+  SetParam(ProactiveTabFreezeAndDiscardParams::
+               kShouldProtectTabsSharingBrowsingInstance.name,
+           "true");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kLowLoadedTabCount.name, "7");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kModerateLoadedTabsPerGbRam.name,
+           "4");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kHighLoadedTabCount.name, "42");
   // These are expressed in seconds.
-  SetParam(kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam, "60");
-  SetParam(kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam, "120");
-  SetParam(kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam, "247");
-  SetParam(kProactiveTabFreezeAndDiscard_FreezeTimeoutParam, "10");
-  SetParam(kProactiveTabFreezeAndDiscard_UnfreezeTimeoutParam, "20");
-  SetParam(kProactiveTabFreezeAndDiscard_RefreezeTimeoutParam, "30");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kLowOccludedTimeout.name, "60");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kModerateOccludedTimeout.name,
+           "120");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kHighOccludedTimeout.name,
+           "247");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kFreezeTimeout.name, "10");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kUnfreezeTimeout.name, "20");
+  SetParam(ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.name, "30");
+  SetParam(
+      ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections.name,
+      "true");
   EnableProactiveTabFreezeAndDiscard();
 
   // Should snap |moderate_loaded_tab_count| to |low_loaded_tab_count|, when the
@@ -242,7 +291,7 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
       true, true, true, 7, 7, 42, memory_in_gb_low,
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
-      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));
+      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30), true);
 
   // Should snap |moderate_loaded_tab_count| to |high_loaded_tab_count|, when
   // the amount of physical memory is so high that (|memory_in_gb| *
@@ -252,7 +301,7 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
       true, true, true, 7, 42, 42, memory_in_gb_high,
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
-      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));
+      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30), true);
 
   // Tests normal case where |memory_in gb| * |moderate_tab_count_per_gb_ram| is
   // in the interval [low_loaded_tab_count, high_loaded_tab_count].
@@ -261,7 +310,7 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
       true, true, true, 7, 16, 42, memory_in_gb_normal,
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
-      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30));
+      base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30), true);
 }
 
 TEST_F(TabManagerFeaturesTest,
@@ -277,24 +326,45 @@ TEST_F(TabManagerFeaturesTest,
 
 TEST_F(TabManagerFeaturesTest,
        GetSiteCharacteristicsDatabaseParamsInvalidGoesToDefault) {
-  SetParam(kSiteCharacteristicsDb_FaviconUpdateObservationWindow, "    ");
-  SetParam(kSiteCharacteristicsDb_TitleUpdateObservationWindow, "foo");
-  SetParam(kSiteCharacteristicsDb_AudioUsageObservationWindow, ".");
-  SetParam(kSiteCharacteristicsDb_NotificationsUsageObservationWindow, "abc");
-  SetParam(kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod, "bleh");
-  SetParam(kSiteCharacteristicsDb_AudioUsageGracePeriod, "!!!");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow.name,
+      "    ");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow.name,
+      "foo");
+  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow.name,
+           ".");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow
+          .name,
+      "abc");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangeGracePeriod.name,
+      "bleh");
+  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod.name,
+           "!!!");
   EnableSiteCharacteristicsDatabase();
   ExpectDefaultSiteCharacteristicsDatabaseParams();
 }
 
 TEST_F(TabManagerFeaturesTest, GetSiteCharacteristicsDatabaseParams) {
-  SetParam(kSiteCharacteristicsDb_FaviconUpdateObservationWindow, "3600");
-  SetParam(kSiteCharacteristicsDb_TitleUpdateObservationWindow, "36000");
-  SetParam(kSiteCharacteristicsDb_AudioUsageObservationWindow, "360000");
-  SetParam(kSiteCharacteristicsDb_NotificationsUsageObservationWindow,
-           "3600000");
-  SetParam(kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod, "42");
-  SetParam(kSiteCharacteristicsDb_AudioUsageGracePeriod, "43");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow.name,
+      "3600");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow.name,
+      "36000");
+  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow.name,
+           "360000");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow
+          .name,
+      "3600000");
+  SetParam(
+      SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangeGracePeriod.name,
+      "42");
+  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod.name,
+           "43");
 
   EnableSiteCharacteristicsDatabase();
 
@@ -307,27 +377,34 @@ TEST_F(TabManagerFeaturesTest, GetSiteCharacteristicsDatabaseParams) {
 
 TEST_F(TabManagerFeaturesTest,
        GetInfiniteSessionRestoreParamsInvalidGoesToDefault) {
-  SetParam(kInfiniteSessionRestore_MinSimultaneousTabLoads, "  ");
-  SetParam(kInfiniteSessionRestore_MaxSimultaneousTabLoads, "a.b");
-  SetParam(kInfiniteSessionRestore_CoresPerSimultaneousTabLoad, "-- ");
-  SetParam(kInfiniteSessionRestore_MinTabsToRestore, "hey");
-  SetParam(kInfiniteSessionRestore_MaxTabsToRestore, ".");
-  SetParam(kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore, "0x0");
-  SetParam(kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore, "foo");
-  SetParam(kInfiniteSessionRestore_MinSiteEngagementToRestore, "bar");
+  SetParam(InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name, "  ");
+  SetParam(InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name, "a.b");
+  SetParam(InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name,
+           "-- ");
+  SetParam(InfiniteSessionRestoreParams::kMinTabsToRestore.name, "hey");
+  SetParam(InfiniteSessionRestoreParams::kMaxTabsToRestore.name, ".");
+  SetParam(InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name,
+           "0x0");
+  SetParam(InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name,
+           "foo");
+  SetParam(InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name,
+           "bar");
   EnableInfiniteSessionRestore();
   ExpectDefaultInfiniteSessionRestoreParams();
 }
 
 TEST_F(TabManagerFeaturesTest, GetInfiniteSessionRestoreParams) {
-  SetParam(kInfiniteSessionRestore_MinSimultaneousTabLoads, "10");
-  SetParam(kInfiniteSessionRestore_MaxSimultaneousTabLoads, "20");
-  SetParam(kInfiniteSessionRestore_CoresPerSimultaneousTabLoad, "2");
-  SetParam(kInfiniteSessionRestore_MinTabsToRestore, "13");
-  SetParam(kInfiniteSessionRestore_MaxTabsToRestore, "27");
-  SetParam(kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore, "1337");
-  SetParam(kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore, "60");
-  SetParam(kInfiniteSessionRestore_MinSiteEngagementToRestore, "9");
+  SetParam(InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name, "10");
+  SetParam(InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name, "20");
+  SetParam(InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name,
+           "2");
+  SetParam(InfiniteSessionRestoreParams::kMinTabsToRestore.name, "13");
+  SetParam(InfiniteSessionRestoreParams::kMaxTabsToRestore.name, "27");
+  SetParam(InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name,
+           "1337");
+  SetParam(InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name,
+           "60");
+  SetParam(InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name, "9");
   EnableInfiniteSessionRestore();
   ExpectInfiniteSessionRestoreParams(10, 20, 2, 13, 27, 1337,
                                      base::TimeDelta::FromMinutes(1), 9);

@@ -115,7 +115,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
     PluginService* plugin_service,
     InterceptingResourceHandler* intercepting_handler,
     net::URLRequest* request,
-    RequestContextType request_context_type)
+    blink::mojom::RequestContextType request_context_type)
     : LayeredResourceHandler(request, std::move(next_handler)),
       state_(STATE_STARTING),
       host_(host),
@@ -161,7 +161,7 @@ void MimeSniffingResourceHandler::OnResponseStarted(
   if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
     // MIME sniffing should be disabled for a request initiated by fetch().
-    if (request_context_type_ != REQUEST_CONTEXT_TYPE_FETCH &&
+    if (request_context_type_ != blink::mojom::RequestContextType::FETCH &&
         network::ShouldSniffContent(request(), response_.get())) {
       controller->Resume();
       return;

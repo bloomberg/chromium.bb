@@ -22,6 +22,10 @@ PlatformCursor ToPlatformCursor(BitmapCursorOzone* cursor) {
 
 scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
   Cursor cursor(type);
+  // Ozone must honor the lowest possible scale value, which is 1.0f. Otherwise,
+  // it can happen that cursor chooses wrong hotspots if max scaling value is
+  // set to 200p, for example.
+  cursor.set_device_scale_factor(1.0f);
   SkBitmap bitmap = cursor.GetBitmap();
   gfx::Point hotspot = cursor.GetHotspot();
   if (!bitmap.isNull())

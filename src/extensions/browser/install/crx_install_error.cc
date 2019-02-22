@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/install/crx_install_error.h"
+
+#include "base/logging.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 
 namespace extensions {

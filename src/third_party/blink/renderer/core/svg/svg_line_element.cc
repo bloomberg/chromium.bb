@@ -29,17 +29,20 @@ inline SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document),
       x1_(SVGAnimatedLength::Create(this,
                                     SVGNames::x1Attr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kUnitlessZero)),
       y1_(SVGAnimatedLength::Create(this,
                                     SVGNames::y1Attr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kUnitlessZero)),
       x2_(SVGAnimatedLength::Create(this,
                                     SVGNames::x2Attr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      y2_(SVGAnimatedLength::Create(
-          this,
-          SVGNames::y2Attr,
-          SVGLength::Create(SVGLengthMode::kHeight))) {
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kUnitlessZero)),
+      y2_(SVGAnimatedLength::Create(this,
+                                    SVGNames::y2Attr,
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kUnitlessZero)) {
   AddToPropertyMap(x1_);
   AddToPropertyMap(y1_);
   AddToPropertyMap(x2_);

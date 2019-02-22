@@ -24,7 +24,7 @@ ActivationStateComputingNavigationThrottle::CreateForMainFrame(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle->IsInMainFrame());
   return base::WrapUnique(new ActivationStateComputingNavigationThrottle(
-      navigation_handle, base::Optional<ActivationState>(), nullptr));
+      navigation_handle, base::Optional<mojom::ActivationState>(), nullptr));
 }
 
 // static
@@ -32,9 +32,9 @@ std::unique_ptr<ActivationStateComputingNavigationThrottle>
 ActivationStateComputingNavigationThrottle::CreateForSubframe(
     content::NavigationHandle* navigation_handle,
     VerifiedRuleset::Handle* ruleset_handle,
-    const ActivationState& parent_activation_state) {
+    const mojom::ActivationState& parent_activation_state) {
   DCHECK(!navigation_handle->IsInMainFrame());
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             parent_activation_state.activation_level);
   DCHECK(ruleset_handle);
   return base::WrapUnique(new ActivationStateComputingNavigationThrottle(
@@ -44,7 +44,7 @@ ActivationStateComputingNavigationThrottle::CreateForSubframe(
 ActivationStateComputingNavigationThrottle::
     ActivationStateComputingNavigationThrottle(
         content::NavigationHandle* navigation_handle,
-        const base::Optional<ActivationState> parent_activation_state,
+        const base::Optional<mojom::ActivationState> parent_activation_state,
         VerifiedRuleset::Handle* ruleset_handle)
     : content::NavigationThrottle(navigation_handle),
       parent_activation_state_(parent_activation_state),
@@ -57,9 +57,10 @@ ActivationStateComputingNavigationThrottle::
 void ActivationStateComputingNavigationThrottle::
     NotifyPageActivationWithRuleset(
         VerifiedRuleset::Handle* ruleset_handle,
-        const ActivationState& page_activation_state) {
+        const mojom::ActivationState& page_activation_state) {
   DCHECK(navigation_handle()->IsInMainFrame());
-  DCHECK_NE(ActivationLevel::DISABLED, page_activation_state.activation_level);
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            page_activation_state.activation_level);
   parent_activation_state_ = page_activation_state;
   ruleset_handle_ = ruleset_handle;
 }
@@ -130,13 +131,13 @@ void ActivationStateComputingNavigationThrottle::CheckActivationState() {
   // will drop the message via weak pointer semantics.
   async_filter_ = std::make_unique<AsyncDocumentSubresourceFilter>(
       ruleset_handle_, std::move(params),
-      base::Bind(&ActivationStateComputingNavigationThrottle::
-                     OnActivationStateComputed,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ActivationStateComputingNavigationThrottle::
+                         OnActivationStateComputed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
-    ActivationState state) {
+    mojom::ActivationState state) {
   if (defer_timer_) {
     LogDelayMetrics(defer_timer_->Elapsed());
     if (navigation_handle()->IsInMainFrame())

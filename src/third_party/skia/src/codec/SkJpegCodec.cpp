@@ -282,9 +282,7 @@ SkCodec::Result SkJpegCodec::ReadHeader(SkStream* stream, SkCodec** codecOut,
 
 std::unique_ptr<SkCodec> SkJpegCodec::MakeFromStream(std::unique_ptr<SkStream> stream,
                                                      Result* result) {
-    return SkJpegCodec::MakeFromStream(std::move(stream), result,
-                                       // FIXME: This may not be used. Can we skip creating it?
-                                       SkEncodedInfo::ICCProfile::MakeSRGB());
+    return SkJpegCodec::MakeFromStream(std::move(stream), result, nullptr);
 }
 
 std::unique_ptr<SkCodec> SkJpegCodec::MakeFromStream(std::unique_ptr<SkStream> stream,
@@ -302,8 +300,7 @@ std::unique_ptr<SkCodec> SkJpegCodec::MakeFromStream(std::unique_ptr<SkStream> s
 
 SkJpegCodec::SkJpegCodec(SkEncodedInfo&& info, std::unique_ptr<SkStream> stream,
                          JpegDecoderMgr* decoderMgr, SkEncodedOrigin origin)
-    : INHERITED(std::move(info), skcms_PixelFormat_RGBA_8888, std::move(stream),
-                origin)
+    : INHERITED(std::move(info), skcms_PixelFormat_RGBA_8888, std::move(stream), origin)
     , fDecoderMgr(decoderMgr)
     , fReadyState(decoderMgr->dinfo()->global_state)
     , fSwizzleSrcRow(nullptr)
@@ -363,8 +360,8 @@ SkISize SkJpegCodec::onGetScaledDimensions(float desiredScale) const {
     // Set up a fake decompress struct in order to use libjpeg to calculate output dimensions
     jpeg_decompress_struct dinfo;
     sk_bzero(&dinfo, sizeof(dinfo));
-    dinfo.image_width = this->getInfo().width();
-    dinfo.image_height = this->getInfo().height();
+    dinfo.image_width = this->dimensions().width();
+    dinfo.image_height = this->dimensions().height();
     dinfo.global_state = fReadyState;
     calc_output_dimensions(&dinfo, num, denom);
 
@@ -388,8 +385,8 @@ bool SkJpegCodec::onRewind() {
     return true;
 }
 
-bool SkJpegCodec::conversionSupported(const SkImageInfo& dstInfo, SkColorType srcCT,
-                                      bool srcIsOpaque, bool needsColorXform) {
+bool SkJpegCodec::conversionSupported(const SkImageInfo& dstInfo, bool srcIsOpaque,
+                                      bool needsColorXform) {
     SkASSERT(srcIsOpaque);
 
     if (kUnknown_SkAlphaType == dstInfo.alphaType()) {
@@ -426,12 +423,15 @@ bool SkJpegCodec::conversionSupported(const SkImageInfo& dstInfo, SkColorType sr
             }
             break;
         case kGray_8_SkColorType:
-            SkASSERT(!needsColorXform);
             if (JCS_GRAYSCALE != encodedColorType) {
                 return false;
             }
 
-            fDecoderMgr->dinfo()->out_color_space = JCS_GRAYSCALE;
+            if (needsColorXform) {
+                fDecoderMgr->dinfo()->out_color_space = JCS_EXT_RGBA;
+            } else {
+                fDecoderMgr->dinfo()->out_color_space = JCS_GRAYSCALE;
+            }
             break;
         case kRGBA_F16_SkColorType:
             SkASSERT(needsColorXform);
@@ -467,8 +467,8 @@ bool SkJpegCodec::onDimensionsSupported(const SkISize& size) {
     // FIXME: Why is this necessary?
     jpeg_decompress_struct dinfo;
     sk_bzero(&dinfo, sizeof(dinfo));
-    dinfo.image_width = this->getInfo().width();
-    dinfo.image_height = this->getInfo().height();
+    dinfo.image_width = this->dimensions().width();
+    dinfo.image_height = this->dimensions().height();
     dinfo.global_state = fReadyState;
 
     // libjpeg-turbo can scale to 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, and 1/1
@@ -505,7 +505,8 @@ int SkJpegCodec::readRows(const SkImageInfo& dstInfo, void* dst, size_t rowBytes
     // We can never swizzle "in place" because the swizzler may perform sampling and/or
     // subsetting.
     // When fColorXformSrcRow is non-null, it means that we need to color xform and that
-    // we cannot color xform "in place" (many times we can, but not when the dst is F16).
+    // we cannot color xform "in place" (many times we can, but not when the src and dst
+    // are different sizes).
     // In this case, we will color xform from fColorXformSrcRow into the dst.
     JSAMPLE* decodeDst = (JSAMPLE*) dst;
     uint32_t* swizzleDst = (uint32_t*) dst;
@@ -624,8 +625,8 @@ void SkJpegCodec::allocateStorage(const SkImageInfo& dstInfo) {
     }
 
     size_t xformBytes = 0;
-    if (this->colorXform() && (kRGBA_F16_SkColorType == dstInfo.colorType() ||
-                               kRGB_565_SkColorType == dstInfo.colorType())) {
+
+    if (this->colorXform() && sizeof(uint32_t) != dstInfo.bytesPerPixel()) {
         xformBytes = dstWidth * sizeof(uint32_t);
     }
 

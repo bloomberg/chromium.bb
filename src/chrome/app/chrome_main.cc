@@ -88,12 +88,13 @@ int ChromeMain(int argc, const char** argv) {
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   ALLOW_UNUSED_LOCAL(command_line);
 
+#if defined(OS_MACOSX)
+  SetUpBundleOverrides();
+#endif
+
   // Chrome-specific process modes.
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
   if (command_line->HasSwitch(switches::kHeadless)) {
-#if defined(OS_MACOSX)
-    SetUpBundleOverrides();
-#endif
     return headless::HeadlessShellMain(params);
   }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)

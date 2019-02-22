@@ -209,6 +209,7 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kAdvertisingDataFlagsProperty,
                    &advertising_data_flags);
   RegisterProperty(bluetooth_device::kMTUProperty, &mtu);
+  RegisterProperty(bluetooth_device::kEIRProperty, &eir);
 }
 
 BluetoothDeviceClient::Properties::~Properties() = default;
@@ -255,8 +256,7 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
     std::vector<dbus::ObjectPath> object_paths, device_paths;
     device_paths = object_manager_->GetObjectsWithInterface(
         bluetooth_device::kBluetoothDeviceInterface);
-    for (std::vector<dbus::ObjectPath>::iterator iter = device_paths.begin();
-         iter != device_paths.end(); ++iter) {
+    for (auto iter = device_paths.begin(); iter != device_paths.end(); ++iter) {
       Properties* properties = GetProperties(*iter);
       if (properties->adapter.value() == adapter_path)
         object_paths.push_back(*iter);

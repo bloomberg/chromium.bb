@@ -26,7 +26,7 @@ class WindowsSDKApi(recipe_api.RecipeApi):
 
     Args:
       path (path): Path to a directory where to install the SDK
-        (default is '[start_dir]/windows_sdk')
+        (default is '[CACHE]/windows_sdk')
       version (str): CIPD version of the SDK
         (default is set via $infra/windows_sdk.version property)
       enabled (bool): Whether the SDK should be used or not.
@@ -36,7 +36,7 @@ class WindowsSDKApi(recipe_api.RecipeApi):
     """
     if enabled:
       sdk_dir = self._ensure_sdk(
-          path or self.m.path['start_dir'].join('windows_sdk'),
+          path or self.m.path['cache'].join('windows_sdk'),
           version or self._sdk_properties['version'])
       try:
         with self.m.context(**self._sdk_env(sdk_dir)):
@@ -44,8 +44,12 @@ class WindowsSDKApi(recipe_api.RecipeApi):
       finally:
         # cl.exe automatically starts background mspdbsrv.exe daemon which
         # needs to be manually stopped so Swarming can tidy up after itself.
+        #
+        # Since mspdbsrv may not actually be running, don't fail if we can't
+        # actually kill it.
         self.m.step('taskkill mspdbsrv',
-                    ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'])
+                    ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+                    ok_ret='any')
     else:
       yield
 

@@ -12,10 +12,13 @@
 #include "net/third_party/quic/core/frames/quic_application_close_frame.h"
 #include "net/third_party/quic/core/frames/quic_blocked_frame.h"
 #include "net/third_party/quic/core/frames/quic_connection_close_frame.h"
+#include "net/third_party/quic/core/frames/quic_crypto_frame.h"
 #include "net/third_party/quic/core/frames/quic_goaway_frame.h"
 #include "net/third_party/quic/core/frames/quic_max_stream_id_frame.h"
+#include "net/third_party/quic/core/frames/quic_message_frame.h"
 #include "net/third_party/quic/core/frames/quic_mtu_discovery_frame.h"
 #include "net/third_party/quic/core/frames/quic_new_connection_id_frame.h"
+#include "net/third_party/quic/core/frames/quic_new_token_frame.h"
 #include "net/third_party/quic/core/frames/quic_padding_frame.h"
 #include "net/third_party/quic/core/frames/quic_path_challenge_frame.h"
 #include "net/third_party/quic/core/frames/quic_path_response_frame.h"
@@ -27,6 +30,7 @@
 #include "net/third_party/quic/core/frames/quic_stream_id_blocked_frame.h"
 #include "net/third_party/quic/core/frames/quic_window_update_frame.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -50,21 +54,21 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicBlockedFrame* frame);
   explicit QuicFrame(QuicApplicationCloseFrame* frame);
   explicit QuicFrame(QuicNewConnectionIdFrame* frame);
+  explicit QuicFrame(QuicNewTokenFrame* frame);
   explicit QuicFrame(QuicPathResponseFrame* frame);
   explicit QuicFrame(QuicPathChallengeFrame* frame);
   explicit QuicFrame(QuicStopSendingFrame* frame);
+  explicit QuicFrame(QuicMessageFrame* message_frame);
+  explicit QuicFrame(QuicCryptoFrame* crypto_frame);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
 
-  QuicFrameType type;
-
-  // TODO(wub): These frames can also be inlined without increasing the size of
-  // QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame, QuicWindowUpdateFrame,
-  // QuicBlockedFrame, QuicPathResponseFrame, QuicPathChallengeFrame and
-  // QuicStopSendingFrame.
   union {
     // Inlined frames.
+    // Overlapping inlined frames have a |type| field at the same 0 offset as
+    // QuicFrame does for out of line frames below, allowing use of the
+    // remaining 7 bytes after offset for frame-type specific fields.
     QuicPaddingFrame padding_frame;
     QuicMtuDiscoveryFrame mtu_discovery_frame;
     QuicPingFrame ping_frame;
@@ -73,25 +77,42 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicStreamFrame stream_frame;
 
     // Out of line frames.
-    QuicAckFrame* ack_frame;
-    QuicStopWaitingFrame* stop_waiting_frame;
-    QuicRstStreamFrame* rst_stream_frame;
-    QuicConnectionCloseFrame* connection_close_frame;
-    QuicGoAwayFrame* goaway_frame;
-    QuicWindowUpdateFrame* window_update_frame;
-    QuicBlockedFrame* blocked_frame;
-    QuicApplicationCloseFrame* application_close_frame;
-    QuicNewConnectionIdFrame* new_connection_id_frame;
-    QuicPathResponseFrame* path_response_frame;
-    QuicPathChallengeFrame* path_challenge_frame;
-    QuicStopSendingFrame* stop_sending_frame;
+    struct {
+      QuicFrameType type;
+
+      // TODO(wub): These frames can also be inlined without increasing the size
+      // of QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame,
+      // QuicWindowUpdateFrame, QuicBlockedFrame, QuicPathResponseFrame,
+      // QuicPathChallengeFrame and QuicStopSendingFrame.
+      union {
+        QuicAckFrame* ack_frame;
+        QuicStopWaitingFrame* stop_waiting_frame;
+        QuicRstStreamFrame* rst_stream_frame;
+        QuicConnectionCloseFrame* connection_close_frame;
+        QuicGoAwayFrame* goaway_frame;
+        QuicWindowUpdateFrame* window_update_frame;
+        QuicBlockedFrame* blocked_frame;
+        QuicApplicationCloseFrame* application_close_frame;
+        QuicNewConnectionIdFrame* new_connection_id_frame;
+        QuicPathResponseFrame* path_response_frame;
+        QuicPathChallengeFrame* path_challenge_frame;
+        QuicStopSendingFrame* stop_sending_frame;
+        QuicMessageFrame* message_frame;
+        QuicCryptoFrame* crypto_frame;
+        QuicNewTokenFrame* new_token_frame;
+      };
+    };
   };
 };
-// In QuicFrame, QuicFrameType consumes 8 bytes with padding.
-static_assert(sizeof(QuicFrame) <= 32,
-              "Frames larger than 24 bytes should be referenced by pointer.");
 
-typedef std::vector<QuicFrame> QuicFrames;
+static_assert(sizeof(QuicFrame) <= 24,
+              "Frames larger than 24 bytes should be referenced by pointer.");
+static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
+              "Offset of |type| must match in QuicFrame and QuicStreamFrame");
+
+// A inline size of 1 is chosen to optimize the typical use case of
+// 1-stream-frame in QuicTransmissionInfo.retransmittable_frames.
+typedef QuicInlinedVector<QuicFrame, 1> QuicFrames;
 
 // Deletes all the sub-frames contained in |frames|.
 QUIC_EXPORT_PRIVATE void DeleteFrames(QuicFrames* frames);

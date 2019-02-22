@@ -4,6 +4,7 @@
 
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 
+#include <map>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -23,6 +24,9 @@ using TraceConfig = base::trace_event::TraceConfig;
 
 namespace tracing {
 
+using ChromeEventBundleHandle =
+    protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>;
+
 TraceEventMetadataSource::TraceEventMetadataSource()
     : DataSourceBase(mojom::kMetaDataSourceName),
       origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
@@ -41,8 +45,7 @@ void TraceEventMetadataSource::GenerateMetadata(
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
   auto trace_packet = trace_writer->NewTracePacket();
-  protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>
-      event_bundle(trace_packet->set_chrome_events());
+  ChromeEventBundleHandle event_bundle(trace_packet->set_chrome_events());
 
   base::AutoLock lock(lock_);
   for (auto& generator : generator_functions_) {
@@ -102,6 +105,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
       : trace_writer_(std::move(trace_writer)) {}
 
   ~ThreadLocalEventSink() {
+    // Finalize the current message before posting the |trace_writer_| for
+    // destruction, to avoid data races.
+    event_bundle_ = ChromeEventBundleHandle();
+    trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
+
     // Delete the TraceWriter on the sequence that Perfetto runs on, needed
     // as the ThreadLocalEventSink gets deleted on thread
     // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
@@ -109,6 +117,46 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // and trigger it).
     ProducerClient::GetTaskRunner()->DeleteSoon(FROM_HERE,
                                                 std::move(trace_writer_));
+  }
+
+  void EnsureValidHandles() {
+    if (trace_packet_handle_) {
+      return;
+    }
+
+    trace_packet_handle_ = trace_writer_->NewTracePacket();
+    event_bundle_ =
+        ChromeEventBundleHandle(trace_packet_handle_->set_chrome_events());
+    string_table_.clear();
+    next_string_table_index_ = 0;
+  }
+
+  int GetStringTableIndexForString(const char* str_value) {
+    EnsureValidHandles();
+
+    auto it = string_table_.find(reinterpret_cast<intptr_t>(str_value));
+    if (it != string_table_.end()) {
+      CHECK_EQ(std::string(reinterpret_cast<const char*>(it->first)),
+               std::string(str_value));
+
+      return it->second;
+    }
+
+    int string_table_index = ++next_string_table_index_;
+    string_table_[reinterpret_cast<intptr_t>(str_value)] = string_table_index;
+
+    auto* new_string_table_entry = event_bundle_->add_string_table();
+    new_string_table_entry->set_value(str_value);
+    new_string_table_entry->set_index(string_table_index);
+
+    return string_table_index;
+  }
+
+  void AddConvertableToTraceFormat(
+      const base::trace_event::ConvertableToTraceFormat* value,
+      perfetto::protos::pbzero::ChromeTraceEvent_Arg* arg) {
+    std::string json = value->ToString();
+    arg->set_json_value(json.c_str());
   }
 
   void AddTraceEvent(const TraceEvent& trace_event) {
@@ -126,14 +174,46 @@ class TraceEventDataSource::ThreadLocalEventSink {
       return;
     }
 
-    // TODO(oysteine): Consider batching several trace events per trace packet,
-    // and only add repeated data once per batch.
-    auto trace_packet = trace_writer_->NewTracePacket();
-    protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>
-        event_bundle(trace_packet->set_chrome_events());
+    EnsureValidHandles();
 
-    auto* new_trace_event = event_bundle->add_trace_events();
-    new_trace_event->set_name(trace_event.name());
+    int name_index = 0;
+    int category_name_index = 0;
+    int arg_name_indices[base::trace_event::kTraceMaxNumArgs] = {0};
+
+    // Populate any new string table parts first; has to be done before
+    // the add_trace_events() call (as the string table is part of the outer
+    // proto message).
+    // If the TRACE_EVENT_FLAG_COPY flag is set, the char* pointers aren't
+    // necessarily valid after the TRACE_EVENT* call, and so we need to store
+    // the string every time.
+    bool string_table_enabled = !(trace_event.flags() & TRACE_EVENT_FLAG_COPY);
+    if (string_table_enabled) {
+      name_index = GetStringTableIndexForString(trace_event.name());
+      category_name_index = GetStringTableIndexForString(
+          TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
+
+      for (int i = 0;
+           i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+           ++i) {
+        arg_name_indices[i] =
+            GetStringTableIndexForString(trace_event.arg_name(i));
+      }
+    }
+
+    auto* new_trace_event = event_bundle_->add_trace_events();
+
+    if (name_index) {
+      new_trace_event->set_name_index(name_index);
+    } else {
+      new_trace_event->set_name(trace_event.name());
+    }
+
+    if (category_name_index) {
+      new_trace_event->set_category_group_name_index(category_name_index);
+    } else {
+      new_trace_event->set_category_group_name(
+          TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
+    }
 
     new_trace_event->set_timestamp(
         trace_event.timestamp().since_origin().InMicroseconds());
@@ -155,9 +235,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
     new_trace_event->set_process_id(process_id);
     new_trace_event->set_thread_id(thread_id);
 
-    new_trace_event->set_category_group_name(
-        TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
-
     char phase = trace_event.phase();
     new_trace_event->set_phase(phase);
 
@@ -166,11 +243,16 @@ class TraceEventDataSource::ThreadLocalEventSink {
          ++i) {
       auto type = trace_event.arg_type(i);
       auto* new_arg = new_trace_event->add_args();
-      new_arg->set_name(trace_event.arg_name(i));
+
+      if (arg_name_indices[i]) {
+        new_arg->set_name_index(arg_name_indices[i]);
+      } else {
+        new_arg->set_name(trace_event.arg_name(i));
+      }
 
       if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
-        std::string json = trace_event.arg_convertible_value(i)->ToString();
-        new_arg->set_json_value(json.c_str());
+        AddConvertableToTraceFormat(trace_event.arg_convertible_value(i),
+                                    new_arg);
         continue;
       }
 
@@ -243,10 +325,20 @@ class TraceEventDataSource::ThreadLocalEventSink {
     }
   }
 
-  void Flush() { trace_writer_->Flush(); }
+  void Flush() {
+    event_bundle_ = ChromeEventBundleHandle();
+    trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
+    trace_writer_->Flush();
+    token_ = "";
+  }
 
  private:
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
+  ChromeEventBundleHandle event_bundle_;
+  perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
+  std::map<intptr_t, int> string_table_;
+  int next_string_table_index_ = 0;
+  std::string token_;
 };
 
 namespace {

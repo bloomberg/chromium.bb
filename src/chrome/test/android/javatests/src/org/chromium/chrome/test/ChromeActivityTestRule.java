@@ -16,6 +16,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.listener.InstrumentationResultPrinter;
 import android.support.test.rule.ActivityTestRule;
 import android.text.TextUtils;
+import android.view.Menu;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -29,10 +30,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -50,13 +53,14 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.RenderProcessLimit;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.RenderProcessLimit;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.reflect.AnnotatedElement;
@@ -113,6 +117,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 // https://crbug.com/577185
                 Calendar.getInstance();
 
+                // Disable offline indicator UI to prevent it from popping up to obstruct other UI
+                // views that may make tests flaky.
+                Features.getInstance().disable(ChromeFeatureList.OFFLINE_INDICATOR);
+
                 base.evaluate();
             }
         }, description);
@@ -145,6 +153,12 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
             return mSetActivity;
         }
         return super.getActivity();
+    }
+
+    /** Retrieves the application Menu */
+    public Menu getMenu() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(
+                getActivity().getAppMenuHandler().getAppMenu()::getMenu);
     }
 
     /**
@@ -389,8 +403,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
-     * Starts the Main activity as if it was started from an external application, on the specified
-     * URL.
+     * Starts the Main activity as if it was started from an external application, on the
+     * specified URL.
      */
     public void startMainActivityFromExternalApp(String url, String appId)
             throws InterruptedException {
@@ -577,8 +591,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
             public List<InfoBar> call() throws Exception {
                 Tab currentTab = getActivity().getActivityTab();
                 Assert.assertNotNull(currentTab);
-                Assert.assertNotNull(currentTab.getInfoBarContainer());
-                return currentTab.getInfoBarContainer().getInfoBarsForTesting();
+                Assert.assertNotNull(InfoBarContainer.get(currentTab));
+                return InfoBarContainer.get(currentTab).getInfoBarsForTesting();
             }
         });
     }
@@ -623,6 +637,17 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
+     * @return {@link InfoBarContainer} of the active tab of the activity.
+     *     {@code null} if there is no tab for the activity or infobar is available.
+     */
+    public InfoBarContainer getInfoBarContainer() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() ->
+            getActivity().getActivityTab() != null
+                    ? InfoBarContainer.get(getActivity().getActivityTab())
+                    : null);
+    }
+
+    /**
      * Gets the ChromeActivityTestRule's EmbeddedTestServer instance if it has one.
      */
     public EmbeddedTestServer getTestServer() {
@@ -634,6 +659,16 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      */
     public WebContents getWebContents() {
         return getActivity().getActivityTab().getWebContents();
+    }
+
+    /**
+     * @return {@link KeyboardVisibilityDelegate} for the activity.
+     */
+    public KeyboardVisibilityDelegate getKeyboardDelegate() {
+        if (getActivity().getWindowAndroid() == null) {
+            return KeyboardVisibilityDelegate.getInstance();
+        }
+        return getActivity().getWindowAndroid().getKeyboardDelegate();
     }
 
     public void setActivity(T chromeActivity) {

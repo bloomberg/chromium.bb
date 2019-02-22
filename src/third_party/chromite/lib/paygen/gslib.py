@@ -7,22 +7,17 @@
 
 from __future__ import print_function
 
-import base64
 import errno
 import os
-import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib.paygen import filelib
-from chromite.lib.paygen import utils
 
 
 PROTOCOL = 'gs'
 RETRY_ATTEMPTS = 2
-GS_LS_STATUS_RE = re.compile(r'status=(\d+)')
 
 # Gsutil is filled in by "FindGsUtil" on first invocation.
 GSUTIL = None
@@ -71,14 +66,6 @@ class CopyFail(GSLibError):
   """Raised if Copy fails in any way."""
 
 
-class MoveFail(GSLibError):
-  """Raised if Move fails in any way."""
-
-
-class RemoveFail(GSLibError):
-  """Raised if Remove fails in any way."""
-
-
 class CatFail(GSLibError):
   """Raised if Cat fails in any way."""
 
@@ -89,10 +76,6 @@ class StatFail(GSLibError):
 
 class URIError(GSLibError):
   """Raised when URI does not behave as expected."""
-
-
-class ValidateGsutilFailure(GSLibError):
-  """We are unable to validate that gsutil is working correctly."""
 
 
 def RetryGSLib(func):
@@ -257,88 +240,6 @@ def RunGsutilCommand(args,
   return result
 
 
-def ValidateGsutilWorking(bucket):
-  """Validate that gsutil is working correctly.
-
-  There is a failure mode for gsutil in which all operations fail, and this
-  is indistinguishable from all gsutil ls operations matching nothing. We
-  check that there is at least one file in the root of the bucket.
-
-  Args:
-    bucket: bucket we are about to test.
-
-  Raises:
-    ValidateGsutilFailure: If we are unable to find any files in the bucket.
-  """
-  url = 'gs://%s/' % bucket
-  if not List(url):
-    raise ValidateGsutilFailure('Unable to find anything in: %s' % url)
-
-
-@RetryGSLib
-def MD5Sum(gs_uri):
-  """Read the gsutil md5 sum from etag and gsutil ls -L.
-
-  Note that because this relies on 'gsutil ls -L' it suffers from the
-  eventual consistency issue, meaning this function could fail to find
-  the MD5 value for a recently created file in Google Storage.
-
-  Args:
-    gs_uri: An absolute Google Storage URI that refers directly to an object.
-      No globs are supported.
-
-  Returns:
-    A string that is an md5sum, or None if no object found.
-
-  Raises:
-    GSLibError if the gsutil command fails.  If there is no object at that path
-    that is not considered a failure.
-  """
-  gs_md5_regex = re.compile(r'.*?Hash \(md5\):\s+(.*)', re.IGNORECASE)
-  args = ['ls', '-L', gs_uri]
-
-  result = RunGsutilCommand(args, error_code_ok=True)
-
-  # If object was not found then output is completely empty.
-  if not result.output:
-    return None
-
-  for line in result.output.splitlines():
-    match = gs_md5_regex.match(line)
-    if match:
-      # gsutil now prints the MD5 sum in base64, but we want it in hex.
-      return base64.b16encode(base64.b64decode(match.group(1))).lower()
-
-  # This means there was some actual failure in the command.
-  raise GSLibError('Unable to determine MD5Sum for %r' % gs_uri)
-
-
-@RetryGSLib
-def Cmp(path1, path2):
-  """Return True if paths hold identical files, according to MD5 sum.
-
-  Note that this function relies on MD5Sum, which means it also can only
-  promise eventual consistency.  A recently uploaded file in Google Storage
-  may behave badly in this comparison function.
-
-  If either file is missing then always return False.
-
-  Args:
-    path1: URI to a file.  Local paths also supported.
-    path2: URI to a file.  Local paths also supported.
-
-  Returns:
-    True if files are the same, False otherwise.
-  """
-  md5_1 = MD5Sum(path1) if IsGsURI(path1) else filelib.MD5Sum(path1)
-  if not md5_1:
-    return False
-
-  md5_2 = MD5Sum(path2) if IsGsURI(path2) else filelib.MD5Sum(path2)
-
-  return md5_1 == md5_2
-
-
 @RetryGSLib
 def Copy(src_path, dest_path, acl=None, **kwargs):
   """Run gsutil cp src_path dest_path supporting GS globs.
@@ -364,92 +265,6 @@ def Copy(src_path, dest_path, acl=None, **kwargs):
     args += ['-a', acl]
   args += [src_path, dest_path]
   RunGsutilCommand(args, failed_exception=CopyFail, **kwargs)
-
-
-@RetryGSLib
-def Move(src_path, dest_path, **kwargs):
-  """Run gsutil mv src_path dest_path supporting GS globs.
-
-  Note that the created time is changed to now for the moved object(s).
-
-  Args:
-    src_path: The src of the path to move, either a /unix/path or gs:// uri.
-    dest_path: The dest of the path to move, either a /unix/path or gs:// uri.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    MoveFail: If the move fails for any reason.
-  """
-  args = ['mv', src_path, dest_path]
-  RunGsutilCommand(args, failed_exception=MoveFail, **kwargs)
-
-
-@RetryGSLib
-def Remove(*paths, **kwargs):  # pylint: disable=docstring-misnamed-args
-  """Run gsutil rm on path supporting GS globs.
-
-  Args:
-    paths: Local path or gs URI, or list of same.
-    ignore_no_match: If True, then do not complain if anything was not
-      removed because no URI match was found.  Like rm -f.  Defaults to False.
-    recurse: Remove recursively starting at path.  Same as rm -R.  Defaults
-      to False.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    RemoveFail: If the remove fails for any reason.
-  """
-  ignore_no_match = kwargs.pop('ignore_no_match', False)
-  recurse = kwargs.pop('recurse', False)
-
-  args = ['rm']
-
-  if recurse:
-    args.append('-R')
-
-  args.extend(paths)
-
-  try:
-    RunGsutilCommand(args, failed_exception=RemoveFail, **kwargs)
-  except RemoveFail as e:
-    should_raise = True
-    msg = str(e.args[0])
-
-    # Sometimes Google Storage glitches and complains about failing to remove a
-    # specific revision of the file.  It ends up getting removed anyway, but it
-    # throws a NotFoundException.
-    if (ignore_no_match and (('No URLs matched' in msg) or
-                             ('NotFoundException:' in msg))):
-      should_raise = False
-
-    if should_raise:
-      raise
-
-def RemoveDirContents(gs_dir_uri):
-  """Remove all contents of a directory.
-
-  Args:
-    gs_dir_uri: directory to delete contents of.
-  """
-  Remove(os.path.join(gs_dir_uri, '**'), ignore_no_match=True)
-
-
-def CreateWithContents(gs_uri, contents, **kwargs):
-  """Creates the specified file with specified contents.
-
-  Args:
-    gs_uri: The URI of a file on Google Storage.
-    contents: Contents to write to the file.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    CopyFail: If it fails for any reason.
-  """
-  with utils.CreateTempFileWithContents(contents) as content_file:
-    Copy(content_file.name, gs_uri, **kwargs)
 
 
 @RetryGSLib
@@ -487,71 +302,6 @@ def Stat(gs_uri, **kwargs):
   # output and stripping of sensitive information.
   RunGsutilCommand(args, failed_exception=StatFail,
                    get_headers_from_stdout=True, **kwargs)
-
-
-def IsGsURI(path):
-  """Returns true if the path begins with gs://
-
-  Args:
-    path: An absolute Google Storage URI.
-
-  Returns:
-    True if path is really a google storage uri that begins with gs://
-    False otherwise.
-  """
-  return path and path.startswith(PROTOCOL + '://')
-
-
-# TODO(mtennant): Rename this "Size" for consistency.
-@RetryGSLib
-def FileSize(gs_uri, **kwargs):
-  """Return the size of the given gsutil file in bytes.
-
-  Args:
-    gs_uri: Google Storage URI (beginning with 'gs://') pointing
-      directly to a single file.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Returns:
-    Size of file in bytes.
-
-  Raises:
-    URIError: Raised when URI is unknown to Google Storage or when
-      URI matches more than one file.
-  """
-  headers = {}
-  try:
-    Stat(gs_uri, headers=headers, **kwargs)
-  except StatFail as e:
-    raise URIError('Unable to stat file at URI %r: %s' % (gs_uri, e))
-
-  size_str = headers.get('stored-content-length')
-  if size_str is None:
-    raise URIError('Failed to get size of %r' % gs_uri)
-
-  return int(size_str)
-
-
-def Exists(gs_uri, **kwargs):
-  """Return True if object exists at given GS URI.
-
-  Args:
-    gs_uri: Google Storage URI.  Must be a fully-specified URI with
-      no glob expression.  Even if a glob expression matches this
-      method will return False.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Returns:
-    True if gs_uri points to an existing object, and False otherwise.
-  """
-  try:
-    Stat(gs_uri, **kwargs)
-  except StatFail:
-    return False
-
-  return True
 
 
 @RetryGSLib

@@ -41,6 +41,9 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
       ExecutionContext* execution_context,
       const std::vector<WTF::String>& subresource_patterns_to_block);
 
+  // Reports to console when loading of |resource_url| is blocked.
+  void ReportBlockedLoading(const KURL& resource_url) const;
+
   Member<ExecutionContext> execution_context_;
 
   // |subresource_patterns_to_block_| is a collection of subresource patterns

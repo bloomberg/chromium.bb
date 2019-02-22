@@ -437,7 +437,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
           directory_start_page_token, &directory_changestamp)) {
     logger_->Log(
         logging::LOG_ERROR,
-        "Unable to covert directory start page tokens to changestamps, will "
+        "Unable to convert directory start page tokens to changestamps, will "
         "load directory from server %s; directory start page token: %s ",
         directory_fetch_info.ToString().c_str(),
         directory_start_page_token.c_str());
@@ -473,9 +473,9 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
                                                        &local_changestamp)) {
     logger_->Log(
         logging::LOG_ERROR,
-        "Unable to covert start page tokens to changestamps, will load "
+        "Unable to convert start page tokens to changestamps, will load "
         "directory from server %s; local start page token: %s; "
-        "remove start page token: %s",
+        "remote start page token: %s",
         directory_fetch_info.ToString().c_str(),
         local_start_page_token->c_str(), remote_start_page_token.c_str());
     LoadDirectoryFromServer(directory_fetch_info, root_folder_id);
@@ -485,7 +485,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
   // Start loading the directory.
   directory_changestamp = std::max(directory_changestamp, local_changestamp);
 
-  // If the directory's changestamp is up to date or the global changestamp of
+  // If the directory's changestamp is up to date or the global changestamp or
   // the metadata DB is new enough (which means the normal changelist loading
   // should finish very soon), just schedule to run the callback, as there is no
   // need to fetch the directory.

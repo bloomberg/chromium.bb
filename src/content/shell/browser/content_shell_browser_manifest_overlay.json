@@ -15,7 +15,8 @@
         "echo": [
           "echo"
         ],
-        "ui": [ "test", "window_tree_host_factory" ]
+        "ui": [ "test" ],
+        "test_ws": [ "test" ]
       }
     },
     "navigation:frame": {

@@ -94,7 +94,6 @@ config("default") {
     cflags += [
       "-fstrict-aliasing",
       "-fPIC",
-      "-Werror",
     ]
     cflags_cc += [ "-std=c++14" ]
 
@@ -308,6 +307,7 @@ config("warnings") {
     ]
   } else {
     cflags += [
+      "-Werror",
       "-Wall",
       "-Wextra",
       "-Winit-self",
@@ -436,6 +436,10 @@ config("debug_symbols") {
   } else if (is_win) {
     cflags = [ "/Z7" ]
     ldflags = [ "/DEBUG:FASTLINK" ]
+    if (is_clang) {
+      # /DEBUG:FASTLINK requires every object file to have standalone debug information.
+      cflags += [ "-fstandalone-debug" ]
+    }
   } else {
     cflags = [ "-g" ]
   }
@@ -451,7 +455,7 @@ config("no_rtti") {
   }
 }
 
-config("release") {
+config("optimize") {
   if (is_win) {
     cflags = [
       "/O2",
@@ -480,6 +484,9 @@ config("release") {
       ldflags += [ "-O3" ]
     }
   }
+}
+
+config("NDEBUG") {
   defines = [ "NDEBUG" ]
 }
 

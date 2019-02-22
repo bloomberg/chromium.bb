@@ -40,18 +40,16 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
+#include "content/public/common/was_activated_option.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -59,15 +57,16 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
@@ -128,8 +127,8 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::FileChooserParams::Mode,
-                          content::FileChooserParams::Save)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FileChooserParams::Mode,
+                          blink::mojom::FileChooserParams::Mode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
                           content::CSPDirective::NameLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
@@ -142,6 +141,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
                           blink::WebMediaPlayerAction::Type::kTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
+                          content::WasActivatedOption::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
@@ -426,12 +427,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // considered potentially trustworthy.
   IPC_STRUCT_MEMBER(bool, has_potentially_trustworthy_unique_origin)
 
-  // See WebSearchableFormData for a description of these.
-  // Not used by PlzNavigate: in that case these fields are sent to the browser
-  // in mojom::BeginNavigationParams.
-  IPC_STRUCT_MEMBER(GURL, searchable_form_url)
-  IPC_STRUCT_MEMBER(std::string, searchable_form_encoding)
-
   // This is a non-decreasing value that the browser process can use to
   // identify and discard compositor frames that correspond to now-unloaded
   // web content.
@@ -465,6 +460,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::SourceLocation)
   IPC_STRUCT_TRAITS_MEMBER(column_number)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::InitiatorCSPInfo)
+  IPC_STRUCT_TRAITS_MEMBER(should_check_main_world_csp)
+  IPC_STRUCT_TRAITS_MEMBER(initiator_csp)
+  IPC_STRUCT_TRAITS_MEMBER(initiator_self_source)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
@@ -479,11 +480,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(post_data)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
-  IPC_STRUCT_TRAITS_MEMBER(should_check_main_world_csp)
   IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
   IPC_STRUCT_TRAITS_MEMBER(started_from_context_menu)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_csp)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_self_source)
+  IPC_STRUCT_TRAITS_MEMBER(initiator_csp_info)
   IPC_STRUCT_TRAITS_MEMBER(origin_policy)
   IPC_STRUCT_TRAITS_MEMBER(input_start)
 IPC_STRUCT_TRAITS_END()
@@ -677,6 +676,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::CSPSourceList)
   IPC_STRUCT_TRAITS_MEMBER(allow_self)
   IPC_STRUCT_TRAITS_MEMBER(allow_star)
+  IPC_STRUCT_TRAITS_MEMBER(allow_response_redirects)
   IPC_STRUCT_TRAITS_MEMBER(sources)
 IPC_STRUCT_TRAITS_END()
 
@@ -711,31 +711,20 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
-  IPC_STRUCT_TRAITS_MEMBER(file_path)
-  IPC_STRUCT_TRAITS_MEMBER(display_name)
-  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
-  IPC_STRUCT_TRAITS_MEMBER(modification_time)
-  IPC_STRUCT_TRAITS_MEMBER(length)
-  IPC_STRUCT_TRAITS_MEMBER(is_directory)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(title)
   IPC_STRUCT_TRAITS_MEMBER(default_file_name)
   IPC_STRUCT_TRAITS_MEMBER(accept_types)
   IPC_STRUCT_TRAITS_MEMBER(need_local_path)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(capture)
-#endif
+  IPC_STRUCT_TRAITS_MEMBER(use_media_capture)
   IPC_STRUCT_TRAITS_MEMBER(requestor)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(GURL, main_resource_url)
   IPC_STRUCT_MEMBER(GURL, mixed_content_url)
-  IPC_STRUCT_MEMBER(content::RequestContextType, request_context_type)
+  IPC_STRUCT_MEMBER(blink::mojom::RequestContextType, request_context_type)
   IPC_STRUCT_MEMBER(bool, was_allowed)
   IPC_STRUCT_MEMBER(bool, had_redirect)
   IPC_STRUCT_MEMBER(content::SourceLocation, source_location)
@@ -797,7 +786,8 @@ IPC_STRUCT_TRAITS_END()
 // Messages sent from the browser to the renderer.
 
 // Notifies the embedding frame that the intrinsic sizing info parameters
-// of a child frame have changed.
+// of a child frame have changed. Generated when the browser receives a
+// WidgetHostMsg_IntrinsicSizingInfoChanged.
 IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                     blink::WebIntrinsicSizingInfo)
 
@@ -1124,7 +1114,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                     bool /* value */)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
-                    std::vector<content::FileChooserFileInfo>)
+                    std::vector<blink::mojom::FileChooserFileInfoPtr>)
 
 // Updates the renderer with a list of unique blink::UseCounter::Feature values
 // representing Blink features used, performed or encountered by the browser
@@ -1193,12 +1183,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 // Sent by the renderer when the frame becomes focused.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
-// Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoad,
-                    GURL /* url */,
-                    std::vector<GURL> /* redirect_chain */,
-                    base::TimeTicks /* navigation_start */)
-
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
                     FrameHostMsg_DidFailProvisionalLoadWithError_Params)
@@ -1210,12 +1194,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
                     GURL /* validated_url */,
                     int /* error_code */,
                     base::string16 /* error_description */)
-
-// Sent when the renderer starts loading the page. |to_different_document| will
-// be true unless the load is a fragment navigation, or triggered by
-// history.pushState/replaceState.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartLoading,
-                    bool /* to_different_document */)
 
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
@@ -1483,7 +1461,11 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 
-// Sets or unsets the inert bit on a remote frame.
+// Sent by a RenderFrameProxy to the browser signaling that the renderer
+// has determined the DOM subtree it represents is inert and should no
+// longer process input events. Also see WidgetMsg_SetIsInert.
+//
+// https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
 
 // Sets the inherited effective touch action on a remote frame.
@@ -1694,7 +1676,8 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // FrameMsg_RunFileChooserResponse message.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser, content::FileChooserParams)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser,
+                    blink::mojom::FileChooserParams)
 
 // Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,

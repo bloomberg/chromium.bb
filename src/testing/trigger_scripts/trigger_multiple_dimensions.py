@@ -119,6 +119,34 @@ class MultiDimensionTestTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def prune_test_specific_configs(self, args, verbose):
     self.query_swarming_for_bot_configs(verbose)
+    # This script doesn't know how long individual test shards take to
+    # run, nor how many Swarming jobs are waiting to run on a
+    # particular configuration. It can end up scheduling jobs on
+    # configurations that have very few machines, and backing them up
+    # to the point where the tasks start expiring. To try to prevent
+    # this, don't schedule jobs at all on configurations that have
+    # less than 10% of the total capacity. crbug.com/886985
+    MIN_CONFIG_CAPACITY_PERCENTAGE = 0.1
+    filtered_bot_configs = []
+    filtered_bot_statuses = []
+    for i in xrange(len(self._bot_configs)):
+      config = self._bot_configs[i]
+      status = self._bot_statuses[i]
+      if status['total'] >= MIN_CONFIG_CAPACITY_PERCENTAGE * self._total_bots:
+        filtered_bot_configs.append(config)
+        filtered_bot_statuses.append(status)
+      else:
+        if verbose:
+          print 'Filtered config because it had too few bots: %s' % str(status)
+    if len(filtered_bot_configs) == 0:
+      raise Exception('The bot configurations are too fragmented; no single ' +
+                      'configuration has even 10% of the total capacity. ' +
+                      'Distribution will not work well. Failing.')
+    self._bot_configs = filtered_bot_configs
+    self._bot_statuses = filtered_bot_statuses
+    self._total_bots = sum(x['total'] for x in self._bot_statuses)
+    if verbose:
+      print 'Total bots after filtering: %d' % (self._total_bots)
 
 def main():
   # setup args for common contract of base class

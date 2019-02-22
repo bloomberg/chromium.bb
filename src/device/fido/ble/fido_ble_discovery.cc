@@ -14,6 +14,8 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
+#include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_device_authenticator.h"
 
 namespace device {
 
@@ -67,13 +69,27 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
 
 void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
-  if (!CheckForExcludedDeviceAndCacheAddress(device) &&
-      base::ContainsKey(device->GetUUIDs(), FidoServiceUUID()) &&
-      !GetDevice(FidoBleDevice::GetId(device->GetAddress()))) {
+  if (CheckForExcludedDeviceAndCacheAddress(device) ||
+      !base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+    return;
+  }
+
+  const auto device_id = FidoBleDevice::GetId(device->GetAddress());
+  auto* authenticator = GetAuthenticator(device_id);
+  if (!authenticator) {
     VLOG(2) << "Discovered U2F service on existing BLE device: "
             << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
+    return;
   }
+
+  // Our model of FIDO BLE security key assumes that if BLE device is in pairing
+  // mode long enough time without pairing attempt, the device stops advertising
+  // and BluetoothAdapter::DeviceRemoved() is invoked instead of returning back
+  // to regular "non-pairing" mode. As so, we only notify observer when
+  // |fido_device| goes into pairing mode.
+  if (observer() && authenticator->device()->IsInPairingMode())
+    observer()->AuthenticatorPairingModeChanged(this, device_id);
 }
 
 void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
@@ -91,6 +107,26 @@ void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
   // invocation of OnSetPowered().
   if (powered)
     OnSetPowered();
+}
+
+void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
+                                            BluetoothDevice* device,
+                                            const std::string& old_address) {
+  auto previous_device_id = FidoBleDevice::GetId(old_address);
+  auto new_device_id = FidoBleDevice::GetId(device->GetAddress());
+  auto it = authenticators_.find(previous_device_id);
+  if (it == authenticators_.end())
+    return;
+
+  VLOG(2) << "Discovered FIDO BLE device address change from old address : "
+          << old_address << " to new address : " << device->GetAddress();
+  authenticators_.emplace(new_device_id, std::move(it->second));
+  authenticators_.erase(it);
+
+  if (observer()) {
+    observer()->AuthenticatorIdChanged(this, previous_device_id,
+                                       std::move(new_device_id));
+  }
 }
 
 bool FidoBleDiscovery::CheckForExcludedDeviceAndCacheAddress(

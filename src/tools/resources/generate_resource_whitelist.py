@@ -25,7 +25,9 @@ def WriteResourceWhitelist(args):
   readelf = subprocess.Popen(
       ['readelf', '-p', '.debug_str', args.input], stdout=subprocess.PIPE)
   resource_ids = set()
+  output_exists = False
   for line in readelf.stdout:
+    output_exists = True
     # Read a line of the form "  [   123]  WhitelistedResource<456>". We're
     # only interested in the string, not the offset. We're also not interested
     # in header lines.
@@ -38,6 +40,10 @@ def WriteResourceWhitelist(args):
         resource_ids.add(int(s[len('WhitelistedResource<'):-len('>')-1]))
       except ValueError:
         continue
+  if not output_exists:
+    raise Exception('No debug info was dumpped. Ensure GN arg "symbol_level" '
+                    '!= 0 and that the file is not stripped.')
+
   for id in sorted(resource_ids):
     args.output.write(str(id) + '\n')
   exit_code = readelf.wait()

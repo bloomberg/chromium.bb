@@ -22,6 +22,7 @@
 namespace blink {
 
 class LayoutBox;
+class NGConstraintSpaceBuilder;
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -30,10 +31,23 @@ enum NGFragmentationType {
   kFragmentRegion
 };
 
+// Tables have two passes, a "measure" phase (for determining the table row
+// height), and a "layout" phase.
+// See: https://drafts.csswg.org/css-tables-3/#row-layout
+//
+// This enum is used for communicating to *direct* children of table cells,
+// which layout phase the table cell is in.
+enum NGTableCellChildLayoutPhase {
+  kNotTableCellChild,  // The node isn't a table cell child.
+  kMeasure,  // The node is a table cell child, in the "measure" phase.
+  kLayout    // The node is a table cell child, in the "layout" phase.
+};
+
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
-class CORE_EXPORT NGConstraintSpace final
-    : public RefCounted<NGConstraintSpace> {
+class CORE_EXPORT NGConstraintSpace final {
+  USING_FAST_MALLOC(NGConstraintSpace);
+
  public:
   enum ConstraintSpaceFlags {
     kOrthogonalWritingModeRoot = 1 << 0,
@@ -52,13 +66,18 @@ class CORE_EXPORT NGConstraintSpace final
     kNumberOfConstraintSpaceFlags = 11
   };
 
+  NGConstraintSpace() {}
+  NGConstraintSpace(const NGConstraintSpace&) = default;
+  NGConstraintSpace(NGConstraintSpace&&) = default;
+  NGConstraintSpace& operator=(const NGConstraintSpace&) = default;
+  NGConstraintSpace& operator=(NGConstraintSpace&&) = default;
+
   // Creates NGConstraintSpace representing LayoutObject's containing block.
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static scoped_refptr<NGConstraintSpace> CreateFromLayoutObject(
-      const LayoutBox&);
+  static NGConstraintSpace CreateFromLayoutObject(const LayoutBox&);
 
-  const NGExclusionSpace& ExclusionSpace() const { return *exclusion_space_; }
+  const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
@@ -76,6 +95,11 @@ class CORE_EXPORT NGConstraintSpace final
   // See: https://drafts.csswg.org/css-sizing/#percentage-sizing
   NGLogicalSize PercentageResolutionSize() const {
     return percentage_resolution_size_;
+  }
+
+  // The size to use for percentage resolution of replaced elements.
+  NGLogicalSize ReplacedPercentageResolutionSize() const {
+    return replaced_percentage_resolution_size_;
   }
 
   // The size to use for percentage resolution for margin/border/padding.
@@ -160,12 +184,22 @@ class CORE_EXPORT NGConstraintSpace final
 
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
-  NGFragmentationType BlockFragmentationType() const;
+  NGFragmentationType BlockFragmentationType() const {
+    return static_cast<NGFragmentationType>(
+        block_direction_fragmentation_type_);
+  }
 
-  // Return true if this contraint space participates in a fragmentation
+  // Return true if this constraint space participates in a fragmentation
   // context.
   bool HasBlockFragmentation() const {
     return BlockFragmentationType() != kFragmentNone;
+  }
+
+  // Returns if this node is a table cell child, and which table layout phase
+  // is occurring.
+  NGTableCellChildLayoutPhase TableCellChildLayoutPhase() const {
+    return static_cast<NGTableCellChildLayoutPhase>(
+        table_cell_child_layout_phase_);
   }
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
@@ -247,30 +281,19 @@ class CORE_EXPORT NGConstraintSpace final
   }
 
   bool operator==(const NGConstraintSpace&) const;
-  bool operator!=(const NGConstraintSpace&) const;
+  bool operator!=(const NGConstraintSpace& other) const {
+    return !(*this == other);
+  }
 
   String ToString() const;
 
  private:
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
-  NGConstraintSpace(WritingMode,
-                    TextDirection,
-                    NGLogicalSize available_size,
-                    NGLogicalSize percentage_resolution_size,
-                    LayoutUnit parent_percentage_resolution_inline_size,
-                    NGPhysicalSize initial_containing_block_size,
-                    LayoutUnit fragmentainer_block_size,
-                    LayoutUnit fragmentainer_space_at_bfc_start,
-                    NGFragmentationType block_direction_fragmentation_type,
-                    NGFloatTypes adjoining_floats,
-                    const NGMarginStrut& margin_strut,
-                    const NGBfcOffset& bfc_offset,
-                    const base::Optional<LayoutUnit>& floats_bfc_block_offset,
-                    const NGExclusionSpace& exclusion_space,
-                    LayoutUnit clearance_offset,
-                    Vector<NGBaselineRequest>& baseline_requests,
-                    unsigned flags);
+  // is_new_fc is technically redundant, but simplifies the code here a bit.
+  NGConstraintSpace(WritingMode out_writing_mode,
+                    bool is_new_fc,
+                    NGConstraintSpaceBuilder& builder);
 
   bool HasFlag(ConstraintSpaceFlags mask) const {
     return flags_ & static_cast<unsigned>(mask);
@@ -278,6 +301,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+  NGLogicalSize replaced_percentage_resolution_size_;
   LayoutUnit parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
@@ -285,7 +309,8 @@ class CORE_EXPORT NGConstraintSpace final
   LayoutUnit fragmentainer_space_at_bfc_start_;
 
   unsigned block_direction_fragmentation_type_ : 2;
-  unsigned adjoining_floats_ : 2;  //  NGFloatTypes
+  unsigned table_cell_child_layout_phase_ : 2;  // NGTableCellChildLayoutPhase
+  unsigned adjoining_floats_ : 2;               // NGFloatTypes
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
   unsigned flags_ : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
@@ -294,7 +319,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGBfcOffset bfc_offset_;
   base::Optional<LayoutUnit> floats_bfc_block_offset_;
 
-  const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
+  NGExclusionSpace exclusion_space_;
   LayoutUnit clearance_offset_;
 
   Vector<NGBaselineRequest> baseline_requests_;

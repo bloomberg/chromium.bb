@@ -22,6 +22,7 @@ class Image;
 class FileIconSource : public content::URLDataSource {
  public:
   FileIconSource();
+  ~FileIconSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -33,8 +34,6 @@ class FileIconSource : public content::URLDataSource {
   bool AllowCaching() const override;
 
  protected:
-  ~FileIconSource() override;
-
   // Once the |path| and |icon_size| has been determined from the request, this
   // function is called to perform the actual fetch. Declared as virtual for
   // testing.

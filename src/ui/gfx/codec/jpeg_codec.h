@@ -12,6 +12,7 @@
 
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "third_party/skia/include/encode/SkJpegEncoder.h"
 #include "ui/gfx/codec/codec_export.h"
 
 class SkBitmap;
@@ -36,6 +37,20 @@ class CODEC_EXPORT JPEGCodec {
     // order in kARGB_8888_Config skia bitmap.
     FORMAT_SkBitmap
   };
+
+  // Encodes the given raw 'input' pixmap, which includes a pointer to pixels
+  // as well as information describing the pixel format. The encoded JPEG data
+  // will be written into the supplied vector and true will be returned on
+  // success. On failure (false), the contents of the output buffer are
+  // undefined.
+  //
+  // downsample: specifies how pixels will be sampled in the encoded JPEG image,
+  //             can be either k420, k422 or k444.
+  // quality: an integer in the range 0-100, where 100 is the highest quality.
+  static bool Encode(const SkPixmap& input,
+                     int quality,
+                     SkJpegEncoder::Downsample downsample,
+                     std::vector<unsigned char>* output);
 
   // Encodes the given raw 'input' pixmap, which includes a pointer to pixels
   // as well as information describing the pixel format. The encoded JPEG data

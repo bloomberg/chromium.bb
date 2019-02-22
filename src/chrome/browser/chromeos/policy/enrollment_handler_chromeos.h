@@ -41,6 +41,7 @@ class AttestationFlow;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
+class DMAuth;
 class DMTokenStorage;
 class ServerBackedStateKeysBroker;
 
@@ -74,7 +75,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
-      const std::string& auth_token,
+      std::unique_ptr<DMAuth> dm_auth,
       const std::string& client_id,
       const std::string& requisition,
       const EnrollmentCallback& completion_callback);
@@ -99,7 +100,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // CloudPolicyClient::Observer:
   void OnPolicyFetched(CloudPolicyClient* client) override;
   void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  void OnRobotAuthCodesFetched(CloudPolicyClient* client) override;
   void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
@@ -210,6 +210,10 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // Handles the policy validation result for the offline demo mode.
   void OnOfflinePolicyValidated(DeviceCloudPolicyValidator* validator);
 
+  // Handles the fetching auth codes for robot accounts during enrollment.
+  void OnRobotAuthCodesFetched(DeviceManagementStatus status,
+                               const std::string& auth_code);
+
   std::unique_ptr<DeviceCloudPolicyValidator> CreateValidator(
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       const std::string& domain);
@@ -234,7 +238,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
   EnrollmentConfig enrollment_config_;
-  std::string auth_token_;
+  std::unique_ptr<policy::DMAuth> dm_auth_;
   std::string client_id_;
   std::string requisition_;
   EnrollmentCallback completion_callback_;

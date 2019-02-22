@@ -160,8 +160,8 @@ bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
 }
 
 void AwRenderFrameExt::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   content::DocumentState* document_state =
       content::DocumentState::FromDocumentLoader(frame->GetDocumentLoader());

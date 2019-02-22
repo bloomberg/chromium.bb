@@ -860,7 +860,7 @@ def main(argv):
       help='Whether proguard is enabled for this apk or bundle module.')
   parser.add_option('--proguard-configs',
       help='GN-list of proguard flag files to use in final apk.')
-  parser.add_option('--proguard-output-jar-path',
+  parser.add_option('--proguard-mapping-path',
       help='Path to jar created by ProGuard step')
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
@@ -1257,8 +1257,8 @@ def main(argv):
                                                deps_proguard_disabled))
     else:
       deps_info['proguard_enabled'] = bool(options.proguard_enabled)
-      if options.proguard_output_jar_path:
-        deps_info['proguard_output_jar_path'] = options.proguard_output_jar_path
+      if options.proguard_mapping_path:
+        deps_info['proguard_mapping_path'] = options.proguard_mapping_path
 
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.
@@ -1287,7 +1287,7 @@ def main(argv):
                         if p not in extra_jars)
       tested_apk_config = GetDepConfig(options.tested_apk_config)
       deps_info['proguard_under_test_mapping'] = (
-          tested_apk_config['proguard_output_jar_path'] + '.mapping')
+          tested_apk_config['proguard_mapping_path'])
     elif options.proguard_enabled:
       # Not sure why you'd want to proguard the test apk when the under-test apk
       # is not proguarded, but it's easy enough to support.

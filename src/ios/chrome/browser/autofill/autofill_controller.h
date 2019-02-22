@@ -21,6 +21,7 @@ class PasswordGenerationManager;
 }
 
 namespace web {
+class WebFrame;
 class WebState;
 }
 
@@ -59,7 +60,8 @@ passwordGenerationManager:
 // Sends the field type predictions specified in |forms| to the renderer. This
 // method is a no-op if the appropriate experiment is not set.
 - (void)sendAutofillTypePredictionsToRenderer:
-    (const std::vector<autofill::FormDataPredictions>&)forms;
+            (const std::vector<autofill::FormDataPredictions>&)forms
+                                      toFrame:(web::WebFrame*)frame;
 
 // Sets a weak reference to the view controller used to present UI.
 - (void)setBaseViewController:(UIViewController*)baseViewController;

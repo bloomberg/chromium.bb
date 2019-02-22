@@ -202,10 +202,6 @@ void SkBaseDevice::drawImageLattice(const SkImage* image,
     }
 }
 
-void SkBaseDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
-    glyphRunList.temporaryShuntToDrawPosText(this, SkPoint::Make(0, 0));
-}
-
 void SkBaseDevice::drawBitmapLattice(const SkBitmap& bitmap,
                                      const SkCanvas::Lattice& lattice, const SkRect& dst,
                                      const SkPaint& paint) {
@@ -309,6 +305,11 @@ bool SkBaseDevice::peekPixels(SkPixmap* pmap) {
 
 void SkBaseDevice::drawGlyphRunRSXform(SkGlyphRun* run, const SkRSXform* xform) {
     const SkMatrix originalCTM = this->ctm();
+    if (!originalCTM.isFinite() || !SkScalarIsFinite(run->paint().getTextSize()) ||
+        !SkScalarIsFinite(run->paint().getTextScaleX()) ||
+        !SkScalarIsFinite(run->paint().getTextSkewX())) {
+        return;
+    }
     sk_sp<SkShader> shader = sk_ref_sp(run->mutablePaint()->getShader());
     auto perGlyph = [this, &xform, &originalCTM, shader] (
             SkGlyphRun* glyphRun, SkPaint* runPaint) {

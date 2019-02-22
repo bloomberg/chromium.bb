@@ -24,7 +24,7 @@ angle_extensions = [
     "GL_ANGLE_request_extension",
     "GL_ANGLE_robust_client_memory",
     "GL_ANGLE_multiview",
-    "GL_ANGLE_texture_multisample_array",
+    "GL_ANGLE_copy_texture_3d",
 ]
 
 gles1_extensions = [
@@ -54,6 +54,7 @@ supported_extensions = sorted(angle_extensions + gles1_extensions + [
     "GL_ANGLE_framebuffer_multisample",
     "GL_ANGLE_instanced_arrays",
     "GL_ANGLE_translated_shader_source",
+    "GL_EXT_blend_func_extended",
     "GL_EXT_debug_marker",
     "GL_EXT_discard_framebuffer",
     "GL_EXT_disjoint_timer_query",
@@ -68,6 +69,7 @@ supported_extensions = sorted(angle_extensions + gles1_extensions + [
     "GL_OES_EGL_image",
     "GL_OES_get_program_binary",
     "GL_OES_mapbuffer",
+    "GL_OES_texture_storage_multisample_2d_array",
     "GL_OES_vertex_array_object",
     "GL_KHR_parallel_shader_compile",
 ])
@@ -181,6 +183,7 @@ template_entry_point_decl = """ANGLE_EXPORT {return_type}GL_APIENTRY {name}{expl
 
 template_entry_point_def = """{return_type}GL_APIENTRY {name}{explicit_context_suffix}({explicit_context_param}{explicit_context_comma}{params})
 {{
+    ANGLE_SCOPED_GLOBAL_LOCK();
     {event_comment}EVENT("({format_params})"{comma_if_needed}{pass_params});
 
     Context *context = {context_getter};

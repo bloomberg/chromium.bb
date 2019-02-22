@@ -64,7 +64,7 @@ enum StyleRecalcChange {
 enum PseudoId {
   // The order must be NOP ID, public IDs, and then internal IDs.
   // If you add or remove a public ID, you must update the field_size of
-  // "PseudoBits" in ComputedStyleExtraFields.json5.
+  // "PseudoBits" in computed_style_extra_fields.json5.
   kPseudoIdNone,
   kPseudoIdFirstLine,
   kPseudoIdFirstLetter,

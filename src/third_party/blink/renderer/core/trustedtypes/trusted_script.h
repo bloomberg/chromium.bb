@@ -7,14 +7,9 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-class Document;
-class ExceptionState;
-class StringOrTrustedScript;
 
 class CORE_EXPORT TrustedScript final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,10 +21,6 @@ class CORE_EXPORT TrustedScript final : public ScriptWrappable {
 
   // TrustedScript.idl
   String toString() const;
-
-  static String GetString(StringOrTrustedScript,
-                          const Document*,
-                          ExceptionState&);
 
  private:
   TrustedScript(const String& script);

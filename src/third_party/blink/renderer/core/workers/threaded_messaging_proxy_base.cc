@@ -7,11 +7,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -64,16 +64,14 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   KURL script_url = global_scope_creation_params->script_url.Copy();
 
   std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context;
-  if (execution_context_->IsDocument()) {
-    // |web_frame| is null in some unit tests.
-    if (WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(
-            ToDocument(GetExecutionContext())->GetFrame())) {
-      web_worker_fetch_context =
-          web_frame->Client()->CreateWorkerFetchContext();
-      DCHECK(web_worker_fetch_context);
+  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+    LocalFrame* frame = document->GetFrame();
+    web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
+    // |web_worker_fetch_context| is null in some unit tests.
+    if (web_worker_fetch_context) {
       web_worker_fetch_context->SetApplicationCacheHostID(
           GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
-      web_worker_fetch_context->SetIsOnSubframe(web_frame != web_frame->Top());
+      web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
     }
   } else if (execution_context_->IsWorkerGlobalScope()) {
     web_worker_fetch_context =

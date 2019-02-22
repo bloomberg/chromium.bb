@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
+#include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -19,7 +20,7 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
-class WebFrame;
+class WebRemoteFrame;
 }  // namespace blink
 
 namespace content {
@@ -27,6 +28,10 @@ class RenderFrame;
 class URLLoaderThrottle;
 struct WebPluginInfo;
 }  // namespace content
+
+namespace IPC {
+class Message;
+}
 
 namespace extensions {
 // A base class for MimeHandlerViewContainer which provides a way of reusing the
@@ -44,6 +49,8 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   static std::vector<MimeHandlerViewContainerBase*> FromRenderFrame(
       content::RenderFrame* render_frame);
 
+  static bool TryHandleMessage(const IPC::Message& message);
+
   // If the URL matches the same URL that this object has created and it hasn't
   // added a throttle yet, it will return a new one for the purpose of
   // intercepting it.
@@ -57,13 +64,19 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   // Post |message| to the guest.
   void PostMessageFromValue(const base::Value& message);
 
+  bool OnHandleMessage(const IPC::Message& message);
+
+  // WebAssociatedURLLoaderClient overrides.
+  void DidReceiveData(const char* data, int data_length) override;
+  void DidFinishLoading() override;
+
  protected:
   virtual void CreateMimeHandlerViewGuestIfNecessary();
-  virtual blink::WebFrame* GetGuestProxyFrame() const = 0;
+  virtual blink::WebRemoteFrame* GetGuestProxyFrame() const = 0;
   virtual int32_t GetInstanceId() const = 0;
   virtual gfx::Size GetElementSize() const = 0;
 
-  void DidCompleteLoad();
+  void OnMimeHandlerViewGuestOnLoadCompleted(int32_t element_instance_id);
   void SendResourceRequest();
   void EmbedderRenderFrameWillBeGone();
   v8::Local<v8::Object> GetScriptableObject(v8::Isolate* isolate);
@@ -78,6 +91,11 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
   // Whether the plugin is embedded or not.
   bool is_embedded_;
+
+  // Only valid for the cross-process-frame-based implementation. This holds the
+  // routing ID of the frame or proxy whose corresponding WebFrame is the
+  // ContentFrame() of the plugin element.
+  int32_t plugin_frame_routing_id_ = MSG_ROUTING_NONE;
 
  private:
   class PluginResourceThrottle;

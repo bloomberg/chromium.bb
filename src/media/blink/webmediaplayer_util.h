@@ -20,6 +20,10 @@
 #include "third_party/blink/public/platform/web_time_range.h"
 #include "url/gurl.h"
 
+namespace blink {
+class WebLocalFrame;
+}  // namespace blink
+
 namespace media {
 
 class MediaLog;
@@ -34,11 +38,10 @@ blink::WebMediaPlayer::NetworkState MEDIA_BLINK_EXPORT
 PipelineErrorToNetworkState(PipelineStatus error);
 
 // Report various metrics to UMA and RAPPOR.
-void MEDIA_BLINK_EXPORT
-ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
-              const GURL& url,
-              const blink::WebSecurityOrigin& security_origin,
-              MediaLog* media_log);
+void MEDIA_BLINK_EXPORT ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
+                                      const GURL& url,
+                                      const blink::WebLocalFrame& frame,
+                                      MediaLog* media_log);
 
 // Report metrics about pipeline errors.
 void MEDIA_BLINK_EXPORT

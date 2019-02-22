@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener_options.h"
-#include "third_party/blink/renderer/core/events/registered_event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/registered_event_listener.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
@@ -65,7 +65,7 @@ class CORE_EXPORT EventListenerMap final {
   bool Remove(const AtomicString& event_type,
               const EventListener*,
               const EventListenerOptions&,
-              size_t* index_of_removed_listener,
+              wtf_size_t* index_of_removed_listener,
               RegisteredEventListener* registered_listener);
   EventListenerVector* Find(const AtomicString& event_type);
   Vector<AtomicString> EventTypes() const;

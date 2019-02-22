@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/task/post_task.h"
 #import "ios/net/cookies/cookie_store_ios.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,8 +38,8 @@ void CookieNotificationBridge::OnNotificationReceived(
     NSNotification* notification) {
   DCHECK([[notification name]
       isEqualToString:NSHTTPCookieManagerCookiesChangedNotification]);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&net::CookieStoreIOS::NotifySystemCookiesChanged));
 }
 

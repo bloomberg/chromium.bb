@@ -110,6 +110,11 @@ class AutofillManager : public AutofillHandler,
                           const FormData& form,
                           const FormFieldData& field);
 
+  // Called from autofill assistant.
+  virtual void FillProfileForm(const std::string& guid,
+                               const FormData& form,
+                               const FormFieldData& field);
+
   // Returns true if the value/identifier is deletable. Fills out
   // |title| and |body| with relevant user-facing text.
   bool GetDeletionConfirmationText(const base::string16& value,
@@ -182,8 +187,7 @@ class AutofillManager : public AutofillHandler,
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
-  // Returns true if the value of the AutofillEnabled pref is true and the
-  // client supports Autofill.
+  // Returns the value of AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
 
   // Returns true if the value of the AutofillProfileEnabled pref is true and
@@ -620,17 +624,23 @@ class AutofillManager : public AutofillHandler,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DetermineHeuristicsWithOverallPrediction);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           DeterminePossibleFieldTypesWithMultipleValidities);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressWillSubmitFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillFormSubmittedState);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSelectedFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardFilledFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardSelectedFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardFilledFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardGetRealPanDuration);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardWillSubmitFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSubmittedFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardWillSubmitFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            CreditCardCheckoutFlowUserActions);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
@@ -650,7 +660,7 @@ class AutofillManager : public AutofillHandler,
       AutofillMetricsTest,
       CreditCardSubmittedWithoutSelectingSuggestionsKnownCard);
   FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
+      AutofillMetricsIFrameTest,
       ShouldNotLogSubmitWithoutSelectingSuggestionsIfSuggestionFilled);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, ProfileCheckoutFlowUserActions);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);

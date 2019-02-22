@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/resolution_units.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 #include <hb-ot.h>
 #include <hb.h>
@@ -211,10 +212,9 @@ static hb_position_t HarfBuzzGetGlyphHorizontalKerning(
   int32_t kerning_adjustments[1] = {0};
 
   if (typeface->getKerningPairAdjustments(glyphs, 2, kerning_adjustments)) {
-    SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
-    SkScalar size = hb_font_data->paint_.getTextSize();
     return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
-        SkIntToScalar(kerning_adjustments[0]) * size / upm);
+        SkIntToScalar(kerning_adjustments[0]) *
+        hb_font_data->SizePerUnit(*typeface));
   }
 
   return 0;
@@ -339,7 +339,8 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                                        void* user_data) {
   SkTypeface* typeface = reinterpret_cast<SkTypeface*>(user_data);
 
-  const size_t table_size = typeface->getTableSize(tag);
+  const wtf_size_t table_size =
+      SafeCast<wtf_size_t>(typeface->getTableSize(tag));
   if (!table_size) {
     return nullptr;
   }
@@ -388,8 +389,8 @@ hb_face_t* HarfBuzzFace::CreateFace() {
     std::unique_ptr<hb_blob_t, void (*)(hb_blob_t*)> face_blob(
         hb_blob_create(
             reinterpret_cast<const char*>(typeface_stream->getMemoryBase()),
-            typeface_stream->getLength(), HB_MEMORY_MODE_READONLY,
-            typeface_stream, DeleteTypefaceStream),
+            SafeCast<unsigned int>(typeface_stream->getLength()),
+            HB_MEMORY_MODE_READONLY, typeface_stream, DeleteTypefaceStream),
         hb_blob_destroy);
     face = hb_face_create(face_blob.get(), ttc_index);
   }

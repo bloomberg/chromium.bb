@@ -33,7 +33,7 @@ class TraversalRangeNodes : private TraversalRange<Iterator> {
 };
 
 // This class acts like |TraversalNextIterator| but in addition
-// it allows to set current position and checks |m_current| pointer before
+// it allows to set current position and checks |current_| pointer before
 // dereferencing.
 template <class TraversalNext>
 class CheckedTraversalNextIterator
@@ -107,7 +107,7 @@ class EphemeralRangeTemplate final {
 
   Node* CommonAncestorContainer() const;
 
-  // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
+  // Returns true if |m_startPosition| == |m_endPosition| or |isNull()|.
   bool IsCollapsed() const;
   bool IsNull() const {
     DCHECK(IsValid());

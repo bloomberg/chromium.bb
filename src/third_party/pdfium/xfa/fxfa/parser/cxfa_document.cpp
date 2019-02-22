@@ -14,6 +14,7 @@
 #include "fxjs/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/compiler_specific.h"
+#include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cscript_datawindow.h"
@@ -1648,7 +1649,8 @@ void CXFA_Document::DoDataMerge() {
     pDatasetsRoot->SetXMLMappingNode(pDatasetsXMLNode);
   }
 
-  CXFA_Node *pDataRoot = nullptr, *pDDRoot = nullptr;
+  CXFA_Node* pDataRoot = nullptr;
+  CXFA_Node* pDDRoot = nullptr;
   WideString wsDatasetsURI =
       pDatasetsRoot->JSObject()->TryNamespace().value_or(WideString());
   for (CXFA_Node* pChildNode = pDatasetsRoot->GetFirstChild(); pChildNode;

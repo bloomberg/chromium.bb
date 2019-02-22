@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -104,6 +105,12 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       sizes_set_width_(false),
       referrer_policy_(kReferrerPolicyDefault) {
   SetHasCustomStyleCallbacks();
+  if (MediaElementParserHelpers::IsMediaElement(this) &&
+      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+    is_default_overridden_intrinsic_size_ = true;
+    overridden_intrinsic_size_ =
+        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
+  }
 }
 
 HTMLImageElement* HTMLImageElement::Create(Document& document) {
@@ -123,6 +130,12 @@ void HTMLImageElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(form_);
   visitor->Trace(source_);
   HTMLElement::Trace(visitor);
+}
+
+const HashSet<AtomicString>& HTMLImageElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
 }
 
 void HTMLImageElement::NotifyViewportChanged() {
@@ -286,7 +299,22 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == intrinsicsizeAttr &&
              RuntimeEnabledFeatures::
                  ExperimentalProductivityFeaturesEnabled()) {
-    ParseIntrinsicSizeAttribute(params.new_value);
+    String message;
+    bool intrinsic_size_changed =
+        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+            params.new_value, this, &overridden_intrinsic_size_,
+            &is_default_overridden_intrinsic_size_, &message);
+    if (!message.IsEmpty()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, message));
+    }
+
+    if (intrinsic_size_changed && GetLayoutObject() &&
+        GetLayoutObject()->IsLayoutImage())
+      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
+  } else if (name == lazyloadAttr &&
+             EqualIgnoringASCIICase(params.new_value, "off")) {
+    GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -417,15 +445,11 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     }
   }
 
-  // If we have been inserted from a layoutObject-less document,
-  // our loader may have not fetched the image, so do it now.
-  if ((insertion_point.isConnected() && !GetImageLoader().GetContent() &&
-       !GetImageLoader().HasPendingActivity()) ||
-      image_was_modified) {
+  if (image_was_modified ||
+      GetImageLoader().ShouldUpdateOnInsertedInto(insertion_point)) {
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal,
                                        referrer_policy_);
   }
-
   return HTMLElement::InsertedInto(insertion_point);
 }
 
@@ -583,31 +607,6 @@ IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
   return overridden_intrinsic_size_;
 }
 
-void HTMLImageElement::ParseIntrinsicSizeAttribute(const String& value) {
-  unsigned new_width = 0, new_height = 0;
-  Vector<String> size;
-  value.Split('x', size);
-  if (!value.IsEmpty() &&
-      (size.size() != 2 ||
-       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
-       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                               "Unable to parse intrinsicSize: expected "
-                               "[unsigned] x [unsigned], got " +
-                                   value));
-    new_width = 0;
-    new_height = 0;
-  }
-
-  IntSize new_size(new_width, new_height);
-  if (overridden_intrinsic_size_ != new_size) {
-    overridden_intrinsic_size_ = new_size;
-    if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage())
-      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
-  }
-}
-
 KURL HTMLImageElement::Src() const {
   return GetDocument().CompleteURL(getAttribute(srcAttr));
 }
@@ -746,20 +745,14 @@ void HTMLImageElement::SelectSourceURL(
   if (!GetDocument().IsActive())
     return;
 
-  bool found_url = false;
   ImageCandidate candidate = FindBestFitImageFromPictureParent();
-  if (!candidate.IsEmpty()) {
-    SetBestFitURLAndDPRFromImageCandidate(candidate);
-    found_url = true;
-  }
-
-  if (!found_url) {
+  if (candidate.IsEmpty()) {
     candidate = BestFitSourceForImageAttributes(
         GetDocument().DevicePixelRatio(), SourceSize(*this),
         FastGetAttribute(srcAttr), FastGetAttribute(srcsetAttr),
         &GetDocument());
-    SetBestFitURLAndDPRFromImageCandidate(candidate);
   }
+  SetBestFitURLAndDPRFromImageCandidate(candidate);
 
   GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
 
@@ -799,9 +792,9 @@ void HTMLImageElement::DidAddUserAgentShadowRoot(ShadowRoot&) {
 }
 
 void HTMLImageElement::EnsureFallbackForGeneratedContent() {
-  // The special casing for generated content in createLayoutObject breaks the
+  // The special casing for generated content in CreateLayoutObject breaks the
   // invariant that the layout object attached to this element will always be
-  // appropriate for |m_layoutDisposition|. Force recreate it.
+  // appropriate for |layout_disposition_|. Force recreate it.
   // TODO(engedy): Remove this hack. See: https://crbug.com/671953.
   SetLayoutDisposition(LayoutDisposition::kFallbackContent,
                        true /* force_reattach */);

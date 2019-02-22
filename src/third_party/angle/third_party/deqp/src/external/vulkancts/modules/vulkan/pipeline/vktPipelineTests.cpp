@@ -32,6 +32,7 @@
 #include "vktPipelineSamplerTests.hpp"
 #include "vktPipelineImageViewTests.hpp"
 #include "vktPipelinePushConstantTests.hpp"
+#include "vktPipelinePushDescriptorTests.hpp"
 #include "vktPipelineSpecConstantTests.hpp"
 #include "vktPipelineMatchedAttachmentsTests.hpp"
 #include "vktPipelineMultisampleTests.hpp"
@@ -42,6 +43,8 @@
 #include "vktPipelineCacheTests.hpp"
 #include "vktPipelineRenderToImageTests.hpp"
 #include "vktPipelineFramebufferAttachmentTests.hpp"
+#include "vktPipelineStencilExportTests.hpp"
+#include "vktPipelineDerivativeTests.hpp"
 #include "vktTestGroupUtil.hpp"
 
 namespace vkt
@@ -64,6 +67,7 @@ void createChildren (tcu::TestCaseGroup* pipelineTests)
 	pipelineTests->addChild(createSamplerTests					(testCtx));
 	pipelineTests->addChild(createImageViewTests				(testCtx));
 	pipelineTests->addChild(createPushConstantTests				(testCtx));
+	pipelineTests->addChild(createPushDescriptorTests			(testCtx));
 	pipelineTests->addChild(createSpecConstantTests				(testCtx));
 	pipelineTests->addChild(createMatchedAttachmentsTests		(testCtx));
 	pipelineTests->addChild(createMultisampleTests				(testCtx));
@@ -75,6 +79,8 @@ void createChildren (tcu::TestCaseGroup* pipelineTests)
 	pipelineTests->addChild(createCacheTests					(testCtx));
 	pipelineTests->addChild(createRenderToImageTests			(testCtx));
 	pipelineTests->addChild(createFramebufferAttachmentTests	(testCtx));
+	pipelineTests->addChild(createStencilExportTests			(testCtx));
+	pipelineTests->addChild(createDerivativeTests				(testCtx));
 }
 
 } // anonymous

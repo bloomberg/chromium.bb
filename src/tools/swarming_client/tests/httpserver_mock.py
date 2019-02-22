@@ -34,12 +34,12 @@ class MockHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Reads the request body."""
     return self.rfile.read(int(self.headers['Content-Length']))
 
-  def drop_body(self):
-    """Reads the request body."""
+  def yield_body(self):
+    """Yields the request body as 4kiB chunks."""
     size = int(self.headers['Content-Length'])
     while size:
       chunk = min(4096, size)
-      self.rfile.read(chunk)
+      yield self.rfile.read(chunk)
       size -= chunk
 
   ### Overrides from BaseHTTPRequestHandler

@@ -161,25 +161,53 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // Next, we cache the nodes by id. During this process, we can detect the root
   // node based upon the parent links we cached above.
   // Finally, we cache each node's computed bounds, based on its descendants.
+  std::map<int32_t, int32_t> all_parent_map;
+  std::map<int32_t, std::vector<int32_t>> all_children_map;
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     if (!event_data->node_data[i]->int_list_properties)
       continue;
     auto it = event_data->node_data[i]->int_list_properties->find(
         AXIntListProperty::CHILD_NODE_IDS);
     if (it != event_data->node_data[i]->int_list_properties->end()) {
+      all_children_map[event_data->node_data[i]->id] = it->second;
       for (size_t j = 0; j < it->second.size(); ++j)
-        parent_map_[it->second[j]] = event_data->node_data[i]->id;
+        all_parent_map[it->second[j]] = event_data->node_data[i]->id;
+    }
+  }
+
+  // Now copy just the relevant subtree containing the source_id into the
+  // |parent_map_|.
+  // TODO(katie): This step can probably be removed and all items added
+  // directly to the parent map after window mapping is completed, because
+  // we can again assume that there is only one subtree with one root.
+  int32_t source_root = event_data->source_id;
+  // Walk up to the root from the source_id.
+  while (all_parent_map.find(source_root) != all_parent_map.end()) {
+    int32_t parent = all_parent_map[source_root];
+    source_root = parent;
+  }
+  root_id_ = source_root;
+  // Walk back down through children map to populate parent_map_.
+  std::stack<int32_t> stack;
+  stack.push(root_id_);
+  while (!stack.empty()) {
+    int32_t parent = stack.top();
+    stack.pop();
+    const std::vector<int32_t>& children = all_children_map[parent];
+    for (auto it = children.begin(); it != children.end(); ++it) {
+      parent_map_[*it] = parent;
+      stack.push(*it);
     }
   }
 
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     int32_t id = event_data->node_data[i]->id;
+    // Only map nodes in the parent_map and the root.
+    // This avoids adding other subtrees that are not interesting.
+    if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
+      continue;
     AXNodeInfoData* node = event_data->node_data[i].get();
     tree_map_[id] = node;
-    if (parent_map_.find(id) == parent_map_.end()) {
-      CHECK_EQ(-1, root_id_) << "Duplicated root";
-      root_id_ = id;
-    }
 
     if (GetProperty(node, AXBooleanProperty::FOCUSED)) {
       focused_node_id_ = id;
@@ -190,6 +218,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // avoid an O(n^2) amount of work as the computed bounds uses descendant
   // bounds.
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
+    int32_t id = event_data->node_data[i]->id;
+    if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
+      continue;
     AXNodeInfoData* node = event_data->node_data[i].get();
     cached_computed_bounds_[node] = ComputeEnclosingBounds(node);
   }
@@ -396,8 +427,8 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
   if (out_data->role == ax::mojom::Role::kRootWebArea) {
     std::string package_name;
     if (GetProperty(node, AXStringProperty::PACKAGE_NAME, &package_name)) {
-      const std::string& url =
-          base::StringPrintf("%s/%d", package_name.c_str(), tree_id());
+      const std::string& url = base::StringPrintf("%s/%s", package_name.c_str(),
+                                                  tree_id().ToString().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
   }

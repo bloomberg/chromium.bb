@@ -326,7 +326,7 @@ void PointerEventManager::AdjustTouchPointerEvent(
          WebPointerProperties::PointerType::kTouch);
 
   LayoutSize hit_rect_size = GetHitTestRectForAdjustment(
-      LayoutSize(pointer_event.width, pointer_event.height));
+      *frame_, LayoutSize(pointer_event.width, pointer_event.height));
 
   if (hit_rect_size.IsEmpty())
     return;
@@ -554,7 +554,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   if (event.GetType() == WebInputEvent::kPointerUp &&
       !non_hovering_pointers_canceled_ && pointer_event_target.target_frame) {
     user_gesture_holder_ =
-        Frame::NotifyUserActivation(pointer_event_target.target_frame);
+        LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
   }
 
   WebInputEventResult result =
@@ -562,6 +562,52 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
 
   touch_event_manager_->HandleTouchPoint(event, coalesced_events,
                                          pointer_event_target);
+
+  return result;
+}
+
+WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
+    Node* target,
+    const AtomicString& mouse_event_name,
+    const WebMouseEvent& mouse_event,
+    const Vector<WebMouseEvent>& coalesced_events) {
+  WebInputEvent::Type event_type;
+  // TODO(crbug.com/665924): The following ifs skip the mouseover/leave cases,
+  // we should fixed them when further merge the code path.
+  if (mouse_event_name == EventTypeNames::mousemove)
+    event_type = WebInputEvent::kPointerMove;
+  else if (mouse_event_name == EventTypeNames::mousedown)
+    event_type = WebInputEvent::kPointerDown;
+  else if (mouse_event_name == EventTypeNames::mouseup)
+    event_type = WebInputEvent::kPointerUp;
+  else
+    return WebInputEventResult::kNotHandled;
+
+  const WebPointerEvent web_pointer_event(event_type, mouse_event);
+  Vector<WebPointerEvent> pointer_coalesced_events;
+  for (const WebMouseEvent& e : coalesced_events)
+    pointer_coalesced_events.push_back(WebPointerEvent(event_type, e));
+
+  PointerEvent* pointer_event =
+      pointer_event_factory_.Create(web_pointer_event, pointer_coalesced_events,
+                                    target->GetDocument().domWindow());
+  return DispatchPointerEvent(target, pointer_event);
+}
+
+// TODO(crbug.com/665924): Because this code path might have boundary events,
+// it is different from SendMousePointerEvent. We should merge them.
+WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
+    Node* target,
+    const WebMouseEvent& event,
+    const AtomicString& mouse_event_type,
+    const Vector<WebMouseEvent>& coalesced_events,
+    const String& canvas_region_id) {
+  WebInputEventResult result = CreateAndDispatchPointerEvent(
+      target, mouse_event_type, event, coalesced_events);
+
+  result = EventHandlingUtil::MergeEventResult(
+      result, mouse_event_manager_->DispatchMouseEvent(
+                  target, mouse_event_type, event, canvas_region_id, nullptr));
 
   return result;
 }

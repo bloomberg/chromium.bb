@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_environment.h"
@@ -132,9 +131,7 @@ void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
   ash::Shell::GetPrimaryRootWindow()->Show();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
   ash::Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-
-  if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
-    ash::Shell::Get()->cursor_manager()->EnableMouseEvents();
+  ash::Shell::Get()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as

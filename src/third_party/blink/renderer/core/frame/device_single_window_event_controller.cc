@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -92,12 +93,10 @@ bool DeviceSingleWindowEventController::IsSameSecurityOriginAsMainFrame()
 
 bool DeviceSingleWindowEventController::CheckPolicyFeatures(
     const Vector<mojom::FeaturePolicyFeature>& features) const {
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame)
-    return false;
+  const Document& document = GetDocument();
   return std::all_of(features.begin(), features.end(),
-                     [frame](mojom::FeaturePolicyFeature feature) {
-                       return frame->IsFeatureEnabled(feature);
+                     [&document](mojom::FeaturePolicyFeature feature) {
+                       return document.IsFeatureEnabled(feature);
                      });
 }
 

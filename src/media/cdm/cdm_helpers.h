@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/base/video_color_space.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -36,24 +37,31 @@ class DecryptedBlockImpl : public cdm::DecryptedBlock {
   DISALLOW_COPY_AND_ASSIGN(DecryptedBlockImpl);
 };
 
-class MEDIA_EXPORT VideoFrameImpl : public cdm::VideoFrame {
+class MEDIA_EXPORT VideoFrameImpl : public cdm::VideoFrame,
+                                    public cdm::VideoFrame_2 {
  public:
   VideoFrameImpl();
   ~VideoFrameImpl() override;
 
-  // cdm::VideoFrame implementation.
+  // cdm::VideoFrame and cdm::VideoFrame_2 common implementation.
   void SetFormat(cdm::VideoFormat format) final;
   cdm::VideoFormat Format() const final;
   void SetSize(cdm::Size size) final;
   cdm::Size Size() const final;
   void SetFrameBuffer(cdm::Buffer* frame_buffer) final;
   cdm::Buffer* FrameBuffer() final;
-  void SetPlaneOffset(cdm::VideoFrame::VideoPlane plane, uint32_t offset) final;
-  uint32_t PlaneOffset(VideoPlane plane) final;
-  void SetStride(VideoPlane plane, uint32_t stride) final;
-  uint32_t Stride(VideoPlane plane) final;
+  void SetPlaneOffset(cdm::VideoPlane plane, uint32_t offset) final;
+  uint32_t PlaneOffset(cdm::VideoPlane plane) final;
+  void SetStride(cdm::VideoPlane plane, uint32_t stride) final;
+  uint32_t Stride(cdm::VideoPlane plane) final;
   void SetTimestamp(int64_t timestamp) final;
   int64_t Timestamp() const final;
+
+  // cdm::VideoFrame_2 specific implementation.
+  void SetColorSpace(cdm::ColorSpace color_space) final;
+
+  // Helper functions to get the ColorSpace.
+  media::VideoColorSpace MediaColorSpace() const;
 
   // Create a media::VideoFrame based on the data contained in this object.
   // |natural_size| is the visible portion of the video frame, and is
@@ -71,6 +79,8 @@ class MEDIA_EXPORT VideoFrameImpl : public cdm::VideoFrame {
   // The video buffer format.
   cdm::VideoFormat format_;
 
+  cdm::ColorSpace color_space_;
+
   // Width and height of the video frame.
   cdm::Size size_;
 
@@ -78,12 +88,12 @@ class MEDIA_EXPORT VideoFrameImpl : public cdm::VideoFrame {
   cdm::Buffer* frame_buffer_;
 
   // Array of data pointers to each plane in the video frame buffer.
-  uint32_t plane_offsets_[kMaxPlanes];
+  uint32_t plane_offsets_[cdm::kMaxPlanes];
 
   // Array of strides for each plane, typically greater or equal to the width
   // of the surface divided by the horizontal sampling period.  Note that
   // strides can be negative.
-  uint32_t strides_[kMaxPlanes];
+  uint32_t strides_[cdm::kMaxPlanes];
 
   // Presentation timestamp in microseconds.
   int64_t timestamp_;

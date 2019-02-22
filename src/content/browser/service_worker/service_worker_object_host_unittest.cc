@@ -56,7 +56,7 @@ class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
       override {
     events_.push_back(std::move(event));
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   const std::vector<mojom::ExtendableMessageEventPtr>& events() {
@@ -130,10 +130,10 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(
         options, helper_->context()->storage()->NewRegistrationId(),
         helper_->context()->AsWeakPtr());
-    version_ =
-        new ServiceWorkerVersion(registration_.get(), script_url,
-                                 helper_->context()->storage()->NewVersionId(),
-                                 helper_->context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(
+        registration_.get(), script_url, blink::mojom::ScriptType::kClassic,
+        helper_->context()->storage()->NewVersionId(),
+        helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));

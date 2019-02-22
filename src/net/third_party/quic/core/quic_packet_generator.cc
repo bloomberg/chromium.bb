@@ -387,4 +387,29 @@ void QuicPacketGenerator::SetCanSetTransmissionType(
   packet_creator_.set_can_set_transmission_type(can_set_transmission_type);
 }
 
+MessageStatus QuicPacketGenerator::AddMessageFrame(QuicMessageId message_id,
+                                                   QuicStringPiece message) {
+  QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
+                                     "generator tries to add message frame.";
+  if (message.length() > GetLargestMessagePayload()) {
+    return MESSAGE_STATUS_TOO_LARGE;
+  }
+  SendQueuedFrames(/*flush=*/false);
+  if (!packet_creator_.HasRoomForMessageFrame(message.length())) {
+    packet_creator_.Flush();
+  }
+  QuicMessageFrame* frame = new QuicMessageFrame(message_id, message);
+  const bool success = packet_creator_.AddSavedFrame(QuicFrame(frame));
+  if (!success) {
+    QUIC_BUG << "Failed to send message " << message_id;
+    delete frame;
+    return MESSAGE_STATUS_INTERNAL_ERROR;
+  }
+  return MESSAGE_STATUS_SUCCESS;
+}
+
+QuicPacketLength QuicPacketGenerator::GetLargestMessagePayload() const {
+  return packet_creator_.GetLargestMessagePayload();
+}
+
 }  // namespace quic

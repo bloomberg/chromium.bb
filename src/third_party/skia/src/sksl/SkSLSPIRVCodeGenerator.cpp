@@ -1729,7 +1729,7 @@ SpvId SPIRVCodeGenerator::writeVariableReference(const VariableReference& ref, O
             Type intfStruct(-1, name, fields);
             Layout layout(0, -1, -1, 1, -1, -1, -1, -1, Layout::Format::kUnspecified,
                           Layout::kUnspecified_Primitive, -1, -1, "", Layout::kNo_Key,
-                          StringFragment());
+                          Layout::CType::kDefault);
             Variable* intfVar = new Variable(-1,
                                              Modifiers(layout, Modifiers::kUniform_Flag),
                                              name,
@@ -3137,12 +3137,9 @@ void SPIRVCodeGenerator::writeInstructions(const Program& program, OutputStream&
     SkASSERT(main);
     for (auto entry : fVariableMap) {
         const Variable* var = entry.first;
-        int builtin = var->fModifiers.fLayout.fBuiltin;
         if (var->fStorage == Variable::kGlobal_Storage &&
             ((var->fModifiers.fFlags & Modifiers::kIn_Flag) ||
-             (var->fModifiers.fFlags & Modifiers::kOut_Flag)) &&
-             builtin != SK_OUT_BUILTIN &&
-             builtin != SK_INVOCATIONID_BUILTIN) {
+             (var->fModifiers.fFlags & Modifiers::kOut_Flag))) {
             interfaceVars.insert(entry.second);
         }
     }

@@ -66,12 +66,18 @@ std::vector<uint8_t> CryptoUtils::QhkdfExpand(
   return out;
 }
 
-template void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
-                                       const std::vector<uint8_t>& pp_secret,
-                                       QuicEncrypter*);
-template void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
-                                       const std::vector<uint8_t>& pp_secret,
-                                       QuicDecrypter*);
+void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
+                              const std::vector<uint8_t>& pp_secret,
+                              QuicCrypter* crypter) {
+  std::vector<uint8_t> key =
+      CryptoUtils::QhkdfExpand(prf, pp_secret, "key", crypter->GetKeySize());
+  std::vector<uint8_t> iv =
+      CryptoUtils::QhkdfExpand(prf, pp_secret, "iv", crypter->GetIVSize());
+  crypter->SetKey(
+      QuicStringPiece(reinterpret_cast<char*>(key.data()), key.size()));
+  crypter->SetIV(
+      QuicStringPiece(reinterpret_cast<char*>(iv.data()), iv.size()));
+}
 
 namespace {
 
@@ -448,7 +454,7 @@ const char* CryptoUtils::HandshakeFailureReasonToString(
 void CryptoUtils::HashHandshakeMessage(const CryptoHandshakeMessage& message,
                                        QuicString* output,
                                        Perspective perspective) {
-  const QuicData& serialized = message.GetSerialized(perspective);
+  const QuicData& serialized = message.GetSerialized();
   uint8_t digest[SHA256_DIGEST_LENGTH];
   SHA256(reinterpret_cast<const uint8_t*>(serialized.data()),
          serialized.length(), digest);

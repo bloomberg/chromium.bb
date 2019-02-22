@@ -435,8 +435,7 @@ body.v2 {
 
 .v2 #categories-list > li {
   border-top: unset;
-  height: 32px;
-  margin-bottom: 8px;
+  height: 31px;
   margin-top: 8px;
   pointer-events: auto;
 }

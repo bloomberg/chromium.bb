@@ -33,6 +33,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_thread.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -371,8 +372,8 @@ void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
   if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtSuccess", -error.reason());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
-                       static_cast<base::HistogramBase::Sample>(count));
+  UMA_HISTOGRAM_COUNTS_1M("Net.AutoReload.CountAtSuccess",
+                          static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
     base::UmaHistogramSparse("Net.AutoReload.ErrorAtFirstSuccess",
                              -error.reason());
@@ -383,8 +384,8 @@ void ReportAutoReloadFailure(const error_page::Error& error, size_t count) {
   if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtStop", -error.reason());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
-                       static_cast<base::HistogramBase::Sample>(count));
+  UMA_HISTOGRAM_COUNTS_1M("Net.AutoReload.CountAtStop",
+                          static_cast<base::HistogramBase::Sample>(count));
 }
 
 // Tracks navigation correction service usage in UMA to enable more in depth
@@ -523,8 +524,7 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
       auto_reload_paused_(false),
       auto_reload_in_flight_(false),
       uncommitted_load_started_(false),
-      // TODO(ellyjones): Make online_ accurate at object creation.
-      online_(true),
+      online_(content::RenderThread::Get()->IsOnline()),
       visible_(is_visible),
       auto_reload_count_(0),
       navigation_from_button_(NO_BUTTON) {}
@@ -585,8 +585,13 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
 
   // If there's no pending error page information associated with the page load,
   // or the new page is not an error page, then reset pending error page state.
-  if (!pending_error_page_info_ || page_type != ERROR_PAGE)
+  if (!pending_error_page_info_ || page_type != ERROR_PAGE) {
     CancelPendingFetches();
+  } else {
+    // Halt auto-reload if it's currently scheduled. OnFinishLoad will trigger
+    // auto-reload if appropriate.
+    PauseAutoReloadTimer();
+  }
 }
 
 void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {

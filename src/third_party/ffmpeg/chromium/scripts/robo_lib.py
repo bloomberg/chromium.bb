@@ -23,6 +23,12 @@ class RoboConfiguration:
     """
     # This is the prefix that our branches start with.
     self._sushi_branch_prefix = "sushi-"
+    # This is the title that we use for the commit with GN configs.
+    self._gn_commit_title = "GN Configuration"
+    # Title of the commit with chromium/patches/README.
+    self._patches_commit_title = "Chromium patches file"
+    # Title of the commit with chromium/patches/config_flag_changes.txt
+    self._build_changes_commit_title = "Build Config Changes Summary"
     self.EnsureHostInfo()
     self.EnsureChromeSrc()
     self.EnsurePathContainsLLVM()
@@ -76,6 +82,15 @@ class RoboConfiguration:
   def sushi_branch_prefix(self):
     """Return the branch name that indicates that this is a "sushi branch"."""
     return self._sushi_branch_prefix
+
+  def gn_commit_title(self):
+    return self._gn_commit_title
+
+  def patches_commit_title(self):
+    return self._patches_commit_title
+
+  def build_changes_commit_title(self):
+    return self._build_changes_commit_title
 
   def EnsureHostInfo(self):
     """Ensure that the host architecture and platform are set."""

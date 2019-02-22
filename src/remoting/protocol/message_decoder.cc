@@ -24,7 +24,7 @@ MessageDecoder::~MessageDecoder() = default;
 
 void MessageDecoder::AddData(scoped_refptr<net::IOBuffer> data,
                              int data_size) {
-  buffer_.Append(data.get(), data_size);
+  buffer_.Append(std::move(data), data_size);
 }
 
 CompoundBuffer* MessageDecoder::GetNextMessage() {

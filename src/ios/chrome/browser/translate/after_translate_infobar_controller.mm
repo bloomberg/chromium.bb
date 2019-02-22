@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/infobar_controller+protected.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
@@ -28,36 +29,37 @@ enum AlwaysTranslateSwitchState {
 }  // namespace
 
 @interface AfterTranslateInfoBarController () {
-  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;  // weak
   AlwaysTranslateSwitchState _alwaysTranslateSwitchState;
 }
+
+// Overrides superclass property.
+@property(nonatomic, readonly)
+    translate::TranslateInfoBarDelegate* infoBarDelegate;
 
 @end
 
 @implementation AfterTranslateInfoBarController
 
+@dynamic infoBarDelegate;
+
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
 - (instancetype)initWithInfoBarDelegate:
-    (translate::TranslateInfoBarDelegate*)delegate {
-  self = [super init];
-  if (self) {
-    _translateInfoBarDelegate = delegate;
-  }
-  return self;
+    (translate::TranslateInfoBarDelegate*)infoBarDelegate {
+  return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
   ConfirmInfoBarView* infoBarView =
       [[ConfirmInfoBarView alloc] initWithFrame:frame];
   // Icon
-  gfx::Image icon = _translateInfoBarDelegate->GetIcon();
+  gfx::Image icon = self.infoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
     [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
   const bool autodeterminedSourceLanguage =
-      _translateInfoBarDelegate->original_language_code() ==
+      self.infoBarDelegate->original_language_code() ==
       translate::kUnknownLanguageCode;
   bool swappedLanguageButtons;
   std::vector<base::string16> strings;
@@ -69,11 +71,10 @@ enum AlwaysTranslateSwitchState {
   NSString* label3 = autodeterminedSourceLanguage
                          ? @""
                          : base::SysUTF16ToNSString(strings[2]);
-  base::string16 stdOriginal =
-      _translateInfoBarDelegate->original_language_name();
+  base::string16 stdOriginal = self.infoBarDelegate->original_language_name();
   NSString* original = base::SysUTF16ToNSString(stdOriginal);
-  NSString* target = base::SysUTF16ToNSString(
-      _translateInfoBarDelegate->target_language_name());
+  NSString* target =
+      base::SysUTF16ToNSString(self.infoBarDelegate->target_language_name());
   NSString* label =
       [[NSString alloc] initWithFormat:@"%@ %@ %@%@ %@.", label1, original,
                                        label2, label3, target];
@@ -93,10 +94,10 @@ enum AlwaysTranslateSwitchState {
                    action:@selector(infoBarButtonDidPress:)];
   // Always translate switch.
   _alwaysTranslateSwitchState = ALWAYS_TRANSLATE_SWITCH_NOT_CHANGED;
-  if (_translateInfoBarDelegate->ShouldShowAlwaysTranslateShortcut()) {
+  if (self.infoBarDelegate->ShouldShowAlwaysTranslateShortcut()) {
     base::string16 alwaysTranslate = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, stdOriginal);
-    const BOOL switchValue = _translateInfoBarDelegate->ShouldAlwaysTranslate();
+    const BOOL switchValue = self.infoBarDelegate->ShouldAlwaysTranslate();
     [infoBarView
         addSwitchWithLabel:base::SysUTF16ToNSString(alwaysTranslate)
                       isOn:switchValue
@@ -110,26 +111,22 @@ enum AlwaysTranslateSwitchState {
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {
-  // This press might have occurred after the user has already pressed a button,
-  // in which case the view has been detached from the delegate and this press
-  // should be ignored.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
   NSUInteger buttonId = base::mac::ObjCCastStrict<UIButton>(sender).tag;
   switch (buttonId) {
     case TranslateInfoBarIOSTag::CLOSE:
-      _translateInfoBarDelegate->InfoBarDismissed();
+      self.infoBarDelegate->InfoBarDismissed();
       self.delegate->RemoveInfoBar();
       break;
     case TranslateInfoBarIOSTag::AFTER_DONE:
       [self saveAlwaysTranslateState];
-      _translateInfoBarDelegate->InfoBarDismissed();
+      self.infoBarDelegate->InfoBarDismissed();
       self.delegate->RemoveInfoBar();
       break;
     case TranslateInfoBarIOSTag::AFTER_REVERT:
-      _translateInfoBarDelegate->RevertTranslation();
+      self.infoBarDelegate->RevertTranslation();
       break;
     default:
       NOTREACHED() << "Unexpected Translate button label";
@@ -153,10 +150,10 @@ enum AlwaysTranslateSwitchState {
 
   const bool alwaysTranslate =
       _alwaysTranslateSwitchState == ALWAYS_TRANSLATE_SWITCH_SET_TO_ENABLED;
-  if (alwaysTranslate == _translateInfoBarDelegate->ShouldAlwaysTranslate())
+  if (alwaysTranslate == self.infoBarDelegate->ShouldAlwaysTranslate())
     return;
 
-  _translateInfoBarDelegate->ToggleAlwaysTranslate();
+  self.infoBarDelegate->ToggleAlwaysTranslate();
 }
 
 @end

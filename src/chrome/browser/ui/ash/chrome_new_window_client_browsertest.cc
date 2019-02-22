@@ -50,8 +50,10 @@ using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
 // Tests that when we open a new window by pressing 'Ctrl-N', we should use the
 // current active window's profile to determine on which profile's desktop we
 // should open a new window.
+//
+// Test is flaky. See https://crbug.com/884118
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
-                       NewWindowForActiveWindowProfileTest) {
+                       DISABLED_NewWindowForActiveWindowProfileTest) {
   CreateAndStartUserSession(
       AccountId::FromUserEmailGaiaId(kTestUserName1, kTestUser1GaiaId));
   Profile* profile1 = ProfileManager::GetActiveUserProfile();

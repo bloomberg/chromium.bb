@@ -37,7 +37,8 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   void Initialize() override;
 
   // QuicSession methods:
-  QuicSpdyClientStream* CreateOutgoingDynamicStream() override;
+  QuicSpdyClientStream* CreateOutgoingBidirectionalStream() override;
+  QuicSpdyClientStream* CreateOutgoingUnidirectionalStream() override;
   QuicCryptoClientStreamBase* GetMutableCryptoStream() override;
   const QuicCryptoClientStreamBase* GetCryptoStream() const override;
 
@@ -74,10 +75,11 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   // Create the crypto stream. Called by Initialize().
   virtual std::unique_ptr<QuicCryptoClientStreamBase> CreateQuicCryptoStream();
 
-  // Unlike CreateOutgoingDynamicStream, which applies a bunch of sanity checks,
-  // this simply returns a new QuicSpdyClientStream. This may be used by
-  // subclasses which want to use a subclass of QuicSpdyClientStream for streams
-  // but wish to use the sanity checks in CreateOutgoingDynamicStream.
+  // Unlike CreateOutgoingBidirectionalStream, which applies a bunch of
+  // sanity checks, this simply returns a new QuicSpdyClientStream. This may be
+  // used by subclasses which want to use a subclass of QuicSpdyClientStream for
+  // streams but wish to use the sanity checks in
+  // CreateOutgoingBidirectionalStream.
   virtual std::unique_ptr<QuicSpdyClientStream> CreateClientStream();
 
   const QuicServerId& server_id() { return server_id_; }

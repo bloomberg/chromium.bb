@@ -151,7 +151,6 @@ class JobSchedulerTest : public testing::Test {
 
     fake_drive_service_ = std::make_unique<CancelTestableFakeDriveService>();
     test_util::SetUpTestEntries(fake_drive_service_.get());
-    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
@@ -224,20 +223,6 @@ TEST_F(JobSchedulerTest, GetStartPageToken) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(start_page_token);
-}
-
-TEST_F(JobSchedulerTest, GetAppList) {
-  ConnectToWifi();
-
-  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  std::unique_ptr<google_apis::AppList> app_list;
-
-  scheduler_->GetAppList(
-      google_apis::test_util::CreateCopyResultCallback(&error, &app_list));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(app_list);
 }
 
 TEST_F(JobSchedulerTest, GetAllTeamDriveList) {
@@ -470,23 +455,6 @@ TEST_F(JobSchedulerTest, GetFileResource) {
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
-}
-
-TEST_F(JobSchedulerTest, GetShareUrl) {
-  ConnectToWifi();
-
-  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  GURL share_url;
-
-  scheduler_->GetShareUrl(
-      "2_file_resource_id",  // resource ID
-      GURL("chrome-extension://test-id/"), // embed origin
-      ClientContext(USER_INITIATED),
-      google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_FALSE(share_url.is_empty());
 }
 
 TEST_F(JobSchedulerTest, TrashResource) {

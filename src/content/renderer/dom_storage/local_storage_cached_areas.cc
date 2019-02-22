@@ -6,11 +6,11 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
-#include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 
 namespace content {
@@ -57,8 +57,9 @@ void LocalStorageCachedAreas::CloneNamespace(
     const std::string& source_namespace,
     const std::string& destination_namespace) {
   DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
-  DCHECK_EQ(kSessionStorageNamespaceIdLength, source_namespace.size());
-  DCHECK_EQ(kSessionStorageNamespaceIdLength, destination_namespace.size());
+  DCHECK_EQ(blink::kSessionStorageNamespaceIdLength, source_namespace.size());
+  DCHECK_EQ(blink::kSessionStorageNamespaceIdLength,
+            destination_namespace.size());
   CHECK(sequence_checker_.CalledOnValidSequence());
 
   auto namespace_it = cached_namespaces_.find(source_namespace);

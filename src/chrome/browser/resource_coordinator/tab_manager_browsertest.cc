@@ -5,6 +5,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -292,6 +293,7 @@ class TabManagerTest : public InProcessBrowserTest {
         GetWebContentsAt(index));
   }
 
+  base::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -508,13 +510,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   // Nothing should happen with a moderate memory pressure event.
-  base::MemoryPressureListener::NotifyMemoryPressure(
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
 
   // A critical memory pressure event should discard a tab.
-  base::MemoryPressureListener::NotifyMemoryPressure(
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   // Coming here, an asynchronous operation will collect system stats. Once in,
   // a tab should get discarded. As such we need to give it 10s time to discard.
@@ -920,11 +922,15 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownSharedTabProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Set max renderers to 1 before opening tabs to force running out of
   // processes and for both these tabs to share a renderer.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(chrome::kChromeUICreditsURL));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("a.com", "/title2.html"));
+  EXPECT_EQ(tsm()->GetWebContentsAt(0)->GetMainFrame()->GetProcess(),
+            tsm()->GetWebContentsAt(1)->GetMainFrame()->GetProcess());
 
   // The Tab Manager will not be able to fast-kill either of the tabs since they
   // share the same process regardless of the discard reason. No unsafe attempts
@@ -939,12 +945,15 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownSharedTabProcess) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSharedTabProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Set max renderers to 1 before opening tabs to force running out of
   // processes and for both these tabs to share a renderer.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
-  // Disable the protection of recent tabs.
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(chrome::kChromeUICreditsURL));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("a.com", "/title2.html"));
+  EXPECT_EQ(tsm()->GetWebContentsAt(0)->GetMainFrame()->GetProcess(),
+            tsm()->GetWebContentsAt(1)->GetMainFrame()->GetProcess());
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);

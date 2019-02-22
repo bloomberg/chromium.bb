@@ -69,6 +69,9 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   ~HTMLAnchorElement() override;
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   KURL Href() const;
   void SetHref(const AtomicString&);
   void setHref(const USVStringOrTrustedURL&, ExceptionState&);

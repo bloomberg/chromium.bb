@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/chrome_build.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
@@ -271,8 +272,6 @@ inspector_protocol_generate("protocol_sources") {
     "lib/browser/protocol/dp_browser.h",
     "lib/browser/protocol/dp_headless_experimental.cc",
     "lib/browser/protocol/dp_headless_experimental.h",
-    "lib/browser/protocol/dp_network.cc",
-    "lib/browser/protocol/dp_network.h",
     "lib/browser/protocol/dp_page.cc",
     "lib/browser/protocol/dp_page.h",
     "lib/browser/protocol/dp_target.cc",
@@ -282,7 +281,7 @@ inspector_protocol_generate("protocol_sources") {
   ]
 }
 
-component("headless") {
+jumbo_component("headless") {
   sources = [
     "app/headless_shell_switches.cc",
     "app/headless_shell_switches.h",
@@ -303,20 +302,18 @@ component("headless") {
     "lib/browser/headless_devtools_client_impl.cc",
     "lib/browser/headless_devtools_manager_delegate.cc",
     "lib/browser/headless_devtools_manager_delegate.h",
-    "lib/browser/headless_network_conditions.cc",
-    "lib/browser/headless_network_conditions.h",
     "lib/browser/headless_permission_manager.cc",
     "lib/browser/headless_permission_manager.h",
     "lib/browser/headless_platform_event_source.cc",
     "lib/browser/headless_platform_event_source.h",
     "lib/browser/headless_quota_permission_context.cc",
     "lib/browser/headless_quota_permission_context.h",
+    "lib/browser/headless_request_context_manager.cc",
+    "lib/browser/headless_request_context_manager.h",
     "lib/browser/headless_resource_dispatcher_host_delegate.cc",
     "lib/browser/headless_resource_dispatcher_host_delegate.h",
     "lib/browser/headless_shell_application_mac.h",
     "lib/browser/headless_shell_application_mac.mm",
-    "lib/browser/headless_url_request_context_getter.cc",
-    "lib/browser/headless_url_request_context_getter.h",
     "lib/browser/headless_window_tree_host.h",
     "lib/browser/protocol/browser_handler.cc",
     "lib/browser/protocol/browser_handler.h",
@@ -326,8 +323,6 @@ component("headless") {
     "lib/browser/protocol/headless_devtools_session.h",
     "lib/browser/protocol/headless_handler.cc",
     "lib/browser/protocol/headless_handler.h",
-    "lib/browser/protocol/network_handler.cc",
-    "lib/browser/protocol/network_handler.h",
     "lib/browser/protocol/page_handler.cc",
     "lib/browser/protocol/page_handler.h",
     "lib/browser/protocol/protocol_string.cc",
@@ -382,8 +377,6 @@ component("headless") {
     sources += [
       "lib/browser/headless_print_manager.cc",
       "lib/browser/headless_print_manager.h",
-      "lib/renderer/headless_print_render_frame_helper_delegate.cc",
-      "lib/renderer/headless_print_render_frame_helper_delegate.h",
     ]
   }
 
@@ -420,6 +413,10 @@ component("headless") {
     deps += [ "//components/os_crypt" ]
   }
 
+  if (enable_basic_printing) {
+    deps += [ "//components/printing/browser" ]
+  }
+
   if (is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
@@ -434,6 +431,13 @@ component("headless") {
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
+
+    if (enable_basic_printing) {
+      sources += [
+        "lib/renderer/headless_print_render_frame_helper_delegate.cc",
+        "lib/renderer/headless_print_render_frame_helper_delegate.h",
+      ]
+    }
 
     deps += [
       "//components/crash/core/common:crash_key",
@@ -517,6 +521,13 @@ if (!is_component_build) {
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
+
+    if (enable_basic_printing) {
+      sources += [
+        "lib/renderer/headless_print_render_frame_helper_delegate.cc",
+        "lib/renderer/headless_print_render_frame_helper_delegate.h",
+      ]
+    }
 
     deps = [
       ":headless",
@@ -804,8 +815,6 @@ if (is_win) {
     sources = [
       "app/headless_shell.cc",
       "app/headless_shell.h",
-      "app/headless_shell_switches.cc",
-      "app/headless_shell_switches.h",
       "app/headless_shell_win.cc",
       "public/headless_shell.h",
     ]
@@ -839,18 +848,21 @@ if (is_win) {
 
 # Headless library with all included dependencies. Use this library unless you
 # have browser/child dependencies restrictions.
-static_library("headless_shell_lib") {
+jumbo_static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",
-    "app/headless_shell_switches.cc",
-    "app/headless_shell_switches.h",
-    "lib/browser/headless_content_browser_client.cc",
-    "lib/browser/headless_content_browser_client.h",
     "lib/utility/headless_content_utility_client.cc",
     "lib/utility/headless_content_utility_client.h",
     "public/headless_shell.h",
   ]
+
+  if (!is_component_build) {
+    sources += [
+      "lib/browser/headless_content_browser_client.cc",
+      "lib/browser/headless_content_browser_client.h",
+    ]
+  }
 
   deps = [
     ":headless_renderer",
@@ -893,6 +905,7 @@ if (is_fuchsia) {
   fuchsia_package("headless_shell_pkg") {
     binary = ":headless_shell"
     package_name_override = "headless_shell"
+    sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
   }
 
   fuchsia_package_runner("headless_shell_fuchsia") {

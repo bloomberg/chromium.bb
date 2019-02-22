@@ -106,6 +106,8 @@ class CONTENT_EXPORT FlingController {
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
+  void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
+
  protected:
   std::unique_ptr<ui::FlingBooster> fling_booster_;
 
@@ -177,6 +179,9 @@ class CONTENT_EXPORT FlingController {
   // Whether an active fling has seen a |ProgressFling()| call. This is useful
   // for determining if the fling start time should be re-initialized.
   bool has_fling_animation_started_;
+
+  // The clock used; overridable for tests.
+  const base::TickClock* clock_;
 
   base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 

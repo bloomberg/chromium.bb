@@ -77,8 +77,8 @@ class FramebufferGL : public FramebufferImpl
 
     bool checkStatus(const gl::Context *context) const override;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Framebuffer::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Framebuffer::DirtyBits &dirtyBits) override;
 
     GLuint getFramebufferID() const;
     bool isDefault() const;
@@ -96,20 +96,20 @@ class FramebufferGL : public FramebufferImpl
         const GLenum *attachments,
         std::vector<GLenum> *modifiedAttachments) const;
 
-    gl::Error readPixelsRowByRow(const gl::Context *context,
-                                 const gl::Rectangle &area,
-                                 GLenum format,
-                                 GLenum type,
-                                 const gl::PixelPackState &pack,
-                                 GLubyte *pixels) const;
+    angle::Result readPixelsRowByRow(const gl::Context *context,
+                                     const gl::Rectangle &area,
+                                     GLenum format,
+                                     GLenum type,
+                                     const gl::PixelPackState &pack,
+                                     GLubyte *pixels) const;
 
-    gl::Error readPixelsAllAtOnce(const gl::Context *context,
-                                  const gl::Rectangle &area,
-                                  GLenum format,
-                                  GLenum type,
-                                  const gl::PixelPackState &pack,
-                                  GLubyte *pixels,
-                                  bool readLastRowSeparately) const;
+    angle::Result readPixelsAllAtOnce(const gl::Context *context,
+                                      const gl::Rectangle &area,
+                                      GLenum format,
+                                      GLenum type,
+                                      const gl::PixelPackState &pack,
+                                      GLubyte *pixels,
+                                      bool readLastRowSeparately) const;
 
     GLuint mFramebufferID;
     bool mIsDefault;

@@ -7,12 +7,10 @@
 #ifndef FPDFSDK_CPDFSDK_ANNOTHANDLERMGR_H_
 #define FPDFSDK_CPDFSDK_ANNOTHANDLERMGR_H_
 
-#include <map>
 #include <memory>
 
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 
 class CFX_Matrix;
@@ -39,7 +37,6 @@ class CPDFSDK_AnnotHandlerMgr {
 #endif  // PDF_ENABLE_XFA
   void ReleaseAnnot(CPDFSDK_Annot* pAnnot);
 
-  void Annot_OnCreate(CPDFSDK_Annot* pAnnot);
   void Annot_OnLoad(CPDFSDK_Annot* pAnnot);
 
   WideString Annot_GetText(CPDFSDK_Annot* pAnnot);
@@ -55,7 +52,7 @@ class CPDFSDK_AnnotHandlerMgr {
   void Annot_OnDraw(CPDFSDK_PageView* pPageView,
                     CPDFSDK_Annot* pAnnot,
                     CFX_RenderDevice* pDevice,
-                    CFX_Matrix* pUser2Device,
+                    const CFX_Matrix& mtUser2Device,
                     bool bDrawAnnots);
 
   void Annot_OnMouseEnter(CPDFSDK_PageView* pPageView,
@@ -72,10 +69,6 @@ class CPDFSDK_AnnotHandlerMgr {
                          CPDFSDK_Annot::ObservedPtr* pAnnot,
                          uint32_t nFlags,
                          const CFX_PointF& point);
-  bool Annot_OnLButtonDblClk(CPDFSDK_PageView* pPageView,
-                             CPDFSDK_Annot::ObservedPtr* pAnnot,
-                             uint32_t nFlags,
-                             const CFX_PointF& point);
   bool Annot_OnMouseMove(CPDFSDK_PageView* pPageView,
                          CPDFSDK_Annot::ObservedPtr* pAnnot,
                          uint32_t nFlags,
@@ -95,8 +88,6 @@ class CPDFSDK_AnnotHandlerMgr {
                          const CFX_PointF& point);
   bool Annot_OnChar(CPDFSDK_Annot* pAnnot, uint32_t nChar, uint32_t nFlags);
   bool Annot_OnKeyDown(CPDFSDK_Annot* pAnnot, int nKeyCode, int nFlag);
-  bool Annot_OnKeyUp(CPDFSDK_Annot* pAnnot, int nKeyCode, int nFlag);
-
   bool Annot_OnSetFocus(CPDFSDK_Annot::ObservedPtr* pAnnot, uint32_t nFlag);
   bool Annot_OnKillFocus(CPDFSDK_Annot::ObservedPtr* pAnnot, uint32_t nFlag);
 

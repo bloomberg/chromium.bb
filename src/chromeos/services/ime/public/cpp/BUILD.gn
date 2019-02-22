@@ -14,13 +14,42 @@ buildflag_header("buildflags") {
   ]
 }
 
-source_set("features") {
+source_set("rulebased") {
   sources = [
-    "features.cc",
-    "features.h",
+    "rulebased/def/ar.h",
+    "rulebased/def/ckb_ar.h",
+    "rulebased/def/ckb_en.h",
+    "rulebased/def/fa.h",
+    "rulebased/def/km.h",
+    "rulebased/def/lo.h",
+    "rulebased/def/ne_inscript.h",
+    "rulebased/def/ru_phone_aatseel.h",
+    "rulebased/def/ru_phone_yazhert.h",
+    "rulebased/def/ta_inscript.h",
+    "rulebased/def/ta_typewriter.h",
+    "rulebased/def/th.h",
+    "rulebased/def/th_pattajoti.h",
+    "rulebased/def/th_tis.h",
+    "rulebased/engine.cc",
+    "rulebased/engine.h",
+    "rulebased/rules_data.cc",
+    "rulebased/rules_data.h",
   ]
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("rulebased_unit_tests") {
+  testonly = true
+  deps = [
+    ":rulebased",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest:gtest",
+  ]
+  sources = [
+    "rulebased/rulebased_unittest.cc",
   ]
 }

@@ -19,7 +19,6 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
-  MOCK_METHOD0(DoResurrectLastOutputBuffer, void(void));
   MOCK_METHOD3(OnError,
                void(media::VideoCaptureError error,
                     const base::Location& from_here,
@@ -54,9 +53,10 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
                                    base::TimeDelta timestamp,
                                    int frame_feedback_id = 0) override;
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             VideoPixelFormat format,
-                             int frame_feedback_id) override;
+  ReserveResult ReserveOutputBuffer(const gfx::Size& dimensions,
+                                    VideoPixelFormat format,
+                                    int frame_feedback_id,
+                                    Buffer* buffer) override;
   void OnIncomingCapturedBuffer(Buffer buffer,
                                 const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
@@ -68,9 +68,6 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,
       const VideoFrameMetadata& additional_metadata) override;
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   VideoPixelFormat format,
-                                   int frame_feedback_id) override;
 
  private:
   base::OnceClosure frame_cb_;

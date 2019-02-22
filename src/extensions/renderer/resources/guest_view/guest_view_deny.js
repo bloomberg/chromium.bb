@@ -6,8 +6,7 @@
 // permissions are not available. These elements exist only to provide a useful
 // error message when developers attempt to use them.
 
-var DocumentNatives = requireNative('document_natives');
-var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 var ERROR_MESSAGE = 'You do not have permission to use the %1 element.' +
     ' Be sure to declare the "%1" permission in your manifest file.';
@@ -23,22 +22,18 @@ var VIEW_TYPES = [
 
 // Registers a GuestView custom element.
 function registerGuestViewElement(viewType) {
-  var proto = $Object.create(HTMLElement.prototype);
+  GuestViewInternalNatives.AllowGuestViewElementDefinition(() => {
+    var DeniedElement = class extends HTMLElement {
+      constructor() {
+        super();
+        window.console.error($String.replace(
+            ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
+      }
+    }
 
-  proto.createdCallback = function() {
-    window.console.error(
-        $String.replace(ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
-  };
-
-  window[viewType] = DocumentNatives.RegisterElement(
-      $String.toLowerCase(viewType), {prototype: proto});
-
-  // Delete the callbacks so developers cannot call them and produce unexpected
-  // behavior.
-  delete proto.createdCallback;
-  delete proto.attachedCallback;
-  delete proto.detachedCallback;
-  delete proto.attributeChangedCallback;
+    window.customElements.define($String.toLowerCase(viewType), DeniedElement);
+    window[viewType] = DeniedElement;
+  });
 }
 
 var useCapture = true;
@@ -46,13 +41,13 @@ window.addEventListener('readystatechange', function listener(event) {
   if (document.readyState == 'loading')
     return;
 
-  for (var i = 0; i != VIEW_TYPES.length; ++i) {
+  for (var viewType of VIEW_TYPES) {
     // Register the error-providing custom element only for those view types
     // that have not already been registered. Since this module is always loaded
     // last, all the view types that are available (i.e. have the proper
     // permissions) will have already been registered on |window|.
-    if (!window[VIEW_TYPES[i]])
-      registerGuestViewElement(VIEW_TYPES[i]);
+    if (!window[viewType])
+      registerGuestViewElement(viewType);
   }
 
   window.removeEventListener(event.type, listener, useCapture);

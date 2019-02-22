@@ -163,6 +163,7 @@ void SetActivationStateAndError(MobileActivator::PlanActivationState state,
 class MobileSetupUIHTMLSource : public content::URLDataSource {
  public:
   MobileSetupUIHTMLSource();
+  ~MobileSetupUIHTMLSource() override {}
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -181,8 +182,6 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   }
 
  private:
-  ~MobileSetupUIHTMLSource() override {}
-
   void GetPropertiesAndStartDataRequest(
       const content::URLDataSource::GotDataCallback& callback,
       const std::string& service_path,
@@ -628,11 +627,10 @@ void MobileSetupHandler::UpdatePortalReachability(const NetworkState* network,
 
 MobileSetupUI::MobileSetupUI(content::WebUI* web_ui) : ui::WebDialogUI(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<MobileSetupHandler>());
-  MobileSetupUIHTMLSource* html_source = new MobileSetupUIHTMLSource();
 
   // Set up the chrome://mobilesetup/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, html_source);
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                              std::make_unique<MobileSetupUIHTMLSource>());
 
   content::WebContentsObserver::Observe(web_ui->GetWebContents());
 }

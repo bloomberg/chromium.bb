@@ -7,7 +7,7 @@
  *  - WelcomeBanner
  *  - AuthFailBanner
  * @param {DirectoryModel} directoryModel The model.
- * @param {VolumeManagerWrapper} volumeManager The manager.
+ * @param {!VolumeManager} volumeManager The manager.
  * @param {Document} document HTML document.
  * @param {boolean} showWelcome True if the welcome banner can be shown.
  * @constructor
@@ -212,7 +212,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   if (!this.document_.querySelector('link[drive-welcome-style]')) {
     var style = this.document_.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'foreground/css/drive_welcome.css';
+    style.href = constants.DRIVE_WELCOME_CSS;
     style.setAttribute('drive-welcome-style', '');
     this.document_.head.appendChild(style);
   }
@@ -498,10 +498,11 @@ Banners.prototype.showWelcomeBanner_ = function(type) {
  */
 Banners.prototype.onDirectoryChanged_ = function(event) {
   var rootVolume = this.volumeManager_.getVolumeInfo(event.newDirEntry);
-  var previousRootVolume = event.previousDirEntry ?
-      this.volumeManager_.getVolumeInfo(event.previousDirEntry) : null;
   if (!rootVolume)
     return;
+  var previousRootVolume = event.previousDirEntry ?
+      this.volumeManager_.getVolumeInfo(event.previousDirEntry) :
+      null;
 
   // Show (or hide) the low space warning.
   this.maybeShowLowSpaceWarning_(rootVolume);
@@ -551,12 +552,12 @@ Banners.prototype.isLowSpaceWarningTarget_ = function(volumeInfo) {
  * @private
  */
 Banners.prototype.privateOnDirectoryChanged_ = function(event) {
-  if (!this.directoryModel_.getCurrentDirEntry())
+  var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
+  if (!currentDirEntry)
     return;
-
-  var currentDirEntry = assert(this.directoryModel_.getCurrentDirEntry());
-  var currentVolume = currentDirEntry &&
-      this.volumeManager_.getVolumeInfo(currentDirEntry);
+  var currentVolume = this.volumeManager_.getVolumeInfo(currentDirEntry);
+  if (!currentVolume)
+    return;
   var eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
   if (currentVolume === eventVolume) {
     // The file system we are currently on is changed.

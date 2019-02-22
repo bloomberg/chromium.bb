@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">این دستگاه توسط این کارخواه پشتیبیانی نمی‌شود چون نیاز به احراز هویت شخص ثالث دارد.</translation>
 <translation id="3194245623920924351">‏رایانه راه دور Chrome</translation>
 <translation id="3197730452537982411">رایانه ازراه‌دور</translation>
-<translation id="3212472844831225214">‏• اضافه شدن پشتیبانی از Android نسخه ۹٫۰ (‏Pie).</translation>
 <translation id="324272851072175193">ارسال این دستورالعمل با ایمیل</translation>
 <translation id="3258789396564295715">‏می‌توانید با استفاده از کنترل رایانه ازراه‌دور Chrome به‌صورت امن به این رایانه دسترسی پیدا کنید.</translation>
 <translation id="3286521253923406898">‏کنترل‌کننده برنامه میزبان کار با Chrome</translation>
@@ -332,6 +331,8 @@ Chrome
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8548209692293300397">‏قبلاً با <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) وارد سیستم شده بودید. برای دسترسی به رایانه‌های آن حساب، با آن حساب <ph name="LINK_BEGIN" />وارد Google Chrome شوید<ph name="LINK_END" /> و کنترل رایانه ازراه‌دور Chrome را دوباره نصب کنید.</translation>
 <translation id="8642984861538780905">نسبتاً خوب</translation>
+<translation id="8705151241155781642">‏• اضافه شدن پشتیبانی از Android نسخه ۹٫۰ (Pie).
+• پشتیبانی از تغییر اندازه وضوح کنترل دسک تاپ از راه دور برای مطابقت با صفحه دستگاه Android.</translation>
 <translation id="8712909229180978490">‏نمی‌توانم فایل‌های ذخیره شده‌ام را آنلاین در Google Drive ببینم.</translation>
 <translation id="8743328882720071828">می‌خواهید به <ph name="CLIENT_USERNAME" /> اجازه دهید که رایانه‌تان را ببیند و کنترل کند؟</translation>
 <translation id="8747048596626351634">‏جلسه خراب شد یا شروع نشد. درصورت وجود ~/.chrome-remote-desktop-session در رایانه راه‌ دور، مطمئن شوید که یک فرآیند پیش‌زمینه طولانی‌مدت مثل محیط دسک‌تاپ یا مدیر پنجره را راه‌اندازی می‌کند.</translation>

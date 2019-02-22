@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "sql/database.h"
 
 namespace explore_sites {
@@ -53,7 +54,7 @@ bool InitializeSync(sql::Database* db,
   }
   db->Preload();
 
-  return true;  // TODO(dewittj): Implement schema initialization.
+  return ExploreSitesSchema::CreateOrUpgradeIfNeeded(db);
 }
 
 void CloseDatabaseSync(
@@ -105,6 +106,11 @@ ExploreSitesStore::ExploreSitesStore(
       closing_weak_ptr_factory_(this) {}
 
 ExploreSitesStore::~ExploreSitesStore() {}
+
+void ExploreSitesStore::SetInitializationStatusForTest(
+    InitializationStatus status) {
+  initialization_status_ = status;
+}
 
 void ExploreSitesStore::Initialize(base::OnceClosure pending_command) {
   TRACE_EVENT_ASYNC_BEGIN1("explore_sites", "ExploreSitesStore", this,

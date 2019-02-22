@@ -334,10 +334,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ARB_vertex_array_object");
   ext.b_GL_CHROMIUM_bind_uniform_location =
       gfx::HasExtension(extensions, "GL_CHROMIUM_bind_uniform_location");
-  ext.b_GL_CHROMIUM_compressed_copy_texture =
-      gfx::HasExtension(extensions, "GL_CHROMIUM_compressed_copy_texture");
-  ext.b_GL_CHROMIUM_copy_compressed_texture =
-      gfx::HasExtension(extensions, "GL_CHROMIUM_copy_compressed_texture");
   ext.b_GL_CHROMIUM_copy_texture =
       gfx::HasExtension(extensions, "GL_CHROMIUM_copy_texture");
   ext.b_GL_CHROMIUM_framebuffer_mixed_samples =
@@ -400,6 +396,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_KHR_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_KHR_blend_equation_advanced");
   ext.b_GL_KHR_debug = gfx::HasExtension(extensions, "GL_KHR_debug");
+  ext.b_GL_KHR_parallel_shader_compile =
+      gfx::HasExtension(extensions, "GL_KHR_parallel_shader_compile");
   ext.b_GL_KHR_robustness = gfx::HasExtension(extensions, "GL_KHR_robustness");
   ext.b_GL_NV_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_NV_blend_equation_advanced");
@@ -615,13 +613,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       ext.b_GL_ARB_sync) {
     fn.glClientWaitSyncFn = reinterpret_cast<glClientWaitSyncProc>(
         GetGLProcAddress("glClientWaitSync"));
-  }
-
-  if (ext.b_GL_CHROMIUM_copy_compressed_texture ||
-      ext.b_GL_CHROMIUM_compressed_copy_texture) {
-    fn.glCompressedCopyTextureCHROMIUMFn =
-        reinterpret_cast<glCompressedCopyTextureCHROMIUMProc>(
-            GetGLProcAddress("glCompressedCopyTextureCHROMIUM"));
   }
 
   if (ext.b_GL_ANGLE_robust_client_memory) {
@@ -1839,6 +1830,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glMatrixLoadIdentityCHROMIUM"));
   }
 
+  if (ext.b_GL_KHR_parallel_shader_compile) {
+    fn.glMaxShaderCompilerThreadsKHRFn =
+        reinterpret_cast<glMaxShaderCompilerThreadsKHRProc>(
+            GetGLProcAddress("glMaxShaderCompilerThreadsKHR"));
+  }
+
   if (ver->IsAtLeastGLES(3u, 1u) || ver->IsAtLeastGL(4u, 5u)) {
     fn.glMemoryBarrierByRegionFn =
         reinterpret_cast<glMemoryBarrierByRegionProc>(
@@ -2916,11 +2913,6 @@ void GLApiBase::glColorMaskFn(GLboolean red,
 
 void GLApiBase::glCompileShaderFn(GLuint shader) {
   driver_->fn.glCompileShaderFn(shader);
-}
-
-void GLApiBase::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
-                                                  GLuint destId) {
-  driver_->fn.glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
 void GLApiBase::glCompressedTexImage2DFn(GLenum target,
@@ -4478,6 +4470,10 @@ void GLApiBase::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   driver_->fn.glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
+void GLApiBase::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  driver_->fn.glMaxShaderCompilerThreadsKHRFn(count);
+}
+
 void GLApiBase::glMemoryBarrierByRegionFn(GLbitfield barriers) {
   driver_->fn.glMemoryBarrierByRegionFn(barriers);
 }
@@ -5993,13 +5989,6 @@ void TraceGLApi::glColorMaskFn(GLboolean red,
 void TraceGLApi::glCompileShaderFn(GLuint shader) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCompileShader")
   gl_api_->glCompileShaderFn(shader);
-}
-
-void TraceGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
-                                                   GLuint destId) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glCompressedCopyTextureCHROMIUM")
-  gl_api_->glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
 void TraceGLApi::glCompressedTexImage2DFn(GLenum target,
@@ -7836,6 +7825,12 @@ void TraceGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
+void TraceGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glMaxShaderCompilerThreadsKHR")
+  gl_api_->glMaxShaderCompilerThreadsKHRFn(count);
+}
+
 void TraceGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMemoryBarrierByRegion")
   gl_api_->glMemoryBarrierByRegionFn(barriers);
@@ -9636,13 +9631,6 @@ void DebugGLApi::glCompileShaderFn(GLuint shader) {
   GL_SERVICE_LOG("glCompileShader"
                  << "(" << shader << ")");
   gl_api_->glCompileShaderFn(shader);
-}
-
-void DebugGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
-                                                   GLuint destId) {
-  GL_SERVICE_LOG("glCompressedCopyTextureCHROMIUM"
-                 << "(" << sourceId << ", " << destId << ")");
-  gl_api_->glCompressedCopyTextureCHROMIUMFn(sourceId, destId);
 }
 
 void DebugGLApi::glCompressedTexImage2DFn(GLenum target,
@@ -12094,6 +12082,12 @@ void DebugGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
+void DebugGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  GL_SERVICE_LOG("glMaxShaderCompilerThreadsKHR"
+                 << "(" << count << ")");
+  gl_api_->glMaxShaderCompilerThreadsKHRFn(count);
+}
+
 void DebugGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
   GL_SERVICE_LOG("glMemoryBarrierByRegion"
                  << "(" << barriers << ")");
@@ -14209,11 +14203,6 @@ void NoContextGLApi::glCompileShaderFn(GLuint shader) {
   NoContextHelper("glCompileShader");
 }
 
-void NoContextGLApi::glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
-                                                       GLuint destId) {
-  NoContextHelper("glCompressedCopyTextureCHROMIUM");
-}
-
 void NoContextGLApi::glCompressedTexImage2DFn(GLenum target,
                                               GLint level,
                                               GLenum internalformat,
@@ -15738,6 +15727,10 @@ void NoContextGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 
 void NoContextGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   NoContextHelper("glMatrixLoadIdentityEXT");
+}
+
+void NoContextGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  NoContextHelper("glMaxShaderCompilerThreadsKHR");
 }
 
 void NoContextGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {

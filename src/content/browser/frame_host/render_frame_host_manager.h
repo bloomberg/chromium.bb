@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -34,12 +33,10 @@ class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationRequest;
 class NavigatorTestWithBrowserSideNavigation;
-class RenderFrameHostDelegate;
 class RenderFrameHostManagerTest;
 class RenderFrameProxyHost;
 class RenderViewHost;
 class RenderViewHostImpl;
-class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
@@ -176,17 +173,11 @@ class CONTENT_EXPORT RenderFrameHostManager
     virtual ~Delegate() {}
   };
 
-  // All three delegate pointers must be non-NULL and are not owned by this
-  // class. They must outlive this class. The RenderViewHostDelegate and
-  // RenderWidgetHostDelegate are what will be installed into all
-  // RenderViewHosts that are created.
+  // The delegate pointer must be non-NULL and is not owned by this class. It
+  // must outlive this class.
   //
   // You must call Init() before using this class.
-  RenderFrameHostManager(
-      FrameTreeNode* frame_tree_node,
-      RenderFrameHostDelegate* render_frame_delegate,
-      RenderWidgetHostDelegate* render_widget_delegate,
-      Delegate* delegate);
+  RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate);
   ~RenderFrameHostManager();
 
   // For arguments, see WebContentsImpl constructor.
@@ -504,8 +495,6 @@ class CONTENT_EXPORT RenderFrameHostManager
     UNRELATED,
     // A SiteInstance in the same browsing instance as the current.
     RELATED,
-    // The default subframe SiteInstance for the current browsing instance.
-    RELATED_DEFAULT_SUBFRAME,
   };
 
   // Stores information regarding a SiteInstance targeted at a specific URL to
@@ -746,11 +735,6 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Our delegate, not owned by us. Guaranteed non-NULL.
   Delegate* delegate_;
-
-  // Implemented by the owner of this class.  These delegates are installed into
-  // all the RenderFrameHosts that we create.
-  RenderFrameHostDelegate* render_frame_delegate_;
-  RenderWidgetHostDelegate* render_widget_delegate_;
 
   // Our RenderFrameHost which is responsible for all communication with a child
   // RenderFrame instance.

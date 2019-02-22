@@ -4,12 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -35,10 +37,9 @@ static const float kFrameRateToRequest = 15.0f;
 class MockVideoCaptureControllerEventHandler
     : public VideoCaptureControllerEventHandler {
  public:
-  MOCK_METHOD4(DoOnNewBuffer,
+  MOCK_METHOD3(DoOnNewBuffer,
                void(VideoCaptureControllerID id,
                     media::mojom::VideoBufferHandlePtr* buffer_handle,
-                    int length,
                     int buffer_id));
   MOCK_METHOD2(OnBufferDestroyed,
                void(VideoCaptureControllerID, int buffer_id));
@@ -55,9 +56,8 @@ class MockVideoCaptureControllerEventHandler
 
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
-                   int length,
                    int buffer_id) override {
-    DoOnNewBuffer(id, &buffer_handle, length, buffer_id);
+    DoOnNewBuffer(id, &buffer_handle, buffer_id);
   }
 };
 
@@ -243,8 +243,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
       base::Bind(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
                  base::Unretained(this),
                  std::move(quit_run_loop_on_current_thread_cb), true);
-  BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
           base::Unretained(this), std::move(after_start_continuation)));
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
           must_wait_for_gpu_decode_to_start = false;
         }));
   }
-  EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _, _))
+  EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _))
       .Times(AtLeast(1));
   EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _, _))
       .WillRepeatedly(Invoke(
@@ -330,8 +330,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
           }));
 
   base::Closure do_nothing;
-  BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
           base::Unretained(this), std::move(do_nothing)));

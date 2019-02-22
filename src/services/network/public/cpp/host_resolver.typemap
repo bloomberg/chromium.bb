@@ -12,4 +12,7 @@ sources = [
 public_deps = [
   "//net",
 ]
-type_mappings = [ "network.mojom.ResolveHostParameters.DnsQueryType=net::HostResolver::DnsQueryType" ]
+type_mappings = [
+  "network.mojom.ResolveHostParameters.DnsQueryType=net::HostResolver::DnsQueryType",
+  "network.mojom.ResolveHostParameters.Source=net::HostResolverSource",
+]

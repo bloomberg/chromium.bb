@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_animation_type.h"
@@ -18,8 +19,8 @@
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -131,6 +132,7 @@ std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
       /*border_thickness=*/0, kBackdropRoundingDp, kBackdropColor,
       /*initial_opacity=*/1.f, parent,
       /*stack_on_top=*/false);
+  widget->GetNativeWindow()->SetName("OverviewBackdrop");
   return widget;
 }
 
@@ -154,7 +156,7 @@ class ShieldButton : public views::Button {
 
   // views::Button:
   bool OnMousePressed(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandlePressEvent(location);
@@ -164,7 +166,7 @@ class ShieldButton : public views::Button {
   }
 
   void OnMouseReleased(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandleReleaseEvent(location);
@@ -174,7 +176,7 @@ class ShieldButton : public views::Button {
   }
 
   bool OnMouseDragged(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandleDragEvent(location);
@@ -184,7 +186,12 @@ class ShieldButton : public views::Button {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (IsSlidingOutOverviewFromShelf()) {
+      event->SetHandled();
+      return;
+    }
+
+    if (listener()) {
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(this, &location);
       switch (event->type()) {
@@ -312,38 +319,44 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
         close_button_(close_button) {
     AddChildView(listener_button_);
 
-    // Helper function to add a child view to a parent view and make it paint to
-    // layer.
-    auto add_child_with_layer = [](views::View* parent, views::View* child) {
-      child->SetPaintToLayer();
-      child->layer()->SetFillsBoundsOpaquely(false);
-      parent->AddChildView(child);
-    };
-
     header_view_ = new views::View();
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kHorizontal, gfx::Insets(),
             kHorizontalLabelPaddingDp));
     if (image_view_)
-      add_child_with_layer(header_view_, image_view_);
-    add_child_with_layer(header_view_, title_label_);
-    add_child_with_layer(header_view_, close_button_);
-    add_child_with_layer(this, header_view_);
+      header_view_->AddChildView(image_view_);
+    header_view_->AddChildView(title_label_);
+    AddChildWithLayer(header_view_, close_button_);
+    AddChildWithLayer(this, header_view_);
     layout->SetFlexForView(title_label_, 1);
+  }
 
-    // Use |cannot_snap_container_| to specify the padding surrounding
-    // |cannot_snap_label_| and to give the label rounded corners.
-    cannot_snap_container_ = new RoundedRectView(
-        kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
-    cannot_snap_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
-        gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                    kSplitviewLabelHorizontalInsetDp)));
-    cannot_snap_container_->AddChildView(cannot_snap_label_);
-    cannot_snap_container_->set_can_process_events_within_subtree(false);
-    add_child_with_layer(this, cannot_snap_container_);
-    cannot_snap_container_->layer()->SetOpacity(0.f);
+  ~CaptionContainerView() override {
+    // If the cannot snap container was never created, delete cannot_snap_label_
+    // manually.
+    if (!cannot_snap_container_)
+      delete cannot_snap_label_;
+  }
+
+  RoundedRectView* GetCannotSnapContainer() {
+    if (!cannot_snap_container_) {
+      // Use |cannot_snap_container_| to specify the padding surrounding
+      // |cannot_snap_label_| and to give the label rounded corners.
+      cannot_snap_container_ = new RoundedRectView(
+          kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
+      cannot_snap_container_->SetLayoutManager(
+          std::make_unique<views::BoxLayout>(
+              views::BoxLayout::kVertical,
+              gfx::Insets(kSplitviewLabelVerticalInsetDp,
+                          kSplitviewLabelHorizontalInsetDp)));
+      cannot_snap_container_->AddChildView(cannot_snap_label_);
+      cannot_snap_container_->set_can_process_events_within_subtree(false);
+      AddChildWithLayer(this, cannot_snap_container_);
+      cannot_snap_container_->layer()->SetOpacity(0.f);
+      Layout();
+    }
+    return cannot_snap_container_;
   }
 
   ShieldButton* listener_button() { return listener_button_; }
@@ -366,8 +379,11 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   }
 
   void SetCannotSnapLabelVisibility(bool visible) {
+    if (!cannot_snap_container_ && !visible)
+      return;
+
     DoSplitviewOpacityAnimation(
-        cannot_snap_container_->layer(),
+        GetCannotSnapContainer()->layer(),
         visible ? SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN
                 : SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT);
   }
@@ -395,12 +411,14 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     backdrop_bounds_ = bounds;
     backdrop_bounds_.Inset(0, visible_height, 0, 0);
 
-    // Position the cannot snap label in the middle of the item, minus the
-    // title.
-    gfx::Rect cannot_snap_bounds = GetLocalBounds();
-    cannot_snap_bounds.Inset(0, visible_height, 0, 0);
-    cannot_snap_bounds.ClampToCenteredSize(label_size);
-    cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
+    if (cannot_snap_container_) {
+      // Position the cannot snap label in the middle of the item, minus the
+      // title.
+      gfx::Rect cannot_snap_bounds = GetLocalBounds();
+      cannot_snap_bounds.Inset(0, visible_height, 0, 0);
+      cannot_snap_bounds.ClampToCenteredSize(label_size);
+      cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
+    }
 
     // Position the header at the top. The left should be indented to match
     // the transformed window, but not the right because the close button hit
@@ -442,11 +460,19 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     }
   }
 
+  // Helper function to add a child view to a parent view and make it paint to
+  // layer.
+  static void AddChildWithLayer(views::View* parent, views::View* child) {
+    child->SetPaintToLayer();
+    child->layer()->SetFillsBoundsOpaquely(false);
+    parent->AddChildView(child);
+  };
+
   ShieldButton* listener_button_;
   views::ImageView* image_view_;
   views::Label* title_label_;
   views::Label* cannot_snap_label_;
-  RoundedRectView* cannot_snap_container_;
+  RoundedRectView* cannot_snap_container_ = nullptr;
   views::ImageButton* close_button_;
   // View which contains the icon, title and close button.
   views::View* header_view_ = nullptr;
@@ -465,10 +491,6 @@ WindowSelectorItem::WindowSelectorItem(aura::Window* window,
       window_grid_(window_grid) {
   CreateWindowLabel(window->GetTitle());
   GetWindow()->AddObserver(this);
-  if (GetWindowDimensionsType() !=
-      ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
-    backdrop_widget_ = CreateBackdropWidget(window->parent());
-  }
   GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
@@ -498,8 +520,10 @@ bool WindowSelectorItem::Contains(const aura::Window* target) const {
 void WindowSelectorItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
-  transform_window_.RestoreWindow(reset_transform,
-                                  window_selector_->use_slide_animation());
+  transform_window_.RestoreWindow(
+      reset_transform,
+      window_selector_->enter_exit_overview_type() ==
+          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -523,14 +547,19 @@ void WindowSelectorItem::Shutdown() {
                                                transform_window_.window());
     }
   }
-  // Fade out the item widget. This animation continues past the lifetime
-  // of |this|.
-  const bool slide = window_selector_->use_slide_animation();
-  FadeOutWidgetAndMaybeSlideOnExit(
-      std::move(item_widget_),
-      slide ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
-            : OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
-      slide);
+
+  // On swiping from the shelf, the caller handles the animation via calls to
+  // UpdateYAndOpacity, so do not additional fade out or slide animation to the
+  // window.
+  if (window_selector_->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+    return;
+  }
+
+  // Close the item widget without animation to reduce the load during exit
+  // animation.
+  ScopedAnimationDisabler(item_widget_->GetNativeWindow());
+  item_widget_.reset();
 }
 
 void WindowSelectorItem::PrepareForOverview() {
@@ -542,27 +571,53 @@ void WindowSelectorItem::PrepareForOverview() {
 void WindowSelectorItem::SlideWindowIn() {
   // |transform_window_|'s |minimized_widget| is non null because this only gets
   // called if we see the home launcher on enter (all windows are minimized).
-  DCHECK(item_widget_);
   DCHECK(transform_window_.minimized_widget());
-
-  FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
-                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
-                                   /*slide=*/true);
+  // The |item_widget_| will be shown when animation ends.
   FadeInWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true);
 }
 
+void WindowSelectorItem::UpdateYPositionAndOpacity(
+    int new_grid_y,
+    float opacity,
+    WindowSelector::UpdateAnimationSettingsCallback callback) {
+  // Animate the window selector widget and the window itself.
+  // TODO(sammiequon): Investigate if we can combine with
+  // FadeInWidgetAndMaybeSlideOnEnter and animate the transient children too.
+  // Also when animating we should remove shadow and rounded corners.
+  std::vector<ui::Layer*> animation_layers = {
+      GetWindowForStacking()->layer(),
+      item_widget_->GetNativeWindow()->layer()};
+  for (auto* layer : animation_layers) {
+    layer->GetAnimator()->StopAnimating();
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (!callback.is_null()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          layer->GetAnimator());
+      callback.Run(settings.get(), /*observe=*/false);
+    }
+    layer->SetOpacity(opacity);
+
+    // Alter the y-translation. Offset by the window location relative to the
+    // grid.
+    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin;
+    gfx::Transform transform = layer->transform();
+    transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
+    layer->SetTransform(transform);
+  }
+}
+
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
   gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedTransformOverviewWindow::GetItemScale(
-      transform_window_.GetTargetBoundsInScreen().size(), inset_size,
+      GetTargetBoundsInScreen().size(), inset_size,
       transform_window_.GetTopInset(),
       close_button_->GetPreferredSize().height());
 }
 
 gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
-  return transform_window_.GetTargetBoundsInScreen();
+  return ::ash::GetTargetBoundsInScreen(transform_window_.GetOverviewWindow());
 }
 
 gfx::Rect WindowSelectorItem::GetTransformedBounds() const {
@@ -574,9 +629,9 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   if (in_bounds_update_)
     return;
 
-  // Do not animate if the resulting bounds does not change. The original window
-  // may change bounds so we still need to call SetItemBounds to update the
-  // window transform.
+  // Do not animate if the resulting bounds does not change. The original
+  // window may change bounds so we still need to call SetItemBounds to update
+  // the window transform.
   OverviewAnimationType new_animation_type = animation_type;
   if (target_bounds == target_bounds_)
     new_animation_type = OVERVIEW_ANIMATION_NONE;
@@ -592,8 +647,14 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
   gfx::Rect inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
-  if (wm::GetWindowState(GetWindow())->IsMinimized())
+
+  // Do not animate if entering when the window is minimized, as it will be
+  // faded in. We still want to animate if the position is changed after
+  // entering.
+  if (wm::GetWindowState(GetWindow())->IsMinimized() &&
+      mode == HeaderFadeInMode::kFirstUpdate) {
     new_animation_type = OVERVIEW_ANIMATION_NONE;
+  }
 
   SetItemBounds(inset_bounds, new_animation_type);
 
@@ -604,10 +665,12 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
-  // and UpdateHeaderLayout.
+  // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
     SetShadowBounds(
-        base::make_optional(transform_window_.GetTransformedBounds()));
+        window_grid_->IsDropTargetWindow(GetWindow())
+            ? base::nullopt
+            : base::make_optional(transform_window_.GetTransformedBounds()));
   }
 
   UpdateBackdropBounds();
@@ -667,9 +730,9 @@ void WindowSelectorItem::OnMinimizedStateChanged() {
 
 void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
   // Windows which can snap will never show this warning. Or if the window is
-  // the new selector item window, also do not show this warning.
+  // the drop target window, also do not show this warning.
   if (Shell::Get()->split_view_controller()->CanSnap(GetWindow()) ||
-      window_grid_->IsNewSelectorItemWindow(GetWindow())) {
+      window_grid_->IsDropTargetWindow(GetWindow())) {
     caption_container_view_->SetCannotSnapLabelVisibility(false);
     return;
   }
@@ -699,6 +762,7 @@ WindowSelectorItem::GetWindowDimensionsType() const {
 }
 
 void WindowSelectorItem::UpdateWindowDimensionsType() {
+  // TODO(oshima|sammiequan|xdai): Use EnableBackdropIfNeeded.
   transform_window_.UpdateWindowDimensionsType();
   if (GetWindowDimensionsType() ==
       ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
@@ -720,7 +784,10 @@ void WindowSelectorItem::EnableBackdropIfNeeded() {
     DisableBackdrop();
     return;
   }
-
+  if (!backdrop_widget_) {
+    backdrop_widget_ =
+        CreateBackdropWidget(transform_window_.window()->parent());
+  }
   UpdateBackdropBounds();
 }
 
@@ -768,6 +835,9 @@ void WindowSelectorItem::RestackItemWidget() {
 
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
+  if (IsSlidingOutOverviewFromShelf())
+    return;
+
   if (sender == close_button_) {
     base::RecordAction(
         base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
@@ -780,6 +850,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
     CloseWindow();
     return;
   }
+
   CHECK(sender == caption_container_view_->listener_button());
 
   // For other cases, the event is handled in OverviewWindowDragController.
@@ -841,6 +912,9 @@ void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
 
 void WindowSelectorItem::HandleLongPressEvent(
     const gfx::Point& location_in_screen) {
+  if (!SplitViewController::ShouldAllowSplitView())
+    return;
+
   window_selector_->StartSplitViewDragMode(location_in_screen);
 }
 
@@ -918,7 +992,6 @@ void WindowSelectorItem::OnDragAnimationCompleted() {
 
 void WindowSelectorItem::SetShadowBounds(
     base::Optional<gfx::Rect> bounds_in_screen) {
-
   // Shadow is normally turned off during animations and reapplied when they
   // are finished. On destruction, |shadow_| is cleaned up before
   // |transform_window_|, which may call this function, so early exit if
@@ -939,6 +1012,28 @@ void WindowSelectorItem::SetShadowBounds(
   bounds_in_item.ClampToCenteredSize(bounds_in_screen.value().size());
 
   shadow_->SetContentBounds(bounds_in_item);
+}
+
+void WindowSelectorItem::UpdateMaskAndShadow(bool show) {
+  transform_window_.UpdateMask(show);
+
+  // Do not apply the shadow for the drop target in overview.
+  if (!show || window_grid_->IsDropTargetWindow(GetWindow())) {
+    SetShadowBounds(base::nullopt);
+    DisableBackdrop();
+    return;
+  }
+
+  SetShadowBounds(transform_window_.GetTransformedBounds());
+  EnableBackdropIfNeeded();
+}
+
+void WindowSelectorItem::OnStartingAnimationComplete() {
+  DCHECK(item_widget_.get());
+  FadeInWidgetAndMaybeSlideOnEnter(
+      item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      /*slide=*/false);
+  EnableBackdropIfNeeded();
 }
 
 void WindowSelectorItem::SetOpacity(float opacity) {
@@ -978,8 +1073,9 @@ gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
                                        OverviewAnimationType animation_type) {
-  DCHECK(root_window_ == GetWindow()->GetRootWindow());
-  gfx::Rect screen_rect = transform_window_.GetTargetBoundsInScreen();
+  aura::Window* window = GetWindow();
+  DCHECK(root_window_ == window->GetRootWindow());
+  gfx::Rect screen_rect = GetTargetBoundsInScreen();
 
   // Avoid division by zero by ensuring screen bounds is not empty.
   gfx::Size screen_size(screen_rect.size());
@@ -991,11 +1087,18 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   gfx::Rect selector_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, title_height);
+  // Do not set transform for drop target, set bounds instead.
+  if (window_grid_->IsDropTargetWindow(window)) {
+    window->layer()->SetBounds(selector_item_bounds);
+    transform_window_.GetOverviewWindow()->SetTransform(gfx::Transform());
+    return;
+  }
+
   gfx::Transform transform = ScopedTransformOverviewWindow::GetTransformForRect(
       screen_rect, selector_item_bounds);
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  transform_window_.SetTransform(root_window_, transform);
+  SetTransform(transform_window_.GetOverviewWindow(), transform);
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
@@ -1054,14 +1157,10 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   caption_container_view_ = new CaptionContainerView(
       this, image_view, label_view_, cannot_snap_label_view_, close_button_);
   UpdateCannotSnapWarningVisibility();
-
   item_widget_->SetContentsView(caption_container_view_);
   item_widget_->Show();
   item_widget_->SetOpacity(0);
   item_widget_->GetLayer()->SetMasksToBounds(false);
-  FadeInWidgetAndMaybeSlideOnEnter(
-      item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-      /*slide=*/false);
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
@@ -1087,6 +1186,16 @@ void WindowSelectorItem::UpdateHeaderLayout(
       mode == HeaderFadeInMode::kFirstUpdate ? OVERVIEW_ANIMATION_NONE
                                              : animation_type,
       widget_window);
+
+  // Create a start animation observer if this is an enter overview layout
+  // animation.
+  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER) {
+    auto start_observer = std::make_unique<StartAnimationObserver>();
+    animation_settings.AddObserver(start_observer.get());
+    Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
+        std::move(start_observer));
+  }
+
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
@@ -1130,9 +1239,9 @@ void WindowSelectorItem::StartDrag() {
   window_grid_->SetSelectionWidgetVisibility(false);
 
   // |transform_window_| handles hiding shadow and rounded edges mask while
-  // animating, and applies them after animation is complete. Prevent the shadow
-  // and rounded edges mask from showing up after dragging in the case the
-  // window is pressed while still animating.
+  // animating, and applies them after animation is complete. Prevent the
+  // shadow and rounded edges mask from showing up after dragging in the case
+  // the window is pressed while still animating.
   transform_window_.CancelAnimationsListener();
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();

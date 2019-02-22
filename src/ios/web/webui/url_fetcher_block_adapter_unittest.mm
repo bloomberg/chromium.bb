@@ -8,12 +8,12 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -46,11 +46,16 @@ TEST_F(URLFetcherBlockAdapterTest, FetchTextResource) {
       ^(NSData* data, web::URLFetcherBlockAdapter* fetcher) {
         EXPECT_NSEQ(expected_data, data);
       };
-  web::URLFetcherBlockAdapter web_ui_fetcher(test_url, nil, completion_handler);
-  net::FakeURLFetcher fake_fetcher(test_url, &web_ui_fetcher, response,
-                                   net::HTTP_OK,
-                                   net::URLRequestStatus::SUCCESS);
-  fake_fetcher.Start();
+
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
+  web::URLFetcherBlockAdapter web_ui_fetcher(
+      test_url, test_shared_url_loader_factory, completion_handler);
+  web_ui_fetcher.Start();
+  test_url_loader_factory.AddResponse(test_url.spec(), response);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -67,13 +72,18 @@ TEST_F(URLFetcherBlockAdapterTest, FetchPNGResource) {
       ^(NSData* data, URLFetcherBlockAdapter* fetcher) {
         EXPECT_NSEQ(expected_data, data);
       };
-  web::URLFetcherBlockAdapter web_ui_fetcher(test_url, nil, completion_handler);
+
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
+  web::URLFetcherBlockAdapter web_ui_fetcher(
+      test_url, test_shared_url_loader_factory, completion_handler);
   std::string response;
   EXPECT_TRUE(ReadFileToString(favicon_path, &response));
-  net::FakeURLFetcher fake_fetcher(test_url, &web_ui_fetcher, response,
-                                   net::HTTP_OK,
-                                   net::URLRequestStatus::SUCCESS);
-  fake_fetcher.Start();
+  web_ui_fetcher.Start();
+  test_url_loader_factory.AddResponse(test_url.spec(), response);
   base::RunLoop().RunUntilIdle();
 }
 

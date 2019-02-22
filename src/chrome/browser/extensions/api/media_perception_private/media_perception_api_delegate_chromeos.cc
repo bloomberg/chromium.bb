@@ -11,7 +11,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/delegate_to_browser_gpu_service_accelerator_factory.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -78,6 +81,28 @@ void MediaPerceptionAPIDelegateChromeOS::
   if (!connector)
     return;
   connector->BindInterface(video_capture::mojom::kServiceName, provider);
+
+  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
+  mojo::MakeStrongBinding(
+      std::make_unique<
+          content::DelegateToBrowserGpuServiceAcceleratorFactory>(),
+      mojo::MakeRequest(&accelerator_factory));
+  (*provider)->InjectGpuDependencies(std::move(accelerator_factory));
+}
+
+void MediaPerceptionAPIDelegateChromeOS::SetMediaPerceptionRequestHandler(
+    MediaPerceptionRequestHandler handler) {
+  handler_ = std::move(handler);
+}
+
+void MediaPerceptionAPIDelegateChromeOS::ForwardMediaPerceptionRequest(
+    chromeos::media_perception::mojom::MediaPerceptionRequest request,
+    content::RenderFrameHost* render_frame_host) {
+  if (!handler_) {
+    DLOG(ERROR) << "Got request but the handler is not set.";
+    return;
+  }
+  handler_.Run(std::move(request));
 }
 
 }  // namespace extensions

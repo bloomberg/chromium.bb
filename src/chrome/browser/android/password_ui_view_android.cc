@@ -63,7 +63,7 @@ Profile* PasswordUIViewAndroid::GetProfile() {
   return ProfileManager::GetLastUsedProfile();
 }
 
-void PasswordUIViewAndroid::ShowPassword(size_t index,
+void PasswordUIViewAndroid::ShowPassword(const std::string& sort_key,
                                          const base::string16& password_value) {
   NOTIMPLEMENTED();
 }

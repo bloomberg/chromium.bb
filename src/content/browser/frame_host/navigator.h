@@ -52,13 +52,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
 
   // Notifications coming from the RenderFrameHosts ----------------------------
 
-  // The RenderFrameHostImpl started a provisional load.
-  virtual void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const base::TimeTicks& navigation_start) {}
-
   // The RenderFrameHostImpl has failed a provisional load.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
@@ -151,7 +144,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const CommonNavigationParams& common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client);
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      blink::mojom::NavigationInitiatorPtr navigation_initiator);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.

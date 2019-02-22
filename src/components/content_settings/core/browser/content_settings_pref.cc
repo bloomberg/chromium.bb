@@ -321,12 +321,13 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
   }
 
   if (content_type_ == CONTENT_SETTINGS_TYPE_COOKIES) {
-    UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfBlockCookiesExceptions",
-                         cookies_block_exception_count);
-    UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfAllowCookiesExceptions",
-                         cookies_allow_exception_count);
-    UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfSessionOnlyCookiesExceptions",
-                         cookies_session_only_exception_count);
+    UMA_HISTOGRAM_COUNTS_1M("ContentSettings.NumberOfBlockCookiesExceptions",
+                            cookies_block_exception_count);
+    UMA_HISTOGRAM_COUNTS_1M("ContentSettings.NumberOfAllowCookiesExceptions",
+                            cookies_allow_exception_count);
+    UMA_HISTOGRAM_COUNTS_1M(
+        "ContentSettings.NumberOfSessionOnlyCookiesExceptions",
+        cookies_session_only_exception_count);
   }
 }
 

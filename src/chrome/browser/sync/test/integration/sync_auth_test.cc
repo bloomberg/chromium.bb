@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, FailInitialSetupWithPersistentError) {
                          net::HTTP_BAD_REQUEST,
                          net::URLRequestStatus::SUCCESS);
   ASSERT_FALSE(GetClient(0)->SetupSync());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetSyncService(0)->GetAuthError().state());
 }
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryInitialSetupWithTransientError) {
                          net::HTTP_INTERNAL_SERVER_ERROR,
                          net::URLRequestStatus::SUCCESS);
   ASSERT_FALSE(GetClient(0)->SetupSync());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
   ASSERT_TRUE(GetSyncService(0)->IsRetryingAccessTokenFetchForTest());
 }
 

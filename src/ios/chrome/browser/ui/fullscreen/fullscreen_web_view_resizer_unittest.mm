@@ -59,7 +59,6 @@ class FullscreenWebViewResizerTest : public PlatformTest {
 
 // Tests that updating the resizer works as expected.
 TEST_F(FullscreenWebViewResizerTest, UpdateWebState) {
-  // Test.
   ASSERT_EQ(1, _model.progress());
   FullscreenWebViewResizer* resizer =
       [[FullscreenWebViewResizer alloc] initWithModel:&_model];
@@ -74,9 +73,25 @@ TEST_F(FullscreenWebViewResizerTest, UpdateWebState) {
   // Scroll the view then update the resizer.
   _model.SetYContentOffset(50);
   ASSERT_EQ(0, _model.progress());
-  [resizer updateForFullscreenProgress:0];
+  [resizer updateForCurrentState];
   CGRect smallInsetFrame = CGRectMake(0, kTopToolbarCollapsedHeight, kViewWidth,
                                       kViewHeight - kTopToolbarCollapsedHeight);
+  EXPECT_TRUE(CGRectEqualToRect(smallInsetFrame, _webStateView.frame));
+}
+
+// Tests that it is possible to force the update the of the Resizer to a value
+// differente from the model's one.
+TEST_F(FullscreenWebViewResizerTest, ForceUpdateWebState) {
+  FullscreenWebViewResizer* resizer =
+      [[FullscreenWebViewResizer alloc] initWithModel:&_model];
+  resizer.webState = &_webState;
+
+  ASSERT_EQ(1, _model.progress());
+
+  // The frame should be updated when setting the WebState.
+  CGRect smallInsetFrame = CGRectMake(0, kTopToolbarCollapsedHeight, kViewWidth,
+                                      kViewHeight - kTopToolbarCollapsedHeight);
+  [resizer forceToUpdateToProgress:0];
   EXPECT_TRUE(CGRectEqualToRect(smallInsetFrame, _webStateView.frame));
 }
 
@@ -90,22 +105,20 @@ TEST_F(FullscreenWebViewResizerTest, WebStateNoSuperview) {
   web::TestWebState webState;
   webState.SetView(webStateView);
 
-  // Test.
   FullscreenWebViewResizer* resizer =
       [[FullscreenWebViewResizer alloc] initWithModel:&_model];
   resizer.webState = &webState;
 
   EXPECT_TRUE(CGRectEqualToRect(webViewFrame, webStateView.frame));
 
-  [resizer updateForFullscreenProgress:1];
+  [resizer updateForCurrentState];
   EXPECT_TRUE(CGRectEqualToRect(webViewFrame, webStateView.frame));
 }
 
 // Tests that nothing happen (no crash) if there is no web state.
 TEST_F(FullscreenWebViewResizerTest, NoWebState) {
-  // Test.
   FullscreenWebViewResizer* resizer =
       [[FullscreenWebViewResizer alloc] initWithModel:&_model];
 
-  [resizer updateForFullscreenProgress:1];
+  [resizer updateForCurrentState];
 }

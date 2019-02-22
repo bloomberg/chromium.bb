@@ -14,7 +14,7 @@
 <translation id="1510238584712386396">લૉન્ચર</translation>
 <translation id="152892567002884378">વૉલ્યૂમ વધારો</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="ESC" /></translation>
-<translation id="1652741121070700329">પાછળના શબ્દની શરૂઆત પર જાઓ</translation>
+<translation id="1652741121070700329">પાછલા શબ્દની શરૂઆત પર જાઓ</translation>
 <translation id="1671169355475348905">પાછલી ભાષાની ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="1679841710523778799">બ્રાઇટનેસ વધારો</translation>
 <translation id="168356808214100546"><ph name="ALT" />ને દબાવી રાખો, તમે જે વિંડોને ખોલવા માગો છો તે ખુલી જાય ત્યાં સુધી <ph name="TAB" />ને ટૅપ કરો, પછી રિલીઝ કરો.</translation>
@@ -30,7 +30,7 @@
 <translation id="2145908266289632567">ટેક્સ્ટમાં ફેરફાર કરવો</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 થી =</translation>
 <translation id="2181097965834437145">બુકમાર્ક બાર બતાવો અથવા છુપાવો</translation>
-<translation id="2185166372312820725">પાછળના ટૅબ પર જાઓ</translation>
+<translation id="2185166372312820725">પાછલી ટૅબ પર જાઓ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="2382644247745281995">વર્તમાન કીબોર્ડ લેઆઉટ સાથે સમર્થિત નથી</translation>
 <translation id="2397416548179033562">Chrome મેનૂ દર્શાવો</translation>
@@ -39,7 +39,7 @@
 <translation id="2454251766545114447">ડિસ્પ્લે ઝૂમ ઘટાડો</translation>
 <translation id="2478303094958140141">ChromeVox (બોલાયેલ પ્રતિસાદ) ચાલુ અથવા બંધ કરો</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="2530339807289914946">વેબપેજને નીચે સ્ક્રોલ કરો</translation>
+<translation id="2530339807289914946">વેબપેજમાં નીચે સ્ક્રોલ કરો</translation>
 <translation id="2574014812750545982">પેજ પર ઝૂમ લેવલ રીસેટ કરો</translation>
 <translation id="2596078834055697711">વિંડો સ્ક્રીનશૉટ લો</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="TAB" /> અથવા <ph name="RIGHT" /></translation>
@@ -74,7 +74,7 @@
 <translation id="3710784500737332588">સહાયતા કેન્દ્ર ખોલો</translation>
 <translation id="3720939646656082033">લિંકને નવા ટૅબમાં ખોલો અને નવા ટૅબ પર સ્વિચ કરો</translation>
 <translation id="3725795051337497754">વર્તમાન ટૅબ બંધ કરો</translation>
-<translation id="3751033133896282964">તમારી છેલ્લી ક્રિયા રદ કરો</translation>
+<translation id="3751033133896282964">તમારી છેલ્લી ક્રિયામાં કરેલો ફેરફાર રદ કરો</translation>
 <translation id="3792178297143798024">તમારા શેલ્ફ પરની હાઇલાઇટ કરેલી આઇટમ ખોલો</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 થી 8</translation>
 <translation id="3837047332182291558">કીબોર્ડને બ્રાઇટ બનાવો (માત્ર બૅકલિટ કીબોર્ડ માટે)</translation>
@@ -91,11 +91,11 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> અથવા <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ઝલક મોડ</translation>
 <translation id="4382340674111381977">પાછળનાં પેજ પર જાઓ</translation>
-<translation id="4472417192667361414">સિસ્ટમ અને ડિસ્પ્લેની સેટિંગ</translation>
+<translation id="4472417192667361414">સિસ્ટમ અને ડિસ્પ્લેનું સેટિંગ</translation>
 <translation id="4556221320735744018">કીબોર્ડ શૉર્ટકટ સહાયક જુઓ</translation>
-<translation id="4628718545549558538">સ્ટેટસ એરિયા ખોલો (જ્યાં તમારું એકાઉન્ટનું ચિત્ર દેખાય છે ત્યાં ક્લિક કરો)</translation>
+<translation id="4628718545549558538">સ્ટેટસ એરિયા ખોલો (જ્યાં તમારું એકાઉન્ટનું ફોટો દેખાય છે ત્યાં ક્લિક કરો)</translation>
 <translation id="4642092649622328492">આંશિક સ્ક્રીનશૉટ લો</translation>
-<translation id="4698850295812410683">સ્ટાઇલસના સાધનો બતાવો</translation>
+<translation id="4698850295812410683">સ્ટાઇલસનાં સાધનો બતાવો</translation>
 <translation id="4801989101741319327">આગલા શબ્દના અંતે જાઓ</translation>
 <translation id="4916163929714267752">લિંકને નવી વિંડોમાં ખોલો</translation>
 <translation id="5030659775136592441">બુકમાર્ક મેનેજર બતાવો</translation>
@@ -134,7 +134,7 @@
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> અથવા <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">તમારા શેલ્ફ પરના 1-8 આઇકન પર ક્લિક કરો</translation>
 <translation id="6435207348963613811">તમારા શેલ્ફ પરની પાછલી આઇટમને હાઇલાઇટ કરો</translation>
-<translation id="6445033640292336367">ટૅબને તેની ઑરિજિનલ સ્થિતિમાં પાછું લાવો</translation>
+<translation id="6445033640292336367">ટૅબને તેની ઑરિજિનલ સ્થિતિમાં પાછી લાવો</translation>
 <translation id="6474744297082284761">ઝૂમ ઘટાડો (ડૉક કરેલ હોય અથવા પૂર્ણ-સ્ક્રીન મૅગ્નિફાયર ચાલુ કરેલું હોય ત્યારે)</translation>
 <translation id="649811797655257835">ફાઇલ પસંદ કરો, પછી <ph name="SPACE" /> દબાવો</translation>
 <translation id="6556040137485212400">સૌથી લાંબા સમયથી ઉપયોગમાં ન લેવાઈ હોય તે વિંડો ખોલો</translation>
@@ -144,7 +144,7 @@
 <translation id="6690765639083431875">ડાબી બાજુની વિંડોને ડૉક કરો</translation>
 <translation id="6692847073476874842">Files ઍપમાં ફાઇલનું પ્રીવ્યૂ કરો</translation>
 <translation id="671928215901716392">સ્ક્રીન લૉક કરો</translation>
-<translation id="6727005317916125192">પહેલાંની પેન</translation>
+<translation id="6727005317916125192">પાછલી પેન</translation>
 <translation id="6740781404993465795">આગલો શબ્દ અથવા અક્ષર પસંદ કરો</translation>
 <translation id="6760706756348334449">વૉલ્યૂમ ઘટાડો</translation>
 <translation id="6941333068993625698">પ્રતિસાદ સબમિટ કરો</translation>
@@ -168,7 +168,7 @@
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="8130528849632411619">દસ્તાવેજની શરૂઆત પર જાઓ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> અથવા <ph name="E" /></translation>
-<translation id="8232835244134740473">આની વચ્ચે ફોકસ સ્વિચ કરો: સ્ટેટસ એરિયા (જ્યાં તમારા એકાઉન્ટનું ચિત્ર દેખાય છે), લૉન્ચર, ઍડ્રેસ બાર, બુકમાર્ક બાર (જો દૃશ્યક્ષમ હોય, તો), ખુલ્લું છે તે વેબપેજ અને ડાઉનલોડ બાર (જો દૃશ્યક્ષમ હોય, તો).</translation>
+<translation id="8232835244134740473">આની વચ્ચે ફોકસ સ્વિચ કરો: સ્ટેટસ એરિયા (જ્યાં તમારા એકાઉન્ટનો ફોટો દેખાય છે), લૉન્ચર, ઍડ્રેસ બાર, બુકમાર્ક બાર (જો દેખાતી હોય, તો), ખુલ્લું છે તે વેબપેજ અને ડાઉનલોડ બાર (જો દેખાતી હોય, તો).</translation>
 <translation id="8234414138295101081">સ્ક્રીનને 90 ડિગ્રીએ ફેરવો</translation>
 <translation id="8264941229485248811">ડેવલપર સાધનો ઇન્સ્પેક્ટર બતાવો અથવા છુપાવો</translation>
 <translation id="836869401750819675">ડાઉનલોડ પેજ ખોલો</translation>
@@ -178,12 +178,12 @@
 <translation id="8537650670971624753">શોધ મોડમાંથી બહાર નીકળો</translation>
 <translation id="85690795166292698">લિંકને નવા ટૅબમાં ખોલો</translation>
 <translation id="8609384513243082612">નવું ટૅબ ખોલો</translation>
-<translation id="8644639153978066712">Files ઍપમાંની છુપાયેલી ફાઇલો પ્રદર્શિત કરો</translation>
+<translation id="8644639153978066712">Files ઍપમાંની છુપાયેલી ફાઇલો બતાવો</translation>
 <translation id="8717459106217102612">પાછલો શબ્દ અથવા અક્ષર પસંદ કરો</translation>
 <translation id="8727232706774971183">તમારા નોટિફિકેશનો જુઓ</translation>
 <translation id="8855885154700222542">પૂર્ણસ્ક્રીન કી</translation>
 <translation id="88986195241502842">પૃષ્ઠ નીચે</translation>
-<translation id="8924883688469390268">પહેલાંના વપરાશકર્તા પર સ્વિચ કરો</translation>
+<translation id="8924883688469390268">પાછલા વપરાશકર્તા પર સ્વિચ કરો</translation>
 <translation id="8977648847395357314">ઍડ્રેસ બારમાં કન્ટેન્ટ પસંદ કરો</translation>
 <translation id="8982190978301344584">ઉપલબ્ધ IMEsની સૂચિ પ્રદર્શિત કરતું મેનૂ બતાવો</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 થી 8</translation>

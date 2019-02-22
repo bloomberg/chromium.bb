@@ -26,6 +26,7 @@ jumbo_source_set("common") {
     "client_hints/client_hints.cc",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
+    "dom_storage/session_storage_namespace_id.cc",
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/feature_policy.cc",
     "features.cc",
@@ -38,15 +39,18 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_struct_traits.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",
-    "message_port/cloneable_message.cc",
-    "message_port/cloneable_message_struct_traits.cc",
-    "message_port/cloneable_message_struct_traits.h",
-    "message_port/message_port_channel.cc",
-    "message_port/string_message_codec.cc",
-    "message_port/transferable_message.cc",
-    "message_port/transferable_message_struct_traits.cc",
-    "message_port/transferable_message_struct_traits.h",
+    "messaging/cloneable_message.cc",
+    "messaging/cloneable_message_struct_traits.cc",
+    "messaging/cloneable_message_struct_traits.h",
+    "messaging/message_port_channel.cc",
+    "messaging/string_message_codec.cc",
+    "messaging/transferable_message.cc",
+    "messaging/transferable_message_struct_traits.cc",
+    "messaging/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
+    "notifications/notification_resources.cc",
+    "notifications/notification_struct_traits.cc",
+    "notifications/platform_notification_data.cc",
     "origin_policy/origin_policy.cc",
     "origin_policy/origin_policy_parser.cc",
     "origin_policy/origin_policy_parser.h",
@@ -82,6 +86,11 @@ jumbo_source_set("common") {
 
     deps += [ "//third_party/icu" ]
   }
+
+  if (is_win) {
+    sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.cc" ]
+    deps += [ "//ui/gfx/" ]
+  }
 }
 
 test("blink_common_unittests") {
@@ -108,6 +117,7 @@ jumbo_source_set("common_unittests_sources") {
     "indexeddb/indexeddb_key_unittest.cc",
     "manifest/manifest_icon_selector_unittest.cc",
     "mime_util/mime_util_unittest.cc",
+    "notifications/notification_struct_traits_unittest.cc",
     "origin_policy/origin_policy_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
@@ -117,10 +127,13 @@ jumbo_source_set("common_unittests_sources") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/core/embedder",
     "//net",
+    "//skia/public/interfaces",
     "//testing/gtest",
     "//third_party/blink/public/common:headers",
     "//third_party/boringssl",
+    "//url/mojom:url_mojom_gurl",
     "//v8",
     "//v8:v8_libplatform",
   ]
@@ -129,7 +142,7 @@ jumbo_source_set("common_unittests_sources") {
     # TODO(crbug.com/845384): Enable these tests also on Android. Currently
     # they are excluded as they require V8 environment but V8 snapshot is
     # not available in the current minimum test setting.
-    sources += [ "message_port/string_message_codec_unittest.cc" ]
+    sources += [ "messaging/string_message_codec_unittest.cc" ]
   } else {
     # is_android
     sources += [

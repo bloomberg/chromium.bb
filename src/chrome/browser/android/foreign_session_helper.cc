@@ -44,7 +44,7 @@ OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Only return the delegate if it exists and it is done syncing sessions.
-  if (!service || !service->IsSyncActive())
+  if (!service || !service->IsSyncFeatureActive())
     return NULL;
 
   return service->GetOpenTabsUIDelegate();

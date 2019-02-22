@@ -166,7 +166,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
     const SuggestionMarker* marker =
         ToSuggestionMarker(node_marker_pair.second);
     const Vector<String>& marker_suggestions = marker->Suggestions();
-    for (size_t suggestion_index = 0;
+    for (wtf_size_t suggestion_index = 0;
          suggestion_index < marker_suggestions.size(); ++suggestion_index) {
       const String& suggestion = marker_suggestions[suggestion_index];
       if (suggestion_infos.size() == max_number_of_suggestions)
@@ -296,14 +296,14 @@ void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
           GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
               range_to_check, DocumentMarker::MarkerTypes::Suggestion());
 
-  const Node* marker_text_node = nullptr;
+  const Text* marker_text_node = nullptr;
   SuggestionMarker* marker = nullptr;
   for (const std::pair<Member<Node>, Member<DocumentMarker>>& node_marker_pair :
        node_marker_pairs) {
     SuggestionMarker* suggestion_marker =
         ToSuggestionMarker(node_marker_pair.second);
     if (suggestion_marker->Tag() == marker_tag) {
-      marker_text_node = node_marker_pair.first;
+      marker_text_node = ToText(node_marker_pair.first);
       marker = suggestion_marker;
       break;
     }
@@ -313,7 +313,7 @@ void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
     OnSuggestionMenuClosed();
     return;
   }
-
+  DCHECK(marker_text_node);
   const EphemeralRange& range_to_replace =
       EphemeralRange(Position(marker_text_node, marker->StartOffset()),
                      Position(marker_text_node, marker->EndOffset()));
@@ -328,7 +328,7 @@ void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
 
   if (marker->IsMisspelling()) {
     GetFrame().GetDocument()->Markers().RemoveSuggestionMarkerByTag(
-        marker_text_node, marker->Tag());
+        *marker_text_node, marker->Tag());
   } else {
     marker->SetSuggestion(suggestion_index, new_suggestion);
   }
@@ -456,7 +456,7 @@ void TextSuggestionController::ShowSuggestionMenu(
       suggestion_infos_with_node_and_highlight_color.suggestion_infos;
   int span_union_start = suggestion_infos[0].span_start;
   int span_union_end = suggestion_infos[0].span_end;
-  for (size_t i = 1; i < suggestion_infos.size(); ++i) {
+  for (wtf_size_t i = 1; i < suggestion_infos.size(); ++i) {
     span_union_start =
         std::min(span_union_start, suggestion_infos[i].span_start);
     span_union_end = std::max(span_union_end, suggestion_infos[i].span_end);

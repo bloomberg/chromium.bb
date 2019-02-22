@@ -25,8 +25,8 @@ class ContentPreviewsRenderFrameObserver : public content::RenderFrameObserver {
 
   // content::RenderFrameObserver:
   void OnDestruct() override;
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
 
   // Returns whether |previews_state| is consistent with data reduction
   // proxy headers found in |web_url_response| with respect to server previews.

@@ -79,6 +79,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // before OnSyncStarting() is called. |favicon_service| must not be null.
   void SetFaviconService(favicon::FaviconService* favicon_service);
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
   const SyncedBookmarkTracker* GetTrackerForTest() const;
 
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetWeakPtr();
@@ -99,6 +102,15 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void StartTrackingMetadata(
       std::vector<NodeMetadataPair> nodes_metadata,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
+
+  // Creates a DictionaryValue for local and remote debugging information about
+  // |node| and appends it to |all_nodes|. It does the same for child nodes
+  // recursively. |index| is the index of |node| within its parent. |index|
+  // could computed from |node|, however it's much cheaper to pass from outside
+  // since we iterate over child nodes already in the calling sites.
+  void AppendNodeAndChildrenForDebugging(const bookmarks::BookmarkNode* node,
+                                         int index,
+                                         base::ListValue* all_nodes) const;
 
   // Stores the start callback in between OnSyncStarting() and
   // ModelReadyToSync().

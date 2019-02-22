@@ -5,19 +5,31 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
+#include "components/subresource_filter/core/common/common_features.h"
+#include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -127,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        SubresourceFilter) {
   ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ALL_SITES));
   base::HistogramTester histogram_tester;
 
@@ -147,4 +159,329 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       2, 1);
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.All.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
+}
+
+class AdsPageLoadMetricsTestWaiter
+    : public page_load_metrics::PageLoadMetricsTestWaiter {
+ public:
+  explicit AdsPageLoadMetricsTestWaiter(content::WebContents* web_contents)
+      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents) {}
+  void AddMinimumAdResourceExpectation(int num_ad_resources) {
+    expected_minimum_num_ad_resources_ = num_ad_resources;
+  }
+
+ protected:
+  bool ExpectationsSatisfied() const override {
+    int num_ad_resources = 0;
+    for (auto& kv : page_resources_) {
+      if (kv.second->reported_as_ad_resource)
+        num_ad_resources++;
+    }
+    return num_ad_resources >= expected_minimum_num_ad_resources_ &&
+           PageLoadMetricsTestWaiter::ExpectationsSatisfied();
+  };
+
+ private:
+  int expected_minimum_num_ad_resources_ = 0;
+};
+
+class AdsPageLoadMetricsObserverResourceBrowserTest
+    : public subresource_filter::SubresourceFilterBrowserTest {
+ public:
+  AdsPageLoadMetricsObserverResourceBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kAdsFeature);
+  }
+
+  ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
+  void SetUpOnMainThread() override {
+    g_browser_process->subresource_filter_ruleset_service()
+        ->SetIsAfterStartupForTesting();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetRulesetWithRules(
+        {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
+         subresource_filter::testing::CreateSuffixRule("create_frame.js")});
+  }
+
+ protected:
+  std::unique_ptr<AdsPageLoadMetricsTestWaiter>
+  CreateAdsPageLoadMetricsTestWaiter() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    return std::make_unique<AdsPageLoadMetricsTestWaiter>(web_contents);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedAdResources) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  // Both subresources should have been reported as ads.
+  waiter->AddMinimumAdResourceExpectation(2);
+  waiter->Wait();
+}
+
+// Main resources for adframes are counted as ad resources.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedMainResourceAds) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('frame_factory.html', '');"));
+  // Both pages subresources should have been reported as ad. The iframe
+  // resource should also be reported as an ad.
+  waiter->AddMinimumAdResourceExpectation(5);
+  waiter->Wait();
+}
+
+// Subframe navigations report ad resources correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedSubframeNavigationAds) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('frame_factory.html', 'test');"));
+  waiter->AddMinimumAdResourceExpectation(5);
+  waiter->Wait();
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  // All resources except the top-level main resource should be reported as an
+  // ad.
+  waiter->AddMinimumAdResourceExpectation(8);
+  waiter->Wait();
+}
+
+// Verify that per-resource metrics are recorded correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedAdResourceMetrics) {
+  base::HistogramTester histogram_tester;
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto main_html_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          true /*relative_url_is_prefix*/);
+  auto ad_script_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ad_script.js",
+          true /*relative_url_is_prefix*/);
+  auto iframe_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/iframe.html",
+          true /*relative_url_is_prefix*/);
+  auto vanilla_script_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/vanilla_script.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_html_response->WaitForRequest();
+  main_html_response->Send(kHttpResponseHeader);
+  main_html_response->Send(
+      "<html><body></body><script src=\"ad_script.js\"></script></html>");
+  main_html_response->Done();
+
+  ad_script_response->WaitForRequest();
+  ad_script_response->Send(kHttpResponseHeader);
+  ad_script_response->Send(
+      "var iframe = document.createElement(\"iframe\");"
+      "iframe.src =\"iframe.html\";"
+      "document.body.appendChild(iframe);");
+  ad_script_response->Send(std::string(1000, ' '));
+  ad_script_response->Done();
+
+  iframe_response->WaitForRequest();
+  iframe_response->Send(kHttpResponseHeader);
+  iframe_response->Send("<html><script src=\"vanilla_script.js\"></script>");
+  iframe_response->Send(std::string(2000, ' '));
+  iframe_response->Send("</html>");
+  iframe_response->Done();
+
+  vanilla_script_response->WaitForRequest();
+  vanilla_script_response->Send(kHttpResponseHeader);
+  vanilla_script_response->Send(std::string(1024, ' '));
+  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->Wait();
+
+  // Verify correct numbers of resources are recorded.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Mainframe.VanillaResource", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Mainframe.AdResource", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 1);
+  // Verify unfinished resource not yet recorded.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Subframe.VanillaResource", 0);
+
+  // Close all tabs instead of navigating as the embedded_test_server will
+  // hang waiting for loads to finish when we have an unfinished
+  // ControlledHttpReseonse.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  // Verify unfinished resource recorded when page is destroyed.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 2);
+
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.Total", 4, 1);
+  // We have received 4 KB of ads and 1 KB of toplevel ads.
+  histogram_tester.ExpectBucketCount("PageLoad.Clients.Ads.Resources.Bytes.Ads",
+                                     4, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds", 1, 1);
+
+  // 4 resources loaded, one unfinished.
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.Unfinished", 1, 1);
+}
+
+// Verify that per-resource metrics are reported for cached resources and
+// resources loaded by the network.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       RecordedCacheResourceMetrics) {
+  base::HistogramTester histogram_tester;
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("create_frame.js")});
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("foo.com", "/cachetime"));
+
+  // Wait for the favicon to be fetched.
+  waiter->AddMinimumCompleteResourcesExpectation(2);
+  waiter->Wait();
+
+  // All resources should have been loaded by network.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Network.Mainframe.VanillaResource", 2);
+
+  // Open a new tab and navigate so that resources are fetched via the disk
+  // cache. Navigating to the same URL in the same tab triggers a refresh which
+  // will not check the disk cache.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  waiter = CreateAdsPageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("foo.com", "/cachetime"));
+
+  // Wait for the resource to be fetched.
+  waiter->AddMinimumCompleteResourcesExpectation(1);
+  waiter->Wait();
+
+  // Resource should be recorded as loaded from the cache. Favicon not
+  // fetched this time.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Cache.Mainframe.VanillaResource", 1);
+}
+
+// Verify that Mime type metrics are recorded correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       RecordedMimeMetrics) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('multiple_mimes.html', 'test');"));
+  waiter->AddMinimumAdResourceExpectation(8);
+  waiter->Wait();
+
+  // Close all tabs to log metrics, as the video resource request is incomplete.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.HTML",
+                                    1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.CSS",
+                                    1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.JS",
+                                    3);
+
+  // Note: png and video/webm mime types are not set explicitly by the
+  // embedded_test_server.
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Image",
+                                    1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Video",
+                                    1);
+  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Other",
+                                    1);
+
+  // Verify UKM Metrics recorded.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdPageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntrySourceHasUrl(entries.front(), url);
+  EXPECT_GT(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdBytesName),
+            0);
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
+      0);
+
+  // TTI is not reached by this page and thus should not have this recorded.
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entries.front(),
+      ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName));
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdJavascriptBytesName),
+      0);
+  EXPECT_GT(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
+            0);
 }

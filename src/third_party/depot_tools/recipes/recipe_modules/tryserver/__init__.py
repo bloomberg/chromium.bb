@@ -6,6 +6,7 @@ DEPS = [
   'gerrit',
   'git',
   'git_cl',
+  'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/json',
   'recipe_engine/path',

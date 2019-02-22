@@ -8,10 +8,12 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -72,13 +74,11 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
         LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), BuildMockLoginUIService));
+            profile(), base::BindRepeating(&BuildMockLoginUIService)));
     login_ui_service->SetLoginUI(&login_ui_);
 
-    error_controller_ =
-        std::make_unique<syncer::SyncErrorController>(service_.get());
     error_notifier_ =
-        std::make_unique<SyncErrorNotifier>(error_controller_.get(), profile());
+        std::make_unique<SyncErrorNotifier>(service_.get(), profile());
 
     display_service_ =
         std::make_unique<NotificationDisplayServiceTester>(profile());
@@ -104,9 +104,10 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     GoogleServiceAuthError auth_error(error_state);
     EXPECT_CALL(*service_, GetAuthError()).WillRepeatedly(
         ReturnRef(auth_error));
+    ASSERT_EQ(is_error,
+              sync_ui_util::ShouldShowPassphraseError(service_.get()));
 
-    error_controller_->OnStateChanged(service_.get());
-    EXPECT_EQ(is_error, error_controller_->HasError());
+    error_notifier_->OnStateChanged(service_.get());
 
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(kNotificationId);
@@ -119,7 +120,6 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     }
   }
 
-  std::unique_ptr<syncer::SyncErrorController> error_controller_;
   std::unique_ptr<SyncErrorNotifier> error_notifier_;
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> service_;
   FakeLoginUI login_ui_;

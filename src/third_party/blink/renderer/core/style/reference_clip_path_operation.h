@@ -34,6 +34,7 @@
 
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -42,7 +43,7 @@ class SVGResourceClient;
 class ReferenceClipPathOperation final : public ClipPathOperation {
  public:
   static scoped_refptr<ReferenceClipPathOperation> Create(
-      const String& url,
+      const AtomicString& url,
       SVGResource* resource) {
     return base::AdoptRef(new ReferenceClipPathOperation(url, resource));
   }
@@ -51,7 +52,7 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
   void RemoveClient(SVGResourceClient&);
 
   SVGResource* Resource() const;
-  const String& Url() const { return url_; }
+  const AtomicString& Url() const { return url_; }
 
  private:
   bool operator==(const ClipPathOperation&) const override;
@@ -61,7 +62,7 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
       : resource_(resource), url_(url) {}
 
   Persistent<SVGResource> resource_;
-  String url_;
+  AtomicString url_;
 };
 
 DEFINE_TYPE_CASTS(ReferenceClipPathOperation,

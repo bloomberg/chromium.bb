@@ -19,7 +19,8 @@ class IdentityTestEnvironmentInternal;
 // not available; call MakePrimaryAccountAvailable() as needed.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
  public:
-  IdentityTestEnvironment();
+  IdentityTestEnvironment(
+      bool use_fake_url_loader_for_gaia_cookie_manager = false);
   ~IdentityTestEnvironment() override;
 
   // The IdentityManager instance created and owned by this instance.
@@ -80,6 +81,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // NOTE: See disclaimer at top of file re: direct usage.
   void RemoveRefreshTokenForAccount(const std::string& account_id);
 
+  // Puts the given accounts into the Gaia cookie, replacing any previous
+  // accounts. Blocks until the accounts have been set.
+  void SetCookieAccounts(const std::vector<CookieParams>& cookie_accounts);
+
   // When this is set, access token requests will be automatically granted with
   // an access token value of "access_token".
   void SetAutomaticIssueOfAccessTokens(bool grant);
@@ -97,6 +102,23 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       const std::string& token,
       const base::Time& expiration);
+
+  // Issues |token| in response to any access token request that either has (a)
+  // already occurred and has not been matched by a previous call to this or
+  // other WaitFor... method, or (b) will occur in the future. In the latter
+  // case, waits until the access token request occurs.
+  // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
+  // agnostic with respect to whether access token requests are handled
+  // synchronously or asynchronously in the production code.
+  // NOTE: This version is suitable for use in the common context where access
+  // token requests are only being made for one account. If you need to
+  // disambiguate requests coming for different accounts, see the version below.
+  // NOTE: This version allows passing the uncommon id_token parameter which is
+  // needed to test some cases where checking for that extra info is required.
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      const std::string& token,
+      const base::Time& expiration,
+      const std::string& id_token);
 
   // Issues |token| in response to an access token request for |account_id| that
   // either already occurred and has not been matched by a previous call to this

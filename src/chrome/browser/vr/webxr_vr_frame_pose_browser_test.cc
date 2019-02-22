@@ -15,23 +15,27 @@ namespace vr {
 namespace {
 
 struct Frame {
-  device::SubmittedFrameData submitted;
-  device::PoseFrameData pose;
-  device::DeviceConfig config;
+  device_test::mojom::SubmittedFrameDataPtr submitted;
+  device_test::mojom::PoseFrameDataPtr pose;
+  device_test::mojom::DeviceConfigPtr config;
 };
 
-class MyOpenVRMock : public MockOpenVRBase {
+class MyOpenVRMock : public MockOpenVRDeviceHookBase {
  public:
-  void OnFrameSubmitted(device::SubmittedFrameData frame_data) final;
-  device::DeviceConfig WaitGetDeviceConfig() final {
-    device::DeviceConfig ret = {
-        0.2f /* ipd */,
-        {0.1f, 0.2f, 0.3f, 0.4f} /* left projection raw */,
-        {0.5f, 0.6f, 0.7f, 0.8f} /* right projection raw */};
-    return ret;
+  void OnFrameSubmitted(
+      device_test::mojom::SubmittedFrameDataPtr frame_data,
+      device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) final;
+  void WaitGetDeviceConfig(
+      device_test::mojom::XRTestHook::WaitGetDeviceConfigCallback callback)
+      final {
+    std::move(callback).Run(GetDeviceConfig());
   }
-  device::PoseFrameData WaitGetPresentingPose() final;
-  device::PoseFrameData WaitGetMagicWindowPose() final;
+  void WaitGetPresentingPose(
+      device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback)
+      final;
+  void WaitGetMagicWindowPose(
+      device_test::mojom::XRTestHook::WaitGetMagicWindowPoseCallback callback)
+      final;
 
   // The test waits for a submitted frame before returning.
   void WaitForFrames(int count) {
@@ -46,7 +50,17 @@ class MyOpenVRMock : public MockOpenVRBase {
   }
 
   std::vector<Frame> submitted_frames;
-  device::PoseFrameData last_immersive_frame_data = {};
+  device_test::mojom::PoseFrameDataPtr last_immersive_frame_data;
+
+  device_test::mojom::DeviceConfigPtr GetDeviceConfig() {
+    auto config = device_test::mojom::DeviceConfig::New();
+    config->interpupillary_distance = 0.2f;
+    config->projection_left =
+        device_test::mojom::ProjectionRaw::New(0.1f, 0.2f, 0.3f, 0.4f);
+    config->projection_right =
+        device_test::mojom::ProjectionRaw::New(0.5f, 0.6f, 0.7f, 0.8f);
+    return config;
+  }
 
  private:
   // Set to null on background thread after calling Quit(), so we can ensure we
@@ -56,23 +70,25 @@ class MyOpenVRMock : public MockOpenVRBase {
   int wait_frame_count_ = 0;
   int num_frames_submitted_ = 0;
 
-  bool has_last_immersive_frame_data_ = false;
   int frame_id_ = 0;
 };
 
-unsigned int ParseColorFrameId(device::Color color) {
+unsigned int ParseColorFrameId(const device_test::mojom::ColorPtr& color) {
   // Corresponding math in test_webxr_poses.html.
-  unsigned int frame_id =
-      static_cast<unsigned int>(color.r) + 256 * color.g + 256 * 256 * color.b;
+  unsigned int frame_id = static_cast<unsigned int>(color->r) + 256 * color->g +
+                          256 * 256 * color->b;
   return frame_id;
 }
 
-void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
-  unsigned int frame_id = ParseColorFrameId(frame_data.color);
+void MyOpenVRMock::OnFrameSubmitted(
+    device_test::mojom::SubmittedFrameDataPtr frame_data,
+    device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
+  unsigned int frame_id = ParseColorFrameId(frame_data->color);
   DLOG(ERROR) << "Frame Submitted: " << num_frames_submitted_ << " "
               << frame_id;
-  submitted_frames.push_back(
-      {frame_data, last_immersive_frame_data, WaitGetDeviceConfig()});
+  submitted_frames.push_back({std::move(frame_data),
+                              last_immersive_frame_data.Clone(),
+                              GetDeviceConfig()});
 
   num_frames_submitted_++;
   if (num_frames_submitted_ >= wait_frame_count_ && wait_frame_count_ > 0 &&
@@ -81,60 +97,62 @@ void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
     wait_loop_ = nullptr;
   }
 
-  EXPECT_TRUE(has_last_immersive_frame_data_)
+  EXPECT_TRUE(!!last_immersive_frame_data)
       << "Frame submitted without any frame data provided";
 
   // We expect a waitGetPoses, then 2 submits (one for each eye), so after 2
   // submitted frames don't use the same frame_data again.
   if (num_frames_submitted_ % 2 == 0)
-    has_last_immersive_frame_data_ = false;
+    last_immersive_frame_data = nullptr;
+
+  std::move(callback).Run();
 }
 
-device::PoseFrameData MyOpenVRMock::WaitGetMagicWindowPose() {
-  device::PoseFrameData pose = {};
-  pose.is_valid = true;
+void MyOpenVRMock::WaitGetMagicWindowPose(
+    device_test::mojom::XRTestHook::WaitGetMagicWindowPoseCallback callback) {
+  auto pose = device_test::mojom::PoseFrameData::New();
+
   // Almost identity matrix - enough different that we can identify if magic
   // window poses are used instead of presenting poses.
-  pose.device_to_origin[0] = 1;
-  pose.device_to_origin[5] = -1;
-  pose.device_to_origin[10] = 1;
-  pose.device_to_origin[15] = 1;
-  return pose;
+  pose->device_to_origin =
+      gfx::Transform(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+  std::move(callback).Run(std::move(pose));
 }
 
-device::PoseFrameData MyOpenVRMock::WaitGetPresentingPose() {
+void MyOpenVRMock::WaitGetPresentingPose(
+    device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback) {
   DLOG(ERROR) << "WaitGetPresentingPose: " << frame_id_;
 
-  device::PoseFrameData pose = {};
-  pose.is_valid = true;
+  auto pose = device_test::mojom::PoseFrameData::New();
+
   // Start with identity matrix.
-  pose.device_to_origin[0] = 1;
-  pose.device_to_origin[5] = 1;
-  pose.device_to_origin[10] = 1;
-  pose.device_to_origin[15] = 1;
+  pose->device_to_origin = gfx::Transform();
 
   // Add a translation so each frame gets a different transform, and so its easy
   // to identify what the expected pose is.
-  pose.device_to_origin[3] = frame_id_;
+  pose->device_to_origin->Translate3d(0, 0, frame_id_);
 
-  has_last_immersive_frame_data_ = true;
   frame_id_++;
-  last_immersive_frame_data = pose;
+  last_immersive_frame_data = pose.Clone();
 
-  return pose;
+  std::move(callback).Run(std::move(pose));
 }
 
-std::string GetMatrixAsString(const float m[]) {
+std::string GetMatrixAsString(const gfx::Transform& m) {
   // Dump the transpose of the matrix due to openvr vs. webxr matrix format
   // differences.
   return base::StringPrintf(
-      "[%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]", m[0],
-      m[4], m[8], m[12], m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14],
-      m[3], m[7], m[11], m[15]);
+      "[%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]",
+      m.matrix().get(0, 0), m.matrix().get(1, 0), m.matrix().get(2, 0),
+      m.matrix().get(3, 0), m.matrix().get(0, 1), m.matrix().get(1, 1),
+      m.matrix().get(2, 1), m.matrix().get(3, 1), m.matrix().get(0, 2),
+      m.matrix().get(1, 2), m.matrix().get(2, 2), m.matrix().get(3, 2),
+      m.matrix().get(0, 3), m.matrix().get(1, 3), m.matrix().get(2, 3),
+      m.matrix().get(3, 3));
 }
 
 std::string GetPoseAsString(const Frame& frame) {
-  return GetMatrixAsString(frame.pose.device_to_origin);
+  return GetMatrixAsString(*(frame.pose->device_to_origin));
 }
 
 }  // namespace
@@ -162,7 +180,7 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
 
   // Stop hooking OpenVR, so we can safely analyze our cached data without
   // incoming calls (there may be leftover mojo messages queued).
-  device::OpenVRDeviceProvider::SetTestHook(nullptr);
+  my_mock.StopHooking();
 
   // Analyze the submitted frames - check for a few things:
   // 1. Each frame id should be submitted at most once for each of the left and
@@ -172,15 +190,15 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   std::set<unsigned int> seen_left;
   std::set<unsigned int> seen_right;
   unsigned int max_frame_id = 0;
-  for (auto frame : my_mock.submitted_frames) {
-    const device::SubmittedFrameData& data = frame.submitted;
+  for (const auto& frame : my_mock.submitted_frames) {
+    const device_test::mojom::SubmittedFrameDataPtr& data = frame.submitted;
 
     // The test page encodes the frame id as the clear color.
-    unsigned int frame_id = ParseColorFrameId(data.color);
+    unsigned int frame_id = ParseColorFrameId(data->color);
 
     // Validate that each frame is only seen once for each eye.
     DLOG(ERROR) << "Frame id: " << frame_id;
-    if (data.left_eye) {
+    if (data->eye == device_test::mojom::Eye::LEFT) {
       EXPECT_TRUE(seen_left.find(frame_id) == seen_left.end())
           << "Frame for left eye submitted more than once";
       seen_left.insert(frame_id);

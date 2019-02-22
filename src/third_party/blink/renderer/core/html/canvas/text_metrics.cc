@@ -11,36 +11,25 @@ namespace blink {
 constexpr int kHangingAsPercentOfAscent = 80;
 
 float TextMetrics::GetFontBaseline(const TextBaseline& text_baseline,
-                                   const FontMetrics& font_metrics) {
-  // If the font is so tiny that the lroundf operations result in two
-  // different types of text baselines to return the same baseline, use
-  // floating point metrics (crbug.com/338908).
-  // If you changed the heuristic here, for consistency please also change it
-  // in SimpleFontData::platformInit().
-  // TODO(fserb): revisit this.
-  bool use_float_ascent_descent =
-      font_metrics.Ascent() < 3 || font_metrics.Height() < 2;
+                                   const SimpleFontData& font_data) {
+  FontMetrics font_metrics = font_data.GetFontMetrics();
   switch (text_baseline) {
     case kTopTextBaseline:
-      return use_float_ascent_descent ? font_metrics.FloatAscent()
-                                      : font_metrics.Ascent();
+      return font_data.EmHeightAscent().ToFloat();
     case kHangingTextBaseline:
       // According to
       // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
       // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
       // the ascender height"
-      return use_float_ascent_descent
-                 ? font_metrics.FloatAscent() * kHangingAsPercentOfAscent / 100
-                 : font_metrics.Ascent() * kHangingAsPercentOfAscent / 100;
-    case kBottomTextBaseline:
+      return font_metrics.FloatAscent() * kHangingAsPercentOfAscent / 100.0;
     case kIdeographicTextBaseline:
-      return use_float_ascent_descent ? -font_metrics.FloatDescent()
-                                      : -font_metrics.Descent();
+      return -font_metrics.FloatDescent();
+    case kBottomTextBaseline:
+      return -font_data.EmHeightDescent().ToFloat();
     case kMiddleTextBaseline:
-      return use_float_ascent_descent
-                 ? -font_metrics.FloatDescent() +
-                       font_metrics.FloatHeight() / 2.0f
-                 : -font_metrics.Descent() + font_metrics.Height() / 2;
+      return (font_data.EmHeightAscent().ToFloat() -
+              font_data.EmHeightDescent().ToFloat()) /
+             2.0f;
     case kAlphabeticTextBaseline:
     default:
       // Do nothing.
@@ -86,18 +75,13 @@ void TextMetrics::Update(const Font& font,
   // y direction
   const float ascent = font_metrics.FloatAscent();
   const float descent = font_metrics.FloatDescent();
-  const float baseline_y = GetFontBaseline(baseline, font_metrics);
-
+  const float baseline_y = GetFontBaseline(baseline, *font_data);
   font_bounding_box_ascent_ = ascent - baseline_y;
   font_bounding_box_descent_ = descent + baseline_y;
   actual_bounding_box_ascent_ = -bbox.Y() - baseline_y;
   actual_bounding_box_descent_ = bbox.MaxY() + baseline_y;
-
-  // it's not clear where the baseline for the em rect is.
-  // We could try to render a letter that has 1em height and try to figure out.
-  // But for now, just ignore descent for em.
-  em_height_ascent_ = font_metrics.Height() - baseline_y;
-  em_height_descent_ = baseline_y;
+  em_height_ascent_ = font_data->EmHeightAscent() - baseline_y;
+  em_height_descent_ = font_data->EmHeightDescent() + baseline_y;
 
   // TODO(fserb): hanging/ideographic baselines are broken.
   baselines_.setAlphabetic(-baseline_y);

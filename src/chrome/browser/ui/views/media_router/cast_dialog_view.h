@@ -191,6 +191,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Records UMA metrics for the dialog's behavior.
   CastDialogMetrics metrics_;
 
+  // The sink that the user has selected to cast to. If the user is using
+  // multiple sinks at the same time, the last activated sink is used.
+  base::Optional<size_t> selected_sink_index_;
+
   base::WeakPtrFactory<CastDialogView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogView);

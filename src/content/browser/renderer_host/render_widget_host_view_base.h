@@ -27,11 +27,11 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/common/widget_type.h"
 #include "ipc/ipc_listener.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -49,7 +49,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #endif
 
-struct ViewHostMsg_SelectionBounds_Params;
+struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace base {
 class UnguessableToken;
@@ -88,6 +88,7 @@ class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebContentsAccessibility;
 class WebCursor;
+class DelegatedFrameHost;
 struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
@@ -162,9 +163,19 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
 
-  void SetPopupType(blink::WebPopupType popup_type);
+  static void CopyMainAndPopupFromSurface(
+      base::WeakPtr<RenderWidgetHostImpl> main_host,
+      base::WeakPtr<DelegatedFrameHost> main_frame_host,
+      base::WeakPtr<RenderWidgetHostImpl> popup_host,
+      base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      float scale_factor,
+      base::OnceCallback<void(const SkBitmap&)> callback);
 
-  blink::WebPopupType GetPopupType();
+  void SetWidgetType(WidgetType widget_type);
+
+  WidgetType GetWidgetType();
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
@@ -218,9 +229,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetCompositorViewportPixelSize() const;
 
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar.
-  virtual bool DoBrowserControlsShrinkBlinkSize() const;
+  // Whether or not the renderer's viewport size should be shrunk by the height
+  // of the URL-bar.
+  virtual bool DoBrowserControlsShrinkRendererSize() const;
 
   // The height of the URL-bar browser controls.
   virtual float GetTopControlsHeight() const;
@@ -269,7 +280,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
-  virtual void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) {}
+  virtual void SetMainFrameAXTreeID(ui::AXTreeID id) {}
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
@@ -391,6 +402,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY);
 
+  // On success, returns true and modifies |*transform| to represent the
+  // transformation mapping a point in the coordinate space of this view
+  // into the coordinate space of the target view.
+  // On Failure, returns false, and leaves |*transform| unchanged.
+  // This function will fail if viz hit testing is not enabled, or if either
+  // this view or the target view has no current FrameSinkId. The latter may
+  // happen if either view is not currently visible in the viewport.
+  // This function is useful if there are multiple points to transform between
+  // the same two views. |target_view| must be non-null.
+  bool GetTransformToViewCoordSpace(RenderWidgetHostViewBase* target_view,
+                                    gfx::Transform* transform);
+
   // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
   // RenderWidgetHostViewGuests that is needed for special treatment during
   // input event routing. It can be removed either when RWHVGuests properly
@@ -450,7 +473,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // RenderWidget's window's origin. Focus and anchor bound are represented as
   // gfx::Rect.
   virtual void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
+      const WidgetHostMsg_SelectionBounds_Params& params);
 
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(
@@ -613,16 +636,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual bool HasFallbackSurface() const;
 
+  // Cached bool to test if the VizHitTesting feature is enabled.
+  const bool use_viz_hit_test_;
+
   // The model object. Members will become private when
   // RenderWidgetHostViewGuest is removed.
   RenderWidgetHostImpl* host_;
 
   // Is this a fullscreen view?
-  bool is_fullscreen_;
+  bool is_fullscreen_ = false;
 
-  // Whether this view is a popup and what kind of popup it is (select,
-  // autofill...).
-  blink::WebPopupType popup_type_;
+  // Whether this view is a frame or a popup.
+  WidgetType widget_type_ = WidgetType::kFrame;
 
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;
@@ -632,19 +657,20 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool is_scroll_offset_at_top_ = true;
 
   // The scale factor of the display the renderer is currently on.
-  float current_device_scale_factor_;
+  float current_device_scale_factor_ = 0;
 
   // The color space of the display the renderer is currently on.
   gfx::ColorSpace current_display_color_space_;
 
   // The orientation of the display the renderer is currently on.
-  display::Display::Rotation current_display_rotation_;
+  display::Display::Rotation current_display_rotation_ =
+      display::Display::ROTATE_0;
 
   // A reference to current TextInputManager instance this RWHV is registered
   // with. This is initially nullptr until the first time the view calls
   // GetTextInputManager(). It also becomes nullptr when TextInputManager is
   // destroyed before the RWHV is destroyed.
-  TextInputManager* text_input_manager_;
+  TextInputManager* text_input_manager_ = nullptr;
 
   // The background color used in the current renderer.
   base::Optional<SkColor> content_background_color_;
@@ -653,11 +679,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // |content_background_color|.
   base::Optional<SkColor> default_background_color_;
 
-  WebContentsAccessibility* web_contents_accessibility_;
+  WebContentsAccessibility* web_contents_accessibility_ = nullptr;
 
-  bool is_currently_scrolling_viewport_;
-
-  bool use_viz_hit_test_ = false;
+  bool is_currently_scrolling_viewport_ = false;
 
  private:
   void SynchronizeVisualProperties();
@@ -693,7 +717,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   gfx::Rect current_display_area_;
 
-  uint32_t renderer_frame_number_;
+  uint32_t renderer_frame_number_ = 0;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 

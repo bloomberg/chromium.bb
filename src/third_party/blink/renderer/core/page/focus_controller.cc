@@ -764,7 +764,8 @@ FocusController::FocusController(Page* page)
     : page_(page),
       is_active_(false),
       is_focused_(false),
-      is_changing_focused_frame_(false) {}
+      is_changing_focused_frame_(false),
+      is_emulating_focus_(false) {}
 
 FocusController* FocusController::Create(Page* page) {
   return new FocusController(page);
@@ -887,18 +888,14 @@ bool FocusController::IsDocumentFocused(const Document& document) const {
          focused_frame_->Tree().IsDescendantOf(document.GetFrame());
 }
 
-void FocusController::SetFocused(bool focused) {
-  if (IsFocused() == focused)
-    return;
-
-  is_focused_ = focused;
-
-  if (!is_focused_ && FocusedOrMainFrame()->IsLocalFrame())
+void FocusController::FocusHasChanged() {
+  bool focused = IsFocused();
+  if (!focused && FocusedOrMainFrame()->IsLocalFrame())
     ToLocalFrame(FocusedOrMainFrame())->GetEventHandler().StopAutoscroll();
 
   // Do not set a focused frame when being unfocused. This might reset
   // m_isFocused to true.
-  if (!focused_frame_ && is_focused_)
+  if (!focused_frame_ && focused)
     SetFocusedFrame(page_->MainFrame());
 
   // setFocusedFrame above might reject to update m_focusedFrame, or
@@ -911,6 +908,26 @@ void FocusController::SetFocused(bool focused) {
   }
 
   NotifyFocusChangedObservers();
+}
+
+void FocusController::SetFocused(bool focused) {
+  if (is_focused_ == focused)
+    return;
+  is_focused_ = focused;
+  if (!is_emulating_focus_)
+    FocusHasChanged();
+}
+
+void FocusController::SetFocusEmulationEnabled(bool emulate_focus) {
+  if (emulate_focus == is_emulating_focus_)
+    return;
+  bool active = IsActive();
+  bool focused = IsFocused();
+  is_emulating_focus_ = emulate_focus;
+  if (active != IsActive())
+    ActiveHasChanged();
+  if (focused != IsFocused())
+    FocusHasChanged();
 }
 
 bool FocusController::SetInitialFocus(WebFocusType type) {
@@ -1229,12 +1246,7 @@ bool FocusController::SetFocusedElement(Element* element,
   return true;
 }
 
-void FocusController::SetActive(bool active) {
-  if (is_active_ == active)
-    return;
-
-  is_active_ = active;
-
+void FocusController::ActiveHasChanged() {
   Frame* frame = FocusedOrMainFrame();
   if (frame->IsLocalFrame()) {
     Document* const document =
@@ -1249,6 +1261,15 @@ void FocusController::SetActive(bool active) {
       view->InvalidateAllCustomScrollbarsOnActiveChanged();
     ToLocalFrame(frame)->Selection().PageActivationChanged();
   }
+}
+
+void FocusController::SetActive(bool active) {
+  if (is_active_ == active)
+    return;
+
+  is_active_ = active;
+  if (!is_emulating_focus_)
+    ActiveHasChanged();
 }
 
 static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
@@ -1347,6 +1368,9 @@ void FocusController::FindFocusCandidateInContainer(
         !IsNavigableContainer(element, direction))
       continue;
 
+    if (HasRemoteFrame(element))
+      continue;
+
     if (already_checked.Contains(element))
       continue;
 
@@ -1439,27 +1463,28 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
 
   Element* focused_element = focused_document->FocusedElement();
   Node* container = focused_document;
-  if (container->IsDocumentNode())
-    ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (auto* document = DynamicTo<Document>(container))
+    document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
 
-  const LayoutRect starting_rect =
-      FindSearchStartPoint(current_frame, direction);
-  Node* pruned_sub_tree_root = nullptr;
-  bool consumed = false;
+  const LayoutRect visible_rect = RootViewport(current_frame);
+  const LayoutRect start_box =
+      SearchOrigin(visible_rect, focused_element, direction);
 
-  while (!consumed && container) {
+  bool consumed = false;
+  Node* pruned_sub_tree_root = nullptr;
+  while (container) {
     consumed = AdvanceFocusDirectionallyInContainer(
-        container, starting_rect, direction, pruned_sub_tree_root);
+        container, start_box, direction, pruned_sub_tree_root);
     if (consumed)
       break;
 
     // Nothing found in |container| so search the parent container.
     pruned_sub_tree_root = container;
     container = ScrollableAreaOrDocumentOf(container);
-    if (container && container->IsDocumentNode())
-      ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    if (auto* document = DynamicTo<Document>(container))
+      document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
   return consumed;

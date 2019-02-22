@@ -44,6 +44,6 @@ public class AwEmbeddedTestServer extends EmbeddedTestServer {
      */
     public static AwEmbeddedTestServer createAndStartServer(Context context)
             throws InterruptedException {
-        return initializeAndStartServer(new AwEmbeddedTestServer(), context);
+        return initializeAndStartServer(new AwEmbeddedTestServer(), context, 0 /* port */);
     }
 }

@@ -70,7 +70,7 @@ bool DecryptWithPattern(const crypto::SymmetricKey& key,
   //   input_data:  |E1|E2|U3|U4|U5|E6|E7|U8|U9|U10|E11|
   // We must decrypt 2 blocks, then simply copy the next 3 blocks, and
   // repeat until the end. Note that the input does not have to contain
-  // a full pattern at the end (although see the comment below).
+  // a full pattern or even |crypt_byte_block| blocks at the end.
   size_t blocks_processed = 0;
   const uint8_t* src = input_data.data();
   uint8_t* dest = output_data;
@@ -86,14 +86,15 @@ bool DecryptWithPattern(const crypto::SymmetricKey& key,
 
     size_t bytes_to_process = blocks_to_process * kAesBlockSizeInBytes;
 
-    // From ISO/IEC 23001-7:2016(E), section 9.6.1:
-    // "If the last Block pattern in a Subsample is incomplete, the partial
-    // pattern SHALL be followed until truncated by the BytesOfProtectedData
-    // size and any partial crypt_byte_block SHALL remain unencrypted."
-    // So if the last Block pattern is incomplete, it needs to have at least
-    // |crypt_byte_block| blocks to be considered encrypted. If it doesn't,
-    // it is treated as unencrypted and simply copied over.
-    if (is_encrypted_blocks && blocks_to_process == crypt_byte_block) {
+    // From ISO/IEC 23001-7:2016(E), section 10.4.2:
+    // For a typical pattern length of 10 (e.g. 1:9) "the pattern is repeated
+    // every 160 bytes of the protected range, until the end of the range. If
+    // the protected range of the slice body is not a multiple of the pattern
+    // length (e.g. 160 bytes), then the pattern sequence applies to the
+    // included whole 16-byte Blocks and a partial 16-byte Block that may
+    // remain where the pattern is terminated by the byte length of the range
+    // BytesOfProtectedData, is left unencrypted."
+    if (is_encrypted_blocks) {
       if (!aes_cbc_crypto.Decrypt(base::make_span(src, bytes_to_process),
                                   dest)) {
         return false;

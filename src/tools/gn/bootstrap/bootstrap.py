@@ -51,6 +51,11 @@ def main(argv):
       action='store_true',
       help='Download and build with the Debian sysroot.')
   parser.add_option('-v', '--verbose', help='ignored')
+  parser.add_option(
+      '--skip-generate-buildfiles',
+      action='store_true',
+      help='Do not run GN after building it. Causes --gn-gen-args '
+      'to have no effect.')
   options, args = parser.parse_args(argv)
   if args:
     parser.error('Unrecognized command line arguments: %s.' % ', '.join(args))
@@ -83,13 +88,14 @@ def main(argv):
       ['ninja', '-C', gn_build_dir, 'gn', '-w', 'dupbuild=err'])
   shutil.copy2(os.path.join(gn_build_dir, 'gn'), gn_path)
 
-  gn_gen_args = options.gn_gen_args or ''
-  if not options.debug:
-    gn_gen_args += ' is_debug=false'
-  subprocess.check_call([
-      gn_path, 'gen', out_dir,
-      '--args=%s' % gn_gen_args, "--root=" + SRC_ROOT
-  ])
+  if not options.skip_generate_buildfiles:
+    gn_gen_args = options.gn_gen_args or ''
+    if not options.debug:
+      gn_gen_args += ' is_debug=false'
+    subprocess.check_call([
+        gn_path, 'gen', out_dir,
+        '--args=%s' % gn_gen_args, "--root=" + SRC_ROOT
+    ])
 
 
 if __name__ == '__main__':

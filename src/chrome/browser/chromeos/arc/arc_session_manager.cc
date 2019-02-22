@@ -302,9 +302,13 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     scoped_opt_in_tracker_->TrackError();
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
-    // TODO(poromov): Consider PublicSession offline mode.
-    if (IsRobotOrOfflineDemoAccountMode()) {
+    // TODO(poromov): Consider ARC PublicSession offline mode.
+    // Currently ARC session will be exited below, while the main user session
+    // will be kept alive without Android apps.
+    if (IsRobotOrOfflineDemoAccountMode())
       VLOG(1) << "Robot account auth code fetching error";
+    if (IsArcKioskMode()) {
+      VLOG(1) << "Exiting kiosk session due to provisioning failure";
       // Log out the user. All the cleanup will be done in Shutdown() method.
       // The callback is not called because auth code is empty.
       attempt_user_exit_callback_.Run();
@@ -333,12 +337,16 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       scoped_opt_in_tracker_.reset();
     }
 
-    if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn))
+    PrefService* const prefs = profile_->GetPrefs();
+
+    if (prefs->GetBoolean(prefs::kArcSignedIn))
       return;
 
-    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+    prefs->SetBoolean(prefs::kArcSignedIn, true);
 
-    if (ShouldLaunchPlayStoreApp(profile_, oobe_or_assistant_wizard_start_)) {
+    if (ShouldLaunchPlayStoreApp(
+            profile_,
+            prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe))) {
       playstore_launcher_ = std::make_unique<ArcAppLauncher>(
           profile_, kPlayStoreAppId,
           GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
@@ -346,6 +354,8 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
           false /* deferred_launch_allowed */, display::kInvalidDisplayId,
           arc::UserInteractionType::NOT_USER_INITIATED);
     }
+
+    prefs->ClearPref(prefs::kArcProvisioningInitiatedFromOobe);
 
     for (auto& observer : observer_list_)
       observer.OnArcInitialStart();
@@ -465,10 +475,9 @@ void ArcSessionManager::Initialize() {
       base::FeatureList::IsEnabled(
           kCleanArcDataOnRegularToChildTransitionFeature)) {
     LOG(WARNING) << "User transited from regular to child, deleting ARC data";
-    data_remover_->Schedule();
-    profile_->GetPrefs()->SetInteger(
-        prefs::kArcSupervisionTransition,
-        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+    // Since method below starts removal procedure automatically, return.
+    RequestArcDataRemoval();
+    return;
   }
 
   // Chrome may be shut down before completing ARC data removal.
@@ -661,10 +670,21 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
-  oobe_or_assistant_wizard_start_ =
-      IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive();
-
   PrefService* const prefs = profile_->GetPrefs();
+
+  // |prefs::kArcProvisioningInitiatedFromOobe| is used to remember
+  // |IsArcOobeOptInActive| or |IsArcOptInWizardForAssistantActive| state when
+  // ARC start request was made initially. |IsArcOobeOptInActive| or
+  // |IsArcOptInWizardForAssistantActive| will be changed by the time when
+  // decision to auto-launch the Play Store would be made.
+  // |IsArcOobeOptInActive| and |IsArcOptInWizardForAssistantActive| are not
+  // preserved on Chrome restart also and in last case
+  // |prefs::kArcProvisioningInitiatedFromOobe| is used to remember the state of
+  // the initial request.
+  // |prefs::kArcProvisioningInitiatedFromOobe| is reset when provisioning is
+  // done or ARC is opted out.
+  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive())
+    prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
 
   // If it is marked that sign in has been successfully done or if Play Store is
   // not available, then directly start ARC with skipping Play Store ToS.
@@ -730,7 +750,6 @@ void ArcSessionManager::RequestDisable() {
     return;
   }
 
-  oobe_or_assistant_wizard_start_ = false;
   directly_started_ = false;
   enable_requested_ = false;
   scoped_opt_in_tracker_.reset();
@@ -763,6 +782,9 @@ void ArcSessionManager::RequestArcDataRemoval() {
   // TODO(hidehiko): Think a way to get rid of 1), too.
 
   data_remover_->Schedule();
+  profile_->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
   // To support 1) case above, maybe start data removal.
   if (state_ == State::STOPPED)
     MaybeStartArcDataRemoval();
@@ -839,6 +861,7 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   terms_of_service_negotiator_.reset();
 
   if (!accepted) {
+    VLOG(1) << "Terms of services declined";
     // User does not accept the Terms of Service. Disable Google Play Store.
     MaybeUpdateOptInCancelUMA(support_host_.get());
     SetArcPlayStoreEnabledForProfile(profile_, false);
@@ -846,14 +869,24 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   }
 
   // Terms were accepted.
+  VLOG(1) << "Terms of services accepted";
   profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
   StartAndroidManagementCheck();
 }
 
 void ArcSessionManager::StartAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // State::STOPPED appears here in following scenario.
+  // Initial provisioning finished with state
+  // ProvisioningResult::ArcStop or
+  // ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR.
+  // At this moment |prefs::kArcTermsAccepted| is set to true, once user
+  // confirmed ToS prior to provisioning flow. Once user presses "Try Again"
+  // button, OnRetryClicked calls this immediately.
   DCHECK(state_ == State::NEGOTIATING_TERMS_OF_SERVICE ||
-         state_ == State::CHECKING_ANDROID_MANAGEMENT)
+         state_ == State::CHECKING_ANDROID_MANAGEMENT ||
+         state_ == State::STOPPED)
       << state_;
   state_ = State::CHECKING_ANDROID_MANAGEMENT;
 
@@ -1002,10 +1035,10 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcPaiStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcFastAppReinstallStarted, false);
-    profile_->GetPrefs()->SetInteger(
-        prefs::kArcSupervisionTransition,
-        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+    profile_->GetPrefs()->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe,
+                                     false);
   }
+
   ShutdownSession();
   if (support_host_)
     support_host_->Close();
@@ -1068,32 +1101,39 @@ void ArcSessionManager::OnWindowClosed() {
 }
 
 void ArcSessionManager::OnRetryClicked() {
-  DCHECK(support_host_);
-  DCHECK_EQ(support_host_->ui_page(), ArcSupportHost::UIPage::ERROR);
+  DCHECK(!g_ui_enabled || support_host_);
+  DCHECK(!g_ui_enabled ||
+         support_host_->ui_page() == ArcSupportHost::UIPage::ERROR);
   DCHECK(!terms_of_service_negotiator_);
-  DCHECK(!support_host_->HasAuthDelegate());
+  DCHECK(!g_ui_enabled || !support_host_->HasAuthDelegate());
 
   UpdateOptInActionUMA(OptInActionType::RETRY);
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-    // This can currently happen when an error page is shown when re-opt-in
-    // right after opt-out (this is a bug as it should not show an error).  When
-    // the user click the retry button on this error page, we may start terms of
-    // service negotiation instead of recreating the instance.
-    // TODO(hidehiko): consider removing this case after fixing the bug.
-    MaybeStartTermsOfServiceNegotiation();
-  } else if (state_ == State::ACTIVE) {
+  if (state_ == State::ACTIVE) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
     // ARC was postponed to contain its internal state into the report.
     // Here, on retry, stop it, then restart.
-    support_host_->ShowArcLoading();
-    ShutdownSession();
+    if (support_host_)
+      support_host_->ShowArcLoading();
+    // In unit tests ShutdownSession may be executed inline and OnSessionStopped
+    // is called before |reenable_arc_| is set.
     reenable_arc_ = true;
+    ShutdownSession();
   } else {
-    // Otherwise, we restart ARC. Note: this is the first boot case.
-    // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE
-    // case must hit.
-    StartAndroidManagementCheck();
+    // Otherwise, we start ARC once it is stopped now. Usually ARC container is
+    // left active after provisioning failure but in case
+    // ProvisioningResult::ARC_STOPPED and
+    // ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR failures container
+    // is stopped.
+    // At this point ToS is already accepted and
+    // IsArcTermsOfServiceNegotiationNeeded returns true or ToS needs not to be
+    // shown at all. However there is an exception when this does not happen in
+    // case an error page is shown when re-opt-in right after opt-out (this is a
+    // bug as it should not show an error). When the user click the retry
+    // button on this error page, we may start ToS negotiation instead of
+    // recreating the instance.
+    // TODO(hidehiko): consider removing this case after fixing the bug.
+    MaybeStartTermsOfServiceNegotiation();
   }
 }
 

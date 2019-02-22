@@ -53,6 +53,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -134,9 +135,11 @@ class DataReductionProxyProtocolEmbeddedServerTest : public testing::Test {
     context_->set_job_factory(job_factory_.get());
 
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
-    context_->set_proxy_delegate(proxy_delegate_.get());
 
     context_->Init();
+
+    context_->proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
   }
 
  protected:
@@ -282,7 +285,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     bypass_stats_.reset(new DataReductionProxyBypassStats(
         test_context_->config(), test_context_->unreachable_callback(),
-        test_context_->test_network_connection_tracker()));
+        network::TestNetworkConnectionTracker::GetInstance()));
 
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(
@@ -295,11 +298,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
 
     context_->set_job_factory(job_factory_.get());
 
+    context_->Init();
+
     if (use_drp_proxy_delegate) {
       proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
-      context_->set_proxy_delegate(proxy_delegate_.get());
+      context_->proxy_resolution_service()->SetProxyDelegate(
+          proxy_delegate_.get());
     }
-    context_->Init();
   }
 
   // Simulates a request to a data reduction proxy that may result in bypassing
@@ -323,13 +328,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
     std::string trailer =
         (m == "PUT" || m == "POST") ? "Content-Length: 0\r\n" : "";
 
-    std::string request1 =
-        base::StringPrintf("%s http://www.google.com/ HTTP/1.1\r\n"
-                           "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n%s"
-                           "User-Agent:\r\n"
-                           "Accept-Encoding: gzip, deflate\r\n\r\n",
-                           method, trailer.c_str());
+    std::string request1 = base::StringPrintf(
+        "%s http://www.google.com/ HTTP/1.1\r\n"
+        "Host: www.google.com\r\n"
+        "Proxy-Connection: keep-alive\r\n%s"
+        "User-Agent: \r\n"
+        "Accept-Encoding: gzip, deflate\r\n\r\n",
+        method, trailer.c_str());
 
     std::string payload1 =
         (expected_retry ? "Bypass message" : "content");
@@ -382,7 +387,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
                                       : "";
 
     std::string request2_suffix =
-        "User-Agent:\r\n"
+        "User-Agent: \r\n"
         "Accept-Encoding: gzip, deflate\r\n\r\n";
 
     request2 = request2_prefix + request2_middle + request2_suffix;
@@ -483,15 +488,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
     }
 
     if (expected_num_bad_proxies >= 1u) {
-      ProxyRetryInfoMap::const_iterator i =
-          retry_info.find(GetProxyKey(bad_proxy));
+      auto i = retry_info.find(GetProxyKey(bad_proxy));
       ASSERT_TRUE(i != retry_info.end());
       EXPECT_TRUE(expected_min_duration <= (*i).second.current_delay);
       EXPECT_TRUE((*i).second.current_delay <= expected_max_duration);
     }
     if (expected_num_bad_proxies == 2u) {
-      ProxyRetryInfoMap::const_iterator i =
-          retry_info.find(GetProxyKey(bad_proxy2));
+      auto i = retry_info.find(GetProxyKey(bad_proxy2));
       ASSERT_TRUE(i != retry_info.end());
       EXPECT_TRUE(expected_min_duration <= (*i).second.current_delay);
       EXPECT_TRUE((*i).second.current_delay <= expected_max_duration);
@@ -1066,11 +1069,11 @@ TEST_F(DataReductionProxyProtocolTest,
     MockRead(net::SYNCHRONOUS, net::OK),
   };
   MockWrite data_writes[] = {
-    MockWrite("GET / HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n"
-              "User-Agent:\r\n"
-              "Accept-Encoding: gzip, deflate\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.google.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent: \r\n"
+                "Accept-Encoding: gzip, deflate\r\n\r\n"),
   };
   StaticSocketDataProvider data1(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data1);
@@ -1115,9 +1118,9 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
 
   void AttachToContextAndInit() {
     drp_test_context_->AttachToURLRequestContext(storage_.get());
-    context_->set_proxy_delegate(
-        drp_test_context_->io_data()->proxy_delegate());
     context_->Init();
+    context_->proxy_resolution_service()->SetProxyDelegate(
+        drp_test_context_->io_data()->proxy_delegate());
   }
 
   net::TestURLRequestContext* context() { return context_.get(); }

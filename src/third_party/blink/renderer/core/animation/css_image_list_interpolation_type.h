@@ -26,7 +26,7 @@ class CSSImageListInterpolationType : public CSSInterpolationType {
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue MaybeConvertStyleImageList(const StyleImageList&) const;
+  InterpolationValue MaybeConvertStyleImageList(const StyleImageList*) const;
 
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;

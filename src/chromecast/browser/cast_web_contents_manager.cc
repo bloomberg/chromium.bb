@@ -64,7 +64,7 @@ void CastWebContentsManager::DelayWebContentsDeletion(
   // Suspend the MediaSession to free up media resources for the next content
   // window.
   content::MediaSession::Get(web_contents_ptr)
-      ->Suspend(content::MediaSession::SuspendType::SYSTEM);
+      ->Suspend(content::MediaSession::SuspendType::kSystem);
   LOG(INFO) << "WebContents for " << web_contents->GetVisibleURL()
             << " will be deleted in " << time_delta.InMilliseconds()
             << " milliseconds.";

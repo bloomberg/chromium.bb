@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
-#include "net/ssl/token_binding.h"
 
 namespace crypto {
 class ECPrivateKey;
@@ -30,6 +30,8 @@ class SocketTag;
 
 class NET_EXPORT StreamSocket : public Socket {
  public:
+  using BeforeConnectCallback = base::RepeatingCallback<int()>;
+
   // This is used in DumpMemoryStats() to track the estimate of memory usage of
   // a socket.
   struct NET_EXPORT_PRIVATE SocketMemoryStats {
@@ -50,6 +52,16 @@ class NET_EXPORT StreamSocket : public Socket {
   };
 
   ~StreamSocket() override {}
+
+  // Sets a callback to be invoked before establishing a connection. This allows
+  // setting options, like receive and send buffer size, when they will take
+  // effect. The callback should return net::OK on success, and an error on
+  // failure. It must not return net::ERR_IO_PENDING.
+  //
+  // If multiple connection attempts are made, the callback will be invoked for
+  // each one.
+  virtual void SetBeforeConnectCallback(
+      const BeforeConnectCallback& before_connect_callback);
 
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the
@@ -146,13 +158,6 @@ class NET_EXPORT StreamSocket : public Socket {
   // channel ids are not supported.  Must not be called on a socket that does
   // not support SSL.
   virtual ChannelIDService* GetChannelIDService() const;
-
-  // Generates the signature used in Token Binding using key |*key| and for a
-  // Token Binding of type |tb_type|, putting the signature in |*out|. Returns a
-  // net error code.  Must not be called on a socket that does not support SSL.
-  virtual Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                         TokenBindingType tb_type,
-                                         std::vector<uint8_t>* out);
 
   // This method is only for debugging https://crbug.com/548423 and will be
   // removed when that bug is closed. This returns the channel ID key that was

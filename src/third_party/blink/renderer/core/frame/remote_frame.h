@@ -31,10 +31,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void Trace(blink::Visitor*) override;
   void ScheduleNavigation(Document& origin_document,
                           const KURL&,
-                          bool replace_current_item,
+                          WebFrameLoadType,
                           UserGestureStatus) override;
-  void Navigate(const FrameLoadRequest& passed_request) override;
-  void Detach(FrameDetachType) override;
+  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;
   void CheckCompleted() override;
@@ -47,7 +46,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                                          ScrollGranularity granularity,
                                          Frame* child) override;
 
-  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes);
+  void SetCcLayer(cc::Layer*,
+                  bool prevent_contents_opaque_changes,
+                  bool is_surface_layer);
   cc::Layer* GetCcLayer() const { return cc_layer_; }
   bool WebLayerHasFixedContentsOpaque() const {
     return prevent_contents_opaque_changes_;
@@ -62,8 +63,14 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   RemoteFrameClient* Client() const;
 
+  void PointerEventsChanged();
+  bool IsIgnoredForHitTest() const;
+
  private:
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
+
+  // Frame protected overrides:
+  void DetachImpl(FrameDetachType) override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
@@ -76,6 +83,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   Member<RemoteSecurityContext> security_context_;
   cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
+  bool is_surface_layer_ = false;
 };
 
 inline RemoteFrameView* RemoteFrame::View() const {

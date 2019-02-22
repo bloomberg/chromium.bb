@@ -41,7 +41,7 @@
 #include <limits>
 
 namespace blink {
-namespace XPath {
+namespace xpath {
 
 static inline bool IsWhitespace(UChar c) {
   return c == ' ' || c == '\n' || c == '\r' || c == '\t';
@@ -355,7 +355,7 @@ Value FunId::Evaluate(EvaluationContext& context) const {
     if (start_pos == length)
       break;
 
-    size_t end_pos = start_pos;
+    unsigned end_pos = start_pos;
     while (end_pos < length && !IsWhitespace(id_list[end_pos]))
       ++end_pos;
 
@@ -511,7 +511,7 @@ Value FunSubstringBefore::Evaluate(EvaluationContext& context) const {
   if (s2.IsEmpty())
     return "";
 
-  size_t i = s1.Find(s2);
+  wtf_size_t i = s1.Find(s2);
 
   if (i == kNotFound)
     return "";
@@ -523,7 +523,7 @@ Value FunSubstringAfter::Evaluate(EvaluationContext& context) const {
   String s1 = Arg(0)->Evaluate(context).ToString();
   String s2 = Arg(1)->Evaluate(context).ToString();
 
-  size_t i = s1.Find(s2);
+  wtf_size_t i = s1.Find(s2);
   if (i == kNotFound)
     return "";
 
@@ -599,7 +599,7 @@ Value FunTranslate::Evaluate(EvaluationContext& context) const {
 
   for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
     UChar ch = s1[i1];
-    size_t i2 = s2.find(ch);
+    wtf_size_t i2 = s2.find(ch);
 
     if (i2 == kNotFound)
       result.Append(ch);
@@ -646,7 +646,7 @@ Value FunLang::Evaluate(EvaluationContext& context) const {
       return true;
 
     // Remove suffixes one by one.
-    size_t index = lang_value.ReverseFind('-');
+    wtf_size_t index = lang_value.ReverseFind('-');
     if (index == kNotFound)
       break;
     lang_value = lang_value.Left(index);
@@ -770,5 +770,5 @@ Function* CreateFunction(const String& name,
   return function;
 }
 
-}  // namespace XPath
+}  // namespace xpath
 }  // namespace blink

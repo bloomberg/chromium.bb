@@ -29,6 +29,10 @@ bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   return gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad;
 }
 
+bool IsGestureEventFromAutoscroll(const blink::WebGestureEvent event) {
+  return event.SourceDevice() == blink::kWebGestureDeviceSyntheticAutoscroll;
+}
+
 bool IsGestureScrollUpdateInertialEvent(const blink::WebInputEvent& event) {
   if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
     return false;
@@ -66,6 +70,10 @@ bool OverscrollController::ShouldProcessEvent(
       // See crbug.com/533069
       if (gesture.resending_plugin_id != -1 &&
           event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+        return false;
+
+      // Gesture events with Autoscroll source don't cause overscrolling.
+      if (IsGestureEventFromAutoscroll(gesture))
         return false;
 
       blink::WebGestureEvent::ScrollUnits scrollUnits;
@@ -522,6 +530,8 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
 
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return false;
+
+  overscroll_ignored_ = false;
 
   // Tell the delegate about the overscroll update so that it can update
   // the display accordingly (e.g. show history preview etc.).

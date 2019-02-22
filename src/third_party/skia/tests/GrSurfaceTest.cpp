@@ -13,7 +13,6 @@
 #include "GrProxyProvider.h"
 #include "GrRenderTarget.h"
 #include "GrResourceProvider.h"
-#include "GrTest.h"
 #include "GrTexture.h"
 #include "SkMipMap.h"
 #include "Test.h"
@@ -49,7 +48,7 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrSurface, reporter, ctxInfo) {
     REPORTER_ASSERT(reporter, static_cast<GrSurface*>(tex1.get()) == tex1->asTexture());
 
     GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
-        nullptr, 256, 256, kRGBA_8888_GrPixelConfig, false, GrMipMapped::kNo);
+        nullptr, 256, 256, GrColorType::kRGBA_8888, false, GrMipMapped::kNo);
 
     sk_sp<GrSurface> texRT2 =
             resourceProvider->wrapRenderableBackendTexture(backendTex, 1, kBorrow_GrWrapOwnership);
@@ -166,7 +165,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(InitialTextureClear, reporter, context_info) 
                     // Try directly creating the texture.
                     // Do this twice in an attempt to hit the cache on the second time through.
                     for (int i = 0; i < 2; ++i) {
-                        sk_sp<GrTextureProxy> proxy = proxyProvider->createInstantiatedProxy(
+                        auto proxy = proxyProvider->testingOnly_createInstantiatedProxy(
                                 desc, origin, fit, SkBudgeted::kYes);
                         if (!proxy) {
                             continue;

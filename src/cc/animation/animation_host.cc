@@ -279,7 +279,7 @@ bool AnimationHost::NeedsTickAnimations() const {
 bool AnimationHost::TickMutator(base::TimeTicks monotonic_time,
                                 const ScrollTree& scroll_tree,
                                 bool is_active_tree) {
-  if (!mutator_ || !mutator_->HasAnimators())
+  if (!mutator_ || !mutator_->HasMutators())
     return false;
 
   std::unique_ptr<MutatorInputState> state = CollectWorkletAnimationsState(

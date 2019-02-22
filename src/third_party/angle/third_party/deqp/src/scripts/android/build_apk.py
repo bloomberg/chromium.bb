@@ -29,6 +29,7 @@
 import os
 import re
 import sys
+import glob
 import string
 import shutil
 import argparse
@@ -168,7 +169,7 @@ class Environment:
 		self.ndk		= ndk
 
 class Configuration:
-	def __init__(self, env, buildPath, abis, nativeApi, nativeBuildType, gtfTarget, verbose):
+	def __init__(self, env, buildPath, abis, nativeApi, nativeBuildType, gtfTarget, verbose, layers):
 		self.env				= env
 		self.sourcePath			= DEQP_DIR
 		self.buildPath			= buildPath
@@ -178,6 +179,7 @@ class Configuration:
 		self.nativeBuildType	= nativeBuildType
 		self.gtfTarget			= gtfTarget
 		self.verbose			= verbose
+		self.layers				= layers
 		self.cmakeGenerator		= selectFirstAvailableGenerator([NINJA_GENERATOR, MAKEFILE_GENERATOR, NMAKE_GENERATOR])
 
 	def check (self):
@@ -190,8 +192,8 @@ class Configuration:
 		if not NDKEnv.isHostOsSupported(self.env.ndk.hostOsName):
 			raise Exception("NDK '%s' is not supported on this machine" % self.env.ndk.hostOsName)
 
-		if self.env.ndk.version[0] < 15 and self.env.ndk.version[0] != 11:
-			raise Exception("Android NDK version %d is not supported; build requires NDK version 11c or >= 15" % (self.env.ndk.version[0]))
+		if self.env.ndk.version[0] < 15:
+			raise Exception("Android NDK version %d is not supported; build requires NDK version >= 15" % (self.env.ndk.version[0]))
 
 		if self.env.sdk.buildToolsVersion == (0,0,0):
 			raise Exception("No build tools directory found at %s" % os.path.join(self.env.sdk.path, "build-tools"))
@@ -329,12 +331,8 @@ def buildNativeLibrary (config, abiName):
 		return "r%d%s" % (version[0], minorVersionString)
 
 	def getBuildArgs (config, abiName):
-		if config.env.ndk.version[0] == 11:
-			toolchain = 'ndk-%s' % makeNDKVersionString((config.env.ndk.version[0], 0))
-		else:
-			toolchain = 'ndk-modern'
 		return ['-DDEQP_TARGET=android',
-				'-DDEQP_TARGET_TOOLCHAIN=%s' % toolchain,
+				'-DDEQP_TARGET_TOOLCHAIN=ndk-modern',
 				'-DCMAKE_C_FLAGS=-Werror',
 				'-DCMAKE_CXX_FLAGS=-Werror',
 				'-DANDROID_NDK_HOST_OS=%s' % config.env.ndk.hostOsName,
@@ -713,6 +711,17 @@ class AddNativeLibsToAPK (BuildStep):
 			shutil.copyfile(libSrcPath, libAbsPath)
 			libFiles.append(libRelPath)
 
+			if config.layers:
+				layersGlob = os.path.join(config.layers, abi, "libVkLayer_*.so")
+				libVkLayers = glob.glob(layersGlob)
+				for layer in libVkLayers:
+					layerFilename = os.path.basename(layer)
+					layerRelPath = os.path.join("lib", abi, layerFilename)
+					layerAbsPath = os.path.join(pkgPath, layerRelPath)
+					shutil.copyfile(layer, layerAbsPath)
+					libFiles.append(layerRelPath)
+					print "Adding layer binary: %s" % (layer,)
+
 		shutil.copyfile(srcPath, dstPath)
 		addFilesToAPK(config, dstPath, pkgPath, libFiles)
 
@@ -888,6 +897,10 @@ def parseArgs ():
 		default='gles32',
 		choices=['gles32', 'gles31', 'gles3', 'gles2', 'gl'],
 		help="KC-CTS (GTF) target API (only used in openglcts target)")
+	parser.add_argument('--layers-path',
+		dest='layers',
+		default=None,
+		required=False)
 
 	args = parser.parse_args()
 
@@ -922,7 +935,8 @@ if __name__ == "__main__":
 	sdk			= SDKEnv(os.path.realpath(args.sdkPath))
 	buildPath	= os.path.realpath(args.buildRoot)
 	env			= Environment(sdk, ndk)
-	config		= Configuration(env, buildPath, abis=args.abis, nativeApi=args.nativeApi, nativeBuildType=args.nativeBuildType, gtfTarget=args.gtfTarget, verbose=args.verbose)
+	config		= Configuration(env, buildPath, abis=args.abis, nativeApi=args.nativeApi, nativeBuildType=args.nativeBuildType, gtfTarget=args.gtfTarget, verbose=args.verbose,
+						 layers=args.layers)
 
 	try:
 		config.check()

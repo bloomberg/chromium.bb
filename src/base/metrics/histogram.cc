@@ -166,6 +166,7 @@ HistogramBase* Histogram::Factory::Build() {
       return DummyHistogram::GetInstance();
     // To avoid racy destruction at shutdown, the following will be leaked.
     const BucketRanges* created_ranges = CreateRanges();
+
     const BucketRanges* registered_ranges =
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(created_ranges);
 
@@ -336,6 +337,7 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   Sample current = minimum;
   ranges->set_range(bucket_index, current);
   size_t bucket_count = ranges->bucket_count();
+
   while (bucket_count > ++bucket_index) {
     double log_current;
     log_current = log(static_cast<double>(current));
@@ -982,10 +984,12 @@ void LinearHistogram::InitializeBucketRanges(Sample minimum,
   double min = minimum;
   double max = maximum;
   size_t bucket_count = ranges->bucket_count();
+
   for (size_t i = 1; i < bucket_count; ++i) {
     double linear_range =
         (min * (bucket_count - 1 - i) + max * (i - 1)) / (bucket_count - 2);
-    ranges->set_range(i, static_cast<Sample>(linear_range + 0.5));
+    uint32_t range = static_cast<Sample>(linear_range + 0.5);
+    ranges->set_range(i, range);
   }
   ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();

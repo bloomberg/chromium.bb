@@ -798,13 +798,6 @@ chrome.fileManagerPrivate.requestAccessToken = function(refresh, callback) {};
 chrome.fileManagerPrivate.requestWebStoreAccessToken = function(callback) {};
 
 /**
- * Requests a share dialog url for the specified file.
- * @param {!Entry} entry
- * @param {function((string|undefined))} callback Callback with the result url.
- */
-chrome.fileManagerPrivate.getShareUrl = function(entry, callback) {};
-
-/**
  * Requests a download url to download the file contents.
  * @param {!Entry} entry
  * @param {function((string|undefined))} callback Callback with the result url.
@@ -940,7 +933,22 @@ chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
  *     is started and mounted.
  *     chrome.runtime.lastError will be set if there was an error.
  */
-chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
+chrome.fileManagerPrivate.mountCrostini = function(callback) {};
+
+/**
+ * Shares directory with crostini container.
+ * @param {!DirectoryEntry} entry Entry of the directory to share.
+ * @param {function()} callback Callback called after the folder is shared.
+ *     chrome.runtime.lastError will be set if there was an error.
+ */
+chrome.fileManagerPrivate.sharePathWithCrostini = function(
+    entry, callback) {};
+
+/**
+ * Returns list of paths shared with the crostini container.
+ * @param {function(!Array<!Entry>)} callback
+ */
+chrome.fileManagerPrivate.getCrostiniSharedPaths = function(callback) {};
 
 /**
  * Begin installation of a Linux package.
@@ -950,6 +958,30 @@ chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
  *    Called when the installation is either started or fails to start.
  */
 chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
+
+/**
+ * Detect character encoding.
+ *
+ * @param {!string} bytes a hex-encoded string. Every 2 characters represent
+ *     one byte by 2-digit hexadecimal number.
+ * @param {function((string|undefined))} callback |mime_name| Preferred MIME
+ *     name of the detected character encoding system. Slightly different from
+ *     IANA name. See third_party/ced/src/util/encodings/encodings.cc
+ */
+chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
+};
+
+/**
+ * For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
+ * returns a thumbnail appropriate for file list or grid views; otherwise,
+ * returns a thumbnail appropriate for quickview.
+ * @param {Object} entry
+ * @param {boolean} cropToSquare
+ * @param {function(string):void} callback |thumbnailDataUrl| A data URL for the
+ *     thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
+ *     available.
+ */
+chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

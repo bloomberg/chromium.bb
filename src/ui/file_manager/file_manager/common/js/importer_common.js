@@ -134,10 +134,10 @@ importer.isEligiblePath_ = function(splitPath) {
  * Returns true if the entry is a DCIM dir, or a descendant of a DCIM dir.
  *
  * @param {Entry} entry
- * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
+ * @param {!VolumeManager} volumeManager
  * @return {boolean}
  */
-importer.isBeneathMediaDir = function(entry, volumeInfoProvider) {
+importer.isBeneathMediaDir = function(entry, volumeManager) {
   if (!entry || !entry.fullPath) {
     return false;
   }
@@ -150,8 +150,7 @@ importer.isBeneathMediaDir = function(entry, volumeInfoProvider) {
     return false;
   }
 
-  console.assert(volumeInfoProvider !== null);
-  var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+  var volumeInfo = volumeManager.getVolumeInfo(entry);
   return importer.isEligibleVolume(volumeInfo);
 };
 
@@ -169,25 +168,24 @@ importer.isEligibleVolume = function(volumeInfo) {
 /**
  * Returns true if the entry is cloud import eligible.
  *
- * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
+ * @param {!VolumeManager} volumeManager
  * @param {Entry} entry
  * @return {boolean}
  */
-importer.isEligibleEntry = function(volumeInfoProvider, entry) {
-  console.assert(volumeInfoProvider !== null);
+importer.isEligibleEntry = function(volumeManager, entry) {
   return importer.isEligibleType(entry) &&
-      importer.isBeneathMediaDir(entry, volumeInfoProvider);
+      importer.isBeneathMediaDir(entry, volumeManager);
 };
 
 /**
  * Returns true if the entry represents a media directory for the purposes
  * of Cloud Import.
  *
- * @param {Entry|FakeEntry|FilesAppEntry} entry
- * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
+ * @param {Entry|FilesAppEntry} entry
+ * @param {!VolumeManager} volumeManager
  * @return {boolean}
  */
-importer.isMediaDirectory = function(entry, volumeInfoProvider) {
+importer.isMediaDirectory = function(entry, volumeManager) {
   if (!entry || !entry.isDirectory || !entry.fullPath)
     return false;
   var splitPath = importer.splitPath_(/** @type {Entry} */(entry));
@@ -197,8 +195,7 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
   // This is a media root if there is only one element in the path, and it is a
   // valid import root.
   if (splitPath[0] in importer.ValidImportRoots_ && splitPath.length === 1) {
-    console.assert(volumeInfoProvider !== null);
-    var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+    var volumeInfo = volumeManager.getVolumeInfo(entry);
     return importer.isEligibleVolume(volumeInfo);
   }
   return false;

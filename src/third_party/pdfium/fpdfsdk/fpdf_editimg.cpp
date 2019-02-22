@@ -12,6 +12,7 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/render/cpdf_dibbase.h"
@@ -67,7 +68,7 @@ bool LoadJpegHelper(FPDF_PAGE* pages,
     for (int index = 0; index < nCount; index++) {
       CPDF_Page* pPage = CPDFPageFromFPDFPage(pages[index]);
       if (pPage)
-        pImgObj->GetImage()->ResetCache(pPage, nullptr);
+        pImgObj->GetImage()->ResetCache(pPage);
     }
   }
 
@@ -151,7 +152,7 @@ FPDFImageObj_SetBitmap(FPDF_PAGE* pages,
   for (int index = 0; index < nCount; index++) {
     CPDF_Page* pPage = CPDFPageFromFPDFPage(pages[index]);
     if (pPage)
-      pImgObj->GetImage()->ResetCache(pPage, nullptr);
+      pImgObj->GetImage()->ResetCache(pPage);
   }
   RetainPtr<CFX_DIBitmap> holder(CFXDIBitmapFromFPDFBitmap(bitmap));
   pImgObj->GetImage()->SetImage(holder);
@@ -291,15 +292,15 @@ FPDFImageObj_GetImageMetadata(FPDF_PAGEOBJECT image_object,
   if (!pImg)
     return false;
 
-  metadata->marked_content_id = pObj->m_ContentMark.GetMarkedContentID();
+  metadata->marked_content_id = pObj->m_ContentMarks.GetMarkedContentID();
 
   const int nPixelWidth = pImg->GetPixelWidth();
   const int nPixelHeight = pImg->GetPixelHeight();
   metadata->width = nPixelWidth;
   metadata->height = nPixelHeight;
 
-  const float nWidth = pObj->m_Right - pObj->m_Left;
-  const float nHeight = pObj->m_Top - pObj->m_Bottom;
+  const float nWidth = pObj->GetRect().Width();
+  const float nHeight = pObj->GetRect().Height();
   constexpr int nPointsPerInch = 72;
   if (nWidth != 0 && nHeight != 0) {
     metadata->horizontal_dpi = nPixelWidth / nWidth * nPointsPerInch;

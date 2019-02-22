@@ -63,7 +63,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
   class CSSStyleSheetResourceFactory : public ResourceFactory {
    public:
     CSSStyleSheetResourceFactory()
-        : ResourceFactory(Resource::kCSSStyleSheet,
+        : ResourceFactory(ResourceType::kCSSStyleSheet,
                           TextResourceDecoderOptions::kCSSContent) {}
 
     Resource* Create(

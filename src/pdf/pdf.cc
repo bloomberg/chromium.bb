@@ -139,27 +139,29 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 std::vector<uint8_t> ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    const gfx::Size& page_size) {
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area) {
   ScopedSdkInitializer scoped_sdk_initializer;
   if (!scoped_sdk_initializer.Init())
     return std::vector<uint8_t>();
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
-  return engine_exports->ConvertPdfPagesToNupPdf(std::move(input_buffers),
-                                                 pages_per_sheet, page_size);
+  return engine_exports->ConvertPdfPagesToNupPdf(
+      std::move(input_buffers), pages_per_sheet, page_size, printable_area);
 }
 
 std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,
-    const gfx::Size& page_size) {
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area) {
   ScopedSdkInitializer scoped_sdk_initializer;
   if (!scoped_sdk_initializer.Init())
     return std::vector<uint8_t>();
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
-  return engine_exports->ConvertPdfDocumentToNupPdf(input_buffer,
-                                                    pages_per_sheet, page_size);
+  return engine_exports->ConvertPdfDocumentToNupPdf(
+      input_buffer, pages_per_sheet, page_size, printable_area);
 }
 
 }  // namespace chrome_pdf

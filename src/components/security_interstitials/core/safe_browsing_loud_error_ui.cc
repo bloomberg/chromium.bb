@@ -306,12 +306,10 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
       security_interstitials::kPrivacyLinkHtml,
       security_interstitials::CMD_OPEN_REPORTING_PRIVACY,
       l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
-  load_time_data->SetString(security_interstitials::kOptInLink,
-                            l10n_util::GetStringFUTF16(
-                                is_scout_reporting_enabled()
-                                    ? IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE
-                                    : IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
-                                base::UTF8ToUTF16(privacy_link)));
+  load_time_data->SetString(
+      security_interstitials::kOptInLink,
+      l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE,
+                                 base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
                              is_extended_reporting_enabled());
 }

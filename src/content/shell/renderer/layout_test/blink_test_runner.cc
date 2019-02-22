@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -66,12 +65,12 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -107,7 +106,6 @@ using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
 using blink::WebTestingSupport;
-using blink::WebThread;
 using blink::WebVector;
 using blink::WebView;
 
@@ -199,14 +197,12 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, std::move(task));
+  GetTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void BlinkTestRunner::PostDelayedTask(base::OnceClosure task,
                                       base::TimeDelta delay) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
-      FROM_HERE, std::move(task), delay);
+  GetTaskRunner()->PostDelayedTask(FROM_HERE, std::move(task), delay);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
@@ -887,6 +883,15 @@ void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
 
 void BlinkTestRunner::OnDestruct() {
   delete this;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> BlinkTestRunner::GetTaskRunner() {
+  if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame()) {
+    WebLocalFrame* main_frame =
+        render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
+    return main_frame->GetTaskRunner(blink::TaskType::kInternalTest);
+  }
+  return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 }
 
 }  // namespace content

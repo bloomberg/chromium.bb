@@ -7,8 +7,6 @@
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
-var EXTENSION_VIEW_API_METHODS =
-    require('extensionViewApiMethods').EXTENSION_VIEW_API_METHODS;
 var ExtensionViewAttributes =
     require('extensionViewAttributes').ExtensionViewAttributes;
 var ExtensionViewEvents = require('extensionViewEvents').ExtensionViewEvents;
@@ -33,12 +31,6 @@ function ExtensionViewImpl(extensionviewElement) {
 }
 
 ExtensionViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
-
-ExtensionViewImpl.VIEW_TYPE = 'ExtensionView';
-
-ExtensionViewImpl.setupElement = function(proto) {
-  GuestViewContainer.forwardApiMethods(proto, EXTENSION_VIEW_API_METHODS);
-};
 
 ExtensionViewImpl.prototype.createGuest = function(callback) {
   this.guest.create(this.buildParams(), $Function.bind(function() {
@@ -160,4 +152,5 @@ ExtensionViewImpl.prototype.load = function(src) {
   }, this));
 };
 
-GuestViewContainer.registerElement(ExtensionViewImpl);
+// Exports.
+exports.$set('ExtensionViewImpl', ExtensionViewImpl);

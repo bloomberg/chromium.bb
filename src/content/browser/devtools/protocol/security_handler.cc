@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -104,8 +104,7 @@ void AddExplanations(
 // static
 std::vector<SecurityHandler*> SecurityHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<SecurityHandler>(
-      host, Security::Metainfo::domainName);
+  return host->HandlersByName<SecurityHandler>(Security::Metainfo::domainName);
 }
 
 SecurityHandler::SecurityHandler()

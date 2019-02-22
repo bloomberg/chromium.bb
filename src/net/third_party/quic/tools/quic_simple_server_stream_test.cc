@@ -44,9 +44,12 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
   QuicSimpleServerStreamPeer(
       QuicStreamId stream_id,
       QuicSpdySession* session,
+      StreamType type,
       QuicSimpleServerBackend* quic_simple_server_backend)
-      : QuicSimpleServerStream(stream_id, session, quic_simple_server_backend) {
-  }
+      : QuicSimpleServerStream(stream_id,
+                               session,
+                               type,
+                               quic_simple_server_backend) {}
 
   ~QuicSimpleServerStreamPeer() override = default;
 
@@ -210,9 +213,10 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         kInitialSessionFlowControlWindowForTest);
     stream_ = new QuicSimpleServerStreamPeer(
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
-        &session_, &memory_cache_backend_);
+        &session_, BIDIRECTIONAL, &memory_cache_backend_);
     // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
     session_.ActivateStream(QuicWrapUnique(stream_));
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   const QuicString& StreamBody() {
@@ -368,8 +372,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 
 TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // Create a new promised stream with even id().
-  QuicSimpleServerStreamPeer* promised_stream =
-      new QuicSimpleServerStreamPeer(2, &session_, &memory_cache_backend_);
+  QuicSimpleServerStreamPeer* promised_stream = new QuicSimpleServerStreamPeer(
+      2, &session_, WRITE_UNIDIRECTIONAL, &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(promised_stream));
 
   // Send a push response with response status 404, which will be regarded as
@@ -480,6 +484,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   // Create a server initiated stream and pass it to session_.
   QuicSimpleServerStreamPeer* server_initiated_stream =
       new QuicSimpleServerStreamPeer(kServerInitiatedStreamId, &session_,
+                                     WRITE_UNIDIRECTIONAL,
                                      &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(server_initiated_stream));
 

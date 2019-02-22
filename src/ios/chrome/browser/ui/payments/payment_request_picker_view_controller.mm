@@ -7,10 +7,10 @@
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,7 +47,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 
 @implementation PaymentRequestPickerViewController
 
-@synthesize appBar = _appBar;
+@synthesize appBarViewController = _appBarViewController;
 @synthesize searchController = _searchController;
 @synthesize allRows = _allRows;
 @synthesize displayedRows = _displayedRows;
@@ -69,16 +69,14 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
     // Default to displaying all the rows.
     self.displayedRows = self.allRows;
 
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:_appBar.headerViewController];
-    ConfigureAppBarWithCardStyle(_appBar);
+    _appBarViewController = [[ChromeAppBarViewController alloc] init];
 
     // Set up leading (back) button.
     UIBarButtonItem* backButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:self
                                             action:@selector(onBack)];
-    self.appBar.navigationBar.backItem = backButton;
+    self.appBarViewController.navigationBar.backItem = backButton;
   }
   return self;
 }
@@ -98,23 +96,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 
   self.tableView.delegate = self;
 
-  const bool isFullScreen =
-      !IsIPadIdiom() || ([self navigationController].modalPresentationStyle !=
-                         UIModalPresentationFormSheet);
-
-  if (isFullScreen && [self navigationController].navigationBarHidden) {
-    // TODO(crbug.com/767428): When shown full screen, the UITableViewController
-    // uses the full screen even when the status bar is present, but insets the
-    // section headers by the size of the status bar. This will inset the
-    // content by the same amount, to ensure they line up properly. Also insets
-    // by one more pixel to hide the one pixel gap left in between the
-    // navigation bar and the UITableView.
-    const UIEdgeInsets statusBarInset =
-        UIEdgeInsetsMake(-1 - StatusBarHeight(), 0, 0, 0);
-    self.tableView.contentInset = statusBarInset;
-    self.tableView.scrollIndicatorInsets = statusBarInset;
-  }
-
+  [self updateTableInset];
   self.tableView.rowHeight = MDCCellDefaultOneLineHeight;
   self.tableView.accessibilityIdentifier =
       kPaymentRequestPickerViewControllerAccessibilityID;
@@ -137,17 +119,30 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
   // controller does not present on top of the navigation controller.
   self.definesPresentationContext = YES;
 
-  self.appBar.headerViewController.headerView.trackingScrollView =
-      self.tableView;
-  [self.appBar addSubviewsToParent];
+  [self addChildViewController:self.appBarViewController];
+  ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
+  self.appBarViewController.headerView.trackingScrollView = self.tableView;
+  // Match the width of the parent view.
+  CGRect frame = self.appBarViewController.view.frame;
+  frame.origin.x = 0;
+  frame.size.width =
+      self.appBarViewController.parentViewController.view.bounds.size.width;
+  self.appBarViewController.view.frame = frame;
+  [self.view addSubview:self.appBarViewController.view];
+  [self.appBarViewController didMoveToParentViewController:self];
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  [self updateTableInset];
 }
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
-  return self.appBar.headerViewController;
+  return self.appBarViewController;
 }
 
 - (UIViewController*)childViewControllerForStatusBarStyle {
-  return self.appBar.headerViewController;
+  return self.appBarViewController;
 }
 
 #pragma mark - UITableViewDataSource
@@ -196,16 +191,14 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidScroll];
   }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidEndDecelerating];
   }
@@ -213,8 +206,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
   }
@@ -223,8 +215,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 - (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint*)targetContentOffset {
-  MDCFlexibleHeaderView* headerView =
-      self.appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
     [headerView
         trackingScrollViewWillEndDraggingWithVelocity:velocity
@@ -281,6 +272,31 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 }
 
 #pragma mark - Private
+
+- (void)updateTableInset {
+  const bool isFullScreen =
+      !IsIPadIdiom() || ([self navigationController].modalPresentationStyle !=
+                         UIModalPresentationFormSheet);
+
+  if (isFullScreen && [self navigationController].navigationBarHidden) {
+    // TODO(crbug.com/767428): When shown full screen, the UITableViewController
+    // uses the full screen even when the status bar is present, but insets the
+    // section headers by the size of the status bar. This will inset the
+    // content by the same amount, to ensure they line up properly. Also insets
+    // by one more pixel to hide the one pixel gap left in between the
+    // navigation bar and the UITableView.
+    CGFloat topInset = 0;
+    if (@available(iOS 11, *)) {
+      topInset = self.view.safeAreaInsets.top;
+    } else {
+      topInset = StatusBarHeight();
+    }
+    const UIEdgeInsets statusBarInset =
+        UIEdgeInsetsMake(-1 - topInset, 0, 0, 0);
+    self.tableView.contentInset = statusBarInset;
+    self.tableView.scrollIndicatorInsets = statusBarInset;
+  }
+}
 
 - (void)onBack {
   [self.delegate paymentRequestPickerViewControllerDidFinish:self];

@@ -57,7 +57,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   shelf_view_ = shelf_view;
 
   SetAnchorView(anchor);
-  set_arrow(views::BubbleBorder::NONE);
+  SetArrow(views::BubbleBorder::NONE);
   SetBackground(nullptr);
   if (shelf_->IsHorizontalAlignment())
     set_margins(gfx::Insets(0, kEndPadding));
@@ -80,9 +80,8 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   views::BubbleDialogDelegateView::CreateBubble(this);
 
   // This can only be set after bubble creation:
-  if (chromeos::switches::ShouldUseShelfNewUi())
-    GetBubbleFrameView()->bubble_border()->SetCornerRadius(
-        ShelfConstants::shelf_size() / 2);
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+      ShelfConstants::shelf_size() / 2);
 
   AddChildView(shelf_view_);
 }

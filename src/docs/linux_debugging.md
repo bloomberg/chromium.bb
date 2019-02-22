@@ -458,9 +458,7 @@ with the appropriate instructions if you know what they are.)
 
 ## Breakpad
 
-See the last section of [Linux Crash Dumping](linux_crash_dumping.md); you
-need to set a gyp variable and an environment variable for the crash dump tests
-to work.
+See the last section of [Linux Crash Dumping](linux_crash_dumping.md).
 
 ## Drag and Drop
 

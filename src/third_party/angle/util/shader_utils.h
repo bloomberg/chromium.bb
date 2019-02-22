@@ -15,6 +15,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -27,15 +28,12 @@ CompileProgramWithTransformFeedback(const std::string &vsSource,
                                     const std::string &fsSource,
                                     const std::vector<std::string> &transformFeedbackVaryings,
                                     GLenum bufferMode);
-ANGLE_EXPORT GLuint
-CompileProgramWithGSAndTransformFeedback(const std::string &vsSource,
-                                         const std::string &gsSource,
-                                         const std::string &fsSource,
-                                         const std::vector<std::string> &transformFeedbackVaryings,
-                                         GLenum bufferMode);
+
 ANGLE_EXPORT GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource);
-ANGLE_EXPORT GLuint CompileProgramParallel(const std::string &vsSource,
-                                           const std::string &fsSource);
+
+ANGLE_EXPORT GLuint CompileProgram(const std::string &vsSource,
+                                   const std::string &fsSource,
+                                   const std::function<void(GLuint)> &preLinkCallback);
 
 ANGLE_EXPORT GLuint CompileProgramWithGS(const std::string &vsSource,
                                          const std::string &gsSource,
@@ -85,6 +83,9 @@ ANGLE_EXPORT const char *UniformColor();
 // A shader that fills with 100% opaque red.
 ANGLE_EXPORT const char *Red();
 
+// A shader that fills with 100% opaque green.
+ANGLE_EXPORT const char *Green();
+
 // A shader that fills with 100% opaque blue.
 ANGLE_EXPORT const char *Blue();
 
@@ -129,6 +130,10 @@ ANGLE_EXPORT const char *Zero();
 
 // A shader that sets gl_Position to attribute a_position.
 ANGLE_EXPORT const char *Simple();
+
+// A shader that simply passes through attribute a_position, setting it to gl_Position and varying
+// v_position.
+ANGLE_EXPORT const char *Passthrough();
 
 }  // namespace vs
 

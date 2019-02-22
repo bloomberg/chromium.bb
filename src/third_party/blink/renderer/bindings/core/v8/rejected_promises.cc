@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -216,7 +216,7 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
   }
 
   // Then look it up in the reported errors.
-  for (size_t i = 0; i < reported_as_errors_.size(); ++i) {
+  for (wtf_size_t i = 0; i < reported_as_errors_.size(); ++i) {
     std::unique_ptr<Message>& message = reported_as_errors_.at(i);
     if (!message->IsCollected() && message->HasPromise(data.GetPromise())) {
       message->MakePromiseStrong();
@@ -261,7 +261,8 @@ void RejectedPromises::ProcessQueueNow(MessageQueue queue) {
   auto* new_end = std::remove_if(
       reported_as_errors_.begin(), reported_as_errors_.end(),
       [](const auto& message) { return message->IsCollected(); });
-  reported_as_errors_.Shrink(new_end - reported_as_errors_.begin());
+  reported_as_errors_.Shrink(
+      static_cast<wtf_size_t>(new_end - reported_as_errors_.begin()));
 
   for (auto& message : queue) {
     if (message->IsCollected())

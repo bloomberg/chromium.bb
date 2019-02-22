@@ -16,6 +16,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
@@ -45,16 +46,8 @@
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
-    : host_(RenderWidgetHostImpl::From(host)),
-      is_fullscreen_(false),
-      popup_type_(blink::kWebPopupTypeNone),
-      current_device_scale_factor_(0),
-      current_display_rotation_(display::Display::ROTATE_0),
-      text_input_manager_(nullptr),
-      web_contents_accessibility_(nullptr),
-      is_currently_scrolling_viewport_(false),
-      use_viz_hit_test_(features::IsVizHitTestingEnabled()),
-      renderer_frame_number_(0),
+    : use_viz_hit_test_(features::IsVizHitTestingEnabled()),
+      host_(RenderWidgetHostImpl::From(host)),
       weak_factory_(this) {
   host_->render_frame_metadata_provider()->AddObserver(this);
 }
@@ -132,7 +125,7 @@ gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
                                 GetDeviceScaleFactor());
 }
 
-bool RenderWidgetHostViewBase::DoBrowserControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewBase::DoBrowserControlsShrinkRendererSize() const {
   return false;
 }
 
@@ -141,7 +134,7 @@ float RenderWidgetHostViewBase::GetTopControlsHeight() const {
 }
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
+    const WidgetHostMsg_SelectionBounds_Params& params) {
 #if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionBoundsChanged(this, params);
@@ -201,6 +194,87 @@ viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
 
 bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
   return false;
+}
+
+void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
+    base::WeakPtr<RenderWidgetHostImpl> main_host,
+    base::WeakPtr<DelegatedFrameHost> main_frame_host,
+    base::WeakPtr<RenderWidgetHostImpl> popup_host,
+    base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    float scale_factor,
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  if (!main_host || !main_frame_host)
+    return;
+
+#if defined(OS_ANDROID)
+  NOTREACHED()
+      << "RenderWidgetHostViewAndroid::CopyFromSurface calls "
+         "DelegatedFrameHostAndroid::CopyFromCompositingSurface directly, "
+         "and popups are not supported.";
+  return;
+#else
+  if (!popup_host || !popup_frame_host) {
+    // No popup - just call CopyFromCompositingSurface once.
+    main_frame_host->CopyFromCompositingSurface(src_subrect, dst_size,
+                                                std::move(callback));
+    return;
+  }
+
+  // First locate the popup relative to the main page, in DIPs
+  const gfx::Point parent_location =
+      main_host->GetView()->GetBoundsInRootWindow().origin();
+  const gfx::Point popup_location =
+      popup_host->GetView()->GetBoundsInRootWindow().origin();
+  const gfx::Point offset_dips =
+      PointAtOffsetFromOrigin(popup_location - parent_location);
+  const gfx::Vector2d offset_physical =
+      ScaleToFlooredPoint(offset_dips, scale_factor).OffsetFromOrigin();
+
+  // Queue up the request for the MAIN frame image first, but with a
+  // callback that launches a second request for the popup image.
+  //  1. Call CopyFromCompositingSurface for the main frame, with callback
+  //     |main_image_done_callback|. Inside |main_image_done_callback|:
+  //    a. Call CopyFromCompositingSurface again, this time on the popup
+  //       frame. For this call, build a new callback, |popup_done_callback|,
+  //       which:
+  //      i. Takes the main image as a parameter, combines the main image with
+  //         the just-acquired popup image, and then calls the original
+  //         (outer) callback with the combined image.
+  auto main_image_done_callback = base::BindOnce(
+      [](base::OnceCallback<void(const SkBitmap&)> final_callback,
+         const gfx::Vector2d offset,
+         base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+         const gfx::Rect src_subrect, const gfx::Size dst_size,
+         const SkBitmap& main_image) {
+        if (!popup_frame_host)
+          return;
+
+        // Build a new callback that actually combines images.
+        auto popup_done_callback = base::BindOnce(
+            [](base::OnceCallback<void(const SkBitmap&)> final_callback,
+               const gfx::Vector2d offset, const SkBitmap& main_image,
+               const SkBitmap& popup_image) {
+              // Draw popup_image into main_image.
+              SkCanvas canvas(main_image);
+              canvas.drawBitmap(popup_image, offset.x(), offset.y());
+              std::move(final_callback).Run(main_image);
+            },
+            std::move(final_callback), offset, std::move(main_image));
+
+        // Second, request the popup image.
+        gfx::Rect popup_subrect(src_subrect - offset);
+        popup_frame_host->CopyFromCompositingSurface(
+            popup_subrect, dst_size, std::move(popup_done_callback));
+      },
+      std::move(callback), offset_physical, popup_frame_host, src_subrect,
+      dst_size);
+
+  // Request the main image (happens first).
+  main_frame_host->CopyFromCompositingSurface(
+      src_subrect, dst_size, std::move(main_image_done_callback));
+#endif
 }
 
 void RenderWidgetHostViewBase::CopyFromSurface(
@@ -361,12 +435,12 @@ bool RenderWidgetHostViewBase::HasFallbackSurface() const {
   return false;
 }
 
-void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
-  popup_type_ = popup_type;
+void RenderWidgetHostViewBase::SetWidgetType(WidgetType widget_type) {
+  widget_type_ = widget_type;
 }
 
-blink::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
-  return popup_type_;
+WidgetType RenderWidgetHostViewBase::GetWidgetType() {
+  return widget_type_;
 }
 
 BrowserAccessibilityManager*
@@ -811,6 +885,8 @@ void RenderWidgetHostViewBase::DidNavigate() {
     host()->SynchronizeVisualProperties();
 }
 
+// TODO(wjmaclean): Would it simplify this function if we re-implemented it
+// using GetTransformToViewCoordSpace()?
 bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     RenderWidgetHostViewBase* original_view,
     RenderWidgetHostViewBase* target_view,
@@ -863,6 +939,64 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   }
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  return true;
+}
+
+bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
+    RenderWidgetHostViewBase* target_view,
+    gfx::Transform* transform) {
+  DCHECK(transform);
+  if (target_view == this) {
+    transform->MakeIdentity();
+    return true;
+  }
+
+  if (!use_viz_hit_test_)
+    return false;
+  viz::FrameSinkId root_frame_sink_id = GetRootFrameSinkId();
+  if (!root_frame_sink_id.is_valid())
+    return false;
+
+  const auto& display_hit_test_query_map =
+      GetHostFrameSinkManager()->display_hit_test_query();
+  const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
+  if (iter == display_hit_test_query_map.end())
+    return false;
+  viz::HitTestQuery* query = iter->second.get();
+
+  gfx::Transform transform_this_to_root;
+  if (GetFrameSinkId() != root_frame_sink_id) {
+    gfx::Transform transform_root_to_this;
+    if (!query->GetTransformToTarget(GetFrameSinkId(), &transform_root_to_this))
+      return false;
+    if (!transform_root_to_this.GetInverse(&transform_this_to_root))
+      return false;
+  }
+  gfx::Transform transform_root_to_target;
+  if (!query->GetTransformToTarget(target_view->GetFrameSinkId(),
+                                   &transform_root_to_target)) {
+    return false;
+  }
+
+  // TODO(wjmaclean): In TransformPointToTargetCoordSpace the device scale
+  // factor is taken from the original view ... does that matter? Presumably
+  // all the views have the same dsf.
+  float device_scale_factor = GetDeviceScaleFactor();
+  gfx::Transform transform_to_pixel;
+  transform_to_pixel.Scale(device_scale_factor, device_scale_factor);
+  gfx::Transform transform_from_pixel;
+  transform_from_pixel.Scale(1.f / device_scale_factor,
+                             1.f / device_scale_factor);
+
+  // Note: gfx::Transform includes optimizations to early-out for scale = 1 or
+  // concatenating an identity matrix, so we don't add those checks here.
+  transform->MakeIdentity();
+
+  transform->ConcatTransform(transform_to_pixel);
+  transform->ConcatTransform(transform_this_to_root);
+  transform->ConcatTransform(transform_root_to_target);
+  transform->ConcatTransform(transform_from_pixel);
+
   return true;
 }
 

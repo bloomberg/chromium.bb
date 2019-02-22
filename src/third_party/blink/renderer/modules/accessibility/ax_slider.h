@@ -50,7 +50,7 @@ class AXSlider : public AXLayoutObject {
   HTMLInputElement* GetInputElement() const;
   AXObject* ElementAccessibilityHitTest(const IntPoint&) const final;
 
-  AccessibilityRole DetermineAccessibilityRole() final;
+  ax::mojom::Role DetermineAccessibilityRole() final;
   bool IsSlider() const final { return true; }
   bool IsControl() const final { return true; }
 
@@ -67,7 +67,9 @@ class AXSliderThumb final : public AXMockObject {
   static AXSliderThumb* Create(AXObjectCacheImpl&);
   ~AXSliderThumb() override = default;
 
-  AccessibilityRole RoleValue() const override { return kSliderThumbRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kSliderThumb;
+  }
 
  private:
   explicit AXSliderThumb(AXObjectCacheImpl&);

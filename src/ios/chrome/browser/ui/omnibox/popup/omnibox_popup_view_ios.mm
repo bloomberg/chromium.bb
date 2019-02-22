@@ -67,7 +67,7 @@ void OmniboxPopupViewIOS::UpdatePopupAppearance() {
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
-  return [mediator_ isOpen];
+  return [mediator_ hasResults];
 }
 
 OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
@@ -123,6 +123,12 @@ void OmniboxPopupViewIOS::OnMatchSelectedForAppending(
   // Make a defensive copy of |match.fill_into_edit|, as CopyToOmnibox() will
   // trigger a new round of autocomplete and modify |match|.
   base::string16 fill_into_edit(match.fill_into_edit);
+
+  // If the match is not a URL, append a whitespace to the end of it.
+  if (AutocompleteMatch::IsSearchType(match.type)) {
+    fill_into_edit.append(1, ' ');
+  }
+
   delegate_->OnSelectedMatchForAppending(fill_into_edit);
 }
 

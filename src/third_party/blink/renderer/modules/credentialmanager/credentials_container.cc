@@ -241,6 +241,11 @@ DOMException* CredentialManagerErrorToDOMException(
       return DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                   "The operation is not allowed at this time "
                                   "because the page does not have focus.");
+    case CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "Resident credentials or empty "
+                                  "'allowCredentials' lists are not supported "
+                                  "at this time.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
       return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "None of the algorithms specified in "
@@ -335,8 +340,8 @@ void OnMakePublicKeyCredentialComplete(
     DOMArrayBuffer* attestation_buffer =
         VectorToDOMArrayBuffer(std::move(credential->attestation_object));
     AuthenticatorAttestationResponse* authenticator_response =
-        AuthenticatorAttestationResponse::Create(client_data_buffer,
-                                                 attestation_buffer);
+        AuthenticatorAttestationResponse::Create(
+            client_data_buffer, attestation_buffer, credential->transports);
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
                                                   authenticator_response,
                                                   {} /* extensions_outputs */));

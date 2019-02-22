@@ -25,6 +25,14 @@ ChromeBroadcaster* TestFullscreenController::broadcaster() {
 
 void TestFullscreenController::SetWebStateList(WebStateList* web_state_list) {}
 
+const WebStateList* TestFullscreenController::GetWebStateList() const {
+  return nullptr;
+}
+
+WebStateList* TestFullscreenController::GetWebStateList() {
+  return nullptr;
+}
+
 void TestFullscreenController::AddObserver(
     FullscreenControllerObserver* observer) {
   observers_.AddObserver(observer);
@@ -53,13 +61,15 @@ CGFloat TestFullscreenController::GetProgress() const {
   return model_ ? model_->progress() : 0.0;
 }
 
-void TestFullscreenController::ResetModel() {
-  if (model_)
-    model_->ResetForNavigation();
-}
-
 void TestFullscreenController::Shutdown() {
   for (auto& observer : observers_) {
     observer.FullscreenControllerWillShutDown(this);
   }
+}
+
+void TestFullscreenController::EnterFullscreen() {}
+
+void TestFullscreenController::ExitFullscreen() {
+  if (model_)
+    model_->ResetForNavigation();
 }

@@ -126,8 +126,12 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
        std::make_unique<bool>(true),
        flat_rule::OptionFlag_IS_WHITELIST |
+           flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
+      {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
+       std::make_unique<bool>(false),
+       flat_rule::OptionFlag_IS_WHITELIST |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY |
-           flat_rule::OptionFlag_IS_MATCH_CASE},
+           flat_rule::OptionFlag_IS_CASE_INSENSITIVE},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -283,6 +287,31 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
     EXPECT_EQ(cases[i].expected_anchor_left, indexed_rule.anchor_left);
     EXPECT_EQ(cases[i].expected_anchor_right, indexed_rule.anchor_right);
     EXPECT_EQ(cases[i].expected_url_pattern, indexed_rule.url_pattern);
+  }
+}
+
+// Ensure case-insensitive patterns are lower-cased as required by
+// url_pattern_index.
+TEST_F(IndexedRuleTest, CaseInsensitiveLowerCased) {
+  const std::string kPattern = "/QUERY";
+  struct {
+    std::unique_ptr<bool> is_url_filter_case_sensitive;
+    std::string expected_pattern;
+  } test_cases[] = {
+      {std::make_unique<bool>(false), "/query"},
+      {std::make_unique<bool>(true), "/QUERY"},
+      {nullptr, "/QUERY"}  // By default patterns are case sensitive.
+  };
+
+  for (auto& test_case : test_cases) {
+    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
+    rule->condition.url_filter = std::make_unique<std::string>(kPattern);
+    rule->condition.is_url_filter_case_sensitive =
+        std::move(test_case.is_url_filter_case_sensitive);
+    IndexedRule indexed_rule;
+    ASSERT_EQ(ParseResult::SUCCESS,
+              IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule));
+    EXPECT_EQ(test_case.expected_pattern, indexed_rule.url_pattern);
   }
 }
 

@@ -482,6 +482,7 @@ class GLSLTest : public ANGLETest
         glDeleteShader(fs);
 
         const std::string &errorMessage = QueryErrorMessage(program);
+        printf("%s\n", errorMessage.c_str());
 
         EXPECT_NE(std::string::npos, errorMessage.find(expectedErrorType));
         EXPECT_NE(std::string::npos, errorMessage.find(expectedVariableFullName));
@@ -533,11 +534,6 @@ TEST_P(GLSLTest, ScopedStructsOrderBug)
     // TODO(geofflang): Find out why this doesn't compile on AMD OpenGL drivers
     // (http://anglebug.com/1291)
     ANGLE_SKIP_TEST_IF(IsDesktopOpenGL() && (IsOSX() || !IsNVIDIA()));
-
-    // TODO(lucferron): Support for inner scoped structs being redeclared in inner scopes
-    // This bug in glslang is preventing us from supporting this use case for now.
-    // https://github.com/KhronosGroup/glslang/issues/1358
-    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     const std::string fragmentShaderSource =
         R"(precision mediump float;
@@ -2904,6 +2900,9 @@ TEST_P(GLSLTest_ES3, UninitializedNamelessStructInForInitStatement)
 // Test that uninitialized global variables are initialized to 0.
 TEST_P(WebGLGLSLTest, InitUninitializedGlobals)
 {
+    // http://anglebug.com/2862
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+
     const std::string &fragmentShader =
         "precision mediump float;\n"
         "int result;\n"
@@ -4777,6 +4776,380 @@ TEST_P(GLSLTest, IfElseIfAndReturn)
     ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
     drawQuad(program.get(), "a_position", 0.5f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests that PointCoord behaves the same betweeen a user FBO and the back buffer.
+TEST_P(GLSLTest, PointCoordConsistency)
+{
+    // On Intel Windows OpenGL drivers PointCoord appears to be flipped when drawing to the
+    // default framebuffer. http://anglebug.com/2805
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsOpenGL());
+
+    // AMD's OpenGL drivers may have the same issue. http://anglebug.com/1643
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
+
+    constexpr char kPointCoordVS[] = R"(attribute vec2 position;
+uniform vec2 viewportSize;
+void main()
+{
+   gl_Position = vec4(position, 0, 1);
+   gl_PointSize = viewportSize.x;
+})";
+
+    constexpr char kPointCoordFS[] = R"(void main()
+{
+    gl_FragColor = vec4(gl_PointCoord.xy, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, kPointCoordVS, kPointCoordFS);
+    glUseProgram(program);
+
+    GLint uniLoc = glGetUniformLocation(program, "viewportSize");
+    ASSERT_NE(-1, uniLoc);
+    glUniform2f(uniLoc, getWindowWidth(), getWindowHeight());
+
+    // Draw to backbuffer.
+    glDrawArrays(GL_POINTS, 0, 1);
+    ASSERT_GL_NO_ERROR();
+
+    std::vector<GLColor> backbufferData(getWindowWidth() * getWindowHeight());
+    glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE,
+                 backbufferData.data());
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    // Draw to user FBO.
+    glDrawArrays(GL_POINTS, 0, 1);
+    ASSERT_GL_NO_ERROR();
+
+    std::vector<GLColor> userFBOData(getWindowWidth() * getWindowHeight());
+    glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE,
+                 userFBOData.data());
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_EQ(userFBOData.size(), backbufferData.size());
+    EXPECT_EQ(userFBOData, backbufferData);
+}
+
+bool SubrectEquals(const std::vector<GLColor> &bigArray,
+                   const std::vector<GLColor> &smallArray,
+                   int bigSize,
+                   int offset,
+                   int smallSize)
+{
+    int badPixels = 0;
+    for (int y = 0; y < smallSize; y++)
+    {
+        for (int x = 0; x < smallSize; x++)
+        {
+            int bigOffset   = (y + offset) * bigSize + x + offset;
+            int smallOffset = y * smallSize + x;
+            if (bigArray[bigOffset] != smallArray[smallOffset])
+                badPixels++;
+        }
+    }
+    return badPixels == 0;
+}
+
+// Tests that FragCoord behaves the same betweeen a user FBO and the back buffer.
+TEST_P(GLSLTest, FragCoordConsistency)
+{
+    constexpr char kFragCoordShader[] = R"(uniform mediump vec2 viewportSize;
+void main()
+{
+    gl_FragColor = vec4(gl_FragCoord.xy / viewportSize, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFragCoordShader);
+    glUseProgram(program);
+
+    GLint uniLoc = glGetUniformLocation(program, "viewportSize");
+    ASSERT_NE(-1, uniLoc);
+    glUniform2f(uniLoc, getWindowWidth(), getWindowHeight());
+
+    // Draw to backbuffer.
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5);
+    ASSERT_GL_NO_ERROR();
+
+    std::vector<GLColor> backbufferData(getWindowWidth() * getWindowHeight());
+    glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE,
+                 backbufferData.data());
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    // Draw to user FBO.
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5);
+    ASSERT_GL_NO_ERROR();
+
+    std::vector<GLColor> userFBOData(getWindowWidth() * getWindowHeight());
+    glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE,
+                 userFBOData.data());
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_EQ(userFBOData.size(), backbufferData.size());
+    EXPECT_EQ(userFBOData, backbufferData)
+        << "FragCoord should be the same to default and user FBO";
+
+    // Repeat the same test but with a smaller viewport.
+    ASSERT_EQ(getWindowHeight(), getWindowWidth());
+    const int kQuarterSize = getWindowWidth() >> 2;
+    glViewport(kQuarterSize, kQuarterSize, kQuarterSize * 2, kQuarterSize * 2);
+
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5);
+
+    std::vector<GLColor> userFBOViewportData(kQuarterSize * kQuarterSize * 4);
+    glReadPixels(kQuarterSize, kQuarterSize, kQuarterSize * 2, kQuarterSize * 2, GL_RGBA,
+                 GL_UNSIGNED_BYTE, userFBOViewportData.data());
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5);
+
+    std::vector<GLColor> defaultFBOViewportData(kQuarterSize * kQuarterSize * 4);
+    glReadPixels(kQuarterSize, kQuarterSize, kQuarterSize * 2, kQuarterSize * 2, GL_RGBA,
+                 GL_UNSIGNED_BYTE, defaultFBOViewportData.data());
+    ASSERT_GL_NO_ERROR();
+    EXPECT_EQ(userFBOViewportData, defaultFBOViewportData)
+        << "FragCoord should be the same to default and user FBO even with a custom viewport";
+
+    // Check that the subrectangles are the same between the viewport and non-viewport modes.
+    EXPECT_TRUE(SubrectEquals(userFBOData, userFBOViewportData, getWindowWidth(), kQuarterSize,
+                              kQuarterSize * 2));
+    EXPECT_TRUE(SubrectEquals(backbufferData, defaultFBOViewportData, getWindowWidth(),
+                              kQuarterSize, kQuarterSize * 2));
+}
+
+// Ensure that using defined in a macro works in this simple case. This mirrors a dEQP test.
+TEST_P(GLSLTest, DefinedInMacroSucceeds)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying vec2 out0;
+
+void main()
+{
+#define AAA defined(BBB)
+
+#if !AAA
+    out0 = vec2(0.0, 1.0);
+#else
+    out0 = vec2(1.0, 0.0);
+#endif
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    drawQuad(program, "position", 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Validate the defined operator is evaluated when the macro is called, not when defined.
+TEST_P(GLSLTest, DefinedInMacroWithUndef)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying vec2 out0;
+
+void main()
+{
+#define BBB 1
+#define AAA defined(BBB)
+#undef BBB
+
+#if AAA
+    out0 = vec2(1.0, 0.0);
+#else
+    out0 = vec2(0.0, 1.0);
+#endif
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    drawQuad(program, "position", 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Validate the defined operator is evaluated when the macro is called, not when defined.
+TEST_P(GLSLTest, DefinedAfterMacroUsage)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying vec2 out0;
+
+void main()
+{
+#define AAA defined(BBB)
+#define BBB 1
+
+#if AAA
+    out0 = vec2(0.0, 1.0);
+#else
+    out0 = vec2(1.0, 0.0);
+#endif
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    drawQuad(program, "position", 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Test generating "defined" by concatenation when a macro is called. This is not allowed.
+TEST_P(GLSLTest, DefinedInMacroConcatenationNotAllowed)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying vec2 out0;
+
+void main()
+{
+#define BBB 1
+#define AAA(defi, ned) defi ## ned(BBB)
+
+#if AAA(defi, ned)
+    out0 = vec2(0.0, 1.0);
+#else
+    out0 = vec2(1.0, 0.0);
+#endif
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 1);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+    glDeleteProgram(program);
+}
+
+// Test using defined in a macro parameter name. This is not allowed.
+TEST_P(GLSLTest, DefinedAsParameterNameNotAllowed)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying vec2 out0;
+
+void main()
+{
+#define BBB 1
+#define AAA(defined) defined(BBB)
+
+#if AAA(defined)
+    out0 = vec2(0.0, 1.0);
+#else
+    out0 = vec2(1.0, 0.0);
+#endif
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 1);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+    glDeleteProgram(program);
+}
+
+// Ensure that defined in a macro is no accepted in WebGL.
+TEST_P(WebGLGLSLTest, DefinedInMacroFails)
+{
+    constexpr char kVS[] = R"(precision mediump float;
+attribute highp vec4 position;
+varying float out0;
+
+void main()
+{
+#define AAA defined(BBB)
+
+#if !AAA
+    out0 = 1.0;
+#else
+    out0 = 0.0;
+#endif
+    gl_Position = dEQP_Position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying float out0;
+void main()
+{
+    gl_FragColor = vec4(out0, 0, 0, 1);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+    glDeleteProgram(program);
+}
+
+// Simple test using a define macro in WebGL.
+TEST_P(WebGLGLSLTest, DefinedGLESSymbol)
+{
+    constexpr char kVS[] = R"(void main()
+{
+    gl_Position = vec4(1, 0, 0, 1);
+})";
+
+    constexpr char kFS[] = R"(#if defined(GL_ES)
+precision mediump float;
+void main()
+{
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+#else
+foo
+#endif
+)";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
 }
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these

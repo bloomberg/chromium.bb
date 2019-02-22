@@ -141,7 +141,7 @@ InterpolationValue ConvertImageSlice(const ImageSlice& slice, double zoom) {
   sides[kSideBottom] = &slice.slices.Bottom();
   sides[kSideLeft] = &slice.slices.Left();
 
-  for (size_t i = 0; i < kSideIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const Length& side = *sides[i];
     list->Set(i, InterpolableNumber::Create(
                      side.IsFixed() ? side.Pixels() / zoom : side.Percent()));
@@ -205,7 +205,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
   sides[kSideBottom] = slice.Slices().Bottom();
   sides[kSideLeft] = slice.Slices().Left();
 
-  for (size_t i = 0; i < kSideIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const CSSPrimitiveValue& side = *ToCSSPrimitiveValue(sides[i]);
     DCHECK(side.IsNumber() || side.IsPercentage());
     list->Set(i, InterpolableNumber::Create(side.GetDoubleValue()));
@@ -269,7 +269,7 @@ void CSSImageSliceInterpolationType::ApplyStandardPropertyValue(
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   const SliceTypes& types =
       ToCSSImageSliceNonInterpolableValue(non_interpolable_value)->Types();
-  const auto& convert_side = [&types, &list, &style](size_t index) {
+  const auto& convert_side = [&types, &list, &style](wtf_size_t index) {
     float value =
         clampTo<float>(ToInterpolableNumber(list.Get(index))->Value(), 0);
     return types.is_number[index]

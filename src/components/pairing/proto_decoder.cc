@@ -204,7 +204,7 @@ ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendMessage(
   uint16_t message_size = message.size();
 
   *size = sizeof(message_type) + sizeof(message_size) + message.size();
-  IOBufferRefPtr io_buffer(new net::IOBuffer(*size));
+  IOBufferRefPtr io_buffer = base::MakeRefCounted<net::IOBuffer>(*size);
 
   // Write the message type.
   int offset = 0;

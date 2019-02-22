@@ -35,14 +35,14 @@ namespace blink {
 SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
     SVGElement* context_element,
     const QualifiedName& attribute_name,
-    float initial_first_value,
-    float initial_second_value)
+    int initial_value)
     : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(
           context_element,
           attribute_name,
-          SVGIntegerOptionalInteger::Create(
-              SVGInteger::Create(initial_first_value),
-              SVGInteger::Create(initial_second_value))),
+          SVGIntegerOptionalInteger::Create(SVGInteger::Create(initial_value),
+                                            SVGInteger::Create(initial_value)),
+          CSSPropertyInvalid,
+          initial_value),
       first_integer_(SVGAnimatedInteger::Create(context_element,
                                                 attribute_name,
                                                 BaseValue()->FirstInteger())),

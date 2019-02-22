@@ -16,10 +16,10 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
@@ -35,7 +35,6 @@
 using base::win::RegKey;
 using installer::InstallationState;
 using installer::InstallerState;
-using installer::Product;
 using installer::ProductState;
 
 using ::testing::_;
@@ -226,10 +225,11 @@ void AddChromeToInstallerState(const InstallationState& machine_state,
   const ProductState* chrome =
       machine_state.GetProductState(installer_state->system_install());
   if (chrome) {
-    installer_state->AddProductFromState(*chrome);
+    installer_state->set_target_path_for_testing(
+        chrome->GetSetupPath().DirName().DirName().DirName());
   } else {
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    installer_state->AddProduct(std::make_unique<Product>(dist));
+    installer_state->set_target_path_for_testing(
+        installer::GetChromeInstallPath(installer_state->system_install()));
   }
 }
 
@@ -259,10 +259,6 @@ class InstallWorkerTest : public testing::Test {
     // actually be touched.
     archive_path_ =
         base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\chrome.7z");
-    // TODO(robertshield): Take this from the BrowserDistribution once that
-    // no longer depends on MasterPreferences.
-    installation_path_ =
-        base::FilePath(L"C:\\Program Files\\Google\\Chrome\\");
     src_path_ = base::FilePath(
         L"C:\\UnlikelyPath\\Temp\\chrome_123\\source\\Chrome-bin");
     setup_path_ = base::FilePath(
@@ -274,7 +270,6 @@ class InstallWorkerTest : public testing::Test {
   std::unique_ptr<base::Version> current_version_;
   std::unique_ptr<base::Version> new_version_;
   base::FilePath archive_path_;
-  base::FilePath installation_path_;
   base::FilePath setup_path_;
   base::FilePath src_path_;
   base::FilePath temp_dir_;
@@ -375,11 +370,9 @@ class AddUpdateBrandCodeWorkItemTest
   void SetupExpectations(const base::string16& brand,
                          StrictMock<MockWorkItemList>* work_item_list) {
     if (!brand.empty()) {
-      BrowserDistribution* browser_dist =
-          installer_state_->product().distribution();
-      DCHECK(browser_dist);
       base::win::RegKey key(installer_state_->root_key(),
-                            browser_dist->GetStateKey().c_str(), KEY_WRITE);
+                            install_static::GetClientStateKeyPath().c_str(),
+                            KEY_WRITE);
       ASSERT_TRUE(key.Valid());
       ASSERT_EQ(
           0, key.WriteValue(google_update::kRegRLZBrandField, brand.c_str()));

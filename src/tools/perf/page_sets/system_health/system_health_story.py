@@ -49,8 +49,8 @@ class SystemHealthStory(page.Page):
   """Abstract base class for System Health user stories."""
   __metaclass__ = _MetaSystemHealthStory
 
-  # The full name of a single page story has the form CASE:GROUP:PAGE (e.g.
-  # 'load:search:google').
+  # The full name of a single page story has the form CASE:GROUP:PAGE:[VERSION]
+  # (e.g. 'load:search:google' or 'load:search:google:2018').
   NAME = NotImplemented
   URL = NotImplemented
   ABSTRACT_STORY = True
@@ -64,11 +64,20 @@ class SystemHealthStory(page.Page):
 
   def __init__(self, story_set, take_memory_measurement,
       extra_browser_args=None):
-    case, group, _ = self.NAME.split(':')
+    case, group, _ = self.NAME.split(':', 2)
     tags = []
+    found_year_tag = False
     for t in self.TAGS:  # pylint: disable=not-an-iterable
       assert t in story_tags.ALL_TAGS
       tags.append(t.name)
+      if t in story_tags.YEAR_TAGS:
+        # Assert that this is the first year tag.
+        assert not found_year_tag, (
+            "%s has more than one year tag found." % self.__class__.__name__)
+        found_year_tag = True
+    # Assert that there is one year tag.
+    assert found_year_tag, (
+        "%s needs exactly one year tag." % self.__class__.__name__)
     super(SystemHealthStory, self).__init__(
         shared_page_state_class=_SystemHealthSharedState,
         page_set=story_set, name=self.NAME, url=self.URL, tags=tags,

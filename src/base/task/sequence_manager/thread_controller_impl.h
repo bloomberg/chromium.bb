@@ -40,6 +40,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task) override;
   void ScheduleWork() override;
+  void SetMessageLoop(MessageLoop* message_loop) override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
@@ -123,6 +124,10 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   CancelableClosure cancelable_delayed_do_work_closure_;
   SequencedTaskSource* sequence_ = nullptr;  // Not owned.
   debug::TaskAnnotator task_annotator_;
+
+#if DCHECK_IS_ON()
+  bool default_task_runner_set_ = false;
+#endif
 
   WeakPtrFactory<ThreadControllerImpl> weak_factory_;
 

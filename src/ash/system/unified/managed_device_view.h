@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_VIEW_H_
 
 #include "ash/session/session_observer.h"
+#include "ash/system/enterprise/enterprise_domain_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 
@@ -15,7 +16,8 @@ namespace ash {
 // an organization admin. Observes login status in order to show/hide the
 // icon reflecting the latest status.
 class ManagedDeviceView : public TrayItemView,
-                          public SessionObserver {
+                          public SessionObserver,
+                          public EnterpriseDomainObserver {
  public:
   ManagedDeviceView();
   ~ManagedDeviceView() override;
@@ -23,7 +25,11 @@ class ManagedDeviceView : public TrayItemView,
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
 
+  // EnterpriseDomainObserver:
+  void OnEnterpriseDomainChanged() override;
+
  private:
+  void Update();
 
   DISALLOW_COPY_AND_ASSIGN(ManagedDeviceView);
 };

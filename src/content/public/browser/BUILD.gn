@@ -30,6 +30,7 @@ jumbo_source_set("browser_sources") {
     "android/compositor_client.h",
     "android/content_protocol_handler.h",
     "android/devtools_auth.h",
+    "android/gpu_video_accelerator_factories_provider.h",
     "android/java_interfaces.h",
     "android/motion_event_action.h",
     "android/synchronous_compositor.cc",
@@ -100,8 +101,8 @@ jumbo_source_set("browser_sources") {
     "color_chooser.h",
     "content_browser_client.cc",
     "content_browser_client.h",
-    "context_factory.h",
     "cookie_store_factory.h",
+    "delegate_to_browser_gpu_service_accelerator_factory.h",
     "desktop_capture.cc",
     "desktop_capture.h",
     "desktop_media_id.cc",
@@ -130,6 +131,7 @@ jumbo_source_set("browser_sources") {
     "download_utils.h",
     "favicon_status.cc",
     "favicon_status.h",
+    "file_select_listener.h",
     "file_url_loader.h",
     "focused_node_details.h",
     "font_list_async.h",
@@ -201,6 +203,7 @@ jumbo_source_set("browser_sources") {
     "notification_service.h",
     "notification_source.h",
     "notification_types.h",
+    "origin_policy_error_reason.h",
     "overlay_window.h",
     "overscroll_configuration.h",
     "page_navigator.cc",
@@ -243,13 +246,13 @@ jumbo_source_set("browser_sources") {
     "resource_dispatcher_host.h",
     "resource_dispatcher_host_delegate.cc",
     "resource_dispatcher_host_delegate.h",
-    "resource_hints.h",
     "resource_request_info.h",
     "resource_throttle.cc",
     "resource_throttle.h",
     "restore_type.h",
     "save_page_type.h",
     "screen_orientation_delegate.h",
+    "screenlock_observer.h",
     "security_style_explanation.cc",
     "security_style_explanation.h",
     "security_style_explanations.cc",
@@ -260,6 +263,7 @@ jumbo_source_set("browser_sources") {
     "service_worker_usage_info.h",
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
+    "shared_cors_origin_access_list.h",
     "shared_worker_service.h",
     "site_instance.h",
     "site_isolation_policy.cc",
@@ -391,14 +395,27 @@ jumbo_source_set("browser_sources") {
     deps += [ "//ui/android" ]
   }
 
+  if (use_aura || is_mac) {
+    sources += [ "context_factory.h" ]
+  }
+
   if (use_aura) {
-    sources -= [ "context_factory.h" ]
-    deps += [ "//ui/aura" ]
+    sources += [ "gpu_interface_provider_factory.h" ]
+    deps += [
+      "//services/ws/public/cpp/host",
+      "//ui/aura",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "ns_view_bridge_factory_host.h",
+      "ns_view_bridge_factory_impl.h",
+    ]
   }
 
   if (!is_android) {
     sources += [
-      "devtools_frontend_host.h",
       "host_zoom_map.h",
       "zoom_level_delegate.h",
     ]

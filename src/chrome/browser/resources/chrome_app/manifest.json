@@ -4,8 +4,8 @@
   "version": "0.1",
   "description": "Chrome as an app",
   "icons": {
-    "16": "product_logo_16.png",
-    "128": "product_logo_128.png"
+    "32": "chrome_app_icon_32.png",
+    "192": "chrome_app_icon_192.png"
   },
   "app": {
     "launch": {

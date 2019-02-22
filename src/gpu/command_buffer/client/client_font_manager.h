@@ -31,6 +31,7 @@ class RASTER_EXPORT ClientFontManager
   // SkStrikeServer::DiscardableHandleManager implementation.
   SkDiscardableHandleId createHandle() override;
   bool lockHandle(SkDiscardableHandleId handle_id) override;
+  bool isHandleDeleted(SkDiscardableHandleId handle_id) override;
 
   void Serialize();
   SkStrikeServer* strike_server() { return &strike_server_; }

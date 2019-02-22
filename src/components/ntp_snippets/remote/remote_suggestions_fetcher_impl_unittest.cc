@@ -67,6 +67,12 @@ ACTION_P(MoveArgument1PointeeTo, ptr) {
   *ptr = std::move(*arg1);
 }
 
+MATCHER(IsNullCategoriesList, "is a null list of categories") {
+  RemoteSuggestionsFetcher::OptionalFetchedCategories& fetched_categories =
+      *arg;
+  return !fetched_categories.has_value();
+}
+
 MATCHER(IsEmptyCategoriesList, "is an empty list of categories") {
   RemoteSuggestionsFetcher::OptionalFetchedCategories& fetched_categories =
       *arg;
@@ -730,11 +736,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ExclusiveCategoryOnly) {
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldNotFetchWithoutApiKey) {
   ResetFetcherWithAPIKey(std::string());
 
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::PERMANENT_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::PERMANENT_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -811,11 +815,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(
       GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
       /*response_data=*/std::string(), net::HTTP_UNAUTHORIZED, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -833,11 +835,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::ERR_FAILED);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -860,11 +860,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportHttpError) {
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -885,11 +883,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportJsonError) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/kInvalidJsonStr, net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -913,11 +909,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -937,11 +931,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportInvalidListError) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -983,11 +975,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -1028,11 +1018,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -1065,11 +1053,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -1084,11 +1070,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::ERR_FAILED);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
@@ -1103,11 +1087,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::ERR_FAILED);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
-          /*fetched_categories=*/Property(
-              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+  EXPECT_CALL(mock_callback(),
+              Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                  /*fetched_categories=*/IsNullCategoriesList()))
       .Times(1);
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));

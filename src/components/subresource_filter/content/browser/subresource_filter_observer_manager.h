@@ -20,7 +20,9 @@ class WebContents;
 
 namespace subresource_filter {
 
-struct ActivationState;
+namespace mojom {
+class ActivationState;
+}  // namespace mojom
 
 // Manages retaining the list of SubresourceFilterObservers and notifying them
 // of various filtering events. Scoped to the lifetime of a WebContents.
@@ -46,7 +48,7 @@ class SubresourceFilterObserverManager
   // throttles created in MaybeAppendNavigationThrottles().
   void NotifyPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      const ActivationState& activation_state);
+      const mojom::ActivationState& activation_state);
 
   // Called in WillStartRequest or WillRedirectRequest stage from a
   // SubframeNavigationFilteringThrottle.

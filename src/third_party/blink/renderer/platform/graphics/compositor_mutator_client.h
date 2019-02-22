@@ -7,26 +7,29 @@
 
 #include <memory>
 #include "cc/trees/layer_tree_mutator.h"
+#include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
-class CompositorMutatorImpl;
+class AnimationWorkletMutatorDispatcherImpl;
 
-class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
+class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
+                                                public MutatorClient {
  public:
-  explicit CompositorMutatorClient(std::unique_ptr<CompositorMutatorImpl>);
+  explicit CompositorMutatorClient(
+      std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
   ~CompositorMutatorClient() override;
 
-  virtual void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
+  void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>) override;
 
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*) override;
   void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
-  bool HasAnimators() override;
+  bool HasMutators() override;
 
  private:
-  std::unique_ptr<CompositorMutatorImpl> mutator_;
+  std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator_;
   cc::LayerTreeMutatorClient* client_;
 };
 

@@ -223,48 +223,48 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
   ResultMap new_map(new_list.size());
   ResultMap old_map(old_list.size());
 
-  for (size_t i = 0; i < old_map.size(); ++i) {
+  for (wtf_size_t i = 0; i < old_map.size(); ++i) {
     old_map[i].first = nullptr;
     old_map[i].second = 0;
   }
 
-  for (size_t i = 0; i < new_map.size(); ++i) {
+  for (wtf_size_t i = 0; i < new_map.size(); ++i) {
     new_map[i].first = nullptr;
     new_map[i].second = 0;
   }
 
   // Trim head and tail.
-  for (size_t i = 0; i < old_list.size() && i < new_list.size() &&
-                     old_list[i]->sha1_ == new_list[i]->sha1_;
+  for (wtf_size_t i = 0; i < old_list.size() && i < new_list.size() &&
+                         old_list[i]->sha1_ == new_list[i]->sha1_;
        ++i) {
     old_map[i].first = old_list[i].Get();
     old_map[i].second = i;
     new_map[i].first = new_list[i].Get();
     new_map[i].second = i;
   }
-  for (size_t i = 0; i < old_list.size() && i < new_list.size() &&
-                     old_list[old_list.size() - i - 1]->sha1_ ==
-                         new_list[new_list.size() - i - 1]->sha1_;
+  for (wtf_size_t i = 0; i < old_list.size() && i < new_list.size() &&
+                         old_list[old_list.size() - i - 1]->sha1_ ==
+                             new_list[new_list.size() - i - 1]->sha1_;
        ++i) {
-    size_t old_index = old_list.size() - i - 1;
-    size_t new_index = new_list.size() - i - 1;
+    wtf_size_t old_index = old_list.size() - i - 1;
+    wtf_size_t new_index = new_list.size() - i - 1;
     old_map[old_index].first = old_list[old_index].Get();
     old_map[old_index].second = new_index;
     new_map[new_index].first = new_list[new_index].Get();
     new_map[new_index].second = old_index;
   }
 
-  typedef HashMap<String, Vector<size_t>> DiffTable;
+  typedef HashMap<String, Vector<wtf_size_t>> DiffTable;
   DiffTable new_table;
   DiffTable old_table;
 
-  for (size_t i = 0; i < new_list.size(); ++i) {
-    new_table.insert(new_list[i]->sha1_, Vector<size_t>())
+  for (wtf_size_t i = 0; i < new_list.size(); ++i) {
+    new_table.insert(new_list[i]->sha1_, Vector<wtf_size_t>())
         .stored_value->value.push_back(i);
   }
 
-  for (size_t i = 0; i < old_list.size(); ++i) {
-    old_table.insert(old_list[i]->sha1_, Vector<size_t>())
+  for (wtf_size_t i = 0; i < old_list.size(); ++i) {
+    old_table.insert(old_list[i]->sha1_, Vector<wtf_size_t>())
         .stored_value->value.push_back(i);
   }
 
@@ -282,11 +282,11 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
         std::make_pair(old_list[old_it->value[0]].Get(), new_it.value[0]);
   }
 
-  for (size_t i = 0; new_list.size() > 0 && i < new_list.size() - 1; ++i) {
+  for (wtf_size_t i = 0; new_list.size() > 0 && i < new_list.size() - 1; ++i) {
     if (!new_map[i].first || new_map[i + 1].first)
       continue;
 
-    size_t j = new_map[i].second + 1;
+    wtf_size_t j = new_map[i].second + 1;
     if (j < old_map.size() && !old_map[j].first &&
         new_list[i + 1]->sha1_ == old_list[j]->sha1_) {
       new_map[i + 1] = std::make_pair(new_list[i + 1].Get(), j);
@@ -294,11 +294,11 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
     }
   }
 
-  for (size_t i = new_list.size() - 1; new_list.size() > 0 && i > 0; --i) {
+  for (wtf_size_t i = new_list.size() - 1; new_list.size() > 0 && i > 0; --i) {
     if (!new_map[i].first || new_map[i - 1].first || new_map[i].second <= 0)
       continue;
 
-    size_t j = new_map[i].second - 1;
+    wtf_size_t j = new_map[i].second - 1;
     if (!old_map[j].first && new_list[i - 1]->sha1_ == old_list[j]->sha1_) {
       new_map[i - 1] = std::make_pair(new_list[i - 1].Get(), j);
       old_map[j] = std::make_pair(old_list[j].Get(), i - 1);
@@ -323,10 +323,10 @@ bool DOMPatchSupport::InnerPatchChildren(
   // 1. First strip everything except for the nodes that retain. Collect pending
   // merges.
   HeapHashMap<Member<Digest>, Member<Digest>> merges;
-  HashSet<size_t, WTF::IntHash<size_t>,
-          WTF::UnsignedWithZeroKeyHashTraits<size_t>>
+  HashSet<wtf_size_t, WTF::IntHash<wtf_size_t>,
+          WTF::UnsignedWithZeroKeyHashTraits<wtf_size_t>>
       used_new_ordinals;
-  for (size_t i = 0; i < old_list.size(); ++i) {
+  for (wtf_size_t i = 0; i < old_list.size(); ++i) {
     if (old_map[i].first) {
       if (used_new_ordinals.insert(old_map[i].second).is_new_entry)
         continue;
@@ -350,9 +350,10 @@ bool DOMPatchSupport::InnerPatchChildren(
     if (!unused_nodes_map_.Contains(old_list[i]->sha1_) &&
         (!i || old_map[i - 1].first) &&
         (i == old_map.size() - 1 || old_map[i + 1].first)) {
-      size_t anchor_candidate = i ? old_map[i - 1].second + 1 : 0;
-      size_t anchor_after = (i == old_map.size() - 1) ? anchor_candidate + 1
-                                                      : old_map[i + 1].second;
+      wtf_size_t anchor_candidate = i ? old_map[i - 1].second + 1 : 0;
+      wtf_size_t anchor_after = (i == old_map.size() - 1)
+                                    ? anchor_candidate + 1
+                                    : old_map[i + 1].second;
       if (anchor_after - anchor_candidate == 1 &&
           anchor_candidate < new_list.size())
         merges.Set(new_list[anchor_candidate].Get(), old_list[i].Get());
@@ -367,13 +368,13 @@ bool DOMPatchSupport::InnerPatchChildren(
   }
 
   // Mark retained nodes as used, do not reuse node more than once.
-  HashSet<size_t, WTF::IntHash<size_t>,
-          WTF::UnsignedWithZeroKeyHashTraits<size_t>>
+  HashSet<wtf_size_t, WTF::IntHash<wtf_size_t>,
+          WTF::UnsignedWithZeroKeyHashTraits<wtf_size_t>>
       used_old_ordinals;
-  for (size_t i = 0; i < new_list.size(); ++i) {
+  for (wtf_size_t i = 0; i < new_list.size(); ++i) {
     if (!new_map[i].first)
       continue;
-    size_t old_ordinal = new_map[i].second;
+    wtf_size_t old_ordinal = new_map[i].second;
     if (used_old_ordinals.Contains(old_ordinal)) {
       // Do not map node more than once
       new_map[i].first = nullptr;
@@ -386,7 +387,7 @@ bool DOMPatchSupport::InnerPatchChildren(
 
   // Mark <head> and <body> nodes for merge.
   if (old_head || old_body) {
-    for (size_t i = 0; i < new_list.size(); ++i) {
+    for (wtf_size_t i = 0; i < new_list.size(); ++i) {
       if (old_head && IsHTMLHeadElement(*new_list[i]->node_))
         merges.Set(new_list[i].Get(), old_head);
       if (old_body && IsHTMLBodyElement(*new_list[i]->node_))
@@ -401,7 +402,7 @@ bool DOMPatchSupport::InnerPatchChildren(
   }
 
   // 3. Insert missing nodes.
-  for (size_t i = 0; i < new_map.size(); ++i) {
+  for (wtf_size_t i = 0; i < new_map.size(); ++i) {
     if (new_map[i].first || merges.Contains(new_list[i].Get()))
       continue;
     if (!InsertBeforeAndMarkAsUsed(parent_node, new_list[i].Get(),
@@ -411,7 +412,7 @@ bool DOMPatchSupport::InnerPatchChildren(
   }
 
   // 4. Then put all nodes that retained into their slots (sort by new index).
-  for (size_t i = 0; i < old_map.size(); ++i) {
+  for (wtf_size_t i = 0; i < old_map.size(); ++i) {
     if (!old_map[i].first)
       continue;
     Node* node = old_map[i].first->node_;
@@ -517,7 +518,7 @@ bool DOMPatchSupport::RemoveChildAndMoveToNew(Digest* old_digest,
     return true;
   }
 
-  for (size_t i = 0; i < old_digest->children_.size(); ++i) {
+  for (wtf_size_t i = 0; i < old_digest->children_.size(); ++i) {
     if (!RemoveChildAndMoveToNew(old_digest->children_[i].Get(),
                                  exception_state))
       return false;
@@ -531,7 +532,7 @@ void DOMPatchSupport::MarkNodeAsUsed(Digest* digest) {
   while (!queue.IsEmpty()) {
     Digest* first = queue.TakeFirst();
     unused_nodes_map_.erase(first->sha1_);
-    for (size_t i = 0; i < first->children_.size(); ++i)
+    for (wtf_size_t i = 0; i < first->children_.size(); ++i)
       queue.push_back(first->children_[i].Get());
   }
 }

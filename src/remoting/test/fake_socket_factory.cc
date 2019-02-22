@@ -118,7 +118,8 @@ int FakeUdpSocket::Send(const void* data, size_t data_size,
 int FakeUdpSocket::SendTo(const void* data, size_t data_size,
                           const rtc::SocketAddress& address,
                           const rtc::PacketOptions& options) {
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(data_size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(data_size);
   memcpy(buffer->data(), data, data_size);
   base::TimeTicks now = base::TimeTicks::Now();
   cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(buffer->data()),
@@ -335,7 +336,7 @@ void FakePacketSocketFactory::DoReceivePacket() {
 
   PendingPacket packet;
   if (pending_packets_.size() > 1 && RandDouble() < out_of_order_rate_) {
-    std::list<PendingPacket>::iterator it = pending_packets_.begin();
+    auto it = pending_packets_.begin();
     ++it;
     packet = *it;
     pending_packets_.erase(it);
@@ -344,7 +345,7 @@ void FakePacketSocketFactory::DoReceivePacket() {
     pending_packets_.pop_front();
   }
 
-  UdpSocketsMap::iterator iter = udp_sockets_.find(packet.to.port());
+  auto iter = udp_sockets_.find(packet.to.port());
   if (iter == udp_sockets_.end()) {
     // Invalid port number.
     return;

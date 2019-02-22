@@ -40,6 +40,7 @@
 #include "ash/system/unified_accessibility_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
@@ -65,6 +66,10 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
   animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
+
+  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
+  UMA_HISTOGRAM_BOOLEAN("ChromeOS.SystemTray.IsExpandedOnOpen",
+                        model_->IsExpandedOnOpen());
 }
 
 UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
@@ -161,6 +166,9 @@ void UnifiedSystemTrayController::ToggleExpanded() {
 }
 
 void UnifiedSystemTrayController::HandleClearAllAction() {
+  base::RecordAction(
+      base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
+
   // When the animation is finished, OnClearAllAnimationEnded() is called.
   unified_view_->ShowClearAllAnimation();
 }
@@ -221,6 +229,8 @@ void UnifiedSystemTrayController::Fling(int velocity) {
 void UnifiedSystemTrayController::ShowUserChooserView() {
   if (!IsUserChooserEnabled())
     return;
+  animation_->Reset(1.0);
+  UpdateExpandedAmount();
   unified_view_->SetDetailedView(new UserChooserView(this));
 }
 

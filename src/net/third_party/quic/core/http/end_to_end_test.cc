@@ -417,7 +417,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
               client_->client()->client_session()->connection()),
           QuicConnectionPeer::GetAlarmFactory(
               client_->client()->client_session()->connection()),
-          new ClientDelegate(client_->client()));
+          std::make_unique<ClientDelegate>(client_->client()));
     }
     initialized_ = true;
     return client_->client()->connected();
@@ -463,7 +463,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
     server_writer_->Initialize(QuicDispatcherPeer::GetHelper(dispatcher),
                                QuicDispatcherPeer::GetAlarmFactory(dispatcher),
-                               new ServerDelegate(dispatcher));
+                               std::make_unique<ServerDelegate>(dispatcher));
     if (stream_factory_ != nullptr) {
       static_cast<QuicTestServer*>(server_thread_->server())
           ->SetSpdyStreamFactory(stream_factory_);
@@ -2359,7 +2359,10 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
       QuicSpdySession* session,
       QuicSimpleServerBackend* quic_simple_server_backend,
       QuicString response_body)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend),
         response_body_(std::move(response_body)) {}
 
   ~ServerStreamWithErrorResponseBody() override = default;
@@ -2405,7 +2408,10 @@ class ServerStreamThatDropsBody : public QuicSimpleServerStream {
   ServerStreamThatDropsBody(QuicStreamId id,
                             QuicSpdySession* session,
                             QuicSimpleServerBackend* quic_simple_server_backend)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend) {}
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend) {}
 
   ~ServerStreamThatDropsBody() override = default;
 
@@ -2462,7 +2468,10 @@ class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
       QuicSpdySession* session,
       QuicSimpleServerBackend* quic_simple_server_backend,
       int64_t body_bytes)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend),
         body_bytes_(body_bytes) {}
 
   ~ServerStreamThatSendsHugeResponse() override = default;
@@ -2557,7 +2566,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicDispatcher::SessionMap const& map =
       QuicDispatcherPeer::session_map(dispatcher);
-  QuicDispatcher::SessionMap::const_iterator it = map.begin();
+  auto it = map.begin();
   EXPECT_TRUE(it != map.end());
   QuicSession* server_session = it->second.get();
 
@@ -2937,7 +2946,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
           client_->client()->client_session()->connection()),
       QuicConnectionPeer::GetAlarmFactory(
           client_->client()->client_session()->connection()),
-      new ClientDelegate(client_->client()));
+      std::make_unique<ClientDelegate>(client_->client()));
   initialized_ = true;
   ASSERT_TRUE(client_->client()->connected());
 
@@ -3214,6 +3223,58 @@ TEST_P(EndToEndTest, ResetStreamOnTtlExpires) {
   stream->WriteOrBufferBody(body, true, nullptr);
   client_->WaitForResponse();
   EXPECT_EQ(QUIC_STREAM_TTL_EXPIRED, client_->stream_error());
+}
+
+TEST_P(EndToEndTest, SendMessages) {
+  SetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission, true);
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  QuicSession* client_session = client_->client()->client_session();
+  QuicConnection* client_connection = client_session->connection();
+  if (client_connection->transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+
+  SetPacketLossPercentage(30);
+  ASSERT_GT(kMaxPacketSize, client_session->GetLargestMessagePayload());
+  ASSERT_LT(0, client_session->GetLargestMessagePayload());
+
+  QuicString message_string(kMaxPacketSize, 'a');
+  QuicStringPiece message_buffer(message_string);
+  QuicRandom* random =
+      QuicConnectionPeer::GetHelper(client_connection)->GetRandomGenerator();
+  {
+    QuicConnection::ScopedPacketFlusher flusher(
+        client_session->connection(), QuicConnection::SEND_ACK_IF_PENDING);
+    // Verify the largest message gets successfully sent.
+    EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
+              client_session->SendMessage(
+                  QuicStringPiece(message_buffer.data(),
+                                  client_session->GetLargestMessagePayload())));
+    // Send more messages with size (0, largest_payload] until connection is
+    // write blocked.
+    const int kTestMaxNumberOfMessages = 100;
+    for (size_t i = 2; i <= kTestMaxNumberOfMessages; ++i) {
+      size_t message_length =
+          random->RandUint64() % client_session->GetLargestMessagePayload() + 1;
+      MessageResult result = client_session->SendMessage(
+          QuicStringPiece(message_buffer.data(), message_length));
+      if (result.status == MESSAGE_STATUS_BLOCKED) {
+        // Connection is write blocked.
+        break;
+      }
+      EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, i), result);
+    }
+  }
+
+  client_->WaitForDelayedAcks();
+  EXPECT_EQ(MESSAGE_STATUS_TOO_LARGE,
+            client_session
+                ->SendMessage(QuicStringPiece(
+                    message_buffer.data(),
+                    client_session->GetLargestMessagePayload() + 1))
+                .status);
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
 
 class EndToEndPacketReorderingTest : public EndToEndTest {

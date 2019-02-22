@@ -5,8 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "SkImage_Base.h"
-#include "SkImageCacherator.h"
+#include "SkImage_Lazy.h"
 
 #include "SkBitmap.h"
 #include "SkBitmapCache.h"
@@ -49,111 +48,6 @@ private:
 
     std::unique_ptr<SkImageGenerator> fGenerator;
     SkMutex                           fMutex;
-};
-
-class SkImage_Lazy : public SkImage_Base, public SkImageCacherator {
-public:
-    struct Validator {
-        Validator(sk_sp<SharedGenerator>, const SkIRect* subset, sk_sp<SkColorSpace> colorSpace);
-
-        operator bool() const { return fSharedGenerator.get(); }
-
-        sk_sp<SharedGenerator> fSharedGenerator;
-        SkImageInfo            fInfo;
-        SkIPoint               fOrigin;
-        sk_sp<SkColorSpace>    fColorSpace;
-        uint32_t               fUniqueID;
-    };
-
-    SkImage_Lazy(Validator* validator);
-
-    SkImageInfo onImageInfo() const override {
-        return fInfo;
-    }
-    SkColorType onColorType() const override {
-        return kUnknown_SkColorType;
-    }
-    SkAlphaType onAlphaType() const override {
-        return fInfo.alphaType();
-    }
-
-    SkIRect onGetSubset() const override {
-        return SkIRect::MakeXYWH(fOrigin.fX, fOrigin.fY, fInfo.width(), fInfo.height());
-    }
-
-    bool onReadPixels(const SkImageInfo&, void*, size_t, int srcX, int srcY,
-                      CachingHint) const override;
-#if SK_SUPPORT_GPU
-    sk_sp<GrTextureProxy> asTextureProxyRef(GrContext*,
-                                            const GrSamplerState&, SkColorSpace*,
-                                            sk_sp<SkColorSpace>*,
-                                            SkScalar scaleAdjust[2]) const override;
-#endif
-    sk_sp<SkData> onRefEncoded() const override;
-    sk_sp<SkImage> onMakeSubset(const SkIRect&) const override;
-    bool getROPixels(SkBitmap*, SkColorSpace* dstColorSpace, CachingHint) const override;
-    bool onIsLazyGenerated() const override { return true; }
-    sk_sp<SkImage> onMakeColorSpace(sk_sp<SkColorSpace>, SkColorType) const override;
-
-    bool onIsValid(GrContext*) const override;
-
-    SkImageCacherator* peekCacherator() const override {
-        return const_cast<SkImage_Lazy*>(this);
-    }
-
-    // Only return true if the generate has already been cached.
-    bool lockAsBitmapOnlyIfAlreadyCached(SkBitmap*) const;
-    // Call the underlying generator directly
-    bool directGeneratePixels(const SkImageInfo& dstInfo, void* dstPixels, size_t dstRB,
-                              int srcX, int srcY) const;
-
-    // SkImageCacherator interface
-#if SK_SUPPORT_GPU
-    // Returns the texture proxy. If the cacherator is generating the texture and wants to cache it,
-    // it should use the passed in key (if the key is valid).
-    sk_sp<GrTextureProxy> lockTextureProxy(GrContext*,
-                                           const GrUniqueKey& key,
-                                           SkImage::CachingHint,
-                                           bool willBeMipped,
-                                           SkColorSpace* dstColorSpace,
-                                           GrTextureMaker::AllowedTexGenType genType) override;
-
-    // Returns the color space of the texture that would be returned if you called lockTexture.
-    // Separate code path to allow querying of the color space for textures that cached (even
-    // externally).
-    sk_sp<SkColorSpace> getColorSpace(GrContext*, SkColorSpace* dstColorSpace) override;
-
-    // TODO: Need to pass in dstColorSpace to fold into key here?
-    void makeCacheKeyFromOrigKey(const GrUniqueKey& origKey, GrUniqueKey* cacheKey) override;
-#endif
-
-    SkImageInfo buildCacheInfo() const override;
-
-private:
-    class ScopedGenerator;
-
-    /**
-     *  On success (true), bitmap will point to the pixels for this generator. If this returns
-     *  false, the bitmap will be reset to empty.
-     *  TODO: Pass in dstColorSpace to ensure bitmap is compatible?
-     */
-    bool lockAsBitmap(SkBitmap*, SkImage::CachingHint, const SkImageInfo&) const;
-
-    sk_sp<SharedGenerator> fSharedGenerator;
-    // Note that fInfo is not necessarily the info from the generator. It may be cropped by
-    // onMakeSubset and its color space may be changed by onMakeColorSpace.
-    const SkImageInfo      fInfo;
-    const SkIPoint         fOrigin;
-
-    uint32_t fUniqueID;
-
-    // Repeated calls to onMakeColorSpace will result in a proliferation of unique IDs and
-    // SkImage_Lazy instances. Cache the result of the last successful onMakeColorSpace call.
-    mutable SkMutex             fOnMakeColorSpaceMutex;
-    mutable sk_sp<SkColorSpace> fOnMakeColorSpaceTarget;
-    mutable sk_sp<SkImage>      fOnMakeColorSpaceResult;
-
-    typedef SkImage_Base INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,22 +125,22 @@ SkImage_Lazy::SkImage_Lazy(Validator* validator)
     fUniqueID = validator->fUniqueID;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-SkImageInfo SkImage_Lazy::buildCacheInfo() const {
-    if (kGray_8_SkColorType == fInfo.colorType()) {
-        return fInfo.makeColorSpace(nullptr);
-    } else {
-        return fInfo;
+SkImage_Lazy::~SkImage_Lazy() {
+#if SK_SUPPORT_GPU
+    for (int i = 0; i < fUniqueKeyInvalidatedMessages.count(); ++i) {
+        SkMessageBus<GrUniqueKeyInvalidatedMessage>::Post(*fUniqueKeyInvalidatedMessages[i]);
     }
+    fUniqueKeyInvalidatedMessages.deleteAll();
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-static bool check_output_bitmap(const SkBitmap& bitmap, uint32_t expectedID) {
-    SkASSERT(bitmap.getGenerationID() == expectedID);
+static bool check_output_bitmap(const SkBitmap& bitmap, const SkImageInfo& info) {
     SkASSERT(bitmap.isImmutable());
     SkASSERT(bitmap.getPixels());
+    SkASSERT(bitmap.colorType() == info.colorType());
+    SkASSERT(SkColorSpace::Equals(bitmap.colorSpace(), info.colorSpace()));
     return true;
 }
 
@@ -264,10 +158,12 @@ bool SkImage_Lazy::directGeneratePixels(const SkImageInfo& info, void* pixels, s
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SkImage_Lazy::lockAsBitmapOnlyIfAlreadyCached(SkBitmap* bitmap) const {
-    return SkBitmapCache::Find(SkBitmapCacheDesc::Make(fUniqueID,
-                                                       fInfo.width(), fInfo.height()), bitmap) &&
-           check_output_bitmap(*bitmap, fUniqueID);
+bool SkImage_Lazy::lockAsBitmapOnlyIfAlreadyCached(SkBitmap* bitmap,
+                                                   const SkImageInfo& dstInfo) const {
+    auto desc = SkBitmapCacheDesc::Make(fUniqueID, dstInfo.colorType(), dstInfo.colorSpace(),
+                                        SkIRect::MakeSize(fInfo.dimensions()));
+    return SkBitmapCache::Find(desc, bitmap) &&
+           check_output_bitmap(*bitmap, dstInfo);
 }
 
 static bool generate_pixels(SkImageGenerator* gen, const SkPixmap& pmap, int originX, int originY) {
@@ -308,8 +204,7 @@ static bool generate_pixels(SkImageGenerator* gen, const SkPixmap& pmap, int ori
 
 bool SkImage_Lazy::lockAsBitmap(SkBitmap* bitmap, SkImage::CachingHint chint,
                                 const SkImageInfo& info) const {
-    // TODO: Verify dstColorSpace here
-    if (this->lockAsBitmapOnlyIfAlreadyCached(bitmap)) {
+    if (this->lockAsBitmapOnlyIfAlreadyCached(bitmap, info)) {
         return true;
     }
 
@@ -317,7 +212,8 @@ bool SkImage_Lazy::lockAsBitmap(SkBitmap* bitmap, SkImage::CachingHint chint,
     SkBitmapCache::RecPtr cacheRec;
     SkPixmap pmap;
     if (SkImage::kAllow_CachingHint == chint) {
-        auto desc = SkBitmapCacheDesc::Make(fUniqueID, info.width(), info.height());
+        auto desc = SkBitmapCacheDesc::Make(fUniqueID, info.colorType(), info.colorSpace(),
+                                            SkIRect::MakeSize(info.dimensions()));
         cacheRec = SkBitmapCache::Alloc(desc, info, &pmap);
         if (!cacheRec) {
             return false;
@@ -338,16 +234,13 @@ bool SkImage_Lazy::lockAsBitmap(SkBitmap* bitmap, SkImage::CachingHint chint,
 
     if (cacheRec) {
         SkBitmapCache::Add(std::move(cacheRec), bitmap);
-        SkASSERT(bitmap->getPixels());  // we're locked
-        SkASSERT(bitmap->isImmutable());
-        SkASSERT(bitmap->getGenerationID() == fUniqueID);
         this->notifyAddedToRasterCache();
     } else {
         *bitmap = tmpBitmap;
-        bitmap->pixelRef()->setImmutableWithID(fUniqueID);
+        bitmap->setImmutable();
     }
 
-    check_output_bitmap(*bitmap, fUniqueID);
+    check_output_bitmap(*bitmap, info);
     return true;
 }
 
@@ -358,7 +251,7 @@ bool SkImage_Lazy::onReadPixels(const SkImageInfo& dstInfo, void* dstPixels, siz
     SkColorSpace* dstColorSpace = dstInfo.colorSpace();
     SkBitmap bm;
     if (kDisallow_CachingHint == chint) {
-        if (this->lockAsBitmapOnlyIfAlreadyCached(&bm)) {
+        if (this->lockAsBitmapOnlyIfAlreadyCached(&bm, dstInfo)) {
             return bm.readPixels(dstInfo, dstPixels, dstRB, srcX, srcY);
         } else {
             // Try passing the caller's buffer directly down to the generator. If this fails we
@@ -384,8 +277,7 @@ sk_sp<SkData> SkImage_Lazy::onRefEncoded() const {
 
 bool SkImage_Lazy::getROPixels(SkBitmap* bitmap, SkColorSpace* dstColorSpace,
                                CachingHint chint) const {
-    const SkImageInfo cacheInfo = this->buildCacheInfo();
-    return this->lockAsBitmap(bitmap, chint, cacheInfo);
+    return this->lockAsBitmap(bitmap, chint, fInfo);
 }
 
 bool SkImage_Lazy::onIsValid(GrContext* context) const {
@@ -419,8 +311,7 @@ sk_sp<SkImage> SkImage_Lazy::onMakeSubset(const SkIRect& subset) const {
     return validator ? sk_sp<SkImage>(new SkImage_Lazy(&validator)) : nullptr;
 }
 
-sk_sp<SkImage> SkImage_Lazy::onMakeColorSpace(sk_sp<SkColorSpace> target,
-                                              SkColorType targetColorType) const {
+sk_sp<SkImage> SkImage_Lazy::onMakeColorSpace(sk_sp<SkColorSpace> target) const {
     SkAutoExclusive autoAquire(fOnMakeColorSpaceMutex);
     if (target && fOnMakeColorSpaceTarget &&
         SkColorSpace::Equals(target.get(), fOnMakeColorSpaceTarget.get())) {
@@ -446,13 +337,10 @@ sk_sp<SkImage> SkImage::MakeFromGenerator(std::unique_ptr<SkImageGenerator> gene
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- *  Implementation of SkImageCacherator interface, as needed by GrImageTextureMaker
- */
-
 #if SK_SUPPORT_GPU
 
-void SkImage_Lazy::makeCacheKeyFromOrigKey(const GrUniqueKey& origKey, GrUniqueKey* cacheKey) {
+void SkImage_Lazy::makeCacheKeyFromOrigKey(const GrUniqueKey& origKey,
+                                           GrUniqueKey* cacheKey) const {
     // TODO: Take dstColorSpace, include hash in key
     SkASSERT(!cacheKey->isValid());
     if (origKey.isValid()) {
@@ -462,25 +350,27 @@ void SkImage_Lazy::makeCacheKeyFromOrigKey(const GrUniqueKey& origKey, GrUniqueK
 }
 
 class Generator_GrYUVProvider : public GrYUVProvider {
-    SkImageGenerator* fGen;
-
 public:
     Generator_GrYUVProvider(SkImageGenerator* gen) : fGen(gen) {}
 
-    uint32_t onGetID() override { return fGen->uniqueID(); }
+private:
+    uint32_t onGetID() const override { return fGen->uniqueID(); }
     bool onQueryYUV8(SkYUVSizeInfo* sizeInfo, SkYUVColorSpace* colorSpace) const override {
         return fGen->queryYUV8(sizeInfo, colorSpace);
     }
     bool onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo, void* planes[3]) override {
         return fGen->getYUV8Planes(sizeInfo, planes);
     }
+
+    SkImageGenerator* fGen;
+
+    typedef GrYUVProvider INHERITED;
 };
 
 static void set_key_on_proxy(GrProxyProvider* proxyProvider,
                              GrTextureProxy* proxy, GrTextureProxy* originalProxy,
                              const GrUniqueKey& key) {
     if (key.isValid()) {
-        SkASSERT(proxy->origin() == kTopLeft_GrSurfaceOrigin);
         if (originalProxy && originalProxy->getUniqueKey().isValid()) {
             SkASSERT(originalProxy->getUniqueKey() == key);
             SkASSERT(GrMipMapped::kYes == proxy->mipMapped() &&
@@ -494,20 +384,20 @@ static void set_key_on_proxy(GrProxyProvider* proxyProvider,
     }
 }
 
-sk_sp<SkColorSpace> SkImage_Lazy::getColorSpace(GrContext* ctx, SkColorSpace* dstColorSpace) {
-    // TODO: Is this ever needed? Is the output of this function going to be:
-    // return dstColorSpace ? fInfo.refColorSpace() : dstColorSpace;
-    // Yes, except for gray?
-    if (!dstColorSpace) {
-        // In legacy mode, we do no modification to the image's color space or encoding.
-        // Subsequent legacy drawing is likely to ignore the color space, but some clients
-        // may want to know what space the image data is in, so return it.
-        return fInfo.refColorSpace();
-    } else {
-        SkImageInfo cacheInfo = this->buildCacheInfo();
-        return cacheInfo.refColorSpace();
+sk_sp<SkCachedData> SkImage_Lazy::getPlanes(SkYUVSizeInfo* yuvSizeInfo,
+                                            SkYUVColorSpace* yuvColorSpace,
+                                            const void* planes[3]) {
+    ScopedGenerator generator(fSharedGenerator);
+    Generator_GrYUVProvider provider(generator);
+
+    sk_sp<SkCachedData> data = provider.getPlanes(yuvSizeInfo, yuvColorSpace, planes);
+    if (!data) {
+        return nullptr;
     }
+
+    return data;
 }
+
 
 /*
  *  We have 4 ways to try to return a texture (in sorted order)
@@ -517,12 +407,13 @@ sk_sp<SkColorSpace> SkImage_Lazy::getColorSpace(GrContext* ctx, SkColorSpace* ds
  *  3. Ask the generator to return YUV planes, which the GPU can convert
  *  4. Ask the generator to return RGB(A) data, which the GPU can convert
  */
-sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
-                                                     const GrUniqueKey& origKey,
-                                                     SkImage::CachingHint chint,
-                                                     bool willBeMipped,
-                                                     SkColorSpace* dstColorSpace,
-                                                     GrTextureMaker::AllowedTexGenType genType) {
+sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(
+        GrContext* ctx,
+        const GrUniqueKey& origKey,
+        SkImage::CachingHint chint,
+        bool willBeMipped,
+        SkColorSpace* dstColorSpace,
+        GrTextureMaker::AllowedTexGenType genType) const {
     // Values representing the various texture lock paths we can take. Used for logging the path
     // taken to a histogram.
     enum LockTexturePath {
@@ -537,6 +428,10 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
     enum { kLockTexturePathCount = kRGBA_LockTexturePath + 1 };
 
     // Build our texture key.
+    // Even though some proxies created here may have a specific origin and use that origin, we do
+    // not include that in the key. Since SkImages are meant to be immutable, a given SkImage will
+    // always have an associated proxy that is always one origin or the other. It never can change
+    // origins. Thus we don't need to include that info in the key iteself.
     // TODO: This needs to include the dstColorSpace.
     GrUniqueKey key;
     this->makeCacheKeyFromOrigKey(origKey, &key);
@@ -556,10 +451,6 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
         }
     }
 
-    // What format are we going to ask the generator to create?
-    // TODO: Based on the dstColorSpace?
-    const SkImageInfo cacheInfo = this->buildCacheInfo();
-
     // 2. Ask the generator to natively create one
     if (!proxy) {
         ScopedGenerator generator(fSharedGenerator);
@@ -567,11 +458,13 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
                 SkImageGenerator::TexGenType::kCheap != generator->onCanGenerateTexture()) {
             return nullptr;
         }
-        if ((proxy = generator->generateTexture(ctx, cacheInfo, fOrigin, willBeMipped))) {
+        if ((proxy = generator->generateTexture(ctx, fInfo, fOrigin, willBeMipped))) {
             SK_HISTOGRAM_ENUMERATION("LockTexturePath", kNative_LockTexturePath,
                                      kLockTexturePathCount);
             set_key_on_proxy(proxyProvider, proxy.get(), nullptr, key);
             if (!willBeMipped || GrMipMapped::kYes == proxy->mipMapped()) {
+                *fUniqueKeyInvalidatedMessages.append() =
+                        new GrUniqueKeyInvalidatedMessage(key, ctx->uniqueID());
                 return proxy;
             }
         }
@@ -580,34 +473,32 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
     // 3. Ask the generator to return YUV planes, which the GPU can convert. If we will be mipping
     //    the texture we fall through here and have the CPU generate the mip maps for us.
     if (!proxy && !willBeMipped && !ctx->contextPriv().disableGpuYUVConversion()) {
-        const GrSurfaceDesc desc = GrImageInfoToSurfaceDesc(cacheInfo);
+        const GrSurfaceDesc desc = GrImageInfoToSurfaceDesc(fInfo);
         ScopedGenerator generator(fSharedGenerator);
         Generator_GrYUVProvider provider(generator);
 
         // The pixels in the texture will be in the generator's color space. If onMakeColorSpace
         // has been called then this will not match this image's color space. To correct this, apply
         // a color space conversion from the generator's color space to this image's color space.
-        // Note that we can only do this conversion (on the GPU) if both color spaces are XYZ type.
         SkColorSpace* generatorColorSpace = fSharedGenerator->fGenerator->getInfo().colorSpace();
         SkColorSpace* thisColorSpace = fInfo.colorSpace();
 
-        if ((!generatorColorSpace || generatorColorSpace->toXYZD50()) &&
-             (!thisColorSpace || thisColorSpace->toXYZD50())) {
-            // TODO: Update to create the mipped surface in the YUV generator and draw the base
-            // layer directly into the mipped surface.
-            proxy = provider.refAsTextureProxy(ctx, desc, generatorColorSpace, thisColorSpace);
-            if (proxy) {
-                SK_HISTOGRAM_ENUMERATION("LockTexturePath", kYUV_LockTexturePath,
-                                         kLockTexturePathCount);
-                set_key_on_proxy(proxyProvider, proxy.get(), nullptr, key);
-                return proxy;
-            }
+        // TODO: Update to create the mipped surface in the YUV generator and draw the base
+        // layer directly into the mipped surface.
+        proxy = provider.refAsTextureProxy(ctx, desc, generatorColorSpace, thisColorSpace);
+        if (proxy) {
+            SK_HISTOGRAM_ENUMERATION("LockTexturePath", kYUV_LockTexturePath,
+                                     kLockTexturePathCount);
+            set_key_on_proxy(proxyProvider, proxy.get(), nullptr, key);
+            *fUniqueKeyInvalidatedMessages.append() =
+                    new GrUniqueKeyInvalidatedMessage(key, ctx->uniqueID());
+            return proxy;
         }
     }
 
     // 4. Ask the generator to return RGB(A) data, which the GPU can convert
     SkBitmap bitmap;
-    if (!proxy && this->lockAsBitmap(&bitmap, chint, cacheInfo)) {
+    if (!proxy && this->lockAsBitmap(&bitmap, chint, fInfo)) {
         if (willBeMipped) {
             proxy = proxyProvider->createMipMapProxyFromBitmap(bitmap);
         }
@@ -618,6 +509,8 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
             SK_HISTOGRAM_ENUMERATION("LockTexturePath", kRGBA_LockTexturePath,
                                      kLockTexturePathCount);
             set_key_on_proxy(proxyProvider, proxy.get(), nullptr, key);
+            *fUniqueKeyInvalidatedMessages.append() =
+                    new GrUniqueKeyInvalidatedMessage(key, ctx->uniqueID());
             return proxy;
         }
     }
@@ -629,6 +522,8 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(GrContext* ctx,
         // generate the rest of the mips.
         SkASSERT(willBeMipped);
         SkASSERT(GrMipMapped::kNo == proxy->mipMapped());
+        *fUniqueKeyInvalidatedMessages.append() =
+                new GrUniqueKeyInvalidatedMessage(key, ctx->uniqueID());
         if (auto mippedProxy = GrCopyBaseMipMapToTextureProxy(ctx, proxy.get())) {
             set_key_on_proxy(proxyProvider, mippedProxy.get(), proxy.get(), key);
             return mippedProxy;

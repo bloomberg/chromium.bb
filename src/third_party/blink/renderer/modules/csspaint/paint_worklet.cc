@@ -124,7 +124,7 @@ bool PaintWorklet::NeedsToCreateGlobalScope() {
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
   return new PaintWorkletGlobalScopeProxy(
-      ToDocument(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
+      To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
       pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
 }
 

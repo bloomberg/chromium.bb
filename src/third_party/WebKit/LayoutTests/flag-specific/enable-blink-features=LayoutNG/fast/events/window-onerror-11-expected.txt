@@ -8,17 +8,14 @@ No stack trace.
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
-
 window.onerror: "Uncaught SyntaxError: Unexpected token %" at window-onerror-11.html (Line: 33, Column: 14)
 No stack trace.
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
-
 window.onerror: "Uncaught SyntaxError: Unexpected token %" at window-onerror-11.html (Line: 33, Column: 14)
 No stack trace.
 Returning 'true': the error should not be reported in the console as an unhandled exception.
-
 
 
 PASS successfullyParsed is true

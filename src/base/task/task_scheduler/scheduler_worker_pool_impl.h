@@ -76,7 +76,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                           DelayedTaskManager* delayed_task_manager);
 
   // Creates workers following the |params| specification, allowing existing and
-  // future tasks to run. The pool will run at most |max_background_tasks|
+  // future tasks to run. The pool will run at most |max_best_effort_tasks|
   // unblocked TaskPriority::BEST_EFFORT tasks concurrently. Uses
   // |service_thread_task_runner| to monitor for blocked threads in the pool. If
   // specified, |scheduler_worker_observer| will be notified when a worker
@@ -85,7 +85,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |worker_environment| specifies any requested environment to execute the
   // tasks. Can only be called once. CHECKs on failure.
   void Start(const SchedulerWorkerPoolParams& params,
-             int max_background_tasks,
+             int max_best_effort_tasks,
              scoped_refptr<TaskRunner> service_thread_task_runner,
              SchedulerWorkerObserver* scheduler_worker_observer,
              WorkerEnvironment worker_environment);
@@ -221,10 +221,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   bool ShouldPeriodicallyAdjustMaxTasksLockRequired();
 
   // Increments/decrements the number of tasks that can run in this pool.
-  // |is_running_background_task| indicates whether the worker causing the
+  // |is_running_best_effort_task| indicates whether the worker causing the
   // change is currently running a TaskPriority::BEST_EFFORT task.
-  void DecrementMaxTasksLockRequired(bool is_running_background_task);
-  void IncrementMaxTasksLockRequired(bool is_running_background_task);
+  void DecrementMaxTasksLockRequired(bool is_running_best_effort_task);
+  void IncrementMaxTasksLockRequired(bool is_running_best_effort_task);
 
   const std::string pool_label_;
   const ThreadPriority priority_hint_;
@@ -238,10 +238,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   SchedulerBackwardCompatibility backward_compatibility_;
 
-  // Synchronizes accesses to |workers_|, |max_tasks_|, |max_background_tasks_|,
-  // |num_running_background_tasks_|, |num_pending_may_block_workers_|,
-  // |idle_workers_stack_|, |idle_workers_stack_cv_for_testing_|,
-  // |num_wake_ups_before_start_|, |cleanup_timestamps_|, |polling_max_tasks_|,
+  // Synchronizes accesses to |workers_|, |max_tasks_|,
+  // |max_best_effort_tasks_|, |num_running_best_effort_tasks_|,
+  // |num_pending_may_block_workers_|, |idle_workers_stack_|,
+  // |idle_workers_stack_cv_for_testing_|, |num_wake_ups_before_start_|,
+  // |cleanup_timestamps_|, |polling_max_tasks_|,
   // |worker_cleanup_disallowed_for_testing_|,
   // |num_workers_cleaned_up_for_testing_|,
   // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|,
@@ -262,12 +263,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Initial value of |max_tasks_| as set in Start().
   size_t initial_max_tasks_ = 0;
 
-  // The maximum number of background tasks that can run concurrently in this
+  // The maximum number of best-effort tasks that can run concurrently in this
   // pool.
-  int max_background_tasks_ = 0;
+  int max_best_effort_tasks_ = 0;
 
-  // The number of background tasks that are currently running in this pool.
-  int num_running_background_tasks_ = 0;
+  // The number of best-effort tasks that are currently running in this pool.
+  int num_running_best_effort_tasks_ = 0;
 
   // Number of workers that are within the scope of a MAY_BLOCK
   // ScopedBlockingCall but haven't caused a max task increase yet.
@@ -276,7 +277,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Number of workers that are running a TaskPriority::BEST_EFFORT task and are
   // within the scope of a MAY_BLOCK ScopedBlockingCall but haven't caused a max
   // task increase yet.
-  int num_pending_background_may_block_workers_ = 0;
+  int num_pending_best_effort_may_block_workers_ = 0;
 
   // Environment to be initialized per worker.
   WorkerEnvironment worker_environment_ = WorkerEnvironment::NONE;

@@ -17,12 +17,15 @@
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
+#include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -31,6 +34,26 @@ namespace {
 
 using account_manager::AccountType::ACCOUNT_TYPE_GAIA;
 using account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY;
+
+class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
+ public:
+  AccessTokenConsumer() = default;
+  ~AccessTokenConsumer() override = default;
+
+  void OnGetTokenSuccess(const TokenResponse& token_response) override {
+    ++num_access_token_fetch_success_;
+  }
+
+  void OnGetTokenFailure(const GoogleServiceAuthError& error) override {
+    ++num_access_token_fetch_failure_;
+  }
+
+  int num_access_token_fetch_success_ = 0;
+  int num_access_token_fetch_failure_ = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AccessTokenConsumer);
+};
 
 class TokenServiceObserver : public OAuth2TokenService::Observer {
  public:
@@ -80,23 +103,48 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
   std::vector<std::vector<std::string>> batch_change_records_;
 };
 
+class SigninErrorObserver : public SigninErrorController::Observer {
+ public:
+  explicit SigninErrorObserver(SigninErrorController* signin_error_controller)
+      : signin_error_controller_(signin_error_controller) {
+    signin_error_controller_->AddObserver(this);
+  }
+
+  ~SigninErrorObserver() override {
+    signin_error_controller_->RemoveObserver(this);
+  }
+
+  // |SigninErrorController::Observer| overrides.
+  void OnErrorChanged() override {
+    last_err_account_id_ = signin_error_controller_->error_account_id();
+    last_err_ = signin_error_controller_->auth_error();
+  }
+
+  std::string last_err_account_id_;
+  GoogleServiceAuthError last_err_ = GoogleServiceAuthError::AuthErrorNone();
+
+ private:
+  // Non-owning pointer to |SigninErrorController|.
+  SigninErrorController* const signin_error_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(SigninErrorObserver);
+};
+
 }  // namespace
 
 class CrOSOAuthDelegateTest : public testing::Test {
  public:
   CrOSOAuthDelegateTest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::ANY_ACCOUNT),
+        signin_error_observer_(&signin_error_controller_) {}
   ~CrOSOAuthDelegateTest() override = default;
 
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-
-    account_manager_.Initialize(tmp_dir_.GetPath(), test_shared_loader_factory_,
-                                immediate_callback_runner_);
-    scoped_task_environment_.RunUntilIdle();
 
     pref_service_.registry()->RegisterListPref(
         AccountTrackerService::kAccountInfoPref);
@@ -104,6 +152,10 @@ class CrOSOAuthDelegateTest : public testing::Test {
         prefs::kAccountIdMigrationState,
         AccountTrackerService::MIGRATION_NOT_STARTED);
     client_ = std::make_unique<TestSigninClient>(&pref_service_);
+    account_manager_.Initialize(tmp_dir_.GetPath(),
+                                client_->GetURLLoaderFactory(),
+                                immediate_callback_runner_);
+    scoped_task_environment_.RunUntilIdle();
 
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
@@ -112,12 +164,11 @@ class CrOSOAuthDelegateTest : public testing::Test {
     account_tracker_service_.SeedAccountInfo(account_info_);
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-        &account_tracker_service_, &account_manager_);
+        &account_tracker_service_, &account_manager_,
+        &signin_error_controller_);
     delegate_->LoadCredentials(
         account_info_.account_id /* primary_account_id */);
   }
-
-  void TearDown() override { test_shared_loader_factory_->Detach(); }
 
   AccountInfo CreateAccountInfoTestFixture(const std::string& gaia_id,
                                            const std::string& email) {
@@ -141,33 +192,42 @@ class CrOSOAuthDelegateTest : public testing::Test {
     return account_info;
   }
 
+  void AddSuccessfulOAuthTokenResponse() {
+    client_->test_url_loader_factory()->AddResponse(
+        GaiaUrls::GetInstance()->oauth2_token_url().spec(),
+        GetValidTokenResponse("token", 3600));
+  }
+
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Needed because
+  // |content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver| in
+  // |ChromeOSOAuth2TokenServiceDelegate|'s constructor CHECKs that we are
+  // running on the browser UI thread.
+  content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir tmp_dir_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   AccountInfo account_info_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
+  SigninErrorController signin_error_controller_;
+  SigninErrorObserver signin_error_observer_;
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
   AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
           [](const base::RepeatingClosure& closure) -> void { closure.Run(); });
-
- private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<TestSigninClient> client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CrOSOAuthDelegateTest);
 };
 
 TEST_F(CrOSOAuthDelegateTest, RefreshTokenIsAvailableForGaiaAccounts) {
   EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
                 LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            delegate_->GetLoadCredentialsState());
+            delegate_->load_credentials_state());
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
 
@@ -269,12 +329,12 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   AccountManager account_manager;
   // AccountManager will not be fully initialized until
   // |scoped_task_environment_.RunUntilIdle()| is called.
-  account_manager.Initialize(tmp_dir_.GetPath(), test_shared_loader_factory_,
+  account_manager.Initialize(tmp_dir_.GetPath(), client_->GetURLLoaderFactory(),
                              immediate_callback_runner_);
 
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-      &account_tracker_service_, &account_manager);
+      &account_tracker_service_, &account_manager, &signin_error_controller_);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer;
   delegate->AddObserver(&observer);
@@ -349,6 +409,112 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAccountRemoval) {
   EXPECT_TRUE(observer.account_ids_.empty());
 
   delegate_->RemoveObserver(&observer);
+}
+
+TEST_F(CrOSOAuthDelegateTest,
+       SigninErrorObserversAreNotifiedOnAuthErrorChange) {
+  auto error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
+
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_observer_.last_err_);
+  delegate_->UpdateAuthError(account_info_.account_id, error);
+
+  EXPECT_EQ(error, delegate_->GetAuthError(account_info_.account_id));
+  EXPECT_EQ(account_info_.account_id,
+            signin_error_observer_.last_err_account_id_);
+  EXPECT_EQ(error, signin_error_observer_.last_err_);
+}
+
+TEST_F(CrOSOAuthDelegateTest, TransientErrorsAreNotShown) {
+  auto transient_error = GoogleServiceAuthError(
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_observer_.last_err_);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            delegate_->GetAuthError(account_info_.account_id));
+
+  delegate_->UpdateAuthError(account_info_.account_id, transient_error);
+
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_observer_.last_err_);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            delegate_->GetAuthError(account_info_.account_id));
+}
+
+TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
+  delegate_->UpdateCredentials(account_info_.account_id, "123");
+  auto transient_error = GoogleServiceAuthError(
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
+  delegate_->UpdateAuthError(account_info_.account_id, transient_error);
+  // Add a dummy success response. The actual network call has not been made
+  // yet.
+  AddSuccessfulOAuthTokenResponse();
+
+  // Transient error should repeat until backoff period expires.
+  AccessTokenConsumer access_token_consumer;
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_failure_);
+  std::vector<std::string> scopes{"scope"};
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
+      delegate_->CreateAccessTokenFetcher(account_info_.account_id,
+                                          delegate_->GetURLLoaderFactory(),
+                                          &access_token_consumer));
+  scoped_task_environment_.RunUntilIdle();
+  fetcher->Start("client_id", "client_secret", scopes);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
+  // Expect a positive backoff time.
+  EXPECT_GT(delegate_->backoff_entry_.GetTimeUntilRelease(), base::TimeDelta());
+
+  // Pretend that backoff has expired and try again.
+  delegate_->backoff_entry_.SetCustomReleaseTime(base::TimeTicks());
+  fetcher.reset(delegate_->CreateAccessTokenFetcher(
+      account_info_.account_id, delegate_->GetURLLoaderFactory(),
+      &access_token_consumer));
+  fetcher->Start("client_id", "client_secret", scopes);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
+}
+
+TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
+  delegate_->UpdateCredentials(account_info_.account_id, "123");
+  auto transient_error = GoogleServiceAuthError(
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
+  delegate_->UpdateAuthError(account_info_.account_id, transient_error);
+  // Add a dummy success response. The actual network call has not been made
+  // yet.
+  AddSuccessfulOAuthTokenResponse();
+
+  // Transient error should repeat until backoff period expires.
+  AccessTokenConsumer access_token_consumer;
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_failure_);
+  std::vector<std::string> scopes{"scope"};
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
+      delegate_->CreateAccessTokenFetcher(account_info_.account_id,
+                                          delegate_->GetURLLoaderFactory(),
+                                          &access_token_consumer));
+  scoped_task_environment_.RunUntilIdle();
+  fetcher->Start("client_id", "client_secret", scopes);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
+  // Expect a positive backoff time.
+  EXPECT_GT(delegate_->backoff_entry_.GetTimeUntilRelease(), base::TimeDelta());
+
+  // Notify of network change and ensure that request now runs.
+  delegate_->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  fetcher.reset(delegate_->CreateAccessTokenFetcher(
+      account_info_.account_id, delegate_->GetURLLoaderFactory(),
+      &access_token_consumer));
+  fetcher->Start("client_id", "client_secret", scopes);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
+  EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }
 
 }  // namespace chromeos

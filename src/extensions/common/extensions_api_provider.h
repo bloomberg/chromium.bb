@@ -40,8 +40,8 @@ class ExtensionsAPIProvider {
   // or an empty string if this provider doesn't know of the generated API.
   virtual base::StringPiece GetAPISchema(const std::string& name) = 0;
 
-  // Adds any associated permissions.
-  virtual void AddPermissionsProviders(PermissionsInfo* permissions_info) = 0;
+  // Registers permissions for any associated API features.
+  virtual void RegisterPermissions(PermissionsInfo* permissions_info) = 0;
 
   // Registers manifest handlers for any associated API features.
   virtual void RegisterManifestHandlers() = 0;

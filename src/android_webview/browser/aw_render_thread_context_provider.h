@@ -51,6 +51,7 @@ class AwRenderThreadContextProvider
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  gpu::SharedImageInterface* SharedImageInterface() override;
   viz::ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
   void AddObserver(viz::ContextLostObserver* obs) override;

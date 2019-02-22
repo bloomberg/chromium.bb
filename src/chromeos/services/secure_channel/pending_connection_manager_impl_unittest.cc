@@ -22,6 +22,7 @@
 #include "chromeos/services/secure_channel/fake_pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_ble_initiator_connection_request.h"
 #include "chromeos/services/secure_channel/pending_ble_listener_connection_request.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -211,7 +212,8 @@ class FakePendingBleInitiatorConnectionRequestFactory
   BuildInstance(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority,
-      PendingConnectionRequestDelegate* delegate) override {
+      PendingConnectionRequestDelegate* delegate,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
     EXPECT_EQ(expected_client_connection_parameters_,
               client_connection_parameters.get());
     EXPECT_EQ(*expected_connection_priority_, connection_priority);
@@ -257,7 +259,8 @@ class FakePendingBleListenerConnectionRequestFactory
   BuildInstance(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority,
-      PendingConnectionRequestDelegate* delegate) override {
+      PendingConnectionRequestDelegate* delegate,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
     EXPECT_EQ(expected_client_connection_parameters_,
               client_connection_parameters.get());
     EXPECT_EQ(*expected_connection_priority_, connection_priority);
@@ -337,8 +340,12 @@ class SecureChannelPendingConnectionManagerImplTest : public testing::Test {
     PendingBleListenerConnectionRequest::Factory::SetFactoryForTesting(
         fake_pending_ble_listener_connection_request_factory_.get());
 
+    mock_adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+
     manager_ = PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
-        fake_delegate_.get(), fake_ble_connection_manager_.get());
+        fake_delegate_.get(), fake_ble_connection_manager_.get(),
+        mock_adapter_);
   }
 
   void TearDown() override {
@@ -592,6 +599,7 @@ class SecureChannelPendingConnectionManagerImplTest : public testing::Test {
       fake_pending_ble_initiator_connection_request_factory_;
   std::unique_ptr<FakePendingBleListenerConnectionRequestFactory>
       fake_pending_ble_listener_connection_request_factory_;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 
   std::unique_ptr<PendingConnectionManager> manager_;
 

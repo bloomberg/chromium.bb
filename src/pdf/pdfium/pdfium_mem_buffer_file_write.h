@@ -6,6 +6,7 @@
 #define PDF_PDFIUM_PDFIUM_MEM_BUFFER_FILE_WRITE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 

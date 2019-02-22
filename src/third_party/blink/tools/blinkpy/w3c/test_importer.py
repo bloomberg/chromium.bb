@@ -30,7 +30,7 @@ from blinkpy.w3c.local_wpt import LocalWPT
 from blinkpy.w3c.test_copier import TestCopier
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.w3c.wpt_github import WPTGitHub
-from blinkpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest, BASE_MANIFEST_NAME
 from blinkpy.web_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from blinkpy.web_tests.port.base import Port
 
@@ -158,7 +158,7 @@ class TestImporter(object):
             return 0
 
         if self._only_wpt_manifest_changed():
-            _log.info('Only WPT_BASE_MANIFEST.json was updated; skipping the import.')
+            _log.info('Only manifest was updated; skipping the import.')
             return 0
 
         self._commit_changes(commit_message)
@@ -369,7 +369,7 @@ class TestImporter(object):
         manifest_path = self.fs.join(self.dest_path, 'MANIFEST.json')
         assert self.fs.exists(manifest_path)
         manifest_base_path = self.fs.normpath(
-            self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'))
+            self.fs.join(self.dest_path, '..', BASE_MANIFEST_NAME))
         self.copyfile(manifest_path, manifest_base_path)
         self.chromium_git.add_list([manifest_base_path])
 
@@ -393,7 +393,7 @@ class TestImporter(object):
     def _only_wpt_manifest_changed(self):
         changed_files = self.chromium_git.changed_files()
         wpt_base_manifest = self.fs.relpath(
-            self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'),
+            self.fs.join(self.dest_path, '..', BASE_MANIFEST_NAME),
             self.finder.chromium_base())
         return changed_files == [wpt_base_manifest]
 
@@ -564,7 +564,7 @@ class TestImporter(object):
 
         This is the same as invoking the `wpt-update-expectations` script.
         """
-        _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
+        _log.info('Adding test expectations lines to TestExpectations.')
         expectation_updater = WPTExpectationsUpdater(self.host)
         self.rebaselined_tests, self.new_test_expectations = expectation_updater.update_expectations()
 

@@ -7,11 +7,9 @@
 
 from __future__ import print_function
 
-import collections
 import inspect
 import os
 import unittest
-import warnings
 
 from chromite.cbuildbot import binhost
 from chromite.lib import config_lib
@@ -40,7 +38,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
   # Boards that don't have Chromium PFQs.
   # TODO(davidjames): Empty this list.
-  BOARDS_WITHOUT_CHROMIUM_PFQS = ['rush_ryu', 'smaug', 'veyron_rialto']
+  BOARDS_WITHOUT_CHROMIUM_PFQS = ['veyron_rialto']
 
   site_config = config_lib.GetConfig()
 
@@ -54,16 +52,19 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     parallel.RunTasksInProcessPool(binhost.GenConfigsForBoard, inputs)
     fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
     cls.COMPAT_IDS = fetcher.FetchCompatIds(list(board_keys))
+    logging.info('Running tests...')
 
   def setUp(self):
     self.complaints = []
     self.fatal_complaints = []
 
   def tearDown(self):
-    if self.complaints:
-      warnings.warn('\n' + '\n'.join(self.complaints))
+    for complaint in self.complaints:
+      logging.warn(complaint)
+    for complaint in self.fatal_complaints:
+      logging.error(complaint)
     if self.fatal_complaints:
-      self.assertFalse(self.fatal_complaints, '\n'.join(self.fatal_complaints))
+      self.fail('Fatal errors found in this test')
 
   def Complain(self, msg, fatal):
     """Complain about an error when the test exits.
@@ -97,6 +98,41 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       assert expected == actual
       return 'no differences'
 
+  def _FindCloseConfigs(self, pfq_configs, config, skipped_useflags):
+    """Find configs in |pfq_configs| that are "close" to |config|.
+
+    If there are no prebuilts from any PFQ that match this board, then try to
+    help with diagnostics by finding the "closest" matches.  Since most failures
+    are related to mismatched USE flags, we ignore the compiler settings and
+    find configs that have the fewest USE flag changes.
+
+    Args:
+      pfq_configs: A PrebuiltMapping object.
+      config: The baseline config to compare against.
+      skipped_useflags: set of USE flags to ignore when computing changes.
+
+    Returns:
+      A list of (BoardKey, CompatId, added-USE-flags, removed-USE-flags) sorted
+      by the number of changed USE flags.
+    """
+    compat_id = self.GetCompatId(config)
+
+    ret = []
+    for close_id, board_key in pfq_configs.by_compat_id.items():
+      # Only consider matching architectures.
+      if compat_id.arch == close_id.arch:
+        added = (set(close_id.useflags) - set(compat_id.useflags) -
+                 skipped_useflags)
+        removed = (set(compat_id.useflags) - set(close_id.useflags) -
+                   skipped_useflags)
+        if added or removed:
+          ret.append((board_key, compat_id,
+                      sorted('+%s' % x for x in added),
+                      sorted('-%s' % x for x in removed)))
+
+    # Do the final sort of the configs based on number of USE changes.
+    return sorted(ret, key=lambda x: len(x[2]) + len(x[3]))
+
   def AssertChromePrebuilts(self, pfq_configs, config, skip_useflags=False):
     """Verify that the specified config has Chrome prebuilts.
 
@@ -107,9 +143,12 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     """
     # Skip over useflags from the useflag if needed.
     msg_prefix = ''
+    skipped_useflags = set()
     if skip_useflags and config.useflags:
-      msg_prefix = 'When we take out config-requested useflags (%s), ' % (
-          config.useflags)
+      skipped_useflags = set(config.useflags)
+      msg_prefix = ('When we take out config-requested useflags %s for '
+                    'public/partner builds, '
+                    % (tuple(x.encode('ascii') for x in config.useflags),))
       config = config.deepcopy()
       config.useflags = []
 
@@ -126,16 +165,29 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         pfq_compat_id = self.COMPAT_IDS.get(key)
         if pfq_compat_id:
           err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
-          msg = '%s%s uses mismatched Chrome prebuilts from %s -- %s'
+          msg = '%s%s uses mismatched Chrome prebuilts from %s\n\t%s'
           self.Complain(msg % (msg_prefix, config.name, key.board, err),
                         fatal=False)
           pfqs.add(key)
 
     if not pfqs:
       pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
-      msg = '%s%s cannot find Chrome prebuilts -- %s'
-      self.Complain(msg % (msg_prefix, config.name, compat_id),
-                    fatal=pre_cq or config.important)
+      msg = ('%s%s cannot find Chrome prebuilts (probably due to USE flag '
+             'mismatch)\nBuild settings: %s'
+             % (msg_prefix, config.name, compat_id))
+
+      # For brevity, we only show the first three closest matches.  After that,
+      # we start getting redundant, and the deltas get larger.  This is just a
+      # debug display, so it need not be perfect.
+      close_configs = self._FindCloseConfigs(pfq_configs, config,
+                                             skipped_useflags)
+      if close_configs:
+        msg += '\nClosest matching configs:\n'
+        for board_key, compat_id, added, removed in close_configs[0:3]:
+          msg += ('\tBoards: %s\n\t\tUSE changes: %s\n\t\tBuild settings: %s\n'
+                  % (board_key, added + removed, compat_id))
+
+      self.Complain(msg, fatal=pre_cq or config.important)
 
   def GetCompatId(self, config, board=None):
     """Get the CompatId for a config.
@@ -178,23 +230,28 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     return result
 
   def testChromePrebuiltsPresent(self, filename=None):
-    """Verify Chrome prebuilts exist for all configs that build Chrome.
+    """Verify all builds that use Chrome have matching Chrome PFQ configs.
 
     Args:
       filename: Filename to load our PFQ mappings from. By default, generate
         the PFQ mappings based on the current config.
     """
     if filename is not None:
+      logging.info('Checking PFQ database: %s', filename)
       pfq_configs = binhost.PrebuiltMapping.Load(filename)
     else:
+      logging.info('Checking config_lib.GetConfig().site_config')
       keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
 
-    for compat_id, pfqs in pfq_configs.by_compat_id.items():
+    for compat_id, pfqs in sorted(pfq_configs.by_compat_id.items(),
+                                  key=lambda x: str(x[1])):
       if len(pfqs) > 1:
-        msg = 'The following Chrome PFQs produce identical prebuilts: %s -- %s'
-        self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
-                      fatal=False)
+        self.Complain(
+            'The following Chrome PFQs produce identical prebuilts:\n'
+            '\t%s\n\t%s'
+            % ('\n\t'.join(sorted(str(x) for x in pfqs)), compat_id),
+            fatal=False)
 
     # Sort the names to ensure consistent errors.
     for _name, config in sorted(self._GuessActiveConfigs().items()):
@@ -214,7 +271,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
           self.AssertChromePrebuilts(pfq_configs, config, skip_useflags=True)
 
   def testCurrentChromePrebuiltsEnough(self):
-    """Verify Chrome prebuilts exist for all configs that build Chrome.
+    """Verify Chrome prebuilts actually exist for all configs that build Chrome.
 
     This loads the list of Chrome prebuilts that were generated during the last
     Chrome PFQ run from disk and verifies that it is sufficient.
@@ -223,44 +280,6 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
                                                    'chrome')
     if os.path.exists(filename):
       self.testChromePrebuiltsPresent(filename)
-
-  def testReleaseGroupSharing(self):
-    """Verify that the boards built in release groups have compatible settings.
-
-    This means that all of the subconfigs in the release group have matching
-    use flags, cflags, and architecture.
-    """
-    for config in self.site_config.values():
-      # Only test release groups.
-      if not config.name.endswith('-release-group'):
-        continue
-
-      # Get a list of the compatibility IDs.
-      compat_ids_for_config = collections.defaultdict(set)
-      for subconfig in config.child_configs:
-        if subconfig.sync_chrome is not False:
-          for board in subconfig.boards:
-            compat_id = self.GetCompatId(subconfig, board)
-            compat_ids_for_config[compat_id].add(board)
-
-      if len(compat_ids_for_config) > 1:
-        arch_useflags = set(tuple(x[:-1]) for x in compat_ids_for_config)
-        if len(arch_useflags) > 1:
-          # If two configs in the same group have mismatched Chrome binaries
-          # (e.g. different use flags), Chrome may be built twice in parallel
-          # and this may result in flaky, slow, and possibly incorrect builds.
-          msg = '%s: %s and %s have mismatched Chrome binaries -- %s'
-          fatal = True
-        else:
-          # TODO(davidjames): This should be marked fatal once the
-          # ivybridge-freon-release-group is cleaned up.
-          msg = '%s: %s and %s have mismatched cflags -- %s'
-          fatal = False
-        ids, board_sets = zip(*compat_ids_for_config.iteritems())
-        boards = [next(iter(x)) for x in board_sets]
-        err = self.GetCompatIdDiff(ids[0], ids[1])
-        msg %= (config.name, boards[0], boards[1], err)
-        self.Complain(msg, fatal=fatal)
 
   def testDumping(self):
     """Verify Chrome prebuilts exist for all configs that build Chrome.

@@ -14,7 +14,7 @@
 #include "SkAtlasTextContext.h"
 #include "SkAtlasTextFont.h"
 #include "SkAtlasTextRenderer.h"
-#include "SkGlyphRun.h"
+#include "SkGlyphRunPainter.h"
 #include "SkGr.h"
 #include "SkInternalAtlasTextContext.h"
 #include "ops/GrAtlasTextOp.h"
@@ -105,7 +105,7 @@ public:
 
     void makeGrPaint(GrMaskFormat, const SkPaint& skPaint, const SkMatrix&,
                      GrPaint* grPaint) override {
-        grPaint->setColor4f(SkColorToPremulGrColor4fLegacy(skPaint.getColor()));
+        grPaint->setColor4f(GrColor4f::FromRGBA4f(skPaint.getColor4f().premul()));
     }
 
     GrContext* getContext() override {

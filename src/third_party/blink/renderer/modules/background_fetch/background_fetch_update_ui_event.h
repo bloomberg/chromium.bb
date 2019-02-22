@@ -61,7 +61,8 @@ class MODULES_EXPORT BackgroundFetchUpdateUIEvent final
 
   void DidGetIcon(ScriptPromiseResolver* resolver,
                   const String& title,
-                  const SkBitmap& icon);
+                  const SkBitmap& icon,
+                  int64_t ideal_to_chosen_icon_size);
 
   void DidUpdateUI(ScriptPromiseResolver* resolver,
                    mojom::blink::BackgroundFetchError error);

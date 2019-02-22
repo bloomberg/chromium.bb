@@ -47,7 +47,7 @@ Aliases are properties that share most of their logic with another property,
 somtimes with the exception of some minor differences in parsing logic due to
 legacy reasons. Many aliases are -webit prefixed properties that have since
 been implemented without the prefix. Aliases define the alias_for member in
-[CSSProperties.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/CSSProperties.json5)).
+[css_properties.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/css_properties.json5)).
 
 Alias classes implement a small subset of functions of properties, only those
 that do not share an implementation with the resolved property that they are an
@@ -74,7 +74,7 @@ issue crbug.com/752745.
 ### Variable
 
 The Variable rule is not a true CSS property, but is treated
-as such in places for convience. It does not appear in CSSProperties.json5; thus
+as such in places for convenience. It does not appear in css_properties.json5; thus
 its property class header needed to be hand-written & manually added to the
 list of property classes by make_css_property_base.py. Those hand-written
 headers are in this directory.
@@ -90,10 +90,10 @@ headers are in this directory.
 3.  If logic is required by multiple property classes you may need to create a
     new Utils file. These utils methods are grouped by pipeline function (e.g.
     [CSSParsingUtils](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/properties/css_parsing_utils.h)).
-4.  Add the new property to `core/css/CSSProperties.json5`. Ensure that you
+4.  Add the new property to `core/css/css_properties.json5`. Ensure that you
     include all the methods implemented on the property in the
     'property_methods' flag so that the header file is generated correctly (see
-    [CSSProperties.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/CSSProperties.json5)
+    [css_properties.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/css_properties.json5)
     for more details)
 5.  Add new files to BUILD files
     1.  Add the new .cpp file to

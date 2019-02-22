@@ -102,7 +102,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="3171922709365450819">Este cliente no admite el dispositivo porque necesita autenticación de terceros.</translation>
 <translation id="3194245623920924351">Escritorio Remoto de Chrome</translation>
 <translation id="3197730452537982411">Escritorio remoto</translation>
-<translation id="3212472844831225214">• Compatibilidad con Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Enviar estas instrucciones por correo electrónico</translation>
 <translation id="3258789396564295715">Puedes acceder de forma segura a este ordenador con Escritorio Remoto de Chrome.</translation>
 <translation id="3286521253923406898">Controlador de host de Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Anteriormente, iniciaste sesión como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a los ordenadores de esa cuenta, <ph name="LINK_BEGIN" />inicia sesión en Google Chrome<ph name="LINK_END" /> con dicha cuenta y vuelve a instalar Escritorio Remoto de Chrome.</translation>
 <translation id="8642984861538780905">Aceptable</translation>
+<translation id="8705151241155781642">• Compatibilidad con Android 9.0 Pie.
+• Ahora es posible cambiar la resolución del escritorio remoto para que coincida con la resolución de la pantalla de tu dispositivo Android.</translation>
 <translation id="8712909229180978490">No puedo ver mis archivos guardados online en Google Drive.</translation>
 <translation id="8743328882720071828">¿Quieres permitir que <ph name="CLIENT_USERNAME" /> vea y controle tu ordenador?</translation>
 <translation id="8747048596626351634">La sesión ha fallado o no se ha podido iniciar. Si hay una secuencia de comandos ~/.chrome-remote-desktop-session en el ordenador remoto, esta debe iniciar un proceso largo en primer plano, como un entorno de escritorio o un administrador de ventanas.</translation>

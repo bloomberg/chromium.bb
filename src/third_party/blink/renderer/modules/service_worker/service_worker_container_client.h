@@ -6,44 +6,44 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_CONTAINER_CLIENT_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
-class ExecutionContext;
 class WebServiceWorkerProvider;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
-// Owned by Document (or WorkerClients).
+// Owned by Document.
 class MODULES_EXPORT ServiceWorkerContainerClient final
     : public GarbageCollectedFinalized<ServiceWorkerContainerClient>,
       public Supplement<Document>,
-      public Supplement<WorkerClients>,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
-  WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 
  public:
   static const char kSupplementName[];
 
   ServiceWorkerContainerClient(Document&,
                                std::unique_ptr<WebServiceWorkerProvider>);
-  ServiceWorkerContainerClient(WorkerClients&,
-                               std::unique_ptr<WebServiceWorkerProvider>);
   virtual ~ServiceWorkerContainerClient();
+
+  // Returns the ServiceWorker object described by the object info in current
+  // execution context. Creates a new object if needed, or else returns the
+  // existing one.
+  ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
 
   WebServiceWorkerProvider* Provider() { return provider_.get(); }
 
-  static ServiceWorkerContainerClient* From(ExecutionContext*);
+  static ServiceWorkerContainerClient* From(Document*);
 
-  void Trace(blink::Visitor* visitor) override {
-    Supplement<Document>::Trace(visitor);
-    Supplement<WorkerClients>::Trace(visitor);
-  }
+  void Trace(blink::Visitor* visitor) override;
 
   const char* NameInHeapSnapshot() const override {
     return "ServiceWorkerContainerClient";
@@ -51,11 +51,16 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
  private:
   std::unique_ptr<WebServiceWorkerProvider> provider_;
-};
+  // Map from service worker version id to JavaScript ServiceWorker object in
+  // current execution context.
+  HeapHashMap<int64_t,
+              WeakMember<ServiceWorker>,
+              WTF::IntHash<int64_t>,
+              WTF::UnsignedWithZeroKeyHashTraits<int64_t>>
+      service_worker_objects_;
 
-MODULES_EXPORT void ProvideServiceWorkerContainerClientToWorker(
-    WorkerClients*,
-    std::unique_ptr<WebServiceWorkerProvider>);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContainerClient);
+};
 
 }  // namespace blink
 

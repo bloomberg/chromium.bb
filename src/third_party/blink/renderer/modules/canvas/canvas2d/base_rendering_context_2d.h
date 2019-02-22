@@ -372,7 +372,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual void NeedsFinalizeFrame(){};
 
-  float GetFontBaseline(const FontMetrics&) const;
+  float GetFontBaseline(const SimpleFontData&) const;
 
   static const char kDefaultFont[];
   static const char kInheritDirectionString[];

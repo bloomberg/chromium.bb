@@ -7,7 +7,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_popup_type.h"
+#include "content/public/common/widget_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 @class NSWindow;
@@ -21,7 +21,6 @@ namespace content {
 class PopupWindowMac {
  public:
   PopupWindowMac(const gfx::Rect& content_rect,
-                 blink::WebPopupType popup_type,
                  RenderWidgetHostViewCocoa* cocoa_view);
   ~PopupWindowMac();
 

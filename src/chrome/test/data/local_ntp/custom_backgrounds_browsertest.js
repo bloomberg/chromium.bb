@@ -235,6 +235,36 @@ test.customBackgrounds.testImageDoneClick = function() {
   assertFalse(elementIsVisible($('bg-sel-menu')));
 };
 
+/**
+ * Test that no custom background option will be shown when offline.
+ */
+test.customBackgrounds.testHideCustomBackgroundOffline = function() {
+  initLocalNTPWithCustomBackgroundsEnabled();
+
+  let event = new Event('offline', {});
+  window.dispatchEvent(event);
+  $('edit-bg').click();
+
+  assertFalse(elementIsVisible($('edit-bg-default-wallpapers-text')));
+};
+
+/**
+ * Test that clicking collection when offline will trigger an error
+ * notification.
+ */
+test.customBackgrounds.testClickCollectionOfflineShowErrorMsg = function() {
+  initLocalNTPWithCustomBackgroundsEnabled();
+
+  $('edit-bg').click();
+  setupFakeAsyncCollectionLoad();
+  $('edit-bg-default-wallpapers').click();
+  setupFakeAsyncImageLoadOffline('coll_tile_0');
+  let event = new Event('click', {'target': $('coll_tile_0')});
+  $('coll_tile_0').click(event);
+
+  assertTrue(elementIsVisible($('error-notice')));
+};
+
 
 // TODO(crbug.com/857256): add tests for:
 //  * Image attributions.
@@ -274,7 +304,7 @@ setupFakeAsyncCollectionLoad = function() {
       }
     ];
     coll_errors = {};
-  }
+  };
 
   // Append a call to onload to the end of the click handler.
   var oldBackgroundsFunc = $('edit-bg-default-wallpapers').onclick;
@@ -333,6 +363,22 @@ setupFakeAsyncImageLoad = function(tile_id) {
       }
     ];
     coll_img_errors = {};
+    $('ntp-images-loader').onload();
+  }
+};
+
+
+/**
+ * Fake loading a collection's images with a network error to simulate offline
+ * status.
+ */
+setupFakeAsyncImageLoadOffline = function(tile_id) {
+  // Override the image tile's onclick function.
+  let oldImageLoader = $(tile_id).onclick;
+  $(tile_id).onclick = function(event) {
+    oldImageLoader(event);
+    coll_img = [];
+    coll_img_errors = { net_error: true, net_error_no: -106 };
     $('ntp-images-loader').onload();
   }
 };

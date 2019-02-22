@@ -11,6 +11,7 @@
 
 #include "common/debug.h"
 
+#include "libANGLE/Context.h"
 #include "libANGLE/renderer/null/BufferNULL.h"
 #include "libANGLE/renderer/null/CompilerNULL.h"
 #include "libANGLE/renderer/null/DisplayNULL.h"
@@ -120,12 +121,12 @@ gl::Error ContextNULL::finish(const gl::Context *context)
     return gl::NoError();
 }
 
-gl::Error ContextNULL::drawArrays(const gl::Context *context,
-                                  gl::PrimitiveMode mode,
-                                  GLint first,
-                                  GLsizei count)
+angle::Result ContextNULL::drawArrays(const gl::Context *context,
+                                      gl::PrimitiveMode mode,
+                                      GLint first,
+                                      GLsizei count)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 gl::Error ContextNULL::drawArraysInstanced(const gl::Context *context,
@@ -295,9 +296,11 @@ void ContextNULL::popDebugGroup()
 {
 }
 
-gl::Error ContextNULL::syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits)
+angle::Result ContextNULL::syncState(const gl::Context *context,
+                                     const gl::State::DirtyBits &dirtyBits,
+                                     const gl::State::DirtyBits &bitMask)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 GLint ContextNULL::getGPUDisjoint()
@@ -438,4 +441,16 @@ gl::Error ContextNULL::memoryBarrierByRegion(const gl::Context *context, GLbitfi
     return gl::NoError();
 }
 
+void ContextNULL::handleError(GLenum errorCode,
+                              const char *message,
+                              const char *file,
+                              const char *function,
+                              unsigned int line)
+{
+    std::stringstream errorStream;
+    errorStream << "Internal OpenGL error: " << gl::FmtHex(errorCode) << ", in " << file << ", "
+                << function << ":" << line << ". " << message;
+
+    mErrors->handleError(gl::Error(errorCode, errorCode, errorStream.str()));
+}
 }  // namespace rx

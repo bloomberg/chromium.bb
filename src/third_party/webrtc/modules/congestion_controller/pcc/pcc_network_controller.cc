@@ -26,11 +26,12 @@ constexpr double kSlowStartModeIncrease = 1.5;
 
 constexpr double kAlphaForPacketInterval = 0.9;
 constexpr int64_t kMinPacketsNumberPerInterval = 20;
-const TimeDelta kMinDurationOfMonitorInterval = TimeDelta::ms(50);
-const TimeDelta kStartupDuration = TimeDelta::ms(500);
+const TimeDelta kMinDurationOfMonitorInterval = TimeDelta::Millis<50>();
+const TimeDelta kStartupDuration = TimeDelta::Millis<500>();
 constexpr double kMinRateChangeBps = 4000;
-const DataRate kMinRateHaveMultiplicativeRateChange =
-    DataRate::bps(kMinRateChangeBps / kDefaultSamplingStep);
+constexpr DataRate kMinRateHaveMultiplicativeRateChange =
+    DataRate::BitsPerSec<static_cast<int64_t>(kMinRateChangeBps /
+                                              kDefaultSamplingStep)>();
 
 // Bitrate controller constants.
 constexpr double kInitialConversionFactor = 5;
@@ -49,8 +50,8 @@ const uint64_t kRandomSeed = 100;
 }  // namespace
 
 PccNetworkController::PccNetworkController(NetworkControllerConfig config)
-    : start_time_(Timestamp::Infinity()),
-      last_sent_packet_time_(Timestamp::Infinity()),
+    : start_time_(Timestamp::PlusInfinity()),
+      last_sent_packet_time_(Timestamp::PlusInfinity()),
       smoothed_packets_sending_interval_(TimeDelta::Zero()),
       mode_(Mode::kStartup),
       default_bandwidth_(DataRate::kbps(kInitialBandwidthKbps)),
@@ -74,8 +75,8 @@ PccNetworkController::PccNetworkController(NetworkControllerConfig config)
       monitor_intervals_duration_(TimeDelta::Zero()),
       complete_feedback_monitor_interval_number_(0),
       random_generator_(kRandomSeed) {
-  if (config.starting_bandwidth.IsFinite()) {
-    default_bandwidth_ = config.starting_bandwidth;
+  if (config.constraints.starting_rate) {
+    default_bandwidth_ = *config.constraints.starting_rate;
     bandwidth_estimate_ = default_bandwidth_;
   }
 }
@@ -367,7 +368,9 @@ NetworkControlUpdate PccNetworkController::OnTransportLossReport(
   return NetworkControlUpdate();
 }
 
-NetworkControlUpdate PccNetworkController::OnStreamsConfig(StreamsConfig) {
+NetworkControlUpdate PccNetworkController::OnStreamsConfig(StreamsConfig msg) {
+  // TODO(srte): Handle unacknowledged rate allocation.
+  RTC_DCHECK(msg.unacknowledged_rate_allocation.IsZero());
   return NetworkControlUpdate();
 }
 

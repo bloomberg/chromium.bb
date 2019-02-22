@@ -13,6 +13,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list_types.h"
 #include "url/gurl.h"
 
 class Utterance;
@@ -40,12 +41,6 @@ enum TtsEventType {
   TTS_EVENT_RESUME
 };
 
-enum TtsGenderType {
-  TTS_GENDER_NONE,
-  TTS_GENDER_MALE,
-  TTS_GENDER_FEMALE
-};
-
 // Returns true if this event type is one that indicates an utterance
 // is finished and can be destroyed.
 bool IsFinalTtsEventType(TtsEventType event_type);
@@ -67,7 +62,6 @@ struct VoiceData {
 
   std::string name;
   std::string lang;
-  TtsGenderType gender;
   std::string extension_id;
   std::set<TtsEventType> events;
 
@@ -120,9 +114,8 @@ class UtteranceEventDelegate {
 
 // Class that wants to be notified when the set of
 // voices has changed.
-class VoicesChangedDelegate {
+class VoicesChangedDelegate : public base::CheckedObserver {
  public:
-  virtual ~VoicesChangedDelegate() {}
   virtual void OnVoicesChanged() = 0;
 };
 
@@ -167,11 +160,6 @@ class Utterance {
     lang_ = lang;
   }
   const std::string& lang() const { return lang_; }
-
-  void set_gender(TtsGenderType gender) {
-    gender_ = gender;
-  }
-  TtsGenderType gender() const { return gender_; }
 
   void set_continuous_parameters(const double rate,
                                  const double pitch,
@@ -254,7 +242,6 @@ class Utterance {
   // The parsed options.
   std::string voice_name_;
   std::string lang_;
-  TtsGenderType gender_;
   UtteranceContinuousParameters continuous_parameters_;
   bool can_enqueue_;
   std::set<TtsEventType> required_event_types_;

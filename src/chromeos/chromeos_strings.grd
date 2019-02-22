@@ -128,13 +128,62 @@ Try tapping the mic to ask me anything.
         Nothing found on screen
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
-        Timer done
+        Time's up
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_CONTENT" desc="Content for assistant timer notification.">
         00:00s
       </message>
       <message name="IDS_ASSISTANT_STOP_TIMER_QUERY" desc="Query for stopping assistant timer.">
-        stop timer
+        Stop timer
+      </message>
+
+      <!-- The following strings are located here for accessibility from both //ash and //chrome -->
+      <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
+        Turn on Bluetooth to discover nearby devices
+      </message>
+
+      <!-- Status tray enterprise management. -->
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
+        This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED" desc="Text for notifications showing that this device is enterprise managed. Used when the organization's domain name is not available (e.g. Active Directory).">
+        This device is enterprise managed
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT" desc="Short text showing that the device is enterprise managed.">
+        Managed
+      </message>
+
+      <!-- Shelf buttons -->
+      <message name="IDS_ASH_SHELF_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/lock screen.">
+        Shut down
+      </message>
+      <message name="IDS_ASH_SHELF_RESTART_BUTTON" desc="Text shown on restart button on login/lock screen.">
+        Restart
+      </message>
+      <message name="IDS_ASH_SHELF_UNLOCK_BUTTON" desc="Text shown on unlock button on lock screen.">
+        Unlock
+      </message>
+      <message name="IDS_ASH_SHELF_SIGN_OUT_BUTTON" desc="Text shown on sign out button on lock screen.">
+        Sign out
+      </message>
+      <message name="IDS_ASH_SHELF_CANCEL_BUTTON" desc="Text shown on cancel button on add user screen.">
+        Cancel
+      </message>
+      <message name="IDS_ASH_BROWSE_AS_GUEST_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
+        Browse as Guest
+      </message>
+      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+        Add Person
+      </message>
+      <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
+        Apps
+      </message>
+
+      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
+        Launcher
+      </message>
+      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE" desc="The title used for the Ash Launcher in the Shelf to indicate loading/syncinc apps.">
+        Launcher (syncing apps...)
       </message>
     </messages>
   </release>

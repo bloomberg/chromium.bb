@@ -150,7 +150,7 @@ cr.define('invalid_settings_browsertest', function() {
       const overlay = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
       const header = page.$$('print-preview-header');
-      const printButton = header.$$('.print');
+      const printButton = header.$$('.action-button');
 
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
@@ -236,18 +236,20 @@ cr.define('invalid_settings_browsertest', function() {
       setupInvalidCertificateTest([invalidPrinter, validPrinter]);
 
       // Expected message
-      const expectedMessage = 'The selected Google Cloud Print device is no ' +
-          'longer supported. Try setting up the printer in your computer\'s ' +
-          'system settings.';
+      const expectedMessageStart = 'The selected Google Cloud Print device ' +
+          'is no longer supported.';
+      const expectedMessageEnd = 'Try setting up the printer in your ' +
+          'computer\'s system settings.';
 
       // Get references to relevant elements.
       const previewAreaEl = page.$.previewArea;
       const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
       const header = page.$$('print-preview-header');
-      const printButton = header.$$('.print');
+      const printButton = header.$$('.action-button');
       const destinationSettings = page.$$('print-preview-destination-settings');
-      const scalingSettings = page.$$('print-preview-scaling-settings');
+      const scalingSettings = page.$$('print-preview-scaling-settings')
+                                  .$$('print-preview-number-settings-section');
       const layoutSettings = page.$$('print-preview-layout-settings');
 
       return nativeLayer.whenCalled('getInitialSettings')
@@ -260,7 +262,8 @@ cr.define('invalid_settings_browsertest', function() {
             assertFalse(overlayEl.classList.contains('invisible'));
 
             // Verify that the correct message is shown.
-            assertTrue(messageEl.textContent.includes(expectedMessage));
+            assertTrue(messageEl.textContent.includes(expectedMessageStart));
+            assertTrue(messageEl.textContent.includes(expectedMessageEnd));
 
             // Verify that the print button is disabled
             assertTrue(printButton.disabled);
@@ -269,11 +272,11 @@ cr.define('invalid_settings_browsertest', function() {
             // also disabled, so there is no way to regenerate the preview.
             assertEquals(print_preview_new.State.INVALID_PRINTER, page.state);
             assertTrue(layoutSettings.$$('select').disabled);
-            assertTrue(scalingSettings.$$('input').disabled);
+            assertTrue(scalingSettings.$$('cr-input').disabled);
 
             // The destination settings button should be enabled, so that the
             // user can select a new printer.
-            assertFalse(destinationSettings.$$('button').disabled);
+            assertFalse(destinationSettings.$$('paper-button').disabled);
 
             // Reset
             nativeLayer.reset();
@@ -288,13 +291,13 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Settings sections are now active.
             assertFalse(layoutSettings.$$('select').disabled);
-            assertFalse(scalingSettings.$$('input').disabled);
+            assertFalse(scalingSettings.$$('cr-input').disabled);
 
             // The destination settings button should still be enabled.
-            assertFalse(destinationSettings.$$('button').disabled);
+            assertFalse(destinationSettings.$$('paper-button').disabled);
 
             // Message text should have changed and overlay should be invisible.
-            assertFalse(messageEl.textContent.includes(expectedMessage));
+            assertFalse(messageEl.textContent.includes(expectedMessageStart));
             assertTrue(overlayEl.classList.contains('invisible'));
           });
     });
@@ -319,7 +322,7 @@ cr.define('invalid_settings_browsertest', function() {
           const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
           const messageEl = previewAreaEl.$$('.preview-area-message');
           const header = page.$$('print-preview-header');
-          const printButton = header.$$('.print');
+          const printButton = header.$$('.action-button');
 
           return nativeLayer.whenCalled('getInitialSettings')
               .then(function() {

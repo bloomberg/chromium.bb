@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -33,12 +32,12 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor_extra/shadow.h"
@@ -64,8 +63,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kStartupIdKey, nullptr);
-
-const int32_t kInvalidChildAxTreeId = -1;
 
 // The accelerator keys used to close ShellSurfaces.
 const struct {
@@ -502,7 +499,7 @@ void ShellSurfaceBase::SetStartupId(const char* startup_id) {
     SetStartupId(widget_->GetNativeWindow(), startup_id_);
 }
 
-void ShellSurfaceBase::SetChildAxTreeId(int32_t child_ax_tree_id) {
+void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   child_ax_tree_id_ = child_ax_tree_id;
 
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
@@ -893,11 +890,11 @@ gfx::Size ShellSurfaceBase::GetMaximumSize() const {
 void ShellSurfaceBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
 
-  if (child_ax_tree_id_ == kInvalidChildAxTreeId)
+  if (child_ax_tree_id_ == ui::AXTreeIDUnknown())
     return;
 
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                             child_ax_tree_id_);
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                child_ax_tree_id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -982,13 +979,9 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
   window->AddChild(host_window());
-  // Use DESCENDANTS_ONLY event targeting policy for mus/mash.
-  // TODO(https://crbug.com/839521): Revisit after event dispatching code is
-  //     changed for mus/mash.
+  // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
-      ash::Shell::GetAshConfig() == ash::Config::CLASSIC
-          ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
-          : ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   InstallCustomWindowTargeter();
   SetApplicationId(window, application_id_);
   SetStartupId(window, startup_id_);
@@ -1116,15 +1109,6 @@ gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
 
   // Convert from display to screen coordinates.
   return geometry_ + display.bounds().OffsetFromOrigin();
-}
-
-gfx::Point ShellSurfaceBase::GetMouseLocation() const {
-  aura::Window* const root_window = widget_->GetNativeWindow()->GetRootWindow();
-  gfx::Point location =
-      root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
-  aura::Window::ConvertPointToTarget(
-      root_window, widget_->GetNativeWindow()->parent(), &location);
-  return location;
 }
 
 gfx::Rect ShellSurfaceBase::GetClientViewBounds() const {

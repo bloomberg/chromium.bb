@@ -13,32 +13,38 @@
 #include "ash/shell.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/view.h"
 
 namespace ash {
+namespace {
 
-AshFocusManagerFactory::AshFocusManagerFactory() = default;
-AshFocusManagerFactory::~AshFocusManagerFactory() = default;
+// As the name implies, this class is responsible for handling accelerators
+// *after* pre-target accelerators and after the target is given a chance to
+// process the accelerator.
+class PostTargetAcceleratorHandler : public views::FocusManagerDelegate {
+ public:
+  PostTargetAcceleratorHandler() = default;
+  ~PostTargetAcceleratorHandler() override = default;
 
-std::unique_ptr<views::FocusManager> AshFocusManagerFactory::CreateFocusManager(
-    views::Widget* widget,
-    bool desktop_widget) {
-  return std::make_unique<views::FocusManager>(
-      widget, desktop_widget ? nullptr : std::make_unique<Delegate>());
-}
+  // views::FocusManagerDelegate overrides:
+  bool ProcessAccelerator(const ui::Accelerator& accelerator) override;
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override;
 
-AshFocusManagerFactory::Delegate::Delegate() = default;
-AshFocusManagerFactory::Delegate::~Delegate() = default;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PostTargetAcceleratorHandler);
+};
 
-bool AshFocusManagerFactory::Delegate::ProcessAccelerator(
+bool PostTargetAcceleratorHandler::ProcessAccelerator(
     const ui::Accelerator& accelerator) {
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   return controller && controller->Process(accelerator);
 }
 
-void AshFocusManagerFactory::Delegate::OnDidChangeFocus(
-    views::View* focused_before,
-    views::View* focused_now) {
+void PostTargetAcceleratorHandler::OnDidChangeFocus(views::View* focused_before,
+                                                    views::View* focused_now) {
+  // TODO: seems as though this code should live closer to magnification code.
   if (!focused_now || focused_now == focused_before)
     return;
 
@@ -87,6 +93,20 @@ void AshFocusManagerFactory::Delegate::OnDidChangeFocus(
     docked_magnifier->CenterOnPoint(point_of_interest);
   else if (fullscreen_magnifier->IsEnabled())
     fullscreen_magnifier->CenterOnPoint(point_of_interest);
+}
+
+}  // namespace
+
+AshFocusManagerFactory::AshFocusManagerFactory() = default;
+AshFocusManagerFactory::~AshFocusManagerFactory() = default;
+
+std::unique_ptr<views::FocusManager> AshFocusManagerFactory::CreateFocusManager(
+    views::Widget* widget,
+    bool desktop_widget) {
+  return std::make_unique<views::FocusManager>(
+      widget, desktop_widget
+                  ? nullptr
+                  : std::make_unique<PostTargetAcceleratorHandler>());
 }
 
 }  // namespace ash

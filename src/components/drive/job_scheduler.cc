@@ -288,22 +288,6 @@ void JobScheduler::GetStartPageToken(
   StartJob(new_job);
 }
 
-void JobScheduler::GetAppList(const google_apis::AppListCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(TYPE_GET_APP_LIST);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::GetAppList,
-      base::Unretained(drive_service_),
-      base::Bind(&JobScheduler::OnGetAppListJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
 void JobScheduler::GetAllTeamDriveList(
     const google_apis::TeamDriveListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -475,29 +459,6 @@ void JobScheduler::GetFileResource(
       base::Unretained(drive_service_),
       resource_id,
       base::Bind(&JobScheduler::OnGetFileResourceJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
-void JobScheduler::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const ClientContext& context,
-    const google_apis::GetShareUrlCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(TYPE_GET_SHARE_URL);
-  new_job->context = context;
-  new_job->task = base::Bind(
-      &DriveServiceInterface::GetShareUrl,
-      base::Unretained(drive_service_),
-      resource_id,
-      embed_origin,
-      base::Bind(&JobScheduler::OnGetShareUrlJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
@@ -1064,30 +1025,6 @@ void JobScheduler::OnGetStartPageTokenDone(
 
   if (OnJobDone(job_id, error))
     callback.Run(error, std::move(start_page_token));
-}
-
-void JobScheduler::OnGetShareUrlJobDone(
-    JobID job_id,
-    const google_apis::GetShareUrlCallback& callback,
-    google_apis::DriveApiErrorCode error,
-    const GURL& share_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  if (OnJobDone(job_id, error))
-    callback.Run(error, share_url);
-}
-
-void JobScheduler::OnGetAppListJobDone(
-    JobID job_id,
-    const google_apis::AppListCallback& callback,
-    google_apis::DriveApiErrorCode error,
-    std::unique_ptr<google_apis::AppList> app_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  if (OnJobDone(job_id, error))
-    callback.Run(error, std::move(app_list));
 }
 
 void JobScheduler::OnEntryActionJobDone(

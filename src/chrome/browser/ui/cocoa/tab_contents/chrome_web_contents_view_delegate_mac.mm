@@ -18,7 +18,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/focus_tracker.h"
-#include "ui/base/ui_features.h"
 
 ChromeWebContentsViewDelegateMac::ChromeWebContentsViewDelegateMac(
     content::WebContents* web_contents)
@@ -145,12 +144,3 @@ NSWindow* ChromeWebContentsViewDelegateMac::GetNSWindowForFocusTracker() const {
   content::RenderWidgetHostView* rwhv = GetActiveRenderWidgetHostView();
   return rwhv ? [rwhv->GetNativeView() window] : nil;
 }
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-
-content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
-    content::WebContents* web_contents) {
-  return new ChromeWebContentsViewDelegateMac(web_contents);
-}
-
-#endif  // MAC_VIEWS_BROWSER

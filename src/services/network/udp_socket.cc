@@ -26,7 +26,7 @@ const uint32_t kMaxReadSize = 64 * 1024;
 // IPv6.
 const uint32_t kMaxPacketSize = kMaxReadSize - 1;
 
-int ClampBufferSize(int requested_buffer_size) {
+int ClampUDPBufferSize(int requested_buffer_size) {
   constexpr int kMinBufferSize = 0;
   constexpr int kMaxBufferSize = 128 * 1024;
   return base::ClampToRange(requested_buffer_size, kMinBufferSize,
@@ -83,10 +83,11 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
     return socket_.SetBroadcast(broadcast);
   }
   int SetSendBufferSize(int send_buffer_size) override {
-    return socket_.SetSendBufferSize(ClampBufferSize(send_buffer_size));
+    return socket_.SetSendBufferSize(ClampUDPBufferSize(send_buffer_size));
   }
   int SetReceiveBufferSize(int receive_buffer_size) override {
-    return socket_.SetReceiveBufferSize(ClampBufferSize(receive_buffer_size));
+    return socket_.SetReceiveBufferSize(
+        ClampUDPBufferSize(receive_buffer_size));
   }
   int JoinGroup(const net::IPAddress& group_address) override {
     return socket_.JoinGroup(group_address);
@@ -129,11 +130,11 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
     }
     if (result == net::OK && options->receive_buffer_size != 0) {
       result = socket_.SetReceiveBufferSize(
-          ClampBufferSize(options->receive_buffer_size));
+          ClampUDPBufferSize(options->receive_buffer_size));
     }
     if (result == net::OK && options->send_buffer_size != 0) {
-      result =
-          socket_.SetSendBufferSize(ClampBufferSize(options->send_buffer_size));
+      result = socket_.SetSendBufferSize(
+          ClampUDPBufferSize(options->send_buffer_size));
     }
     return result;
   }
@@ -332,7 +333,8 @@ void UDPSocket::DoRecvFrom(uint32_t buffer_size) {
   DCHECK_GT(remaining_recv_slots_, 0u);
   DCHECK_GE(kMaxReadSize, buffer_size);
 
-  recvfrom_buffer_ = new net::IOBuffer(static_cast<size_t>(buffer_size));
+  recvfrom_buffer_ =
+      base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(buffer_size));
 
   // base::Unretained(this) is safe because socket is owned by |this|.
   int net_result = wrapped_socket_->RecvFrom(
@@ -360,9 +362,8 @@ void UDPSocket::DoSendToOrWrite(
 
   // |data| points to a range of bytes in the received message and will be
   // freed when this method returns, so copy out the bytes now.
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      new net::IOBufferWithSize(data.size());
-  memcpy(buffer.get()->data(), data.begin(), data.size());
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(data.size());
+  memcpy(buffer.get()->data(), data.data(), data.size());
 
   if (send_buffer_.get()) {
     auto request = std::make_unique<PendingSendRequest>();

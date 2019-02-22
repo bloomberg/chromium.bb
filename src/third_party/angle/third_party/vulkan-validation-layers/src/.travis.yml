@@ -45,7 +45,8 @@ before_install:
     if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]]; then
       # Install the appropriate Linux packages.
       sudo apt-get -qq update
-      sudo apt-get -y install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev libx11-xcb-dev
+      sudo apt-get -y install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev \
+                              libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-ewmh-dev
     fi
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "ANDROID" ]]; then
@@ -60,10 +61,12 @@ before_install:
   - |
     if [[ "$CHECK_FORMAT" == "ON" && "$TRAVIS_PULL_REQUEST" != "false" ]]; then
       # Install the clang format diff tool, but only for pull requests.
-      curl -L http://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/clang-format-diff.py -o scripts/clang-format-diff.py;
+      curl -L http://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/clang-format-diff.py \
+           -o scripts/clang-format-diff.py;
     fi
   # Misc setup
   - export core_count=$(nproc || echo 4) && echo core_count = $core_count
+  - ccache --zero-stats
   - set +e
 
 script:
@@ -90,15 +93,31 @@ script:
       cd ${TRAVIS_BUILD_DIR}
       mkdir build
       cd build
-      cmake -C ${TRAVIS_BUILD_DIR}/external/helper.cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_CCACHE=ON ..
-      cmake --build . -- -j$core_count
-      ccache --show-stats
+      cmake -C ${TRAVIS_BUILD_DIR}/external/helper.cmake -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/build/install -DUSE_CCACHE=ON ..
+      cmake --build . --target install -- -j$core_count
+    fi
+  - |
+    if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]]; then
+      # Build VulkanTools
+      # Note: VulkanTools has a build dependency on Vulkan-ValidationLayers so it must be built after V-VL is built
+      pushd ${TRAVIS_BUILD_DIR}/external/VulkanTools
+      ./update_external_sources.sh
+      mkdir build
+      cd build
+      cmake -DCMAKE_BUILD_TYPE=Debug \
+            -DVULKAN_HEADERS_INSTALL_DIR=${TRAVIS_BUILD_DIR}/external/Vulkan-Headers/build/install \
+            -DVULKAN_LOADER_INSTALL_DIR=${TRAVIS_BUILD_DIR}/external/Vulkan-Loader/build/install \
+            -DVULKAN_VALIDATIONLAYERS_INSTALL_DIR=${TRAVIS_BUILD_DIR}/build/install \
+            ..
+      cmake --build . -- -j $core_count
+      popd
     fi
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]]; then
       # Run Tests
       cd ${TRAVIS_BUILD_DIR}
-      export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/external/Vulkan-Loader/build/loader:$LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/external/Vulkan-Loader/install/lib:${LD_LIBRARY_PATH}
       export VK_LAYER_PATH=${TRAVIS_BUILD_DIR}/external/VulkanTools/build/layersvt:${TRAVIS_BUILD_DIR}/build/layers
       export VK_ICD_FILENAMES=${TRAVIS_BUILD_DIR}/external/Vulkan-Tools/build/icd/VkICD_mock_icd.json
       build/tests/vk_layer_validation_tests
@@ -134,6 +153,7 @@ script:
         ./scripts/check_commit_message_format.sh
       fi
     fi
+  - ccache --show-stats
   - set +e
 
 notifications:
@@ -143,5 +163,6 @@ notifications:
       - cnorthrop@google.com
       - tobine@google.com
       - chrisforbes@google.com
+      - shannon@lunarg.com
     on_success: change
     on_failure: always

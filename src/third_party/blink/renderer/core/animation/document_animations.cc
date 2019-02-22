@@ -80,7 +80,7 @@ void DocumentAnimations::UpdateAnimations(
   if (document.View()) {
     if (CompositorAnimationHost* host =
             document.View()->GetCompositorAnimationHost()) {
-      int total_animations_count = 0;
+      wtf_size_t total_animations_count = 0;
       if (document.Timeline().HasAnimations()) {
         total_animations_count = document.Timeline().PendingAnimationsCount();
       }
@@ -93,7 +93,7 @@ void DocumentAnimations::UpdateAnimations(
     }
   }
 
-  document.GetWorkletAnimationController().UpdateAnimationCompositingStates();
+  document.GetWorkletAnimationController().UpdateAnimationStates();
 
   document.Timeline().ScheduleNextService();
 }

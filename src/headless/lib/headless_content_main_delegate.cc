@@ -90,30 +90,30 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Make sure all processes know that we're in headless mode.
-  if (!command_line->HasSwitch(switches::kHeadless))
-    command_line->AppendSwitch(switches::kHeadless);
+  if (!command_line->HasSwitch(::switches::kHeadless))
+    command_line->AppendSwitch(::switches::kHeadless);
 
   if (browser_->options()->single_process_mode)
-    command_line->AppendSwitch(switches::kSingleProcess);
+    command_line->AppendSwitch(::switches::kSingleProcess);
 
   if (browser_->options()->disable_sandbox)
     command_line->AppendSwitch(service_manager::switches::kNoSandbox);
 
   if (!browser_->options()->enable_resource_scheduler)
-    command_line->AppendSwitch(switches::kDisableResourceScheduler);
+    command_line->AppendSwitch(::switches::kDisableResourceScheduler);
 
 #if defined(USE_OZONE)
   // The headless backend is automatically chosen for a headless build, but also
   // adding it here allows us to run in a non-headless build too.
-  command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
+  command_line->AppendSwitchASCII(::switches::kOzonePlatform, "headless");
 #endif
 
-  if (!command_line->HasSwitch(switches::kUseGL)) {
+  if (!command_line->HasSwitch(::switches::kUseGL)) {
     if (!browser_->options()->gl_implementation.empty()) {
-      command_line->AppendSwitchASCII(switches::kUseGL,
+      command_line->AppendSwitchASCII(::switches::kUseGL,
                                       browser_->options()->gl_implementation);
     } else {
-      command_line->AppendSwitch(switches::kDisableGpu);
+      command_line->AppendSwitch(::switches::kDisableGpu);
     }
   }
 
@@ -121,7 +121,7 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   // software compositing anyway, but only after attempting and failing to
   // initialize GPU compositing. We disable GPU compositing here explicitly to
   // preempt this attempt.
-  command_line->AppendSwitch(switches::kDisableGpuCompositing);
+  command_line->AppendSwitch(::switches::kDisableGpuCompositing);
 
   SetContentClient(&content_client_);
   return false;
@@ -130,9 +130,9 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 void HeadlessContentMainDelegate::InitLogging(
     const base::CommandLine& command_line) {
   const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
 #if !defined(OS_WIN)
-  if (!command_line.HasSwitch(switches::kEnableLogging))
+  if (!command_line.HasSwitch(::switches::kEnableLogging))
     return;
 #else
   // Child processes in Windows are not able to initialize logging.
@@ -142,11 +142,12 @@ void HeadlessContentMainDelegate::InitLogging(
 
   logging::LoggingDestination log_mode;
   base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
-  if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr") {
+  if (command_line.GetSwitchValueASCII(::switches::kEnableLogging) ==
+      "stderr") {
     log_mode = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   } else {
     base::FilePath custom_filename(
-        command_line.GetSwitchValuePath(switches::kEnableLogging));
+        command_line.GetSwitchValuePath(::switches::kEnableLogging));
     if (custom_filename.empty()) {
       log_mode = logging::LOG_TO_ALL;
     } else {
@@ -155,10 +156,10 @@ void HeadlessContentMainDelegate::InitLogging(
     }
   }
 
-  if (command_line.HasSwitch(switches::kLoggingLevel) &&
+  if (command_line.HasSwitch(::switches::kLoggingLevel) &&
       logging::GetMinLogLevel() >= 0) {
     std::string log_level =
-        command_line.GetSwitchValueASCII(switches::kLoggingLevel);
+        command_line.GetSwitchValueASCII(::switches::kLoggingLevel);
     int level = 0;
     if (base::StringToInt(log_level, &level) && level >= 0 &&
         level < logging::LOG_NUM_SEVERITIES) {
@@ -216,7 +217,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   NOTIMPLEMENTED();
 #else
   const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
   crash_reporter::SetCrashReporterClient(g_headless_crash_client.Pointer());
   g_headless_crash_client.Pointer()->set_crash_dumps_dir(
       browser_->options()->crash_dumps_dir);
@@ -251,7 +252,7 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
   // crash.
   InitLogging(command_line);
 #else
-  if (command_line.HasSwitch(switches::kEnableLogging))
+  if (command_line.HasSwitch(::switches::kEnableLogging))
     InitLogging(command_line);
 #endif  // defined(OS_WIN)
 
@@ -281,8 +282,8 @@ int HeadlessContentMainDelegate::RunProcess(
 
   browser_->RunOnStartCallback();
   browser_runner->Run();
-  browser_.reset();
   browser_runner->Shutdown();
+  browser_.reset();
 
   // Return value >=0 here to disable calling content::BrowserMain.
   return 0;
@@ -294,7 +295,7 @@ void HeadlessContentMainDelegate::ZygoteForked() {
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
   const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
   // Unconditionally try to turn on crash reporting since we do not have access
   // to the latest browser options at this point when testing. Breakpad will
   // bail out gracefully if the browser process hasn't enabled crash reporting.
@@ -312,7 +313,8 @@ HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
 // static
 void HeadlessContentMainDelegate::InitializeResourceBundle() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const std::string locale = command_line->GetSwitchValueASCII(switches::kLang);
+  const std::string locale =
+      command_line->GetSwitchValueASCII(::switches::kLang);
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 

@@ -33,6 +33,12 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace gl {
+
+class GLFenceEGL;
+
+}  // namespace gl
+
 namespace media {
 
 class H264Parser;
@@ -98,6 +104,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Note: Initialize() and Destroy() are synchronous.
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
+              int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
@@ -145,7 +153,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
     // AssignPictureBuffers().
     kAwaitingPictureBuffers,
-    kError,  // Error in kDecoding state.
+    kError,       // Error in kDecoding state.
+    kDestroying,  // Destroying state, when shutting down the decoder.
   };
 
   enum OutputRecordState {
@@ -163,26 +172,12 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Decode() to DecodeTask().
   struct BitstreamBufferRef;
 
-  // Auto-destruction reference for EGLSync (for message-passing).
-  struct EGLSyncKHRRef;
-
   // Record for decoded pictures that can be sent to PictureReady.
   struct PictureRecord {
     PictureRecord(bool cleared, const Picture& picture);
     ~PictureRecord();
     bool cleared;     // Whether the texture is cleared and safe to render from.
     Picture picture;  // The decoded picture.
-  };
-
-  // Record for input buffers.
-  struct InputRecord {
-    InputRecord();
-    ~InputRecord();
-    bool at_device;    // held by device.
-    void* address;     // mmap() address.
-    size_t length;     // mmap() length.
-    off_t bytes_used;  // bytes filled in the mmap() segment.
-    int32_t input_id;  // triggering input_id as given to Decode().
   };
 
   // Record for output buffers.
@@ -192,7 +187,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     ~OutputRecord();
     OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
-    EGLSyncKHR egl_sync;    // sync the compositor's use of the EGLImage.
+    std::unique_ptr<gl::GLFenceEGL> egl_fence;  // sync the compositor's use of
+                                                // the EGLImage.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
     GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
@@ -210,10 +206,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Task to finish initialization on decoder_thread_.
   void InitializeTask();
 
-  // Enqueue a BitstreamBuffer to decode.  This will enqueue a buffer to the
+  // Enqueue a buffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
   // the buffer.
-  void DecodeTask(const BitstreamBuffer& bitstream_buffer);
+  void DecodeTask(scoped_refptr<DecoderBuffer> buffer, int32_t bitstream_id);
 
   // Decode from the buffers queued in decoder_input_queue_.  Calls
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
@@ -286,11 +282,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool EnqueueInputRecord();
   bool EnqueueOutputRecord();
 
-  // Process a ReusePictureBuffer() API call.  The API call create an EGLSync
-  // object on the main (GPU process) thread; we will record this object so we
-  // can wait on it before reusing the buffer.
+  // Task to flag the specified picture buffer for reuse, executed on the
+  // decoder_thread_. The picture buffer can only be reused after the specified
+  // fence has been signaled.
   void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
+                              std::unique_ptr<gl::GLFenceEGL> egl_fence);
 
   // Flush() task.  Child thread should not submit any more buffers until it
   // receives the NotifyFlushDone callback.  This task will schedule an empty
@@ -356,6 +352,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Safe from any thread.
   //
 
+  // Check whether a destroy is scheduled.
+  bool IsDestroyPending();
+
   // Error notification (using PostTask() to child thread, if necessary).
   void NotifyError(Error error);
 
@@ -394,6 +393,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Send a frame to the image processor to process. The index of decoder
   // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
   bool ProcessFrame(int32_t bitstream_buffer_id, int output_buffer_index);
+
+  void SendBufferToClient(size_t buffer_index, int32_t bitstream_buffer_id);
 
   //
   // Methods run on child thread.
@@ -450,6 +451,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Decoder state machine state.
   State decoder_state_;
 
+  // Waitable event signaled when the decoder is destroying.
+  base::WaitableEvent destroy_pending_;
+
   Config::OutputMode output_mode_;
 
   // BitstreamBuffer we're presently reading.
@@ -460,8 +464,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // queued afterwards.  For flushing or resetting the pipeline then, we will
   // delay these buffers until after the flush or reset completes.
   int decoder_delay_bitstream_buffer_id_;
-  // Input buffer we're presently filling.
-  int decoder_current_input_buffer_;
   // We track the number of buffer decode tasks we have scheduled, since each
   // task execution should complete one buffer.  If we fall behind (due to
   // resource backpressure, etc.), we'll have to schedule more to catch up.
@@ -494,31 +496,25 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   //
   // Hardware state and associated queues.  Since decoder_thread_ services
   // the hardware, decoder_thread_ owns these too.
-  // output_buffer_map_, free_output_buffers_ and output_planes_count_ are an
+  // output_buffer_map_ and output_planes_count_ are an
   // exception during the buffer (re)allocation sequence, when the
   // decoder_thread_ is blocked briefly while the Child thread manipulates
   // them.
   //
 
-  // Completed decode buffers.
-  base::queue<int> input_ready_queue_;
+  V4L2WritableBufferRef current_input_buffer_;
 
-  // Input buffer state.
-  bool input_streamon_;
-  // Input buffers enqueued to device.
-  int input_buffer_queued_count_;
-  // Input buffers ready to use, as a LIFO since we don't care about ordering.
-  std::vector<int> free_input_buffers_;
-  // Mapping of int index to input buffer record.
-  std::vector<InputRecord> input_buffer_map_;
+  scoped_refptr<V4L2Queue> input_queue_;
+  scoped_refptr<V4L2Queue> output_queue_;
+  // Input buffers ready to be queued.
+  base::queue<V4L2WritableBufferRef> input_ready_queue_;
 
-  // Output buffer state.
-  bool output_streamon_;
-  // Output buffers enqueued to device.
-  int output_buffer_queued_count_;
-  // Output buffers ready to use, as a FIFO since we want oldest-first to hide
-  // synchronization latency with GL.
-  std::list<int> free_output_buffers_;
+  // Buffers that have been allocated but are awaiting an ImportBuffer
+  // or AssignEGLImage event.
+  std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
+  // Keeps decoded buffers out of the free list until the client returns them.
+  std::map<int32_t, V4L2ReadableBufferRef> buffers_at_client_;
+
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
   // Required size of DPB for decoding.

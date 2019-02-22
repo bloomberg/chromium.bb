@@ -7,7 +7,6 @@
 
 #include "SkColorSpacePriv.h"
 #include "SkColorSpaceXformSteps.h"
-#include "SkPM4fPriv.h"
 #include "SkRasterPipeline.h"
 #include "SkReadBuffer.h"
 #include "SkString.h"
@@ -53,6 +52,6 @@ void SkToSRGBColorFilter::flatten(SkWriteBuffer& buffer) const {
 std::unique_ptr<GrFragmentProcessor> SkToSRGBColorFilter::asFragmentProcessor(
         GrContext*, const GrColorSpaceInfo&) const {
     return GrColorSpaceXformEffect::Make(fSrcColorSpace.get(), kPremul_SkAlphaType,
-                                         sk_srgb_singleton());
+                                         sk_srgb_singleton(),  kPremul_SkAlphaType);
 }
 #endif

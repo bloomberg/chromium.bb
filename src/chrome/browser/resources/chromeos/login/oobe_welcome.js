@@ -114,6 +114,15 @@ Polymer({
     this.i18nUpdateLocale();
   },
 
+  /** Called when OOBE configuration is loaded.
+   * @param {!OobeTypes.OobeConfiguration} configuration
+   */
+  updateOobeConfiguration: function(configuration) {
+    // TODO(antrim): apply a11y options, language selection
+    if (configuration.welcomeNext)
+      this.onWelcomeNextButtonClicked_();
+  },
+
   /**
    * Updates "device in tablet mode" state when tablet mode is changed.
    * @param {Boolean} isInTabletMode True when in tablet mode.

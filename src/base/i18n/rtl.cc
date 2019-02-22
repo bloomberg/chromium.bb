@@ -71,15 +71,16 @@ base::i18n::TextDirection GetCharacterDirection(UChar32 character) {
   // Now that we have the character, we use ICU in order to query for the
   // appropriate Unicode BiDi character type.
   int32_t property = u_getIntPropertyValue(character, UCHAR_BIDI_CLASS);
-  if ((property == U_RIGHT_TO_LEFT) ||
-      (property == U_RIGHT_TO_LEFT_ARABIC) ||
-      (property == U_RIGHT_TO_LEFT_EMBEDDING) ||
-      (property == U_RIGHT_TO_LEFT_OVERRIDE)) {
-    return base::i18n::RIGHT_TO_LEFT;
-  } else if ((property == U_LEFT_TO_RIGHT) ||
-             (property == U_LEFT_TO_RIGHT_EMBEDDING) ||
-             (property == U_LEFT_TO_RIGHT_OVERRIDE)) {
-    return base::i18n::LEFT_TO_RIGHT;
+  switch (property) {
+    case U_RIGHT_TO_LEFT:
+    case U_RIGHT_TO_LEFT_ARABIC:
+    case U_RIGHT_TO_LEFT_EMBEDDING:
+    case U_RIGHT_TO_LEFT_OVERRIDE:
+      return base::i18n::RIGHT_TO_LEFT;
+    case U_LEFT_TO_RIGHT:
+    case U_LEFT_TO_RIGHT_EMBEDDING:
+    case U_LEFT_TO_RIGHT_OVERRIDE:
+      return base::i18n::LEFT_TO_RIGHT;
   }
   return base::i18n::UNKNOWN_DIRECTION;
 }

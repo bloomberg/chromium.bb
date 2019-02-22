@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
+namespace test {
+
 namespace {
 
 constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
@@ -70,6 +72,12 @@ class FrameSinkManagerTest : public testing::Test {
   const BeginFrameSource* GetBeginFrameSource(
       const std::unique_ptr<CompositorFrameSinkSupport>& support) {
     return support->begin_frame_source_;
+  }
+
+  void ExpireAllTemporaryReferencesAndGarbageCollect() {
+    manager_.surface_manager()->ExpireOldTemporaryReferences();
+    manager_.surface_manager()->ExpireOldTemporaryReferences();
+    manager_.surface_manager()->GarbageCollectSurfaces();
   }
 
   // Checks if a [Root]CompositorFrameSinkImpl exists for |frame_sink_id|.
@@ -427,13 +435,13 @@ TEST_F(FrameSinkManagerTest, EvictSurfaces) {
 
   // |surface_id1| and |surface_id2| should remain alive after garbage
   // collection because they're not marked for destruction.
-  manager_.surface_manager()->GarbageCollectSurfaces();
+  ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_TRUE(manager_.surface_manager()->GetSurfaceForId(surface_id1));
   EXPECT_TRUE(manager_.surface_manager()->GetSurfaceForId(surface_id2));
 
   // Call EvictSurfaces. Now the garbage collector can destroy the surfaces.
   manager_.EvictSurfaces({surface_id1, surface_id2});
-  manager_.surface_manager()->GarbageCollectSurfaces();
+  ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id1));
   EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id2));
 }
@@ -642,4 +650,5 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kUnregisterOrderList),
                        ::testing::ValuesIn(kBFSOrderList)));
 
+}  // namespace test
 }  // namespace viz

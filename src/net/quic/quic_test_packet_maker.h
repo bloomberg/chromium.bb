@@ -107,6 +107,17 @@ class QuicTestPacketMaker {
       quic::QuicPacketNumber least_unacked,
       bool send_feedback,
       size_t bytes_written);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
+      quic::QuicPacketNumber num,
+      bool include_version,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      quic::QuicTime::Delta delta_time_largest_observed,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      quic::QuicErrorCode quic_error,
+      const std::string& quic_error_details);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
       quic::QuicPacketNumber num,
       bool include_version,

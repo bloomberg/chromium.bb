@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">ይህ መሣሪያ የሶስተኛ ወገን ማረጋገጥ ስለሚያስፈልገው በዚህ ደንበኛ አይደገፍም።</translation>
 <translation id="3194245623920924351">Chrome የርቀት ዴስክቶፕ</translation>
 <translation id="3197730452537982411">የርቀት ዴስክቶፕ</translation>
-<translation id="3212472844831225214">• ለAndroid 9.0 Pie ድጋፍ ታክሏል።</translation>
 <translation id="324272851072175193">እነዚህን መመሪያዎች በኢሜይል ላክ</translation>
 <translation id="3258789396564295715">Chrome የርቀት ዴስክቶፕን ተጠቅመው ይህንን ኮምፒውተር ደህንነቱ በተጠበቀ መልኩ ሊደርሱበት ይችላሉ።</translation>
 <translation id="3286521253923406898">Chromoting አስተናጋጅ መቆጣጠሪያ</translation>
@@ -331,6 +330,8 @@
 <translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
 <translation id="8548209692293300397">ከዚህ ቀደም እንደ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ሆነው ገብተዋል። በዚያ መለያ ውስጥ የእርስዎን ኮምፒውተሮች ለመድረስ በዚያ መለያ <ph name="LINK_BEGIN" />ወደ Google Chrome ይግቡ<ph name="LINK_END" />ና የChrome ርቀት ዴስክቶፕን ዳግም ይጫኑት።</translation>
 <translation id="8642984861538780905">ደህና</translation>
+<translation id="8705151241155781642">• ለAndroid 9.0 Pie ድጋፍ ታክሏል።
+• ከAndroid መሣሪያዎ ማያ ገጽ ጋር ለማመጣጠን የርቀት ዴስክቶፕ ጥራት መጠንን የመቀየር ድጋፍ።</translation>
 <translation id="8712909229180978490">የእኔን በGoogle አንጻፊ ላይ የተቀመጡ ፋይሎች ማየት አልችልም።</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> የእርስዎን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር እንዲፈቀድለት ይፈልጋሉr?</translation>
 <translation id="8747048596626351634">ክፍለ ጊዜው ተበላሽቷል ወይም ለመጀመር አልቻለም። ~/.chrome-የርቀት-ዴስክቶፕ-ክፍለ ጊዜ በርቀት ኮምፒውተሩ ላይ የሚገኝ ከሆነ እንደ የዴስክቶፕ ድባብ ወይም የመስኮት አስተዳዳሪ የመሰለ ከፊት ገጽ የሚሄድ ሂደትን በመጠቀም እንደሚጀምር ያረጋግጡ።</translation>

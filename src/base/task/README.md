@@ -8,5 +8,6 @@ instance(s) for their process/threads, the vast majority of users should only
 need APIs in base/task/.
 
 Documentation:
-- [Threading and tasks](https://chromium.googlesource.com/chromium/src/+/lkcr/docs/threading_and_tasks.md)
-- [Callbacks](https://chromium.googlesource.com/chromium/src/+/lkcr/docs/callback.md)
+
+* [Threading and tasks](/docs/threading_and_tasks.md)
+* [Callbacks](/docs/callback.md)

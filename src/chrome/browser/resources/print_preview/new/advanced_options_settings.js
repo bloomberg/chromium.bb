@@ -28,6 +28,6 @@ Polymer({
   /** @private */
   onDialogClose_: function() {
     this.showAdvancedDialog_ = false;
-    this.$$('button').focus();
+    this.$.button.focus();
   },
 });

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL backpressure Failed to register a ServiceWorker: ServiceWorker script evaluation failed
-Harness: the test ran to completion.
-

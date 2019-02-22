@@ -89,15 +89,6 @@ class NetMetricsLogUploaderTest : public testing::Test {
     }
   }
 
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index) {
-    if (index >= test_url_loader_factory_.pending_requests()->size())
-      return nullptr;
-    auto* request = &(*test_url_loader_factory_.pending_requests())[index];
-    DCHECK(request);
-    return request;
-  }
-
   int on_upload_complete_count() const {
     return on_upload_complete_count_;
   }
@@ -148,13 +139,15 @@ TEST_F(NetMetricsLogUploaderTest, OnUploadCompleteReuseUploader) {
 
   // Mimic the initial fetcher callback.
   CheckReportingInfoHeader(last_request_headers(), 10);
+  auto* pending_request_0 = test_url_loader_factory()->GetPendingRequest(0);
   test_url_loader_factory()->SimulateResponseWithoutRemovingFromPendingList(
-      GetPendingRequest(0), "");
+      pending_request_0, "");
 
   // Mimic the second fetcher callback.
   CheckReportingInfoHeader(last_request_headers(), 20);
+  auto* pending_request_1 = test_url_loader_factory()->GetPendingRequest(1);
   test_url_loader_factory()->SimulateResponseWithoutRemovingFromPendingList(
-      GetPendingRequest(1), "");
+      pending_request_1, "");
 
   EXPECT_EQ(on_upload_complete_count(), 2);
 }

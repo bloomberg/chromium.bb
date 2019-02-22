@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -142,15 +141,9 @@ class PLATFORM_EXPORT HeapAllocator {
         size, IsEagerlyFinalizedType<Metadata>::value));
   }
 
-#if defined(OS_WIN) && defined(COMPILER_MSVC)
-  // MSVC eagerly instantiates the unused 'operator delete',
-  // provide a version that asserts and fails at run-time if
-  // used.
-  // Elsewhere we expect compilation to fail if 'delete' is
-  // attempted used and instantiated with a HeapAllocator-based
-  // object, as HeapAllocator::free is not provided.
+  // Compilers sometimes eagerly instantiates the unused 'operator delete', so
+  // we provide a version that asserts and fails at run-time if used.
   static void Free(void*) { NOTREACHED(); }
-#endif
 
   template <typename T>
   static void* NewArray(size_t bytes) {
@@ -676,23 +669,6 @@ struct VectorTraits<blink::UntracedMember<T>>
   static const bool kCanMoveWithMemcpy = true;
 };
 
-template <
-    typename T,
-    blink::WeaknessPersistentConfiguration weaknessConfiguration,
-    blink::CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
-struct VectorTraits<blink::PersistentBase<T,
-                                          weaknessConfiguration,
-                                          crossThreadnessConfiguration>>
-    : VectorTraitsBase<blink::PersistentBase<T,
-                                             weaknessConfiguration,
-                                             crossThreadnessConfiguration>> {
-  STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = true;
-  static const bool kCanInitializeWithMemset = true;
-  static const bool kCanClearUnusedSlotsWithMemset = false;
-  static const bool kCanMoveWithMemcpy = true;
-};
-
 template <typename T>
 struct VectorTraits<blink::HeapVector<T, 0>>
     : VectorTraitsBase<blink::HeapVector<T, 0>> {
@@ -980,14 +956,6 @@ struct HandleHashTraits : SimpleClassHashTraits<H> {
 
   static PeekOutType Peek(const H& value) { return value; }
 };
-
-template <typename T>
-struct HashTraits<blink::Persistent<T>>
-    : HandleHashTraits<T, blink::Persistent<T>> {};
-
-template <typename T>
-struct HashTraits<blink::CrossThreadPersistent<T>>
-    : HandleHashTraits<T, blink::CrossThreadPersistent<T>> {};
 
 template <typename Value,
           typename HashFunctions,

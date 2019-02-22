@@ -152,55 +152,18 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
   return CharacterRange(to_x, from_x, -min_y, max_y);
 }
 
-void ShapeResultBuffer::AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
-                                         float offset,
-                                         Vector<CharacterRange>& ranges) {
-  Vector<float> character_widths(run_info.num_characters_);
-  for (const auto& glyph : run_info.glyph_data_)
-    character_widths[glyph.character_index] += glyph.advance;
-
-  if (run_info.Rtl())
-    offset += run_info.width_;
-
-  for (unsigned character_index = 0; character_index < run_info.num_characters_;
-       character_index++) {
-    float start = offset;
-    offset += character_widths[character_index] * (run_info.Rtl() ? -1 : 1);
-    float end = offset;
-
-    // To match getCharacterRange we flip ranges to ensure start <= end.
-    if (end < start)
-      ranges.push_back(CharacterRange(end, start, 0, 0));
-    else
-      ranges.push_back(CharacterRange(start, end, 0, 0));
-  }
-}
-
 Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
     TextDirection direction,
     float total_width) const {
   Vector<CharacterRange> ranges;
   float current_x = direction == TextDirection::kRtl ? total_width : 0;
-  for (const scoped_refptr<const ShapeResult> result : results_) {
-    unsigned run_count = result->runs_.size();
-
-    if (result->Rtl()) {
-      for (int index = run_count - 1; index >= 0; index--) {
-        current_x -= result->runs_[index]->width_;
-        AddRunInfoRanges(*result->runs_[index], current_x, ranges);
-      }
-    } else {
-      for (unsigned index = 0; index < run_count; index++) {
-        AddRunInfoRanges(*result->runs_[index], current_x, ranges);
-        current_x += result->runs_[index]->width_;
-      }
-    }
-  }
+  for (const scoped_refptr<const ShapeResult> result : results_)
+    current_x = result->IndividualCharacterRanges(&ranges, current_x);
   return ranges;
 }
 
 void ShapeResultBuffer::AddRunInfoAdvances(const ShapeResult::RunInfo& run_info,
-                                           float offset,
+                                           double offset,
                                            Vector<double>& advances) {
   const unsigned num_glyphs = run_info.glyph_data_.size();
   const unsigned num_chars = run_info.num_characters_;
@@ -254,7 +217,7 @@ Vector<double> ShapeResultBuffer::IndividualCharacterAdvances(
     float total_width) const {
   unsigned character_offset = 0;
   Vector<double> advances;
-  float current_x = direction == TextDirection::kRtl ? total_width : 0;
+  double current_x = direction == TextDirection::kRtl ? total_width : 0;
 
   for (const scoped_refptr<const ShapeResult> result : results_) {
     unsigned run_count = result->runs_.size();

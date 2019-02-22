@@ -8,17 +8,14 @@
 #define XFA_FXFA_CXFA_FFAPP_H_
 
 #include <memory>
-#include <vector>
 
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
-#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fxfa/cxfa_fontmgr.h"
 #include "xfa/fxfa/fxfa.h"
 
-class CFGAS_DefaultFontManager;
 class CFGAS_FontMgr;
 class CFWL_WidgetMgr;
 class CPDF_Document;
@@ -33,8 +30,6 @@ class CXFA_FFApp {
 
   explicit CXFA_FFApp(IXFA_AppProvider* pProvider);
   ~CXFA_FFApp();
-
-  void SetDefaultFontMgr(std::unique_ptr<CFGAS_DefaultFontManager> pFontMgr);
 
   CXFA_FWLAdapterWidgetMgr* GetFWLAdapterWidgetMgr();
   CFWL_WidgetMgr* GetFWLWidgetMgr() const { return m_pFWLApp->GetWidgetMgr(); }

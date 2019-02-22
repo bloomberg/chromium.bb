@@ -64,6 +64,7 @@ class SecurityContext;
 class Settings;
 class WindowProxy;
 class WindowProxyManager;
+enum class ReportOptions;
 struct FrameLoadRequest;
 
 enum class FrameDetachType { kRemove, kSwap };
@@ -71,9 +72,6 @@ enum class FrameDetachType { kRemove, kSwap };
 // Status of user gesture.
 enum class UserGestureStatus { kActive, kNone };
 
-// Whether to report policy violations when checking whether a feature is
-// enabled.
-enum class ReportOptions { kReportOnFailure, kDoNotReport };
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
@@ -101,13 +99,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // eventually fixed.
   virtual void ScheduleNavigation(Document& origin_document,
                                   const KURL&,
-                                  bool replace_current_item,
+                                  WebFrameLoadType,
                                   UserGestureStatus) = 0;
   // Synchronously begins a navigation.
-  virtual void Navigate(const FrameLoadRequest&) = 0;
+  virtual void Navigate(const FrameLoadRequest&, WebFrameLoadType) = 0;
 
-  // The base Detach() method must be the last line of overrides of Detach().
-  virtual void Detach(FrameDetachType);
+  void Detach(FrameDetachType);
   void DisconnectOwnerElement();
   virtual bool ShouldClose() = 0;
   virtual void DidFreeze() = 0;
@@ -188,41 +185,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     return has_received_user_gesture_before_nav_;
   }
 
-  // Creates a |UserGestureIndicator| that contains a |UserGestureToken| with
-  // the given status.  Also activates the user activation state of the
-  // |LocalFrame| (provided it's non-null) and all its ancestors.
-  //
-  // TODO(mustaq): Move the user activation entry-points to LocalFrame.
-  static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
-      LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
-  static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
-      LocalFrame*,
-      UserGestureToken*);
-
-  // Returns the transient user activation state of the |LocalFrame|, provided
-  // it is non-null.  Otherwise returns |false|.
-  //
-  // The |checkIfMainThread| parameter determines if the token based gestures
-  // (legacy code) must be used in a thread-safe manner.
-  //
-  // TODO(mustaq): clarify/enforce the relation between the two params after
-  // null-frame main-thread cases (crbug.com/730690) have been removed.
-  static bool HasTransientUserActivation(LocalFrame*,
-                                         bool checkIfMainThread = false);
-
-  // Consumes the transient user activation state of the |LocalFrame|, provided
-  // the frame pointer is non-null and the state hasn't been consumed since
-  // activation.  Returns |true| if succesfully consumed the state.
-  //
-  // The |checkIfMainThread| parameter determines if the token based gestures
-  // (legacy code) must be used in a thread-safe manner.
-  static bool ConsumeTransientUserActivation(
-      LocalFrame*,
-      bool checkIfMainThread = false,
-      UserActivationUpdateSource update_source =
-          UserActivationUpdateSource::kRenderer);
-
   bool IsAttached() const {
     return lifecycle_.GetState() == FrameLifecycle::kAttached;
   }
@@ -231,11 +193,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Optionally sends a report to any registered reporting observers or
   // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
   // disabled.
-  bool IsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport) const;
-  virtual void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const {
-  }
+  // TODO(iclelland): Replace these with methods on SecurityContext/Document
+  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature) const;
+  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature,
+                                  ReportOptions report_on_failure) const;
+  virtual void DeprecatedReportFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const {}
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
@@ -271,6 +234,16 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
+  // DetachImpl() may be re-entered multiple times, if a frame is detached while
+  // already being detached.
+  virtual void DetachImpl(FrameDetachType) = 0;
+
+  // Note that IsAttached() and IsDetached() are not strict opposites: frames
+  // that are detaching are considered to be in neither state.
+  bool IsDetached() const {
+    return lifecycle_.GetState() == FrameLifecycle::kDetached;
+  }
+
   mutable FrameTree tree_node_;
 
   Member<Page> page_;
@@ -283,8 +256,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   bool has_received_user_gesture_before_nav_ = false;
 
-  FrameLifecycle lifecycle_;
-
   // This is set to true if this is a subframe, and the frame element in the
   // parent frame's document becomes inert. This should always be false for
   // the main frame.
@@ -293,22 +264,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   TouchAction inherited_effective_touch_action_ = TouchAction::kTouchActionAuto;
 
  private:
-  // Activates the user activation state of this frame and all its ancestors.
-  //
-  // TODO(mustaq): Move the user activation (private) entry-points to
-  // LocalFrame.
-  void NotifyUserActivation();
-
-  bool HasTransientUserActivation() {
-    return user_activation_state_.IsActive();
-  }
-
-  // Consumes and returns the transient user activation of current Frame, after
-  // updating all ancestor/descendant frames.
-  bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
-
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
+  FrameLifecycle lifecycle_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;

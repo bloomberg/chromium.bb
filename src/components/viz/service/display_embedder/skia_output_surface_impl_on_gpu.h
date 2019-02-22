@@ -172,6 +172,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
+
+  // surfaces for swap chain images.
+  std::vector<sk_sp<SkSurface>> sk_surfaces_;
 #endif
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU

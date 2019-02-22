@@ -27,11 +27,14 @@ def GetBenchmarkStorySet(benchmark):
 
 
 def GetBenchmarkStoryNames(benchmark):
+  """Return the list of all stories names in the benchmark.
+  This guarantees the order of the stories in the list is exactly the same
+  of the order of stories to be run by benchmark.
+  """
   story_list = []
   for story in GetBenchmarkStorySet(benchmark):
-    if story.name not in story_list:
-      story_list.append(story.name)
-  return sorted(story_list)
+    story_list.append(story.name)
+  return story_list
 
 
 def GetStoryTags(benchmark):

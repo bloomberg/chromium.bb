@@ -11,31 +11,31 @@
 
 namespace device {
 
-ARCoreGlThread::ARCoreGlThread(
+ArCoreGlThread::ArCoreGlThread(
     std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
     base::OnceCallback<void()> initialized_callback)
-    : base::android::JavaHandlerThread("ARCoreGL"),
+    : base::android::JavaHandlerThread("ArCoreGL"),
       mailbox_bridge_(std::move(mailbox_bridge)),
       initialized_callback_(std::move(initialized_callback)) {}
 
-ARCoreGlThread::~ARCoreGlThread() {
+ArCoreGlThread::~ArCoreGlThread() {
   Stop();
 }
 
-ARCoreGl* ARCoreGlThread::GetARCoreGl() {
+ArCoreGl* ArCoreGlThread::GetArCoreGl() {
   return arcore_gl_.get();
 }
 
-void ARCoreGlThread::Init() {
+void ArCoreGlThread::Init() {
   DCHECK(!arcore_gl_);
 
   arcore_gl_ =
-      std::make_unique<ARCoreGl>(base::ResetAndReturn(&mailbox_bridge_));
+      std::make_unique<ArCoreGl>(base::ResetAndReturn(&mailbox_bridge_));
 
   std::move(initialized_callback_).Run();
 }
 
-void ARCoreGlThread::CleanUp() {
+void ArCoreGlThread::CleanUp() {
   arcore_gl_.reset();
 }
 

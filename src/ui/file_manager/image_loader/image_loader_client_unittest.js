@@ -4,19 +4,19 @@
 
 'use strict';
 
-var chrome = {
-  metricsPrivate: {
-    MetricTypeType: {
-      HISTOGRAM_LOG: 'histogram-log',
-      HISTOGRAM_LINEAR: 'histogram-linear'
-    },
+/** @suppress {const|checkTypes} */
+function setUp() {
+  chrome.metricsPrivate = {
+    MetricTypeType:
+        {HISTOGRAM_LOG: 'histogram-log', HISTOGRAM_LINEAR: 'histogram-linear'},
     recordPercentage: function() {},
     recordValue: function() {}
-  },
-  i18n: {
-    getMessage: function() {}
-  }
-};
+  };
+
+  chrome.i18n = {
+    getMessage: function() {},
+  };
+}
 
 /**
  * Lets the client to load URL and returns the local cache (not caches in the
@@ -24,67 +24,72 @@ var chrome = {
  *
  * @param {ImageLoaderClient} client
  * @param {string} url URL
- * @param {Object} options load options.
+ * @param {boolean} cache Whether to request caching on the request.
  * @return {Promise<boolean>} True if the local cache is used.
  */
-function loadAndCheckCacheUsed(client, url, options) {
-  var cacheUsed = true;
+function loadAndCheckCacheUsed(client, url, cache) {
+  let cacheUsed = true;
 
+  /** @suppress {accessControls} */
   ImageLoaderClient.sendMessage_ = function(message, callback) {
     cacheUsed = false;
-    if (callback)
-      callback({data: 'ImageData', width: 100, height: 100, status: 'success'});
+    if (callback) {
+      callback(new LoadImageResponse(
+          LoadImageResponseStatus.SUCCESS, message.taskId || -1,
+          {data: 'ImageData', width: 100, height: 100}));
+    }
   };
 
+  let request = LoadImageRequest.createForUrl(url);
+  request.cache = cache;
+
   return new Promise(function(fulfill) {
-    client.load(url, function() {
+    client.load(request, function() {
       fulfill(cacheUsed);
-    }, options);
+    });
   });
 }
 
 function testCache(callback) {
   var client = new ImageLoaderClient();
   reportPromise(
-      loadAndCheckCacheUsed(
-          client, 'http://example.com/image.jpg', {cache: true}).
-      then(function(cacheUsed) {
-        assertFalse(cacheUsed);
-        return loadAndCheckCacheUsed(
-            client, 'http://example.com/image.jpg', {cache: true});
-      }).
-      then(function(cacheUsed) {
-        assertTrue(cacheUsed);
-      }),
+      loadAndCheckCacheUsed(client, 'http://example.com/image.jpg', true)
+          .then(function(cacheUsed) {
+            assertFalse(cacheUsed);
+            return loadAndCheckCacheUsed(
+                client, 'http://example.com/image.jpg', true);
+          })
+          .then(function(cacheUsed) {
+            assertTrue(cacheUsed);
+          }),
       callback);
 }
 
 function testNoCache(callback) {
   var client = new ImageLoaderClient();
   reportPromise(
-      loadAndCheckCacheUsed(
-          client, 'http://example.com/image.jpg', {cache: false}).
-      then(function(cacheUsed) {
-        assertFalse(cacheUsed);
-        return loadAndCheckCacheUsed(
-            client, 'http://example.com/image.jpg', {cache: false});
-      }).
-      then(function(cacheUsed) {
-        assertFalse(cacheUsed);
-      }),
+      loadAndCheckCacheUsed(client, 'http://example.com/image.jpg', false)
+          .then(function(cacheUsed) {
+            assertFalse(cacheUsed);
+            return loadAndCheckCacheUsed(
+                client, 'http://example.com/image.jpg', false);
+          })
+          .then(function(cacheUsed) {
+            assertFalse(cacheUsed);
+          }),
       callback);
 }
 
 function testDataURLCache(callback) {
   var client = new ImageLoaderClient();
   reportPromise(
-      loadAndCheckCacheUsed(client, 'data:URI', {cache: true}).
-      then(function(cacheUsed) {
-        assertFalse(cacheUsed);
-        return loadAndCheckCacheUsed(client, 'data:URI', {cache: true});
-      }).
-      then(function(cacheUsed) {
-        assertFalse(cacheUsed);
-      }),
+      loadAndCheckCacheUsed(client, 'data:URI', true)
+          .then(function(cacheUsed) {
+            assertFalse(cacheUsed);
+            return loadAndCheckCacheUsed(client, 'data:URI', true);
+          })
+          .then(function(cacheUsed) {
+            assertFalse(cacheUsed);
+          }),
       callback);
 }

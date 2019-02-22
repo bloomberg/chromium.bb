@@ -39,12 +39,26 @@ class Widget;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
+                                 public ContentSettingImageView::Delegate,
+                                 public ImmersiveModeController::Observer,
                                  public PageActionIconView::Delegate,
                                  public ToolbarButtonProvider,
-                                 public ImmersiveModeController::Observer,
                                  public views::WidgetObserver {
  public:
   static const char kViewClassName[];
+
+  // Timing parameters for the origin fade animation.
+  // These control how long it takes for the origin text and menu button
+  // highlight to fade in, pause then fade out.
+  static constexpr base::TimeDelta kOriginFadeInDuration =
+      base::TimeDelta::FromMilliseconds(800);
+  static constexpr base::TimeDelta kOriginPauseDuration =
+      base::TimeDelta::FromMilliseconds(2500);
+  static constexpr base::TimeDelta kOriginFadeOutDuration =
+      base::TimeDelta::FromMilliseconds(800);
+
+  // The total duration of the origin fade animation.
+  static const base::TimeDelta kOriginTotalDuration;
 
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
@@ -66,6 +80,49 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   SkColor active_color_for_testing() const { return active_color_; }
 
+  // views::AccessiblePaneView:
+  const char* GetClassName() const override;
+
+  // BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override;
+  base::Optional<int> GetMaxBrowserActionsWidth() const override;
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override;
+
+  // ContentSettingImageView::Delegate:
+  SkColor GetContentSettingInkDropColor() const override;
+  content::WebContents* GetContentSettingWebContents() override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
+  void OnContentSettingImageBubbleShown(
+      ContentSettingImageModel::ImageType type) const override;
+
+  // ImmersiveModeController::Observer:
+  void OnImmersiveRevealStarted() override;
+
+  // PageActionIconView::Delegate:
+  SkColor GetPageActionInkDropColor() const override;
+  content::WebContents* GetWebContentsForPageActionIconView() override;
+
+  // ToolbarButtonProvider:
+  BrowserActionsContainer* GetBrowserActionsContainer() override;
+  PageActionIconContainerView* GetPageActionIconContainerView() override;
+  AppMenuButton* GetAppMenuButton() override;
+  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
+  void FocusToolbar() override;
+  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
+
+  // views::WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
+ protected:
+  // views::AccessiblePaneView:
+  gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
+
  private:
   friend class HostedAppNonClientFrameViewAshTest;
   friend class HostedAppGlassBrowserFrameViewTest;
@@ -73,7 +130,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   friend class HostedAppAshInteractiveUITest;
 
   // Duration to wait before starting the opening animation.
-  static const base::TimeDelta kTitlebarAnimationDelay;
+  static constexpr base::TimeDelta kTitlebarAnimationDelay =
+      base::TimeDelta::FromMilliseconds(750);
 
   // Methods for coordinate the titlebar animation (origin text slide, menu
   // highlight and icon fade in).
@@ -89,37 +147,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
 
+  SkColor GetIconColor() const;
   void UpdateChildrenColor();
-
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
-  const char* GetClassName() const override;
-
-  // BrowserActionsContainer::Delegate:
-  views::MenuButton* GetOverflowReferenceView() override;
-  base::Optional<int> GetMaxBrowserActionsWidth() const override;
-  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
-      ToolbarActionsBarDelegate* delegate,
-      Browser* browser,
-      ToolbarActionsBar* main_bar) const override;
-
-  // PageActionIconView::Delegate:
-  content::WebContents* GetWebContentsForPageActionIconView() override;
-
-  // ToolbarButtonProvider:
-  BrowserActionsContainer* GetBrowserActionsContainer() override;
-  PageActionIconContainerView* GetPageActionIconContainerView() override;
-  AppMenuButton* GetAppMenuButton() override;
-  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
-  void FocusToolbar() override;
-  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
-
-  // ImmersiveModeController::Observer:
-  void OnImmersiveRevealStarted() override;
-
-  // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // Whether we're waiting for the widget to become visible.
   bool pending_widget_visibility_ = true;

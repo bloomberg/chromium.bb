@@ -6,6 +6,8 @@
 
 #include "fpdfsdk/formfiller/cffl_listbox.h"
 
+#include <utility>
+
 #include "fpdfsdk/cpdfsdk_common.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
@@ -37,8 +39,9 @@ CPWL_Wnd::CreateParams CFFL_ListBox::GetCreateParam() {
   return cp;
 }
 
-CPWL_Wnd* CFFL_ListBox::NewPDFWindow(const CPWL_Wnd::CreateParams& cp) {
-  auto* pWnd = new CPWL_ListBox();
+std::unique_ptr<CPWL_Wnd> CFFL_ListBox::NewPDFWindow(
+    const CPWL_Wnd::CreateParams& cp) {
+  auto pWnd = pdfium::MakeUnique<CPWL_ListBox>();
   pWnd->AttachFFLData(this);
   pWnd->Create(cp);
   pWnd->SetFillerNotify(m_pFormFillEnv->GetInteractiveFormFiller());
@@ -70,8 +73,7 @@ CPWL_Wnd* CFFL_ListBox::NewPDFWindow(const CPWL_Wnd::CreateParams& cp) {
   }
 
   pWnd->SetTopVisibleIndex(m_pWidget->GetTopVisibleIndex());
-
-  return pWnd;
+  return std::move(pWnd);
 }
 
 bool CFFL_ListBox::OnChar(CPDFSDK_Annot* pAnnot,

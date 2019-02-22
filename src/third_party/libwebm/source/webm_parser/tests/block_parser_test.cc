@@ -69,7 +69,8 @@ const TestData ebml_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x86,  // Flags = key_frame | ebml_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -97,7 +98,8 @@ const TestData xiph_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x82,  // Flags = key_frame | xiph_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -125,7 +127,8 @@ const TestData fixed_lacing_one_frame = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x84,  // Flags = key_frame | fixed_lacing.
         0x00,  // Lace count - 1 = 0 (1 frame).
 
@@ -148,6 +151,7 @@ const TestData fixed_lacing_one_frame = {
 };
 
 // Test data for an EBML-laced block.
+// clang-format off
 const TestData ebml_lacing = {
     // Data.
     {
@@ -318,6 +322,7 @@ const TestData xiph_lacing = {
     // expected_frame_sizes
     {510, 256, 2, 3},
 };
+// clang-format on
 
 // Test data for a fixed-laced block.
 const TestData fixed_lacing = {
@@ -380,7 +385,8 @@ const TestData no_flags = {
     // Data.
     {
         0x81,  // Track number = 1.
-        0x00, 0x00,  // Timecode = 0.
+        0x00,
+        0x00,  // Timecode = 0.
         0x00,  // Flags = 0.
 
         // Lace data (1 frame).
@@ -407,7 +413,8 @@ const TestData block_flags = {
     // Data.
     {
         0x82,  // Track number = 2.
-        0xFE, 0xDC,  // Timecode = -292.
+        0xFE,
+        0xDC,  // Timecode = -292.
         0x08,  // Flags = invisible.
 
         // Lace data (1 frame).
@@ -433,8 +440,10 @@ const TestData block_flags = {
 const TestData simple_block_flags = {
     // Data.
     {
-        0x41, 0x23,  // Track number = 291.
-        0x12, 0x34,  // Timecode = 4660.
+        0x41,
+        0x23,  // Track number = 291.
+        0x12,
+        0x34,  // Timecode = 4660.
         0x89,  // Flags = key_frame | invisible | discardable.
 
         // Lace data (1 frame).
@@ -520,7 +529,8 @@ template <typename T, Id id>
 class BasicBlockParserTest : public ElementParserTest<T, id> {
  public:
   // Sets expectations for a normal (i.e. successful parse) test.
-  void SetExpectations(const TestData& test_data, bool incremental) {
+  void SetExpectations(const TestData& test_data, bool incremental,
+                       bool set_action) {
     InSequence dummy;
 
     const SimpleBlock expected_simple_block = ExpectedSimpleBlock(test_data);
@@ -528,15 +538,24 @@ class BasicBlockParserTest : public ElementParserTest<T, id> {
 
     FrameMetadata metadata = FirstFrameMetadata(test_data);
     if (std::is_same<T, SimpleBlockParser>::value) {
-      EXPECT_CALL(callback_,
-                  OnSimpleBlockBegin(metadata.parent_element,
-                                     expected_simple_block, NotNull()))
-          .Times(1);
+      auto& expectation = EXPECT_CALL(
+          callback_, OnSimpleBlockBegin(metadata.parent_element,
+                                        expected_simple_block, NotNull()));
+      if (set_action) {
+        expectation.Times(1);
+      } else {
+        expectation.WillOnce(Return(Status(Status::kOkCompleted)));
+      }
       EXPECT_CALL(callback_, OnBlockBegin(_, _, _)).Times(0);
     } else {
-      EXPECT_CALL(callback_, OnBlockBegin(metadata.parent_element,
-                                          expected_block, NotNull()))
-          .Times(1);
+      auto& expectation = EXPECT_CALL(
+          callback_,
+          OnBlockBegin(metadata.parent_element, expected_block, NotNull()));
+      if (set_action) {
+        expectation.Times(1);
+      } else {
+        expectation.WillOnce(Return(Status(Status::kOkCompleted)));
+      }
       EXPECT_CALL(callback_, OnSimpleBlockBegin(_, _, _)).Times(0);
     }
 
@@ -574,7 +593,7 @@ class BasicBlockParserTest : public ElementParserTest<T, id> {
   // Runs a single test using the provided test data.
   void RunTest(const TestData& test_data) {
     SetReaderData(test_data.data);
-    SetExpectations(test_data, false);
+    SetExpectations(test_data, false, true);
 
     ParseAndVerify();
 
@@ -584,7 +603,7 @@ class BasicBlockParserTest : public ElementParserTest<T, id> {
   // Same as RunTest(), except it forces parsers to parse one byte at a time.
   void RunIncrementalTest(const TestData& test_data) {
     SetReaderData(test_data.data);
-    SetExpectations(test_data, true);
+    SetExpectations(test_data, true, true);
 
     IncrementalParseAndVerify();
 
@@ -744,6 +763,13 @@ TEST_F(BlockParserTest, IncrementalFixedLacing) {
   RunIncrementalTest(fixed_lacing);
 }
 
+TEST_F(BlockParserTest, DefaultActionIsRead) {
+  SetReaderData(fixed_lacing_one_frame.data);
+  SetExpectations(fixed_lacing_one_frame, false, false);
+  ParseAndVerify();
+  ValidateBlock(fixed_lacing_one_frame, parser_.value());
+}
+
 TEST_F(BlockParserTest, IncrementalNoLacing) { RunIncrementalTest(no_lacing); }
 
 class SimpleBlockParserTest
@@ -827,6 +853,13 @@ TEST_F(SimpleBlockParserTest, IncrementalFixedLacing) {
 
 TEST_F(SimpleBlockParserTest, IncrementalNoLacing) {
   RunIncrementalTest(no_lacing);
+}
+
+TEST_F(SimpleBlockParserTest, DefaultActionIsRead) {
+  SetReaderData(fixed_lacing_one_frame.data);
+  SetExpectations(fixed_lacing_one_frame, false, false);
+  ParseAndVerify();
+  ValidateBlock(fixed_lacing_one_frame, parser_.value());
 }
 
 }  // namespace

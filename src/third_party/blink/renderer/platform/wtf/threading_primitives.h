@@ -71,14 +71,11 @@ class WTF_EXPORT MutexBase {
 
   void lock();
   void unlock();
+  void AssertAcquired() const {
 #if DCHECK_IS_ON()
-  // Deprecated in favour of AssertAcquired.
-  bool Locked() const { return mutex_.recursion_count_ > 0; }
-
-  void AssertAcquired() const { DCHECK(Locked()); }
-#else
-  void AssertAcquired() const {}
+    DCHECK(mutex_.recursion_count_);
 #endif
+  }
 
  public:
   PlatformMutex& Impl() { return mutex_; }
@@ -153,20 +150,16 @@ class WTF_EXPORT ThreadCondition final {
   USING_FAST_MALLOC(ThreadCondition);  // Only HeapTest.cpp requires.
 
  public:
-  ThreadCondition();
+  explicit ThreadCondition(Mutex&);
   ~ThreadCondition();
 
-  void Wait(Mutex&);
-  // Returns true if the condition was signaled before absoluteTime, false if
-  // the absoluteTime was reached or is in the past.
-  // The absoluteTime is in seconds, starting on January 1, 1970. The time is
-  // assumed to use the same time zone as WTF::currentTime().
-  bool TimedWait(Mutex&, double absolute_time);
+  void Wait();
   void Signal();
   void Broadcast();
 
  private:
   PlatformCondition condition_;
+  PlatformMutex& mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadCondition);
 };

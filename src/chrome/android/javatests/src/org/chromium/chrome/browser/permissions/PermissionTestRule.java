@@ -16,15 +16,14 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -145,10 +144,8 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      */
     void setUpActivity() throws InterruptedException {
         startMainActivityOnBlankPage();
-        InfoBarContainer container =
-                getActivity().getTabModelSelector().getCurrentTab().getInfoBarContainer();
         mListener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(mListener);
+        getInfoBarContainer().addAnimationListener(mListener);
     }
 
     private void ruleTearDown() throws Exception {

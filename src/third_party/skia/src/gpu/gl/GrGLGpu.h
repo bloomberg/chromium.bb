@@ -118,7 +118,7 @@ public:
     void clearStencilClip(const GrFixedClip&, bool insideStencilMask,
                           GrRenderTarget*, GrSurfaceOrigin);
 
-    void clearStencil(GrRenderTarget*, int clearValue) override;
+    void clearStencil(GrRenderTarget*, int clearValue);
 
     GrGpuRTCommandBuffer* getCommandBuffer(
             GrRenderTarget*, GrSurfaceOrigin,
@@ -136,8 +136,9 @@ public:
                                                                 int height) override;
 #if GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                     GrPixelConfig config, bool isRenderTarget,
-                                                     GrMipMapped mipMapped) override;
+                                                     GrColorType colorType, bool isRenderTarget,
+                                                     GrMipMapped mipMapped,
+                                                     size_t rowBytes = 0) override;
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
     void deleteTestingOnlyBackendTexture(const GrBackendTexture&) override;
 
@@ -251,14 +252,22 @@ private:
 
     void setTextureSwizzle(int unitIdx, GrGLenum target, const GrGLenum swizzle[]);
 
-    void generateMipmapsForProcessorTextures(
+    /**
+     * primitiveProcessorTextures must contain GrPrimitiveProcessor::numTextureSamplers() *
+     * numPrimitiveProcessorTextureSets entries.
+     */
+    void resolveAndGenerateMipMapsForProcessorTextures(
             const GrPrimitiveProcessor&, const GrPipeline&,
-            const GrTextureProxy* const primitiveProcessorTextures[]);
+            const GrTextureProxy* const primitiveProcessorTextures[],
+            int numPrimitiveProcessorTextureSets);
 
     // Flushes state from GrPipeline to GL. Returns false if the state couldn't be set.
     // willDrawPoints must be true if point primitives will be rendered after setting the GL state.
+    // If DynamicStateArrays is not null then dynamicStateArraysLength is the number of dynamic
+    // state entries in each array.
     bool flushGLState(const GrPrimitiveProcessor&, const GrPipeline&,
-                      const GrPipeline::FixedDynamicState*, bool willDrawPoints);
+                      const GrPipeline::FixedDynamicState*, const GrPipeline::DynamicStateArrays*,
+                      int dynamicStateArraysLength, bool willDrawPoints);
 
     void flushProgram(sk_sp<GrGLProgram>);
 
@@ -395,7 +404,9 @@ private:
     // Must be called if bindSurfaceFBOForPixelOps was used to bind a surface for copying.
     void unbindTextureFBOForPixelOps(GrGLenum fboTarget, GrSurface* surface);
 
+#ifdef SK_ENABLE_DUMP_GPU
     void onDumpJSON(SkJSONWriter*) const override;
+#endif
 
     bool createCopyProgram(GrTexture* srcTexture);
     bool createMipmapProgram(int progIdx);

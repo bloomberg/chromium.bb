@@ -47,7 +47,7 @@ base::StringPiece ShellExtensionsAPIProvider::GetAPISchema(
   return shell::api::ShellGeneratedSchemas::Get(name);
 }
 
-void ShellExtensionsAPIProvider::AddPermissionsProviders(
+void ShellExtensionsAPIProvider::RegisterPermissions(
     PermissionsInfo* permissions_info) {}
 
 void ShellExtensionsAPIProvider::RegisterManifestHandlers() {}

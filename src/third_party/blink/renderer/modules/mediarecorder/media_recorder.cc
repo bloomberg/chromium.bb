@@ -174,8 +174,13 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
           this,
           &MediaRecorder::DispatchScheduledEvent,
           context->GetTaskRunner(TaskType::kDOMManipulation))) {
-  DCHECK(stream_->getTracks().size());
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
 
+  DCHECK(stream_->getTracks().size());
   recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   DCHECK(recorder_handler_);

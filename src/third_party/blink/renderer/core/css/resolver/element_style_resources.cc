@@ -206,7 +206,6 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               if (element_->GetDocument()
                       .GetFrame()
                       ->IsLazyLoadingImageAllowed()) {
-                background_image->SetIsLazyloadPossiblyDeferred(true);
                 image_request_optimization = FetchParameters::kDeferImageLoad;
               } else {
                 image_request_optimization = FetchParameters::kAllowPlaceholder;
@@ -215,10 +214,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             StyleImage* new_image =
                 LoadPendingImage(style, ToStylePendingImage(background_image),
                                  image_request_optimization);
-            if (new_image && new_image->IsImageResource() &&
-                ToStyleFetchedImage(new_image)->IsLazyloadPossiblyDeferred()) {
+            if (new_image && new_image->IsLazyloadPossiblyDeferred())
               LazyLoadImageObserver::StartMonitoring(element_);
-            }
             background_layer->SetImage(new_image);
           }
         }
@@ -242,7 +239,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
       }
       case CSSPropertyCursor: {
         if (CursorList* cursor_list = style->Cursors()) {
-          for (size_t i = 0; i < cursor_list->size(); ++i) {
+          for (wtf_size_t i = 0; i < cursor_list->size(); ++i) {
             CursorData& current_cursor = cursor_list->at(i);
             if (StyleImage* image = current_cursor.GetImage()) {
               if (image->IsPendingImage()) {

@@ -188,15 +188,16 @@ class VdaVideoDecoder : public VideoDecoder,
   base::MRUCache<int32_t, base::TimeDelta> timestamps_;
 
   //
-  // GPU thread state.
-  //
-  std::unique_ptr<VideoDecodeAccelerator> vda_;
-  bool vda_initialized_ = false;
-
-  //
   // Shared state.
   //
+  // Only read on GPU thread during initialization, which is mutually exclusive
+  // with writes on the parent thread.
   VideoDecoderConfig config_;
+  // Only written on the GPU thread during initialization, which is mutually
+  // exclusive with reads on the parent thread.
+  std::unique_ptr<VideoDecodeAccelerator> vda_;
+  bool vda_initialized_ = false;
+  bool decode_on_parent_thread_ = false;
 
   //
   // Weak pointers, prefixed by bound thread.

@@ -12,14 +12,10 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
+#include "base/win/windows_types.h"
 #include "build/build_config.h"
 #include "chrome/installer/setup/progress_calculator.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
-
-#if defined(OS_WIN)
-#include <windows.h>  // NOLINT
-#endif
 
 namespace base {
 class CommandLine;
@@ -29,8 +25,6 @@ namespace installer {
 
 class InstallationState;
 class MasterPreferences;
-
-class ProductState;
 
 // Encapsulates the state of the current installation operation. This class
 // interprets the command-line arguments and master preferences and determines
@@ -61,16 +55,6 @@ class InstallerState {
   void Initialize(const base::CommandLine& command_line,
                   const MasterPreferences& prefs,
                   const InstallationState& machine_state);
-
-  // Adds a product constructed on the basis of |state|, setting this object's
-  // msi flag if |state| is msi-installed. Returns the product that was added,
-  // or NULL if |state| is incompatible with this object. Ownership is not
-  // passed to the caller.
-  Product* AddProductFromState(const ProductState& state);
-
-  // Returns the product that was added, or NULL if |product| is incompatible
-  // with this object. Ownership of the return value is not given to the caller.
-  Product* AddProduct(std::unique_ptr<Product> product);
 
   // The level (user or system) of this operation.
   Level level() const { return level_; }
@@ -103,9 +87,7 @@ class InstallerState {
   // verbose_logging master preferences option is true.
   bool verbose_logging() const { return verbose_logging_; }
 
-#if defined(OS_WIN)
   HKEY root_key() const { return root_key_; }
-#endif
 
   // The ClientState key by which we interact with Google Update.
   const base::string16& state_key() const { return state_key_; }
@@ -113,11 +95,6 @@ class InstallerState {
   // Returns true if this is an update of multi-install Chrome to
   // single-install.
   bool is_migrating_to_single() const { return is_migrating_to_single_; }
-
-  const Product& product() const {
-    DCHECK(product_);
-    return *product_;
-  }
 
   // Returns the currently installed version in |target_path|, or NULL if no
   // products are installed. Ownership is passed to the caller.
@@ -162,26 +139,16 @@ class InstallerState {
   // Clears the instance to an uninitialized state.
   void Clear();
 
-  bool CanAddProduct(const base::FilePath* product_dir) const;
-  Product* AddProductInDirectory(const base::FilePath* product_dir,
-                                 std::unique_ptr<Product> product);
-  Product* AddProductFromPreferences(
-      const MasterPreferences& prefs,
-      const InstallationState& machine_state);
-
   // Sets this object's level and updates the root_key_ accordingly.
   void set_level(Level level);
 
   Operation operation_;
   base::FilePath target_path_;
   base::string16 state_key_;
-  std::unique_ptr<Product> product_;
   base::Version critical_update_version_;
   ProgressCalculator progress_calculator_;
   Level level_;
-#if defined(OS_WIN)
   HKEY root_key_;
-#endif
   bool msi_;
   bool background_mode_;
   bool verbose_logging_;
@@ -189,7 +156,7 @@ class InstallerState {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);
-};  // class InstallerState
+};
 
 }  // namespace installer
 

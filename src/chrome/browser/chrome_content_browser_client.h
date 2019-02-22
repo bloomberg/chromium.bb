@@ -18,8 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/chrome_service.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/buildflags/buildflags.h"
@@ -27,7 +27,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "ui/base/resource/data_pack.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -68,7 +67,6 @@ class Origin;
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ChromeContentBrowserClient(
-      std::unique_ptr<ui::DataPack> data_pack = nullptr,
       ChromeFeatureListCreator* chrome_feature_list_creator = nullptr);
   ~ChromeContentBrowserClient() override;
 
@@ -131,6 +129,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& initiator_origin,
       int render_process_id,
       content::ResourceType resource_type) override;
+  network::mojom::URLLoaderFactoryPtrInfo
+  CreateURLLoaderFactoryForNetworkRequests(
+      content::RenderProcessHost* process,
+      network::mojom::NetworkContext* network_context,
+      const url::Origin& request_initiator) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(
@@ -146,9 +149,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                 ui::PageTransition* transition,
                                 bool* is_renderer_initiated,
                                 content::Referrer* referrer) override;
-  bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      content::SiteInstance* parent_site_instance) override;
   bool ShouldStayInParentProcessForNTP(
       const GURL& url,
       content::SiteInstance* parent_site_instance) override;
@@ -158,6 +158,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldTryToUseExistingProcessHost(
       content::BrowserContext* browser_context,
       const GURL& url) override;
+  bool ShouldSubframesTryToReuseExistingProcess(
+      content::RenderFrameHost* main_frame) override;
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
   bool ShouldSwapBrowsingInstancesForNavigation(
@@ -246,7 +248,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin) override;
   std::string GetWebBluetoothBlocklist() override;
-  net::URLRequestContext* OverrideRequestContextForURL(
+  net::CookieStore* OverrideCookieStoreForURL(
       const GURL& url,
       content::ResourceContext* context) override;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -438,8 +440,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       bool is_navigation,
-      const GURL& url,
-      network::mojom::URLLoaderFactoryRequest* factory_request) override;
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      bool* bypass_redirect_checks) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
@@ -497,6 +500,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterRendererPreferenceWatcherForWorkers(
       content::BrowserContext* browser_context,
       content::mojom::RendererPreferenceWatcherPtr watcher) override;
+
+  base::Optional<std::string> GetOriginPolicyErrorPage(
+      content::OriginPolicyErrorReason error_reason,
+      const url::Origin& origin,
+      const GURL& url) override;
+  bool CanIgnoreCertificateErrorIfNeeded() override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
@@ -574,8 +583,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistryWithArgs<content::RenderProcessHost*,
                                               const url::Origin&>>
       worker_interfaces_parameterized_;
-
-  std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
 
   ChromeFeatureListCreator* chrome_feature_list_creator_;
 

@@ -40,10 +40,8 @@ class DetachableResourceHandler::Controller : public ResourceController {
 
   void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
                              modified_request_headers) override {
-    DCHECK(!modified_request_headers.has_value())
-        << "Redirect with modified headers was not supported yet. "
-           "crbug.com/845683";
-    Resume();
+    MarkAsUsed();
+    detachable_handler_->ResumeForRedirect(modified_request_headers);
   }
 
   void Cancel() override {
@@ -210,7 +208,7 @@ void DetachableResourceHandler::OnWillRead(
     std::unique_ptr<ResourceController> controller) {
   if (!next_handler_) {
     if (!read_buffer_.get())
-      read_buffer_ = new net::IOBuffer(kReadBufSize);
+      read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufSize);
     *buf = read_buffer_;
     *buf_size = kReadBufSize;
     controller->Resume();

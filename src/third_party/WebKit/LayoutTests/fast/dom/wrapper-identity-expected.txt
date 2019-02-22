@@ -172,4 +172,3 @@ PASS var object = window['test']; isEqualJS(object, object); is true
 PASS var object = window['toolbar']; isEqualJS(object, object); is true
 PASS var object = window['top']; isEqualJS(object, object); is true
 PASS var object = window['window']; isEqualJS(object, object); is true
-

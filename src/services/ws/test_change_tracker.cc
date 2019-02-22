@@ -153,13 +153,14 @@ std::string ChangeToDescription(const Change& change,
                                 change.float_value);
     case CHANGE_TYPE_REQUEST_CLOSE:
       return "RequestClose";
-    case CHANGE_TYPE_SURFACE_CHANGED:
-      return base::StringPrintf("SurfaceCreated window_id=%s surface_id=%s",
-                                WindowIdToString(change.window_id).c_str(),
-                                change.surface_id.ToString().c_str());
     case CHANGE_TYPE_TRANSFORM_CHANGED:
       return base::StringPrintf("TransformChanged window_id=%s",
                                 WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DISPLAY_CHANGED:
+      return base::StringPrintf(
+          "DisplayChanged window_id=%s display_id=%s",
+          WindowIdToString(change.window_id).c_str(),
+          base::NumberToString(change.display_id).c_str());
     case CHANGE_TYPE_DRAG_DROP_START:
       return "DragDropStart";
     case CHANGE_TYPE_DRAG_ENTER:
@@ -427,6 +428,15 @@ void TestChangeTracker::OnWindowOpacityChanged(Id window_id, float opacity) {
   AddChange(change);
 }
 
+void TestChangeTracker::OnWindowDisplayChanged(Id window_id,
+                                               int64_t display_id) {
+  Change change;
+  change.type = CHANGE_TYPE_DISPLAY_CHANGED;
+  change.window_id = window_id;
+  change.display_id = display_id;
+  AddChange(change);
+}
+
 void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
                                                         bool drawn) {
   Change change;
@@ -509,18 +519,6 @@ void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
   change.change_id = change_id;
   change.window_id = window_data->window_id;
   change.bool_value = drawn;
-  AddChange(change);
-}
-
-void TestChangeTracker::OnWindowSurfaceChanged(
-    Id window_id,
-    const viz::SurfaceInfo& surface_info) {
-  Change change;
-  change.type = CHANGE_TYPE_SURFACE_CHANGED;
-  change.window_id = window_id;
-  change.surface_id = surface_info.id();
-  change.frame_size = surface_info.size_in_pixels();
-  change.device_scale_factor = surface_info.device_scale_factor();
   AddChange(change);
 }
 

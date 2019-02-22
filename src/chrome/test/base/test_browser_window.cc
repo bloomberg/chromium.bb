@@ -35,6 +35,11 @@ ui::PageTransition
   return ui::PAGE_TRANSITION_LINK;
 }
 
+base::TimeTicks TestBrowserWindow::TestLocationBar::GetMatchSelectionTimestamp()
+    const {
+  return base::TimeTicks();
+}
+
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
   return NULL;
 }
@@ -66,6 +71,22 @@ bool TestBrowserWindow::IsAlwaysOnTop() const {
 gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
   return NULL;
 }
+
+void TestBrowserWindow::SetTopControlsShownRatio(
+    content::WebContents* web_contents,
+    float ratio) {}
+
+bool TestBrowserWindow::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  return false;
+}
+
+int TestBrowserWindow::GetTopControlsHeight() const {
+  return 0;
+}
+
+void TestBrowserWindow::SetTopControlsGestureScrollInProgress(
+    bool in_progress) {}
 
 StatusBubble* TestBrowserWindow::GetStatusBubble() {
   return NULL;

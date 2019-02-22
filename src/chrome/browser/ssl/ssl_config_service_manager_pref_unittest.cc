@@ -273,23 +273,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDraft23) {
             initial_config_->tls13_variant);
 }
 
-// Tests that Draft28 TLS 1.3 can be enabled via field trials.
-TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDraft28) {
-  // Toggle the field trial.
-  variations::testing::VariationParamsManager variation_params(
-      "TLS13Variant", {{"variant", "draft28"}});
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager =
-      SetUpConfigServiceManager(&local_state);
-
-  EXPECT_EQ(network::mojom::SSLVersion::kTLS13, initial_config_->version_max);
-  EXPECT_EQ(network::mojom::TLS13Variant::kDraft28,
-            initial_config_->tls13_variant);
-}
-
 // Tests that Final TLS 1.3 can be enabled via field trials.
 TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureFinal) {
   // Toggle the field trial.

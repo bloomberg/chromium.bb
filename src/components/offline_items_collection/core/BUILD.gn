@@ -10,6 +10,8 @@ if (is_android) {
 static_library("core") {
   sources = [
     "fail_state.h",
+    "filtered_offline_item_observer.cc",
+    "filtered_offline_item_observer.h",
     "launch_location.h",
     "offline_content_aggregator.cc",
     "offline_content_aggregator.h",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "filtered_offline_item_observer_unittest.cc",
     "offline_content_aggregator_unittest.cc",
     "throttled_offline_content_provider_unittest.cc",
   ]
@@ -88,7 +91,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/android_deps:android_support_annotations_java",
     ]
   }
 

@@ -413,6 +413,12 @@
 #define GL_FRAMEBUFFER_FLIP_Y_MESA 0x8BBB
 #endif /* GL_MESA_framebuffer_flip_y */
 
+#ifndef GL_KHR_parallel_shader_compile
+#define GL_KHR_parallel_shader_compile 1
+#define GL_MAX_SHADER_COMPILER_THREADS_KHR 0x91B0
+#define GL_COMPLETION_STATUS_KHR 0x91B1
+#endif /* GL_KHR_parallel_shader_compile */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)
@@ -433,6 +439,8 @@
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632
 #define GL_MAX_VIEWS_OVR 0x9631
 #define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
+
+#define GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT 0x8868
 
 // Forward declare EGL types.
 typedef uint64_t EGLuint64CHROMIUM;

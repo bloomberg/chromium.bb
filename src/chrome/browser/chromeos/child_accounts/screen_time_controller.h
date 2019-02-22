@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -27,7 +28,8 @@ namespace chromeos {
 // Schedule notifications and lock/unlock screen based on the processor output.
 class ScreenTimeController : public KeyedService,
                              public session_manager::SessionManagerObserver,
-                             public system::TimezoneSettings::Observer {
+                             public system::TimezoneSettings::Observer,
+                             public chromeos::SystemClockClient::Observer {
  public:
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -85,6 +87,9 @@ class ScreenTimeController : public KeyedService,
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
+
+  // chromeos::SystemClockClient::Observer:
+  void SystemClockUpdated() override;
 
   content::BrowserContext* context_;
   PrefService* pref_service_;

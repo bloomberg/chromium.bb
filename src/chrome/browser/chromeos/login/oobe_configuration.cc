@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/oobe_configuration_client.h"
 
@@ -15,9 +16,11 @@ namespace chromeos {
 
 // static
 OobeConfiguration* OobeConfiguration::instance = nullptr;
+bool OobeConfiguration::skip_check_for_testing_ = false;
 
 OobeConfiguration::OobeConfiguration()
-    : configuration_(
+    : check_completed_(false),
+      configuration_(
           std::make_unique<base::Value>(base::Value::Type::DICTIONARY)),
       weak_factory_(this) {
   DCHECK(!OobeConfiguration::Get());
@@ -34,8 +37,11 @@ OobeConfiguration* OobeConfiguration::Get() {
   return OobeConfiguration::instance;
 }
 
-void OobeConfiguration::AddObserver(Observer* observer) {
+void OobeConfiguration::AddAndFireObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
+  if (check_completed_) {
+    observer->OnOobeConfigurationChanged();
+  }
 }
 
 void OobeConfiguration::RemoveObserver(Observer* observer) {
@@ -46,13 +52,20 @@ const base::Value& OobeConfiguration::GetConfiguration() const {
   return *configuration_.get();
 }
 
+bool OobeConfiguration::CheckCompleted() const {
+  return check_completed_;
+}
+
 void OobeConfiguration::ResetConfiguration() {
   configuration_ = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  for (auto& observer : observer_list_)
-    observer.OnOobeConfigurationChanged();
+  if (check_completed_) {
+    NotifyObservers();
+  }
 }
 
 void OobeConfiguration::CheckConfiguration() {
+  if (skip_check_for_testing_)
+    return;
   DBusThreadManager::Get()
       ->GetOobeConfigurationClient()
       ->CheckForOobeConfiguration(
@@ -62,20 +75,28 @@ void OobeConfiguration::CheckConfiguration() {
 
 void OobeConfiguration::OnConfigurationCheck(bool has_configuration,
                                              const std::string& configuration) {
-  if (!has_configuration)
+  check_completed_ = true;
+  if (!has_configuration) {
+    NotifyObservers();
     return;
+  }
 
   int error_code, row, col;
   std::string error_message;
   auto value = base::JSONReader::ReadAndReturnError(
       configuration, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
       &error_code, &error_message, &row, &col);
-  if (!value || !value->is_dict()) {
+  if (!value) {
     LOG(ERROR) << "Error parsing OOBE configuration: " << error_message;
-    return;
+  } else if (!chromeos::configuration::ValidateConfiguration(*value)) {
+    LOG(ERROR) << "Invalid OOBE configuration";
+  } else {
+    configuration_ = std::move(value);
   }
+  NotifyObservers();
+}
 
-  configuration_ = std::move(value);
+void OobeConfiguration::NotifyObservers() {
   for (auto& observer : observer_list_)
     observer.OnOobeConfigurationChanged();
 }

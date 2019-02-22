@@ -8,9 +8,12 @@
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
@@ -71,7 +74,11 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL) {}
+      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL) {
+  // Set a class property key, which allows |this| to be used for interactive
+  // events, e.g. move or resize.
+  SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
+}
 
 WaylandWindow::~WaylandWindow() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
@@ -194,7 +201,24 @@ void WaylandWindow::ApplyPendingBounds() {
   connection_->ScheduleFlush();
 }
 
+void WaylandWindow::DispatchHostWindowDragMovement(
+    int hittest,
+    const gfx::Point& pointer_location) {
+  DCHECK(xdg_surface_);
+
+  connection_->ResetPointerFlags();
+  if (hittest == HTCAPTION)
+    xdg_surface_->SurfaceMove(connection_);
+  else
+    xdg_surface_->SurfaceResize(connection_, hittest);
+
+  connection_->ScheduleFlush();
+}
+
 void WaylandWindow::Show() {
+  if (!is_tooltip_)  // Tooltip windows should not get keyboard focus
+    set_keyboard_focus(true);
+
   if (xdg_surface_)
     return;
   if (is_tooltip_) {
@@ -510,6 +534,31 @@ void WaylandWindow::OnCloseRequest() {
   delegate_->OnCloseRequest();
 }
 
+void WaylandWindow::OnDragEnter(const gfx::PointF& point,
+                                std::unique_ptr<OSExchangeData> data,
+                                int operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+int WaylandWindow::OnDragMotion(const gfx::PointF& point,
+                                uint32_t time,
+                                int operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return 0;
+}
+
+void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::OnDragLeave() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 bool WaylandWindow::IsMinimized() const {
   return state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
 }
@@ -540,6 +589,10 @@ WaylandWindow* WaylandWindow::GetParentWindow(
   if (!parent_window)
     return connection_->GetCurrentFocusedWindow();
   return parent_window;
+}
+
+WmMoveResizeHandler* WaylandWindow::AsWmMoveResizeHandler() {
+  return static_cast<WmMoveResizeHandler*>(this);
 }
 
 }  // namespace ui

@@ -5,9 +5,14 @@
 #ifndef CHROME_BROWSER_ANDROID_DIGITAL_ASSET_LINKS_DIGITAL_ASSET_LINKS_HANDLER_H_
 #define CHROME_BROWSER_ANDROID_DIGITAL_ASSET_LINKS_DIGITAL_ASSET_LINKS_HANDLER_H_
 
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace digital_asset_links {
 
@@ -29,11 +34,11 @@ using RelationshipCheckResultCallback =
 // for details of usage and APIs. These APIs are used to verify declared
 // relationships between different asset types like web domains or Android apps.
 // The lifecycle of this handler will be governed by the owner.
-class DigitalAssetLinksHandler : public net::URLFetcherDelegate {
+class DigitalAssetLinksHandler {
  public:
   explicit DigitalAssetLinksHandler(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  ~DigitalAssetLinksHandler() override;
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
+  ~DigitalAssetLinksHandler();
 
   // Checks whether the given "relationship" has been declared by the target
   // |web_domain| for the source Android app which is uniquely defined by the
@@ -54,16 +59,15 @@ class DigitalAssetLinksHandler : public net::URLFetcherDelegate {
       const std::string& relationship);
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Callbacks for the SafeJsonParser.
   void OnJSONParseSucceeded(std::unique_ptr<base::Value> result);
   void OnJSONParseFailed(const std::string& error_message);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // The per request callback for receiving a URLFetcher result. This gets
   // reset every time we get a new CheckDigitalAssetLinkRelationship call.

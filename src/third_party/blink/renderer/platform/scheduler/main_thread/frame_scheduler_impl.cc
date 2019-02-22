@@ -433,7 +433,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
-    case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
@@ -449,6 +448,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // unthrottled and undeferred) not to prevent service workers that may
     // control browser navigation on multiple tabs.
     case TaskType::kInternalWorker:
+    // Some tasks in the tests need to run when objects are paused e.g. to hook
+    // when recovering from debugger JavaScript statetment.
+    case TaskType::kInternalTest:
       return UnpausableTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
@@ -464,6 +466,8 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kWorkerThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kWorkerThreadTaskQueueCompositor:
+    case TaskType::kExperimentalWebSchedulingUserInteraction:
+    case TaskType::kExperimentalWebSchedulingBestEffort:
     case TaskType::kCount:
       // Not a valid frame-level TaskType.
       return base::nullopt;
@@ -491,6 +495,16 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->LoadingTaskQueue();
     case TaskType::kNetworkingControl:
       return frame_task_queue_controller_->LoadingControlTaskQueue();
+    case TaskType::kInternalInspector:
+      return frame_task_queue_controller_->InspectorTaskQueue();
+    case TaskType::kExperimentalWebSchedulingUserInteraction:
+      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
+          FrameTaskQueueController::WebSchedulingTaskQueueType::
+              kWebSchedulingUserVisiblePriority);
+    case TaskType::kExperimentalWebSchedulingBestEffort:
+      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
+          FrameTaskQueueController::WebSchedulingTaskQueueType::
+              kWebSchedulingBestEffortPriority);
     default:
       // Non-loading task queue.
       DCHECK_LT(static_cast<size_t>(type),
@@ -852,6 +866,16 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
          parent_page_scheduler_->IsLoading())) {
       return TaskQueue::QueuePriority::kLowPriority;
     }
+  }
+
+  if (task_queue->queue_type() ==
+      MainThreadTaskQueue::QueueType::kWebSchedulingUserInteraction) {
+    return TaskQueue::QueuePriority::kNormalPriority;
+  }
+
+  if (task_queue->queue_type() ==
+      MainThreadTaskQueue::QueueType::kWebSchedulingBestEffort) {
+    return TaskQueue::QueuePriority::kLowPriority;
   }
 
   return task_queue->queue_type() ==

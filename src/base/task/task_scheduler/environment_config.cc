@@ -28,13 +28,13 @@ bool CanUseBackgroundPriorityForSchedulerWorker() {
     return false;
 
 #if !defined(OS_ANDROID)
-  // When thread priority can't be increased, run all threads with a normal
-  // priority to avoid priority inversions on shutdown (TaskScheduler increases
-  // background threads priority to normal on shutdown while resolving remaining
-  // shutdown blocking tasks).
+  // When thread priority can't be increased to NORMAL, run all threads with a
+  // NORMAL priority to avoid priority inversions on shutdown (TaskScheduler
+  // increases BACKGROUND threads priority to NORMAL on shutdown while resolving
+  // remaining shutdown blocking tasks).
   //
   // This is ignored on Android, because it doesn't have a clean shutdown phase.
-  if (!PlatformThread::CanIncreaseCurrentThreadPriority())
+  if (!PlatformThread::CanIncreaseThreadPriority(ThreadPriority::NORMAL))
     return false;
 #endif  // defined(OS_ANDROID)
 

@@ -12,7 +12,9 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
@@ -99,8 +101,11 @@ class TouchInputBrowserTest : public ContentBrowserTest {
 
  protected:
   void SendTouchEvent(SyntheticWebTouchEvent* event) {
-    GetWidgetHost()->ForwardTouchEventWithLatencyInfo(*event,
-                                                      ui::LatencyInfo());
+    auto* root_view = GetWidgetHost()->GetView();
+    auto* input_event_router =
+        GetWidgetHost()->delegate()->GetInputEventRouter();
+    input_event_router->RouteTouchEvent(root_view, event, ui::LatencyInfo());
+
     event->ResetPoints();
   }
   void LoadURL() {

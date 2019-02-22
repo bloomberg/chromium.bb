@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/length.h"
@@ -169,6 +170,16 @@ LayoutUnit ResolveBlockLength(
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return border_and_padding.BlockSum();
 
+  // Scrollable percentage-sized children of table cells, in the table
+  // "measure" phase contribute nothing to the row height measurement.
+  // See: https://drafts.csswg.org/css-tables-3/#row-layout
+  if (length.IsPercentOrCalc() &&
+      constraint_space.TableCellChildLayoutPhase() ==
+          NGTableCellChildLayoutPhase::kMeasure &&
+      (style.OverflowY() == EOverflow::kAuto ||
+       style.OverflowY() == EOverflow::kScroll))
+    return border_and_padding.BlockSum();
+
   bool is_percentage_indefinite =
       constraint_space.PercentageResolutionSize().block_size ==
       NGSizeIndefinite;
@@ -204,10 +215,18 @@ LayoutUnit ResolveBlockLength(
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionSize().block_size;
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
-      if (style.BoxSizing() == EBoxSizing::kContentBox) {
-        value += border_and_padding.BlockSum();
-      } else {
+
+      // Percentage-sized children of table cells, in the table "layout" phase,
+      // pretend they have box-sizing: border-box.
+      // TODO(crbug.com/285744): FF/Edge don't do this. Determine if there
+      // would be compat issues for matching their behavior.
+      if (style.BoxSizing() == EBoxSizing::kBorderBox ||
+          (length.IsPercentOrCalc() &&
+           constraint_space.TableCellChildLayoutPhase() ==
+               NGTableCellChildLayoutPhase::kLayout)) {
         value = std::max(border_and_padding.BlockSum(), value);
+      } else {
+        value += border_and_padding.BlockSum();
       }
       return value;
     }
@@ -277,11 +296,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   // ResolveInlineLength.
   // The constraint space's writing mode has to match the style, so we can't
   // use the passed-in mode here.
-  NGConstraintSpaceBuilder builder(
-      style.GetWritingMode(),
-      /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite});
-  scoped_refptr<NGConstraintSpace> space =
-      builder.ToConstraintSpace(style.GetWritingMode());
+  NGConstraintSpace space =
+      NGConstraintSpaceBuilder(
+          style.GetWritingMode(),
+          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+          .ToConstraintSpace(style.GetWritingMode());
 
   LayoutUnit content_size =
       min_and_max ? min_and_max->max_size : NGSizeIndefinite;
@@ -297,12 +316,12 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     computed_sizes = *min_and_max;
   } else {
     if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-      computed_sizes.min_size = computed_sizes.max_size = ResolveInlineLength(
-          *space, style, min_and_max, inline_size,
+      computed_sizes = ResolveInlineLength(
+          space, style, min_and_max, inline_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     } else {
-      computed_sizes.min_size = computed_sizes.max_size = ResolveBlockLength(
-          *space, style, inline_size, content_size,
+      computed_sizes = ResolveBlockLength(
+          space, style, inline_size, content_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     }
   }
@@ -312,32 +331,30 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                           : style.MaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-    max = ResolveInlineLength(*space, style, min_and_max, max_length,
+    max = ResolveInlineLength(space, style, min_and_max, max_length,
                               LengthResolveType::kMaxSize,
                               LengthResolvePhase::kIntrinsic);
   } else {
-    max = ResolveBlockLength(*space, style, max_length, content_size,
+    max = ResolveBlockLength(space, style, max_length, content_size,
                              LengthResolveType::kMaxSize,
                              LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.min_size = std::min(computed_sizes.min_size, max);
-  computed_sizes.max_size = std::min(computed_sizes.max_size, max);
+  computed_sizes.Constrain(max);
 
   Length min_length = writing_mode == WritingMode::kHorizontalTb
                           ? style.MinWidth()
                           : style.MinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-    min = ResolveInlineLength(*space, style, min_and_max, min_length,
+    min = ResolveInlineLength(space, style, min_and_max, min_length,
                               LengthResolveType::kMinSize,
                               LengthResolvePhase::kIntrinsic);
   } else {
-    min = ResolveBlockLength(*space, style, min_length, content_size,
+    min = ResolveBlockLength(space, style, min_length, content_size,
                              LengthResolveType::kMinSize,
                              LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.min_size = std::max(computed_sizes.min_size, min);
-  computed_sizes.max_size = std::max(computed_sizes.max_size, min);
+  computed_sizes.Encompass(min);
 
   return computed_sizes;
 }
@@ -373,23 +390,24 @@ MinMaxSize ComputeMinAndMaxContentContribution(
 
   base::Optional<MinMaxSize> minmax;
   if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
-    scoped_refptr<NGConstraintSpace> adjusted_constraint_space;
+    NGConstraintSpace adjusted_constraint_space;
     if (constraint_space) {
       // TODO(layout-ng): Check if our constraint space produces spec-compliant
       // outputs.
       // It is important to set a floats bfc block offset so that we don't get a
       // partial layout. It is also important that we shrink to fit, by
       // definition.
-      NGConstraintSpaceBuilder builder(*constraint_space);
-      builder.SetAvailableSize(constraint_space->AvailableSize())
-          .SetPercentageResolutionSize(
-              constraint_space->PercentageResolutionSize())
-          .SetFloatsBfcBlockOffset(LayoutUnit())
-          .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
-          .SetIsShrinkToFit(true);
       adjusted_constraint_space =
-          builder.ToConstraintSpace(node.Style().GetWritingMode());
-      constraint_space = adjusted_constraint_space.get();
+          NGConstraintSpaceBuilder(*constraint_space)
+              .SetAvailableSize(constraint_space->AvailableSize())
+              .SetPercentageResolutionSize(
+                  constraint_space->PercentageResolutionSize())
+              .SetFloatsBfcBlockOffset(LayoutUnit())
+              .SetIsNewFormattingContext(
+                  constraint_space->IsNewFormattingContext())
+              .SetIsShrinkToFit(true)
+              .ToConstraintSpace(node.Style().GetWritingMode());
+      constraint_space = &adjusted_constraint_space;
     }
     minmax = node.ComputeMinMaxSize(writing_mode, input, constraint_space);
   }
@@ -460,19 +478,14 @@ LayoutUnit ComputeInlineSizeForFragment(
   return ConstrainByMinMax(extent, min, max);
 }
 
-LayoutUnit ComputeBlockSizeForFragment(
+namespace {
+
+// Computes the block-size for a fragment, ignoring the fixed block-size if set.
+LayoutUnit ComputeBlockSizeForFragmentInternal(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     LayoutUnit content_size,
     const base::Optional<NGBoxStrut>& border_padding) {
-  if (constraint_space.IsFixedSizeBlock())
-    return constraint_space.AvailableSize().block_size;
-
-  if (style.Display() == EDisplay::kTableCell) {
-    // All handled by the table layout code or not applicable.
-    return content_size;
-  }
-
   LayoutUnit extent =
       ResolveBlockLength(constraint_space, style, style.LogicalHeight(),
                          content_size, LengthResolveType::kContentSize,
@@ -490,6 +503,20 @@ LayoutUnit ComputeBlockSizeForFragment(
       LengthResolveType::kMinSize, LengthResolvePhase::kLayout, border_padding);
 
   return ConstrainByMinMax(extent, min, max);
+}
+
+}  // namespace
+
+LayoutUnit ComputeBlockSizeForFragment(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    LayoutUnit content_size,
+    const base::Optional<NGBoxStrut>& border_padding) {
+  if (constraint_space.IsFixedSizeBlock())
+    return constraint_space.AvailableSize().block_size;
+
+  return ComputeBlockSizeForFragmentInternal(constraint_space, style,
+                                             content_size, border_padding);
 }
 
 // Computes size for a replaced element.
@@ -737,6 +764,21 @@ NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace& constraint_space,
                         style.IsFlippedLinesWritingMode());
 }
 
+NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,
+                                   const NGLayoutInputNode node) {
+  if (constraint_space.IsAnonymous() || !node.IsTableCell())
+    return NGBoxStrut();
+
+  // At the moment we just access the values set by the parent table layout.
+  // Once we have a NGTableLayoutAlgorithm this should pass the intrinsic
+  // padding via the constraint space object.
+
+  // TODO(karlo): intrinsic padding can sometimes be negative; that seems
+  // insane, but works in the old code; in NG it trips DCHECKs.
+  return {LayoutUnit(), LayoutUnit(), node.IntrinsicPaddingBlockStart(),
+          node.IntrinsicPaddingBlockEnd()};
+}
+
 NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                           const ComputedStyle& style) {
   // If we are producing an anonymous fragment (e.g. a column) we shouldn't
@@ -753,27 +795,6 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
       ResolveMarginPaddingLength(constraint_space, style.PaddingBefore());
   padding.block_end =
       ResolveMarginPaddingLength(constraint_space, style.PaddingAfter());
-  return padding;
-}
-
-NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
-                          const NGLayoutInputNode node) {
-  // If we are producing an anonymous fragment (e.g. a column), it has no
-  // borders, padding or scrollbars. Using the ones from the container can only
-  // cause trouble.
-  if (constraint_space.IsAnonymous())
-    return NGBoxStrut();
-
-  NGBoxStrut padding = ComputePadding(constraint_space, node.Style());
-  if (node.GetLayoutBox()->IsTableCell()) {
-    // Use values calculated by the table layout code
-    const LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
-    // TODO(karlo): intrinsic padding can sometimes be negative; that
-    // seems insane, but works in the old code; in NG it trips
-    // DCHECKs.
-    padding.block_start += LayoutUnit(cell->IntrinsicPaddingBefore());
-    padding.block_end += LayoutUnit(cell->IntrinsicPaddingAfter());
-  }
   return padding;
 }
 
@@ -890,6 +911,21 @@ LayoutUnit ConstrainByMinMax(LayoutUnit length,
   return std::max(min, std::min(length, max));
 }
 
+bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
+                                LayoutUnit content_box_inline_size) {
+  DCHECK(scrollbars->InlineSum());
+  if (scrollbars->InlineSum() <= content_box_inline_size)
+    return false;
+  if (scrollbars->inline_end) {
+    DCHECK(!scrollbars->inline_start);
+    scrollbars->inline_end = content_box_inline_size;
+  } else {
+    DCHECK(scrollbars->inline_start);
+    scrollbars->inline_start = content_box_inline_size;
+  }
+  return true;
+}
+
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node) {
@@ -899,7 +935,9 @@ NGBoxStrut CalculateBorderScrollbarPadding(
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
   return ComputeBorders(constraint_space, node) +
-         ComputePadding(constraint_space, node) + node.GetScrollbarSizes();
+         ComputePadding(constraint_space, node.Style()) +
+         ComputeIntrinsicPadding(constraint_space, node) +
+         node.GetScrollbarSizes();
 }
 
 NGLogicalSize CalculateBorderBoxSize(
@@ -926,21 +964,115 @@ NGLogicalSize CalculateBorderBoxSize(
                                   block_content_size, border_padding));
 }
 
-NGLogicalSize CalculateContentBoxSize(
-    const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding) {
-  NGLogicalSize size = border_box_size;
-  size.inline_size -= border_scrollbar_padding.InlineSum();
+NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset) {
+  DCHECK_NE(size.inline_size, NGSizeIndefinite);
+  size.inline_size -= inset.InlineSum();
   size.inline_size = std::max(size.inline_size, LayoutUnit());
 
-  // Our calculated block-axis size may still be indefinite. If so, just leave
-  // the size as NGSizeIndefinite instead of subtracting borders and padding.
   if (size.block_size != NGSizeIndefinite) {
-    size.block_size -= border_scrollbar_padding.BlockSum();
+    size.block_size -= inset.BlockSum();
     size.block_size = std::max(size.block_size, LayoutUnit());
   }
 
   return size;
+}
+
+namespace {
+
+// Implements the common part of the child percentage size calculation. Deals
+// with how percentages are propagated from parent to child in quirks mode.
+NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    NGLogicalSize child_percentage_size,
+    LayoutUnit parent_percentage_block_size) {
+  // Flex items may have a fixed block-size, but children shouldn't resolve
+  // their percentages against this.
+  if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite()) {
+    DCHECK(node.IsFlexItem());
+    child_percentage_size.block_size = NGSizeIndefinite;
+    return child_percentage_size;
+  }
+
+  // In quirks mode the percentage resolution height is passed from parent to
+  // child.
+  // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
+  if (child_percentage_size.block_size == NGSizeIndefinite &&
+      node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
+      !node.Style().HasOutOfFlowPosition()) {
+    child_percentage_size.block_size = parent_percentage_block_size;
+  }
+
+  return child_percentage_size;
+}
+
+}  // namespace
+
+NGLogicalSize CalculateChildPercentageSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    const NGLogicalSize& child_available_size) {
+  // Anonymous block or spaces should pass the percent size straight through.
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return space.PercentageResolutionSize();
+
+  NGLogicalSize child_percentage_size = child_available_size;
+
+  bool is_table_cell_in_measure_phase =
+      node.IsTableCell() && !space.IsFixedSizeBlock();
+
+  // Table cells which are measuring their content, force their children to
+  // have an indefinite percentage resolution size.
+  if (is_table_cell_in_measure_phase) {
+    child_percentage_size.block_size = NGSizeIndefinite;
+    return child_percentage_size;
+  }
+
+  // Table cell children don't apply the "percentage-quirk". I.e. if their
+  // percentage resolution block-size is indefinite, they don't pass through
+  // their parent's percentage resolution block-size.
+  if (space.TableCellChildLayoutPhase() !=
+      NGTableCellChildLayoutPhase::kNotTableCellChild)
+    return child_percentage_size;
+
+  return AdjustChildPercentageSizeForQuirksAndFlex(
+      space, node, child_percentage_size,
+      space.PercentageResolutionSize().block_size);
+}
+
+NGLogicalSize CalculateReplacedChildPercentageSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    NGLogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
+    const NGBoxStrut& border_padding) {
+  // Anonymous block or spaces should pass the percent size straight through.
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return space.ReplacedPercentageResolutionSize();
+
+  bool has_resolvable_block_size = !node.Style().LogicalHeight().IsAuto() ||
+                                   !node.Style().LogicalMinHeight().IsAuto();
+
+  bool is_table_cell_in_layout_phase =
+      node.IsTableCell() && space.IsFixedSizeBlock();
+
+  // Table cells in the "layout" phase have a fixed block-size. However
+  // replaced children should resolve their percentages against the size given
+  // in the "measure" phase.
+  //
+  // To handle this we recalculate the border-box block-size, ignoring the
+  // fixed size constraint.
+  if (is_table_cell_in_layout_phase && has_resolvable_block_size) {
+    border_box_size.block_size = ComputeBlockSizeForFragmentInternal(
+        space, node.Style(), NGSizeIndefinite, border_padding);
+  }
+
+  NGLogicalSize child_percentage_size =
+      ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
+
+  return AdjustChildPercentageSizeForQuirksAndFlex(
+      space, node, child_percentage_size,
+      space.ReplacedPercentageResolutionSize().block_size);
 }
 
 }  // namespace blink

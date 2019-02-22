@@ -583,7 +583,7 @@ everywhere. To do this:
 1.  When it is, update [waterfalls.pyl] to use the
     "gpu trigger script" functionality to select *either* the stable *or* the
     new driver version on the stable version of the bot. See [this
-    CL](https://chromium-review.googlesource.com/882344) for an example, though
+    CL](https://chromium-review.googlesource.com/1189059) for an example, though
     that CL was targeting a different OS version rather than driver version.
 1.  After that lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
@@ -591,7 +591,9 @@ everywhere. To do this:
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
 1.  Remove the alternate swarming dimensions for the stable bot from
-    [waterfalls.pyl], locking it to the new driver version.
+    [waterfalls.pyl], locking it to the new driver version. See [this
+    CL](https://chromium-review.googlesource.com/1197329) for an example, though
+    that CL was targeting a different OS version rather than driver version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as

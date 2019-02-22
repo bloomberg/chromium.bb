@@ -11,7 +11,7 @@
 namespace quic {
 
 // A class representing a non-reentrant mutex in QUIC.
-class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
+class LOCKABLE QUIC_EXPORT_PRIVATE QuicMutex {
  public:
   QuicMutex() = default;
   QuicMutex(const QuicMutex&) = delete;
@@ -40,7 +40,7 @@ class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
 
 // A helper class that acquires the given QuicMutex shared lock while the
 // QuicReaderMutexLock is in scope.
-class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicReaderMutexLock {
+class SCOPED_LOCKABLE QUIC_EXPORT_PRIVATE QuicReaderMutexLock {
  public:
   explicit QuicReaderMutexLock(QuicMutex* lock) SHARED_LOCK_FUNCTION(lock);
   QuicReaderMutexLock(const QuicReaderMutexLock&) = delete;
@@ -54,7 +54,7 @@ class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicReaderMutexLock {
 
 // A helper class that acquires the given QuicMutex exclusive lock while the
 // QuicWriterMutexLock is in scope.
-class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicWriterMutexLock {
+class SCOPED_LOCKABLE QUIC_EXPORT_PRIVATE QuicWriterMutexLock {
  public:
   explicit QuicWriterMutexLock(QuicMutex* lock) EXCLUSIVE_LOCK_FUNCTION(lock);
   QuicWriterMutexLock(const QuicWriterMutexLock&) = delete;

@@ -113,7 +113,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action);
 
   // Node frontend is always undocked.
-  static void OpenNodeFrontendWindow(Profile* profile);
+  static DevToolsWindow* OpenNodeFrontendWindow(Profile* profile);
 
   static void InspectElement(content::RenderFrameHost* inspected_frame_host,
                              int x,
@@ -330,7 +330,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
       override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      const content::FileChooserParams& params) override;
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
 

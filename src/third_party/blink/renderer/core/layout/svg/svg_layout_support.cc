@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -261,7 +262,8 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
   }
 
   local_visual_rect = stroke_bounding_box;
-  AdjustVisualRectWithResources(*container, local_visual_rect);
+  AdjustVisualRectWithResources(*container, object_bounding_box,
+                                local_visual_rect);
 }
 
 const LayoutSVGRoot* SVGLayoutSupport::FindTreeRootObject(
@@ -385,6 +387,7 @@ bool SVGLayoutSupport::IsOverflowHidden(const ComputedStyle& style) {
 
 void SVGLayoutSupport::AdjustVisualRectWithResources(
     const LayoutObject& layout_object,
+    const FloatRect& object_bounding_box,
     FloatRect& visual_rect) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
@@ -392,15 +395,13 @@ void SVGLayoutSupport::AdjustVisualRectWithResources(
     return;
 
   if (LayoutSVGResourceFilter* filter = resources->Filter())
-    visual_rect = filter->ResourceBoundingBox(&layout_object);
+    visual_rect = filter->ResourceBoundingBox(object_bounding_box);
 
-  if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
-    visual_rect.Intersect(
-        clipper->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
-  }
+  if (LayoutSVGResourceClipper* clipper = resources->Clipper())
+    visual_rect.Intersect(clipper->ResourceBoundingBox(object_bounding_box));
 
   if (LayoutSVGResourceMasker* masker = resources->Masker())
-    visual_rect.Intersect(masker->ResourceBoundingBox(&layout_object));
+    visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box));
 }
 
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
@@ -428,15 +429,34 @@ bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
                                                   point);
 }
 
-bool SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
     const LayoutObject& object,
     const AffineTransform& local_transform,
-    const FloatPoint& point_in_parent,
-    FloatPoint& local_point) {
+    const HitTestLocation& location_in_parent,
+    base::Optional<HitTestLocation>& local_storage) {
+  // Use a fast path for an identity transform which creates no new
+  // HitTestLocation objects or inverse AffineTransforms, and performs no
+  // matrix multiplies.
+  if (local_transform.IsIdentity()) {
+    if (PointInClippingArea(object, location_in_parent.TransformedPoint()))
+      return &location_in_parent;
+    return nullptr;
+  }
   if (!local_transform.IsInvertible())
-    return false;
-  local_point = local_transform.Inverse().MapPoint(point_in_parent);
-  return PointInClippingArea(object, local_point);
+    return nullptr;
+  const AffineTransform inverse = local_transform.Inverse();
+  if (location_in_parent.IsRectBasedTest()) {
+    local_storage.emplace(
+        HitTestLocation(inverse.MapPoint(location_in_parent.TransformedPoint()),
+                        inverse.MapQuad(location_in_parent.TransformedRect())));
+  } else {
+    local_storage.emplace(HitTestLocation(
+        inverse.MapPoint(location_in_parent.TransformedPoint())));
+  }
+
+  if (PointInClippingArea(object, local_storage->TransformedPoint()))
+    return &*local_storage;
+  return nullptr;
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(
@@ -490,7 +510,7 @@ bool SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(
     const ComputedStyle& style) {
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  return style.HasIsolation() || style.Opacity() < 1 || style.HasBlendMode() ||
+  return style.HasIsolation() || style.HasOpacity() || style.HasBlendMode() ||
          style.HasFilter() || svg_style.HasMasker() || style.ClipPath();
 }
 

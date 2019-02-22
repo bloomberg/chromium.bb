@@ -10,11 +10,13 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/task/post_task.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/render_process_host.h"
@@ -134,8 +136,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
   java_peer_.Reset(Java_ChildProcessLauncherHelperImpl_createAndStart(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos));
   AddRef();  // Balanced by OnChildProcessStarted.
-  BrowserThread::PostTask(
-      client_thread_id_, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {client_thread_id_},
       base::Bind(
           &ChildProcessLauncherHelper::set_java_peer_available_on_client_thread,
           this));

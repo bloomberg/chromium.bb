@@ -53,10 +53,11 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                                    const base::ListValue& entries) = 0;
 
     // Called when the properties for a managed state have changed.
+    // |properties| is expected to be of type DICTIONARY.
     virtual void UpdateManagedStateProperties(
         ManagedState::ManagedType type,
         const std::string& path,
-        const base::DictionaryValue& properties) = 0;
+        const base::Value& properties) = 0;
 
     // Called when the list of profiles changes.
     virtual void ProfileListChanged() = 0;
@@ -74,11 +75,10 @@ class CHROMEOS_EXPORT ShillPropertyHandler
         const base::Value& value) = 0;
 
     // Called when a watched network or device IPConfig property changes.
-    virtual void UpdateIPConfigProperties(
-        ManagedState::ManagedType type,
-        const std::string& path,
-        const std::string& ip_config_path,
-        const base::DictionaryValue& properties) = 0;
+    virtual void UpdateIPConfigProperties(ManagedState::ManagedType type,
+                                          const std::string& path,
+                                          const std::string& ip_config_path,
+                                          const base::Value& properties) = 0;
 
     // Called when the list of devices with portal check enabled changes.
     virtual void CheckPortalListChanged(

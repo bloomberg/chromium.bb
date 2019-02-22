@@ -38,10 +38,6 @@ bool DisableUpdateService() {
   return true;
 }
 
-bool ForceUIRefreshPhase1() {
-  return true;
-}
-
 void SetUpTestsIfPresent() {
   // No-op for Earl Grey.
 }

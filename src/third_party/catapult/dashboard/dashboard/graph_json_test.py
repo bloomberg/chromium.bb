@@ -53,12 +53,15 @@ class GraphJsonTest(testing_common.TestCase):
       bot.put()
       bots.append(bot)
       test = graph_data.TestMetadata(id='ChromiumGPU/%s/dromaeo' % name)
+      test.UpdateSheriff()
       test.put()
       for sub_name in ['dom', 'jslib']:
         sub_test = graph_data.TestMetadata(
             id='%s/%s' % (test.key.id(), sub_name),
             improvement_direction=anomaly.UP,
-            has_rows=True).put()
+            has_rows=True)
+        sub_test.UpdateSheriff()
+        sub_test.put()
         test_container_key = utils.GetTestContainerKey(sub_test)
         for i in range(start_rev, end_rev, step):
           # Add Rows for one bot with revision numbers that aren't lined up
@@ -85,6 +88,7 @@ class GraphJsonTest(testing_common.TestCase):
     bot = graph_data.Bot(id='bot', parent=master.key)
     bot.put()
     test = graph_data.TestMetadata(id='master/bot/suite')
+    test.UpdateSheriff()
     test.put()
 
     rows = []
@@ -94,6 +98,7 @@ class GraphJsonTest(testing_common.TestCase):
       test = graph_data.TestMetadata(id=path,
                                      improvement_direction=anomaly.UP,
                                      has_rows=True)
+      test.UpdateSheriff()
       test.put()
       test_container_key = utils.GetTestContainerKey(test.key)
       for i in range(start_rev, end_rev, step):
@@ -546,6 +551,7 @@ class GraphJsonTest(testing_common.TestCase):
     test.description = 'About this test'
     test.units = 'ms'
     test.buildername = 'Windows 7 (1)'
+    test.UpdateSheriff()
     test.put()
 
     flot_json_str = graph_json.GetGraphJson(
@@ -663,7 +669,10 @@ class GraphJsonTest(testing_common.TestCase):
     for name in ['sub_test_a', 'sub_test_b']:
       sub_test = graph_data.TestMetadata(id='%s/%s' % (test_key.id(), name),
                                          improvement_direction=anomaly.UP,
-                                         has_rows=True).put()
+                                         has_rows=True)
+      sub_test.UpdateSheriff()
+      sub_test.put()
+
       sub_test_container_key = utils.GetTestContainerKey(sub_test)
       for i in range(start_rev, end_rev, 3):
         # Add Rows for one bot with revision numbers that aren't lined up
@@ -836,6 +845,27 @@ class GraphJsonHelperFunctionTest(testing_common.TestCase):
     point_info = graph_json._PointInfoDict(row, {})
     self.assertEqual(row.a_stdio_uri, point_info['a_stdio_uri'])
     self.assertIsNone(point_info.get('a_buildbot_status_page'))
+
+  def testPointInfoDict_BuildUri_NoBuildbotUri(self):
+    testing_common.AddTests(['Master'], ['b'], {'my_suite': {}})
+    test = utils.TestKey('Master/b/my_suite').get()
+    test.buildername = 'MyBuilder'
+    test_container_key = utils.GetTestContainerKey(test)
+    row = graph_data.Row(id=345, buildnumber=456, parent=test_container_key)
+    # Test buildbot format
+    row.a_stdio_uri = ('[Buildbot stdio]('
+                       'http://build.chromium.org/p/my.master.id/'
+                       'builders/MyBuilder%20%281%29/builds/456/steps/'
+                       'my_suite/logs/stdio)')
+    row.a_build_uri = ('[Build]('
+                       'http://foo/bar)')
+    point_info = graph_json._PointInfoDict(row, {})
+    self.assertEqual(
+        '[Buildbot stdio](https://luci-logdog.appspot.com/v/?s='
+        'chrome%2Fbb%2Fmy.master.id%2FMyBuilder__1_%2F456%2F%2B%2F'
+        'recipes%2Fsteps%2Fmy_suite%2F0%2Fstdout)', point_info['a_stdio_uri'])
+    self.assertIsNone(point_info.get('a_buildbot_status_page'))
+    self.assertEqual(row.a_build_uri, point_info['a_build_uri'])
 
   def testPointInfoDict_RowHasNoTracingUri_ResultHasNoTracingUri(self):
     testing_common.AddTests(['Master'], ['b'], {'my_suite': {}})

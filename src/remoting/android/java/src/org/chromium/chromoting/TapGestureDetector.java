@@ -60,13 +60,13 @@ public class TapGestureDetector {
     private final int mTouchSlopSquare;
 
     /** The maximum number of fingers seen in the gesture. */
-    private int mPointerCount = 0;
+    private int mPointerCount;
 
     /** The coordinates of the first finger down seen in the gesture. */
     private PointF mInitialPoint;
 
     /** Set to true whenever motion is detected in the gesture, or a long-touch is triggered. */
-    private boolean mTapCancelled = false;
+    private boolean mTapCancelled;
 
     // This static inner class holds a WeakReference to the outer object, to avoid triggering the
     // lint HandlerLeak warning.

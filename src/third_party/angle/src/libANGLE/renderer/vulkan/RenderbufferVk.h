@@ -17,7 +17,7 @@
 namespace rx
 {
 
-class RenderbufferVk : public RenderbufferImpl, public vk::CommandGraphResource
+class RenderbufferVk : public RenderbufferImpl
 {
   public:
     RenderbufferVk(const gl::RenderbufferState &state);
@@ -36,13 +36,13 @@ class RenderbufferVk : public RenderbufferImpl, public vk::CommandGraphResource
                                     size_t height) override;
     gl::Error setStorageEGLImageTarget(const gl::Context *context, egl::Image *image) override;
 
-    gl::Error getAttachmentRenderTarget(const gl::Context *context,
-                                        GLenum binding,
-                                        const gl::ImageIndex &imageIndex,
-                                        FramebufferAttachmentRenderTarget **rtOut) override;
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
   private:
     vk::ImageHelper mImage;

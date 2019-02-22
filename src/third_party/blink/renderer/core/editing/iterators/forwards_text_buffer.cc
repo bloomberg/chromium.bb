@@ -10,7 +10,7 @@ const UChar* ForwardsTextBuffer::Data() const {
   return BufferBegin();
 }
 
-UChar* ForwardsTextBuffer::CalcDestination(size_t length) {
+UChar* ForwardsTextBuffer::CalcDestination(wtf_size_t length) {
   DCHECK_LE(Size() + length, Capacity());
   return BufferBegin() + Size();
 }

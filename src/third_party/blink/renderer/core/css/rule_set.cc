@@ -69,7 +69,6 @@ RuleData::RuleData(StyleRule* rule,
                    AddRuleFlags add_rule_flags)
     : rule_(rule),
       selector_index_(selector_index),
-      is_last_in_array_(false),
       position_(position),
       specificity_(Selector().Specificity()),
       link_match_type_(Selector().ComputeLinkMatchType(CSSSelector::kMatchAll)),
@@ -85,11 +84,11 @@ RuleData::RuleData(StyleRule* rule,
 
 void RuleSet::AddToRuleSet(const AtomicString& key,
                            PendingRuleMap& map,
-                           const RuleData& rule_data) {
-  Member<HeapLinkedStack<RuleData>>& rules =
+                           const RuleData* rule_data) {
+  Member<HeapLinkedStack<Member<const RuleData>>>& rules =
       map.insert(key, nullptr).stored_value->value;
   if (!rules)
-    rules = new HeapLinkedStack<RuleData>;
+    rules = new HeapLinkedStack<Member<const RuleData>>;
   rules->Push(rule_data);
 }
 
@@ -142,7 +141,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
 }
 
 bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
-                                    RuleData& rule_data) {
+                                    RuleData* rule_data) {
   AtomicString id;
   AtomicString class_name;
   AtomicString custom_pseudo_element_name;
@@ -234,12 +233,13 @@ void RuleSet::AddRule(StyleRule* rule,
   // See https://crbug.com/804179
   if (selector_index >= 8192)
     return;
-  RuleData rule_data(rule, selector_index, rule_count_++, add_rule_flags);
+  RuleData* rule_data =
+      new RuleData(rule, selector_index, rule_count_++, add_rule_flags);
   if (features_.CollectFeaturesFromRuleData(rule_data) ==
       RuleFeatureSet::kSelectorNeverMatches)
     return;
 
-  if (!FindBestRuleSetAndAdd(rule_data.Selector(), rule_data)) {
+  if (!FindBestRuleSetAndAdd(rule_data->Selector(), rule_data)) {
     // If we didn't find a specialized map to stick it in, file under universal
     // rules.
     universal_rules_.push_back(rule_data);
@@ -273,7 +273,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       const CSSSelectorList& selector_list = style_rule->SelectorList();
       for (const CSSSelector* selector = selector_list.First(); selector;
            selector = selector_list.Next(*selector)) {
-        size_t selector_index = selector_list.SelectorIndex(*selector);
+        wtf_size_t selector_index = selector_list.SelectorIndex(*selector);
         if (selector->HasDeepCombinatorOrShadowPseudo()) {
           deep_combinator_or_shadow_pseudo_rules_.push_back(
               MinimalRuleData(style_rule, selector_index, add_rule_flags));
@@ -331,7 +331,7 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
 }
 
 void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
-  for (size_t selector_index =
+  for (wtf_size_t selector_index =
            rule->SelectorList().SelectorIndex(*rule->SelectorList().First());
        selector_index != kNotFound;
        selector_index =
@@ -342,19 +342,20 @@ void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
 void RuleSet::CompactPendingRules(PendingRuleMap& pending_map,
                                   CompactRuleMap& compact_map) {
   for (auto& item : pending_map) {
-    HeapLinkedStack<RuleData>* pending_rules = item.value.Release();
-    CompactRuleMap::ValueType* compact_rules =
-        compact_map.insert(item.key, nullptr).stored_value;
-
-    HeapTerminatedArrayBuilder<RuleData> builder(
-        compact_rules->value.Release());
-    builder.Grow(pending_rules->size());
+    HeapLinkedStack<Member<const RuleData>>* pending_rules =
+        item.value.Release();
+    Member<HeapVector<Member<const RuleData>>>& rules =
+        compact_map.insert(item.key, nullptr).stored_value->value;
+    if (!rules) {
+      rules = new HeapVector<Member<const RuleData>>();
+      rules->ReserveInitialCapacity(pending_rules->size());
+    } else {
+      rules->ReserveCapacity(pending_rules->size());
+    }
     while (!pending_rules->IsEmpty()) {
-      builder.Append(pending_rules->Peek());
+      rules->push_back(pending_rules->Peek());
       pending_rules->Pop();
     }
-
-    compact_rules->value = builder.Release();
   }
 }
 
@@ -421,7 +422,7 @@ void RuleSet::Trace(blink::Visitor* visitor) {
 #ifndef NDEBUG
 void RuleSet::Show() const {
   for (const auto& rule : all_rules_)
-    rule.Selector().Show();
+    rule->Selector().Show();
 }
 #endif
 

@@ -78,7 +78,18 @@ class DrawCallParams final : angle::NonCopyable
 {
   public:
     // Called by DrawArrays.
-    DrawCallParams(PrimitiveMode mode, GLint firstVertex, GLsizei vertexCount, GLsizei instances);
+    DrawCallParams(PrimitiveMode mode, GLint firstVertex, GLsizei vertexCount, GLsizei instances)
+        : mMode(mode),
+          mFirstVertex(firstVertex),
+          mVertexCount(vertexCount),
+          mIndexCount(0),
+          mBaseVertex(0),
+          mType(GL_NONE),
+          mIndices(nullptr),
+          mInstances(instances),
+          mIndirect(nullptr)
+    {
+    }
 
     // Called by DrawElements.
     DrawCallParams(PrimitiveMode mode,
@@ -86,7 +97,18 @@ class DrawCallParams final : angle::NonCopyable
                    GLenum type,
                    const void *indices,
                    GLint baseVertex,
-                   GLsizei instances);
+                   GLsizei instances)
+        : mMode(mode),
+          mFirstVertex(0),
+          mVertexCount(0),
+          mIndexCount(indexCount),
+          mBaseVertex(baseVertex),
+          mType(type),
+          mIndices(indices),
+          mInstances(instances),
+          mIndirect(nullptr)
+    {
+    }
 
     // Called by DrawArraysIndirect.
     DrawCallParams(PrimitiveMode mode, const void *indirect);
@@ -97,7 +119,15 @@ class DrawCallParams final : angle::NonCopyable
     PrimitiveMode mode() const { return mMode; }
 
     // This value is the sum of 'baseVertex' and the first indexed vertex for DrawElements calls.
-    GLint firstVertex() const;
+    GLint firstVertex() const
+    {
+        // In some cases we can know the first vertex will be fixed at zero, if we're on the "fast
+        // path". In these cases the index range is not resolved. If the first vertex is not zero,
+        // however, then it must be because the index range is resolved. This only applies to the
+        // D3D11 back-end currently.
+        ASSERT(mFirstVertex == 0 || (!isDrawElements() || mIndexRange.valid()));
+        return mFirstVertex;
+    }
 
     size_t vertexCount() const
     {

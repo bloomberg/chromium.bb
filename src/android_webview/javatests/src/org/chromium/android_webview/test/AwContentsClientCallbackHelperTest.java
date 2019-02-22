@@ -21,12 +21,13 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientCallbackHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
+import org.chromium.android_webview.test.TestAwContentsClient.OnLoadResourceHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.PictureListenerHelper;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 import java.util.concurrent.Callable;
 
@@ -38,46 +39,6 @@ import java.util.concurrent.Callable;
 public class AwContentsClientCallbackHelperTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
-    /**
-     * Callback helper for OnLoadedResource.
-     */
-    public static class OnLoadResourceHelper extends CallbackHelper {
-        private String mLastLoadedResource;
-
-        public String getLastLoadedResource() {
-            assert getCallCount() > 0;
-            return mLastLoadedResource;
-        }
-
-        public void notifyCalled(String url) {
-            mLastLoadedResource = url;
-            notifyCalled();
-        }
-    }
-
-    /**
-     * TestAwContentsClient extended with OnLoadResourceHelper.
-     */
-    public static class TestAwContentsClient
-            extends org.chromium.android_webview.test.TestAwContentsClient {
-
-        private final OnLoadResourceHelper mOnLoadResourceHelper;
-
-        public TestAwContentsClient() {
-            super();
-            mOnLoadResourceHelper = new OnLoadResourceHelper();
-        }
-
-        public OnLoadResourceHelper getOnLoadResourceHelper() {
-            return mOnLoadResourceHelper;
-        }
-
-        @Override
-        public void onLoadResource(String url) {
-            mOnLoadResourceHelper.notifyCalled(url);
-        }
-    }
 
     private static class TestCancelCallbackPoller
             implements AwContentsClientCallbackHelper.CancelCallbackPoller {

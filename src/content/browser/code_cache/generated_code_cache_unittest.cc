@@ -25,8 +25,6 @@ class GeneratedCodeCacheTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(cache_dir_.CreateUniqueTempDir());
     cache_path_ = cache_dir_.GetPath();
-    generated_code_cache_ =
-        std::make_unique<GeneratedCodeCache>(cache_path_, kMaxSizeInBytes);
   }
 
   void TearDown() override {
@@ -36,7 +34,11 @@ class GeneratedCodeCacheTest : public testing::Test {
 
   // This function initializes the cache and waits till the transaction is
   // finished. When this function returns, the backend is already initialized.
-  void InitializeCache() {
+  void InitializeCache(GeneratedCodeCache::CodeCacheType cache_type) {
+    // Create code cache
+    generated_code_cache_ = std::make_unique<GeneratedCodeCache>(
+        cache_path_, kMaxSizeInBytes, cache_type);
+
     GURL url(kInitialUrl);
     url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
     WriteToCache(url, origin, kInitialData, base::Time::Now());
@@ -46,10 +48,10 @@ class GeneratedCodeCacheTest : public testing::Test {
   // This function initializes the cache and reopens it. When this function
   // returns, the backend initialization is not complete yet. This is used
   // to test the pending operaions path.
-  void InitializeCacheAndReOpen() {
-    InitializeCache();
+  void InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType cache_type) {
+    InitializeCache(cache_type);
     generated_code_cache_.reset(
-        new GeneratedCodeCache(cache_path_, kMaxSizeInBytes));
+        new GeneratedCodeCache(cache_path_, kMaxSizeInBytes, cache_type));
   }
 
   void WriteToCache(const GURL& url,
@@ -113,6 +115,7 @@ TEST_F(GeneratedCodeCacheTest, CheckResponseTime) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(url, origin, data, response_time);
@@ -129,7 +132,7 @@ TEST_F(GeneratedCodeCacheTest, FetchEntry) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   FetchFromCache(url, origin);
   scoped_task_environment_.RunUntilIdle();
 
@@ -141,7 +144,7 @@ TEST_F(GeneratedCodeCacheTest, WriteEntry) {
   GURL new_url("http://example1.com/script.js");
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(new_url, origin, data, response_time);
@@ -158,7 +161,7 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntry) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   DeleteFromCache(url, origin);
   FetchFromCache(url, origin);
   scoped_task_environment_.RunUntilIdle();
@@ -167,11 +170,27 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntry) {
   ASSERT_TRUE(received_null_);
 }
 
+TEST_F(GeneratedCodeCacheTest, WriteEntryWithEmptyData) {
+  GURL url(kInitialUrl);
+  url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
+
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
+  base::Time response_time = base::Time::Now();
+  WriteToCache(url, origin, std::string(), response_time);
+  scoped_task_environment_.RunUntilIdle();
+  FetchFromCache(url, origin);
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_TRUE(received_);
+  ASSERT_TRUE(received_null_);
+  EXPECT_EQ(response_time, received_response_time_);
+}
+
 TEST_F(GeneratedCodeCacheTest, FetchEntryPendingOp) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCacheAndReOpen();
+  InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
   FetchFromCache(url, origin);
   scoped_task_environment_.RunUntilIdle();
 
@@ -183,7 +202,7 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryPendingOp) {
   GURL new_url("http://example1.com/script1.js");
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForScript";
   base::Time response_time = base::Time::Now();
   WriteToCache(new_url, origin, data, response_time);
@@ -200,7 +219,7 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntryPendingOp) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCacheAndReOpen();
+  InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
   DeleteFromCache(url, origin);
   FetchFromCache(url, origin);
   scoped_task_environment_.RunUntilIdle();
@@ -213,7 +232,7 @@ TEST_F(GeneratedCodeCacheTest, UpdateDataOfExistingEntry) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string new_data = "SerializedCodeForScriptOverwrite";
   base::Time response_time = base::Time::Now();
   WriteToCache(url, origin, new_data, response_time);
@@ -227,7 +246,7 @@ TEST_F(GeneratedCodeCacheTest, UpdateDataOfExistingEntry) {
 }
 
 TEST_F(GeneratedCodeCacheTest, FetchFailsForNonexistingOrigin) {
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   url::Origin new_origin = url::Origin::Create(GURL("http://not-example.com"));
   FetchFromCache(GURL(kInitialUrl), new_origin);
   scoped_task_environment_.RunUntilIdle();
@@ -241,6 +260,7 @@ TEST_F(GeneratedCodeCacheTest, FetchEntriesFromSameOrigin) {
   GURL second_url("http://script.com/one.js");
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data_first_resource = "SerializedCodeForFirstResource";
   WriteToCache(url, origin, data_first_resource, base::Time());
 
@@ -264,6 +284,7 @@ TEST_F(GeneratedCodeCacheTest, FetchSucceedsFromDifferentOrigins) {
   url::Origin origin = url::Origin::Create(GURL("http://example.com"));
   url::Origin origin1 = url::Origin::Create(GURL("http://example1.com"));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data_origin = "SerializedCodeForFirstOrigin";
   WriteToCache(url, origin, data_origin, base::Time());
 
@@ -287,6 +308,7 @@ TEST_F(GeneratedCodeCacheTest, FetchFailsForUniqueOrigin) {
   url::Origin origin =
       url::Origin::Create(GURL("data:text/html,<script></script>"));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForUniqueOrigin";
   WriteToCache(url, origin, data, base::Time());
   scoped_task_environment_.RunUntilIdle();
@@ -301,6 +323,7 @@ TEST_F(GeneratedCodeCacheTest, FetchFailsForInvalidOrigin) {
   GURL url("http://example.com/script.js");
   url::Origin origin = url::Origin::Create(GURL("invalidURL"));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForInvalidOrigin";
   WriteToCache(url, origin, data, base::Time());
   scoped_task_environment_.RunUntilIdle();
@@ -316,6 +339,7 @@ TEST_F(GeneratedCodeCacheTest, FetchFailsForInvalidURL) {
   GURL url("InvalidURL");
   url::Origin origin = url::Origin::Create(GURL("http://example.com"));
 
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   std::string data = "SerializedCodeForInvalidURL";
   WriteToCache(url, origin, data, base::Time());
   scoped_task_environment_.RunUntilIdle();
@@ -330,7 +354,7 @@ TEST_F(GeneratedCodeCacheTest, ClearCache) {
   GURL url("http://example.com/script.js");
   url::Origin origin = url::Origin::Create(GURL("http://example.com"));
 
-  InitializeCache();
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
   ClearCache();
   scoped_task_environment_.RunUntilIdle();
   FetchFromCache(url, origin);
@@ -338,5 +362,17 @@ TEST_F(GeneratedCodeCacheTest, ClearCache) {
 
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
+}
+
+TEST_F(GeneratedCodeCacheTest, WasmCache) {
+  GURL url(kInitialUrl);
+  url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
+
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kWebAssembly);
+  FetchFromCache(url, origin);
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_TRUE(received_);
+  EXPECT_EQ(kInitialData, received_data_);
 }
 }  // namespace content

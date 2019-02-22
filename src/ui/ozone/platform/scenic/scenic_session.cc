@@ -103,6 +103,21 @@ ScenicSession::ResourceId ScenicSession::CreateImage(
   return image_id;
 }
 
+ScenicSession::ResourceId ScenicSession::CreateImagePipe(
+    fidl::InterfaceRequest<fuchsia::images::ImagePipe> request) {
+  fuchsia::ui::gfx::ImagePipeArgs image_pipe;
+  image_pipe.image_pipe_request = std::move(request);
+
+  fuchsia::ui::gfx::ResourceArgs resource;
+  resource.set_image_pipe(std::move(image_pipe));
+
+  ResourceId image_pipe_id = AllocateResourceId();
+  EnqueueGfxCommand(
+      NewCreateResourceCommand(image_pipe_id, std::move(resource)));
+
+  return image_pipe_id;
+}
+
 ScenicSession::ResourceId ScenicSession::ImportResource(
     fuchsia::ui::gfx::ImportSpec spec,
     zx::eventpair import_token) {
@@ -261,12 +276,12 @@ void ScenicSession::Close() {
   session_listener_binding_.Unbind();
 }
 
-void ScenicSession::OnError(fidl::StringPtr error) {
+void ScenicSession::OnScenicError(fidl::StringPtr error) {
   Close();
   listener_->OnScenicError(error);
 }
 
-void ScenicSession::OnEvent(
+void ScenicSession::OnScenicEvent(
     fidl::VectorPtr<fuchsia::ui::scenic::Event> events) {
   listener_->OnScenicEvents(events.get());
 }

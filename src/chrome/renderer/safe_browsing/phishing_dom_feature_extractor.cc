@@ -195,7 +195,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
             base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
           DLOG(ERROR) << "Feature extraction took too long, giving up";
           // We expect this to happen infrequently, so record when it does.
-          UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureTimeout", 1);
+          UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.DOMFeatureTimeout", 1);
           RunCallback(false);
           return;
         }
@@ -355,8 +355,8 @@ void PhishingDOMFeatureExtractor::RunCallback(bool success) {
   // Record some timing stats that we can use to evaluate feature extraction
   // performance.  These include both successful and failed extractions.
   DCHECK(page_feature_state_.get());
-  UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureIterations",
-                       page_feature_state_->num_iterations);
+  UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.DOMFeatureIterations",
+                          page_feature_state_->num_iterations);
   UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureTotalTime",
                       clock_->Now() - page_feature_state_->start_time);
 
@@ -399,7 +399,7 @@ blink::WebDocument PhishingDOMFeatureExtractor::GetNextDocument() {
   } else {
     // Keep track of how often frame traversal got "stuck" due to the
     // current subdocument getting removed from the frame tree.
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureFrameRemoved", 1);
+    UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.DOMFeatureFrameRemoved", 1);
   }
   return blink::WebDocument();
 }

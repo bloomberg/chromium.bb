@@ -9,7 +9,7 @@ android_resources("chrome_tabs_client_example_apk_resources") {
   android_manifest = "src/Application/src/main/AndroidManifest.xml"
   custom_package = "org.chromium.customtabsclient"
   deps = [
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -32,9 +32,9 @@ android_apk("custom_tabs_client_example_apk") {
     ":chrome_tabs_client_example_apk_resources",
     ":custom_tabs_client_shared_java",
     ":custom_tabs_support_java",
-    "//third_party/android_tools:android_arch_lifecycle_common_java",
-    "//third_party/android_tools:android_support_annotations_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_arch_lifecycle_common_java",
+    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
   chromium_code = false
 }
@@ -79,9 +79,9 @@ android_library("custom_tabs_support_java") {
   ]
   deps = [
     ":custom_tabs_support_resources",
-    "//third_party/android_tools:android_support_annotations_java",
-    "//third_party/android_tools:android_support_compat_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:android_support_compat_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
   srcjar_deps = [ ":chrome_custom_tabs_service_aidl" ]
   android_manifest_for_lint = "src/customtabs/AndroidManifest.xml"

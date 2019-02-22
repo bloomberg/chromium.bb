@@ -95,9 +95,6 @@ void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
   RemoveTab(index);
 }
 
-void FakeBaseTabStripController::ToggleTabAudioMute(int index) {
-}
-
 void FakeBaseTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
@@ -127,10 +124,6 @@ void FakeBaseTabStripController::CreateNewTab() {
 
 void FakeBaseTabStripController::CreateNewTabWithLocation(
     const base::string16& location) {
-}
-
-bool FakeBaseTabStripController::IsIncognito() {
-  return false;
 }
 
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
@@ -168,8 +161,8 @@ SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
   return gfx::kPlaceholderColor;
 }
 
-SkColor FakeBaseTabStripController::GetTabBackgroundColor(TabState state,
-                                                          bool opaque) const {
+SkColor FakeBaseTabStripController::GetTabBackgroundColor(
+    TabState state) const {
   return gfx::kPlaceholderColor;
 }
 

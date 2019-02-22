@@ -37,11 +37,15 @@ const char kImageData[] = "pie image";
 const char kImageData2[] = "cake image";
 
 const char kUmaImageLoadSuccessHistogramName[] =
-    "NewTabPage.Feed.ImageFetchResult";
+    "ContentSuggestions.Feed.Image.FetchResult";
 const char kUmaCacheLoadHistogramName[] =
-    "NewTabPage.Feed.ImageLoadFromCacheTime";
+    "ContentSuggestions.Feed.Image.LoadFromCacheTime";
 const char kUmaNetworkLoadHistogramName[] =
-    "NewTabPage.Feed.ImageLoadFromNetworkTime";
+    "ContentSuggestions.Feed.Image.LoadFromNetworkTime";
+
+// Keep in sync with DIMENSION_UNKNOWN in third_party/feed/src/main/java/com/
+//  google/android/libraries/feed/host/imageloader/ImageLoaderApi.java.
+const int DIMENSION_UNKNOWN = -1;
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
@@ -49,6 +53,7 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
       const std::string& image_data,
       const gfx::Size& desired_image_frame_size,
       const image_fetcher::ImageDecodedCallback& callback) override {
+    desired_image_frame_size_ = desired_image_frame_size;
     gfx::Image image;
     if (valid_ && !image_data.empty()) {
       ASSERT_EQ(image_data_, image_data);
@@ -59,10 +64,12 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
   }
   void SetDecodingValid(bool valid) { valid_ = valid; }
   void SetExpectedData(std::string data) { image_data_ = data; }
+  gfx::Size GetDesiredImageFrameSize() { return desired_image_frame_size_; }
 
  private:
   bool valid_ = true;
   std::string image_data_;
+  gfx::Size desired_image_frame_size_;
 };
 
 }  // namespace
@@ -146,9 +153,11 @@ TEST_F(FeedImageManagerTest, FetchEmptyUrlVector) {
   base::MockCallback<ImageFetchedCallback> image_callback;
 
   // Make sure an empty image passed to callback.
-  EXPECT_CALL(image_callback,
-              Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true))));
+  EXPECT_CALL(
+      image_callback,
+      Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true)), -1));
   feed_image_manager()->FetchImage(std::vector<std::string>(),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();
@@ -160,12 +169,16 @@ TEST_F(FeedImageManagerTest, FetchImageFromCache) {
   RunUntilIdle();
 
   base::MockCallback<ImageFetchedCallback> image_callback;
-  EXPECT_CALL(image_callback,
-              Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false))));
-  feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
-                                   image_callback.Get());
+  EXPECT_CALL(
+      image_callback,
+      Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
+  feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}), 100,
+                                   200, image_callback.Get());
 
   RunUntilIdle();
+
+  ASSERT_EQ(fake_image_decoder()->GetDesiredImageFrameSize().width(), 100);
+  ASSERT_EQ(fake_image_decoder()->GetDesiredImageFrameSize().height(), 200);
 }
 
 TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
@@ -173,9 +186,11 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   {
     test_url_loader_factory()->AddResponse(kImageURL, kImageData);
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                     DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                      image_callback.Get());
 
     RunUntilIdle();
@@ -192,9 +207,11 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   {
     test_url_loader_factory()->ClearResponses();
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                     DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                      image_callback.Get());
 
     RunUntilIdle();
@@ -208,12 +225,13 @@ TEST_F(FeedImageManagerTest, FetchSecondImageIfFirstFailed) {
                                            net::HTTP_NOT_FOUND);
     test_url_loader_factory()->AddResponse(kImageURL2, kImageData2);
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 1));
     fake_image_decoder()->SetExpectedData(kImageData2);
     feed_image_manager()->FetchImage(
-        std::vector<std::string>({kImageURL, kImageURL2}),
-        image_callback.Get());
+        std::vector<std::string>({kImageURL, kImageURL2}), DIMENSION_UNKNOWN,
+        DIMENSION_UNKNOWN, image_callback.Get());
 
     RunUntilIdle();
   }
@@ -237,9 +255,11 @@ TEST_F(FeedImageManagerTest, DecodingErrorWillDeleteCache) {
     fake_image_decoder()->SetDecodingValid(false);
     base::MockCallback<ImageFetchedCallback> image_callback;
 
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(true))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true)), -1));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                     DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                      image_callback.Get());
 
     RunUntilIdle();
@@ -275,6 +295,7 @@ TEST_F(FeedImageManagerTest, GarbageCollectionRunOnStart) {
 TEST_F(FeedImageManagerTest, InvalidUrlHistogramFailure) {
   base::MockCallback<ImageFetchedCallback> image_callback;
   feed_image_manager()->FetchImage(std::vector<std::string>({""}),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();
@@ -293,6 +314,7 @@ TEST_F(FeedImageManagerTest, FetchImageFromCachHistogram) {
 
   base::MockCallback<ImageFetchedCallback> image_callback;
   feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();
@@ -308,6 +330,7 @@ TEST_F(FeedImageManagerTest, FetchImageFromNetworkHistogram) {
   test_url_loader_factory()->AddResponse(kImageURL, kImageData);
   base::MockCallback<ImageFetchedCallback> image_callback;
   feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();
@@ -323,6 +346,7 @@ TEST_F(FeedImageManagerTest, FetchImageFromNetworkEmptyHistogram) {
   test_url_loader_factory()->AddResponse(kImageURL, "");
   base::MockCallback<ImageFetchedCallback> image_callback;
   feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();
@@ -340,6 +364,7 @@ TEST_F(FeedImageManagerTest, NetworkDecodingErrorHistogram) {
 
   base::MockCallback<ImageFetchedCallback> image_callback;
   feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
+                                   DIMENSION_UNKNOWN, DIMENSION_UNKNOWN,
                                    image_callback.Get());
 
   RunUntilIdle();

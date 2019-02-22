@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
@@ -30,12 +31,18 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
+  typedef Vector<NGLogicalOffset, 16> OffsetVector;
+
   ~NGContainerFragmentBuilder() override;
 
   LayoutUnit InlineSize() const { return size_.inline_size; }
   LayoutUnit BlockSize() const { return size_.block_size; }
   const NGLogicalSize& Size() const { return size_; }
-  NGContainerFragmentBuilder& SetInlineSize(LayoutUnit);
+  NGContainerFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
+    DCHECK_GE(inline_size, LayoutUnit());
+    size_.inline_size = inline_size;
+    return *this;
+  }
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
@@ -58,18 +65,29 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
     return *this;
   }
 
-  NGContainerFragmentBuilder& SetEndMarginStrut(const NGMarginStrut&);
+  NGContainerFragmentBuilder& SetEndMarginStrut(
+      const NGMarginStrut& end_margin_strut) {
+    end_margin_strut_ = end_margin_strut;
+    return *this;
+  }
 
   NGContainerFragmentBuilder& SetExclusionSpace(
-      std::unique_ptr<const NGExclusionSpace> exclusion_space);
+      NGExclusionSpace&& exclusion_space) {
+    exclusion_space_ = std::move(exclusion_space);
+    return *this;
+  }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
     return unpositioned_list_marker_;
   }
   NGContainerFragmentBuilder& SetUnpositionedListMarker(
-      const NGUnpositionedListMarker&);
+      const NGUnpositionedListMarker& marker) {
+    DCHECK(!unpositioned_list_marker_ || !marker);
+    unpositioned_list_marker_ = marker;
+    return *this;
+  }
 
-  virtual NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
+  virtual NGContainerFragmentBuilder& AddChild(const NGLayoutResult&,
                                                const NGLogicalOffset&);
 
   // This version of AddChild will not propagate floats/out_of_flow.
@@ -120,7 +138,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       LayoutObject* inline_container);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
-      NGOutOfFlowPositionedDescendant);
+      NGOutOfFlowPositionedDescendant descendant);
 
   void GetAndClearOutOfFlowDescendantCandidates(
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
@@ -199,7 +217,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;
   NGMarginStrut end_margin_strut_;
-  std::unique_ptr<const NGExclusionSpace> exclusion_space_;
+  NGExclusionSpace exclusion_space_;
 
   Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
@@ -209,12 +227,17 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // Store NGLinks rather than NGPhysicalOffsets even though we don't have the
   // offsets yet to allow us to move the entire vector to the fragment at
   // construction time.
+  // Unlike OffsetVector, we don't want to keep the inline capacity around
+  // because this vector will be long-lived, and it would be wasteful to reserve
+  // space for 16 children in every fragment. Instead, we reserve some initial
+  // capacity for it when adding the first child  and shrink it down when
+  // creating the fragment.
   Vector<NGLink> children_;
 
   // Logical offsets for the children. Stored as logical offsets as we can't
   // convert to physical offsets until layout of all children has been
   // determined.
-  Vector<NGLogicalOffset> offsets_;
+  OffsetVector offsets_;
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 

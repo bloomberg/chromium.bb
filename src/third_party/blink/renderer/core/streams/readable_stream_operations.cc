@@ -35,7 +35,8 @@ base::Optional<bool> BooleanOperationWithRethrow(
   if (!V8ScriptRunner::CallExtra(script_state, operation, args)
            .ToLocal(&local_value) ||
       !local_value->BooleanValue(script_state->GetContext()).To(&result_bool)) {
-    DCHECK(block.HasCaught());
+    DCHECK(block.HasCaught() ||
+           script_state->GetIsolate()->IsExecutionTerminating());
     exception_state.RethrowV8Exception(block.Exception());
     return base::nullopt;
   }
@@ -62,7 +63,8 @@ bool BooleanOperationForDCheck(ScriptState* script_state,
     DCHECK(!block.HasCaught());
     return result_bool;
   }
-  DCHECK(block.HasCaught());
+  DCHECK(block.HasCaught() ||
+         script_state->GetIsolate()->IsExecutionTerminating());
   return fallback_value;
 }
 
@@ -120,7 +122,8 @@ ScriptValue ReadableStreamOperations::GetReader(
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
-  DCHECK(!result.IsEmpty());
+  DCHECK(!result.IsEmpty() ||
+         script_state->GetIsolate()->IsExecutionTerminating());
   return result;
 }
 
@@ -216,7 +219,8 @@ ScriptPromise ReadableStreamOperations::DefaultReaderRead(
   v8::MaybeLocal<v8::Value> maybe_result = V8ScriptRunner::CallExtra(
       script_state, "ReadableStreamDefaultReaderRead", args);
   if (maybe_result.IsEmpty()) {
-    DCHECK(block.HasCaught());
+    DCHECK(block.HasCaught() ||
+           script_state->GetIsolate()->IsExecutionTerminating());
     return ScriptPromise::Reject(script_state, block.Exception());
   }
   return ScriptPromise::Cast(script_state, maybe_result.ToLocalChecked());
@@ -236,7 +240,8 @@ void ReadableStreamOperations::Tee(ScriptState* script_state,
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::CallExtra(script_state, "ReadableStreamTee", args)
            .ToLocal(&result)) {
-    DCHECK(block.HasCaught());
+    DCHECK(block.HasCaught() ||
+           script_state->GetIsolate()->IsExecutionTerminating());
     exception_state.RethrowV8Exception(block.Exception());
     return;
   }

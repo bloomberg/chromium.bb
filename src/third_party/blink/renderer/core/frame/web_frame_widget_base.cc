@@ -67,6 +67,13 @@ WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
   return local_root_;
 }
 
+void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
+    layer_tree_view->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
+  }
+}
+
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const WebDragData& web_drag_data,
     const WebFloatPoint& point_in_viewport,
@@ -185,11 +192,6 @@ void WebFrameWidgetBase::DragSourceEndedAt(
 
 void WebFrameWidgetBase::DragSourceSystemDragEnded() {
   CancelDrag();
-}
-
-void WebFrameWidgetBase::CompositeWithRasterForTesting() {
-  if (auto* layer_tree_view = GetLayerTreeView())
-    layer_tree_view->CompositeWithRasterForTesting();
 }
 
 void WebFrameWidgetBase::CancelDrag() {
@@ -319,12 +321,12 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
       gesture_indicator =
-          Frame::NotifyUserActivation(GetPage()
-                                          ->GetPointerLockController()
-                                          .GetElement()
-                                          ->GetDocument()
-                                          .GetFrame(),
-                                      UserGestureToken::kNewGesture);
+          LocalFrame::NotifyUserActivation(GetPage()
+                                               ->GetPointerLockController()
+                                               .GetElement()
+                                               ->GetDocument()
+                                               .GetFrame(),
+                                           UserGestureToken::kNewGesture);
       pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:
@@ -341,7 +343,11 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
 
   if (GetPage()) {
     GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
-        transformed_event, event_type);
+        transformed_event,
+        TransformWebMouseEventVector(
+            local_root_->GetFrameView(),
+            coalesced_event.GetCoalescedEventsPointers()),
+        event_type);
   }
 }
 

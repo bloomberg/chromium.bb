@@ -18,17 +18,12 @@
 FullscreenWebStateListObserver::FullscreenWebStateListObserver(
     FullscreenController* controller,
     FullscreenModel* model,
-    WebStateList* web_state_list,
     FullscreenMediator* mediator)
     : controller_(controller),
       model_(model),
-      web_state_list_(web_state_list),
       web_state_observer_(controller, model, mediator) {
   DCHECK(controller_);
   DCHECK(model_);
-  DCHECK(web_state_list_);
-  web_state_list_->AddObserver(this);
-  web_state_observer_.SetWebState(web_state_list_->GetActiveWebState());
 }
 
 FullscreenWebStateListObserver::~FullscreenWebStateListObserver() {
@@ -36,10 +31,31 @@ FullscreenWebStateListObserver::~FullscreenWebStateListObserver() {
   DCHECK(!web_state_list_);
 }
 
+void FullscreenWebStateListObserver::SetWebStateList(
+    WebStateList* web_state_list) {
+  if (web_state_list_ == web_state_list)
+    return;
+  if (web_state_list_)
+    web_state_list_->RemoveObserver(this);
+  web_state_list_ = web_state_list;
+  if (web_state_list_) {
+    web_state_list_->AddObserver(this);
+    web_state_observer_.SetWebState(web_state_list_->GetActiveWebState());
+  } else {
+    web_state_observer_.SetWebState(nullptr);
+  }
+}
+
+const WebStateList* FullscreenWebStateListObserver::GetWebStateList() const {
+  return web_state_list_;
+}
+
+WebStateList* FullscreenWebStateListObserver::GetWebStateList() {
+  return web_state_list_;
+}
+
 void FullscreenWebStateListObserver::Disconnect() {
-  web_state_list_->RemoveObserver(this);
-  web_state_list_ = nullptr;
-  web_state_observer_.SetWebState(nullptr);
+  SetWebStateList(nullptr);
 }
 
 void FullscreenWebStateListObserver::WebStateInsertedAt(
@@ -48,8 +64,8 @@ void FullscreenWebStateListObserver::WebStateInsertedAt(
     int index,
     bool activating) {
   DCHECK_EQ(web_state_list_, web_state_list);
-  if (activating && controller_->IsEnabled())
-    controller_->ResetModel();
+  if (activating)
+    controller_->ExitFullscreen();
 }
 
 void FullscreenWebStateListObserver::WebStateReplacedAt(

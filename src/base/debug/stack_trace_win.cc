@@ -199,7 +199,8 @@ class SymbolContext {
   // extensible like PathService since that can in turn fire CHECKs.
   void OutputTraceToStream(const void* const* trace,
                            size_t count,
-                           std::ostream* os) {
+                           std::ostream* os,
+                           const char* prefix_string) {
     base::AutoLock lock(lock_);
 
     for (size_t i = 0; (i < count) && os->good(); ++i) {
@@ -231,6 +232,8 @@ class SymbolContext {
                                            &line_displacement, &line);
 
       // Output the backtrace line.
+      if (prefix_string)
+        (*os) << prefix_string;
       (*os) << "\t";
       if (has_symbol) {
         (*os) << symbol->Name << " [0x" << trace[i] << "+"
@@ -343,21 +346,24 @@ void StackTrace::InitTrace(const CONTEXT* context_record) {
     trace_[i] = NULL;
 }
 
-void StackTrace::Print() const {
-  OutputToStream(&std::cerr);
+void StackTrace::PrintWithPrefix(const char* prefix_string) const {
+  OutputToStreamWithPrefix(&std::cerr, prefix_string);
 }
 
-void StackTrace::OutputToStream(std::ostream* os) const {
+void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
+                                          const char* prefix_string) const {
   SymbolContext* context = SymbolContext::GetInstance();
   if (g_init_error != ERROR_SUCCESS) {
     (*os) << "Error initializing symbols (" << g_init_error
           << ").  Dumping unresolved backtrace:\n";
     for (size_t i = 0; (i < count_) && os->good(); ++i) {
+      if (prefix_string)
+        (*os) << prefix_string;
       (*os) << "\t" << trace_[i] << "\n";
     }
   } else {
     (*os) << "Backtrace:\n";
-    context->OutputTraceToStream(trace_, count_, os);
+    context->OutputTraceToStream(trace_, count_, os, prefix_string);
   }
 }
 

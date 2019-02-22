@@ -36,9 +36,8 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 #  svg
 #  canvas, fast/canvas
 #  transforms
+#  display-lock
 # Some additional bugs that are caused by painting problems are also within this section.
-
-crbug.com/805292 hittesting/image-with-clip-path.html [ Skip ]
 
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
 # SPv2 paint properties are still being implemented.
@@ -118,7 +117,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
-crbug.com/841567 virtual/threaded/fast/scrolling/hover-during-scroll.html [ Failure Timeout Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ Failure Pass Timeout ]
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
@@ -168,8 +166,16 @@ crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-g
 crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
 crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 
+# Display locking, currently only available via a virtual test.
+crbug.com/882663 display-lock [ Skip ]
+crbug.com/882663 virtual/display-lock/display-lock/acquire-callback-throws.html [ Failure ]
+crbug.com/882663 virtual/display-lock/display-lock/multiple-schedules-recursive.html [ Failure ]
+crbug.com/882663 virtual/display-lock/display-lock/simple-schedule-2.html [ Failure ]
+
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 virtual/outofblink-cors/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 virtual/outofblink-cors-ns/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
@@ -286,11 +292,119 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-001.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-002.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-003.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-004-dynamic.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-col-005.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-001.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-002.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-colspan-003.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-001.html [ Failure ]
+crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html [ Failure ]
 
 # [css-contain]
 
+crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
+crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
+crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
+crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
+crbug.com/855261 external/wpt/css/css-contain/contain-size-grid-002.html [ Failure ]
+crbug.com/863454 external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
+crbug.com/869296 external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
+crbug.com/882383 external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
+crbug.com/882383 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
+crbug.com/882383 external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
+crbug.com/882385 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
+crbug.com/882385 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
+crbug.com/882385 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
+crbug.com/882385 external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
+crbug.com/880802 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
+crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-block-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-button-001.html [ Failure ]
+crbug.com/882388 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-001.html [ Failure ]
+crbug.com/882388 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
+crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
+crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
+crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-block-001.html [ Failure ]
+crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
+
+# [css-align]
+
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-001.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-002.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-003.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-004.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-005.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-006.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-007.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-008.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-rtl-001.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-rtl-002.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-vertWM-001.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-vertWM-002.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-001.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-002.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-003.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-004.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-005.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-006.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-007.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-008.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-rtl-001.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-rtl-002.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-rtl-003.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-rtl-004.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-safe-001.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-vertWM-001.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-vertWM-002.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-vertWM-003.html [ Failure ]
+crbug.com/722287 crbug.com/886585 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-self-vertWM-004.html [ Failure ]
+crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-fallback-align-content-001.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-001.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-002.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-003.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-004.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-005.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-006.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-007.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-008.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-rtl-001.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-rtl-002.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-vertWM-001.html [ Failure ]
+crbug.com/722287 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-justify-content-vertWM-002.html [ Failure ]
+crbug.com/886592 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-margin-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-img-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-img-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-rtl-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-rtl-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-rtl-003.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-rtl-004.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-vertWM-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-vertWM-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-vertWM-003.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-vertWM-004.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-img-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-img-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-rtl-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-rtl-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-rtl-003.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-rtl-004.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-001.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-002.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
+crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
@@ -300,7 +414,6 @@ crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
 # Tests for LayoutNG to pass, but not planned to fix for pre-LayoutNG.
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Failure ]
 crbug.com/855279 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Failure ]
-crbug.com/591099 fast/dom/inner-text-first-letter.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Failure ]
 crbug.com/877946 external/wpt/css/CSS2/linebox/anonymous-inline-inherit-001.html [ Failure ]
@@ -308,6 +421,10 @@ crbug.com/859233 external/wpt/css/css-break/hit-test-inline-fragmentation-with-b
 crbug.com/845902 external/wpt/css/css-sizing/whitespace-and-break.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
+crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-ltr.html [ Failure ]
+crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-rtl.html [ Failure ]
+crbug.com/591099 external/wpt/css/cssom-view/offsetTopLeftInline.html [ Failure ]
+crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
@@ -343,7 +460,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 ### virtual/layout_ng/fast/block/basic
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/018.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-table-cell.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/text-indent-rtl.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Failure ]
 
@@ -366,17 +482,18 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Pass Crash Timeout ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block2.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hittest-order-1.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash.html [ Crash Pass ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
+
+### virtual/layout_ng/fast/inline
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
 
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
@@ -403,14 +520,10 @@ crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
 
-### Crash site: PaintController.cpp
-crbug.com/714962 virtual/layout_ng/fast/inline//continuation-outlines-with-layers-2.html [ Crash Failure ]
-
 crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/emptyInlinesWithinLists.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-long-image.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-repeat-x.html [ Failure ]
@@ -531,6 +644,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-036.xht [ Skip ]
 
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/inline-block-and-column-span-all.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-003.html [ Failure ]
@@ -654,6 +768,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-height-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-height-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-under-vertical-rl-scroll.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-003.xht [ Failure ]
@@ -670,7 +785,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-in-i
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-floats.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-with-margin-top-and-line-after-break-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-with-margin-top-and-line-after-break-3.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-with-margin-top-and-line-after-break.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-with-margin-top-and-line-after-break.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-with-margin-top-and-line-before-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-line-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-line-underflow-2.html [ Failure ]
@@ -705,6 +820,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/content-change-same-height.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/cssom-view.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/abspos-becomes-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/abspos-multicol-with-spanner-becomes-spanner.html [ Failure ]
@@ -733,7 +849,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spa
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/invalid-spanner-container-becomes-valid.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-abspos-next-to-spanner.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-abspos-next-to-spanner.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-before-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-between-spanners.html [ Failure ]
@@ -759,6 +875,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/fixedpos-child-bec
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox-starts-at-column-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox-starts-at-column-boundary-with-block.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flexbox-with-overflow-auto-child-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flipped-blocks-border-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flipped-blocks-hit-test.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-after-break-after.html [ Failure ]
@@ -778,7 +895,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-unbreakable.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/focus-outline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-block-with-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-last-block-before-spanner.html [ Failure ]
@@ -1015,6 +1131,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/widows-and-orphans
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/widows.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/auto-height.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/auto-height-with-break.html [ Failure ]
+crbug.com/879467 virtual/layout_ng_experimental/fast/pagination/body-make-paginated-table-abspos-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/break-in-paged-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/caret-range-outside-paged-x.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/caret-range-outside-paged-x-rtl.html [ Failure ]
@@ -1278,7 +1395,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-shrink-to
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-flex-rounding-assert.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-flexbox-min-size-auto.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-orthogonal-flexbox-relayout.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-stretch.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
@@ -1398,6 +1514,7 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Skip ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Skip ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Skip ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure ]
@@ -1589,6 +1706,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/per
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-002.html [ Skip ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-003.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-004.html [ Skip ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-quirks-node.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-size-subitems-001.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-widths-001.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-001.html [ Skip ]
@@ -1623,10 +1741,31 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/get
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order/order-with-column-reverse.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order/order-with-row-reverse.html [ Failure ]
-# ====== LayoutNG-only failures until here ======
 
-# V8 will break this and needs rebaseline.
-crbug.com/855582 http/tests/devtools/sources/debugger-ui/last-execution-context.js [ Failure Pass ]
+# Fieldset in NG
+#
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-auto-margins.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-list-item-numbering.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-list-item.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-margin-inline.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
+
+### virtual/layout_ng_experimental/fast/forms/fieldset/
+crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/fieldset-align.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-after-margin-with-before-border-horizontal-mode.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small-after-margin-before-border-horizontal-mode.html [ Failure ]
+
+crbug.com/894457 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/dynamic-bsize-change.html [ Crash ]
+
+# ====== LayoutNG-only failures until here ======
 
 ### sheriff 2018-05-28
 crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
@@ -1665,50 +1804,26 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # virtual/outofblink-cors and virtual/outofblink-cors-ns.
 # These are entries specific to outofblink-cors. Entries having the same
 # expectations with the base tests (without virtual/outofblink-cors, for
-# example) are not listed here.
+# example) are not listed here. crbug.com/870173 is used to track failing tests
+# that fail only for our virtual tests, and do not have a specific bug entry.
 #
-# ./third_party/blink/tools/run_web_tests.py virtual/outofblink-cors
-# Passed 2005
-# Total  2098
-# Counts skip: 2 crash: 14 text: 67 image: 1 pass: 2005 timeout: 9
+# ./third_party/blink/tools/run_web_tests.py virtual/outofblink-cors \
+# virtual/outofblink-cors-ns
+# Passed 8297
+# Total  8418
+# Counts skip: 34 crash: 3 text: 67 pass: 8297 timeout: 17
 
 # Crashing tests in dictionary order.
+crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
-crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
-crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
 
 # Failing tests in dictionary order.
-crbug.com/867834 virtual/outofblink-cors/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/data-uri.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
-crbug.com/867834 virtual/outofblink-cors-ns/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/data-uri.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 
 # ====== Out of Blink CORS related tests END ======
 
@@ -1731,7 +1846,6 @@ crbug.com/841922 [ Linux Win Mac ] virtual/video-surface-layer/media/video-contr
 
 crbug.com/862716 [ Mac Linux Win ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
 crbug.com/862806 [ Mac ] css3/filters/effect-drop-shadow-hw.html [ Failure Pass ]
-crbug.com/862826 [ Mac Linux ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Failure Pass ]
 
 # gpuBenchmarking.pinchBy is busted on desktops for touchscreen pinch
 crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
@@ -1783,6 +1897,10 @@ crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pas
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass Failure ]
 
+crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
+crbug.com/892032 virtual/mouseevent_fractional/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
+crbug.com/892032 virtual/user-activation-v2/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
+
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
@@ -1790,6 +1908,8 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
+crbug.com/518883 crbug.com/390452 virtual/outofblink-cors/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
+crbug.com/518883 crbug.com/390452 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
@@ -1839,6 +1959,8 @@ crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/time
 
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Win7 Mac Linux ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 
+crbug.com/889952 fast/selectors/selection-window-inactive.html [ Pass Failure ]
+
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
@@ -1853,8 +1975,12 @@ crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumen
 
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
+crbug.com/411164 [ Win ] virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
+crbug.com/411164 [ Win ] virtual/outofblink-cors-ns/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -1888,10 +2014,6 @@ crbug.com/766135 virtual/user-activation-v2/fast/dom/Window/redirect-with-timer.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 
-# Web Components related tests (Shadow DOM, Custom Elements) failures.
-crbug.com/392771 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
-crbug.com/869308 shadow-dom/imperative-api.html [ Failure ]
-
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
@@ -1919,8 +2041,6 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-009.html 
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.html [ Failure ]
-crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-end-003.html [ Failure ]
-crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-end-016.html [ Failure ]
 crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-start-004.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-text/text-justify/text-justify-001.html [ Failure ]
@@ -2176,9 +2296,14 @@ crbug.com/528062 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cache
 crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
-
-# Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
-crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
@@ -2204,8 +2329,6 @@ crbug.com/472330 fast/writing-mode/table-percent-width-quirk.html [ Failure ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
-
-crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
 
 crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
 crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
@@ -2356,6 +2479,8 @@ crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computeds
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
+crbug.com/596743 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Failure ]
+
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/percentage-heights-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
@@ -2455,6 +2580,8 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 virtual/outofblink-cors/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 virtual/outofblink-cors-ns/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/545140 [ Mac ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
@@ -2474,13 +2601,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height-bo
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
-
-
-# TODO(ftang,jshin) Remove once v8 is rolled to include a fix for v8/7958.
-crbug.com/v8/7958 fast/js/string-prototype-properties.html [ Skip ]
-
-# TODO(ftang) Remove once v8 is rolled to include a fix for v8/7961.
-crbug.com/v8/7961 fast/js/date-proto-generic-invocation.html [ Skip ]
 
 # TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
@@ -2552,6 +2672,7 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/654477 fast/layers/video-layer.html [ Failure ]
+# These could likely be removed - see https://chromium-review.googlesource.com/c/chromium/src/+/1252141
 crbug.com/654477 media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 virtual/video-surface-layer/media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
@@ -2579,14 +2700,13 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 
 # Skip the non-virtualized CORS-RFC1918 tests:
 crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
+crbug.com/763830 virtual/outofblink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
+crbug.com/763830 virtual/outofblink-cors-ns/http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/831729 http/tests/event-timing/event-timing-crossiframe.html [ Timeout ]
 crbug.com/831729 http/tests/event-timing/event-timing-observer-manual.html [ Skip ]
 
 # Working on getting the CSP tests going:
-crbug.com/694525 external/wpt/content-security-policy/object-src [ Skip ]
-crbug.com/694525 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Skip ]
-crbug.com/694525 external/wpt/content-security-policy/connect-src/connect-src-websocket-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-from-guid.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-connect-src-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/form-action/form-action-src-redirect-blocked.sub.html [ Skip ]
@@ -2688,7 +2808,6 @@ crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.
 
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
-crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
@@ -2714,20 +2833,157 @@ crbug.com/875622 external/wpt/css/css-animations/AnimationEffect-getComputedTimi
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Pass Failure Timeout ]
 
-# wptserve raises exceptions when running this test:
-crbug.com/870526 external/wpt/background-fetch/idlharness.https.any.serviceworker.html [ Skip ]
-crbug.com/870526 external/wpt/notifications/idlharness.https.any.serviceworker.html [ Skip ]
-crbug.com/870526 external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Skip ]
-crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Skip ]
-
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
+# text-indent percentage should be resolved against the block's own content-box inline-size
+crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-002.html [ Failure ]
+crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-003.html [ Failure ]
+crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
+
+# Some control characters still not visible
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-003.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-004.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-005.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-006.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-007.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-008.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00B.html [ Failure ]
+crbug.com/893490 external/wpt/css/css-text/white-space/control-chars-00D.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00E.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00F.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-010.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-011.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-012.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-013.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-014.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-015.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-016.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-017.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-018.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-019.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01A.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01B.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01C.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01D.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01E.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-01F.html [ Failure ]
+crbug.com/893490 external/wpt/css/css-text/white-space/control-chars-07F.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-080.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-081.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-082.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-083.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-084.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-085.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-086.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-087.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-088.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-089.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08A.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08B.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08C.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-08D.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-08E.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-08F.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-090.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-091.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-092.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-093.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-094.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-095.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-096.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-097.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-098.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-099.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09A.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09B.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09C.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-09D.html [ Failure ]
+crbug.com/893490 [ Mac Win ] external/wpt/css/css-text/white-space/control-chars-09E.html [ Failure ]
+crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F.html [ Failure ]
+
+# needs implementation of test_driver_internal.action_sequence
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementPosition.html [ Timeout ]
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html [ Timeout ]
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
+crbug.com/626703 [ Win10 ] external/wpt/speech-api/idlharness.window.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_wrapped.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_lt_50.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/width_50_percent.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_gt_50.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/scroll_up.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/viewportanchor_x_50_percent.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/regionanchor_y_50_percent.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/regionanchor_x_50_percent.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/basic.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/single_line_top_left.html [ Timeout ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_lt_50_size_gt_maximum_size.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/viewportanchor_y_50_percent.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-backgrounds/border-image-width-008.html [ Failure ]
+crbug.com/626703 external/wpt/content-security-policy/generic/only-valid-whitespaces-are-allowed.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/internal-stylesheet.html [ Timeout ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-004.svg [ Failure ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [ Failure ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/internal-stylesheet.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-complex-001.svg [ Failure ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/inline-style.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-bicubic-001.svg [ Failure ]
+crbug.com/626703 external/wpt/x-frame-options/multiple.sub.html [ Timeout ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-005.svg [ Failure ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-002.svg [ Failure ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout ]
+crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-003.svg [ Failure ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/svg/internal-stylesheet.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
+crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
+crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
+crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
+crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
+crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToPresentation_notfound_error-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToMultiplePresentations_success-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/presentation-api/controlling-ua/startMultiplePresentations_success-manual.https.html [ Skip ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-001.html [ Failure ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-002.html [ Failure ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-001.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image-hash.html [ Failure ]
+crbug.com/626703 external/wpt/hr-time/unload-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
+crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
-crbug.com/626703 external/wpt/webrtc/no-media-call.html [ Timeout ]
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 Mac10.12 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
-crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-16.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-83.xml [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-64.xml [ Skip ]
@@ -2754,8 +3010,7 @@ crbug.com/626703 external/wpt/quirks/text-decoration-doesnt-propagate-into-table
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow-hidden.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getDevicePose.https.html [ Failure Timeout ]
-crbug.com/877300 external/wpt/editing/run/delete.html?2001-3000 [ Timeout Pass ]
-crbug.com/626703 external/wpt/payment-request/payment-response/onpayerdetailchange-attribute.manual.https.html [ Timeout ]
+crbug.com/626703 external/wpt/payment-request/payment-response/onpayerdetailchange-attribute-manual.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transitions/event-dispatch.tentative.html [ Timeout ]
@@ -2778,9 +3033,9 @@ crbug.com/626703 external/wpt/payment-request/PaymentValidationErrors/retry-show
 crbug.com/626703 external/wpt/payment-request/PaymentValidationErrors/retry-shows-error-member-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/retry-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/rejects_if_not_active-manual.https.html [ Skip ]
-crbug.com/626703 external/wpt/infrastructure/server/secure-context.https.any.serviceworker.html [ Skip ]
-crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-with-activation-succeeds.html [ Timeout ]
+crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Timeout ]
+crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-007.svg [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-005.svg [ Failure ]
 crbug.com/366558 external/wpt/svg/text/reftests/text-multiline-002.svg [ Failure ]
@@ -2793,15 +3048,6 @@ crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-006.svg [ Failu
 crbug.com/366553 [ Linux Win ] external/wpt/svg/text/reftests/text-inline-size-003.svg [ Failure ]
 crbug.com/366558 external/wpt/svg/text/reftests/text-multiline-001.svg [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-101.svg [ Failure ]
-crbug.com/626703 [ Linux Win ] external/wpt/css/css-contain/contain-size-025.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-layout-cell-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-layout-cell-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-size-monolithic-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
-crbug.com/868102 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
-crbug.com/870157 external/wpt/css/css-contain/contain-layout-016.html [ Failure ]
 crbug.com/626703 external/wpt/clear-site-data/executionContexts.sub.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
 crbug.com/626703 [ Linux Mac Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
@@ -2836,20 +3082,11 @@ crbug.com/863355 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ F
 crbug.com/366559 external/wpt/svg/shapes/reftests/pathlength-003.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-side-001.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-shape-001.svg [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/rendering/order/z-index.svg [ Failure ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events.html [ Timeout ]
 crbug.com/626703 external/wpt/console/console-timing-logging-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-scoping/host-specificity-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-scoping/slotted-specificity.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-001.html [ Failure ]
-crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-negative.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/compat/webkit-text-fill-color-property-002.html [ Failure ]
-crbug.com/626703 external/wpt/html/editing/focus/focus-02.html [ Timeout ]
-crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-order.html [ Timeout ]
-crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive.html [ Timeout ]
-crbug.com/626703 external/wpt/html/editing/focus/focus-01.html [ Timeout ]
-crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-zero.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-002.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
@@ -2960,7 +3197,7 @@ crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-circle-004.htm
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-circle-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-003.svg [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/test-mask.html [ Failure ]
+crbug.com/432153 external/wpt/css/css-masking/test-mask.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-004.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-recursion-002.svg [ Failure ]
@@ -3014,18 +3251,9 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-size-breaks-001.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-incremental-update-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
@@ -3242,7 +3470,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Fa
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
 crbug.com/626703 [ Linux Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-fieldset-nested-legend.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-026.html [ Failure ]
 crbug.com/626703 external/wpt/svg/path/closepath/segment-completing.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
@@ -3283,9 +3510,6 @@ crbug.com/626703 [ Android Linux Mac ] external/wpt/html/semantics/embedded-cont
 crbug.com/626703 [ Android Win ] external/wpt/css/css-fonts/font-kerning-02.html [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
-crbug.com/626703 external/wpt/beacon/beacon-cors.sub.window.html [ Timeout ]
-crbug.com/626703 external/wpt/beacon/beacon-navigate.html [ Timeout ]
-crbug.com/626703 external/wpt/beacon/beacon-redirect.window.html [ Timeout ]
 crbug.com/626703 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/text-decoration-va-length-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/text-decoration-va-length-002.xht [ Failure ]
@@ -3361,10 +3585,7 @@ crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.ht
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
-crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
-crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_up.html [ Failure ]
@@ -3372,12 +3593,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_end.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_end_wrapped.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle_position_50.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle_position_gt_50.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle_position_lt_50.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle_position_lt_50_size_gt_maximum_size.html [ Failure ]
-crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_middle_wrapped.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_start.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_start_wrapped.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/basic.html [ Failure ]
@@ -3592,19 +3807,13 @@ crbug.com/626703 external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/send-content-type-string.htm [ Failure ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/xhr/send-content-type-string.htm [ Failure ]
-crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/send-content-type-string.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/send-entity-body-document.htm [ Failure ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/xhr/send-entity-body-document.htm [ Failure ]
-crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/send-entity-body-document.htm [ Failure ]
 crbug.com/626703 external/wpt/xhr/setrequestheader-header-allowed.htm [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/xhr/setrequestheader-header-allowed.htm [ Failure ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/setrequestheader-header-allowed.htm [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-placeholder-shown-type-change-001.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-read-write-type-change-002.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type-change-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -3612,9 +3821,27 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
+crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
-crbug.com/874124 external/wpt/css/css-multicol/multicol-span-none-001.xht [ Failure ]
+
+# Different results on try bots and CQ, skipped to unblock wpt import.
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-default-css.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-element.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-main-frame-root.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-main-frame-window.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-scrollintoview-nested.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-smooth-positions.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-root.html [ Skip ]
+crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-window.html [ Skip ]
+
+# Can't add baselines because a generated unique ID is part of the failure message.
+crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
+crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
+crbug.com/888470 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
+crbug.com/888470 virtual/outofblink-cors/external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
+crbug.com/888470 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
+crbug.com/888470 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
 
 # This test times out on debug builds, see https://crbug.com/755810
 crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
@@ -3626,7 +3853,6 @@ crbug.com/809935 external/wpt/css/css-fonts/variations/font-style-interpolation.
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-011.html [ Failure Crash Pass ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
-crbug.com/762017 external/wpt/html/semantics/embedded-content/media-elements/video_loop_base.html [ Pass Crash ]
 
 # Worker/SharedWorker are not exposed in WorkerGlobalScope.
 crbug.com/850662 external/wpt/workers/baseurl/alpha/worker-in-worker.html [ Failure ]
@@ -3643,6 +3869,11 @@ crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-tim
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
+
+# Unclear if XHR events should still be fired after its frame is discarded.
+crbug.com/881180 external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
+crbug.com/881180 virtual/outofblink-cors/external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
+crbug.com/881180 virtual/outofblink-cors-ns/external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
 
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
@@ -3674,8 +3905,6 @@ crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Time
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/003.html [ Timeout ]
-
-crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
@@ -3775,12 +4004,14 @@ crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.tentative.
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
+crbug.com/610835 virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
+crbug.com/610835 virtual/outofblink-cors-ns/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
 # Added 2016-12-12
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
 
 
-crbug.com/765738 [ Linux Win Mac ] virtual/enable_wasm/http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
+crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
@@ -3795,6 +4026,16 @@ crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inl
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
+crbug.com/664816 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
+crbug.com/664816 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 
 crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 
@@ -3841,10 +4082,6 @@ crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.h
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash Pass ]
 
-# ====== Tests from enabling .any.js/.worker.js tests end here ========
-
-crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass Timeout Crash ]
-
 # ====== Begin of display: contents tests ======
 
 crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Failure ]
@@ -3867,13 +4104,12 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openK
 
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
+crbug.com/678499 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
+crbug.com/678499 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
 crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
-
-crbug.com/860637 http/tests/wasm_streaming/regression860637.html [ Skip ]
-crbug.com/860637 virtual/enable_wasm_streaming/http/tests/wasm_streaming/regression860637.html [ Skip ]
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
@@ -3902,7 +4138,6 @@ crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Fa
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/716320 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
-crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Failure Timeout ]
 
 # SharedArrayBuffer is disabled on Android
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/identity-not-preserved.html [ Failure ]
@@ -3921,26 +4156,13 @@ crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-m
 crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-sharedworker.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-window.html [ Failure ]
 
-# Requires --enable-features=WebAssembly
-crbug.com/746486 external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
-crbug.com/746486 external/wpt/wasm/serialization/broadcastchannel-success.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/identity-not-preserved.html [ Timeout ]
-crbug.com/746486 external/wpt/wasm/serialization/nested-worker-success.any.worker.html [ Timeout Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/no-transferring.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-domain-success.sub.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-messagechannel-success.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-sharedworker-failure.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html [ Failure ]
-crbug.com/746486 external/wpt/wasm/serialization/window-simple-success.html [ Failure ]
-
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
-crbug.com/874302 virtual/enable_wasm/external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
-crbug.com/874302 virtual/enable_wasm/external/wpt/wasm/serialization/broadcastchannel-success.html [ Timeout ]
+crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
+crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success.html [ Timeout ]
 
-crbug.com/877286 virtual/enable_wasm/external/wpt/wasm/serialization/no-transferring.html [ Failure ]
-crbug.com/877296 virtual/enable_wasm/external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
+crbug.com/877286 external/wpt/wasm/serialization/no-transferring.html [ Failure ]
+crbug.com/877296 external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
 
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
@@ -3965,6 +4187,10 @@ crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 # Sheriff failures 2017-05-11
 crbug.com/724027 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
 crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
@@ -3984,11 +4210,8 @@ crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachm
 crbug.com/874866 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 crbug.com/874931 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
-crbug.com/875009 virtual/enable_wasm_streaming/http/tests/wasm_streaming/wasm_response_apis.html [ Crash Pass ]
 
-crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] virtual/outofblink-cors/external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] virtual/outofblink-cors-ns/external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/align-items-004.htm [ Failure Pass ]
@@ -4018,7 +4241,6 @@ crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
-crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
 crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 # Image decode failures due to document destruction.
@@ -4061,6 +4283,8 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
+crbug.com/708994 virtual/outofblink-cors/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
+crbug.com/708994 virtual/outofblink-cors-ns/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
 
@@ -4101,6 +4325,12 @@ crbug.com/849694 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/c
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
 
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
@@ -4239,9 +4469,13 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 # Sheriff failures 2017-09-20
 # Fails reliably on last 3 builds of this bot.
 crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
+crbug.com/767091 [ Mac10.12 ] virtual/outofblink-cors/http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
+crbug.com/767091 [ Mac10.12 ] virtual/outofblink-cors-ns/http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
+crbug.com/767469 virtual/outofblink-cors/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
+crbug.com/767469 virtual/outofblink-cors-ns/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 
 # Sheriff failures 2017-10-02
@@ -4263,7 +4497,6 @@ crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
 
 # Sheriff failures 2017-10-13
-crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774463 [ Win7 Debug ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html [ Pass Failure ]
@@ -4291,16 +4524,9 @@ crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.html [ Pass
 crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure ]
 
 # Failing cookies tests with random numbers in error message
-crbug.com/843945 external/wpt/cookies/samesite/fetch.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-get-blank.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-post-blank.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/iframe-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/iframe.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/img.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/window-open.html [ Failure ]
 
 # Client hint tests that fail in content_shell but pass when run manually using
 # full browser.
@@ -4308,14 +4534,6 @@ crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime_same_origin_iframe
 crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime.tentative.https.html [ Skip ]
 crbug.com/856700 external/wpt/client-hints/http_equiv_accept_ch_lifetime_same_origin_iframe.tentative.https.html [ Skip ]
 crbug.com/856700 external/wpt/client-hints/http_equiv_accept_ch_lifetime.tentative.https.html [ Skip ]
-
-crbug.com/v8/8092 inspector-protocol/runtime/runtime-compileScript.js [ Skip ]
-crbug.com/v8/8092 external/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setInterval.html [ Skip ]
-crbug.com/v8/8092 external/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html [ Skip ]
-crbug.com/v8/8092 fast/events/window-onerror-04.html [ Skip ]
-crbug.com/v8/8092 svg/dom/SVGViewSpec.html [ Skip ]
-crbug.com/v8/8092 virtual/mouseevent_fractional/fast/events/window-onerror-04.html [ Skip ]
-crbug.com/v8/8092 virtual/user-activation-v2/fast/events/window-onerror-04.html [ Skip ]
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
@@ -4370,6 +4588,7 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
+crbug.com/807838 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 
@@ -4377,9 +4596,9 @@ crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/
 crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
 
 # These tests require Unified Autoplay.
-crbug.com/779087 external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
@@ -4459,9 +4678,6 @@ crbug.com/860368 virtual/video-surface-layer/media/color-profile-video.html [ Ti
 crbug.com/860368 virtual/video-surface-layer/media/controls/modern/singletouch-on-play-button.html [ Timeout Pass ]
 crbug.com/860368 virtual/video-surface-layer/media/controls/lazy-loaded-style.html [ Pass Failure ]
 
-# TODO(senorblanco): rebaseline after Skia roll
-crbug.com/802896 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
-
 crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
 crbug.com/806645 [ Win7 Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
@@ -4496,20 +4712,22 @@ crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-featu
 crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/806249 external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
+crbug.com/806249 external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Failure ]
+crbug.com/806249 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Timeout ]
 crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-button.html [ Failure ]
 crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
 crbug.com/806249 media/picture-in-picture/picture-in-picture-enabled.html [ Failure ]
 crbug.com/811977 media/picture-in-picture/picture-in-picture-interstitial.html [ Failure ]
+crbug.com/811977 media/picture-in-picture/mediastream.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
+crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Failure ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
+crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
-# Sheriff 2018-02-26
-crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
@@ -4525,7 +4743,7 @@ crbug.com/803774 http/tests/devtools/sxg/ [ Skip ]
 crbug.com/803774 http/tests/loading/sxg/ [ Skip ]
 
 # Prefetching Signed Exchange DevTools tests are flaky.
-crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-expired.js [ Pass Failure ]
+crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
 crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22
@@ -4552,9 +4770,9 @@ crbug.com/754986 virtual/video-surface-layer/media/video-transformed.html [ Pass
 
 # Sheriff 2018-03-29
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
-crbug.com/827209 [ Win Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
-crbug.com/827209 [ Win Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
-crbug.com/827209 [ Win Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 [ Win Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
+crbug.com/827209 [ Win Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
+crbug.com/827209 [ Win Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
@@ -4580,6 +4798,17 @@ crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass T
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 crbug.com/840659 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 
+# WebRTC: In "Plan B", remote tracks are unmuted by default, so tests time out
+# waiting for "unmute".
+crbug.com/889487 external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
+# WebRTC: In "Unified Plan", remote tracks are correctly muted by default, but
+# they unmute whether or not RTP packets arrive which is incorrect, this causes
+# a timeout in the "checkMute" test because the "unmute" listeners are hooked up
+# after we've already unmuted. The "checkMute" test likely contain bugs that
+# would cause a timeout anyway, but our implementation times out even before
+# that part due to incorrect behavior.
+crbug.com/889487 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
@@ -4603,8 +4832,6 @@ crbug.com/840881 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
-crbug.com/832842 [ Win7 Linux ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
-crbug.com/832842 [ Mac ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/video-surface-layer/media/controls/closed-captions-dynamic-update.html [ Skip ]
@@ -4617,7 +4844,6 @@ crbug.com/831796 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfie
 
 # Sheriff 2018-04-24
 crbug.com/836242 [ Linux Mac Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/836275 [ Linux Mac ] fast/spatial-navigation/snav-two-elements-one-line.html [ Pass Failure ]
 
 # Sheriff 2018-04-25
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
@@ -4677,7 +4903,7 @@ crbug.com/828858 external/wpt/inert/inert-node-is-uneditable.tentative.html [ Fa
 
 # Sheriff 2018-06-07
 crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html [ Pass Failure ]
-crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure ]
+crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure Timeout ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]
 
 # Sheriff 2018-06-08
@@ -4718,23 +4944,22 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 #   they can be run via virtual/origin-policy instead.
 crbug.com/751996 external/wpt/origin-policy [ Skip ]
 
-# IntersectionObserverV2: Skip tests that rely on
-#     --enable-blink-features=IntersectionObserverV2
-crbug.com/869049 http/tests/intersection-observer/v2/cross-origin-effects.html [ Skip ]
-crbug.com/869049 http/tests/intersection-observer/v2/cross-origin-occlusion.html [ Skip ]
-
 # Sheriff 2018-06-18
 crbug.com/853852 [ Win7 Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 crbug.com/853852 [ Linux ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
+crbug.com/854538 [ Win7 ] virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
+crbug.com/854538 [ Win7 ] virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
 # Sheriff 2018-06-21
 crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 
 # Sheriff 2018-06-25
-crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
+crbug.com/855816 [ Win ] virtual/outofblink-cors/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
+crbug.com/855816 [ Win ] virtual/outofblink-cors-ns/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
+crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # Sheriff 2018-06-29
 crbug.com/859064 http/tests/devtools/console-resource-errors.js [ Pass Failure ]
@@ -4791,10 +5016,8 @@ crbug.com/867376 [ Mac ] http/tests/devtools/elements/css-variables/resolve-inhe
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
-crbug.com/867982 [ Linux Mac Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
-
-crbug.com/698165 [ Mac ] external/wpt/editing/run/justifycenter.html [ Timeout Pass ]
-crbug.com/698165 [ Mac ] external/wpt/editing/run/multitest.html [ Timeout Pass ]
+crbug.com/867982 [ Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
+crbug.com/882756 [ Debug ] external/wpt/requestidlecallback/cancel-invoked.html [ Timeout Pass ]
 
 # Sheriff 2018-07-27
 crbug.com/868317 [ Mac ] external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Pass ]
@@ -4891,6 +5114,8 @@ crbug.com/824539 [ Android ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/824539 [ Android ] fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
+crbug.com/824539 [ Android ] virtual/outofblink-cors/http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
+crbug.com/824539 [ Android ] virtual/outofblink-cors-ns/http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
 crbug.com/824539 [ Android ] images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
 crbug.com/824539 [ Android ] images/size-failure.html [ Failure ]
 crbug.com/824539 [ Android ] paint/invalidation/shadow-multiple.html [ Failure ]
@@ -4936,7 +5161,6 @@ crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac Linux ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
-crbug.com/871416 fast/spatial-navigation/snav-stay-in-overflow-div.html [ Pass Failure ]
 
 # Only passes on bots with GPUs.
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
@@ -4953,10 +5177,12 @@ crbug.com/873873 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/873873 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
-# Tests that work only when LazyImageLoading feature is enabled.
-crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
+# IntersectionObserverV2 tests run in a virtual test suite
+crbug.com/827639 intersection-observer/v2 [ Skip ]
+crbug.com/827639 http/tests/intersection-observer/v2 [ Skip ]
 
 crbug.com/875884 [ Linux Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
+crbug.com/875884 [ Linux Win ] virtual/threaded/lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 
 # Sheriff 2018-08-16
 crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash ]
@@ -4968,9 +5194,6 @@ crbug.com/875170 animations/interpolation/svg-stroke-dasharray-interpolation.htm
 
 # Test frequently times out on Mac CQ bots.
 crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
-
-# This won't pass until the bug fixed.
-crbug.com/875287 fast/frames/crash-frameset-CSS-content-property.html [ Crash ]
 
 # Wake Lock api test timeouts
 crbug.com/872530 external/wpt/wake-lock/wakelock-applicability-manual.https.html [ Pass Timeout ]
@@ -5027,6 +5250,9 @@ crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
+# Flaky
+crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
+
 # Failures on 32-bit Android when using GPU instead of software rendering
 crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
 crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
@@ -5039,3 +5265,65 @@ crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavi
 
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
+
+# Sheriff 2018-09-10
+crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]
+
+crbug.com/882689 http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
+crbug.com/882689 virtual/outofblink-cors/http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
+crbug.com/882689 virtual/outofblink-cors-ns/http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
+
+# The following tests need LazyFrameLoading.
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
+
+# Sheriff 2018-09-13
+crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
+
+# Sheriff 2018-09-18
+crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
+crbug.com/884445 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
+
+# Sheriff 2018-09-19
+crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
+crbug.com/886566 [ Linux Win10 Mac Android ] http/tests/csspaint/invalidation-background-image.html [ Pass Timeout ]
+crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
+crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
+
+# Enable AnimationWorklet tests for mainthread
+crbug.com/887659 animations/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
+crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
+crbug.com/887659 animations/animationworklet/animator-with-options.html [ Failure ]
+crbug.com/887659 animations/animationworklet/peek-updated-composited-property-on-main.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-style-update.html [ Failure ]
+crbug.com/887659 animations/animationworklet/worklet-animation-responsive-to-zoom.html [ Crash ]
+
+# Sheriff 2018-09-25
+crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
+
+# Sheriff 2018-10-03
+crbug.com/891530 [ Linux ] virtual/android/rootscroller/remove-rootscroller-crash.html [ Pass Timeout ]
+crbug.com/891510 [ Win7 ] fast/dom/inline-event-attributes-release.html [ Failure Pass ]
+crbug.com/892772 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
+
+# Flakiness in DTMF
+crbug.com/893112 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Failure ]
+
+# Sheriff 2018-10-08
+crbug.com/893015 virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Failure Pass ]
+crbug.com/893015 http/tests/fetch/chromium/release-handle-crash.html [ Crash Pass ]
+crbug.com/893015 virtual/outofblink-cors-ns/http/tests/fetch/chromium/release-handle-crash.html [ Crash Pass ]
+
+# Sheriff 2018-10-09
+crbug.com/893508 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
+crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
+crbug.com/893869 [ Linux Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]

@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -15,56 +16,48 @@ source_set("text_input_types") {
   ]
 }
 
-jumbo_component("ime") {
-  output_name = "ui_base_ime"
+jumbo_component("ime_types") {
+  output_name = "ui_base_ime_types"
   sources = [
     "candidate_window.cc",
     "candidate_window.h",
-    "chromeos/character_composer.cc",
-    "chromeos/character_composer.h",
-    "chromeos/component_extension_ime_manager.cc",
-    "chromeos/component_extension_ime_manager.h",
-    "chromeos/extension_ime_util.cc",
-    "chromeos/extension_ime_util.h",
-    "chromeos/fake_ime_keyboard.cc",
-    "chromeos/fake_ime_keyboard.h",
-    "chromeos/fake_input_method_delegate.cc",
-    "chromeos/fake_input_method_delegate.h",
-    "chromeos/ime_candidate_window_handler_interface.h",
-    "chromeos/ime_keyboard.cc",
-    "chromeos/ime_keyboard.h",
-    "chromeos/ime_keymap.cc",
-    "chromeos/ime_keymap.h",
-    "chromeos/input_method_delegate.h",
-    "chromeos/input_method_descriptor.cc",
-    "chromeos/input_method_descriptor.h",
-    "chromeos/input_method_manager.cc",
-    "chromeos/input_method_manager.h",
-    "chromeos/input_method_util.cc",
-    "chromeos/input_method_util.h",
-    "chromeos/mock_component_extension_ime_manager.cc",
-    "chromeos/mock_component_extension_ime_manager.h",
-    "chromeos/mock_component_extension_ime_manager_delegate.cc",
-    "chromeos/mock_component_extension_ime_manager_delegate.h",
-    "chromeos/mock_ime_candidate_window_handler.cc",
-    "chromeos/mock_ime_candidate_window_handler.h",
-    "chromeos/mock_ime_engine_handler.cc",
-    "chromeos/mock_ime_engine_handler.h",
     "composition_text.cc",
     "composition_text.h",
-    "ime_bridge.cc",
-    "ime_bridge.h",
-    "ime_engine_handler_interface.h",
-    "ime_input_context_handler_interface.h",
     "ime_text_span.cc",
     "ime_text_span.h",
     "infolist_entry.cc",
     "infolist_entry.h",
+    "ui_base_ime_types_export.h",
+  ]
+
+  defines = [ "UI_BASE_IME_TYPES_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ui/gfx/range",
+  ]
+
+  public_deps = [
+    ":text_input_types",
+    "//skia",
+  ]
+}
+
+jumbo_component("ime") {
+  output_name = "ui_base_ime"
+  sources = [
+    "constants.cc",
+    "constants.h",
+    "ime_bridge.cc",
+    "ime_bridge.h",
+    "ime_engine_handler_interface.h",
+    "ime_input_context_handler_interface.h",
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",
     "input_method_chromeos.cc",
     "input_method_chromeos.h",
+    "input_method_delegate.cc",
     "input_method_delegate.h",
     "input_method_factory.cc",
     "input_method_factory.h",
@@ -79,13 +72,6 @@ jumbo_component("ime") {
     "input_method_minimal.cc",
     "input_method_minimal.h",
     "input_method_observer.h",
-    "linux/fake_input_method_context.cc",
-    "linux/fake_input_method_context.h",
-    "linux/fake_input_method_context_factory.cc",
-    "linux/fake_input_method_context_factory.h",
-    "linux/linux_input_method_context.h",
-    "linux/linux_input_method_context_factory.cc",
-    "linux/linux_input_method_context_factory.h",
     "mock_ime_input_context_handler.cc",
     "mock_ime_input_context_handler.h",
     "mock_input_method.cc",
@@ -110,6 +96,41 @@ jumbo_component("ime") {
     "win/tsf_text_store.h",
   ]
 
+  if (is_chromeos) {
+    sources += [
+      "chromeos/character_composer.cc",
+      "chromeos/character_composer.h",
+      "chromeos/component_extension_ime_manager.cc",
+      "chromeos/component_extension_ime_manager.h",
+      "chromeos/extension_ime_util.cc",
+      "chromeos/extension_ime_util.h",
+      "chromeos/fake_ime_keyboard.cc",
+      "chromeos/fake_ime_keyboard.h",
+      "chromeos/fake_input_method_delegate.cc",
+      "chromeos/fake_input_method_delegate.h",
+      "chromeos/ime_candidate_window_handler_interface.h",
+      "chromeos/ime_keyboard.cc",
+      "chromeos/ime_keyboard.h",
+      "chromeos/ime_keymap.cc",
+      "chromeos/ime_keymap.h",
+      "chromeos/input_method_delegate.h",
+      "chromeos/input_method_descriptor.cc",
+      "chromeos/input_method_descriptor.h",
+      "chromeos/input_method_manager.cc",
+      "chromeos/input_method_manager.h",
+      "chromeos/input_method_util.cc",
+      "chromeos/input_method_util.h",
+      "chromeos/mock_component_extension_ime_manager.cc",
+      "chromeos/mock_component_extension_ime_manager.h",
+      "chromeos/mock_component_extension_ime_manager_delegate.cc",
+      "chromeos/mock_component_extension_ime_manager_delegate.h",
+      "chromeos/mock_ime_candidate_window_handler.cc",
+      "chromeos/mock_ime_candidate_window_handler.h",
+      "chromeos/mock_ime_engine_handler.cc",
+      "chromeos/mock_ime_engine_handler.h",
+    ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -132,8 +153,7 @@ jumbo_component("ime") {
   ]
 
   public_deps = [
-    ":text_input_types",
-    "//skia",
+    ":ime_types",
   ]
 
   if (is_desktop_linux) {
@@ -141,6 +161,10 @@ jumbo_component("ime") {
       "input_method_auralinux.cc",
       "input_method_auralinux.h",
     ]
+  }
+
+  if (is_linux) {
+    public_deps += [ "//ui/base/ime/linux" ]
   }
 
   if (!is_chromeos && is_linux) {
@@ -210,5 +234,20 @@ jumbo_component("ime") {
 
   if (is_mac) {
     libs = [ "AppKit.framework" ]
+  }
+
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/input_method_keyboard_controller_fuchsia.cc",
+      "fuchsia/input_method_keyboard_controller_fuchsia.h",
+      "input_method_fuchsia.cc",
+      "input_method_fuchsia.h",
+    ]
+
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:input",
+      "//ui/events",
+      "//ui/events:dom_keycode_converter",
+    ]
   }
 }

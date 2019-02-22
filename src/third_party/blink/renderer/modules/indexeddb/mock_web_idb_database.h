@@ -84,7 +84,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     bool key_only,
                     WebIDBCallbacks*));
 
-  MOCK_METHOD9(Put,
+  MOCK_METHOD8(Put,
                void(long long transaction_id,
                     long long object_store_id,
                     const WebData& value,
@@ -92,15 +92,13 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     WebIDBKeyView primary_key,
                     WebIDBPutMode,
                     WebIDBCallbacks*,
-                    const WebVector<long long>& index_ids,
-                    const WebVector<WebIndexKeys>));
+                    const WebVector<WebIDBIndexKeys>&));
 
-  MOCK_METHOD5(SetIndexKeys,
+  MOCK_METHOD4(SetIndexKeys,
                void(long long transaction_id,
                     long long object_store_id,
                     WebIDBKeyView primary_key,
-                    const WebVector<long long>& index_ids,
-                    const WebVector<WebIndexKeys>&));
+                    const WebVector<WebIDBIndexKeys>&));
   MOCK_METHOD3(SetIndexesReady,
                void(long long transaction_id,
                     long long object_store_id,

@@ -24,7 +24,7 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertNeutral(
     ConversionCheckers&) const {
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(kRectComponentIndexCount);
-  for (size_t i = 0; i < kRectComponentIndexCount; i++)
+  for (wtf_size_t i = 0; i < kRectComponentIndexCount; i++)
     result->Set(i, InterpolableNumber::Create(0));
   return InterpolationValue(std::move(result));
 }

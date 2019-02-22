@@ -10,14 +10,18 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/signaling/fake_signal_strategy.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,14 +33,18 @@ namespace remoting {
 class GcdStateUpdaterTest : public testing::Test {
  public:
   GcdStateUpdaterTest()
-      : task_runner_(new base::TestMockTimeTaskRunner()),
-        runner_handler_(task_runner_),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+        test_shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         token_getter_(OAuthTokenGetter::SUCCESS,
                       "<fake_user_email>",
                       "<fake_access_token>"),
         rest_client_(new GcdRestClient("http://gcd_base_url",
                                        "<gcd_device_id>",
-                                       nullptr,
+                                       test_shared_url_loader_factory_,
                                        &token_getter_)),
         signal_strategy_(SignalingAddress("local_jid")) {
     rest_client_->SetClockForTest(&test_clock_);
@@ -46,11 +54,22 @@ class GcdStateUpdaterTest : public testing::Test {
 
   void OnHostIdError() { on_host_id_error_count_++; }
 
+  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
+      size_t index = 0) {
+    if (index >= test_url_loader_factory_.pending_requests()->size())
+      return nullptr;
+    auto* request = &(*test_url_loader_factory_.pending_requests())[index];
+    DCHECK(request);
+    return request;
+  }
+
  protected:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle runner_handler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::SimpleTestClock test_clock_;
   net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
   FakeOAuthTokenGetter token_getter_;
   std::unique_ptr<GcdRestClient> rest_client_;
   FakeSignalStrategy signal_strategy_;
@@ -64,17 +83,21 @@ TEST_F(GcdStateUpdaterTest, Success) {
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
       &signal_strategy_, std::move(rest_client_)));
 
-  signal_strategy_.Connect();
-  task_runner_->RunUntilIdle();
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ("{\"patches\":[{\"patch\":{"
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_EQ("{\"patches\":[{\"patch\":{"
             "\"base\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
             "\"_jabberId\":\"local_jid\"}},"
             "\"timeMs\":0.0}],\"requestTimeMs\":0.0}",
-            fetcher->upload_data());
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+            network::GetUploadData(request));
+
+        test_url_loader_factory_.AddResponse(request.url.spec(), std::string(),
+                                             net::HTTP_OK);
+      }));
+
+  signal_strategy_.Connect();
+  scoped_task_environment_.RunUntilIdle();
+
   EXPECT_EQ(1, on_success_count_);
 
   updater.reset();
@@ -91,34 +114,39 @@ TEST_F(GcdStateUpdaterTest, QueuedRequests) {
   // Connect, then re-connect with a different JID while the status
   // update for the first connection is pending.
   signal_strategy_.Connect();
-  task_runner_->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   signal_strategy_.Disconnect();
-  task_runner_->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   signal_strategy_.SetLocalAddress(SignalingAddress("local_jid2"));
   signal_strategy_.Connect();
-  task_runner_->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Let the first status update finish.  This should be a no-op in
   // the updater because the local JID has changed since this request
   // was issued.
-  net::TestURLFetcher* fetcher0 = url_fetcher_factory_.GetFetcherByID(0);
-  fetcher0->set_response_code(200);
-  fetcher0->delegate()->OnURLFetchComplete(fetcher0);
+  auto* request = GetPendingRequest(0);
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, std::string());
+
   EXPECT_EQ(0, on_success_count_);
 
-  // Wait for the next retry.
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-
-  // There should be a new pending request now with the new local JID.
-  net::TestURLFetcher* fetcher1 = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher1);
-  EXPECT_EQ("{\"patches\":[{\"patch\":{"
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_EQ("{\"patches\":[{\"patch\":{"
             "\"base\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
             "\"_jabberId\":\"local_jid2\"}},"
             "\"timeMs\":0.0}],\"requestTimeMs\":0.0}",
-            fetcher1->upload_data());
-  fetcher1->set_response_code(200);
-  fetcher1->delegate()->OnURLFetchComplete(fetcher1);
+            network::GetUploadData(request));
+        test_url_loader_factory_.AddResponse(request.url.spec(), std::string(),
+                                             net::HTTP_OK);
+        scoped_task_environment_.RunUntilIdle();
+      }));
+
+  // Wait for the next retry.
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // There should be a new pending request now with the new local JID.
+  // It will be caught and handled by the interceptor installed above.
   EXPECT_EQ(1, on_success_count_);
 
   updater.reset();
@@ -133,17 +161,19 @@ TEST_F(GcdStateUpdaterTest, Retry) {
       &signal_strategy_, std::move(rest_client_)));
 
   signal_strategy_.Connect();
-  task_runner_->RunUntilIdle();
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1.0, task_runner_->Now().ToDoubleT());
-  fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  scoped_task_environment_.RunUntilIdle();
+
+  auto* request = GetPendingRequest(0);
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, network::ResourceResponseHead(), std::string(),
+      network::URLLoaderCompletionStatus(net::ERR_FAILED));
+
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  request = GetPendingRequest(1);
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, network::CreateResourceResponseHead(net::HTTP_OK), std::string(),
+      network::URLLoaderCompletionStatus());
   EXPECT_EQ(1, on_success_count_);
 
   updater.reset();
@@ -158,11 +188,12 @@ TEST_F(GcdStateUpdaterTest, UnknownHost) {
       &signal_strategy_, std::move(rest_client_)));
 
   signal_strategy_.Connect();
-  task_runner_->RunUntilIdle();
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(404);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  scoped_task_environment_.RunUntilIdle();
+
+  auto* request = GetPendingRequest(0);
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
+      std::string(), network::URLLoaderCompletionStatus(net::OK));
   EXPECT_EQ(0, on_success_count_);
   EXPECT_EQ(1, on_host_id_error_count_);
 }

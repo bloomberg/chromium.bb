@@ -13,6 +13,8 @@ source_set("browser") {
     "//components/network_hints/common",
     "//content/public/browser",
     "//ipc",
+    "//mojo/public/cpp/bindings",
     "//net",
+    "//services/network/public/mojom",
   ]
 }

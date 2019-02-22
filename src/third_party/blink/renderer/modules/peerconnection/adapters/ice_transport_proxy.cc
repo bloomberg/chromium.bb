@@ -13,11 +13,12 @@ namespace blink {
 
 IceTransportProxy::IceTransportProxy(
     FrameScheduler* frame_scheduler,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-    rtc::Thread* host_thread_rtc_thread,
     Delegate* delegate,
-    std::unique_ptr<cricket::PortAllocator> port_allocator)
-    : host_thread_(std::move(host_thread)),
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
+    : proxy_thread_(std::move(proxy_thread)),
+      host_thread_(std::move(host_thread)),
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
       connection_handle_for_scheduler_(
@@ -25,55 +26,71 @@ IceTransportProxy::IceTransportProxy(
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
-  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
-      frame_scheduler->GetTaskRunner(TaskType::kNetworking);
-  DCHECK(proxy_thread->BelongsToCurrentThread());
+  DCHECK(adapter_factory);
+  DCHECK(proxy_thread_->BelongsToCurrentThread());
+  adapter_factory->InitializeOnMainThread();
   // Wait to initialize the host until the weak_ptr_factory_ is initialized.
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(new IceTransportHost(proxy_thread, weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(port_allocator)));
-  PostCrossThreadTask(
-      *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::Initialize,
-                      CrossThreadUnretained(host_.get()),
-                      CrossThreadUnretained(host_thread_rtc_thread)));
+  host_.reset(new IceTransportHost(proxy_thread_, host_thread_,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  PostCrossThreadTask(*host_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportHost::Initialize,
+                                      CrossThreadUnretained(host_.get()),
+                                      WTF::Passed(std::move(adapter_factory))));
 }
 
 IceTransportProxy::~IceTransportProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!HasConsumer());
   // Note: The IceTransportHost will be deleted on the host thread.
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportProxy::proxy_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return proxy_thread_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportProxy::host_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return host_thread_;
 }
 
 void IceTransportProxy::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
     const std::vector<cricket::RelayServerConfig>& turn_servers,
-    int32_t candidate_filter) {
+    IceTransportPolicy policy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,
       CrossThreadBind(&IceTransportHost::StartGathering,
                       CrossThreadUnretained(host_.get()), local_parameters,
-                      stun_servers, turn_servers, candidate_filter));
+                      stun_servers, turn_servers, policy));
 }
 
-void IceTransportProxy::SetRole(cricket::IceRole role) {
+void IceTransportProxy::Start(
+    const cricket::IceParameters& remote_parameters,
+    cricket::IceRole role,
+    const std::vector<cricket::Candidate>& initial_remote_candidates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::SetRole,
-                      CrossThreadUnretained(host_.get()), role));
+      CrossThreadBind(&IceTransportHost::Start,
+                      CrossThreadUnretained(host_.get()), remote_parameters,
+                      role, initial_remote_candidates));
 }
 
-void IceTransportProxy::SetRemoteParameters(
-    const cricket::IceParameters& remote_parameters) {
+void IceTransportProxy::HandleRemoteRestart(
+    const cricket::IceParameters& new_remote_parameters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::SetRemoteParameters,
-                      CrossThreadUnretained(host_.get()), remote_parameters));
+  PostCrossThreadTask(*host_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportHost::HandleRemoteRestart,
+                                      CrossThreadUnretained(host_.get()),
+                                      new_remote_parameters));
 }
 
 void IceTransportProxy::AddRemoteCandidate(
@@ -85,11 +102,25 @@ void IceTransportProxy::AddRemoteCandidate(
                       CrossThreadUnretained(host_.get()), candidate));
 }
 
-void IceTransportProxy::ClearRemoteCandidates() {
+bool IceTransportProxy::HasConsumer() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*host_thread_, FROM_HERE,
-                      CrossThreadBind(&IceTransportHost::ClearRemoteCandidates,
-                                      CrossThreadUnretained(host_.get())));
+  return consumer_proxy_;
+}
+
+IceTransportHost* IceTransportProxy::ConnectConsumer(
+    QuicTransportProxy* consumer_proxy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_proxy);
+  DCHECK(!consumer_proxy_);
+  consumer_proxy_ = consumer_proxy;
+  return host_.get();
+}
+
+void IceTransportProxy::DisconnectConsumer(QuicTransportProxy* consumer_proxy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(consumer_proxy);
+  DCHECK_EQ(consumer_proxy, consumer_proxy_);
+  consumer_proxy_ = nullptr;
 }
 
 void IceTransportProxy::OnGatheringStateChanged(
@@ -107,6 +138,13 @@ void IceTransportProxy::OnCandidateGathered(
 void IceTransportProxy::OnStateChanged(cricket::IceTransportState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnStateChanged(new_state);
+}
+
+void IceTransportProxy::OnSelectedCandidatePairChanged(
+    const std::pair<cricket::Candidate, cricket::Candidate>&
+        selected_candidate_pair) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  delegate_->OnSelectedCandidatePairChanged(selected_candidate_pair);
 }
 
 }  // namespace blink

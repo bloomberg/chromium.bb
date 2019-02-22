@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
-struct WebFallbackFont;
+struct OutOfProcessFont;
 struct WebFontRenderStyle;
 }
 
@@ -24,7 +24,7 @@ namespace content {
 void GetFallbackFontForCharacter(sk_sp<font_service::FontLoader> font_loader,
                                  const int32_t character,
                                  const char* preferred_locale,
-                                 blink::WebFallbackFont* family);
+                                 blink::OutOfProcessFont* family);
 
 // Returns rendering settings for a provided font family, size, and style.
 // |size_and_style| stores the bold setting in its least-significant bit, the
@@ -37,6 +37,16 @@ void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
                              bool is_italic,
                              float device_scale_factor,
                              blink::WebFontRenderStyle* out);
+
+// Matches a font uniquely by postscript name or full font name.  Used in Blink
+// for @font-face { src: local(arg) } matching.  Provide full font name or
+// postscript name as argument font_unique_name in UTF-8. fallback_font contains
+// a filename and fontconfig interface id if a match was found. The filename is
+// empty and the interface id is zero if no match is found.
+void MatchFontByPostscriptNameOrFullFontName(
+    sk_sp<font_service::FontLoader> font_loader,
+    const char* font_unique_name,
+    blink::OutOfProcessFont* uniquely_matched_font);
 
 };  // namespace content
 

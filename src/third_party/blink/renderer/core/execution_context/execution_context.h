@@ -59,6 +59,7 @@ class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventTarget;
+class FetchClientSettingsObjectSnapshot;
 class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
 class KURL;
@@ -223,6 +224,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // algorithm defined in the Referrer Policy spec.
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   virtual String OutgoingReferrer() const;
+
+  FetchClientSettingsObjectSnapshot* CreateFetchClientSettingsObjectSnapshot();
 
   // Parses a comma-separated list of referrer policy tokens, and sets
   // the context's referrer policy to the last one that is a valid

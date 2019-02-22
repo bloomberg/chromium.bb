@@ -136,11 +136,6 @@ class MEDIA_EXPORT DecoderBuffer
     return side_data_size_;
   }
 
-  // A discard window indicates the amount of data which should be discard from
-  // this buffer after decoding.  The first value is the amount of the front and
-  // the second the amount off the back.  A value of kInfiniteDuration for the
-  // first value indicates the entire buffer should be discarded; the second
-  // value must be base::TimeDelta() in this case.
   typedef std::pair<base::TimeDelta, base::TimeDelta> DiscardPadding;
   const DiscardPadding& discard_padding() const {
     DCHECK(!end_of_stream());
@@ -202,16 +197,37 @@ class MEDIA_EXPORT DecoderBuffer
   virtual ~DecoderBuffer();
 
  private:
+  // Presentation time of the frame.
   base::TimeDelta timestamp_;
+  // Presentation duration of the frame.
   base::TimeDelta duration_;
 
+  // Size of the encoded data.
   size_t size_;
+  // Encoded data, if it is stored on the heap.
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> data_;
+
+  // Side data. Used for alpha channel in VPx, and for text cues.
   size_t side_data_size_;
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
+
+  // Copy of |data_| for debugging purposes. This field is not to be used.
+  // crbug.com/794740.
+  void* data_at_initialize_;
+
+  // Encoded data, if it is stored in SHM.
   std::unique_ptr<UnalignedSharedMemory> shm_;
+
+  // Encryption parameters for the encoded data.
   std::unique_ptr<DecryptConfig> decrypt_config_;
+
+  // Duration of (audio) samples from the beginning and end of this frame which
+  // should be discarded after decoding. A value of kInfiniteDuration for the
+  // first value indicates the entire frame should be discarded; the second
+  // value must be base::TimeDelta() in this case.
   DiscardPadding discard_padding_;
+
+  // Whether the frame was marked as a keyframe in the container.
   bool is_key_frame_;
 
   // Constructor helper method for memory allocations.

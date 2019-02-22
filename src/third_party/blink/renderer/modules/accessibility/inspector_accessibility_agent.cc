@@ -12,14 +12,16 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_type_builder_helper.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -40,37 +42,37 @@ namespace {
 
 static const AXID kIDForInspectedNodeWithNoAXNode = 0;
 
-void AddHasPopupProperty(AXHasPopup has_popup,
+void AddHasPopupProperty(ax::mojom::HasPopup has_popup,
                          protocol::Array<AXProperty>& properties) {
   switch (has_popup) {
-    case kAXHasPopupFalse:
+    case ax::mojom::HasPopup::kFalse:
       break;
-    case kAXHasPopupTrue:
+    case ax::mojom::HasPopup::kTrue:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("true", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupMenu:
+    case ax::mojom::HasPopup::kMenu:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("menu", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupListbox:
+    case ax::mojom::HasPopup::kListbox:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("listbox", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupTree:
+    case ax::mojom::HasPopup::kTree:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("tree", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupGrid:
+    case ax::mojom::HasPopup::kGrid:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("grid", AXValueTypeEnum::Token)));
       break;
-    case kAXHasPopupDialog:
+    case ax::mojom::HasPopup::kDialog:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::HasPopup,
                          CreateValue("dialog", AXValueTypeEnum::Token)));
@@ -119,26 +121,26 @@ void FillGlobalStates(AXObject& ax_object,
 
   AddHasPopupProperty(ax_object.HasPopup(), properties);
 
-  InvalidState invalid_state = ax_object.GetInvalidState();
+  ax::mojom::InvalidState invalid_state = ax_object.GetInvalidState();
   switch (invalid_state) {
-    case kInvalidStateUndefined:
+    case ax::mojom::InvalidState::kNone:
       break;
-    case kInvalidStateFalse:
+    case ax::mojom::InvalidState::kFalse:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("false", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateTrue:
+    case ax::mojom::InvalidState::kTrue:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("true", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateSpelling:
+    case ax::mojom::InvalidState::kSpelling:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("spelling", AXValueTypeEnum::Token)));
       break;
-    case kInvalidStateGrammar:
+    case ax::mojom::InvalidState::kGrammar:
       properties.addItem(
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("grammar", AXValueTypeEnum::Token)));
@@ -153,41 +155,52 @@ void FillGlobalStates(AXObject& ax_object,
   }
 }
 
-bool RoleAllowsModal(AccessibilityRole role) {
-  return role == kDialogRole || role == kAlertDialogRole;
+bool RoleAllowsModal(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kDialog ||
+         role == ax::mojom::Role::kAlertDialog;
 }
 
-bool RoleAllowsMultiselectable(AccessibilityRole role) {
-  return role == kGridRole || role == kListBoxRole || role == kTabListRole ||
-         role == kTreeGridRole || role == kTreeRole;
+bool RoleAllowsMultiselectable(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kListBox ||
+         role == ax::mojom::Role::kTabList ||
+         role == ax::mojom::Role::kTreeGrid || role == ax::mojom::Role::kTree;
 }
 
-bool RoleAllowsOrientation(AccessibilityRole role) {
-  return role == kScrollBarRole || role == kSplitterRole || role == kSliderRole;
+bool RoleAllowsOrientation(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kScrollBar ||
+         role == ax::mojom::Role::kSplitter || role == ax::mojom::Role::kSlider;
 }
 
-bool RoleAllowsReadonly(AccessibilityRole role) {
-  return role == kGridRole || role == kCellRole || role == kTextFieldRole ||
-         role == kColumnHeaderRole || role == kRowHeaderRole ||
-         role == kTreeGridRole;
+bool RoleAllowsReadonly(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kCell ||
+         role == ax::mojom::Role::kTextField ||
+         role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader ||
+         role == ax::mojom::Role::kTreeGrid;
 }
 
-bool RoleAllowsRequired(AccessibilityRole role) {
-  return role == kComboBoxGroupingRole || role == kComboBoxMenuButtonRole ||
-         role == kCellRole || role == kListBoxRole || role == kRadioGroupRole ||
-         role == kSpinButtonRole || role == kTextFieldRole ||
-         role == kTextFieldWithComboBoxRole || role == kTreeRole ||
-         role == kColumnHeaderRole || role == kRowHeaderRole ||
-         role == kTreeGridRole;
+bool RoleAllowsRequired(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kComboBoxGrouping ||
+         role == ax::mojom::Role::kComboBoxMenuButton ||
+         role == ax::mojom::Role::kCell || role == ax::mojom::Role::kListBox ||
+         role == ax::mojom::Role::kRadioGroup ||
+         role == ax::mojom::Role::kSpinButton ||
+         role == ax::mojom::Role::kTextField ||
+         role == ax::mojom::Role::kTextFieldWithComboBox ||
+         role == ax::mojom::Role::kTree ||
+         role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader ||
+         role == ax::mojom::Role::kTreeGrid;
 }
 
-bool RoleAllowsSort(AccessibilityRole role) {
-  return role == kColumnHeaderRole || role == kRowHeaderRole;
+bool RoleAllowsSort(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader;
 }
 
 void FillWidgetProperties(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   String autocomplete = ax_object.AriaAutoComplete();
   if (!autocomplete.IsEmpty())
     properties.addItem(
@@ -232,7 +245,7 @@ void FillWidgetProperties(AXObject& ax_object,
     }
   }
 
-  if (role == kTextFieldRole) {
+  if (role == ax::mojom::Role::kTextField) {
     properties.addItem(
         CreateProperty(AXPropertyNameEnum::Multiline,
                        CreateBooleanValue(ax_object.IsMultiline())));
@@ -275,23 +288,23 @@ void FillWidgetProperties(AXObject& ax_object,
 
 void FillWidgetStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   const char* checked_prop_val = nullptr;
   switch (ax_object.CheckedState()) {
-    case kCheckedStateTrue:
+    case ax::mojom::CheckedState::kTrue:
       checked_prop_val = "true";
       break;
-    case kCheckedStateMixed:
+    case ax::mojom::CheckedState::kMixed:
       checked_prop_val = "mixed";
       break;
-    case kCheckedStateFalse:
+    case ax::mojom::CheckedState::kFalse:
       checked_prop_val = "false";
       break;
-    case kCheckedStateUndefined:
+    case ax::mojom::CheckedState::kNone:
       break;
   }
   if (checked_prop_val) {
-    auto* const checked_prop_name = role == kToggleButtonRole
+    auto* const checked_prop_name = role == ax::mojom::Role::kToggleButton
                                         ? AXPropertyNameEnum::Pressed
                                         : AXPropertyNameEnum::Checked;
     properties.addItem(CreateProperty(
@@ -450,7 +463,7 @@ void FillRelationships(AXObject& ax_object,
   results.clear();
 }
 
-std::unique_ptr<AXValue> CreateRoleNameValue(AccessibilityRole role) {
+std::unique_ptr<AXValue> CreateRoleNameValue(ax::mojom::Role role) {
   AtomicString role_name = AXObject::RoleName(role);
   std::unique_ptr<AXValue> role_name_value;
   if (!role_name.IsNull()) {
@@ -465,9 +478,9 @@ std::unique_ptr<AXValue> CreateRoleNameValue(AccessibilityRole role) {
 }  // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(
-    Page* page,
+    InspectedFrames* inspected_frames,
     InspectorDOMAgent* dom_agent)
-    : page_(page), dom_agent_(dom_agent) {}
+    : inspected_frames_(inspected_frames), dom_agent_(dom_agent) {}
 
 Response InspectorAccessibilityAgent::getPartialAXTree(
     Maybe<int> dom_node_id,
@@ -545,7 +558,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
           .setNodeId(String::Number(ax_id))
           .setIgnored(true)
           .build();
-  AccessibilityRole role = AccessibilityRole::kIgnoredRole;
+  ax::mojom::Role role = ax::mojom::Role::kIgnored;
   ignored_node_object->setRole(CreateRoleNameValue(role));
 
   if (ax_object && ax_object->IsAXLayoutObject()) {
@@ -562,13 +575,15 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
     ignored_reasons.push_back(IgnoredReason(kAXNotRendered));
   }
 
-  if (dom_node)
-    ignored_node_object->setBackendDOMNodeId(DOMNodeIds::IdForNode(dom_node));
+  if (dom_node) {
+    ignored_node_object->setBackendDOMNodeId(
+        IdentifiersFactory::IntIdForNode(dom_node));
+  }
 
   std::unique_ptr<protocol::Array<AXProperty>> ignored_reason_properties =
       protocol::Array<AXProperty>::create();
-  for (size_t i = 0; i < ignored_reasons.size(); i++)
-    ignored_reason_properties->addItem(CreateProperty(ignored_reasons[i]));
+  for (IgnoredReason& reason : ignored_reasons)
+    ignored_reason_properties->addItem(CreateProperty(reason));
   ignored_node_object->setIgnoredReasons(std::move(ignored_reason_properties));
 
   return ignored_node_object;
@@ -619,7 +634,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
     bool fetch_relatives,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   std::unique_ptr<AXNode> node_object =
       AXNode::create()
           .setNodeId(String::Number(ax_object.AXObjectID()))
@@ -646,8 +661,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
     if (!name_sources.IsEmpty()) {
       std::unique_ptr<protocol::Array<AXValueSource>> name_source_properties =
           protocol::Array<AXValueSource>::create();
-      for (size_t i = 0; i < name_sources.size(); ++i) {
-        NameSource& name_source = name_sources[i];
+      for (NameSource& name_source : name_sources) {
         name_source_properties->addItem(CreateValueSource(name_source));
         if (name_source.text.IsNull() || name_source.superseded)
           continue;
@@ -669,6 +683,37 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
   return node_object;
 }
 
+Response InspectorAccessibilityAgent::getFullAXTree(
+    std::unique_ptr<protocol::Array<AXNode>>* nodes) {
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (!document)
+    return Response::Error("No document.");
+  *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
+  AXContext ax_context(*document);
+  AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());
+  Deque<AXID> ids;
+  ids.push_back(cache.Root()->AXObjectID());
+  while (!ids.empty()) {
+    AXID ax_id = ids.front();
+    ids.pop_front();
+    AXObject* ax_object = cache.ObjectFromAXID(ax_id);
+    std::unique_ptr<AXNode> node =
+        BuildProtocolAXObject(*ax_object, nullptr, false, *nodes, cache);
+
+    std::unique_ptr<protocol::Array<AXNodeId>> child_ids =
+        protocol::Array<AXNodeId>::create();
+    const AXObject::AXObjectVector& children = ax_object->Children();
+    for (unsigned i = 0; i < children.size(); i++) {
+      AXObject& child_ax_object = *children[i].Get();
+      child_ids->addItem(String::Number(child_ax_object.AXObjectID()));
+      ids.push_back(child_ax_object.AXObjectID());
+    }
+    node->setChildIds(std::move(child_ids));
+    (*nodes)->addItem(std::move(node));
+  }
+  return Response::OK();
+}
+
 void InspectorAccessibilityAgent::FillCoreProperties(
     AXObject& ax_object,
     AXObject* inspected_ax_object,
@@ -676,11 +721,11 @@ void InspectorAccessibilityAgent::FillCoreProperties(
     AXNode& node_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AXNameFrom name_from;
+  ax::mojom::NameFrom name_from;
   AXObject::AXObjectVector name_objects;
   ax_object.GetName(name_from, &name_objects);
 
-  AXDescriptionFrom description_from;
+  ax::mojom::DescriptionFrom description_from;
   AXObject::AXObjectVector description_objects;
   String description =
       ax_object.Description(name_from, description_from, &description_objects);
@@ -705,7 +750,7 @@ void InspectorAccessibilityAgent::FillCoreProperties(
 
   Node* node = ax_object.GetNode();
   if (node)
-    node_object.setBackendDOMNodeId(DOMNodeIds::IdForNode(node));
+    node_object.setBackendDOMNodeId(IdentifiersFactory::IntIdForNode(node));
 }
 
 void InspectorAccessibilityAgent::PopulateRelatives(
@@ -764,7 +809,7 @@ void InspectorAccessibilityAgent::AddChildren(
 }
 
 void InspectorAccessibilityAgent::Trace(blink::Visitor* visitor) {
-  visitor->Trace(page_);
+  visitor->Trace(inspected_frames_);
   visitor->Trace(dom_agent_);
   InspectorBaseAgent::Trace(visitor);
 }

@@ -12,7 +12,7 @@
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/engines/engine_resources.h"
 #include "chrome/chrome_cleaner/settings/settings_definitions.h"
-#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 
 namespace chrome_cleaner {
 
@@ -322,7 +322,7 @@ void Settings::Initialize(const base::CommandLine& command_line,
   chrome_mojo_pipe_token_ = command_line.GetSwitchValueASCII(
       chrome_cleaner::kChromeMojoPipeTokenSwitch);
   has_parent_pipe_handle_ =
-      command_line.HasSwitch(mojo::NamedPlatformChannel::kNamedHandleSwitch);
+      command_line.HasSwitch(mojo::PlatformChannel::kHandleSwitch);
 #if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
   remove_report_only_uws_ = command_line.HasSwitch(kRemoveScanOnlyUwS);
 #endif

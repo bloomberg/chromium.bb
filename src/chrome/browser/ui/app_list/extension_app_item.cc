@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -56,14 +57,13 @@ ExtensionAppItem::ExtensionAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
-    SetDefaultPositionIfApplicable();
+    SetDefaultPositionIfApplicable(model_updater);
 
   // Set model updater last to avoid being called during construction.
   set_model_updater(model_updater);
 }
 
-ExtensionAppItem::~ExtensionAppItem() {
-}
+ExtensionAppItem::~ExtensionAppItem() = default;
 
 void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
@@ -78,7 +78,8 @@ void ExtensionAppItem::Reload() {
   if (!icon_) {
     icon_ = extensions::ChromeAppIconService::Get(profile())->CreateIcon(
         this, extension_id(),
-        app_list::AppListConfig::instance().grid_icon_dimension());
+        app_list::AppListConfig::instance().grid_icon_dimension(),
+        base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
   } else {
     icon_->Reload();
   }
@@ -91,8 +92,7 @@ void ExtensionAppItem::OnIconUpdated(extensions::ChromeAppIcon* icon) {
 const Extension* ExtensionAppItem::GetExtension() const {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());
-  const Extension* extension = registry->GetInstalledExtension(
-      extension_id());
+  const Extension* extension = registry->GetInstalledExtension(extension_id());
   return extension;
 }
 
@@ -102,8 +102,8 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    extension_enable_flow_ = std::make_unique<ExtensionEnableFlow>(
-        profile(), extension_id(), this);
+    extension_enable_flow_ =
+        std::make_unique<ExtensionEnableFlow>(profile(), extension_id(), this);
     extension_enable_flow_->StartForNativeWindow(nullptr);
   }
   return true;
@@ -151,8 +151,7 @@ void ExtensionAppItem::Activate(int event_flags) {
     return;
 
   extensions::RecordAppListMainLaunch(extension);
-  GetController()->ActivateApp(profile(),
-                               extension,
+  GetController()->ActivateApp(profile(), extension,
                                AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                                event_flags);
 }

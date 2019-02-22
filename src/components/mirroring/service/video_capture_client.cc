@@ -92,6 +92,7 @@ void VideoCaptureClient::OnStateChanged(media::mojom::VideoCaptureState state) {
     case media::mojom::VideoCaptureState::STOPPED:
     case media::mojom::VideoCaptureState::ENDED:
       client_buffers_.clear();
+      mapped_buffers_.clear();
       weak_factory_.InvalidateWeakPtrs();
       error_callback_.Reset();
       frame_deliver_callback_.Reset();
@@ -106,12 +107,13 @@ void VideoCaptureClient::OnNewBuffer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
 
-  if (!buffer_handle->is_read_only_shmem_region()) {
+  if (!buffer_handle->is_read_only_shmem_region() &&
+      !buffer_handle->is_shared_buffer_handle()) {
     NOTIMPLEMENTED();
     return;
   }
-  const auto insert_result = client_buffers_.emplace(std::make_pair(
-      buffer_id, std::move(buffer_handle->get_read_only_shmem_region())));
+  const auto insert_result = client_buffers_.emplace(
+      std::make_pair(buffer_id, std::move(buffer_handle)));
   DCHECK(insert_result.second);
 }
 
@@ -160,34 +162,72 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
     LOG(DFATAL) << "Ignoring OnBufferReady() for unknown buffer.";
     return;
   }
-
-  base::ReadOnlySharedMemoryMapping mapping = buffer_iter->second.Map();
-  const size_t frame_allocation_size =
-      media::VideoFrame::AllocationSize(info->pixel_format, info->coded_size);
   scoped_refptr<media::VideoFrame> frame;
-  if (mapping.IsValid() && mapping.size() >= frame_allocation_size) {
+  BufferFinishedCallback buffer_finished_callback;
+  if (buffer_iter->second->is_shared_buffer_handle()) {
+    // TODO(https://crbug.com/843117): Remove this case after migrating
+    // media::VideoCaptureDeviceClient to the new shared memory API.
+    auto mapping_iter = mapped_buffers_.find(buffer_id);
+    const size_t buffer_size =
+        media::VideoFrame::AllocationSize(info->pixel_format, info->coded_size);
+    if (mapping_iter != mapped_buffers_.end() &&
+        buffer_size > mapping_iter->second.second) {
+      // Unmaps shared memory for too-small region.
+      mapped_buffers_.erase(mapping_iter);
+      mapping_iter = mapped_buffers_.end();
+    }
+    if (mapping_iter == mapped_buffers_.end()) {
+      mojo::ScopedSharedBufferMapping mapping =
+          buffer_iter->second->get_shared_buffer_handle()->Map(buffer_size);
+      if (!mapping) {
+        video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id, -1.0);
+        return;
+      }
+      mapping_iter =
+          mapped_buffers_
+              .emplace(std::make_pair(
+                  buffer_id, MappingAndSize(std::move(mapping), buffer_size)))
+              .first;
+    }
+    const auto& buffer = mapping_iter->second;
     frame = media::VideoFrame::WrapExternalData(
         info->pixel_format, info->coded_size, info->visible_rect,
         info->visible_rect.size(),
-        const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
-        frame_allocation_size, info->timestamp);
+        reinterpret_cast<uint8_t*>(buffer.first.get()), buffer.second,
+        info->timestamp);
+    buffer_finished_callback = media::BindToCurrentLoop(base::BindOnce(
+        &VideoCaptureClient::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
+        buffer_id, base::ReadOnlySharedMemoryMapping()));
+  } else {
+    base::ReadOnlySharedMemoryMapping mapping =
+        buffer_iter->second->get_read_only_shmem_region().Map();
+    const size_t frame_allocation_size =
+        media::VideoFrame::AllocationSize(info->pixel_format, info->coded_size);
+    if (mapping.IsValid() && mapping.size() >= frame_allocation_size) {
+      frame = media::VideoFrame::WrapExternalData(
+          info->pixel_format, info->coded_size, info->visible_rect,
+          info->visible_rect.size(),
+          const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
+          frame_allocation_size, info->timestamp);
+    }
+    buffer_finished_callback = media::BindToCurrentLoop(base::BindOnce(
+        &VideoCaptureClient::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
+        buffer_id, std::move(mapping)));
   }
+
   if (!frame) {
     LOG(DFATAL) << "Unable to wrap shared memory mapping.";
     video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id, -1.0);
     OnStateChanged(media::mojom::VideoCaptureState::FAILED);
     return;
   }
-
-  BufferFinishedCallback buffer_finished_callback =
-      media::BindToCurrentLoop(base::BindOnce(
-          &VideoCaptureClient::OnClientBufferFinished,
-          weak_factory_.GetWeakPtr(), buffer_id, std::move(mapping)));
   frame->AddDestructionObserver(
       base::BindOnce(&VideoCaptureClient::DidFinishConsumingFrame,
                      frame->metadata(), std::move(buffer_finished_callback)));
 
   frame->metadata()->MergeInternalValuesFrom(info->metadata);
+  if (info->color_space.has_value())
+    frame->set_color_space(info->color_space.value());
 
   frame_deliver_callback_.Run(frame);
 }
@@ -199,6 +239,9 @@ void VideoCaptureClient::OnBufferDestroyed(int32_t buffer_id) {
   const auto& buffer_iter = client_buffers_.find(buffer_id);
   if (buffer_iter != client_buffers_.end())
     client_buffers_.erase(buffer_iter);
+  const auto& mapping_iter = mapped_buffers_.find(buffer_id);
+  if (mapping_iter != mapped_buffers_.end())
+    mapped_buffers_.erase(mapping_iter);
 }
 
 void VideoCaptureClient::OnClientBufferFinished(
@@ -210,6 +253,7 @@ void VideoCaptureClient::OnClientBufferFinished(
 
   // Buffer was already destroyed.
   if (client_buffers_.find(buffer_id) == client_buffers_.end()) {
+    DCHECK(mapped_buffers_.find(buffer_id) == mapped_buffers_.end());
     return;
   }
 

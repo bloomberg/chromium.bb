@@ -533,15 +533,13 @@ void TabManager::OnMemoryPressure(
   // memory pressure signal after it becomes more reliable.
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      break;
+      return;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       LogMemoryAndDiscardTab(LifecycleUnitDiscardReason::URGENT);
-      break;
-    default:
-      NOTREACHED();
+      return;
   }
+  NOTREACHED();
   // TODO(skuhne): If more memory pressure levels are introduced, consider
   // calling PurgeBrowserMemory() before CRITICAL is reached.
 }

@@ -84,7 +84,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   class ScriptResourceFactory : public ResourceFactory {
    public:
     ScriptResourceFactory()
-        : ResourceFactory(Resource::kScript,
+        : ResourceFactory(ResourceType::kScript,
                           TextResourceDecoderOptions::kPlainTextContent) {}
 
     Resource* Create(

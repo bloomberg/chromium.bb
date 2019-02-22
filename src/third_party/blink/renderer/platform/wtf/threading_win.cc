@@ -175,47 +175,19 @@ bool RecursiveMutex::TryLock() {
   return true;
 }
 
-ThreadCondition::ThreadCondition() {
+ThreadCondition::ThreadCondition(Mutex& mutex) : mutex_(mutex.Impl()) {
   InitializeConditionVariable(&condition_);
 }
 
 ThreadCondition::~ThreadCondition() {}
 
-void ThreadCondition::Wait(Mutex& mutex) {
-  PlatformMutex& platform_mutex = mutex.Impl();
+void ThreadCondition::Wait() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  --platform_mutex.recursion_count_;
-  BOOL result = SleepConditionVariableCS(
-      &condition_, &platform_mutex.internal_mutex_, INFINITE);
+  --mutex_.recursion_count_;
+  BOOL result =
+      SleepConditionVariableCS(&condition_, &mutex_.internal_mutex_, INFINITE);
   DCHECK_NE(result, 0);
-  ++platform_mutex.recursion_count_;
-}
-
-bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
-  double current_time = WTF::CurrentTime();
-
-  // Time is in the past - return immediately.
-  if (absolute_time <= current_time) {
-    // Consider the wait to have timed out, even if our condition has already
-    // been signaled, to match the pthreads implementation.
-    return false;
-  }
-
-  // If time is too far in the future (and would overflow unsigned long), wait
-  // forever.
-  DWORD interval =
-      (absolute_time - current_time > static_cast<double>(INT_MAX) / 1000.0)
-          ? INFINITE
-          : ((absolute_time - current_time) * 1000.0);
-
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  PlatformMutex& platform_mutex = mutex.Impl();
-  --platform_mutex.recursion_count_;
-  BOOL result = SleepConditionVariableCS(
-      &condition_, &platform_mutex.internal_mutex_, interval);
-  ++platform_mutex.recursion_count_;
-
-  return result != 0;
+  ++mutex_.recursion_count_;
 }
 
 void ThreadCondition::Signal() {

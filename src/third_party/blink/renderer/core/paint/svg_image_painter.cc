@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -31,22 +31,22 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
   }
   // Images cannot have children so do not call UpdateCullRect.
 
-  SVGTransformContext transform_context(
+  ScopedSVGTransformState transform_state(
       paint_info_before_filtering, layout_svg_image_,
       layout_svg_image_.LocalToSVGParentTransform());
   {
-    SVGPaintContext paint_context(layout_svg_image_,
-                                  paint_info_before_filtering);
-    if (paint_context.ApplyClipMaskAndFilterIfNecessary() &&
+    ScopedSVGPaintState paint_state(layout_svg_image_,
+                                    paint_info_before_filtering);
+    if (paint_state.ApplyClipMaskAndFilterIfNecessary() &&
         !DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_context.GetPaintInfo().context, layout_svg_image_,
-            paint_context.GetPaintInfo().phase)) {
+            paint_state.GetPaintInfo().context, layout_svg_image_,
+            paint_state.GetPaintInfo().phase)) {
       if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
         SVGModelObjectPainter::RecordHitTestData(layout_svg_image_, paint_info);
-      DrawingRecorder recorder(paint_context.GetPaintInfo().context,
+      DrawingRecorder recorder(paint_state.GetPaintInfo().context,
                                layout_svg_image_,
-                               paint_context.GetPaintInfo().phase);
-      PaintForeground(paint_context.GetPaintInfo());
+                               paint_state.GetPaintInfo().phase);
+      PaintForeground(paint_state.GetPaintInfo());
     }
   }
 

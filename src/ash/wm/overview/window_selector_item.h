@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -28,7 +29,6 @@ class Shadow;
 
 namespace ash {
 
-class WindowSelector;
 class WindowGrid;
 
 // This class represents an item in overview mode.
@@ -187,6 +187,14 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // to transition from the home launcher.
   void SlideWindowIn();
 
+  // Translate and fade the window (or minimized widget) and |item_widget_|. It
+  // should remain in the same spot relative to the grids origin, which is given
+  // by |new_grid_y|.
+  void UpdateYPositionAndOpacity(
+      int new_grid_y,
+      float opacity,
+      WindowSelector::UpdateAnimationSettingsCallback callback);
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -224,6 +232,13 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
+
+  // Show or hide the mask and shadow on this window item.
+  void UpdateMaskAndShadow(bool show);
+
+  // Called when the starting animation is completed, or called immediately
+  // if there was no starting animation.
+  void OnStartingAnimationComplete();
 
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);

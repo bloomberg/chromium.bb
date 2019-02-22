@@ -70,10 +70,10 @@ class CONTENT_EXPORT ChildThreadImpl
   struct CONTENT_EXPORT Options;
 
   // Creates the thread.
-  ChildThreadImpl();
+  explicit ChildThreadImpl(base::RepeatingClosure quit_closure);
   // Allow to be used for single-process mode and for in process gpu mode via
   // options.
-  explicit ChildThreadImpl(const Options& options);
+  ChildThreadImpl(base::RepeatingClosure quit_closure, const Options& options);
   // ChildProcess::main_thread() is reset after Shutdown(), and before the
   // destructor, so any subsystem that relies on ChildProcess::main_thread()
   // must be terminated before Shutdown returns. In particular, if a subsystem
@@ -254,6 +254,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // TaskRunner to post tasks to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+
+  // Used to quit the main thread.
+  base::RepeatingClosure quit_closure_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 

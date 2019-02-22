@@ -22,6 +22,8 @@ aggregate_vector_icons("vr_vector_icons") {
 source_set("vector_icons") {
   sources = get_target_outputs(":vr_vector_icons")
 
+  defines = [ "VR_VECTOR_ICONS_IMPL" ]
+
   deps = [
     ":vr_vector_icons",
     "//base",

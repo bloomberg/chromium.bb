@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -68,6 +67,7 @@ class PlatformProbeSink;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
+enum class ResourceType : uint8_t;
 
 enum FetchResourceType { kFetchMainResource, kFetchSubresource };
 
@@ -95,7 +95,8 @@ class PLATFORM_EXPORT FetchContext
   // Extend this when needed.
   enum LogSource { kJSSource, kSecuritySource, kOtherSource };
 
-  static FetchContext& NullInstance();
+  static FetchContext& NullInstance(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   virtual ~FetchContext() = default;
 
@@ -117,7 +118,7 @@ class PLATFORM_EXPORT FetchContext
   // intervention.
   virtual mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
-      Resource::Type,
+      ResourceType,
       FetchParameters::DeferOption) const;
 
   virtual void DispatchDidChangeResourcePriority(unsigned long identifier,
@@ -136,7 +137,7 @@ class PLATFORM_EXPORT FetchContext
       unsigned long identifier,
       ResourceRequest&,
       const ResourceResponse& redirect_response,
-      Resource::Type,
+      ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo());
   virtual void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
                                                       const ResourceRequest&,
@@ -146,7 +147,7 @@ class PLATFORM_EXPORT FetchContext
       unsigned long identifier,
       const ResourceResponse&,
       network::mojom::RequestContextFrameType,
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       Resource*,
       ResourceResponseType);
   virtual void DispatchDidReceiveData(unsigned long identifier,
@@ -167,12 +168,12 @@ class PLATFORM_EXPORT FetchContext
                                int64_t encoded_data_length,
                                bool is_internal_request);
 
-  virtual bool ShouldLoadNewResource(Resource::Type) const { return false; }
+  virtual bool ShouldLoadNewResource(ResourceType) const { return false; }
 
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
   virtual void RecordLoadingActivity(const ResourceRequest&,
-                                     Resource::Type,
+                                     ResourceType,
                                      const AtomicString& fetch_initiator_name);
 
   virtual void DidLoadResource(Resource*);
@@ -180,7 +181,7 @@ class PLATFORM_EXPORT FetchContext
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }
   virtual base::Optional<ResourceRequestBlockedReason> CanRequest(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
@@ -189,7 +190,7 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
   virtual base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
@@ -222,7 +223,7 @@ class PLATFORM_EXPORT FetchContext
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to
   // prepare a ResourceRequest instance at the start of resource loading.
-  virtual void PopulateResourceRequest(Resource::Type,
+  virtual void PopulateResourceRequest(ResourceType,
                                        const ClientHintsPreferences&,
                                        const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
@@ -264,7 +265,7 @@ class PLATFORM_EXPORT FetchContext
   // (after Detach() is called, this will return a generic timer suitable for
   // post-detach actions like keepalive requests.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
-    return Platform::Current()->CurrentThread()->GetTaskRunner();
+    return task_runner_;
   }
 
   // TODO(altimin): This is used when creating a URLLoader, and
@@ -291,10 +292,9 @@ class PLATFORM_EXPORT FetchContext
   }
 
   // Returns if the |resource_url| is identified as ad.
-  virtual bool IsAdResource(
-      const KURL& resource_url,
-      Resource::Type type,
-      WebURLRequest::RequestContext request_context) const {
+  virtual bool IsAdResource(const KURL& resource_url,
+                            ResourceType type,
+                            mojom::RequestContextType request_context) const {
     return false;
   }
 
@@ -302,10 +302,12 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
-  FetchContext();
+  explicit FetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

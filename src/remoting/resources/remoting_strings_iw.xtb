@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">המכשיר הזה לא נתמך על-ידי הלקוח הזה כי נדרש עבורו אימות של צד שלישי.</translation>
 <translation id="3194245623920924351">‏שולחן עבודה מרוחק של Chrome</translation>
 <translation id="3197730452537982411">שולחן עבודה מרוחק</translation>
-<translation id="3212472844831225214">‏• הוספנו תמיכה ב-Android 9.0 Pie.</translation>
 <translation id="324272851072175193">שליחת ההוראות באימייל</translation>
 <translation id="3258789396564295715">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="3286521253923406898">‏בקר מארח Chromoting</translation>
@@ -331,6 +330,8 @@ Chrome
 <translation id="8525306231823319788">מסך מלא</translation>
 <translation id="8548209692293300397">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Google Chrome<ph name="LINK_END" /> עם החשבון והתקן מחדש את שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="8642984861538780905">איכות סבירה</translation>
+<translation id="8705151241155781642">‏• נוספה תמיכה ב-Android 9.0 Pie.
+• תמיכה בשינוי הרזולוציה של המחשב המרוחק כך שתתאים למסך של מכשיר ה-Android.</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8743328882720071828">האם ברצונך לאפשר ל-<ph name="CLIENT_USERNAME" /> לראות את המחשב שלך ולשלוט בו?</translation>
 <translation id="8747048596626351634">‏ההפעלה קרסה או שלא התחילה. אם ‎~/.chrome-remote-desktop-session קיים במחשב המרוחק, יש לוודא שהוא מפעיל תהליך ארוך טווח בחזית. לדוגמה: סביבת שולחן העבודה או מנהל החלונות.</translation>

@@ -121,7 +121,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     _passwordForm = passwordForm;
     if (!_passwordForm.blacklisted_by_user) {
       _username = base::SysUTF16ToNSString(_passwordForm.username_value);
-      if (_passwordForm.federation_origin.unique()) {
+      if (_passwordForm.federation_origin.opaque()) {
         _password = base::SysUTF16ToNSString(_passwordForm.password_value);
       } else {
         _federation =
@@ -198,7 +198,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     [model addItem:[self usernameCopyButtonItem]
         toSectionWithIdentifier:SectionIdentifierUsername];
 
-    if (_passwordForm.federation_origin.unique()) {
+    if (_passwordForm.federation_origin.opaque()) {
       [model addSectionWithIdentifier:SectionIdentifierPassword];
       SettingsTextItem* passwordHeader =
           [[SettingsTextItem alloc] initWithType:ItemTypeHeader];

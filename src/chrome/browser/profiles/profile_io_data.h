@@ -137,7 +137,7 @@ class ProfileIOData {
 
   net::URLRequestContext* GetMainRequestContext() const;
   net::URLRequestContext* GetMediaRequestContext() const;
-  net::URLRequestContext* GetExtensionsRequestContext() const;
+  virtual net::CookieStore* GetExtensionsCookieStore() const = 0;
   net::URLRequestContext* GetIsolatedAppRequestContext(
       IOThread* io_thread,
       net::URLRequestContext* main_context,
@@ -166,10 +166,6 @@ class ProfileIOData {
   // Gets Sync state, for Dice account consistency.
   bool IsSyncEnabled() const;
   bool SyncHasAuthError() const;
-
-  net::URLRequestContext* extensions_request_context() const {
-    return extensions_request_context_.get();
-  }
 
   BooleanPrefMember* safe_browsing_enabled() const {
     return &safe_browsing_enabled_;
@@ -501,8 +497,8 @@ class ProfileIOData {
   virtual void OnMainRequestContextCreated(
       ProfileParams* profile_params) const = 0;
 
-  // Initializes the RequestContext for extensions.
-  virtual void InitializeExtensionsRequestContext(
+  // Initializes the cookie store for extensions.
+  virtual void InitializeExtensionsCookieStore(
       ProfileParams* profile_params) const = 0;
 
   // Does an on-demand initialization of a media RequestContext for the given
@@ -599,7 +595,6 @@ class ProfileIOData {
   mutable network::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
 
-  mutable std::unique_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;
   mutable URLRequestContextMap isolated_media_request_context_map_;

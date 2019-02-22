@@ -8,6 +8,8 @@
 
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -116,6 +118,7 @@ class TabActivityWatcherUkmTest : public TabActivityWatcherTest {
     TabActivityWatcherTest::PreRunTestOnMainThread();
 
     ukm_entry_checker_ = std::make_unique<UkmEntryChecker>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void SetUpOnMainThread() override {
@@ -149,7 +152,40 @@ class TabActivityWatcherUkmTest : public TabActivityWatcherTest {
     ukm_entry_checker_->ExpectNewEntry(kFOCEntryName, url, expected_metrics);
   }
 
+  // Uses test_ukm_recorder_ to check new event metrics including:
+  // (1) the number of UkmEntry with given event_name should be equal to |size|.
+  // (2) the newest entry should have source_url equal to |url|.
+  // (3) the newest entry should have source_id equal to |source_id| if
+  //     |source_id| is not 0 (skip for the case of 0).
+  // (4) the newest entry should contain all metrics in |expected_metrics|.
+  // Also returns the source_id of the newest entry.
+  ukm::SourceId ExpectNewEntryWithSourceId(const GURL& url,
+                                           const std::string& event_name,
+                                           size_t num_entries,
+                                           const UkmMetricMap& expected_metrics,
+                                           ukm::SourceId source_id = 0) {
+    const std::vector<const ukm::mojom::UkmEntry*> entries =
+        test_ukm_recorder_->GetEntriesByName(event_name);
+    // Check size.
+    EXPECT_EQ(entries.size(), num_entries);
+    const ukm::mojom::UkmEntry* entry = entries.back();
+    // Check source_url.
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+    // Check source_id.
+    if (source_id != 0) {
+      EXPECT_EQ(source_id, entry->source_id);
+    }
+    // Check expected_metrics.
+    for (const auto& metric : expected_metrics) {
+      test_ukm_recorder_->ExpectEntryMetric(entry, metric.first,
+                                            *metric.second);
+    }
+
+    return entry->source_id;
+  }
+
   std::unique_ptr<UkmEntryChecker> ukm_entry_checker_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcherUkmTest);
@@ -327,6 +363,72 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, TabDrag) {
   CloseBrowserSynchronously(browser());
   EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kEntryName));
   EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kFOCEntryName));
+}
+
+// Tests discarded tab is recorded correctly.
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
+                       DiscardedTabGetsPreviousSourceId) {
+  ukm::SourceId ukm_source_id_for_tab_0 = 0;
+  ukm::SourceId ukm_source_id_for_tab_1 = 0;
+
+  ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
+  EXPECT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
+
+  // Adding a new foreground tab logs the previously active tab.
+  AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_->ExpectNewEntry(
+        kEntryName, test_urls_[0],
+        {{TabManager_TabMetrics::kNavigationEntryCountName, 2}});
+
+    ukm_source_id_for_tab_0 = ExpectNewEntryWithSourceId(
+        test_urls_[0], kEntryName, 1,
+        {{TabManager_TabMetrics::kNavigationEntryCountName, 2}});
+  }
+
+  // Discard the first tab.
+  content::WebContents* first_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  resource_coordinator::TabLifecycleUnitSource::GetInstance()
+      ->GetTabLifecycleUnitExternal(first_contents)
+      ->DiscardTab();
+
+  // Switching to first tab logs a forgrounded event for test_urls_[0]
+  // and a backgrounded event for test_urls_[1].
+  browser()->tab_strip_model()->ActivateTabAt(0, kIsUserGesture);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[1],
+                                       kBasicMetricValues);
+
+    ukm_source_id_for_tab_1 = ExpectNewEntryWithSourceId(
+        test_urls_[1], kEntryName, 2, kBasicMetricValues);
+
+    ExpectNewEntryWithSourceId(
+        test_urls_[0], kFOCEntryName, 1,
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1}},
+        ukm_source_id_for_tab_0);
+  }
+
+  // Discard the second tab.
+  content::WebContents* second_content =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  resource_coordinator::TabLifecycleUnitSource::GetInstance()
+      ->GetTabLifecycleUnitExternal(second_content)
+      ->DiscardTab();
+
+  CloseBrowserSynchronously(browser());
+  {
+    SCOPED_TRACE("");
+
+    ExpectNewEntryWithSourceId(
+        test_urls_[1], kFOCEntryName, 2,
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1}},
+        ukm_source_id_for_tab_1);
+  }
 }
 
 }  // namespace resource_coordinator

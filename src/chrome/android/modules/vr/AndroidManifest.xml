@@ -14,10 +14,9 @@
 
     <!-- TODO(crbug.com/862689): Set dist:onDemand="true" once we can on-demand
          install modules. -->
-    <!-- TODO(crbug.com/875059): Use @string reference for dist:title. -->
     <dist:module
         dist:onDemand="false"
-        dist:title="VR">
+        dist:title="@string/vr_module_title">
         <dist:fusing dist:include="false" />
     </dist:module>
 

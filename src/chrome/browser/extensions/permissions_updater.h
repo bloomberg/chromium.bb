@@ -64,8 +64,7 @@ class PermissionsUpdater {
   // Sets a delegate to provide platform-specific logic. This should be set
   // during startup (to ensure all extensions are initialized through the
   // delegate).
-  // |delegate| is a singleton instance and is leaked.
-  static void SetPlatformDelegate(Delegate* delegate);
+  static void SetPlatformDelegate(std::unique_ptr<Delegate> delegate);
 
   // Grants |permissions| that were defined as optional in the manifest to
   // |extension|, updating the active permission set and notifying any

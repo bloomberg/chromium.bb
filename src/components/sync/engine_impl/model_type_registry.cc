@@ -255,7 +255,7 @@ ModelTypeSet ModelTypeRegistry::GetInitialSyncDoneNonBlockingTypes() const {
 }
 
 const UpdateHandler* ModelTypeRegistry::GetUpdateHandler(ModelType type) const {
-  UpdateHandlerMap::const_iterator it = update_handler_map_.find(type);
+  auto it = update_handler_map_.find(type);
   return it == update_handler_map_.end() ? nullptr : it->second;
 }
 

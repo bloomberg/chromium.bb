@@ -491,6 +491,18 @@ There is also a library at
 [third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js](../../third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js)
 to help with writing paint invalidation and repaint tests.
 
+### Tests for scrolling animations
+
+Some layout tests need to ensure animations such as middle-click auto-scroll,
+fling, etc. get performed properly. When testing in display compositor pixel
+dump mode (now the standard), the standard behavior for tests is to
+synchronously composite without rastering (to save time). However, animations
+run upon surface activation, which only happens once rasterization is performed.
+Therefore, for these tests, an additional setting needs to be set. Near the
+beginning of these tests, call `continuouslyRunAnimations()` defined in
+[third_party/WebKit/LayoutTests/resources/compositor-controls.js](../../third_party/WebKit/LayoutTests/resources/compositor-controls.js)
+which will enable full rasterization during the test.
+
 ## Layout tree tests
 
 A layout tree test renders a web page and produces up to two results, which

@@ -29,6 +29,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
@@ -236,8 +237,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     callback = ^(NSData* log_content) {
       std::string log(static_cast<const char*>([log_content bytes]),
                       static_cast<size_t>([log_content length]));
-      web::WebThread::PostTask(
-          web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+      base::PostTaskWithTraits(
+          FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
             GetApplicationContext()->GetMetricsService()->PushExternalLog(log);
           }));
     };

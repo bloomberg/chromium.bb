@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
@@ -47,7 +48,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode CreateDiskImageRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -68,7 +70,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode DestroyDiskImageRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -88,7 +91,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode ListVmDisksRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -108,7 +112,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StartVmRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -131,7 +136,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode StopVmRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -139,27 +145,6 @@ class ConciergeClientImpl : public ConciergeClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            vm_tools::concierge::StopVmResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void StartContainer(
-      const vm_tools::concierge::StartContainerRequest& request,
-      DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback)
-      override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kStartContainerMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode StartContainerRequest protobuf";
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::StartContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -180,7 +165,8 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode ContainerSshKeysRequest protobuf";
-      std::move(callback).Run(base::nullopt);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
@@ -252,8 +238,8 @@ class ConciergeClientImpl : public ConciergeClient {
     DCHECK_EQ(interface_name, vm_tools::concierge::kVmConciergeInterface);
     DCHECK_EQ(signal_name, vm_tools::concierge::kContainerStartupFailedSignal);
     if (!is_connected) {
-      LOG(ERROR)
-          << "Failed to connect to Signal. Async StartContainer will not work";
+      LOG(ERROR) << "Failed to connect to Signal. Async StartLxdContainer will "
+                    "not work";
     }
     is_container_startup_failed_signal_connected_ = is_connected;
   }

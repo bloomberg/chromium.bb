@@ -9,6 +9,7 @@
   --subtitle-font-distance-to-baseline: 3px;
   --subtitle-line-height: 18px;
   --offline-gaia-dialog-width: 768px;
+  font-family: var(--oobe-default-font-family);
 }
 
 #header-container {
@@ -36,7 +37,7 @@
 }
 
 #oobe-subtitle ::slotted(*) {
-  color: var(--google-grey-900);
+  color: var(--google-grey-700);
   font-size: var(--subtitle-font-size);
   line-height: var(--subtitle-line-height);
   /* margin 12px = 32 - line-height
@@ -45,6 +46,13 @@
   margin: calc(32px - var(--subtitle-line-height)
                - (var(--subtitle-line-height) - var(--subtitle-font-size))
                + var(--subtitle-font-distance-to-baseline)) 0 0 0;
+}
+
+#oobe-progress ::slotted(paper-progress) {
+  --paper-progress-active-color: var(--google-blue-500);
+  --paper-progress-container-color: var(--google-blue-100);
+  height: 3px;
+  width: 100%;
 }
 
 #footer-container {

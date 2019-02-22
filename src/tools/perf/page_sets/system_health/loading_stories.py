@@ -28,22 +28,33 @@ class _LoadingStory(system_health_story.SystemHealthStory):
 class LoadGoogleStory(_LoadingStory):
   NAME = 'load:search:google'
   URL = 'https://www.google.co.uk/'
+  TAGS = [story_tags.YEAR_2016]
 
 
 class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'
-  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2016]
 
 
 class LoadYahooStory(_LoadingStory):
   NAME = 'load:search:yahoo'
   URL = 'https://search.yahoo.com/search;_ylt=?p=google'
+  TAGS = [story_tags.YEAR_2016]
 
 
 class LoadAmazonDesktopStory(_LoadingStory):
   NAME = 'load:search:amazon'
   URL = 'https://www.amazon.com/s/?field-keywords=nexus'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadAmazonDesktopStory2018(_LoadingStory):
+  NAME = 'load:search:amazon:2018'
+  URL = 'https://www.amazon.com/s/?field-keywords=pixel'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
@@ -51,7 +62,14 @@ class LoadTaobaoDesktopStory(_LoadingStory):
   NAME = 'load:search:taobao'
   URL = 'https://world.taobao.com/'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
+
+
+class LoadTaobaoDesktopStory2018(_LoadingStory):
+  NAME = 'load:search:taobao:2018'
+  URL = 'https://world.taobao.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
 
 
 class LoadTaobaoMobileStory(_LoadingStory):
@@ -59,20 +77,21 @@ class LoadTaobaoMobileStory(_LoadingStory):
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
   URL = 'http://m.intl.taobao.com/?ali_trackid'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2016]
 
 
 class LoadYandexStory(_LoadingStory):
   NAME = 'load:search:yandex'
   URL = 'https://yandex.ru/touchsearch?text=science'
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
 class LoadEbayStory(_LoadingStory):
   NAME = 'load:search:ebay'
   # Redirects to the "http://" version.
   URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 ################################################################################
@@ -83,6 +102,7 @@ class LoadEbayStory(_LoadingStory):
 class LoadTwitterStory(_LoadingStory):
   NAME = 'load:social:twitter'
   URL = 'https://www.twitter.com/nasa'
+  TAGS = [story_tags.YEAR_2016]
 
   # Desktop version is already covered by
   # 'browse:social:twitter_infinite_scroll'
@@ -97,19 +117,34 @@ class LoadVkStory(_LoadingStory):
   # indefinitely on mobile
   # (see https://github.com/chromium/web-page-replay/issues/71).
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
+
+
+class LoadVkDesktopStory2018(_LoadingStory):
+  NAME = 'load:social:vk:2018'
+  URL = 'https://vk.com/sbeatles'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
 
 
 class LoadInstagramDesktopStory(_LoadingStory):
   NAME = 'load:social:instagram'
   URL = 'https://www.instagram.com/selenagomez/'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadInstagramDesktopStory2018(_LoadingStory):
+  NAME = 'load:social:instagram:2018'
+  URL = 'https://www.instagram.com/selenagomez/'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
   URL = 'https://uk.pinterest.com/categories/popular/'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
   # Mobile story is already covered by
   # 'browse:social:pinterest_infinite_scroll'.
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
@@ -124,6 +159,14 @@ class LoadBbcDesktopStory(_LoadingStory):
   NAME = 'load:news:bbc'
   # Redirects to the "http://" version.
   URL = 'https://www.bbc.co.uk/news/world-asia-china-36189636'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadBbcDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:bbc:2018'
+  URL = 'https://www.bbc.co.uk/news'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
@@ -131,24 +174,47 @@ class LoadCnnStory(_LoadingStory):
   NAME = 'load:news:cnn'
   # Using "https://" shows "Your connection is not private".
   URL = 'http://edition.cnn.com'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
+
+
+class LoadCnnStory2018(_LoadingStory):
+  NAME = 'load:news:cnn:2018'
+  URL = 'https://edition.cnn.com'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
 
 
 class LoadFlipboardDesktopStory(_LoadingStory):
   NAME = 'load:news:flipboard'
   URL = 'https://flipboard.com/explore'
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadHackerNewsDesktopStory(_LoadingStory):
   NAME = 'load:news:hackernews'
   URL = 'https://news.ycombinator.com'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadHackerNewsDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:hackernews:2018'
+  URL = 'https://news.ycombinator.com'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadNytimesDesktopStory(_LoadingStory):
   NAME = 'load:news:nytimes'
   URL = 'http://www.nytimes.com'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadNytimesDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:nytimes:2018'
+  URL = 'http://www.nytimes.com'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
@@ -156,19 +222,34 @@ class LoadNytimesMobileStory(_LoadingStory):
   NAME = 'load:news:nytimes'
   URL = 'http://mobile.nytimes.com'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'
   # Using "https://" hangs and shows "This site can't be reached".
   URL = 'http://news.qq.com'
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
+
+
+class LoadQqDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:qq:2018'
+  URL = 'https://news.qq.com'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadRedditDesktopStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadRedditDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:reddit:2018'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
@@ -176,14 +257,14 @@ class LoadRedditMobileStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
   NAME = 'load:news:washingtonpost'
   URL = 'https://www.washingtonpost.com/pwa'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
   _CLOSE_BUTTON_SELECTOR = '.close'
 
   def _DidLoadDocument(self, action_runner):
@@ -201,14 +282,15 @@ class LoadWashingtonPostMobileStory(_LoadingStory):
 class LoadWikipediaStory(_LoadingStory):
   NAME = 'load:news:wikipedia'
   URL = 'https://en.wikipedia.org/wiki/Science'
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
 
 class LoadIrctcStory(_LoadingStory):
   NAME = 'load:news:irctc'
   URL = 'https://www.irctc.co.in'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2016]
 
 
 ################################################################################
@@ -221,7 +303,8 @@ class LoadYouTubeStory(_LoadingStory):
   NAME = 'load:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
   PLATFORM_SPECIFIC = True
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2016]
 
 
 class LoadDailymotionStory(_LoadingStory):
@@ -230,12 +313,13 @@ class LoadDailymotionStory(_LoadingStory):
   NAME = 'load:media:dailymotion'
   URL = (
       'https://www.dailymotion.com/video/x489k7d_street-performer-shows-off-slinky-skills_fun?autoplay=false')
+  TAGS = [story_tags.YEAR_2016]
 
 
 class LoadGoogleImagesStory(_LoadingStory):
   NAME = 'load:media:google_images'
   URL = 'https://www.google.co.uk/search?tbm=isch&q=love'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadSoundCloudStory(_LoadingStory):
@@ -243,18 +327,20 @@ class LoadSoundCloudStory(_LoadingStory):
   # https://github.com/chromium/web-page-replay/issues/73.
   NAME = 'load:media:soundcloud'
   URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
+  TAGS = [story_tags.YEAR_2016]
 
 
 class Load9GagDesktopStory(_LoadingStory):
   NAME = 'load:media:9gag'
   URL = 'https://www.9gag.com/'
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadImgurStory(_LoadingStory):
   NAME = 'load:media:imgur'
   URL = 'http://imgur.com/gallery/5UlBN'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadFacebookPhotosMobileStory(_LoadingStory):
@@ -263,7 +349,7 @@ class LoadFacebookPhotosMobileStory(_LoadingStory):
   URL = (
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
 
 class LoadFacebookPhotosDesktopStory(_LoadingStory):
@@ -271,6 +357,7 @@ class LoadFacebookPhotosDesktopStory(_LoadingStory):
   NAME = 'load:media:facebook_photos'
   URL = (
       'https://www.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&theater')
+  TAGS = [story_tags.YEAR_2016]
   # Recording currently does not work. The page gets stuck in the
   # theater viewer.
   SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
@@ -286,7 +373,7 @@ class LoadDocsStory(_LoadingStory):
   NAME = 'load:tools:docs'
   URL = (
       'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class _LoadGmailBaseStory(_LoadingStory):
@@ -310,6 +397,7 @@ class _LoadGmailBaseStory(_LoadingStory):
 
 
 class LoadGmailDesktopStory(_LoadGmailBaseStory):
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
   def _DidLoadDocument(self, action_runner):
@@ -319,6 +407,7 @@ class LoadGmailDesktopStory(_LoadGmailBaseStory):
 
 
 class LoadGmailMobileStory(_LoadGmailBaseStory):
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
   SKIP_LOGIN = False
@@ -334,12 +423,13 @@ class LoadStackOverflowStory(_LoadingStory):
   NAME = 'load:tools:stackoverflow'
   URL = (
       'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadDropboxStory(_LoadingStory):
   NAME = 'load:tools:dropbox'
   URL = 'https://www.dropbox.com'
+  TAGS = [story_tags.YEAR_2016]
 
   def _Login(self, action_runner):
     dropbox_login.LoginAccount(action_runner, 'dropbox')
@@ -348,13 +438,13 @@ class LoadDropboxStory(_LoadingStory):
 class LoadWeatherStory(_LoadingStory):
   NAME = 'load:tools:weather'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
 
 
 class LoadDriveStory(_LoadingStory):
   NAME = 'load:tools:drive'
   URL = 'https://drive.google.com/drive/my-drive'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
 
   def _Login(self, action_runner):
     google_login.LoginGoogleAccount(action_runner, 'googletest')
@@ -370,7 +460,7 @@ class LoadBubblesStory(_LoadingStory):
   NAME = 'load:games:bubbles'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # The #logo element is removed right before the main menu is displayed.
@@ -382,14 +472,14 @@ class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'
   # Using "https://" hangs and shows "This site can't be reached".
   URL = 'http://www8.games.mobi/games/html5/lazors/lazors.html'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadSpyChaseStory(_LoadingStory):
   NAME = 'load:games:spychase'
   # Using "https://" shows "Your connection is not private".
   URL = 'http://playstar.mobi/games/spychase/index.php'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # The background of the game canvas is set when the "Tap screen to play"
@@ -402,10 +492,12 @@ class LoadMiniclipStory(_LoadingStory):
   NAME = 'load:games:miniclip'
   # Using "https://" causes "404 Not Found" during WPR recording.
   URL = 'http://www.miniclip.com/games/en/'
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
 
 
 class LoadAlphabettyStory(_LoadingStory):
   NAME = 'load:games:alphabetty'
   URL = 'https://king.com/play/alphabetty'
+  TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.

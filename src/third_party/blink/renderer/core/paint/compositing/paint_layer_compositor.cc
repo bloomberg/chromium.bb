@@ -840,7 +840,7 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 
   graphics_layer->UpdateTrackingRasterInvalidations();
 
-  for (size_t i = 0; i < graphics_layer->Children().size(); ++i)
+  for (wtf_size_t i = 0; i < graphics_layer->Children().size(); ++i)
     UpdateTrackingRasterInvalidationsRecursive(graphics_layer->Children()[i]);
 
   if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())

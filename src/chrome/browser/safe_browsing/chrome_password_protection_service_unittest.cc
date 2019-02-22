@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -34,7 +33,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -407,9 +405,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // If sync password entry pinging is disabled by policy,
   // |IsPingingEnabled(..)| should return false.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_PROTECTION_OFF);
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
@@ -428,9 +423,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPingingIsSkippedIfMatchEnterpriseWhitelist) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   RequestOutcome reason = RequestOutcome::UNKNOWN;
   ASSERT_FALSE(
       profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
@@ -823,10 +815,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetDefaultChangePasswordURL) {
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetEnterprisePasswordURL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-
   // If enterprise change password url is not set. This will return the default
   // GAIA change password url.
   EXPECT_TRUE(service_->GetEnterpriseChangePasswordURL().DomainIs(
@@ -981,8 +969,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordChangedEvent) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
 
   // Preparing sync account.
   SigninManagerBase* signin_manager =
@@ -1013,8 +999,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPasswordReuse) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
@@ -1051,8 +1035,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
@@ -1091,9 +1073,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
       base::UTF8ToUTF16("example.com"));
 
-  // Enables kEnterprisePasswordProtectionV1 feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
                                       PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ(
@@ -1121,9 +1100,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
   base::string16 generic_enterprise_warning_text = l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 
-  // Enables kEnterprisePasswordProtectionV1 feature.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
                                       PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ(

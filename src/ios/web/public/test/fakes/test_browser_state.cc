@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
@@ -31,7 +33,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return web::WebThread::GetTaskRunnerForThread(web::WebThread::IO);
+    return base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
   }
 
  private:

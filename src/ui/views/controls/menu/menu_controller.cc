@@ -499,6 +499,10 @@ void MenuController::Run(Widget* parent,
 }
 
 void MenuController::Cancel(ExitType type) {
+#if defined(OS_MACOSX)
+  menu_closure_animation_.reset();
+#endif
+
   // If the menu has already been destroyed, no further cancellation is
   // needed.  We especially don't want to set the |exit_type_| to a lesser
   // value.
@@ -1529,7 +1533,7 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
 void MenuController::Accept(MenuItemView* item, int event_flags) {
 #if defined(OS_MACOSX)
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
-      item,
+      item, item->GetParentMenuItem()->GetSubmenu(),
       base::BindOnce(&MenuController::ReallyAccept, base::Unretained(this),
                      base::Unretained(item), event_flags));
   menu_closure_animation_->Start();
@@ -1845,8 +1849,7 @@ void MenuController::CommitPendingSelection() {
   // Open all the submenus preceeding the last menu item (last menu item is
   // handled next).
   if (new_path.size() > 1) {
-    for (std::vector<MenuItemView*>::iterator i = new_path.begin();
-         i != new_path.end() - 1; ++i) {
+    for (auto i = new_path.begin(); i != new_path.end() - 1; ++i) {
       OpenMenu(*i);
     }
   }
@@ -2070,10 +2073,9 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     const int right_of_parent =
         item_loc.x() + item->width() - submenu_horizontal_inset;
 
-    int border_size = menu_config.CornerRadiusForMenu(this);
-    if (!border_size)
-      border_size = menu_config.menu_vertical_border_size;
-    menu_bounds.set_y(item_loc.y() - border_size);
+    MenuScrollViewContainer* container =
+        item->GetParentMenuItem()->GetSubmenu()->GetScrollViewContainer();
+    menu_bounds.set_y(item_loc.y() - container->border()->GetInsets().top());
 
     // Assume the menu can be placed in the preferred location.
     menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
@@ -2609,7 +2611,18 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
     if (last_part.type != MenuPart::NONE)
       exit_type = EXIT_OUTERMOST;
   }
+#if defined(OS_MACOSX)
+  SubmenuView* target = exit_type == EXIT_ALL
+                            ? source
+                            : state_.item->GetRootMenuItem()->GetSubmenu();
+  menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
+      nullptr, target,
+      base::BindOnce(&MenuController::Cancel, base::Unretained(this),
+                     exit_type));
+  menu_closure_animation_->Start();
+#else
   Cancel(exit_type);
+#endif
 }
 
 void MenuController::SetDropMenuItem(MenuItemView* new_target,

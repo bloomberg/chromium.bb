@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"

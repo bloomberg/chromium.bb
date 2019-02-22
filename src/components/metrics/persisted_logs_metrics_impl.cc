@@ -22,12 +22,12 @@ void PersistedLogsMetricsImpl::RecordCompressionRatio(
 }
 
 void PersistedLogsMetricsImpl::RecordDroppedLogSize(size_t size) {
-  UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
-                       static_cast<int>(size));
+  UMA_HISTOGRAM_COUNTS_1M("UMA.Large Accumulated Log Not Persisted",
+                          static_cast<int>(size));
 }
 
 void PersistedLogsMetricsImpl::RecordDroppedLogsNum(int dropped_logs_num) {
-  UMA_HISTOGRAM_COUNTS("UMA.UnsentLogs.Dropped", dropped_logs_num);
+  UMA_HISTOGRAM_COUNTS_1M("UMA.UnsentLogs.Dropped", dropped_logs_num);
 }
 
 }  // namespace metrics

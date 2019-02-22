@@ -24,7 +24,7 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/task_queue.h"
+#include "components/offline_pages/task/task_queue.h"
 
 namespace offline_pages {
 
@@ -45,8 +45,7 @@ class RequestQueue : public TaskQueue::Delegate {
       AddRequestCallback;
 
   // Callback used by |ChangeRequestsState|.
-  typedef base::OnceCallback<void(std::unique_ptr<UpdateRequestsResult>)>
-      UpdateCallback;
+  typedef base::OnceCallback<void(UpdateRequestsResult)> UpdateCallback;
 
   // Callback used by |UdpateRequest|.
   typedef base::OnceCallback<void(UpdateRequestResult)> UpdateRequestCallback;
@@ -101,9 +100,9 @@ class RequestQueue : public TaskQueue::Delegate {
       PickRequestTask::RequestPickedCallback picked_callback,
       PickRequestTask::RequestNotPickedCallback not_picked_callback,
       PickRequestTask::RequestCountCallback request_count_callback,
-      DeviceConditions& conditions,
-      std::set<int64_t>& disabled_requests,
-      base::circular_deque<int64_t>& prioritized_requests);
+      DeviceConditions conditions,
+      const std::set<int64_t>& disabled_requests,
+      base::circular_deque<int64_t>* prioritized_requests);
 
   // Reconcile any requests that were active the last time chrome exited.
   void ReconcileRequests(UpdateCallback callback);

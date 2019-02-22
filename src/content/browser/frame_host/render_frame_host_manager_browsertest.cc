@@ -37,7 +37,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -2372,6 +2371,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
   SiteInstance* site_instance1 = shell()->web_contents()->GetSiteInstance();
+  int process1_id = site_instance1->GetProcess()->GetID();
 
   // Open a new tab. Initially it gets a render view in the original tab's
   // current site instance.
@@ -2384,9 +2384,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   WebContentsImpl* new_web_contents = static_cast<WebContentsImpl*>(
       new_shell->web_contents());
   SiteInstance* site_instance2 = new_web_contents->GetSiteInstance();
+  int process2_id = site_instance2->GetProcess()->GetID();
 
+  // The 2nd WebUI page should swap to a different process (and SiteInstance),
+  // but should stay in the same BrowsingInstance as the 1st WebUI page.
+  EXPECT_NE(process1_id, process2_id);
   EXPECT_NE(site_instance2, site_instance1);
   EXPECT_TRUE(site_instance2->IsRelatedSiteInstance(site_instance1));
+
   RenderViewHost* initial_rvh = new_web_contents->
       GetRenderManagerForTesting()->GetSwappedOutRenderViewHost(site_instance1);
   ASSERT_TRUE(initial_rvh);
@@ -3009,16 +3014,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate again to the original site, but to a page that will take a while
   // to commit.
   GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
-  NavigationStallDelegate stall_delegate(same_site_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(new_shell->web_contents(),
+                                           same_site_url);
   new_shell->LoadURL(same_site_url);
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // Going back in history should work and the test should not crash.
   TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
   new_shell->web_contents()->GetController().GoBack();
   back_nav_load_observer.Wait();
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Tests that InputMsg type IPCs are ignored by swapped out RenderViews. It
@@ -3273,9 +3277,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Start a cross-site navigation to the same site but don't commit.
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  NavigationStallDelegate stall_delegate(cross_site_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(),
+                                           cross_site_url);
   shell()->LoadURL(cross_site_url);
+  EXPECT_TRUE(stalled_navigation.WaitForResponse());
 
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
@@ -3295,8 +3300,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(next_rfh, web_contents->GetMainFrame());
   EXPECT_FALSE(
       web_contents->GetRenderManagerForTesting()->speculative_frame_host());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Check that if a sandboxed subframe opens a cross-process popup such that the
@@ -3353,11 +3356,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_NE(new_shell->web_contents()->GetSiteInstance(),
               shell()->web_contents()->GetSiteInstance());
 
-    // Check that the popup is sandboxed by checking its document.origin, which
+    // Check that the popup is sandboxed by checking its self.origin, which
     // should be unique.
     std::string origin;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_shell, "domAutomationController.send(document.origin)", &origin));
+        new_shell, "domAutomationController.send(self.origin)", &origin));
     EXPECT_EQ("null", origin);
   };
 

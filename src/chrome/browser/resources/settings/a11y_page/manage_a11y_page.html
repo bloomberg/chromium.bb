@@ -49,7 +49,7 @@
     <iron-collapse opened="[[prefs.settings.accessibility.value]]">
       <div class="settings-box"
           on-click="onChromeVoxSettingsTap_" actionable>
-        <div class="start">$i18n{chromeVoxOptionsLabel}</div>
+        <div class="start" aria-hidden="true">$i18n{chromeVoxOptionsLabel}</div>
         <paper-icon-button-light class="icon-external">
           <button aria-label="$i18n{chromeVoxOptionsLabel}"></button>
         </paper-icon-button-light>
@@ -67,7 +67,9 @@
     <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
       <div class="settings-box"
           on-click="onSelectToSpeakSettingsTap_" actionable>
-        <div class="start">$i18n{selectToSpeakOptionsLabel}</div>
+        <div class="start" aria-hidden="true">
+          $i18n{selectToSpeakOptionsLabel}
+        </div>
         <paper-icon-button-light class="icon-external">
           <button aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
         </paper-icon-button-light>
@@ -75,7 +77,7 @@
     </iron-collapse>
     <div class="settings-box two-line" on-click="onManageTtsSettingsTap_"
         actionable>
-      <div class="start">
+      <div class="start" aria-hidden="true">
         $i18n{manageTtsSettings}
         <div class="secondary" id="appearanceSettingsSecondary">
           $i18n{ttsSettingsLinkDescription}
@@ -121,7 +123,7 @@
       </div>
     </template>
     <div class="settings-box two-line" on-click="onDisplayTap_" actionable>
-      <div class="start">
+      <div class="start" aria-hidden="true">
         $i18n{displaySettingsTitle}
         <div class="secondary" id="displaySettingsSecondary">
           $i18n{displaySettingsDescription}
@@ -133,7 +135,7 @@
       </paper-icon-button-light>
     </div>
     <div class="settings-box two-line" on-click="onAppearanceTap_" actionable>
-      <div class="start">
+      <div class="start" aria-hidden="true">
         $i18n{appearanceSettingsTitle}
         <div class="secondary" id="appearanceSettingsSecondary">
           $i18n{appearanceSettingsDescription}
@@ -175,7 +177,9 @@
       <iron-collapse opened="[[prefs.settings.a11y.switch_access.value]]">
         <div class="settings-box continuation" actionable
             on-click="onSwitchAccessSettingsTap_">
-          <div class="start">$i18n{switchAccessOptionsLabel}</div>
+          <div class="start" aria-hidden="true">
+            $i18n{switchAccessOptionsLabel}
+          </div>
           <paper-icon-button-light class="icon-external">
             <button aria-label="$i18n{switchAccessOptionsLabel}"></button>
           </paper-icon-button-light>
@@ -183,7 +187,7 @@
       </iron-collapse>
     </template>
     <div class="settings-box two-line" on-click="onKeyboardTap_" actionable>
-      <div class="start">
+      <div class="start" aria-hidden="true">
         $i18n{keyboardSettingsTitle}
         <div class="secondary" id="keyboardSettingsSecondary">
           $i18n{keyboardSettingsDescription}
@@ -227,16 +231,16 @@
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
     <div class="settings-box two-line" on-click="onMouseTap_" actionable>
-      <div class="start">
+      <div class="start" aria-hidden="true">
         $i18n{mouseSettingsTitle}
         <div class="secondary" id="mouseSettingsSecondary">
           $i18n{mouseSettingsDescription}
         </div>
-        </div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{mouseSettingsTitle}"
-              aria-describedby="mouseSettingsSecondary"></button>
-        </paper-icon-button-light>
+      </div>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{mouseSettingsTitle}"
+            aria-describedby="mouseSettingsSecondary"></button>
+      </paper-icon-button-light>
     </div>
 
     <h2>$i18n{audioHeading}</h2>

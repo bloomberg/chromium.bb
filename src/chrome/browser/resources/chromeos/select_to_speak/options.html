@@ -15,27 +15,32 @@
     <div class="container">
 
       <h2 class="i18n" msgid="options_speech"></h2>
-      <div class="option">
-        <span class="i18n" msgid="options_voices_description"
-              id="voices_description"></span>
-        <select id="voice" aria-labelledby="voices_description">
-        </select>
-      </div>
-
-      <div class="option">
-        <label class="i18n" msgid="options_text_to_speech_settings"></label>
-        <button id="ttsSettingsBtn" class="i18n"
-            msgid="options_text_to_speech_settings_link">
-        </button>
+      <div class="option-group">
+        <div class="option">
+          <span class="i18n" msgid="options_voices_description"
+                id="voices_description"></span>
+          <select id="voice" aria-labelledby="voices_description">
+          </select>
+        </div>
+        <hr aria-hidden="true">
+        <div class="option">
+          <label class="i18n" msgid="options_text_to_speech_settings"></label>
+          <button id="ttsSettingsBtn" class="i18n"
+              msgid="options_text_to_speech_settings_link">
+          </button>
+        </div>
       </div>
 
       <h2 class="i18n" msgid="options_highlight"></h2>
-      <div class="option">
-        <label id="wordHighlightLabel" class="i18n"
-               msgid="options_highlight_description">
-        </label>
-        <input id="wordHighlight" type="checkbox" class="checkbox"
-           name="wordHighlight" aria-labeledby="wordHighlightLabel">
+      <div class="option-group">
+        <div class="option" id="wordHighlightOption">
+          <label id="wordHighlightLabel" class="i18n"
+                msgid="options_highlight_description">
+          </label>
+          <input id="wordHighlight" type="checkbox" role="switch"
+            class="checkbox" name="wordHighlight"
+            aria-labeledby="wordHighlightLabel">
+        </div>
         <div class="sub-option hidden" id="highlightSubOption">
           <span class="i18n" msgid="options_highlight_color_description"
                 id="highlight_color_description"></span>

@@ -13,59 +13,47 @@ found in the LICENSE file.
 'use strict';
 
 tr.b.unittest.testSuite(function() {
-  // Add a browser and renderer to the process, with a few key events necessary
-  // to calculate the |androidStartupMetric|. An |offset| can be added to all
-  // events and the length of a few events can be extended by
-  // |incrementForMetrics|.
-  function fillModelWithOneBrowserSession(model, offset, incrementForMetrics) {
+  function createNewThread(model) {
     const browserProcess = model.getOrCreateProcess(tr.b.GUID.allocateSimple());
     const mainThread = browserProcess.getOrCreateThread(
         tr.b.GUID.allocateSimple());
     // Initializing the thread name is necessary to pass validation checks
     // made by the ChromeModelHelper.
     mainThread.name = 'CrBrowserMain';
+    return mainThread;
+  }
+
+  // Add a browser and renderer to the process, with a few key events necessary
+  // to calculate the |androidStartupMetric|. An |offset| can be added to all
+  // events and the length of a few events can be extended by
+  // |incrementForMetrics|.
+  function fillModelWithOneBrowserSession(model, offset, incrementForMetrics) {
     // In order for the tests below to succeed with strictEqual, the floating
     // point values should have exact representation as IEEE754 float.
-    mainThread.asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
+    createNewThread(model).asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
       cat: 'startup',
       title: 'Startup.BrowserMessageLoopStartTimeFromMainEntry3',
       start: (offset + 6800.125),
       duration: (incrementForMetrics + 1700.0625)
     }));
-    mainThread.asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
-      cat: 'navigation',
-      title: 'Navigation timeToNetworkStack',
-      start: (offset + 7502.50 + incrementForMetrics),
-      duration: 12.25
-    }));
+  }
 
-    const rendererProcess = model.getOrCreateProcess(
-        tr.b.GUID.allocateSimple());
-    const rendererMainThread =
-      rendererProcess.getOrCreateThread(tr.b.GUID.allocateSimple());
-    rendererMainThread.name = 'CrRendererMain';
-    rendererMainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-      cat: 'loading,rail,devtools.timeline',
-      title: 'firstContentfulPaint',
-      start: (offset + 8400.125 + incrementForMetrics),
-      duration: 0.0,
-      args: {frame: '0x0'}
-    }));
-
-    // Add an extra FCP event in the same renderer process appearing after the
-    // initial FCP even to check that it is ignored by metric computations.
-    rendererMainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-      cat: 'loading,rail,devtools.timeline',
-      title: 'firstContentfulPaint',
-      start: (offset + 8400.125 + incrementForMetrics + 0.125),
-      duration: 0.0,
-      args: {frame: '0x0'}
+  // Adds an event for the messageloop metric with an early start timestamp. The
+  // metric should ignore the very first messageloop start event in the trace.
+  // The specific lengths are not important.
+  function addEarlyMessageLoopEvent(model, offset) {
+    createNewThread(model).asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
+      cat: 'startup',
+      title: 'Startup.BrowserMessageLoopStartTimeFromMainEntry3',
+      start: (offset + 1.0),
+      duration: 1000.0
     }));
   }
 
   function makeTestModel(offset, incrementForMetrics) {
     return tr.c.TestUtils.newModel(function(model) {
       fillModelWithOneBrowserSession(model, offset, incrementForMetrics);
+      addEarlyMessageLoopEvent(model, offset);
     });
   }
 
@@ -77,14 +65,6 @@ tr.b.unittest.testSuite(function() {
         'messageloop_start_time');
     assert.strictEqual(1, messageLoopStartHistogram.numValues);
     assert.strictEqual(1700.0625, messageLoopStartHistogram.average);
-    const requestStartHistogram = histograms.getHistogramNamed(
-        'request_start_time');
-    assert.strictEqual(1, requestStartHistogram.numValues);
-    assert.strictEqual(714.625, requestStartHistogram.average);
-    const firstContentfulPaintHistogram = histograms.getHistogramNamed(
-        'first_contentful_paint_time');
-    assert.strictEqual(1, firstContentfulPaintHistogram.numValues);
-    assert.strictEqual(1600.0, firstContentfulPaintHistogram.average);
   });
 
   // Checks the metrics after adding an offset to events in the model, and
@@ -96,10 +76,6 @@ tr.b.unittest.testSuite(function() {
         'messageloop_start_time');
     assert.strictEqual(1, messageLoopStartHistogram.numValues);
     assert.strictEqual(1707.0625, messageLoopStartHistogram.average);
-    const firstContentfulPaintHistogram = histograms.getHistogramNamed(
-        'first_contentful_paint_time');
-    assert.strictEqual(1, firstContentfulPaintHistogram.numValues);
-    assert.strictEqual(1607.0, firstContentfulPaintHistogram.average);
   });
 
   test('androidStartupMetric_twoSessions', function() {
@@ -108,6 +84,7 @@ tr.b.unittest.testSuite(function() {
       return tr.c.TestUtils.newModel(function(model) {
         fillModelWithOneBrowserSession(model, 0.0, 0.0);
         fillModelWithOneBrowserSession(model, offset, incrementForMetrics);
+        addEarlyMessageLoopEvent(model, 0.0, 0.0);
       });
     }
     const delta = 0.125;
@@ -119,16 +96,6 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(2, messageLoopStartHistogram.numValues);
     assert.strictEqual(1700.0625, messageLoopStartHistogram.min);
     assert.strictEqual(1700.0625 + delta, messageLoopStartHistogram.max);
-    const requestStartHistogram = histograms.getHistogramNamed(
-        'request_start_time');
-    assert.strictEqual(2, requestStartHistogram.numValues);
-    assert.strictEqual(714.625, requestStartHistogram.min);
-    assert.strictEqual(714.625 + delta, requestStartHistogram.max);
-    const firstContentfulPaintHistogram = histograms.getHistogramNamed(
-        'first_contentful_paint_time');
-    assert.strictEqual(2, firstContentfulPaintHistogram.numValues);
-    assert.strictEqual(1600.0, firstContentfulPaintHistogram.min);
-    assert.strictEqual(1600.0 + delta, firstContentfulPaintHistogram.max);
   });
 });
 </script>

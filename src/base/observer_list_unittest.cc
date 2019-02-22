@@ -120,8 +120,8 @@ class ObserverListTestBase {
   ObserverListTestBase() {}
 
   template <class T>
-  const decltype(T::list_) list(const T& iter) {
-    return iter.list_;
+  const decltype(T::list_.get()) list(const T& iter) {
+    return iter.list_.get();
   }
 
   template <class T>

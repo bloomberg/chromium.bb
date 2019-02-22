@@ -31,10 +31,9 @@ class FullscreenController : public KeyedService {
 
   // The WebStateList for the Browser whose fullscreen state is managed by this
   // controller.
-  // TODO(crbug.com/790886): Once FullscreenController is a BrowserUserData,
-  // remove this, as the Browser's WebStateList can be used directly rather than
-  // being set.
   virtual void SetWebStateList(WebStateList* web_state_list) = 0;
+  virtual const WebStateList* GetWebStateList() const = 0;
+  virtual WebStateList* GetWebStateList() = 0;
 
   // Adds and removes FullscreenControllerObservers.
   virtual void AddObserver(FullscreenControllerObserver* observer) = 0;
@@ -57,9 +56,13 @@ class FullscreenController : public KeyedService {
   // 1.0 denotes that the toolbar should be completely visible.
   virtual CGFloat GetProgress() const = 0;
 
-  // Resets the model such that progress is reset to 1.0, animating in the
-  // headers and footers.
-  virtual void ResetModel() = 0;
+  // Enters fullscreen mode, animating away toolbars and resetting the progress
+  // to 0.0.  Calling this function while fullscreen is disabled has no effect.
+  virtual void EnterFullscreen() = 0;
+
+  // Exits fullscreen mode, animating in toolbars and resetting the progress to
+  // 1.0.
+  virtual void ExitFullscreen() = 0;
 
  private:
 

@@ -49,7 +49,8 @@
 namespace blink {
 
 static unsigned long long ToIntegerMilliseconds(TimeDelta duration) {
-  DCHECK_GE(duration, TimeDelta());
+  // TODO(npm): add histograms to understand when/why |duration| is sometimes
+  // negative.
   double clamped_seconds =
       Performance::ClampTimeResolution(duration.InSecondsF());
   return static_cast<unsigned long long>(clamped_seconds * 1000.0);

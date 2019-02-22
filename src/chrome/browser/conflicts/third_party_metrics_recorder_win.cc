@@ -66,6 +66,9 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
     if (module_data.module_properties & ModuleInfoData::kPropertyLoadedModule)
       AddUnsignedModuleToCrashkeys(module_data.inspection_result->basename);
   }
+
+  if (module_data.module_properties & ModuleInfoData::kPropertyShellExtension)
+    shell_extensions_count_++;
 }
 
 void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
@@ -89,6 +92,9 @@ void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
                                  module_count_, 1, 500, 50);
   base::UmaHistogramCustomCounts("ThirdPartyModules.Modules.Unsigned",
                                  unsigned_module_count_, 1, 500, 50);
+
+  base::UmaHistogramCounts100("ThirdPartyModules.ShellExtensionsCount3",
+                              shell_extensions_count_);
 }
 
 void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(

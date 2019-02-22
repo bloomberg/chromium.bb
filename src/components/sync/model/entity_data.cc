@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -101,6 +102,11 @@ EntityDataPtr EntityData::UpdateSpecifics(
   dict->SetString(base::ToUpperASCII(#value), transform(value));
 
 std::unique_ptr<base::DictionaryValue> EntityData::ToDictionaryValue() {
+  // This is used when debugging at sync-internals page. The code in
+  // sync_node_browser.js is expecing certain fields names. e.g. CTIME, MTIME,
+  // and IS_DIR.
+  base::Time ctime = creation_time;
+  base::Time mtime = modification_time;
   std::unique_ptr<base::DictionaryValue> dict =
       std::make_unique<base::DictionaryValue>();
   dict->Set("SPECIFICS", EntitySpecificsToValue(specifics));
@@ -109,10 +115,10 @@ std::unique_ptr<base::DictionaryValue> EntityData::ToDictionaryValue() {
   ADD_TO_DICT(dict, server_defined_unique_tag);
   ADD_TO_DICT(dict, non_unique_name);
   ADD_TO_DICT(dict, parent_id);
-  ADD_TO_DICT_WITH_TRANSFORM(dict, creation_time, GetTimeDebugString);
-  ADD_TO_DICT_WITH_TRANSFORM(dict, modification_time, GetTimeDebugString);
+  ADD_TO_DICT_WITH_TRANSFORM(dict, ctime, GetTimeDebugString);
+  ADD_TO_DICT_WITH_TRANSFORM(dict, mtime, GetTimeDebugString);
   ADD_TO_DICT_WITH_TRANSFORM(dict, unique_position, UniquePositionToString);
-  dict->SetBoolean("IS_FOLDER", is_folder);
+  dict->SetBoolean("IS_DIR", is_folder);
   return dict;
 }
 
@@ -141,8 +147,8 @@ bool EntityDataTraits::HasValue(const EntityData& value) {
 }
 
 const EntityData& EntityDataTraits::DefaultValue() {
-  CR_DEFINE_STATIC_LOCAL(EntityData, default_instance, ());
-  return default_instance;
+  static base::NoDestructor<EntityData> default_instance;
+  return *default_instance;
 }
 
 void PrintTo(const EntityData& entity_data, std::ostream* os) {

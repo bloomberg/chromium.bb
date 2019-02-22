@@ -34,7 +34,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
@@ -68,7 +67,8 @@
 namespace blink {
 
 namespace {
-constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
+const int kScopingTimeoutMS = 100;
+constexpr TimeDelta kTextFinderTestTimeout = TimeDelta::FromSeconds(10);
 }
 
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
@@ -81,10 +81,11 @@ void TextFinder::FindMatch::Trace(blink::Visitor* visitor) {
 class TextFinder::IdleScopeStringMatchesCallback
     : public ScriptedIdleTaskController::IdleTask {
  public:
-  static IdleScopeStringMatchesCallback* Create(TextFinder* text_finder,
-                                                int identifier,
-                                                const WebString& search_text,
-                                                const WebFindOptions& options) {
+  static IdleScopeStringMatchesCallback* Create(
+      TextFinder* text_finder,
+      int identifier,
+      const WebString& search_text,
+      const mojom::blink::FindOptions& options) {
     return new IdleScopeStringMatchesCallback(text_finder, identifier,
                                               search_text, options);
   }
@@ -108,26 +109,32 @@ class TextFinder::IdleScopeStringMatchesCallback
   IdleScopeStringMatchesCallback(TextFinder* text_finder,
                                  int identifier,
                                  const WebString& search_text,
-                                 const WebFindOptions& options)
+                                 const mojom::blink::FindOptions& options)
       : text_finder_(text_finder),
         identifier_(identifier),
         search_text_(search_text),
-        options_(options) {
+        options_(options.Clone()) {
+    // We need to add deadline because some webpages might have frames
+    // that are always busy, resulting in bad experience in find-in-page
+    // because the scoping tasks are not run.
+    // See crbug.com/893465.
+    IdleRequestOptions request_options;
+    request_options.setTimeout(kScopingTimeoutMS);
     callback_handle_ =
         text_finder->GetFrame()->GetDocument()->RequestIdleCallback(
-            this, IdleRequestOptions());
+            this, request_options);
   }
 
   void invoke(IdleDeadline* deadline) override {
     text_finder_->ResumeScopingStringMatches(deadline, identifier_,
-                                             search_text_, options_);
+                                             search_text_, *options_);
   }
 
   Member<TextFinder> text_finder_;
   int callback_handle_ = 0;
   const int identifier_;
   const WebString search_text_;
-  const WebFindOptions options_;
+  mojom::blink::FindOptionsPtr options_;
 };
 
 static void ScrollToVisible(Range* match) {
@@ -150,7 +157,7 @@ static void ScrollToVisible(Range* match) {
 
 bool TextFinder::Find(int identifier,
                       const WebString& search_text,
-                      const WebFindOptions& options,
+                      const mojom::blink::FindOptions& options,
                       bool wrap_within_frame,
                       bool* active_now) {
   if (!options.find_next) {
@@ -394,9 +401,10 @@ void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
   }
 }
 
-void TextFinder::StartScopingStringMatches(int identifier,
-                                           const WebString& search_text,
-                                           const WebFindOptions& options) {
+void TextFinder::StartScopingStringMatches(
+    int identifier,
+    const WebString& search_text,
+    const mojom::blink::FindOptions& options) {
   CancelPendingScopingEffort();
 
   // This is a brand new search, so we need to reset everything.
@@ -432,7 +440,7 @@ void TextFinder::StartScopingStringMatches(int identifier,
 void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
                                     int identifier,
                                     const WebString& search_text,
-                                    const WebFindOptions& options) {
+                                    const mojom::blink::FindOptions& options) {
   if (!ShouldScopeMatches(search_text, options)) {
     FinishCurrentScopingEffort(identifier);
     return;
@@ -502,7 +510,7 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
     }
 
     // If the Find function found a match it will have stored where the
-    // match was found in m_activeSelectionRect on the current frame. If we
+    // match was found in active_selection_rect_ on the current frame. If we
     // find this rect during scoping it means we have found the active
     // tickmark.
     bool found_active_match = false;
@@ -662,7 +670,7 @@ void TextFinder::UpdateFindMatchRects() {
     find_match_rects_are_valid_ = false;
   }
 
-  size_t dead_matches = 0;
+  wtf_size_t dead_matches = 0;
   for (FindMatch& match : find_matches_cache_) {
     if (!match.range_->BoundaryPointsValid() ||
         !match.range_->startContainer()->isConnected())
@@ -725,7 +733,7 @@ int TextFinder::NearestFindMatch(const FloatPoint& point,
 
   int nearest = -1;
   float nearest_distance_squared = FLT_MAX;
-  for (size_t i = 0; i < find_matches_cache_.size(); ++i) {
+  for (wtf_size_t i = 0; i < find_matches_cache_.size(); ++i) {
     DCHECK(!find_matches_cache_[i].rect_.IsEmpty());
     FloatSize offset = point - find_matches_cache_[i].rect_.Center();
     float width = offset.Width();
@@ -853,7 +861,7 @@ void TextFinder::UnmarkAllTextMatches() {
 }
 
 bool TextFinder::ShouldScopeMatches(const String& search_text,
-                                    const WebFindOptions& options) {
+                                    const mojom::blink::FindOptions& options) {
   // Don't scope if we can't find a frame or a view.
   // The user may have closed the tab/application, so abort.
   LocalFrame* frame = OwnerFrame().GetFrame();
@@ -885,16 +893,17 @@ bool TextFinder::ShouldScopeMatches(const String& search_text,
   return true;
 }
 
-void TextFinder::ScopeStringMatchesSoon(int identifier,
-                                        const WebString& search_text,
-                                        const WebFindOptions& options) {
+void TextFinder::ScopeStringMatchesSoon(
+    int identifier,
+    const WebString& search_text,
+    const mojom::blink::FindOptions& options) {
   DCHECK_EQ(idle_scoping_callback_, nullptr);
   // If it's for testing, run the scoping immediately.
   // TODO(rakina): Change to use general solution when it's available.
   // https://crbug.com/875203
   if (options.run_synchronously_for_testing) {
     ScopeStringMatches(
-        IdleDeadline::Create(CurrentTimeTicks() + kForcedInvocationDeadline,
+        IdleDeadline::Create(CurrentTimeTicks() + kTextFinderTestTimeout,
                              IdleDeadline::CallbackType::kCalledWhenIdle),
         identifier, search_text, options);
   } else {
@@ -903,10 +912,11 @@ void TextFinder::ScopeStringMatchesSoon(int identifier,
   }
 }
 
-void TextFinder::ResumeScopingStringMatches(IdleDeadline* deadline,
-                                            int identifier,
-                                            const WebString& search_text,
-                                            const WebFindOptions& options) {
+void TextFinder::ResumeScopingStringMatches(
+    IdleDeadline* deadline,
+    int identifier,
+    const WebString& search_text,
+    const mojom::blink::FindOptions& options) {
   idle_scoping_callback_.Clear();
 
   ScopeStringMatches(deadline, identifier, search_text, options);

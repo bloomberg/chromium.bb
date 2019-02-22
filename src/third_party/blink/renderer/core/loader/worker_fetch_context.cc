@@ -92,10 +92,9 @@ WorkerFetchContext* WorkerFetchContext::Create(
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     std::unique_ptr<WebWorkerFetchContext> web_context)
-    : global_scope_(global_scope),
+    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
+      global_scope_(global_scope),
       web_context_(std::move(web_context)),
-      loading_task_runner_(
-          global_scope_->GetTaskRunner(TaskType::kInternalLoading)),
       fetch_client_settings_object_(
           new FetchClientSettingsObjectImpl(*global_scope_)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
@@ -143,7 +142,7 @@ void WorkerFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
-    Resource::Type resource_type) const {
+    ResourceType resource_type) const {
   probe::didBlockRequest(global_scope_, resource_request, nullptr,
                          fetch_initiator_info, blocked_reason, resource_type);
 }
@@ -180,7 +179,7 @@ WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
 }
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
@@ -195,7 +194,7 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const KURL& url) const {
   if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
       resource_request.GetRequestContext() !=
-          WebURLRequest::kRequestContextXMLHttpRequest) {
+          mojom::RequestContextType::XML_HTTP_REQUEST) {
     if (Url().User() != url.User() || Url().Pass() != url.Pass()) {
       CountDeprecation(
           WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
@@ -266,7 +265,7 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
         ->CreateURLLoader(wrapped, CreateResourceLoadingTaskRunnerHandle());
   }
 
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextScript) {
+  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT) {
     if (!script_loader_factory_)
       script_loader_factory_ = web_context_->CreateScriptLoaderFactory();
     if (script_loader_factory_) {
@@ -321,7 +320,7 @@ void WorkerFetchContext::DispatchWillSendRequest(
     unsigned long identifier,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
   probe::willSendRequest(global_scope_, identifier, nullptr, request,
                          redirect_response, initiator_info, resource_type);
@@ -331,7 +330,7 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType) {
   if (response.HasMajorCertificateErrors()) {
@@ -393,25 +392,21 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void WorkerFetchContext::PopulateResourceRequest(
-    Resource::Type type,
+    ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
   FrameLoader::UpgradeInsecureRequest(out_request, global_scope_);
-  SetFirstPartyCookieAndRequestorOrigin(out_request);
+  SetFirstPartyCookie(out_request);
 }
 
-void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
-    ResourceRequest& out_request) {
+void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-  if (!out_request.RequestorOrigin())
-    out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerFetchContext::GetLoadingTaskRunner() {
-  return loading_task_runner_;
+bool WorkerFetchContext::DefersLoading() const {
+  return global_scope_->IsContextPaused();
 }
 
 std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>

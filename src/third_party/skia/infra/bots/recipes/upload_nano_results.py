@@ -17,7 +17,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  # Upload the nanobench resuls.
+  # Upload the nanobench results.
   builder_name = api.properties['buildername']
 
   now = api.time.utcnow()

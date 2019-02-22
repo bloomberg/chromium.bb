@@ -41,8 +41,7 @@ std::vector<std::string> ListValueToStringVector(const base::ListValue* value) {
   std::vector<std::string> results;
   results.reserve(value->GetSize());
   std::string s;
-  for (base::ListValue::const_iterator it = value->begin(); it != value->end();
-       ++it) {
+  for (auto it = value->begin(); it != value->end(); ++it) {
     if (!it->GetAsString(&s))
       continue;
     results.push_back(s);
@@ -58,8 +57,7 @@ std::vector<uint16_t> ParseCipherSuites(
   std::vector<uint16_t> cipher_suites;
   cipher_suites.reserve(cipher_strings.size());
 
-  for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
-       it != cipher_strings.end(); ++it) {
+  for (auto it = cipher_strings.begin(); it != cipher_strings.end(); ++it) {
     uint16_t cipher_suite = 0;
     if (!net::ParseSSLCipherString(*it, &cipher_suite)) {
       LOG(ERROR) << "Ignoring unrecognized or unparsable cipher suite: " << *it;
@@ -181,9 +179,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     tls13_value = switches::kTLS13VariantDisabled;
   } else if (tls13_variant == "draft23") {
     tls13_value = switches::kTLS13VariantDraft23;
-    version_value = switches::kSSLVersionTLSv13;
-  } else if (tls13_variant == "draft28") {
-    tls13_value = switches::kTLS13VariantDraft28;
     version_value = switches::kSSLVersionTLSv13;
   } else if (tls13_variant == "final") {
     tls13_value = switches::kTLS13VariantFinal;
@@ -316,8 +311,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
       config->version_max = network::mojom::SSLVersion::kTLS12;
   } else if (tls13_variant_str == switches::kTLS13VariantDraft23) {
     config->tls13_variant = network::mojom::TLS13Variant::kDraft23;
-  } else if (tls13_variant_str == switches::kTLS13VariantDraft28) {
-    config->tls13_variant = network::mojom::TLS13Variant::kDraft28;
   } else if (tls13_variant_str == switches::kTLS13VariantFinal) {
     config->tls13_variant = network::mojom::TLS13Variant::kFinal;
   }

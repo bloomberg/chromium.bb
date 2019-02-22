@@ -18,7 +18,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "components/net_log/chrome_net_log.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/dns/mdns_client.h"
 #include "net/socket/datagram_server_socket.h"
 
@@ -87,8 +89,8 @@ class ServiceDiscoveryClientMdns::Proxy {
   }
 
   static bool PostToUIThread(base::OnceClosure task) {
-    return BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                   std::move(task));
+    return base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                                    std::move(task));
   }
 
   ServiceDiscoveryClient* client() {
@@ -154,8 +156,8 @@ void InitMdns(const MdnsInitCallback& on_initialized,
               net::MDnsClient* mdns,
               net::NetLog* net_log) {
   SocketFactory socket_factory(interfaces, net_log);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(on_initialized, mdns->StartListening(&socket_factory)));
 }
 
@@ -335,12 +337,13 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 }  // namespace
 
 ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
-    : mdns_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
+    : mdns_runner_(
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
       restart_attempts_(0),
       need_delay_mdns_tasks_(true),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   StartNewClient();
 }
 
@@ -373,12 +376,12 @@ ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
 
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   DestroyMdns();
 }
 
-void ServiceDiscoveryClientMdns::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void ServiceDiscoveryClientMdns::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Only network changes resets counter.
   restart_attempts_ = 0;

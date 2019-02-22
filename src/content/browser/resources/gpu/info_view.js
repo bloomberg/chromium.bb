@@ -235,6 +235,7 @@ cr.define('gpu', function() {
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'protected_video_decode': 'Hardware Protected Video Decode',
         'surface_synchronization': 'Surface Synchronization',
+        'surface_control': 'Surface Control',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
         'viz_display_compositor': 'Viz Service Display Compositor',

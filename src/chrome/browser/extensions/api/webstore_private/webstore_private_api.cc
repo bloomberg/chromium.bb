@@ -102,8 +102,7 @@ void PendingApprovals::PushApproval(
 std::unique_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
     Profile* profile,
     const std::string& id) {
-  for (ApprovalList::iterator iter = approvals_.begin();
-       iter != approvals_.end(); ++iter) {
+  for (auto iter = approvals_.begin(); iter != approvals_.end(); ++iter) {
     if (iter->get()->extension_id == id &&
         profile->IsSameProfile(iter->get()->profile)) {
       std::unique_ptr<WebstoreInstaller::Approval> approval = std::move(*iter);
@@ -282,8 +281,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   // Check the management policy before the installation process begins.
   Profile* profile = chrome_details_.GetProfile();
   base::string16 policy_error;
-  bool allow = ExtensionSystem::Get(profile)->
-      management_policy()->UserMayLoad(dummy_extension_.get(), &policy_error);
+  bool allow =
+      ExtensionSystem::Get(profile)->management_policy()->UserMayInstall(
+          dummy_extension_.get(), &policy_error);
   if (!allow) {
     bool blocked_for_child = false;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

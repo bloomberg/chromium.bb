@@ -106,6 +106,31 @@ TEST_F(WebmParserTest, DefaultParse) {
   EXPECT_EQ(Status::kOkCompleted, status.code);
 }
 
+TEST_F(WebmParserTest, DefaultActionIsRead) {
+  BufferReader reader = {
+      0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
+      0x80,  // Size = 0.
+  };
+
+  MockCallback callback;
+  {
+    InSequence dummy;
+
+    const ElementMetadata metadata = {Id::kEbml, 5, 0, 0};
+    const Ebml ebml{};
+
+    // This intentionally does not set the action and relies on the parser using
+    // a default action value of kRead.
+    EXPECT_CALL(callback, OnElementBegin(metadata, NotNull()))
+        .WillOnce(Return(Status(Status::kOkCompleted)));
+    EXPECT_CALL(callback, OnEbml(metadata, ebml)).Times(1);
+  }
+
+  WebmParser parser;
+  Status status = parser.Feed(&callback, &reader);
+  EXPECT_EQ(Status::kOkCompleted, status.code);
+}
+
 TEST_F(WebmParserTest, UnknownElement) {
   BufferReader reader = {
       0x80,  // ID = 0x80.

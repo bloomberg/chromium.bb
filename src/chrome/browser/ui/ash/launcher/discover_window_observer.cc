@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,11 +13,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace {
@@ -56,10 +53,5 @@ void DiscoverWindowObserver::OnNewDiscoverWindow(Browser* discover_browser) {
   const ash::ShelfID shelf_id(app_list::kInternalAppIdDiscover);
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // The new gfx::ImageSkia instance is owned by the window itself.
-  window->SetProperty(
-      aura::client::kWindowIconKey,
-      new gfx::ImageSkia(*rb.GetImageSkiaNamed(IDR_DISCOVER_APP_192)));
   aura_window_tracker_->Add(window);
 }

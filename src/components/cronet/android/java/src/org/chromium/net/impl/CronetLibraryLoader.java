@@ -35,7 +35,7 @@ public class CronetLibraryLoader {
     // Has library loading commenced?  Setting guarded by sLoadLock.
     private static volatile boolean sLibraryLoaded = IntegratedModeState.INTEGRATED_MODE_ENABLED;
     // Has ensureInitThreadInitialized() completed?
-    private static volatile boolean sInitThreadInitDone = false;
+    private static volatile boolean sInitThreadInitDone;
     // Block calling native methods until this ConditionVariable opens to indicate loadLibrary()
     // is completed and native methods have been registered.
     private static final ConditionVariable sWaitForLibLoad = new ConditionVariable();

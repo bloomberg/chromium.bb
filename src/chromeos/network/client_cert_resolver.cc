@@ -258,11 +258,11 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
     base::Time now) {
   // Filter all client certs and determines each certificate's issuer, which is
   // required for the pattern matching.
-  // TODO(pmarko): Consider moving the filtering of client certs into
-  // CertLoader. It should not be in ClientCertResolver's responsibility to
-  // decide if a certificate is a valid client certificate or not. Other
-  // consumers of CertLoader could also use a pre-filtered list (e.g.
-  // NetworkCertMigrator). See crbug.com/781693.
+  // TODO(crbug.com/781693): Consider moving the filtering of client certs into
+  // NetworkCertLoader. It should not be in ClientCertResolver's responsibility
+  // to decide if a certificate is a valid client certificate or not. Other
+  // consumers of NetworkCertLoader could also use a pre-filtered list (e.g.
+  // NetworkCertMigrator).
   std::vector<CertAndIssuer> client_certs;
   for (net::ScopedCERTCertificate& scoped_cert : certs) {
     CERTCertificate* cert = scoped_cert.get();
@@ -270,7 +270,8 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
     // HasPrivateKey should be invoked after IsCertificateHardwareBacked for
     // performance reasons.
     if (!net::x509_util::GetValidityTimes(cert, nullptr, &not_after) ||
-        now > not_after || !CertLoader::IsCertificateHardwareBacked(cert) ||
+        now > not_after ||
+        !NetworkCertLoader::IsCertificateHardwareBacked(cert) ||
         !HasPrivateKey(cert)) {
       continue;
     }
@@ -322,8 +323,8 @@ std::vector<NetworkAndMatchingCert> FindCertificateMatches(
     std::string pkcs11_id;
     int slot_id = -1;
 
-    pkcs11_id =
-        CertLoader::GetPkcs11IdAndSlotForCert(cert_it->cert.get(), &slot_id);
+    pkcs11_id = NetworkCertLoader::GetPkcs11IdAndSlotForCert(
+        cert_it->cert.get(), &slot_id);
     if (pkcs11_id.empty()) {
       LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
       // So far this error is not expected to happen. We can just continue, in
@@ -358,7 +359,7 @@ void LogError(const std::string& service_path,
 }
 
 bool ClientCertificatesLoaded() {
-  if (!CertLoader::Get()->initial_load_finished()) {
+  if (!NetworkCertLoader::Get()->initial_load_finished()) {
     VLOG(1) << "Certificates not loaded yet.";
     return false;
   }
@@ -381,8 +382,8 @@ ClientCertResolver::~ClientCertResolver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (network_state_handler_)
     network_state_handler_->RemoveObserver(this, FROM_HERE);
-  if (CertLoader::IsInitialized())
-    CertLoader::Get()->RemoveObserver(this);
+  if (NetworkCertLoader::IsInitialized())
+    NetworkCertLoader::Get()->RemoveObserver(this);
   if (managed_network_config_handler_)
     managed_network_config_handler_->RemoveObserver(this);
 }
@@ -399,7 +400,7 @@ void ClientCertResolver::Init(
   managed_network_config_handler_ = managed_network_config_handler;
   managed_network_config_handler_->AddObserver(this);
 
-  CertLoader::Get()->AddObserver(this);
+  NetworkCertLoader::Get()->AddObserver(this);
 }
 
 void ClientCertResolver::AddObserver(Observer* observer) {
@@ -428,11 +429,12 @@ bool ClientCertResolver::ResolveCertificatePatternSync(
   if (client_cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     client_certs = CreateSortedCertAndIssuerList(
         net::x509_util::DupCERTCertificateList(
-            CertLoader::Get()->system_token_client_certs()),
+            NetworkCertLoader::Get()->system_token_client_certs()),
         base::Time::Now());
   } else {
     client_certs = CreateSortedCertAndIssuerList(
-        net::x509_util::DupCERTCertificateList(CertLoader::Get()->all_certs()),
+        net::x509_util::DupCERTCertificateList(
+            NetworkCertLoader::Get()->all_certs()),
         base::Time::Now());
   }
 
@@ -448,8 +450,8 @@ bool ClientCertResolver::ResolveCertificatePatternSync(
   }
 
   int slot_id = -1;
-  std::string pkcs11_id =
-      CertLoader::GetPkcs11IdAndSlotForCert(cert_it->cert.get(), &slot_id);
+  std::string pkcs11_id = NetworkCertLoader::GetPkcs11IdAndSlotForCert(
+      cert_it->cert.get(), &slot_id);
   if (pkcs11_id.empty()) {
     LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
     // So far this error is not expected to happen. We can just continue, in
@@ -621,9 +623,9 @@ void ClientCertResolver::ResolveNetworks(
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FindCertificateMatches,
                      net::x509_util::DupCERTCertificateList(
-                         CertLoader::Get()->all_certs()),
+                         NetworkCertLoader::Get()->all_certs()),
                      net::x509_util::DupCERTCertificateList(
-                         CertLoader::Get()->system_token_client_certs()),
+                         NetworkCertLoader::Get()->system_token_client_certs()),
                      networks_to_resolve, Now()),
       base::BindOnce(&ClientCertResolver::ConfigureCertificates,
                      weak_ptr_factory_.GetWeakPtr()));

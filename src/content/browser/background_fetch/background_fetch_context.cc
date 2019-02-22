@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_metrics.h"
@@ -17,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -24,6 +26,8 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
+
+using FailureReason = blink::mojom::BackgroundFetchFailureReason;
 
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
@@ -72,15 +76,16 @@ void BackgroundFetchContext::DidGetInitializationData(
     blink::mojom::BackgroundFetchError error,
     std::vector<background_fetch::BackgroundFetchInitializationData>
         initialization_data) {
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    // TODO(crbug.com/780025): Log failures to UMA.
+  if (error != blink::mojom::BackgroundFetchError::NONE)
     return;
-  }
+
+  background_fetch::RecordRegistrationsOnStartup(initialization_data.size());
 
   for (auto& data : initialization_data) {
     CreateController(data.registration_id, data.registration, data.options,
                      data.icon, data.ui_title, data.num_completed_requests,
-                     data.num_requests, std::move(data.active_fetch_requests));
+                     data.num_requests, std::move(data.active_fetch_requests),
+                     /* start_paused = */ false);
   }
 }
 
@@ -133,6 +138,7 @@ void BackgroundFetchContext::StartFetch(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     RenderFrameHost* render_frame_host,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -143,23 +149,14 @@ void BackgroundFetchContext::StartFetch(
   // operator uses.
   DCHECK_EQ(0u, fetch_callbacks_.count(registration_id));
   fetch_callbacks_[registration_id] = std::move(callback);
-
-  // |data_manager| is guaranteed to outlive |this|. |create_registration| is
-  // passed to `DidGetPermission`, which is tied to |weak_factory_|. That means
-  // that if |create_registration| runs, |this| is still alive, as is
-  // |data_manager| (a pointer owned by |this|).
-  auto create_registration = base::BindOnce(
-      &BackgroundFetchDataManager::CreateRegistration,
-      base::Unretained(data_manager_.get()), registration_id, requests, options,
-      icon,
-      base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
-                     weak_factory_.GetWeakPtr(), registration_id));
+  int frame_tree_node_id =
+      render_frame_host ? render_frame_host->GetFrameTreeNodeId() : 0;
 
   GetPermissionForOrigin(
       registration_id.origin(), render_frame_host,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
-                     weak_factory_.GetWeakPtr(), std::move(create_registration),
-                     registration_id));
+                     weak_factory_.GetWeakPtr(), registration_id, requests,
+                     options, icon, std::move(ukm_data), frame_tree_node_id));
 }
 
 void BackgroundFetchContext::GetPermissionForOrigin(
@@ -167,7 +164,6 @@ void BackgroundFetchContext::GetPermissionForOrigin(
     RenderFrameHost* render_frame_host,
     GetPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   ResourceRequestInfo::WebContentsGetter wc_getter = base::NullCallback();
 
   // Permissions need to go through the DownloadRequestLimiter if the fetch
@@ -182,11 +178,28 @@ void BackgroundFetchContext::GetPermissionForOrigin(
 }
 
 void BackgroundFetchContext::DidGetPermission(
-    base::OnceClosure permission_closure,
     const BackgroundFetchRegistrationId& registration_id,
-    bool has_permission) {
-  if (has_permission) {
-    std::move(permission_closure).Run();
+    const std::vector<ServiceWorkerFetchRequest>& requests,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
+    int frame_tree_node_id,
+    BackgroundFetchPermission permission) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
+                     registration_id.origin(), requests, options, icon,
+                     std::move(ukm_data), frame_tree_node_id, permission));
+
+  if (permission != BackgroundFetchPermission::BLOCKED) {
+    // TODO(crbug.com/886896): Passed paused flag to CreateRegistration.
+    data_manager_->BackgroundFetchDataManager::CreateRegistration(
+        registration_id, requests, options, icon,
+        permission == BackgroundFetchPermission::ASK /* start_paused */,
+        base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
+                       weak_factory_.GetWeakPtr(), registration_id));
     return;
   }
 
@@ -201,7 +214,6 @@ void BackgroundFetchContext::DidGetPermission(
 void BackgroundFetchContext::GetIconDisplaySize(
     blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   delegate_proxy_.GetIconDisplaySize(std::move(callback));
 }
 
@@ -261,7 +273,7 @@ void BackgroundFetchContext::OnQuotaExceeded(
     const BackgroundFetchRegistrationId& registration_id) {
   auto job_it = job_controllers_.find(registration_id.unique_id());
   if (job_it != job_controllers_.end() && job_it->second)
-    job_it->second->Abort(BackgroundFetchReasonToAbort::QUOTA_EXCEEDED);
+    job_it->second->Abort(FailureReason::QUOTA_EXCEEDED);
 }
 
 void BackgroundFetchContext::AbandonFetches(
@@ -281,8 +293,7 @@ void BackgroundFetchContext::AbandonFetches(
             service_worker_registration_id) {
       DCHECK(saved_iter->second);
 
-      saved_iter->second->Abort(
-          BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE);
+      saved_iter->second->Abort(FailureReason::SERVICE_WORKER_UNAVAILABLE);
     }
   }
 
@@ -307,7 +318,8 @@ void BackgroundFetchContext::OnRegistrationCreated(
     const BackgroundFetchRegistration& registration,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
-    int num_requests) {
+    int num_requests,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (hang_registration_creation_for_testing_) {
@@ -322,7 +334,7 @@ void BackgroundFetchContext::OnRegistrationCreated(
 
   CreateController(registration_id, registration, options, icon, options.title,
                    0u /* num_completed_requests */, num_requests,
-                   {} /* active_fetch_requests */);
+                   {} /* active_fetch_requests */, start_paused);
 }
 
 void BackgroundFetchContext::OnUpdatedUI(
@@ -348,6 +360,15 @@ void BackgroundFetchContext::OnStorageWiped() {
   AbandonFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
 }
 
+void BackgroundFetchContext::OnFetchStorageError(
+    const BackgroundFetchRegistrationId& registration_id) {
+  auto controllers_iter = job_controllers_.find(registration_id.unique_id());
+  if (controllers_iter == job_controllers_.end())
+    return;
+
+  controllers_iter->second->Abort(FailureReason::SERVICE_WORKER_UNAVAILABLE);
+}
+
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRegistration& registration,
@@ -357,7 +378,8 @@ void BackgroundFetchContext::CreateController(
     size_t num_completed_requests,
     size_t num_requests,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-        active_fetch_requests) {
+        active_fetch_requests,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
@@ -372,7 +394,7 @@ void BackgroundFetchContext::CreateController(
 
   controller->InitializeRequestStatus(num_completed_requests, num_requests,
                                       std::move(active_fetch_requests),
-                                      ui_title);
+                                      ui_title, start_paused);
   scheduler_->AddJobController(controller.get());
   job_controllers_.emplace(registration_id.unique_id(), std::move(controller));
 }
@@ -382,28 +404,36 @@ void BackgroundFetchContext::Abort(
     blink::mojom::BackgroundFetchService::AbortCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  auto controllers_iter = job_controllers_.find(registration_id.unique_id());
+  if (controllers_iter == job_controllers_.end()) {
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+    return;
+  }
+
+  controllers_iter->second->Abort(FailureReason::CANCELLED_BY_DEVELOPER);
+
   DidFinishJob(std::move(callback), registration_id,
-               BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER);
+               FailureReason::CANCELLED_BY_DEVELOPER);
 }
 
 void BackgroundFetchContext::DidFinishJob(
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchReasonToAbort reason_to_abort) {
+    FailureReason failure_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // If |aborted| is true, this will also propagate the event to any active
-  // JobController for the registration, to terminate in-progress requests.
+  // If the registration was aborted, this will also propagate the event to any
+  // active JobController, to terminate in-progress requests.
   data_manager_->MarkRegistrationForDeletion(
       registration_id,
       base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
                      weak_factory_.GetWeakPtr(), registration_id,
-                     reason_to_abort, std::move(callback)));
+                     failure_reason, std::move(callback)));
 }
 
 void BackgroundFetchContext::DidMarkForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchReasonToAbort reason_to_abort,
+    FailureReason failure_reason,
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     blink::mojom::BackgroundFetchError error) {
   DCHECK(callback);
@@ -412,108 +442,108 @@ void BackgroundFetchContext::DidMarkForDeletion(
   // It's normal to get INVALID_ID errors here - it means the registration was
   // already inactive (marked for deletion). This happens when an abort (from
   // developer or from user) races with the download completing/failing, or even
-  // when two aborts race. TODO(johnme): Log STORAGE_ERRORs to UMA though.
+  // when two aborts race.
   if (error != blink::mojom::BackgroundFetchError::NONE)
     return;
 
+  if (failure_reason == FailureReason::NONE) {
+    // As far as we know the fetch was successful, go over the entries in the
+    // cache and make sure all the responses are there and successful.
+    data_manager_->GetSettledFetchesForRegistration(
+        registration_id, std::make_unique<BackgroundFetchRequestMatchParams>(),
+        base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
+                       weak_factory_.GetWeakPtr(), registration_id));
+    return;
+  }
+
+  // The fetch failed, dispatch an appropriate event.
   auto controllers_iter = job_controllers_.find(registration_id.unique_id());
-
-  if (reason_to_abort == BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER) {
-    DCHECK(controllers_iter != job_controllers_.end());
-    controllers_iter->second->Abort(reason_to_abort);
-  }
+  DCHECK(controllers_iter != job_controllers_.end());
   auto registration = controllers_iter->second->NewRegistration(
-      blink::mojom::BackgroundFetchState::FAILURE);
-
-  switch (reason_to_abort) {
-    case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
-    case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
-      CleanupRegistration(registration_id, {},
-                          blink::mojom::BackgroundFetchState::FAILURE);
-      event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-          registration_id, std::move(registration), base::DoNothing());
-      return;
-    case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-    case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
-    case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
-    case BackgroundFetchReasonToAbort::NONE:
-      // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
-      // We still need this to figure out which event to send.
-      // TODO(crbug.com/699957, crbug.com/874092): Add a method to only return
-      // the information needed to dispatch these events, instead of settled
-      // fetches.
-      data_manager_->GetSettledFetchesForRegistration(
-          registration_id,
-          std::make_unique<BackgroundFetchRequestMatchParams>(),
-          base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
-                         weak_factory_.GetWeakPtr(), registration_id,
-                         std::move(registration)));
-      return;
-  }
+      blink::mojom::BackgroundFetchResult::FAILURE);
+  DispatchCompletionEvent(registration_id, std::move(registration));
 }
 
 void BackgroundFetchContext::DidGetSettledFetches(
     const BackgroundFetchRegistrationId& registration_id,
-    std::unique_ptr<BackgroundFetchRegistration> registration,
     blink::mojom::BackgroundFetchError error,
-    bool background_fetch_succeeded,
+    FailureReason failure_reason,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(failure_reason == FailureReason::NONE ||
+         failure_reason == FailureReason::FETCH_ERROR ||
+         failure_reason == FailureReason::SERVICE_WORKER_UNAVAILABLE ||
+         failure_reason == FailureReason::BAD_STATUS);
 
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    CleanupRegistration(registration_id, {} /* fetches */,
-                        blink::mojom::BackgroundFetchState::FAILURE,
-                        true /* preserve_info_to_dispatch_click_event */);
-    return;
-  }
+  auto controllers_iter = job_controllers_.find(registration_id.unique_id());
+  DCHECK(controllers_iter != job_controllers_.end());
+  failure_reason = controllers_iter->second->MergeFailureReason(failure_reason);
 
-  DCHECK(job_controllers_.count(registration_id.unique_id()));
+  blink::mojom::BackgroundFetchResult result =
+      failure_reason == FailureReason::NONE
+          ? blink::mojom::BackgroundFetchResult::SUCCESS
+          : blink::mojom::BackgroundFetchResult::FAILURE;
 
-  if (job_controllers_[registration_id.unique_id()]->total_downloads() !=
-      static_cast<int>(settled_fetches.size())) {
-    // Something went wrong, and some information was lost.
-    background_fetch_succeeded = false;
-  }
+  auto registration = controllers_iter->second->NewRegistration(result);
+  DispatchCompletionEvent(registration_id, std::move(registration));
+}
 
-  // The `backgroundfetchsuccess` event will be invoked when all requests in the
-  // registration have completed successfully. In all other cases, the
-  // `backgroundfetchfail` event will be invoked instead.
-  if (background_fetch_succeeded) {
-    registration->state = blink::mojom::BackgroundFetchState::SUCCESS;
-    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
-        registration_id, std::move(registration),
-        base::BindOnce(
-            &BackgroundFetchContext::CleanupRegistration,
-            weak_factory_.GetWeakPtr(), registration_id,
-            // The blob uuid is sent as part of |settled_fetches|. Bind
-            // |blob_data_handles| to the callback to keep them alive
-            // until the waitUntil event is resolved.
-            std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchState::SUCCESS,
-            true /* preserve_info_to_dispatch_click_event */));
-  } else {
-    registration->state = blink::mojom::BackgroundFetchState::FAILURE;
-    event_dispatcher_.DispatchBackgroundFetchFailEvent(
-        registration_id, std::move(registration),
-        base::BindOnce(
-            &BackgroundFetchContext::CleanupRegistration,
-            weak_factory_.GetWeakPtr(), registration_id,
-            // The blob uuid is sent as part of |settled_fetches|. Bind
-            // |blob_data_handles| to the callback to keep them alive
-            // until the waitUntil event is resolved.
-            std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchState::FAILURE,
-            true /* preserve_info_to_dispatch_click_event */));
+void BackgroundFetchContext::DispatchCompletionEvent(
+    const BackgroundFetchRegistrationId& registration_id,
+    std::unique_ptr<BackgroundFetchRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  registration_notifier_->Notify(*registration);
+
+  switch (registration->failure_reason) {
+    case FailureReason::NONE:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::SUCCESS);
+      event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
+          registration_id, std::move(registration),
+          base::BindOnce(&BackgroundFetchContext::CleanupRegistration,
+                         weak_factory_.GetWeakPtr(), registration_id,
+                         blink::mojom::BackgroundFetchResult::SUCCESS,
+                         /* preserve_info_to_dispatch_click_event= */ true));
+      return;
+    case FailureReason::CANCELLED_FROM_UI:
+    case FailureReason::CANCELLED_BY_DEVELOPER:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::FAILURE);
+      event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+          registration_id, std::move(registration),
+          base::BindOnce(&BackgroundFetchContext::CleanupRegistration,
+                         weak_factory_.GetWeakPtr(), registration_id,
+                         blink::mojom::BackgroundFetchResult::FAILURE,
+                         /* preserve_info_to_dispatch_click_event= */ false));
+      return;
+    case FailureReason::BAD_STATUS:
+    case FailureReason::FETCH_ERROR:
+    case FailureReason::SERVICE_WORKER_UNAVAILABLE:
+    case FailureReason::QUOTA_EXCEEDED:
+    case FailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+      DCHECK_EQ(registration->result,
+                blink::mojom::BackgroundFetchResult::FAILURE);
+      event_dispatcher_.DispatchBackgroundFetchFailEvent(
+          registration_id, std::move(registration),
+          base::BindOnce(&BackgroundFetchContext::CleanupRegistration,
+                         weak_factory_.GetWeakPtr(), registration_id,
+                         blink::mojom::BackgroundFetchResult::FAILURE,
+                         /* preserve_info_to_dispatch_click_event= */ true));
+      return;
   }
 }
 
 void BackgroundFetchContext::CleanupRegistration(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<std::unique_ptr<storage::BlobDataHandle>>& blob_handles,
-    blink::mojom::BackgroundFetchState background_fetch_state,
+    blink::mojom::BackgroundFetchResult background_fetch_result,
     bool preserve_info_to_dispatch_click_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Indicate to the renderer that the records for this fetch are no longer
+  // available.
+  registration_notifier_->NotifyRecordsUnavailable(registration_id.unique_id());
 
   // If we had an active JobController, it is no longer necessary, as the
   // notification's UI can no longer be updated after the fetch is aborted, or
@@ -526,22 +556,16 @@ void BackgroundFetchContext::CleanupRegistration(
   if (preserve_info_to_dispatch_click_event) {
     completed_fetches_[registration_id.unique_id()] = std::make_pair(
         registration_id,
-        controllers_iter->second->NewRegistration(background_fetch_state));
+        controllers_iter->second->NewRegistration(background_fetch_result));
   }
   job_controllers_.erase(registration_id.unique_id());
 
-  // At this point, JavaScript can no longer obtain BackgroundFetchRegistration
-  // objects for this registration, and those objects are the only thing that
-  // requires us to keep the registration's data around. So once the
-  // RegistrationNotifier informs us that all existing observers (and hence
-  // BackgroundFetchRegistration objects) have been garbage collected, it'll be
-  // safe to delete the registration. This callback doesn't run if the browser
-  // is shutdown before that happens - BackgroundFetchDataManager::Cleanup acts
-  // as a fallback in that case, and deletes the registration on next startup.
-  registration_notifier_->AddGarbageCollectionCallback(
-      registration_id.unique_id(),
-      base::BindOnce(&BackgroundFetchContext::LastObserverGarbageCollected,
-                     weak_factory_.GetWeakPtr(), registration_id));
+  // Delete the data associated with this fetch. Cache storage will keep the
+  // downloaded data around so long as there are references to it, and delete
+  // it once there is none. We don't need to do that accounting.
+  data_manager_->DeleteRegistration(
+      registration_id,
+      base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
 }
 
 void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
@@ -555,14 +579,12 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
     return;
   }
 
-  // The fetch is active, or has been aborted/cancelled.
+  // The fetch is active.
   auto controllers_iter = job_controllers_.find(unique_id);
   if (controllers_iter == job_controllers_.end())
     return;
-  // TODO(crbug.com/873630): Implement a background fetch state manager to
-  // keep track of states, and stop hard-coding it here.
   auto registration = controllers_iter->second->NewRegistration(
-      blink::mojom::BackgroundFetchState::PENDING);
+      blink::mojom::BackgroundFetchResult::UNSET);
   event_dispatcher_.DispatchBackgroundFetchClickEvent(
       controllers_iter->second->registration_id(), std::move(registration),
       base::DoNothing());
@@ -583,7 +605,7 @@ void BackgroundFetchContext::MatchRequests(
 void BackgroundFetchContext::DidGetMatchingRequests(
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
     blink::mojom::BackgroundFetchError error,
-    bool background_fetch_succeeded,
+    FailureReason failure_reason,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -596,20 +618,11 @@ void BackgroundFetchContext::DidGetMatchingRequests(
   std::move(callback).Run(std::move(settled_fetches));
 }
 
-void BackgroundFetchContext::LastObserverGarbageCollected(
-    const BackgroundFetchRegistrationId& registration_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  data_manager_->DeleteRegistration(
-      registration_id,
-      base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
-}
-
 void BackgroundFetchContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
 }
 

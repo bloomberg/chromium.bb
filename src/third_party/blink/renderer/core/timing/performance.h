@@ -198,6 +198,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void ActivateObserver(PerformanceObserver&);
   void ResumeSuspendedObservers();
 
+  bool HasObserverFor(PerformanceEntry::EntryType) const;
+
   static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
                                    const ResourceResponse&,
                                    const SecurityOrigin&,
@@ -244,7 +246,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void NotifyObserversOfEntry(PerformanceEntry&) const;
   void NotifyObserversOfEntries(PerformanceEntryVector&);
-  bool HasObserverFor(PerformanceEntry::EntryType) const;
 
   void DeliverObservationsTimerFired(TimerBase*);
 

@@ -126,10 +126,10 @@ angle::Result PixelBuffer::stageSubresourceUpdate(ContextVk *contextVk,
 
     VkBuffer bufferHandle = VK_NULL_HANDLE;
 
-    uint8_t *stagingPointer = nullptr;
-    bool newBufferAllocated = false;
+    uint8_t *stagingPointer    = nullptr;
+    bool newBufferAllocated    = false;
     VkDeviceSize stagingOffset = 0;
-    size_t allocationSize   = outputDepthPitch * extents.depth;
+    size_t allocationSize      = outputDepthPitch * extents.depth;
     ANGLE_TRY(mStagingBuffer.allocate(contextVk, allocationSize, &stagingPointer, &bufferHandle,
                                       &stagingOffset, &newBufferAllocated));
 
@@ -140,7 +140,7 @@ angle::Result PixelBuffer::stageSubresourceUpdate(ContextVk *contextVk,
     loadFunction.loadFunction(extents.width, extents.height, extents.depth, source, inputRowPitch,
                               inputDepthPitch, stagingPointer, outputRowPitch, outputDepthPitch);
 
-    VkBufferImageCopy copy;
+    VkBufferImageCopy copy = {};
 
     copy.bufferOffset                    = stagingOffset;
     copy.bufferRowLength                 = extents.width;
@@ -197,8 +197,8 @@ angle::Result PixelBuffer::stageSubresourceUpdateFromFramebuffer(
 
     VkBuffer bufferHandle = VK_NULL_HANDLE;
 
-    uint8_t *stagingPointer = nullptr;
-    bool newBufferAllocated = false;
+    uint8_t *stagingPointer    = nullptr;
+    bool newBufferAllocated    = false;
     VkDeviceSize stagingOffset = 0;
 
     // The destination is only one layer deep.
@@ -206,19 +206,10 @@ angle::Result PixelBuffer::stageSubresourceUpdateFromFramebuffer(
     ANGLE_TRY(mStagingBuffer.allocate(contextVk, allocationSize, &stagingPointer, &bufferHandle,
                                       &stagingOffset, &newBufferAllocated));
 
-    gl::PixelPackState pixelPackState = gl::PixelPackState();
-    // TODO(lucferron): The pixel pack state alignment should probably be 1 instead of 4.
-    // http://anglebug.com/2718
-
-    if (isViewportFlipEnabled)
-    {
-        pixelPackState.reverseRowOrder = !pixelPackState.reverseRowOrder;
-    }
-
     const angle::Format &copyFormat =
         GetFormatFromFormatType(formatInfo.internalFormat, formatInfo.type);
     PackPixelsParams params(clippedRectangle, copyFormat, static_cast<GLuint>(outputRowPitch),
-                            pixelPackState, nullptr, 0);
+                            isViewportFlipEnabled, nullptr, 0);
 
     // 2- copy the source image region to the pixel buffer using a cpu readback
     if (loadFunction.requiresConversion)
@@ -249,7 +240,7 @@ angle::Result PixelBuffer::stageSubresourceUpdateFromFramebuffer(
     }
 
     // 3- enqueue the destination image subresource update
-    VkBufferImageCopy copyToImage;
+    VkBufferImageCopy copyToImage               = {};
     copyToImage.bufferOffset                    = static_cast<VkDeviceSize>(stagingOffset);
     copyToImage.bufferRowLength                 = 0;  // Tightly packed data can be specified as 0.
     copyToImage.bufferImageHeight               = clippedRectangle.height;
@@ -346,11 +337,11 @@ angle::Result PixelBuffer::stageSubresourceUpdateAndGetData(ContextVk *contextVk
 {
     VkBuffer bufferHandle;
     VkDeviceSize stagingOffset = 0;
-    bool newBufferAllocated = false;
+    bool newBufferAllocated    = false;
     ANGLE_TRY(mStagingBuffer.allocate(contextVk, allocationSize, destData, &bufferHandle,
                                       &stagingOffset, &newBufferAllocated));
 
-    VkBufferImageCopy copy;
+    VkBufferImageCopy copy               = {};
     copy.bufferOffset                    = stagingOffset;
     copy.bufferRowLength                 = extents.width;
     copy.bufferImageHeight               = extents.height;
@@ -429,13 +420,11 @@ PixelBuffer::SubresourceUpdate::SubresourceUpdate(const SubresourceUpdate &other
 
 // TextureVk implementation.
 TextureVk::TextureVk(const gl::TextureState &state, RendererVk *renderer)
-    : TextureImpl(state), mRenderTarget(&mImage, &mBaseLevelImageView, this), mPixelBuffer(renderer)
+    : TextureImpl(state), mRenderTarget(&mImage, &mBaseLevelImageView, 0), mPixelBuffer(renderer)
 {
 }
 
-TextureVk::~TextureVk()
-{
-}
+TextureVk::~TextureVk() = default;
 
 gl::Error TextureVk::onDestroy(const gl::Context *context)
 {
@@ -443,7 +432,7 @@ gl::Error TextureVk::onDestroy(const gl::Context *context)
     RendererVk *renderer = contextVk->getRenderer();
 
     releaseImage(context, renderer);
-    renderer->releaseObject(getStoredQueueSerial(), &mSampler);
+    renderer->releaseObject(renderer->getCurrentQueueSerial(), &mSampler);
 
     mPixelBuffer.release(renderer);
     return gl::NoError();
@@ -473,7 +462,7 @@ gl::Error TextureVk::setImage(const gl::Context *context,
     }
 
     // Create a new graph node to store image initialization commands.
-    onResourceChanged(renderer);
+    mImage.finishCurrentCommands(renderer);
 
     // Handle initial data.
     if (pixels)
@@ -501,7 +490,7 @@ gl::Error TextureVk::setSubImage(const gl::Context *context,
         gl::Offset(area.x, area.y, area.z), formatInfo, unpack, type, pixels));
 
     // Create a new graph node to store image initialization commands.
-    onResourceChanged(contextVk->getRenderer());
+    mImage.finishCurrentCommands(contextVk->getRenderer());
 
     return gl::NoError();
 }
@@ -582,7 +571,7 @@ gl::Error TextureVk::copySubTexture(const gl::Context *context,
                                     const gl::ImageIndex &index,
                                     const gl::Offset &destOffset,
                                     size_t sourceLevel,
-                                    const gl::Rectangle &sourceArea,
+                                    const gl::Box &sourceBox,
                                     bool unpackFlipY,
                                     bool unpackPremultiplyAlpha,
                                     bool unpackUnmultiplyAlpha,
@@ -592,7 +581,7 @@ gl::Error TextureVk::copySubTexture(const gl::Context *context,
     size_t level                             = static_cast<size_t>(index.getLevelIndex());
     const gl::InternalFormat &destFormatInfo = *mState.getImageDesc(target, level).format.info;
     return copySubTextureImpl(vk::GetImpl(context), index, destOffset, destFormatInfo, sourceLevel,
-                              sourceArea, unpackFlipY, unpackPremultiplyAlpha,
+                              sourceBox.toRect(), unpackFlipY, unpackPremultiplyAlpha,
                               unpackUnmultiplyAlpha, vk::GetImpl(source));
 }
 
@@ -627,8 +616,8 @@ angle::Result TextureVk::copySubImageImpl(const gl::Context *context,
         gl::Extents(clippedSourceArea.width, clippedSourceArea.height, 1), internalFormat,
         framebufferVk));
 
-    onResourceChanged(renderer);
-    framebufferVk->addReadDependency(this);
+    mImage.finishCurrentCommands(renderer);
+    framebufferVk->getFramebuffer()->addReadDependency(&mImage);
     return angle::Result::Continue();
 }
 
@@ -645,11 +634,15 @@ gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
 {
     RendererVk *renderer = contextVk->getRenderer();
 
+    if (sourceLevel != 0)
+    {
+        WARN() << "glCopyTextureCHROMIUM with sourceLevel != 0 not implemented.";
+        return angle::Result::Stop();
+    }
+
     // Read back the requested region of the source texture
     uint8_t *sourceData = nullptr;
-    ANGLE_TRY(source->copyImageDataToBuffer(contextVk, sourceLevel, sourceArea, &sourceData));
-
-    ANGLE_TRY(renderer->finish(contextVk));
+    ANGLE_TRY(source->copyImageDataToBuffer(contextVk, sourceLevel, 1, sourceArea, &sourceData));
 
     // Using the front-end ANGLE format for the colorRead and colorWrite functions.  Otherwise
     // emulated formats like luminance-alpha would not know how to interpret the data.
@@ -669,23 +662,16 @@ gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
     GLuint sourceDataRowPitch = sourceArea.width * sourceAngleFormat.pixelBytes;
     GLuint destDataRowPitch   = sourceArea.width * destAngleFormat.pixelBytes;
 
-    CopyImageCHROMIUM(sourceData, sourceDataRowPitch, sourceAngleFormat.pixelBytes,
+    CopyImageCHROMIUM(sourceData, sourceDataRowPitch, sourceAngleFormat.pixelBytes, 0,
                       sourceAngleFormat.pixelReadFunction, destData, destDataRowPitch,
-                      destAngleFormat.pixelBytes, destAngleFormat.pixelWriteFunction,
+                      destAngleFormat.pixelBytes, 0, destAngleFormat.pixelWriteFunction,
                       destFormat.format, destFormat.componentType, sourceArea.width,
-                      sourceArea.height, unpackFlipY, unpackPremultiplyAlpha,
+                      sourceArea.height, 1, unpackFlipY, unpackPremultiplyAlpha,
                       unpackUnmultiplyAlpha);
 
     // Create a new graph node to store image initialization commands.
-    onResourceChanged(contextVk->getRenderer());
+    mImage.finishCurrentCommands(contextVk->getRenderer());
 
-    return angle::Result::Continue();
-}
-
-angle::Result TextureVk::getCommandBufferForWrite(ContextVk *contextVk,
-                                                  vk::CommandBuffer **commandBufferOut)
-{
-    ANGLE_TRY(appendWriteResource(contextVk, commandBufferOut));
     return angle::Result::Continue();
 }
 
@@ -699,7 +685,13 @@ gl::Error TextureVk::setStorage(const gl::Context *context,
     RendererVk *renderer             = contextVk->getRenderer();
     const vk::Format &format         = renderer->getFormat(internalFormat);
     vk::CommandBuffer *commandBuffer = nullptr;
-    ANGLE_TRY(getCommandBufferForWrite(contextVk, &commandBuffer));
+    ANGLE_TRY(mImage.recordCommands(contextVk, &commandBuffer));
+
+    if (mImage.valid())
+    {
+        releaseImage(context, renderer);
+    }
+
     ANGLE_TRY(initImage(contextVk, format, size, static_cast<uint32_t>(levels), commandBuffer));
     return gl::NoError();
 }
@@ -751,43 +743,36 @@ angle::Result TextureVk::redefineImage(const gl::Context *context,
 
 angle::Result TextureVk::copyImageDataToBuffer(ContextVk *contextVk,
                                                size_t sourceLevel,
+                                               uint32_t layerCount,
                                                const gl::Rectangle &sourceArea,
                                                uint8_t **outDataPtr)
 {
-    if (sourceLevel != 0)
-    {
-        WARN() << "glCopyTextureCHROMIUM with sourceLevel != 0 not implemented.";
-        return angle::Result::Stop();
-    }
-
     // Make sure the source is initialized and it's images are flushed.
     ANGLE_TRY(ensureImageInitialized(contextVk));
 
-    const angle::Format &angleFormat = getImage().getFormat().textureFormat();
-    const gl::Extents imageSize =
-        mState.getImageDesc(NonCubeTextureTypeToTarget(mState.getType()), sourceLevel).size;
-    size_t sourceCopyAllocationSize = sourceArea.width * sourceArea.height * angleFormat.pixelBytes;
+    const angle::Format &imageFormat = getImage().getFormat().textureFormat();
+    size_t sourceCopyAllocationSize = sourceArea.width * sourceArea.height * imageFormat.pixelBytes;
 
     vk::CommandBuffer *commandBuffer = nullptr;
-    ANGLE_TRY(getCommandBufferForWrite(contextVk, &commandBuffer));
+    ANGLE_TRY(mImage.recordCommands(contextVk, &commandBuffer));
 
     // Requirement of the copyImageToBuffer, the source image must be in SRC_OPTIMAL layout.
-    bool newBufferAllocated = false;
     mImage.changeLayoutWithStages(VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                   VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, commandBuffer);
 
     // Allocate enough memory to copy the sourceArea region of the source texture into its pixel
     // buffer.
-    VkBuffer copyBufferHandle;
+    bool newBufferAllocated       = false;
+    VkBuffer copyBufferHandle     = VK_NULL_HANDLE;
     VkDeviceSize sourceCopyOffset = 0;
     ANGLE_TRY(mPixelBuffer.allocate(contextVk, sourceCopyAllocationSize, outDataPtr,
                                     &copyBufferHandle, &sourceCopyOffset, &newBufferAllocated));
 
-    VkBufferImageCopy region;
+    VkBufferImageCopy region               = {};
     region.bufferOffset                    = sourceCopyOffset;
-    region.bufferRowLength                 = imageSize.width;
-    region.bufferImageHeight               = imageSize.height;
+    region.bufferRowLength                 = 0;
+    region.bufferImageHeight               = 0;
     region.imageExtent.width               = sourceArea.width;
     region.imageExtent.height              = sourceArea.height;
     region.imageExtent.depth               = 1;
@@ -796,151 +781,37 @@ angle::Result TextureVk::copyImageDataToBuffer(ContextVk *contextVk,
     region.imageOffset.z                   = 0;
     region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount     = 1;
+    region.imageSubresource.layerCount     = layerCount;
     region.imageSubresource.mipLevel       = static_cast<uint32_t>(sourceLevel);
 
     commandBuffer->copyImageToBuffer(mImage.getImage(), mImage.getCurrentLayout(), copyBufferHandle,
                                      1, &region);
 
-    return angle::Result::Continue();
-}
-
-angle::Result TextureVk::generateMipmapWithBlit(ContextVk *contextVk)
-{
-    uint32_t imageLayerCount           = GetImageLayerCount(mState.getType());
-    const gl::Extents baseLevelExtents = mImage.getExtents();
-    vk::CommandBuffer *commandBuffer   = nullptr;
-    ANGLE_TRY(getCommandBufferForWrite(contextVk, &commandBuffer));
-
-    // We are able to use blitImage since the image format we are using supports it. This
-    // is a faster way we can generate the mips.
-    int32_t mipWidth  = baseLevelExtents.width;
-    int32_t mipHeight = baseLevelExtents.height;
-
-    // Manually manage the image memory barrier because it uses a lot more parameters than our
-    // usual one.
-    VkImageMemoryBarrier barrier;
-    barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.image                           = mImage.getImage().getHandle();
-    barrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-    barrier.pNext                           = nullptr;
-    barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount     = imageLayerCount;
-    barrier.subresourceRange.levelCount     = 1;
-
-    for (uint32_t mipLevel = 1; mipLevel <= mState.getMipmapMaxLevel(); mipLevel++)
-    {
-        int32_t nextMipWidth  = std::max<int32_t>(1, mipWidth >> 1);
-        int32_t nextMipHeight = std::max<int32_t>(1, mipHeight >> 1);
-
-        barrier.subresourceRange.baseMipLevel = mipLevel - 1;
-        barrier.oldLayout                     = mImage.getCurrentLayout();
-        barrier.newLayout                     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask                 = VK_ACCESS_TRANSFER_READ_BIT;
-
-        // We can do it for all layers at once.
-        commandBuffer->singleImageBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                          VK_PIPELINE_STAGE_TRANSFER_BIT, 0, barrier);
-
-        VkImageBlit blit                   = {};
-        blit.srcOffsets[0]                 = {0, 0, 0};
-        blit.srcOffsets[1]                 = {mipWidth, mipHeight, 1};
-        blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-        blit.srcSubresource.mipLevel       = mipLevel - 1;
-        blit.srcSubresource.baseArrayLayer = 0;
-        blit.srcSubresource.layerCount     = imageLayerCount;
-        blit.dstOffsets[0]                 = {0, 0, 0};
-        blit.dstOffsets[1]                 = {nextMipWidth, nextMipHeight, 1};
-        blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-        blit.dstSubresource.mipLevel       = mipLevel;
-        blit.dstSubresource.baseArrayLayer = 0;
-        blit.dstSubresource.layerCount     = imageLayerCount;
-
-        mipWidth  = nextMipWidth;
-        mipHeight = nextMipHeight;
-
-        commandBuffer->blitImage(mImage.getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                 mImage.getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
-                                 VK_FILTER_LINEAR);
-    }
-
-    // Transition the last mip level to the same layout as all the other ones, so we can declare
-    // our whole image layout to be SRC_OPTIMAL.
-    barrier.subresourceRange.baseMipLevel = mState.getMipmapMaxLevel();
-    barrier.oldLayout                     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    barrier.newLayout                     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-
-    // We can do it for all layers at once.
-    commandBuffer->singleImageBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                      VK_PIPELINE_STAGE_TRANSFER_BIT, 0, barrier);
-
-    // This is just changing the internal state of the image helper so that the next call
-    // to changeLayoutWithStages will use this layout as the "oldLayout" argument.
-    mImage.updateLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    // Explicitly finish. If new use cases arise where we don't want to block we can change this.
+    ANGLE_TRY(contextVk->getRenderer()->finish(contextVk));
 
     return angle::Result::Continue();
 }
 
-angle::Result TextureVk::generateMipmapWithCPU(const gl::Context *context)
+angle::Result TextureVk::generateMipmapsWithCPU(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-    RendererVk *renderer = contextVk->getRenderer();
 
-    bool newBufferAllocated            = false;
     const gl::Extents baseLevelExtents = mImage.getExtents();
     uint32_t imageLayerCount           = GetImageLayerCount(mState.getType());
-    const angle::Format &angleFormat   = mImage.getFormat().textureFormat();
-    GLuint sourceRowPitch              = baseLevelExtents.width * angleFormat.pixelBytes;
-    size_t baseLevelAllocationSize     = sourceRowPitch * baseLevelExtents.height;
 
-    vk::CommandBuffer *commandBuffer = nullptr;
-    ANGLE_TRY(getCommandBufferForWrite(contextVk, &commandBuffer));
+    uint8_t *imageData = nullptr;
+    gl::Rectangle imageArea(0, 0, baseLevelExtents.width, baseLevelExtents.height);
+    ANGLE_TRY(copyImageDataToBuffer(contextVk, mState.getEffectiveBaseLevel(), imageLayerCount,
+                                    imageArea, &imageData));
 
-    // Requirement of the copyImageToBuffer, the source image must be in SRC_OPTIMAL layout.
-    mImage.changeLayoutWithStages(VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, commandBuffer);
+    const angle::Format &angleFormat = mImage.getFormat().textureFormat();
+    GLuint sourceRowPitch            = baseLevelExtents.width * angleFormat.pixelBytes;
+    size_t baseLevelAllocationSize   = sourceRowPitch * baseLevelExtents.height;
 
-    size_t totalAllocationSize = baseLevelAllocationSize * imageLayerCount;
-
-    VkBuffer copyBufferHandle;
-    uint8_t *baseLevelBuffers;
-    VkDeviceSize copyBaseOffset;
-
-    // Allocate enough memory to copy every level 0 image (one for each layer of the texture).
-    ANGLE_TRY(mPixelBuffer.allocate(contextVk, totalAllocationSize, &baseLevelBuffers,
-                                    &copyBufferHandle, &copyBaseOffset, &newBufferAllocated));
-
-    // Do only one copy for all layers at once.
-    VkBufferImageCopy region;
-    region.bufferImageHeight               = baseLevelExtents.height;
-    region.bufferOffset                    = copyBaseOffset;
-    region.bufferRowLength                 = baseLevelExtents.width;
-    region.imageExtent.width               = baseLevelExtents.width;
-    region.imageExtent.height              = baseLevelExtents.height;
-    region.imageExtent.depth               = 1;
-    region.imageOffset.x                   = 0;
-    region.imageOffset.y                   = 0;
-    region.imageOffset.z                   = 0;
-    region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount     = imageLayerCount;
-    region.imageSubresource.mipLevel       = mState.getEffectiveBaseLevel();
-
-    commandBuffer->copyImageToBuffer(mImage.getImage(), mImage.getCurrentLayout(), copyBufferHandle,
-                                     1, &region);
-
-    ANGLE_TRY(renderer->finish(contextVk));
-
-    const uint32_t levelCount = getLevelCount();
-
-    // We now have the base level available to be manipulated in the baseLevelBuffer pointer.
-    // Generate all the missing mipmaps with the slow path. We can optimize with vkCmdBlitImage
-    // later.
-    // For each layer, use the copied data to generate all the mips.
+    // We now have the base level available to be manipulated in the imageData pointer. Generate all
+    // the missing mipmaps with the slow path. For each layer, use the copied data to generate all
+    // the mips.
     for (GLuint layer = 0; layer < imageLayerCount; layer++)
     {
         size_t bufferOffset = layer * baseLevelAllocationSize;
@@ -948,10 +819,12 @@ angle::Result TextureVk::generateMipmapWithCPU(const gl::Context *context)
         ANGLE_TRY(generateMipmapLevelsWithCPU(
             contextVk, angleFormat, layer, mState.getEffectiveBaseLevel() + 1,
             mState.getMipmapMaxLevel(), baseLevelExtents.width, baseLevelExtents.height,
-            sourceRowPitch, baseLevelBuffers + bufferOffset));
+            sourceRowPitch, imageData + bufferOffset));
     }
 
-    return mPixelBuffer.flushUpdatesToImage(contextVk, levelCount, &mImage, commandBuffer);
+    vk::CommandBuffer *commandBuffer;
+    ANGLE_TRY(mImage.recordCommands(contextVk, &commandBuffer));
+    return mPixelBuffer.flushUpdatesToImage(contextVk, getLevelCount(), &mImage, commandBuffer);
 }
 
 gl::Error TextureVk::generateMipmap(const gl::Context *context)
@@ -983,15 +856,16 @@ gl::Error TextureVk::generateMipmap(const gl::Context *context)
     // only.
     if (IsMaskFlagSet(kBlitFeatureFlags, imageProperties.linearTilingFeatures))
     {
-        ANGLE_TRY(generateMipmapWithBlit(contextVk));
+        ANGLE_TRY(ensureImageInitialized(contextVk));
+        ANGLE_TRY(mImage.generateMipmapsWithBlit(contextVk, mState.getMipmapMaxLevel()));
     }
     else
     {
-        ANGLE_TRY(generateMipmapWithCPU(context));
+        ANGLE_TRY(generateMipmapsWithCPU(context));
     }
 
     // We're changing this textureVk content, make sure we let the graph know.
-    onResourceChanged(renderer);
+    mImage.finishCurrentCommands(renderer);
 
     return gl::NoError();
 }
@@ -1014,22 +888,31 @@ gl::Error TextureVk::releaseTexImage(const gl::Context *context)
     return gl::InternalError();
 }
 
-gl::Error TextureVk::getAttachmentRenderTarget(const gl::Context *context,
-                                               GLenum binding,
-                                               const gl::ImageIndex &imageIndex,
-                                               FramebufferAttachmentRenderTarget **rtOut)
+angle::Result TextureVk::getAttachmentRenderTarget(const gl::Context *context,
+                                                   GLenum binding,
+                                                   const gl::ImageIndex &imageIndex,
+                                                   FramebufferAttachmentRenderTarget **rtOut)
 {
-    // TODO(jmadill): Handle cube textures. http://anglebug.com/2470
-    ASSERT(imageIndex.getType() == gl::TextureType::_2D);
-
     // Non-zero mip level attachments are an ES 3.0 feature.
-    ASSERT(imageIndex.getLevelIndex() == 0 && !imageIndex.hasLayer());
+    ASSERT(imageIndex.getLevelIndex() == 0);
 
     ContextVk *contextVk = vk::GetImpl(context);
     ANGLE_TRY(ensureImageInitialized(contextVk));
 
-    *rtOut = &mRenderTarget;
-    return gl::NoError();
+    switch (imageIndex.getType())
+    {
+        case gl::TextureType::_2D:
+            *rtOut = &mRenderTarget;
+            break;
+        case gl::TextureType::CubeMap:
+            ANGLE_TRY(initCubeMapRenderTargets(contextVk));
+            *rtOut = &mCubeMapRenderTargets[imageIndex.cubeMapFaceIndex()];
+            break;
+        default:
+            UNREACHABLE();
+    }
+
+    return angle::Result::Continue();
 }
 
 angle::Result TextureVk::ensureImageInitialized(ContextVk *contextVk)
@@ -1040,7 +923,7 @@ angle::Result TextureVk::ensureImageInitialized(ContextVk *contextVk)
     }
     RendererVk *renderer             = contextVk->getRenderer();
     vk::CommandBuffer *commandBuffer = nullptr;
-    ANGLE_TRY(getCommandBufferForWrite(contextVk, &commandBuffer));
+    ANGLE_TRY(mImage.recordCommands(contextVk, &commandBuffer));
 
     const gl::ImageDesc &baseLevelDesc  = mState.getBaseLevelDesc();
     const gl::Extents &baseLevelExtents = baseLevelDesc.size;
@@ -1054,49 +937,66 @@ angle::Result TextureVk::ensureImageInitialized(ContextVk *contextVk)
         ANGLE_TRY(initImage(contextVk, format, baseLevelExtents, levelCount, commandBuffer));
     }
 
-    ANGLE_TRY(mPixelBuffer.flushUpdatesToImage(contextVk, levelCount, &mImage, commandBuffer));
+    return mPixelBuffer.flushUpdatesToImage(contextVk, levelCount, &mImage, commandBuffer);
+}
+
+angle::Result TextureVk::initCubeMapRenderTargets(ContextVk *contextVk)
+{
+    // Lazy init. Check if already initialized.
+    if (!mCubeMapFaceImageViews.empty())
+        return angle::Result::Continue();
+
+    mCubeMapFaceImageViews.resize(gl::kCubeFaceCount);
+
+    for (size_t cubeMapFaceIndex = 0; cubeMapFaceIndex < gl::kCubeFaceCount; ++cubeMapFaceIndex)
+    {
+        vk::ImageView &imageView = mCubeMapFaceImageViews[cubeMapFaceIndex];
+        ANGLE_TRY(mImage.initLayerImageView(contextVk, gl::TextureType::CubeMap,
+                                            VK_IMAGE_ASPECT_COLOR_BIT, gl::SwizzleState(),
+                                            &imageView, 1, cubeMapFaceIndex, 1));
+        mCubeMapRenderTargets.emplace_back(&mImage, &imageView, cubeMapFaceIndex);
+    }
     return angle::Result::Continue();
 }
 
-gl::Error TextureVk::syncState(const gl::Context *context, const gl::Texture::DirtyBits &dirtyBits)
+angle::Result TextureVk::syncState(const gl::Context *context,
+                                   const gl::Texture::DirtyBits &dirtyBits)
 {
     if (dirtyBits.none() && mSampler.valid())
     {
-        return gl::NoError();
+        return angle::Result::Continue();
     }
 
     ContextVk *contextVk = vk::GetImpl(context);
     if (mSampler.valid())
     {
         RendererVk *renderer = contextVk->getRenderer();
-        renderer->releaseObject(getStoredQueueSerial(), &mSampler);
+        renderer->releaseObject(renderer->getCurrentQueueSerial(), &mSampler);
     }
 
     const gl::SamplerState &samplerState = mState.getSamplerState();
 
     // Create a simple sampler. Force basic parameter settings.
-    VkSamplerCreateInfo samplerInfo;
+    VkSamplerCreateInfo samplerInfo     = {};
     samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.pNext                   = nullptr;
     samplerInfo.flags                   = 0;
-    samplerInfo.magFilter               = gl_vk::GetFilter(samplerState.magFilter);
-    samplerInfo.minFilter               = gl_vk::GetFilter(samplerState.minFilter);
-    samplerInfo.mipmapMode              = gl_vk::GetSamplerMipmapMode(samplerState.minFilter);
-    samplerInfo.addressModeU            = gl_vk::GetSamplerAddressMode(samplerState.wrapS);
-    samplerInfo.addressModeV            = gl_vk::GetSamplerAddressMode(samplerState.wrapT);
-    samplerInfo.addressModeW            = gl_vk::GetSamplerAddressMode(samplerState.wrapR);
+    samplerInfo.magFilter               = gl_vk::GetFilter(samplerState.getMagFilter());
+    samplerInfo.minFilter               = gl_vk::GetFilter(samplerState.getMinFilter());
+    samplerInfo.mipmapMode              = gl_vk::GetSamplerMipmapMode(samplerState.getMinFilter());
+    samplerInfo.addressModeU            = gl_vk::GetSamplerAddressMode(samplerState.getWrapS());
+    samplerInfo.addressModeV            = gl_vk::GetSamplerAddressMode(samplerState.getWrapT());
+    samplerInfo.addressModeW            = gl_vk::GetSamplerAddressMode(samplerState.getWrapR());
     samplerInfo.mipLodBias              = 0.0f;
     samplerInfo.anisotropyEnable        = VK_FALSE;
     samplerInfo.maxAnisotropy           = 1.0f;
     samplerInfo.compareEnable           = VK_FALSE;
     samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
-    samplerInfo.minLod                  = samplerState.minLod;
-    samplerInfo.maxLod                  = samplerState.maxLod;
+    samplerInfo.minLod                  = samplerState.getMinLod();
+    samplerInfo.maxLod                  = samplerState.getMaxLod();
     samplerInfo.borderColor             = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    ANGLE_TRY(mSampler.init(contextVk, samplerInfo));
-    return gl::NoError();
+    return mSampler.init(contextVk, samplerInfo);
 }
 
 gl::Error TextureVk::setStorageMultisample(const gl::Context *context,
@@ -1110,24 +1010,18 @@ gl::Error TextureVk::setStorageMultisample(const gl::Context *context,
     return gl::InternalError() << "setStorageMultisample is unimplemented.";
 }
 
-gl::Error TextureVk::initializeContents(const gl::Context *context,
-                                        const gl::ImageIndex &imageIndex)
+angle::Result TextureVk::initializeContents(const gl::Context *context,
+                                            const gl::ImageIndex &imageIndex)
 {
     UNIMPLEMENTED();
-    return gl::NoError();
-}
-
-const vk::ImageHelper &TextureVk::getImage() const
-{
-    ASSERT(mImage.valid());
-    return mImage;
+    return angle::Result::Continue();
 }
 
 const vk::ImageView &TextureVk::getImageView() const
 {
     ASSERT(mImage.valid());
 
-    const GLenum minFilter = mState.getSamplerState().minFilter;
+    const GLenum minFilter = mState.getSamplerState().getMinFilter();
     if (minFilter == GL_LINEAR || minFilter == GL_NEAREST)
     {
         return mBaseLevelImageView;
@@ -1181,10 +1075,19 @@ angle::Result TextureVk::initImage(ContextVk *contextVk,
 
 void TextureVk::releaseImage(const gl::Context *context, RendererVk *renderer)
 {
-    mImage.release(renderer->getCurrentQueueSerial(), renderer);
-    renderer->releaseObject(getStoredQueueSerial(), &mBaseLevelImageView);
-    renderer->releaseObject(getStoredQueueSerial(), &mMipmapImageView);
-    onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+    mImage.release(renderer);
+
+    Serial currentSerial = renderer->getCurrentQueueSerial();
+
+    renderer->releaseObject(currentSerial, &mBaseLevelImageView);
+    renderer->releaseObject(currentSerial, &mMipmapImageView);
+
+    for (vk::ImageView &imageView : mCubeMapFaceImageViews)
+    {
+        renderer->releaseObject(currentSerial, &imageView);
+    }
+    mCubeMapFaceImageViews.clear();
+    mCubeMapRenderTargets.clear();
 }
 
 uint32_t TextureVk::getLevelCount() const

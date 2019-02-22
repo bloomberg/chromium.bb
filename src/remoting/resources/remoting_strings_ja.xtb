@@ -102,7 +102,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3171922709365450819">このデバイスは第三者の認証を必要とするため、このクライアントではサポートされていません。</translation>
 <translation id="3194245623920924351">Chrome リモート デスクトップ</translation>
 <translation id="3197730452537982411">リモートデスクトップ</translation>
-<translation id="3212472844831225214">• Android 9.0 Pie のサポートを追加しました。</translation>
 <translation id="324272851072175193">手順をメールで送信</translation>
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="3286521253923406898">Chromoting ホスト コントローラ</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="8548209692293300397">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Google Chrome にログイン<ph name="LINK_END" />し、Chrome リモート デスクトップを再インストールしてください。</translation>
 <translation id="8642984861538780905">中程度</translation>
+<translation id="8705151241155781642">• Android 9.0 Pie のサポートを追加しました。
+• Android 搭載端末の画面に合わせてリモート デスクトップの解像度を変更できるようになりました。</translation>
 <translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> にパソコンの閲覧と制御を許可しますか？</translation>
 <translation id="8747048596626351634">セッションがクラッシュしたか、セッションを開始できませんでした。~/.chrome-remote-desktop-session がリモートのパソコンにある場合は、このスクリプトによって、デスクトップ環境やウィンドウ マネージャのような長時間実行のフォアグラウンド プロセスが開始されることを確認してください。</translation>

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
@@ -61,13 +61,13 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
           paint_info.context, layout_list_marker_, paint_info.phase))
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_list_marker_, paint_info);
-  if (!paint_info_with_offset.LocalRectIntersectsCullRect(
+  ScopedPaintState paint_state(layout_list_marker_, paint_info);
+  if (!paint_state.LocalRectIntersectsCullRect(
           layout_list_marker_.PhysicalVisualOverflowRect()))
     return;
 
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
-  auto box_origin = paint_info_with_offset.PaintOffset();
+  const auto& local_paint_info = paint_state.GetPaintInfo();
+  auto box_origin = paint_state.PaintOffset();
 
   DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
                            local_paint_info.phase);
@@ -157,8 +157,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   }
 
   const UChar suffix =
-      ListMarkerText::Suffix(layout_list_marker_.StyleRef().ListStyleType(),
-                             layout_list_marker_.ListItem()->Value());
+      list_marker_text::Suffix(layout_list_marker_.StyleRef().ListStyleType(),
+                               layout_list_marker_.ListItem()->Value());
   UChar suffix_str[2] = {suffix, static_cast<UChar>(' ')};
   TextRun suffix_run =
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),

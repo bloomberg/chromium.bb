@@ -11,10 +11,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/browser_ui_interface.h"
-#include "chrome/browser/vr/compositor_ui_interface.h"
+#include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/keyboard_ui_interface.h"
 
 namespace gfx {
 class Point3F;
@@ -27,6 +25,7 @@ namespace vr {
 class BrowserUiInterface;
 class InputEvent;
 class PlatformUiInputDelegate;
+class SchedulerUiInterface;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
@@ -37,13 +36,22 @@ using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
 // feature module.
-class UiInterface : public BrowserUiInterface,
-                    public CompositorUiInterface,
-                    public KeyboardUiInterface {
+class UiInterface {
  public:
-  ~UiInterface() override {}
+  virtual ~UiInterface() = default;
 
   virtual base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() = 0;
+  virtual SchedulerUiInterface* GetSchedulerUiPtr() = 0;
+
+  // Textures from 2D UI that are positioned in the 3D scene.
+  // Content refers to the web contents, as coming from the Chrome compositor.
+  // Content Overlay refers to UI drawn in the same view hierarchy as the
+  // contents.
+  // Platform UI refers to popups, which are rendered in a different window.
+  virtual void OnGlInitialized(GlTextureLocation textures_location,
+                               unsigned int content_texture_id,
+                               unsigned int content_overlay_texture_id,
+                               unsigned int platform_ui_texture_id) = 0;
 
   virtual void SetAlertDialogEnabled(bool enabled,
                                      PlatformUiInputDelegate* delegate,
@@ -54,30 +62,24 @@ class UiInterface : public BrowserUiInterface,
       PlatformUiInputDelegate* delegate,
       float width_percentage,
       float height_percentage) = 0;
-  virtual void SetAlertDialogSize(float width, float height) = 0;
-  virtual void SetContentOverlayAlertDialogSize(float width_percentage,
-                                                float height_percentage) = 0;
-  virtual void SetDialogLocation(float x, float y) = 0;
-  virtual void SetDialogFloating(bool floating) = 0;
-  virtual void ShowPlatformToast(const base::string16& text) = 0;
-  virtual void CancelPlatformToast() = 0;
   virtual void OnPause() = 0;
   virtual void OnControllerUpdated(const ControllerModel& controller_model,
                                    const ReticleModel& reticle_model) = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
-  virtual void OnSwapContents(int new_content_id) = 0;
-  virtual void OnContentBoundsChanged(int width, int height) = 0;
   virtual void AcceptDoffPromptForTesting() = 0;
   virtual gfx::Point3F GetTargetPointForTesting(
       UserFriendlyElementName element_name,
       const gfx::PointF& position) = 0;
+  virtual bool GetElementVisibilityForTesting(
+      UserFriendlyElementName element_name) = 0;
   virtual bool IsContentVisibleAndOpaque() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;
   virtual gfx::Transform GetContentWorldSpaceTransform() = 0;
-  virtual bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&) = 0;
+  virtual bool OnBeginFrame(base::TimeTicks current_time,
+                            const gfx::Transform& head_pose) = 0;
   virtual bool SceneHasDirtyTextures() const = 0;
   virtual void UpdateSceneTextures() = 0;
-  virtual void Draw(const RenderInfo&) = 0;
+  virtual void Draw(const RenderInfo& render_info) = 0;
   virtual void DrawContent(const float (&uv_transform)[16],
                            float xborder,
                            float yborder) = 0;

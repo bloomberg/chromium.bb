@@ -282,6 +282,15 @@ MockFileEntry.prototype.clone = function(path, opt_filesystem) {
 };
 
 /**
+ * Helper to expose methods mixed in via MockEntry to the type checker.
+ *
+ * @return {!MockEntry}
+ */
+MockFileEntry.prototype.asMock = function() {
+  return /** @type{!MockEntry} */ (/** @type(*) */ (this));
+};
+
+/**
  * Mock class for DirectoryEntry.
  *
  * @param {FileSystem} filesystem File system where the entry is localed.

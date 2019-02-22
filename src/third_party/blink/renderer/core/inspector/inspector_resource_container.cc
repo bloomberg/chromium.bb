@@ -39,20 +39,22 @@ bool InspectorResourceContainer::LoadStyleSheetContent(const String& url,
 }
 
 void InspectorResourceContainer::StoreStyleElementContent(
-    int backend_node_id,
+    DOMNodeId backend_node_id,
     const String& content) {
   style_element_contents_.Set(backend_node_id, content);
 }
 
-bool InspectorResourceContainer::LoadStyleElementContent(int backend_node_id,
-                                                         String* content) {
+bool InspectorResourceContainer::LoadStyleElementContent(
+    DOMNodeId backend_node_id,
+    String* content) {
   if (!style_element_contents_.Contains(backend_node_id))
     return false;
   *content = style_element_contents_.at(backend_node_id);
   return true;
 }
 
-void InspectorResourceContainer::EraseStyleElementContent(int backend_node_id) {
+void InspectorResourceContainer::EraseStyleElementContent(
+    DOMNodeId backend_node_id) {
   style_element_contents_.erase(backend_node_id);
 }
 

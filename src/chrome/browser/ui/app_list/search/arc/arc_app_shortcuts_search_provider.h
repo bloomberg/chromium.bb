@@ -29,7 +29,7 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
   void Start(const base::string16& query) override;
 
  private:
-  void OnGetAppShortcutItems(
+  void OnGetAppShortcutGlobalQueryItems(
       std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
 
   const int max_results_;

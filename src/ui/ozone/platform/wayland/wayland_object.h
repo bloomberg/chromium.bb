@@ -27,6 +27,8 @@ struct wl_subcompositor;
 struct wl_subsurface;
 struct wl_surface;
 struct wl_touch;
+struct wp_presentation;
+struct wp_presentation_feedback;
 struct xdg_shell;
 struct xdg_surface;
 struct xdg_popup;
@@ -36,6 +38,8 @@ struct zxdg_surface_v6;
 struct zxdg_toplevel_v6;
 struct zxdg_popup_v6;
 struct zxdg_positioner_v6;
+struct zwp_text_input_manager_v1;
+struct zwp_text_input_v1;
 
 namespace wl {
 
@@ -157,6 +161,18 @@ struct ObjectTraits<wl_touch> {
 };
 
 template <>
+struct ObjectTraits<wp_presentation> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_presentation*);
+};
+
+template <>
+struct ObjectTraits<wp_presentation_feedback> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_presentation_feedback*);
+};
+
+template <>
 struct ObjectTraits<xdg_shell> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_shell*);
@@ -208,6 +224,18 @@ template <>
 struct ObjectTraits<zxdg_positioner_v6> {
   static const wl_interface* interface;
   static void (*deleter)(zxdg_positioner_v6*);
+};
+
+template <>
+struct ObjectTraits<zwp_text_input_manager_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_text_input_manager_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_text_input_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_text_input_v1*);
 };
 
 struct Deleter {

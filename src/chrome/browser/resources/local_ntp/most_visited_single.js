@@ -8,6 +8,24 @@
 
 
 /**
+ * Enum for key codes.
+ * @enum {int}
+ * @const
+ */
+const KEYCODES = {
+  BACKSPACE: 8,
+  DELETE: 46,
+  DOWN: 40,
+  ENTER: 13,
+  ESC: 27,
+  LEFT: 37,
+  RIGHT: 39,
+  SPACE: 32,
+  TAB: 9,
+  UP: 38,
+};
+
+/**
  * Enum for ids.
  * @enum {string}
  * @const
@@ -85,11 +103,44 @@ var TileVisualType = {
   THUMBNAIL_FAILED: 8,
 };
 
+
 /**
- * Number of tiles per row for Material Design.
+ * Timeout delay for the window.onresize event throttle. Set to 15 frame per
+ * second.
+ * @const {number}
+ */
+const RESIZE_TIMEOUT_DELAY = 66;
+
+
+/**
+ * Maximum number of tiles if custom links is enabled.
+ * @const {number}
+ */
+const MD_MAX_NUM_CUSTOM_LINK_TILES = 10;
+
+
+/**
+ * Maximum number of tiles per row for Material Design.
  * @const {number}
  */
 const MD_MAX_TILES_PER_ROW = 5;
+
+
+/**
+ * Width of a tile for Material Design. Keep in sync with
+ * most_visited_single.css.
+ * @const {number}
+ */
+const MD_TILE_WIDTH = 112;
+
+
+/**
+ * Number of tiles that will always be visible for Material Design. Calculated
+ * by dividing minimum |--content-width| (see local_ntp.css) by |MD_TILE_WIDTH|
+ * and multiplying by 2 rows.
+ * @const {number}
+ */
+const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
 
 
 /**
@@ -97,6 +148,13 @@ const MD_MAX_TILES_PER_ROW = 5;
  * @type {number}
  */
 var NUM_TITLE_LINES = 1;
+
+
+/**
+ * Largest minimum font size in settings.
+ * @const {number}
+ */
+const LARGEST_MINIMUM_FONT_SIZE = 24;
 
 
 /**
@@ -258,6 +316,8 @@ var handleCommand = function(data) {
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
+  } else if (cmd === 'focusMenu') {
+    focusTileMenu(data);
   } else {
     console.error('Unknown command: ' + JSON.stringify(data));
   }
@@ -282,6 +342,27 @@ var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('using-theme', info.isUsingTheme);
+
+  // Reduce font weight on the default(white) background for Mac and CrOS.
+  document.body.classList.toggle('mac-chromeos',
+      !info.isThemeDark && !info.isUsingTheme &&
+      (navigator.userAgent.indexOf('Mac') > -1 ||
+      navigator.userAgent.indexOf('CrOS') > -1));
+};
+
+
+/**
+ * Handler for 'focusMenu' message from the host page. Focuses the edited tile's
+ * menu or the add shortcut tile after closing the custom link edit dialog
+ * without saving.
+ * @param {object} info Data received in the message.
+ */
+var focusTileMenu = function(info) {
+  let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
+  if (info.tid === -1 /* Add shortcut tile */)
+    tile.focus();
+  else
+    tile.parentNode.childNodes[1].focus();
 };
 
 
@@ -359,6 +440,9 @@ var swapInNewTiles = function() {
       cur.style.maxWidth =
           'calc(var(--md-tile-width) * ' + Math.ceil(cur.childNodes.length / 2);
     }
+
+    // Prevent keyboard navigation to tiles that are not visible.
+    updateTileVisibility();
   }
 
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
@@ -373,6 +457,25 @@ var swapInNewTiles = function() {
   tiles = document.createElement('div');
 };
 
+
+/**
+ * Explicitly hide tiles that are not visible in order to prevent keyboard
+ * navigation.
+ */
+function updateTileVisibility() {
+  const allTiles =
+      document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_CONTAINER);
+  if (allTiles.length === 0)
+    return;
+
+  // Get the current number of tiles per row. Hide any tile after the first two
+  // rows.
+  const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
+  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++)
+    allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
+}
+
+
 /**
  * Truncates titles that are longer than one line and appends an ellipsis. Text
  * overflow in CSS ("text-overflow: ellipsis") requires "overflow: hidden",
@@ -384,7 +487,8 @@ function truncateTitleText(titles) {
     let el = titles[i];
     const originalTitle = el.innerText;
     let truncatedTitle = el.innerText;
-    while (el.scrollHeight > el.offsetHeight && truncatedTitle.length > 0) {
+    while (el.scrollHeight > LARGEST_MINIMUM_FONT_SIZE
+    && truncatedTitle.length > 0) {
       el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '\u2026';
     }
     if (truncatedTitle.length === 0) {
@@ -392,6 +496,7 @@ function truncateTitleText(titles) {
     }
   }
 }
+
 
 /**
  * Handler for the 'show' message from the host page, called when it wants to
@@ -529,30 +634,30 @@ var renderMostVisitedTile = function(data) {
   });
 
   tile.addEventListener('keydown', function(event) {
-    if (event.keyCode == 46 /* DELETE */ ||
-        event.keyCode == 8 /* BACKSPACE */) {
+    if (event.keyCode === KEYCODES.DELETE ||
+        event.keyCode === KEYCODES.BACKSPACE) {
       event.preventDefault();
       event.stopPropagation();
       blacklistTile(this);
     } else if (
-        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
+        event.keyCode === KEYCODES.ENTER|| event.keyCode === KEYCODES.SPACE) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
       // specify the direction of movement
       var inArrowDirection = function(origin, target) {
-        return (event.keyCode == 37 /* LEFT */ &&
-                origin.offsetTop == target.offsetTop &&
+        return (event.keyCode === KEYCODES.LEFT &&
+                origin.offsetTop === target.offsetTop &&
                 origin.offsetLeft > target.offsetLeft) ||
-            (event.keyCode == 38 /* UP */ &&
+            (event.keyCode === KEYCODES.UP &&
              origin.offsetTop > target.offsetTop &&
-             origin.offsetLeft == target.offsetLeft) ||
-            (event.keyCode == 39 /* RIGHT */ &&
-             origin.offsetTop == target.offsetTop &&
+             origin.offsetLeft === target.offsetLeft) ||
+            (event.keyCode === KEYCODES.RIGHT &&
+             origin.offsetTop === target.offsetTop &&
              origin.offsetLeft < target.offsetLeft) ||
-            (event.keyCode == 40 /* DOWN */ &&
+            (event.keyCode === KEYCODES.DOWN &&
              origin.offsetTop < target.offsetTop &&
-             origin.offsetLeft == target.offsetLeft);
+             origin.offsetLeft === target.offsetLeft);
       };
 
       var nonEmptyTiles = document.querySelectorAll('#mv-tiles .mv-tile');
@@ -690,20 +795,20 @@ function renderMaterialDesignTile(data) {
     }
   });
   mdTile.addEventListener('keydown', function(event) {
-    if ((event.keyCode == 46 /* DELETE */ ||
-         event.keyCode == 8 /* BACKSPACE */) &&
+    if ((event.keyCode === KEYCODES.DELETE ||
+         event.keyCode === KEYCODES.BACKSPACE) &&
         !data.isAddButton) {
       event.preventDefault();
       event.stopPropagation();
       blacklistTile(mdTileContainer);
     } else if (
-        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
+        event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
       event.preventDefault();
       this.click();
-    } else if (event.keyCode == 37 /* LEFT */) {
+    } else if (event.keyCode === KEYCODES.LEFT) {
       const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.max(Number(this.getAttribute('data-pos')) - 1, 0)].focus();
-    } else if (event.keyCode == 39 /* RIGHT */) {
+    } else if (event.keyCode === KEYCODES.RIGHT) {
       const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.min(
                 Number(this.getAttribute('data-pos')) + 1, tiles.length - 1)]
@@ -785,10 +890,9 @@ function renderMaterialDesignTile(data) {
   mdTitle.className = CLASSES.MD_TITLE;
   mdTitle.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
-  // Font weight on Mac and ChromeOS is heavier and needs to be reduced.
-  if (navigator.userAgent.indexOf('Mac') > -1 ||
-      navigator.userAgent.indexOf('CrOS') > -1) {
-    mdTitle.style.fontWeight = 400;
+  // Windows font family fallback to Segoe
+  if (navigator.userAgent.indexOf('Windows') > -1) {
+    mdTitle.style.fontFamily = 'Segoe UI';
   }
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
@@ -882,8 +986,19 @@ var init = function() {
 
   // Set the maximum number of tiles to show.
   if (isCustomLinksEnabled) {
-    maxNumTiles = 10;
+    maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
   }
+
+  // Throttle the resize event.
+  let resizeTimeout;
+  window.onresize = () => {
+    if (resizeTimeout)
+      return;
+    resizeTimeout = window.setTimeout(() => {
+      resizeTimeout = null;
+      updateTileVisibility();
+    }, RESIZE_TIMEOUT_DELAY);
+  };
 
   window.addEventListener('message', handlePostMessage);
 };

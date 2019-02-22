@@ -98,6 +98,7 @@ TargetNtMapViewOfSection(NtMapViewOfSectionFunction orig_MapViewOfSection,
       if (!agent->OnDllLoad(file_name, module_name, *base)) {
         // Interception agent is demanding to un-map the module.
         g_nt.UnmapViewOfSection(process, *base);
+        *base = nullptr;
         ret = STATUS_UNSUCCESSFUL;
       }
     }

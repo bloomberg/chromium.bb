@@ -32,11 +32,13 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
@@ -112,7 +114,7 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
         is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
-                           WebURLRequest::RequestContext) override {
+                           mojom::RequestContextType) override {
     return policy_;
   }
 
@@ -170,8 +172,8 @@ class FrameFetchContextTest : public testing::Test {
 
   // Call the method for the actual test cases as only this fixture is specified
   // as a friend class.
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest& request) {
-    fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
+  void SetFirstPartyCookie(ResourceRequest& request) {
+    fetch_context->SetFirstPartyCookie(request);
   }
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder;
@@ -231,8 +233,8 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
         CanRequestInternal(SecurityViolationReportingPolicy::kReport);
     const KURL url("http://example.com/");
     EXPECT_EQ(expect_is_ad, fetch_context->IsAdResource(
-                                url, Resource::kMock,
-                                WebURLRequest::kRequestContextUnspecified));
+                                url, ResourceType::kMock,
+                                mojom::RequestContextType::UNSPECIFIED));
     return reason;
   }
 
@@ -241,8 +243,8 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     ResourceResponse response;
     FetchInitiatorInfo initiator_info;
 
-    fetch_context->DispatchWillSendRequest(1, request, response,
-                                           Resource::kImage, initiator_info);
+    fetch_context->DispatchWillSendRequest(
+        1, request, response, ResourceType::kImage, initiator_info);
     return request.IsAdResource();
   }
 
@@ -266,9 +268,10 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     resource_request.SetKeepalive(keepalive);
+    resource_request.SetRequestorOrigin(fetch_context->GetSecurityOrigin());
     ResourceLoaderOptions options;
     return fetch_context->CanRequest(
-        Resource::kImage, resource_request, input_url, options,
+        ResourceType::kImage, resource_request, input_url, options,
         reporting_policy, ResourceRequest::RedirectStatus::kNoRedirect);
   }
 
@@ -314,12 +317,12 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
  protected:
   void ExpectUpgrade(const char* input, const char* expected) {
-    ExpectUpgrade(input, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(input, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNone, expected);
   }
 
   void ExpectUpgrade(const char* input,
-                     WebURLRequest::RequestContext request_context,
+                     mojom::RequestContextType request_context,
                      network::mojom::RequestContextFrameType frame_type,
                      const char* expected) {
     const KURL input_url(input);
@@ -346,7 +349,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
 
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     resource_request.SetFrameType(frame_type);
 
     fetch_context->ModifyRequestForCSP(resource_request);
@@ -364,13 +367,29 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     }
   }
 
+  void ExpectIsAutomaticUpgradeSet(const char* input,
+                                   const char* main_frame,
+                                   bool expected_value) {
+    const KURL input_url(input);
+    const KURL main_frame_url(main_frame);
+    ResourceRequest resource_request(input_url);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
+    resource_request.SetFrameType(
+        network::mojom::RequestContextFrameType::kNone);
+
+    document->SetURL(main_frame_url);
+    fetch_context->ModifyRequestForCSP(resource_request);
+
+    EXPECT_EQ(expected_value, resource_request.IsAutomaticUpgrade());
+  }
+
   void ExpectSetRequiredCSPRequestHeader(
       const char* input,
       network::mojom::RequestContextFrameType frame_type,
       const AtomicString& expected_required_csp) {
     const KURL input_url(input);
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     resource_request.SetFrameType(frame_type);
 
     fetch_context->ModifyRequestForCSP(resource_request);
@@ -426,29 +445,29 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
     document->InsecureNavigationsToUpgrade()->clear();
 
     // We always upgrade for FrameTypeNone.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNone,
                   test.upgraded);
 
     // We never upgrade for FrameTypeNested. This is done on the browser
     // process.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNested,
                   test.original);
 
     // We do not upgrade for FrameTypeTopLevel or FrameTypeAuxiliary...
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.original);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.original);
 
     // unless the request context is RequestContextForm.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
+    ExpectUpgrade(test.original, mojom::RequestContextType::FORM,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.upgraded);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
+    ExpectUpgrade(test.original, mojom::RequestContextType::FORM,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.upgraded);
 
@@ -456,10 +475,10 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
     // InsecureNavigationsSet:
     document->AddInsecureNavigationUpgrade(
         example_origin->Host().Impl()->GetHash());
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.upgraded);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.upgraded);
   }
@@ -490,6 +509,31 @@ TEST_F(FrameFetchContextModifyRequestTest,
                 "ftp://example.test:21/image.png");
   ExpectUpgrade("ftp://example.test:1212/image.png",
                 "ftp://example.test:1212/image.png");
+}
+
+TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
+  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "https://example.test", true);
+}
+
+TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeNotSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
+  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  // Upgrade shouldn't happen if the resource is already https.
+  ExpectIsAutomaticUpgradeSet("https://example.test/image.png",
+                              "https://example.test", false);
+  // Upgrade shouldn't happen if the site is http.
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "http://example.test", false);
+
+  document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  // Flag shouldn't be set if upgrade was due to upgrade-insecure-requests.
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "https://example.test", false);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
@@ -797,30 +841,32 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
 TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Default case
   ResourceRequest request("http://www.example.com");
-  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
-            fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kDefault,
+      fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // Post
   ResourceRequest post_request("http://www.example.com");
   post_request.SetHTTPMethod(HTTPNames::POST);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kValidateCache,
-      fetch_context->ResourceRequestCachePolicy(
-          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
+            fetch_context->ResourceRequestCachePolicy(
+                post_request, ResourceType::kMainResource,
+                FetchParameters::kNoDefer));
 
   // Re-post
   document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kOnlyIfCached,
-      fetch_context->ResourceRequestCachePolicy(
-          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(mojom::FetchCacheMode::kOnlyIfCached,
+            fetch_context->ResourceRequestCachePolicy(
+                post_request, ResourceType::kMainResource,
+                FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReload
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kValidateCache,
+      fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
@@ -829,48 +875,52 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   EXPECT_EQ(
       mojom::FetchCacheMode::kValidateCache,
       fetch_context->ResourceRequestCachePolicy(
-          conditional, Resource::kMainResource, FetchParameters::kNoDefer));
+          conditional, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReloadBypassingCache
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kBypassCache,
+      fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(
       mojom::FetchCacheMode::kBypassCache,
       fetch_context->ResourceRequestCachePolicy(
-          conditional, Resource::kMainResource, FetchParameters::kNoDefer));
+          conditional, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReloadBypassingCache with a post request
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kBypassCache,
-      fetch_context->ResourceRequestCachePolicy(
-          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
+            fetch_context->ResourceRequestCachePolicy(
+                post_request, ResourceType::kMainResource,
+                FetchParameters::kNoDefer));
 
   // Set up a child frame
   FrameFetchContext* child_fetch_context = CreateChildFrame();
 
   // Child frame as part of back/forward
   document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
-  EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
-            child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kForceCache,
+      child_fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  EXPECT_EQ(mojom::FetchCacheMode::kDefault,
-            child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kDefault,
+      child_fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload bypassing cache
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kBypassCache,
+      child_fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 
   // Per-frame bypassing reload, but parent load type is different.
   // This is not the case users can trigger through user interfaces, but for
@@ -878,9 +928,10 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   child_frame->Loader().GetDocumentLoader()->SetLoadType(
       WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchParameters::kNoDefer));
+  EXPECT_EQ(
+      mojom::FetchCacheMode::kBypassCache,
+      child_fetch_context->ResourceRequestCachePolicy(
+          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
 }
 
 TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
@@ -893,13 +944,13 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   ResourceRequest request("http://www.example.com/mock");
   EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMock, FetchParameters::kNoDefer));
+                request, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReload should not affect sub-resources
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMock, FetchParameters::kNoDefer));
+                request, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
@@ -907,98 +958,31 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchParameters::kNoDefer));
+                conditional, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReloadBypassingCache
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMock, FetchParameters::kNoDefer));
+                request, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // WebFrameLoadType::kReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchParameters::kNoDefer));
+                conditional, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation
   document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMock, FetchParameters::kNoDefer));
+                request, ResourceType::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation with a conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchParameters::kNoDefer));
-}
-
-TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
-  struct TestCase {
-    const char* document_url;
-    bool document_sandboxed;
-    const char* requestor_origin;  // "" => null
-    network::mojom::RequestContextFrameType frame_type;
-    const char* serialized_origin;  // "" => null
-  } cases[] = {
-      // No document origin => unique request origin
-      {"", false, "", network::mojom::RequestContextFrameType::kNone, "null"},
-      {"", true, "", network::mojom::RequestContextFrameType::kNone, "null"},
-
-      // Document origin => request origin
-      {"http://example.test", false, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
-      {"http://example.test", true, "",
-       network::mojom::RequestContextFrameType::kNone, "http://example.test"},
-
-      // If the request already has a requestor origin, then
-      // 'SetFirstPartyCookieAndRequestorOrigin' leaves it alone:
-      {"http://example.test", false, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
-      {"http://example.test", true, "http://not-example.test",
-       network::mojom::RequestContextFrameType::kNone,
-       "http://not-example.test"},
-  };
-
-  int index = 0;
-  for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << index++ << " " << test.document_url
-                                    << " => " << test.serialized_origin);
-    // Set up a new document to ensure sandbox flags are cleared:
-    dummy_page_holder = DummyPageHolder::Create(IntSize(500, 500));
-    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
-    document = &dummy_page_holder->GetDocument();
-    fetch_context =
-        static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
-    FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
-
-    // Setup the test:
-    document->SetURL(KURL(test.document_url));
-    document->SetSecurityOrigin(SecurityOrigin::Create(document->Url()));
-
-    if (test.document_sandboxed)
-      document->EnforceSandboxFlags(kSandboxOrigin);
-
-    ResourceRequest request("http://example.test/");
-    request.SetFrameType(test.frame_type);
-    if (strlen(test.requestor_origin) > 0) {
-      request.SetRequestorOrigin(
-          SecurityOrigin::Create(KURL(test.requestor_origin)));
-    }
-
-    // Compare the populated |requestorOrigin| against |test.serializedOrigin|
-    SetFirstPartyCookieAndRequestorOrigin(request);
-    if (strlen(test.serialized_origin) == 0) {
-      EXPECT_TRUE(!request.RequestorOrigin());
-    } else {
-      EXPECT_EQ(String(test.serialized_origin),
-                request.RequestorOrigin()->ToString());
-    }
-
-    EXPECT_EQ(document->SiteForCookies(), request.SiteForCookies());
-  }
+                conditional, ResourceType::kMock, FetchParameters::kNoDefer));
 }
 
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
@@ -1118,7 +1102,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(resource_request);
@@ -1130,7 +1114,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
               testing::Property(&ResourceRequest::GetFrameType,
                                 network::mojom::RequestContextFrameType::kNone),
               testing::Property(&ResourceRequest::GetRequestContext,
-                                WebURLRequest::kRequestContextImage)),
+                                mojom::RequestContextType::IMAGE)),
           ResourceResponse()));
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());
@@ -1141,7 +1125,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   ResourceResponse response(url);
@@ -1242,7 +1226,7 @@ TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {
 
   EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kRaw, FetchParameters::kNoDefer));
+                request, ResourceType::kRaw, FetchParameters::kNoDefer));
 }
 
 TEST_F(FrameFetchContextTest, DispatchDidChangePriorityWhenDetached) {
@@ -1279,8 +1263,8 @@ TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  fetch_context->DispatchWillSendRequest(1, request, response, Resource::kRaw,
-                                         initiator_info);
+  fetch_context->DispatchWillSendRequest(1, request, response,
+                                         ResourceType::kRaw, initiator_info);
   // Should not crash.
 }
 
@@ -1306,7 +1290,7 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
 
   fetch_context->DispatchDidReceiveResponse(
       3, response, network::mojom::RequestContextFrameType::kTopLevel,
-      WebURLRequest::kRequestContextFetch, resource,
+      mojom::RequestContextType::FETCH, resource,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   // Should not crash.
 }
@@ -1344,10 +1328,11 @@ TEST_F(FrameFetchContextTest, DispatchDidFailWhenDetached) {
 TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
   dummy_page_holder = nullptr;
 
-  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kImage));
-  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kRaw));
-  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kScript));
-  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kMainResource));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(ResourceType::kImage));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(ResourceType::kRaw));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(ResourceType::kScript));
+  EXPECT_FALSE(
+      fetch_context->ShouldLoadNewResource(ResourceType::kMainResource));
 }
 
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
@@ -1355,11 +1340,11 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  fetch_context->RecordLoadingActivity(request, Resource::kRaw,
+  fetch_context->RecordLoadingActivity(request, ResourceType::kRaw,
                                        FetchInitiatorTypeNames::xmlhttprequest);
   // Should not crash.
 
-  fetch_context->RecordLoadingActivity(request, Resource::kRaw,
+  fetch_context->RecordLoadingActivity(request, ResourceType::kRaw,
                                        FetchInitiatorTypeNames::document);
   // Should not crash.
 }
@@ -1483,12 +1468,11 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   dummy_page_holder = nullptr;
 
   fetch_context->PopulateResourceRequest(
-      Resource::kRaw, client_hints_preferences, resource_width, request);
+      ResourceType::kRaw, client_hints_preferences, resource_width, request);
   // Should not crash.
 }
 
-TEST_F(FrameFetchContextTest,
-       SetFirstPartyCookieAndRequestorOriginWhenDetached) {
+TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
   const KURL document_url("https://www2.example.com/foo/bar");
@@ -1499,10 +1483,10 @@ TEST_F(FrameFetchContextTest,
 
   dummy_page_holder = nullptr;
 
-  SetFirstPartyCookieAndRequestorOrigin(request);
+  SetFirstPartyCookie(request);
 
   EXPECT_EQ(document_url, request.SiteForCookies());
-  EXPECT_EQ(origin, request.RequestorOrigin());
+  EXPECT_EQ(document_url.GetString(), request.SiteForCookies().GetString());
 }
 
 TEST_F(FrameFetchContextTest, ArchiveWhenDetached) {

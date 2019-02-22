@@ -38,6 +38,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
   void SetKey(uint32_t crypto_session_id,
               const uint8_t* key_id,
               uint32_t key_id_size,
+              KeyType key_type,
               const uint8_t* key_blob,
               uint32_t key_blob_size) final;
   void RemoveKey(uint32_t crypto_session_id,
@@ -60,6 +61,8 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
   void OnMediaCryptoSessionCreated(media::CdmProxy::Status status,
                                    uint32_t crypto_session_id,
                                    uint64_t output_data);
+  void OnKeySet(media::CdmProxy::Status status);
+  void OnKeyRemoved(media::CdmProxy::Status status);
 
   mojom::CdmProxyPtr cdm_proxy_ptr_;
   cdm::CdmProxyClient* client_;

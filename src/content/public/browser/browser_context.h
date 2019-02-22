@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
@@ -43,6 +44,10 @@ class Connector;
 
 namespace storage {
 class ExternalMountPoints;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace media {
@@ -77,6 +82,7 @@ class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
+class SharedCorsOriginAccessList;
 class SiteInstance;
 class StoragePartition;
 class SSLHostStateDelegate;
@@ -214,6 +220,21 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context);
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
+
+  // Returns a SharedCorsOriginAccessList instance for the |browser_context|.
+  // TODO(toyoshim): Remove this interface once NetworkService is enabled.
+  static const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList(
+      BrowserContext* browser_context);
+
+  // Sets CORS origin access lists. This obtains SharedCorsOriginAccessList
+  // that is bound to |browser_context|, and calls SetForOrigin(...) for legacy
+  // code path, but calls into NetworkService instead if it is enabled.
+  static void SetCorsOriginAccessListsForOrigin(
+      BrowserContext* browser_context,
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure);
 
   BrowserContext();
 

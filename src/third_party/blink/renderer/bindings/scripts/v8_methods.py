@@ -220,7 +220,7 @@ def method_context(interface, method, is_visible=True):
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
         'is_static': is_static,
-        'is_unforgeable': is_unforgeable(interface, method),
+        'is_unforgeable': is_unforgeable(method),
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method, interface),  # [MeasureAs]
         'name': name,
@@ -450,7 +450,7 @@ def property_attributes(interface, method):
     property_attributes_list = []
     if 'NotEnumerable' in extended_attributes:
         property_attributes_list.append('v8::DontEnum')
-    if is_unforgeable(interface, method):
+    if is_unforgeable(method):
         property_attributes_list.append('v8::ReadOnly')
         property_attributes_list.append('v8::DontDelete')
     return property_attributes_list

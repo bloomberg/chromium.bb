@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 
-#include <math.h>
+#include <algorithm>
+#include <limits>
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -91,7 +94,7 @@ const int kMaximizedWindowInset = 10;  // DIPs.
 // Given the bounds of a dragged tab, return the X coordinate to use for
 // computing where in the strip to insert/move the tab.
 int GetDraggedX(const gfx::Rect& dragged_bounds) {
-  return dragged_bounds.x() + Tab::GetDragInset();
+  return dragged_bounds.x() + TabStyle::GetTabInternalPadding().left();
 }
 
 #if defined(OS_CHROMEOS)
@@ -111,9 +114,11 @@ aura::Window* GetWindowForTabDraggingProperties(const TabStrip* tab_strip) {
 // Returns true if |tab_strip| browser window is snapped.
 bool IsSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
+  aura::Window* window = GetWindowForTabDraggingProperties(tab_strip);
   ash::mojom::WindowStateType type =
-      GetWindowForTabDraggingProperties(tab_strip)->GetProperty(
-          ash::kWindowStateTypeKey);
+      window->GetProperty(ash::kTabDroppedWindowStateTypeKey);
+  if (type == ash::mojom::WindowStateType::DEFAULT)
+    type = window->GetProperty(ash::kWindowStateTypeKey);
   return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
          type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
@@ -566,6 +571,18 @@ void TabDragController::EndDrag(EndDragReason reason) {
   // dragged tabs to it first.
   if (reason == END_DRAG_COMPLETE && deferred_target_tabstrip_observer_)
     PerformDeferredAttach();
+
+  // It's also possible that we need to merge the dragged tabs back into the
+  // source window even if the dragged tabs is dragged away from the source
+  // window.
+  // TODO(xdai/mukai): Move ClearTabDraggingInfo() to a later point and let
+  // RevertDrag() handle this case.
+  if (source_tabstrip_ &&
+      GetWindowForTabDraggingProperties(source_tabstrip_)
+          ->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+    SetDeferredTargetTabstrip(source_tabstrip_);
+    PerformDeferredAttach();
+  }
 #endif
 
   EndDragImpl(reason != END_DRAG_COMPLETE && source_tabstrip_ ?
@@ -757,7 +774,7 @@ TabDragController::DragBrowserToNewTabStrip(TabStrip* target_tabstrip,
   GetAttachedBrowserWidget()->GetGestureRecognizer()->TransferEventsTo(
       GetAttachedBrowserWidget()->GetNativeView(),
       target_tabstrip->GetWidget()->GetNativeView(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
   if (is_dragging_window_) {
@@ -859,7 +876,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   if (!attached_tabstrip_->touch_layout_.get()) {
     double ratio =
         static_cast<double>(attached_tabstrip_->current_inactive_width()) /
-        Tab::GetStandardWidth();
+        TabStyle::GetStandardWidth();
     threshold = gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.
@@ -1200,6 +1217,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     }
   }
 
+  ClearIsDraggingTabs();
   ClearTabDraggingInfo();
   attached_tabstrip_->DraggedTabsDetached();
   attached_tabstrip_ = NULL;
@@ -1234,7 +1252,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   gfx::NativeView attached_native_view = attached_widget->GetNativeView();
   attached_widget->GetGestureRecognizer()->TransferEventsTo(
       attached_native_view, dragged_widget->GetNativeView(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
@@ -1535,7 +1553,9 @@ void TabDragController::EndDragImpl(EndDragType type) {
     GetAttachedBrowserWidget()->EndMoveLoop();
   }
 
-  ClearTabDraggingInfo();
+  // "IsDraggingTabs" flag needs to be cleared since some part of CompleteDrag()
+  // assumes it's cleared beforehand. See https://crbug.com/892221.
+  ClearIsDraggingTabs();
 
   if (type != TAB_DESTROYED) {
     // We only finish up the drag if we were actually dragging. If start_drag_
@@ -1558,6 +1578,10 @@ void TabDragController::EndDragImpl(EndDragType type) {
     if (started_drag_)
       RevertDrag();
   }  // else case the only tab we were dragging was deleted. Nothing to do.
+
+  // Clear tab dragging info after the complete/revert as CompleteDrag() may
+  // need to use some of the properties.
+  ClearTabDraggingInfo();
 
   // Clear out drag data so we don't attempt to do anything with it.
   drag_data_.clear();
@@ -1591,10 +1615,14 @@ void TabDragController::PerformDeferredAttach() {
   SetDeferredTargetTabstrip(nullptr);
   deferred_target_tabstrip_observer_.reset();
 
+  // GetCursorScreenPoint() needs to be called before Detach() is called as
+  // GetCursorScreenPoint() may use the current attached tabstrip to get the
+  // touch event position but Detach() sets attached tabstrip to nullptr.
+  const gfx::Point current_screen_point = GetCursorScreenPoint();
   Detach(DONT_RELEASE_CAPTURE);
   // If we're attaching the dragged tabs to an overview window's tabstrip, the
   // tabstrip should not have focus.
-  Attach(target_tabstrip, GetCursorScreenPoint(), /*set_capture=*/false);
+  Attach(target_tabstrip, current_screen_point, /*set_capture=*/false);
 #endif
 }
 
@@ -2095,23 +2123,34 @@ void TabDragController::SetTabDraggingInfo() {
 #endif
 }
 
-void TabDragController::ClearTabDraggingInfo() {
+void TabDragController::ClearIsDraggingTabs() {
 #if defined(OS_CHROMEOS)
   TabStrip* dragged_tabstrip =
       attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
   DCHECK(!dragged_tabstrip->IsDragSessionActive() || !active_);
   // Do not clear the dragging info properties for a to-be-destroyed window.
-  // They will be cleared later in Window's destrutor. It's intentional as
+  // They will be cleared later in Window's destructor. It's intentional as
   // ash::SplitViewController::TabDraggedWindowObserver listens to both
   // OnWindowDestroying() event and the window properties change event, and uses
   // the two events to decide what to do next.
   if (GetModel(dragged_tabstrip)->empty())
     return;
 
+  GetWindowForTabDraggingProperties(dragged_tabstrip)
+      ->ClearProperty(ash::kIsDraggingTabsKey);
+#endif
+}
+
+void TabDragController::ClearTabDraggingInfo() {
+#if defined(OS_CHROMEOS)
+  TabStrip* dragged_tabstrip =
+      attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
+  DCHECK(!dragged_tabstrip->IsDragSessionActive() || !active_);
+
   aura::Window* dragged_window =
       GetWindowForTabDraggingProperties(dragged_tabstrip);
-  dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
+  dragged_window->ClearProperty(ash::kTabDroppedWindowStateTypeKey);
 #endif
 }
 

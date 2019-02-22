@@ -345,7 +345,7 @@ def git_config_if_not_set(key, value):
 def gclient_sync(
     with_branch_heads, with_tags, revisions, break_repo_locks,
     disable_syntax_validation, patch_refs, gerrit_reset,
-    gerrit_rebase_patch_ref, apply_patch_on_gclient):
+    gerrit_rebase_patch_ref):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -366,7 +366,7 @@ def gclient_sync(
       revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
-  if apply_patch_on_gclient and patch_refs:
+  if patch_refs:
     for patch_ref in patch_refs:
       args.extend(['--patch-ref', patch_ref])
     if not gerrit_reset:
@@ -379,7 +379,7 @@ def gclient_sync(
   except SubprocessFailed as e:
     # If gclient sync is handling patching, parse the output for a patch error
     # message.
-    if apply_patch_on_gclient and 'Failed to apply patch.' in e.output:
+    if 'Failed to apply patch.' in e.output:
       raise PatchFailed(e.message, e.code, e.output)
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
@@ -816,27 +816,13 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs,
                     gerrit_rebase_patch_ref, refs, git_cache_dir,
-                    cleanup_dir, gerrit_reset, disable_syntax_validation,
-                    apply_patch_on_gclient):
+                    cleanup_dir, gerrit_reset, disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print 'Fetching Git checkout'
 
   git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir)
-
-  applied_gerrit_patch = False
-  if not apply_patch_on_gclient:
-    print '===Processing patch solutions==='
-    patch_root = patch_root or ''
-    print 'Patch root is %r' % patch_root
-    for solution in solutions:
-      print 'Processing solution %r' % solution['name']
-      if (patch_root == solution['name'] or
-          solution['name'].startswith(patch_root + '/')):
-        relative_root = solution['name'][len(patch_root) + 1:]
-        target = '/'.join([relative_root, 'DEPS']).lstrip('/')
-        print '  relative root is %r, target is %r' % (relative_root, target)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, target_cpu,
@@ -869,8 +855,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
           disable_syntax_validation,
           patch_refs,
           gerrit_reset,
-          gerrit_rebase_patch_ref,
-          apply_patch_on_gclient)
+          gerrit_rebase_patch_ref)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -972,10 +957,6 @@ def parse_args():
   parse.add_option(
       '--disable-syntax-validation', action='store_true',
       help='Disable validation of .gclient and DEPS syntax.')
-  parse.add_option('--no-apply-patch-on-gclient',
-                   dest='apply_patch_on_gclient', action='store_false',
-                   default=True,
-                   help='Patch the gerrit ref in gclient instead of here.')
 
   options, args = parse.parse_args()
 
@@ -1013,10 +994,6 @@ def parse_args():
         'WARNING: Caught execption while parsing revision_mapping*: %s'
         % (str(e),)
     )
-
-  if options.patch_refs:
-    if not options.apply_patch_on_gclient:
-      parse.error('--patch_ref cannot be used with --no-apply-patch-on-gclient')
 
   # Because we print CACHE_DIR out into a .gclient file, and then later run
   # eval() on it, backslashes need to be escaped, otherwise "E:\b\build" gets
@@ -1088,8 +1065,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
           git_cache_dir=options.git_cache_dir,
           cleanup_dir=options.cleanup_dir,
           gerrit_reset=not options.gerrit_no_reset,
-          disable_syntax_validation=options.disable_syntax_validation,
-          apply_patch_on_gclient=options.apply_patch_on_gclient)
+          disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'

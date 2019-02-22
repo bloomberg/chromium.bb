@@ -167,9 +167,13 @@ TEST_F(TriggerManagerTest, StartAndFinishCollectingThreatDetails) {
   EXPECT_TRUE(StartCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                            web_contents1));
   EXPECT_THAT(data_collectors_map(), UnorderedElementsAre(Key(web_contents1)));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents1, true));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents1).threat_details);
 
   // More complex scenarios can happen, where collection happens on two
@@ -182,39 +186,63 @@ TEST_F(TriggerManagerTest, StartAndFinishCollectingThreatDetails) {
                                            web_contents2));
   EXPECT_THAT(data_collectors_map(),
               UnorderedElementsAre(Key(web_contents1), Key(web_contents2)));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
+  EXPECT_NE(data_collectors_map().find(web_contents2),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents2).threat_details);
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents2, true));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
+  EXPECT_NE(data_collectors_map().find(web_contents2),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents2).threat_details);
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents1, true));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents1).threat_details);
+  EXPECT_NE(data_collectors_map().find(web_contents2),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents2).threat_details);
 
   // Calling Start twice with the same WebContents is an error, and will return
   // false the second time. But it can still be completed normally.
   EXPECT_TRUE(StartCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                            web_contents1));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
   EXPECT_FALSE(StartCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents1));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents1, true));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents1).threat_details);
 
   // Calling Finish twice with the same WebContents is an error, and will return
   // false the second time. It's basically a no-op.
   EXPECT_TRUE(StartCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                            web_contents1));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_NE(nullptr, data_collectors_map().at(web_contents1).threat_details);
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents1, true));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents1).threat_details);
   EXPECT_FALSE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                              web_contents1, false));
+  EXPECT_NE(data_collectors_map().find(web_contents1),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents1).threat_details);
 }
 
@@ -265,6 +293,8 @@ TEST_F(TriggerManagerTest, UserOptedOutOfSBER_DataCollected_NoReportSent) {
   EXPECT_THAT(data_collectors_map(), UnorderedElementsAre(Key(web_contents)));
   EXPECT_FALSE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                              web_contents, false));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 }
 
@@ -281,6 +311,8 @@ TEST_F(TriggerManagerTest, UserOptsOutOfSBER_DataCollected_NoReportSent) {
 
   EXPECT_FALSE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                              web_contents, false));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 }
 
@@ -298,6 +330,8 @@ TEST_F(TriggerManagerTest, UserOptsInToSBER_DataCollected_ReportSent) {
 
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                             web_contents, true));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 }
 
@@ -315,6 +349,8 @@ TEST_F(TriggerManagerTest,
 
   EXPECT_FALSE(FinishCollectingThreatDetails(TriggerType::SECURITY_INTERSTITIAL,
                                              web_contents, false));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 }
 
@@ -331,6 +367,8 @@ TEST_F(TriggerManagerTest, NoCollectionWhenOutOfQuota) {
   EXPECT_THAT(data_collectors_map(), UnorderedElementsAre(Key(web_contents)));
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
                                             web_contents, true));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 
   // Turn off the AD_SAMPLE trigger inside the throttler, the trigger should no
@@ -338,6 +376,8 @@ TEST_F(TriggerManagerTest, NoCollectionWhenOutOfQuota) {
   SetTriggerHasQuota(TriggerType::AD_SAMPLE, false);
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 }
 
@@ -367,6 +407,8 @@ TEST_F(TriggerManagerTest, AdSamplerTrigger) {
   EXPECT_THAT(data_collectors_map(), UnorderedElementsAre(Key(web_contents)));
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
                                             web_contents, true));
+  EXPECT_NE(data_collectors_map().find(web_contents),
+            data_collectors_map().end());
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
 
   // Disabling SBEROptInAllowed disables this trigger.

@@ -78,17 +78,6 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
   return touch_action;
 }
 
-// Returns true for elements that are either <img> or <svg> image or <video>
-// that are not in an image or media document; returns false otherwise.
-bool IsImageOrVideoElement(const Element* element) {
-  if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
-      !element->GetDocument().IsImageDocument())
-    return true;
-  if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
-    return true;
-  return false;
-}
-
 bool ShouldForceLegacyLayout(const ComputedStyle& style,
                              const ComputedStyle& layout_parent_style,
                              const Element& element) {
@@ -120,9 +109,7 @@ bool ShouldForceLegacyLayout(const ComputedStyle& style,
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a block
     // fragmentation context.
-    if (style.SpecifiesColumns() ||
-        (style.IsOverflowPaged() &&
-         &element != document.ViewportDefiningElement()))
+    if (style.SpecifiesColumns() || style.IsOverflowPaged())
       return true;
     if (document.Printing()) {
       // This needs to be discovered on the root element.
@@ -320,7 +307,14 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (IsHTMLLegendElement(element) && style.Display() != EDisplay::kContents) {
-    style.SetDisplay(EDisplay::kBlock);
+    // Allow any blockified display value for legends. Note that according to
+    // the spec, this shouldn't affect computed style (like we do here).
+    // Instead, the display override should be determined during box creation,
+    // and even then only be applied to the rendered legend inside a
+    // fieldset. However, Blink determines the rendered legend during layout
+    // instead of during layout object creation, and also generally makes
+    // assumptions that the computed display value is the one to use.
+    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
     return;
   }
 
@@ -453,16 +447,20 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.Display() == EDisplay::kTableHeaderGroup ||
       style.Display() == EDisplay::kTableRow ||
       style.Display() == EDisplay::kTableRowGroup ||
-      style.Display() == EDisplay::kTableCell)
+      style.Display() == EDisplay::kTableCell) {
     style.SetWritingMode(layout_parent_style.GetWritingMode());
+    style.UpdateFontOrientation();
+  }
 
   // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
   if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
       (style.Display() == EDisplay::kWebkitBox ||
-       style.Display() == EDisplay::kWebkitInlineBox))
+       style.Display() == EDisplay::kWebkitInlineBox)) {
     style.SetWritingMode(WritingMode::kHorizontalTb);
+    style.UpdateFontOrientation();
+  }
 
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);
@@ -563,14 +561,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (element && (style.Display() != EDisplay::kNone ||
-                  element->LayoutObjectIsNeeded(style))) {
-    // TODO(rakina): Move this attribute check somewhere else.
-    if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-        !element->invisible().IsNull())
-      style.SetDisplay(EDisplay::kNone);
-    else if (element->IsHTMLElement())
-      AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  if (element && element->IsHTMLElement() &&
+      (style.Display() != EDisplay::kNone ||
+       element->LayoutObjectIsNeeded(style))) {
+    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
   }
   if (style.Display() != EDisplay::kNone) {
     bool is_document_element =
@@ -642,12 +636,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // Let the theme also have a crack at adjusting the style.
   if (style.HasAppearance())
     LayoutTheme::GetTheme().AdjustStyle(style, element);
-
-  // If we have first-letter pseudo style, transitions, or animations, do not
-  // share this style.
-  if (style.HasPseudoStyle(kPseudoIdFirstLetter) || style.Transitions() ||
-      style.Animations())
-    style.SetUnique();
 
   AdjustStyleForEditing(style);
 
@@ -735,28 +723,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       element &&
       ShouldForceLegacyLayout(style, layout_parent_style, *element)) {
     style.SetForceLegacyLayout(true);
-  }
-
-  // If intrinsically sized images or videos are disallowed by feature policy,
-  // use default size (300 x 150) instead.
-  if (IsImageOrVideoElement(element)) {
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-        element->GetDocument().GetFrame() &&
-        (!style.Width().IsSpecified() || !style.Height().IsSpecified())) {
-      // This check will trigger reporting, so only do it if either width or
-      // height is unspecified.
-      if (!element->GetDocument().GetFrame()->IsFeatureEnabled(
-              mojom::FeaturePolicyFeature::kUnsizedMedia,
-              ReportOptions::kReportOnFailure)) {
-        if (!style.Width().IsSpecified()) {
-          style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
-        }
-        if (!style.Height().IsSpecified()) {
-          style.SetLogicalHeight(
-              Length(LayoutReplaced::kDefaultHeight, kFixed));
-        }
-      }
-    }
   }
 }
 }  // namespace blink

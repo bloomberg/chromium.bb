@@ -51,6 +51,8 @@ ScriptProcessorHandler::ScriptProcessorHandler(
     unsigned number_of_output_channels)
     : AudioHandler(kNodeTypeScriptProcessor, node, sample_rate),
       double_buffer_index_(0),
+      input_buffers_(new HeapVector<Member<AudioBuffer>>()),
+      output_buffers_(new HeapVector<Member<AudioBuffer>>()),
       buffer_size_(buffer_size),
       buffer_read_write_index_(0),
       number_of_input_channels_(number_of_input_channels),
@@ -115,8 +117,8 @@ void ScriptProcessorHandler::Initialize() {
                                   sample_rate)
             : nullptr;
 
-    input_buffers_.push_back(input_buffer);
-    output_buffers_.push_back(output_buffer);
+    input_buffers_->push_back(input_buffer);
+    output_buffers_->push_back(output_buffer);
   }
 
   AudioHandler::Initialize();
@@ -139,14 +141,14 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
   // sides.
   unsigned double_buffer_index = this->DoubleBufferIndex();
   bool is_double_buffer_index_good =
-      double_buffer_index < 2 && double_buffer_index < input_buffers_.size() &&
-      double_buffer_index < output_buffers_.size();
+      double_buffer_index < 2 && double_buffer_index < input_buffers_->size() &&
+      double_buffer_index < output_buffers_->size();
   DCHECK(is_double_buffer_index_good);
   if (!is_double_buffer_index_good)
     return;
 
-  AudioBuffer* input_buffer = input_buffers_[double_buffer_index].Get();
-  AudioBuffer* output_buffer = output_buffers_[double_buffer_index].Get();
+  AudioBuffer* input_buffer = input_buffers_->at(double_buffer_index).Get();
+  AudioBuffer* output_buffer = output_buffers_->at(double_buffer_index).Get();
 
   // Check the consistency of input and output buffers.
   unsigned number_of_input_channels = internal_input_bus_->NumberOfChannels();
@@ -260,8 +262,8 @@ void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
   if (double_buffer_index > 1)
     return;
 
-  AudioBuffer* input_buffer = input_buffers_[double_buffer_index].Get();
-  AudioBuffer* output_buffer = output_buffers_[double_buffer_index].Get();
+  AudioBuffer* input_buffer = input_buffers_->at(double_buffer_index).Get();
+  AudioBuffer* output_buffer = output_buffers_->at(double_buffer_index).Get();
   DCHECK(output_buffer);
   if (!output_buffer)
     return;
@@ -298,8 +300,8 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
     return;
   }
 
-  AudioBuffer* input_buffer = input_buffers_[double_buffer_index].Get();
-  AudioBuffer* output_buffer = output_buffers_[double_buffer_index].Get();
+  AudioBuffer* input_buffer = input_buffers_->at(double_buffer_index).Get();
+  AudioBuffer* output_buffer = output_buffers_->at(double_buffer_index).Get();
   DCHECK(output_buffer);
   if (!output_buffer) {
     waitable_event->Signal();

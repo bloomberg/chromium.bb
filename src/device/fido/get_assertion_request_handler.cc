@@ -84,6 +84,18 @@ bool CheckResponseCredentialIdMatchesRequestAllowList(
                      });
 }
 
+// When the response from the authenticator does not contain a credential and
+// the allow list from the GetAssertion request only contains a single
+// credential id, manually set credential id in the returned response.
+void SetCredentialIdForResponseWithEmptyCredential(
+    const CtapGetAssertionRequest& request,
+    AuthenticatorGetAssertionResponse& response) {
+  if (request.allow_list() && request.allow_list()->size() == 1 &&
+      !response.credential()) {
+    response.SetCredential(request.allow_list()->at(0));
+  }
+}
+
 // Checks UserVerificationRequirement enum passed from the relying party is
 // compatible with the authenticator, and updates the request to the
 // "effective" user verification requirement.
@@ -175,7 +187,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           transport_availability_info().available_transports,
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension());
-    auto discovery = FidoDiscovery::CreateCable(*request_.cable_extension());
+    auto discovery =
+        FidoDeviceDiscovery::CreateCable(*request_.cable_extension());
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }
@@ -218,6 +231,7 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
+  SetCredentialIdForResponseWithEmptyCredential(request_, *response);
   OnAuthenticatorResponse(authenticator, response_code, std::move(response));
 }
 

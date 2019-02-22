@@ -13,12 +13,12 @@
 #include <utility>
 
 #include "common_video/h264/h264_common.h"
-#include "modules/include/module_common_types.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/utility/vp8_header_parser.h"
 #include "modules/video_coding/utility/vp9_uncompressed_header_parser.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/timeutils.h"
 #include "sdk/android/generated_video_jni/jni/VideoEncoderWrapper_jni.h"
 #include "sdk/android/generated_video_jni/jni/VideoEncoder_jni.h"
 #include "sdk/android/native_api/jni/class_loader.h"
@@ -390,7 +390,6 @@ CodecSpecificInfo VideoEncoderWrapper::ParseCodecSpecificInfo(
   switch (codec_settings_.codecType) {
     case kVideoCodecVP8:
       info.codecSpecific.VP8.nonReference = false;
-      info.codecSpecific.VP8.simulcastIdx = 0;
       info.codecSpecific.VP8.temporalIdx = kNoTemporalIdx;
       info.codecSpecific.VP8.layerSync = false;
       info.codecSpecific.VP8.keyIdx = kNoKeyIdx;
@@ -403,7 +402,6 @@ CodecSpecificInfo VideoEncoderWrapper::ParseCodecSpecificInfo(
       info.codecSpecific.VP9.flexible_mode = false;
       info.codecSpecific.VP9.ss_data_available = key_frame ? true : false;
       info.codecSpecific.VP9.temporal_idx = kNoTemporalIdx;
-      info.codecSpecific.VP9.spatial_idx = kNoSpatialIdx;
       info.codecSpecific.VP9.temporal_up_switch = true;
       info.codecSpecific.VP9.inter_layer_predicted = false;
       info.codecSpecific.VP9.gof_idx =

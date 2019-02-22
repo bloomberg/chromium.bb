@@ -8,7 +8,8 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
-import "third_party/blink/public/mojom/message_port/message_port.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/notifications/notification.mojom";
 import "third_party/blink/public/mojom/payments/payment_app.mojom";
 import "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker.mojom";
@@ -18,7 +19,6 @@ import "third_party/blink/public/mojom/service_worker/service_worker_fetch_respo
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
 import "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom";
-import "third_party/blink/public/platform/modules/notifications/notification.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -57,9 +57,10 @@ const int32 kPushEventTimeoutSeconds = 90;
 // browser.
 //
 // USAGE TIP: Those DispatchEvent* messages expecting a
-// (blink.mojom.ServiceWorkerEventStatus, mojo_base.mojom.Time) callback are
-// considered 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback
-// can be used to create the callback for these.
+// (blink.mojom.ServiceWorkerEventStatus, mojo_base.mojom.TimeTicks) callback
+// are considered 'simple events'.
+// ServiceWorkerVersion::CreateSimpleEventCallback can be used to create the
+// callback for these.
 interface ServiceWorker {
   // The first message sent on this interface. It is used to associate service
   // worker-related interfaces together on the service worker thread, as
@@ -75,10 +76,10 @@ interface ServiceWorker {
   DispatchInstallEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
           bool has_fetch_handler,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchActivateEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   // These methods dispatch to the ServiceWorkerGlobalScope the events listed on
   // https://wicg.github.io/background-fetch/#service-worker-global-events.
@@ -88,19 +89,19 @@ interface ServiceWorker {
   DispatchBackgroundFetchAbortEvent(
       blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchBackgroundFetchClickEvent(
       blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
  DispatchBackgroundFetchFailEvent(
       blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchBackgroundFetchSuccessEvent(
       blink.mojom.BackgroundFetchRegistration registration)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   // Dispatches the cookie change events in the Async Cookie API specification.
   // https://github.com/WICG/cookie-store/
@@ -110,7 +111,7 @@ interface ServiceWorker {
       network.mojom.CanonicalCookie cookie,
       network.mojom.CookieChangeCause cause)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   // The Dispatch*FetchEvent() callback is called once the event finishes,
   // which means the event handler ran and all outstanding respondWith() and
@@ -121,7 +122,7 @@ interface ServiceWorker {
       blink.mojom.DispatchFetchEventParams params,
       blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   DispatchNotificationClickEvent(
       string notification_id,
@@ -129,17 +130,17 @@ interface ServiceWorker {
       int32 action_index,
       mojo_base.mojom.String16? reply)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchNotificationCloseEvent(
       string notification_id,
       blink.mojom.NotificationData notification_data)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   // The payload of a push message can be valid with content, valid with empty
   // content, or null.
   DispatchPushEvent(string? payload)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
   // S13nServiceWorker: |timeout| is the amount of time to allow this event to
@@ -149,31 +150,31 @@ interface ServiceWorker {
                     bool last_chance,
                     mojo_base.mojom.TimeDelta timeout)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchAbortPaymentEvent(
       payments.mojom.PaymentHandlerResponseCallback result_of_abort_payment)
           => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.Time dispatch_event_time);
+              mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchCanMakePaymentEvent(
       payments.mojom.CanMakePaymentEventData event_data,
       payments.mojom.PaymentHandlerResponseCallback result_of_can_make_payment)
           => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.Time dispatch_event_time);
+              mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchPaymentRequestEvent(
       payments.mojom.PaymentRequestEventData request_data,
       payments.mojom.PaymentHandlerResponseCallback response_callback)
           => (blink.mojom.ServiceWorkerEventStatus status,
-              mojo_base.mojom.Time dispatch_event_time);
+              mojo_base.mojom.TimeTicks dispatch_event_time);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   // TODO(crbug.com/869714): Remove this code for long living service workers
   // when Android Messages no longer requires it.
   DispatchExtendableMessageEventWithCustomTimeout(ExtendableMessageEvent event,
                                  mojo_base.mojom.TimeDelta timeout)
       => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.Time dispatch_event_time);
+          mojo_base.mojom.TimeTicks dispatch_event_time);
 
   // Pings the service worker to check if it is responsive. If the callback is
   // not called within a certain period of time, the browser will terminate the

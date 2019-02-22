@@ -3004,7 +3004,7 @@ OPENSSL_EXPORT const char *SSL_get_psk_identity_hint(const SSL *ssl);
 OPENSSL_EXPORT const char *SSL_get_psk_identity(const SSL *ssl);
 
 
-// QUIC Transport Parameters.
+// QUIC transport parameters.
 //
 // draft-ietf-quic-tls defines a new TLS extension quic_transport_parameters
 // used by QUIC for each endpoint to unilaterally declare its supported
@@ -3381,15 +3381,13 @@ OPENSSL_EXPORT int SSL_renegotiate_pending(SSL *ssl);
 OPENSSL_EXPORT int SSL_total_renegotiations(const SSL *ssl);
 
 // tls13_variant_t determines what TLS 1.3 variant to negotiate.
-//
-// TODO(svaldez): Make |tls13_rfc| the default after callers are switched to
-// explicitly enable |tls13_all|.
 enum tls13_variant_t {
-  tls13_default = 0,
+  tls13_rfc = 0,
   tls13_draft23,
   tls13_draft28,
-  tls13_rfc,
-  tls13_all = tls13_default,
+  // tls13_all enables all variants of TLS 1.3, to keep the transition smooth as
+  // early adopters move to the final version.
+  tls13_all,
 };
 
 // SSL_CTX_set_tls13_variant sets which variant of TLS 1.3 we negotiate. On the
@@ -3668,6 +3666,10 @@ OPENSSL_EXPORT void SSL_CTX_set_false_start_allowed_without_alpn(SSL_CTX *ctx,
 // ignore the downgrade signal in the server's random value.
 OPENSSL_EXPORT void SSL_CTX_set_ignore_tls13_downgrade(SSL_CTX *ctx,
                                                        int ignore);
+
+// SSL_set_ignore_tls13_downgrade configures whether |ssl| ignores the downgrade
+// signal in the server's random value.
+OPENSSL_EXPORT void SSL_set_ignore_tls13_downgrade(SSL *ssl, int ignore);
 
 // SSL_is_tls13_downgrade returns one if the TLS 1.3 anti-downgrade
 // mechanism would have aborted |ssl|'s handshake and zero otherwise.
@@ -4316,6 +4318,7 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
 //
 // These defines exist for node.js, with the hope that we can eliminate the
 // need for them over time.
+
 #define SSLerr(function, reason) \
   ERR_put_error(ERR_LIB_SSL, 0, reason, __FILE__, __LINE__)
 
@@ -4383,6 +4386,10 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
 #define SSL_CTRL_SET_TMP_ECDH_CB doesnt_exist
 #define SSL_CTRL_SET_TMP_RSA doesnt_exist
 #define SSL_CTRL_SET_TMP_RSA_CB doesnt_exist
+
+// |BORINGSSL_PREFIX| already makes each of these symbols into macros, so there
+// is no need to define conflicting macros.
+#if !defined(BORINGSSL_PREFIX)
 
 #define DTLSv1_get_timeout DTLSv1_get_timeout
 #define DTLSv1_handle_timeout DTLSv1_handle_timeout
@@ -4453,6 +4460,8 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
 #define SSL_set_tmp_rsa SSL_set_tmp_rsa
 #define SSL_total_renegotiations SSL_total_renegotiations
 
+#endif // !defined(BORINGSSL_PREFIX)
+
 
 #if defined(__cplusplus)
 }  // extern C
@@ -4461,7 +4470,7 @@ OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_arg(SSL_CTX *ctx, void *arg);
 
 extern "C++" {
 
-namespace bssl {
+BSSL_NAMESPACE_BEGIN
 
 BORINGSSL_MAKE_DELETER(SSL, SSL_free)
 BORINGSSL_MAKE_DELETER(SSL_CTX, SSL_CTX_free)
@@ -4573,7 +4582,7 @@ OPENSSL_EXPORT bool SSL_apply_handoff(SSL *ssl, Span<const uint8_t> handoff);
 OPENSSL_EXPORT bool SSL_serialize_handback(const SSL *ssl, CBB *out);
 OPENSSL_EXPORT bool SSL_apply_handback(SSL *ssl, Span<const uint8_t> handback);
 
-}  // namespace bssl
+BSSL_NAMESPACE_END
 
 }  // extern C++
 

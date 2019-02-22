@@ -6,7 +6,7 @@
 #define COMPONENTS_GRPC_SUPPORT_INCLUDE_BIDIRECTIONAL_STREAM_C_H_
 
 #if defined(WIN32)
-#define GRPC_SUPPORT_EXPORT
+#define GRPC_SUPPORT_EXPORT __declspec(dllexport)
 #else
 #define GRPC_SUPPORT_EXPORT __attribute__((visibility("default")))
 #endif
@@ -242,4 +242,4 @@ bool bidirectional_stream_is_done(bidirectional_stream* stream);
 }
 #endif
 
-#endif  // COMPONENTS_GRPC_SUPPORT_INCLUDE_BIDIRECTIONAL_STREAM_H_
+#endif  // COMPONENTS_GRPC_SUPPORT_INCLUDE_BIDIRECTIONAL_STREAM_C_H_

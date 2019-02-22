@@ -82,12 +82,15 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
   }
 
   // QuicStreamFrameDataProducer
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override {
+  WriteStreamDataResult WriteStreamData(QuicStreamId id,
+                                        QuicStreamOffset offset,
+                                        QuicByteCount data_length,
+                                        QuicDataWriter* writer) override {
     DCHECK_EQ(kCryptoStreamId, id);
-    return send_buffer_.WriteStreamData(offset, data_length, writer);
+    if (send_buffer_.WriteStreamData(offset, data_length, writer)) {
+      return WRITE_SUCCESS;
+    }
+    return WRITE_FAILED;
   }
 
   std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets() {
@@ -332,7 +335,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   // Packets with connection IDs for active connections are processed
   // immediately.
   QuicConnectionId connection_id = header.destination_connection_id;
-  SessionMap::iterator it = session_map_.find(connection_id);
+  auto it = session_map_.find(connection_id);
   if (it != session_map_.end()) {
     DCHECK(!buffered_packets_.HasBufferedPackets(connection_id));
     it->second->ProcessUdpPacket(current_self_address_, current_peer_address_,
@@ -586,7 +589,7 @@ void QuicDispatcher::Shutdown() {
 void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         QuicErrorCode error,
                                         const QuicString& error_details) {
-  SessionMap::iterator it = session_map_.find(connection_id);
+  auto it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
     QUIC_BUG << "ConnectionId " << connection_id
              << " does not exist in the session map.  Error: "
@@ -706,6 +709,11 @@ bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
   return false;
 }
 
+bool QuicDispatcher::OnCryptoFrame(const QuicCryptoFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
 bool QuicDispatcher::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
                                      QuicTime::Delta /*ack_delay_time*/) {
   DCHECK(false);
@@ -713,8 +721,18 @@ bool QuicDispatcher::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
 }
 
 bool QuicDispatcher::OnAckRange(QuicPacketNumber /*start*/,
-                                QuicPacketNumber /*end*/,
-                                bool /*last_range*/) {
+                                QuicPacketNumber /*end*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnAckTimestamp(QuicPacketNumber /*packet_number*/,
+                                    QuicTime /*timestamp*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnAckFrameEnd(QuicPacketNumber /*start*/) {
   DCHECK(false);
   return false;
 }
@@ -795,6 +813,16 @@ bool QuicDispatcher::OnBlockedFrame(const QuicBlockedFrame& frame) {
 
 bool QuicDispatcher::OnNewConnectionIdFrame(
     const QuicNewConnectionIdFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnMessageFrame(const QuicMessageFrame& frame) {
   DCHECK(false);
   return false;
 }
@@ -1137,9 +1165,8 @@ void QuicDispatcher::ProcessStatelessRejectorState(
       StatelessConnectionTerminator terminator(rejector->connection_id(),
                                                &framer_, helper(),
                                                time_wait_list_manager_.get());
-      terminator.RejectConnection(rejector->reply()
-                                      .GetSerialized(Perspective::IS_SERVER)
-                                      .AsStringPiece());
+      terminator.RejectConnection(
+          rejector->reply().GetSerialized().AsStringPiece());
       OnConnectionRejectedStatelessly();
       fate = kFateTimeWait;
       break;

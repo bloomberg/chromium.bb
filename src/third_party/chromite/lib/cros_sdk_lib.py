@@ -14,8 +14,13 @@ import time
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import timeout_util
+
+
+# Version file location inside chroot.
+CHROOT_VERSION_FILE = '/etc/cros_chroot_version'
 
 
 # Name of the LV that contains the active chroot inside the chroot.img file.
@@ -30,39 +35,59 @@ CHROOT_THINPOOL_NAME = 'thinpool'
 _MAX_LVM_RETRIES = 3
 
 
-def GetChrootVersion(chroot=None, buildroot=None):
+class Error(Exception):
+  """Base cros sdk error class."""
+
+
+class ChrootDeprecatedError(Error):
+  """Raised when the chroot is too old to update."""
+
+  def __init__(self, *args, **kwargs):
+    # Message defined here because it's long and gives specific instructions.
+    msg = ('Upgrade hook missing for your chroot version.\n'
+           'Your chroot is so old that some updates have been deprecated and'
+           'it will need to be recreated. A fresh chroot can be built with:\n'
+           '    cros_sdk --replace\n')
+    super(ChrootDeprecatedError, self).__init__(msg, *args, **kwargs)
+
+
+class ChrootUpdateError(Error):
+  """Error encountered when updating the chroot."""
+
+
+class InvalidChrootVersionError(Error):
+  """Chroot version is not a valid version."""
+
+
+class UninitializedChrootError(Error):
+  """Chroot has not been initialized."""
+
+
+class VersionHasMultipleHooksError(Error):
+  """When it is found that a single version has multiple hooks."""
+
+
+def GetChrootVersion(chroot):
   """Extract the version of the chroot.
 
   Args:
     chroot: Full path to the chroot to examine.
-    buildroot: If |chroot| is not set, find it relative to |buildroot|.
 
   Returns:
     The version of the chroot dir, or None if the version is missing/invalid.
-
-  Raises:
-    ValueError if neither |chroot| nor |buildroot| is passed.
   """
-  if chroot is None and buildroot is None:
-    raise ValueError('need either |chroot| or |buildroot| to search')
-
-  if chroot is None:
-    chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
-  ver_path = os.path.join(chroot, 'etc', 'cros_chroot_version')
-  chroot_version = None
+  # Append since CHROOT_VERSION_FILE starts with /.
+  ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
+  updater = GetChrootUpdater(version_file=ver_path)
   try:
-    chroot_version = osutils.ReadFile(ver_path).strip()
-    return int(chroot_version)
-  except IOError:
-    logging.debug('could not read %s', ver_path)
-    return None
-  except ValueError as e:
-    logging.warning('chroot %s contains invalid version %s: %s', chroot,
-                    chroot_version, e)
-    return None
+    return updater.GetVersion()
+  except (IOError, Error) as e:
+    logging.debug(e.message)
+
+  return None
 
 
-def IsChrootReady(chroot=None, buildroot=None):
+def IsChrootReady(chroot):
   """Checks if the chroot is mounted and set up.
 
   /etc/cros_chroot_version is set to the current version of the chroot at the
@@ -71,15 +96,11 @@ def IsChrootReady(chroot=None, buildroot=None):
 
   Args:
     chroot: Full path to the chroot to examine.
-    buildroot: If |chroot| is not set, find it relative to |buildroot|.
 
   Returns:
     True iff the chroot contains a valid version.
-
-  Raises:
-    ValueError if neither |chroot| nor |buildroot| is passed.
   """
-  return GetChrootVersion(chroot, buildroot) > 0
+  return GetChrootVersion(chroot) > 0
 
 
 def FindVolumeGroupForDevice(chroot_path, chroot_dev):
@@ -281,10 +302,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
   cmd = ['lvs', chroot_lv]
   result = cros_build_lib.SudoRunCommand(
       cmd, capture_output=True, error_code_ok=True, print_cmd=False)
-  if result.returncode == 0:
-    logging.debug('Activating existing LV %s', chroot_lv)
-    cmd = ['lvchange', '-q', '-ay', chroot_lv]
-  else:
+  if result.returncode != 0:
     cmd = ['lvcreate', '-q', '-L499G', '-T',
            '%s/%s' % (chroot_vg, CHROOT_THINPOOL_NAME), '-V500G',
            '-n', CHROOT_LV_NAME]
@@ -434,3 +452,192 @@ def _RescanDeviceLvmMetadata(chroot_dev):
   cmd = ['pvscan', '--cache', chroot_dev]
   cros_build_lib.SudoRunCommand(
       cmd, capture_output=True, print_cmd=False, error_code_ok=True)
+
+
+def RunChrootVersionHooks(version_file=None, hooks_dir=None):
+  """Run the chroot version hooks to bring the chroot up to date."""
+  if not cros_build_lib.IsInsideChroot():
+    command = ['run_chroot_version_hooks']
+    cros_build_lib.RunCommand(command, enter_chroot=True)
+  else:
+    chroot = GetChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
+    chroot.ApplyUpdates()
+
+
+def InitLatestVersion(version_file=None, hooks_dir=None):
+  """Initialize the chroot version to the latest version."""
+  if not cros_build_lib.IsInsideChroot():
+    # Run the command in the chroot.
+    command = ['run_chroot_version_hooks', '--init-latest']
+    cros_build_lib.RunCommand(command, enter_chroot=True)
+  else:
+    # Initialize the version.
+    chroot = GetChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
+    if chroot.IsInitialized():
+      logging.info('Chroot is already initialized to %s.', chroot.GetVersion())
+    else:
+      logging.info('Initializing chroot to version %s.', chroot.latest_version)
+      chroot.SetVersion(chroot.latest_version)
+
+
+@memoize.Memoize
+def GetChrootUpdater(version_file=None, hooks_dir=None):
+  """Memoized factory method to help avoid extraneous filesystem operations."""
+  return ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
+
+
+class ChrootUpdater(object):
+  """Chroot version and update related functionality."""
+
+  _CHROOT_VERSION_HOOKS_DIR = os.path.join(constants.CROSUTILS_DIR,
+                                           'chroot_version_hooks.d')
+
+  def __init__(self, version_file=None, hooks_dir=None):
+    if version_file:
+      # We have one. Just here to skip the logic below since we don't need it.
+      default_version_file = None
+    elif cros_build_lib.IsInsideChroot():
+      # Use the absolute path since we're inside the chroot.
+      default_version_file = CHROOT_VERSION_FILE
+    else:
+      # Use the default chroot path as a prefix since we're outside the chroot.
+      ch_dir = os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR)
+      # Append since CHROOT_VERSION_FILE starts with /.
+      default_version_file = ch_dir + CHROOT_VERSION_FILE
+
+    self._version_file = version_file or default_version_file
+    self._hooks_dir = hooks_dir or self._CHROOT_VERSION_HOOKS_DIR
+
+    self._version = None
+    self._latest_version = None
+    self._hook_files = None
+
+  @property
+  def latest_version(self):
+    """Get the highest available version for the chroot."""
+    if self._latest_version is None:
+      self._latest_version = self._LatestScriptsVersion()
+    return self._latest_version
+
+  def GetVersion(self):
+    """Get the chroot version.
+
+    Returns:
+      int
+
+    Raises:
+      InvalidChrootVersionError when the file contents are not a valid version.
+      IOError when the file cannot be read.
+      UninitializedChrootError when the version file does not exist.
+    """
+    if self._version is None:
+      # Check for existence so IOErrors from osutils.ReadFile are limited to
+      # permissions problems.
+      if not os.path.exists(self._version_file):
+        raise UninitializedChrootError(
+            'Version file does not exist: %s' % self._version_file)
+
+      version = osutils.ReadFile(self._version_file)
+
+      try:
+        self._version = int(version)
+      except ValueError:
+        raise InvalidChrootVersionError(
+            'Invalid chroot version in %s: %s' % (self._version_file, version))
+
+    return self._version
+
+  def SetVersion(self, version):
+    """Set and store the chroot version."""
+    self._version = version
+    osutils.WriteFile(self._version_file, str(version), sudo=True)
+    # TODO(saklein) Verify if this chown is necessary. The version file
+    # is in /etc, so it's reasonable to expect root would own it, but the bash
+    # version had the chown for many years before the conversion.
+    osutils.Chown(self._version_file)
+
+  def IsInitialized(self):
+    """Initialized Check."""
+    try:
+      return self.GetVersion() > 0
+    except (Error, IOError):
+      return False
+
+  def ApplyUpdates(self):
+    """Apply all necessary updates to the chroot."""
+    if self.GetVersion() > self.latest_version:
+      raise InvalidChrootVersionError(
+          'Missing upgrade hook for version %s.\n'
+          'Chroot is too new. Consider running:\n'
+          '    cros_sdk --replace' %  self.GetVersion())
+
+    for hook, version in self.GetChrootUpdates():
+      result = cros_build_lib.RunCommand('source %s' % hook,
+                                         enter_chroot=True, error_code_ok=True,
+                                         shell=True)
+      if not result.returncode:
+        self.SetVersion(version)
+      else:
+        raise ChrootUpdateError('Error running chroot version hook: %s' % hook)
+
+  def GetChrootUpdates(self):
+    """Get all (update file, version) pairs that have not been run.
+
+    Returns:
+      list of (/path/to/hook/file, version) pairs in order.
+
+    Raises:
+      ChrootDeprecatedError when one or more required update files have been
+          deprecated.
+    """
+    hooks = self._GetHookFilesByVersion()
+
+    # Create the relevant ChrootUpdates.
+    updates = []
+    # Current version has already been run and we need to run the latest, so +1
+    # for each end of the version range.
+    for version in range(self.GetVersion() + 1, self.latest_version + 1):
+      # Deprecation check: Deprecation is done by removing old scripts. Updates
+      # must form a continuous sequence. If the sequence is broken between the
+      # chroot's current version and the most recent, then the chroot must be
+      # recreated.
+      if version not in hooks:
+        raise ChrootDeprecatedError()
+
+      updates.append((hooks[version], version))
+
+    return updates
+
+  def _GetHookFilesByVersion(self):
+    """Find and store the hooks by their version number.
+
+    Returns:
+      dict - {version: /path/to/hook/file} mapping.
+
+    Raises:
+      VersionHasMultipleHooksError when multiple hooks exist for a version.
+    """
+    if self._hook_files:
+      return self._hook_files
+
+    hook_files = {}
+    for hook in os.listdir(self._hooks_dir):
+      version = int(hook.split('_', 1)[0])
+
+      # Sanity check: Each version may only have a single script. Multiple CLs
+      # landed at the same time and no one noticed the version overlap.
+      if version in hook_files:
+        raise VersionHasMultipleHooksError(
+            'Version %s has multiple hooks.' % version)
+
+      hook_files[version] = os.path.join(self._hooks_dir, hook)
+
+    self._hook_files = hook_files
+    return self._hook_files
+
+  def _LatestScriptsVersion(self):
+    """Get the most recent update hook version."""
+    hook_files = os.listdir(self._hooks_dir)
+    # Hook file names must follow the "version_short_description" convention.
+    # Pull out just the version number and find the max.
+    return max(int(hook.split('_', 1)[0]) for hook in hook_files)

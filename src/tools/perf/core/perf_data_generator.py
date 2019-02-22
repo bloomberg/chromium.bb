@@ -34,26 +34,20 @@ from telemetry import decorators
 from py_utils import discover
 
 
-_UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
-  'experimental.startup.android.coldish',
-  'experimental.startup.mobile',
-  'blink_perf.accessibility',
-  ])
-
 # Additional compile targets to add to builders.
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
 # ChromeDriver is archived together with Chrome for use in bisecting.
 # This can be used by Chrome test team, as well as by google3 teams for
 # bisecting Chrome builds with their web tests. For questions or to report
-# issues, please contact johnchen@chromium.org and stgao@chromium.org.
+# issues, please contact johnchen@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'Android Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
-    'Android arm64 Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
-    'Linux Builder Perf': ['chromedriver'],
-    'Mac Builder Perf': ['chromedriver'],
-    'Win Builder Perf': ['chromedriver'],
-    'Win x64 Builder Perf': ['chromedriver'],
+    'android-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
+    'android_arm64-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
+    'linux-builder-perf': ['chromedriver'],
+    'mac-builder-perf': ['chromedriver'],
+    'win32-builder-perf': ['chromedriver'],
+    'win64-builder-perf': ['chromedriver'],
 }
 
 
@@ -70,34 +64,6 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
 #     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
-    'OBBS Mac 10.12 Perf': {
-      'tests': [
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac1012_5_shard_map.json',
-          ],
-          'num_shards': 5
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Mac-10.12',
-        'gpu': '8086:0a2e'
-      },
-    },
     'One Buildbot Step Test Builder': {
       'tests': [
         {
@@ -196,7 +162,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_go_shard_map.json',
+            '--test-shard-map-filename=android-go-perf_map.json',
           ],
           'num_shards': 19
         }
@@ -217,7 +183,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 16,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
+              '--test-shard-map-filename=android-nexus5x-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -266,7 +232,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 16,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5_16_shard_map.json',
+              '--test-shard-map-filename=android_nexus5_perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -309,7 +275,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_webview_test_suite',
           'num_shards': 16,
           'extra_args': [
-              '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
+              '--test-shard-map-filename=android_nexus5x_webview_perf_map.json',
               '--assert-gpu-compositing',
           ],
         }
@@ -327,9 +293,9 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_webview_test_suite',
-          'num_shards': 16,
+          'num_shards': 8,
           'extra_args': [
-              '--test-shard-map-filename=android_nexus6_webview_shard_map.json',
+              '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
               '--assert-gpu-compositing',
           ],
         }
@@ -350,7 +316,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win10_shard_map.json',
+              '--test-shard-map-filename=win-10-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -385,7 +351,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 5,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win7_shard_map.json',
+              '--test-shard-map-filename=win_7_perf_map.json',
           ],
         },
         # crbug.com/735679 enable performance_browser_tests
@@ -420,7 +386,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 5,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win7_nvidia_shard_map.json',
+              '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -476,7 +442,8 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
+              ('--test-shard-map-filename='
+               'mac-10_12_laptop_low_end-perf_map.json'),
               '--assert-gpu-compositing',
           ],
         },
@@ -506,7 +473,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=linux_perf_shard_map.json',
+              '--test-shard-map-filename=linux-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -544,7 +511,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
+            '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
               '--assert-gpu-compositing',
           ],
           'num_shards': 26
@@ -604,8 +571,7 @@ def current_benchmarks():
   for b in discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values():
-    if not b.Name() in _UNSCHEDULED_TELEMETRY_BENCHMARKS:
-      all_benchmarks.append(b)
+    all_benchmarks.append(b)
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
@@ -662,8 +628,11 @@ NON_TELEMETRY_BENCHMARKS = {
     'load_library_perf_tests': BenchmarkMetadata(
         'xhwang@chromium.org, crouleau@chromium.org',
         'Internals>Media>Encrypted'),
-    'media_perftests': BenchmarkMetadata('crouleau@chromium.org'),
-    'performance_browser_tests': BenchmarkMetadata('miu@chromium.org'),
+    'performance_browser_tests': BenchmarkMetadata(
+        'miu@chromium.org', 'Internals>Media>ScreenCapture'),
+    'media_perftests': BenchmarkMetadata(
+        'crouleau@chromium.org, dalecurtis@chromium.org',
+        'Internals>Media'),
     'views_perftests': BenchmarkMetadata(
         'tapted@chromium.org', 'Internals>Views'),
     'components_perftests': BenchmarkMetadata('csharrison@chromium.org')
@@ -674,8 +643,11 @@ NON_TELEMETRY_BENCHMARKS = {
 NON_WATERFALL_BENCHMARKS = {
     'sizes (mac)':
         BenchmarkMetadata('tapted@chromium.org'),
-    'sizes (win)': BenchmarkMetadata('grt@chromium.org'),
-    'sizes (linux)': BenchmarkMetadata('thestig@chromium.org'),
+    'sizes (win)': BenchmarkMetadata('grt@chromium.org',
+                                     'Internals>PlatformIntegration'),
+    'sizes (linux)': BenchmarkMetadata(
+        'thestig@chromium.org', 'thomasanderson@chromium.org',
+        'Internals>PlatformIntegration'),
     'resource_sizes': BenchmarkMetadata(
         'agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org'),
     'supersize_archive': BenchmarkMetadata('agrieve@chromium.org'),
@@ -707,7 +679,7 @@ def get_all_benchmarks_metadata(metadata):
 def get_tests_in_performance_test_suite():
   tests = sets.Set()
   add_benchmarks_from_sharding_map(
-      tests, "shard_maps/linux_perf_shard_map.json")
+      tests, "shard_maps/linux-perf_map.json")
   add_benchmarks_from_sharding_map(
       tests, "shard_maps/pixel2_7_shard_map.json")
   return tests
@@ -786,7 +758,7 @@ def update_benchmark_csv(file_path):
   owners, and components. Requires that all benchmarks have owners.
   """
   header_data = [['AUTOGENERATED FILE DO NOT EDIT'],
-      ['See //tools/perf/generate_perf_data.py to make changes'],
+      ['See https://bit.ly/update-benchmarks-info to make changes'],
       ['Benchmark name', 'Individual owners', 'Component', 'Documentation',
        'Tags']
   ]
@@ -820,7 +792,7 @@ def update_benchmark_csv(file_path):
                      ub_module.UNDOCUMENTED_BENCHMARKS)))
     if ub_module.UNDOCUMENTED_BENCHMARKS - undocumented_benchmarks:
       error_message += (
-          'These benchmarks are already documented. Please remove them from'
+          'These benchmarks are already documented. Please remove them from '
           'the UNDOCUMENTED_BENCHMARKS list in undocumented_benchmarks.py: %s' %
           (','.join(b for b in ub_module.UNDOCUMENTED_BENCHMARKS -
                     undocumented_benchmarks)))

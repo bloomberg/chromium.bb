@@ -27,7 +27,6 @@ class Rect;
 
 namespace ui {
 
-class DrmBuffer;
 class DrmDeviceManager;
 class DrmOverlayValidator;
 class HardwareDisplayController;
@@ -88,17 +87,20 @@ class DrmWindow {
   // Returns the last buffer associated with this window.
   const DrmOverlayPlane* GetLastModesetBuffer();
 
-  void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) const;
-
  private:
   // Draw next frame in an animated cursor.
   void OnCursorAnimationTimeout();
 
-  gfx::AcceleratedWidget widget_;
+  void UpdateCursorImage();
+  void UpdateCursorLocation();
 
-  DrmDeviceManager* device_manager_;  // Not owned.
-  ScreenManager* screen_manager_;     // Not owned.
+  // Draw the last set cursor & update the cursor plane.
+  void ResetCursor();
+
+  const gfx::AcceleratedWidget widget_;
+
+  DrmDeviceManager* const device_manager_;  // Not owned.
+  ScreenManager* const screen_manager_;     // Not owned.
 
   // The current bounds of the window.
   gfx::Rect bounds_;
@@ -107,12 +109,6 @@ class DrmWindow {
   // the window isn't over an active display.
   HardwareDisplayController* controller_ = nullptr;
   std::unique_ptr<DrmOverlayValidator> overlay_validator_;
-
-  void UpdateCursorImage();
-  void UpdateCursorLocation();
-
-  // Draw the last set cursor & update the cursor plane.
-  void ResetCursor();
 
   base::RepeatingTimer cursor_timer_;
   std::vector<SkBitmap> cursor_bitmaps_;

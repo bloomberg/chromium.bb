@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
@@ -27,6 +28,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -148,7 +150,7 @@ class AppListPresenterDelegateNonHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {}, {app_list::features::kEnableHomeLauncher});
+        {}, {app_list_features::kEnableHomeLauncher});
     AppListPresenterDelegateTest::SetUp();
   }
 
@@ -204,6 +206,45 @@ TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   // Updating the displays should close the app list.
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Tests the app list window's bounds under multi-displays environment.
+TEST_F(AppListPresenterDelegateTest, AppListWindowBounds) {
+  // Set up a screen with two displays (horizontally adjacent).
+  UpdateDisplay("1024x768,1024x768");
+  const gfx::Size display_size(1024, 768);
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  // Test the app list window's bounds on primary display.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect primary_display_rect(
+      gfx::Point(
+          0, display_size.height() -
+                 app_list::AppListConfig::instance().peeking_app_list_height()),
+      display_size);
+  EXPECT_EQ(
+      primary_display_rect,
+      GetAppListView()->GetWidget()->GetNativeView()->GetBoundsInScreen());
+
+  // Close the app list on primary display.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Test the app list window's bounds on secondary display.
+  GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect secondary_display_rect(
+      gfx::Point(
+          display_size.width(),
+          display_size.height() -
+              app_list::AppListConfig::instance().peeking_app_list_height()),
+      display_size);
+  EXPECT_EQ(
+      secondary_display_rect,
+      GetAppListView()->GetWidget()->GetNativeView()->GetBoundsInScreen());
 }
 
 // Tests that the app list is not draggable in side shelf alignment.
@@ -765,7 +806,7 @@ TEST_P(AppListPresenterDelegateTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->ui()->GetKeyboardWindow()->SetBounds(
+  keyboard_controller->GetKeyboardWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
   keyboard_controller->NotifyKeyboardWindowLoaded();
@@ -1118,13 +1159,10 @@ class AppListPresenterDelegateHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {app_list::features::kEnableHomeLauncher,
-         app_list::features::kEnableBackgroundBlur},
+        {app_list_features::kEnableHomeLauncher,
+         app_list_features::kEnableBackgroundBlur},
         {});
     AppListPresenterDelegateTest::SetUp();
-    // Home launcher is only enabled on internal display.
-    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-        .SetFirstDisplayAsInternalDisplay();
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
@@ -1136,7 +1174,7 @@ class AppListPresenterDelegateHomeLauncherTest
         ->shelf_controller()
         ->model()
         ->GetShelfItemDelegate(ShelfID(kAppListId))
-        ->ItemSelected(std::move(event), display::kInvalidDisplayId,
+        ->ItemSelected(std::move(event), GetPrimaryDisplayId(),
                        ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
     GetAppListTestHelper()->WaitUntilIdle();
   }
@@ -1348,7 +1386,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
       Shell::Get()->window_selector_controller();
   window_selector_controller->ToggleOverview();
   EXPECT_TRUE(window_selector_controller->IsSelecting());
-  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
+  ui::Layer* layer = GetAppListView()->GetWidget()->GetNativeWindow()->layer();
   EXPECT_EQ(0.0f, layer->opacity());
 
   // Disable overview mode.
@@ -1406,33 +1444,6 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the app list is not draggable from shelf.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, DragFromShelf) {
-  UpdateDisplay("1080x900");
-
-  // Drag from the shelf to show the app list.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureScrollSequence(gfx::Point(540, 890), gfx::Point(540, 0),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-
-  // Show app list in tablet mode.
-  EnableTabletMode(true);
-  GetAppListTestHelper()->CheckVisibility(true);
-
-  // Enable overview mode to hide the app list.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
-  EXPECT_EQ(0.0f, layer->opacity());
-
-  // Drag from the shelf.
-  generator->GestureScrollSequence(gfx::Point(540, 890), gfx::Point(540, 0),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_EQ(0.0f, layer->opacity());
-}
-
 // Tests that the app list button will minimize all windows.
 TEST_F(AppListPresenterDelegateHomeLauncherTest,
        AppListButtonMinimizeAllWindows) {
@@ -1440,19 +1451,35 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0)),
-      window2(CreateTestWindowInShellWithId(1));
+      window2(CreateTestWindowInShellWithId(1)),
+      window3(CreateTestWindowInShellWithId(2));
   wm::WindowState *state1 = wm::GetWindowState(window1.get()),
-                  *state2 = wm::GetWindowState(window2.get());
+                  *state2 = wm::GetWindowState(window2.get()),
+                  *state3 = wm::GetWindowState(window3.get());
   state1->Maximize();
   state2->Maximize();
+  state3->Maximize();
   EXPECT_TRUE(state1->IsMaximized());
   EXPECT_TRUE(state2->IsMaximized());
+  EXPECT_TRUE(state3->IsMaximized());
+
+  // The windows need to be activated for the mru window tracker.
+  wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window3.get());
+  auto ordering = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
 
   // Press app list button.
   PressAppListButton();
   EXPECT_TRUE(state1->IsMinimized());
   EXPECT_TRUE(state2->IsMinimized());
+  EXPECT_TRUE(state3->IsMinimized());
   GetAppListTestHelper()->CheckVisibility(true);
+
+  // Tests that the window ordering remains the same as before we minimize.
+  EXPECT_TRUE(std::equal(
+      ordering.begin(), ordering.end(),
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().begin()));
 }
 
 // Tests that the app list button will end split view mode.
@@ -1498,6 +1525,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Long press on the app list to open the context menu.
+  // TODO(ginko) look into a way to populate an apps grid, then get a point
+  // between these apps so that clicks/taps between apps can be tested
   const gfx::Point onscreen_point(GetPointOutsideSearchbox());
   ui::test::EventGenerator* generator = GetEventGenerator();
   ui::GestureEvent long_press(

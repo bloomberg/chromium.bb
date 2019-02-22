@@ -151,6 +151,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
 
+  // Highlights the ink drop for the button.
+  void SetHighlighted(bool bubble_visible);
+
   // Overridden from View:
   void OnEnabledChanged() override;
   const char* GetClassName() const override;

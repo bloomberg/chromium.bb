@@ -27,9 +27,8 @@
 #ifndef HB_OT_OS2_TABLE_HH
 #define HB_OT_OS2_TABLE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-open-type.hh"
 #include "hb-ot-os2-unicode-ranges.hh"
-#include "hb-subset-plan.hh"
 
 namespace OT {
 
@@ -82,7 +81,7 @@ struct os2
 
     hb_codepoint_t cp = HB_SET_VALUE_INVALID;
     while (codepoints->next (&cp)) {
-      unsigned int bit = hb_get_unicode_range_bit (cp);
+      unsigned int bit = _hb_ot_os2_get_unicode_range_bit (cp);
       if (bit < 128)
       {
         unsigned int block = bit / 32;

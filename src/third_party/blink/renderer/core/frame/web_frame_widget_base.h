@@ -23,15 +23,15 @@ class Layer;
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class CompositorAnimationHost;
-class CompositorMutatorImpl;
 class GraphicsLayer;
-struct IntrinsicSizingInfo;
+class HitTestResult;
 class PageWidgetEventHandler;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
-class HitTestResult;
+struct IntrinsicSizingInfo;
 struct WebFloatPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
@@ -51,7 +51,8 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual bool ForSubframe() const = 0;
   virtual void ScheduleAnimation() = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
-  virtual base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+  virtual base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) = 0;
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
@@ -70,6 +71,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // WebFrameWidget implementation.
   void Close() override;
   WebLocalFrame* LocalRoot() const override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const WebFloatPoint& point_in_viewport,
                                        const WebFloatPoint& screen_point,
@@ -89,7 +91,6 @@ class CORE_EXPORT WebFrameWidgetBase
                          const WebFloatPoint& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
-  void CompositeWithRasterForTesting() override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 

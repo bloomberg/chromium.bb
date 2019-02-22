@@ -61,6 +61,7 @@ void MockSharedWorker::Terminate() {
 }
 
 void MockSharedWorker::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
     blink::mojom::DevToolsAgentAssociatedRequest request) {
   NOTREACHED();
 }
@@ -105,8 +106,10 @@ void MockSharedWorkerFactory::CreateSharedWorker(
         service_worker_provider_info,
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        script_loader_factory_ptr_info,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+        main_script_loader_factory,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_sciript_load_params,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {

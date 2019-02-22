@@ -76,6 +76,7 @@ class AppListClientImpl
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override;
+  void OnPageBreakItemDeleted(const std::string& id) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;

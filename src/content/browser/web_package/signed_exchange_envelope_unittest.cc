@@ -229,4 +229,15 @@ TEST(SignedExchangeEnvelopeTest, InvalidValidityURLHeader) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeEnvelopeTest, InnerResponseIsSXG) {
+  auto header = GenerateHeaderAndParse(
+      GURL("https://test.example.org/test/"), kSignatureString,
+      {
+          {kMethodKey, "GET"},
+      },
+      {{kStatusKey, "200"},
+       {"content-type", "application/signed-exchange;v=b2"}});
+  ASSERT_FALSE(header.has_value());
+}
+
 }  // namespace content

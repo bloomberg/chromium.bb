@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">该客户端不支持此设备，因为此设备要求进行第三方身份验证。</translation>
 <translation id="3194245623920924351">Chrome远程桌面</translation>
 <translation id="3197730452537982411">远程桌面</translation>
-<translation id="3212472844831225214">• 添加了对 Android 9.0 Pie 的支持。</translation>
 <translation id="324272851072175193">通过电子邮件发送这些说明</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="3286521253923406898">Chrome 远程访问主机控制器</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐号名下的计算机，请使用该帐号<ph name="LINK_BEGIN" />登录 Google Chrome<ph name="LINK_END" />，然后重新安装 Chrome 远程桌面。</translation>
 <translation id="8642984861538780905">一般</translation>
+<translation id="8705151241155781642">• 添加了对 Android 9.0 Pie 的支持。
+• 支持调整远程桌面的分辨率以适合 Android 设备屏幕的大小。</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="8743328882720071828">您要允许 <ph name="CLIENT_USERNAME" /> 查看和控制您的计算机吗？</translation>
 <translation id="8747048596626351634">会话已崩溃或未能顺利启动。如果远程计算机上存在 ~/.chrome-remote-desktop-session，请确保它会启动一个能长时间运行的前台进程（例如桌面环境或窗口管理器）。</translation>

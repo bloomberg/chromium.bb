@@ -264,6 +264,35 @@ bool ValidateCopyTexSubImage3D(Context *context,
                                GLint y,
                                GLsizei width,
                                GLsizei height);
+bool ValidateCopyTexture3DANGLE(Context *context,
+                                GLuint sourceId,
+                                GLint sourceLevel,
+                                TextureTarget destTarget,
+                                GLuint destId,
+                                GLint destLevel,
+                                GLint internalFormat,
+                                GLenum destType,
+                                GLboolean unpackFlipY,
+                                GLboolean unpackPremultiplyAlpha,
+                                GLboolean unpackUnmultiplyAlpha);
+bool ValidateCopySubTexture3DANGLE(Context *context,
+                                   GLuint sourceId,
+                                   GLint sourceLevel,
+                                   TextureTarget destTarget,
+                                   GLuint destId,
+                                   GLint destLevel,
+                                   GLint xoffset,
+                                   GLint yoffset,
+                                   GLint zoffset,
+                                   GLint x,
+                                   GLint y,
+                                   GLint z,
+                                   GLsizei width,
+                                   GLsizei height,
+                                   GLsizei depth,
+                                   GLboolean unpackFlipY,
+                                   GLboolean unpackPremultiplyAlpha,
+                                   GLboolean unpackUnmultiplyAlpha);
 bool ValidateTexImage3D(Context *context,
                         TextureType target,
                         GLint level,
@@ -592,6 +621,17 @@ bool ValidateGetInternalformativ(Context *context,
                                  GLenum pname,
                                  GLsizei bufSize,
                                  GLint *params);
+
+bool ValidateBindFragDataLocationIndexedEXT(Context *context,
+                                            GLuint program,
+                                            GLuint colorNumber,
+                                            GLuint index,
+                                            const char *name);
+bool ValidateBindFragDataLocationEXT(Context *context,
+                                     GLuint program,
+                                     GLuint colorNumber,
+                                     const char *name);
+bool ValidateGetFragDataIndexEXT(Context *context, GLuint program, const char *name);
 
 }  // namespace gl
 

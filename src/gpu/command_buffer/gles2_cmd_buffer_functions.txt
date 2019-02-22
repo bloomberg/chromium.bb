@@ -287,7 +287,6 @@ GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLuint64 swap_id, GLint x, GLint y, GLint width, GLint height, GLbitfieldSwapBuffersFlags flags = 0);
 GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLuint source_id, GLint source_level, GLenumTextureTarget dest_target, GLuint dest_id, GLint dest_level, GLintTextureInternalFormat internalformat, GLenumPixelType dest_type, GLboolean unpack_flip_y, GLboolean unpack_premultiply_alpha, GLboolean unpack_unmultiply_alpha);
 GL_APICALL void         GL_APIENTRY glCopySubTextureCHROMIUM (GLuint source_id, GLint source_level, GLenumTextureTarget dest_target, GLuint dest_id, GLint dest_level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height, GLboolean unpack_flip_y, GLboolean unpack_premultiply_alpha, GLboolean unpack_unmultiply_alpha);
-GL_APICALL void         GL_APIENTRY glCompressedCopyTextureCHROMIUM (GLuint source_id, GLuint dest_id);
 GL_APICALL void         GL_APIENTRY glDrawArraysInstancedANGLE (GLenumDrawMode mode, GLint first, GLsizei count, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glDrawElementsInstancedANGLE (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GLuint divisor);
@@ -403,3 +402,6 @@ GL_APICALL void         GL_APIENTRY glSetReadbackBufferShadowAllocationINTERNAL 
 
 // Extension ANGLE_multiview
 GL_APICALL void         GL_APIENTRY glFramebufferTextureMultiviewLayeredANGLE (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+
+// Extension KHR_parallel_shader_compile
+GL_APICALL void         GL_APIENTRY glMaxShaderCompilerThreadsKHR (GLuint count);

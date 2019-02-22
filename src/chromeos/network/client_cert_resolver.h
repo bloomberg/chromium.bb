@@ -15,9 +15,9 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/client_cert_util.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -40,7 +40,7 @@ struct MatchingCertAndResolveStatus;
 // certificate pattern, this class searches for a matching client certificate.
 // Each time it finds a match, it configures the network accordingly.
 class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
-                                           public CertLoader::Observer,
+                                           public NetworkCertLoader::Observer,
                                            public NetworkPolicyObserver {
  public:
   class Observer {
@@ -92,7 +92,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   void NetworkListChanged() override;
   void NetworkConnectionStateChanged(const NetworkState* network) override;
 
-  // CertLoader::Observer overrides
+  // NetworkCertLoader::Observer overrides
   void OnCertificatesLoaded(
       const net::ScopedCERTCertificateList& cert_list) override;
 

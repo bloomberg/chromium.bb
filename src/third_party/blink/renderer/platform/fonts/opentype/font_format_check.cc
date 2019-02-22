@@ -13,15 +13,23 @@
 
 namespace blink {
 
+namespace {
+
+struct HarfbuzzBlobDestroyer {
+  inline void operator()(hb_blob_t* blob) { hb_blob_destroy(blob); };
+};
+
+struct HarfbuzzFaceDestroyer {
+  inline void operator()(hb_face_t* face) { hb_face_destroy(face); };
+};
+}  // namespace
+
 FontFormatCheck::FontFormatCheck(sk_sp<SkData> sk_data) {
-  std::unique_ptr<hb_blob_t, std::function<void(hb_blob_t*)>> font_blob(
-      hb_blob_create(reinterpret_cast<const char*>(sk_data->bytes()),
-                     sk_data->size(), HB_MEMORY_MODE_READONLY, nullptr,
-                     nullptr),
-      [](hb_blob_t* blob) { hb_blob_destroy(blob); });
-  std::unique_ptr<hb_face_t, std::function<void(hb_face_t*)>> face(
-      hb_face_create(font_blob.get(), 0),
-      [](hb_face_t* face) { hb_face_destroy(face); });
+  std::unique_ptr<hb_blob_t, HarfbuzzBlobDestroyer> font_blob(hb_blob_create(
+      reinterpret_cast<const char*>(sk_data->bytes()), sk_data->size(),
+      HB_MEMORY_MODE_READONLY, nullptr, nullptr));
+  std::unique_ptr<hb_face_t, HarfbuzzFaceDestroyer> face(
+      hb_face_create(font_blob.get(), 0));
 
   unsigned table_count = 0;
   table_count = hb_face_get_table_tags(face.get(), 0, nullptr, nullptr);
@@ -40,12 +48,22 @@ bool FontFormatCheck::IsCbdtCblcColorFont() {
          table_tags_.Contains(HB_TAG('C', 'B', 'L', 'C'));
 }
 
+bool FontFormatCheck::IsColrCpalColorFont() {
+  return table_tags_.size() &&
+         table_tags_.Contains(HB_TAG('C', 'O', 'L', 'R')) &&
+         table_tags_.Contains(HB_TAG('C', 'P', 'A', 'L'));
+}
+
 bool FontFormatCheck::IsSbixColorFont() {
   return table_tags_.size() && table_tags_.Contains(HB_TAG('s', 'b', 'i', 'x'));
 }
 
 bool FontFormatCheck::IsCff2OutlineFont() {
   return table_tags_.size() && table_tags_.Contains(HB_TAG('C', 'F', 'F', '2'));
+}
+
+bool FontFormatCheck::IsColorFont() {
+  return IsCbdtCblcColorFont() || IsColrCpalColorFont() || IsSbixColorFont();
 }
 
 FontFormatCheck::VariableFontSubType FontFormatCheck::ProbeVariableFont(

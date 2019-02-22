@@ -29,7 +29,8 @@ const char kOutstandingLimitForBackgroundMainFrameName[] = "bg_limit";
 const char kOutstandingLimitForBackgroundSubFrameName[] = "bg_sub_limit";
 
 // Field trial default parameters.
-constexpr size_t kOutstandingLimitForBackgroundFrameDefault = 16u;
+constexpr size_t kOutstandingLimitForBackgroundMainFrameDefault = 3u;
+constexpr size_t kOutstandingLimitForBackgroundSubFrameDefault = 2u;
 
 // Maximum request count that request count metrics assume.
 constexpr base::HistogramBase::Sample kMaximumReportSize10K = 10000;
@@ -94,18 +95,14 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
-  uint32_t main_frame_limit = GetFieldTrialUint32Param(
+  static size_t main_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundMainFrameName,
-      kOutstandingLimitForBackgroundFrameDefault);
-  if (context->IsMainFrame())
-    return main_frame_limit;
+      kOutstandingLimitForBackgroundMainFrameDefault);
+  static size_t sub_frame_limit = GetFieldTrialUint32Param(
+      kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundSubFrameName,
+      kOutstandingLimitForBackgroundSubFrameDefault);
 
-  // We do not have a fixed default limit for sub-frames, but use the limit for
-  // the main frame so that it works as how previous versions that haven't
-  // consider sub-frames' specific limit work.
-  return GetFieldTrialUint32Param(kResourceLoadThrottlingTrial,
-                                  kOutstandingLimitForBackgroundSubFrameName,
-                                  main_frame_limit);
+  return context->IsMainFrame() ? main_frame_limit : sub_frame_limit;
 }
 
 int TakeWholeKilobytes(int64_t& bytes) {
@@ -368,8 +365,10 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 }
 
 ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
-  return new ResourceLoadScheduler(context ? context
-                                           : &FetchContext::NullInstance());
+  return new ResourceLoadScheduler(
+      context ? context
+              : &FetchContext::NullInstance(
+                    Platform::Current()->CurrentThread()->GetTaskRunner()));
 }
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;
@@ -429,17 +428,18 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   ResourceLoadScheduler::ClientId client_id = *id;
   MaybeRun();
 
-  if (IsThrottledState() &&
+  if (!omit_console_log_ && IsThrottledState() &&
       pending_request_map_.find(client_id) != pending_request_map_.end()) {
     // Note that this doesn't show the message when a frame is stopped (vs.
     // this DOES when throttled).
     context_->AddInfoConsoleMessage(
-        "Active resource loading counts reached to a per-frame limit while the "
-        "tab is in background. Network requests will be delayed until a "
-        "previous loading finishes, or the tab is foregrounded. See "
-        "https://www.chromestatus.com/feature/5527160148197376 for more "
+        "Active resource loading counts reached a per-frame limit while the "
+        "tab was in background. Network requests will be delayed until a "
+        "previous loading finishes, or the tab is brought to the foreground. "
+        "See https://www.chromestatus.com/feature/5527160148197376 for more "
         "details",
         FetchContext::kOtherSource);
+    omit_console_log_ = true;
   }
 }
 
@@ -586,6 +586,8 @@ void ResourceLoadScheduler::OnLifecycleStateChanged(
     traffic_monitor_->OnLifecycleStateChanged(state);
 
   frame_scheduler_lifecycle_state_ = state;
+
+  omit_console_log_ = false;
 
   switch (state) {
     case scheduler::SchedulingLifecycleState::kHidden:

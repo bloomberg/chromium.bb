@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace ui {
 
 CompositorLockManager::CompositorLockManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    CompositorLockManagerClient* client)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
-      client_(client),
       weak_ptr_factory_(this),
       lock_timeout_weak_ptr_factory_(this) {}
 
@@ -21,11 +20,12 @@ CompositorLockManager::~CompositorLockManager() = default;
 
 std::unique_ptr<CompositorLock> CompositorLockManager::GetCompositorLock(
     CompositorLockClient* client,
-    base::TimeDelta timeout) {
+    base::TimeDelta timeout,
+    std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits) {
   // This uses the main WeakPtrFactory to break the connection from the lock to
   // the CompositorLockManager when the CompositorLockManager is destroyed.
-  auto lock =
-      std::make_unique<CompositorLock>(client, weak_ptr_factory_.GetWeakPtr());
+  auto lock = std::make_unique<CompositorLock>(
+      client, weak_ptr_factory_.GetWeakPtr(), std::move(scoped_defer_commits));
   bool was_empty = active_locks_.empty();
   active_locks_.push_back(lock.get());
 
@@ -41,9 +41,6 @@ std::unique_ptr<CompositorLock> CompositorLockManager::GetCompositorLock(
       lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
     }
   }
-
-  if (was_empty)
-    client_->OnCompositorLockStateChanged(true);
 
   if (should_extend_timeout) {
     // The timeout task uses an independent WeakPtrFactory that is invalidated
@@ -61,7 +58,6 @@ std::unique_ptr<CompositorLock> CompositorLockManager::GetCompositorLock(
 void CompositorLockManager::RemoveCompositorLock(CompositorLock* lock) {
   base::Erase(active_locks_, lock);
   if (active_locks_.empty()) {
-    client_->OnCompositorLockStateChanged(false);
     lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
     scheduled_timeout_ = base::TimeTicks();
   }
@@ -75,16 +71,22 @@ void CompositorLockManager::TimeoutLocks() {
   DCHECK(active_locks_.empty());
 }
 
-CompositorLock::CompositorLock(CompositorLockClient* client,
-                               base::WeakPtr<CompositorLockManager> manager)
-    : client_(client), manager_(std::move(manager)) {}
+CompositorLock::CompositorLock(
+    CompositorLockClient* client,
+    base::WeakPtr<CompositorLockManager> manager,
+    std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits)
+    : client_(client),
+      scoped_defer_commits_(std::move(scoped_defer_commits)),
+      manager_(std::move(manager)) {}
 
 CompositorLock::~CompositorLock() {
+  scoped_defer_commits_ = nullptr;
   if (manager_)
     manager_->RemoveCompositorLock(this);
 }
 
 void CompositorLock::TimeoutLock() {
+  scoped_defer_commits_ = nullptr;
   manager_->RemoveCompositorLock(this);
   manager_ = nullptr;
   if (client_)

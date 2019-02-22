@@ -224,7 +224,6 @@ void TtsPlatformImplMac::GetVoices(std::vector<VoiceData>* outVoices) {
     NSDictionary* attributes =
         [NSSpeechSynthesizer attributesForVoice:voiceIdentifier];
     NSString* name = [attributes objectForKey:NSVoiceName];
-    NSString* gender = [attributes objectForKey:NSVoiceGender];
     NSString* localeIdentifier =
         [attributes objectForKey:NSVoiceLocaleIdentifier];
 
@@ -242,12 +241,6 @@ void TtsPlatformImplMac::GetVoices(std::vector<VoiceData>* outVoices) {
     } else {
       data.lang = base::SysNSStringToUTF8(language);
     }
-    if ([gender isEqualToString:NSVoiceGenderMale])
-      data.gender = TTS_GENDER_MALE;
-    else if ([gender isEqualToString:NSVoiceGenderFemale])
-      data.gender = TTS_GENDER_FEMALE;
-    else
-      data.gender = TTS_GENDER_NONE;
     data.events.insert(TTS_EVENT_START);
     data.events.insert(TTS_EVENT_END);
     data.events.insert(TTS_EVENT_WORD);

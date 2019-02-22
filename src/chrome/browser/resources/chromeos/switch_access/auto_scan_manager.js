@@ -3,79 +3,53 @@
 // found in the LICENSE file.
 
 /**
- * Class to handle changes to auto-scan.
- *
- * @constructor
- * @param {SwitchAccessInterface} switchAccess
+ * Class to handle auto-scan behavior.
  */
-function AutoScanManager(switchAccess) {
+class AutoScanManager {
   /**
-   * SwitchAccess reference.
-   *
-   * @private {SwitchAccessInterface}
+   * @param {!SwitchAccessInterface} switchAccess
    */
-  this.switchAccess_ = switchAccess;
+  constructor(switchAccess) {
+    /**
+     * SwitchAccess reference.
+     * @private {!SwitchAccessInterface}
+     */
+    this.switchAccess_ = switchAccess;
 
-  /**
-   * Auto-scan interval ID.
-   *
-   * @private {number|undefined}
-   */
-  this.intervalID_;
+    /**
+     * Auto-scan interval ID.
+     * @private {number|undefined}
+     */
+    this.intervalID_;
 
-  /**
-   * Length of auto-scan interval in milliseconds.
-   *
-   * @private {number}
-   */
-  this.scanTime_ = switchAccess.getNumberPref('autoScanTime');
+    /**
+     * Length of auto-scan interval in milliseconds.
+     * @private {number}
+     */
+    this.scanTime_ = switchAccess.getNumberPref('autoScanTime');
 
-  let enabled = switchAccess.getBooleanPref('enableAutoScan');
-  if (enabled)
-    this.start_();
-}
-
-AutoScanManager.prototype = {
-  /**
-   * Stop the window from moving to the next node at a fixed interval.
-   *
-   * @private
-   */
-  stop_: function() {
-    window.clearInterval(this.intervalID_);
-    this.intervalID_ = undefined;
-  },
-
-  /**
-   * Set the window to move to the next node at an interval in milliseconds
-   * equal to this.scanTime_.
-   *
-   * @private
-   */
-  start_: function() {
-    this.intervalID_ = window.setInterval(
-        this.switchAccess_.moveForward.bind(this.switchAccess_),
-        this.scanTime_);
-  },
+    const enabled = switchAccess.getBooleanPref('enableAutoScan');
+    if (enabled)
+      this.start_();
+  }
 
   /**
    * Return true if auto-scan is currently running. Otherwise return false.
-   *
    * @return {boolean}
    */
-  isRunning: function() {
+  isRunning() {
     return this.intervalID_ !== undefined;
-  },
+  }
 
   /**
    * Restart auto-scan under the current settings if it is currently running.
    */
-  restartIfRunning: function() {
+  restartIfRunning() {
     if (this.isRunning()) {
       this.stop_();
       this.start_();
     }
-  },
+  }
 
   /**
    * Stop auto-scan if it is currently running. Then, if |enabled| is true,
@@ -83,12 +57,12 @@ AutoScanManager.prototype = {
    *
    * @param {boolean} enabled
    */
-  setEnabled: function(enabled) {
+  setEnabled(enabled) {
     if (this.isRunning())
       this.stop_();
     if (enabled)
       this.start_();
-  },
+  }
 
   /**
    * Update this.scanTime_ to |scanTime|. Then, if auto-scan is currently
@@ -96,8 +70,28 @@ AutoScanManager.prototype = {
    *
    * @param {number} scanTime Auto-scan interval time in milliseconds.
    */
-  setScanTime: function(scanTime) {
+  setScanTime(scanTime) {
     this.scanTime_ = scanTime;
     this.restartIfRunning();
-  },
-};
+  }
+
+  /**
+   * Stop the window from moving to the next node at a fixed interval.
+   * @private
+   */
+  stop_() {
+    window.clearInterval(this.intervalID_);
+    this.intervalID_ = undefined;
+  }
+
+  /**
+   * Set the window to move to the next node at an interval in milliseconds
+   * equal to this.scanTime_.
+   * @private
+   */
+  start_() {
+    this.intervalID_ = window.setInterval(
+        this.switchAccess_.moveForward.bind(this.switchAccess_),
+        this.scanTime_);
+  }
+}

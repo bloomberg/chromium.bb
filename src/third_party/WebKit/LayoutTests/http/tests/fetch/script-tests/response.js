@@ -480,6 +480,14 @@ test(() => {
     assert_equals(response.body, stream);
   }, 'Response constructed with a stream');
 
+test(() => {
+    var controller;
+    var stream = new ReadableStream({start: c => controller = c});
+    stream.getReader();
+    assert_throws(TypeError(), () => new Response(stream),
+                  'Response constructor should throw TypeError');
+  }, 'Response constructed with a locked stream');
+
 promise_test(() => {
     var controller;
     var stream = new ReadableStream({start: c => controller = c});
@@ -538,14 +546,6 @@ promise_test(t => {
     var response = new Response(stream);
     return promise_rejects(t, TypeError(), response.text());
   }, 'Response constructed with an errored stream');
-
-promise_test(t => {
-    var controller;
-    var stream = new ReadableStream({start: c => controller = c});
-    stream.getReader();
-    var response = new Response(stream);
-    return promise_rejects(t, TypeError(), response.text());
-  }, 'Response constructed with a locked stream');
 
 promise_test(t => {
     var controller;

@@ -33,6 +33,22 @@ void GetFormatProperties(VkPhysicalDevice physicalDevice,
                          VkFormat vkFormat,
                          VkFormatProperties *propertiesOut);
 
+struct TextureFormatInitInfo final
+{
+    angle::FormatID format;
+    VkFormat vkFormat;
+    InitializeTextureDataFunction initializer;
+};
+
+struct BufferFormatInitInfo final
+{
+    angle::FormatID format;
+    VkFormat vkFormat;
+    bool vkFormatIsPacked;
+    VertexCopyFunction vertexLoadFunction;
+    bool vertexLoadRequiresConversion;
+};
+
 struct Format final : private angle::NonCopyable
 {
     Format();
@@ -43,25 +59,15 @@ struct Format final : private angle::NonCopyable
     void initialize(VkPhysicalDevice physicalDevice, const angle::Format &angleFormat);
 
     void initTextureFallback(VkPhysicalDevice physicalDevice,
-                             angle::FormatID format,
-                             VkFormat vkFormat,
-                             InitializeTextureDataFunction initializer,
-                             angle::FormatID fallbackFormat,
-                             VkFormat fallbackVkFormat,
-                             InitializeTextureDataFunction fallbackInitializer);
-
+                             const TextureFormatInitInfo *info,
+                             int numInfo);
     void initBufferFallback(VkPhysicalDevice physicalDevice,
-                            angle::FormatID format,
-                            VkFormat vkFormat,
-                            VertexCopyFunction function,
-                            bool functionConverts,
-                            angle::FormatID fallbackFormat,
-                            VkFormat fallbackVkFormat,
-                            VertexCopyFunction fallbackFunction);
+                            const BufferFormatInitInfo *info,
+                            int numInfo);
 
+    const angle::Format &angleFormat() const;
     const angle::Format &textureFormat() const;
     const angle::Format &bufferFormat() const;
-    const angle::Format &angleFormat() const;
 
     angle::FormatID angleFormatID;
     GLenum internalFormat;
@@ -69,6 +75,7 @@ struct Format final : private angle::NonCopyable
     VkFormat vkTextureFormat;
     angle::FormatID bufferFormatID;
     VkFormat vkBufferFormat;
+    bool vkBufferFormatIsPacked;
     InitializeTextureDataFunction textureInitializerFunction;
     LoadFunctionMap textureLoadFunctions;
     VertexCopyFunction vertexLoadFunction;
@@ -105,6 +112,9 @@ const VkFormatProperties &GetMandatoryFormatSupport(VkFormat vkFormat);
 
 }  // namespace vk
 
+// Returns the alignment for a buffer to be used with the vertex input stage in Vulkan. This
+// calculation is listed in the Vulkan spec at the end of the section 'Vertex Input Description'.
+size_t GetVertexInputAlignment(const vk::Format &format);
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_VULKAN_VK_FORMAT_UTILS_H_

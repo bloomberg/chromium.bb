@@ -149,9 +149,11 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   DCHECK(!host_);
 
   if (invalidation_handler_registered_) {
-    bool success =
-        invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
-    DCHECK(success);
+    if (reason != BROWSER_SHUTDOWN) {
+      bool success =
+          invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
+      DCHECK(success);
+    }
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = nullptr;
   }
@@ -317,7 +319,8 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
-    const std::string& cache_guid) {
+    const std::string& cache_guid,
+    const std::string& session_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   model_type_connector_ = std::move(model_type_connector);
@@ -338,14 +341,14 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
   // the host to ensure they're visible in the customize screen.
   AddExperimentalTypes();
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             cache_guid, true);
+                             cache_guid, session_name, true);
 }
 
 void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                             WeakHandle<DataTypeDebugInfoListener>(), "",
-                             false);
+                             WeakHandle<DataTypeDebugInfoListener>(),
+                             /*cache_guid=*/"", /*session_name=*/"", false);
 }
 
 void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(

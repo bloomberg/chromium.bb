@@ -38,6 +38,7 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_QUERY_RESULT_EXT',
       'GL_QUERY_RESULT_AVAILABLE_EXT',
+      'GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT',
     ],
   },
   'QueryTarget': {
@@ -269,10 +270,6 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'trace_level': 1,
-  },
-  'CompressedCopyTextureCHROMIUM': {
-    'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
-    'unit_test': False,
   },
   'GenQueriesEXT': {
     'type': 'GENn',

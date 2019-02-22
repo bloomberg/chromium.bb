@@ -63,12 +63,13 @@ std::string TakeVariationParamOrReturnEmpty(
   return value;
 }
 
-ActivationLevel ParseActivationLevel(const base::StringPiece activation_level) {
+mojom::ActivationLevel ParseActivationLevel(
+    const base::StringPiece activation_level) {
   if (base::LowerCaseEqualsASCII(activation_level, kActivationLevelEnabled))
-    return ActivationLevel::ENABLED;
+    return mojom::ActivationLevel::kEnabled;
   else if (base::LowerCaseEqualsASCII(activation_level, kActivationLevelDryRun))
-    return ActivationLevel::DRYRUN;
-  return ActivationLevel::DISABLED;
+    return mojom::ActivationLevel::kDryRun;
+  return mojom::ActivationLevel::kDisabled;
 }
 
 ActivationScope ParseActivationScope(const base::StringPiece activation_scope) {
@@ -234,6 +235,9 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects{
     "SubresourceFilterConsiderRedirects", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kFilterAdsOnAbusiveSites{"FilterAdsOnAbusiveSites",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
 const char kActivationLevelDryRun[] = "dryrun";
@@ -270,7 +274,7 @@ const char kPresetLiveRunForBetterAds[] =
 
 // static
 Configuration Configuration::MakePresetForLiveRunOnPhishingSites() {
-  Configuration config(ActivationLevel::ENABLED,
+  Configuration config(mojom::ActivationLevel::kEnabled,
                        ActivationScope::ACTIVATION_LIST,
                        ActivationList::PHISHING_INTERSTITIAL);
   config.activation_conditions.priority = 1000;
@@ -279,7 +283,8 @@ Configuration Configuration::MakePresetForLiveRunOnPhishingSites() {
 
 // static
 Configuration Configuration::MakePresetForPerformanceTestingDryRunOnAllSites() {
-  Configuration config(ActivationLevel::DRYRUN, ActivationScope::ALL_SITES);
+  Configuration config(mojom::ActivationLevel::kDryRun,
+                       ActivationScope::ALL_SITES);
   config.activation_options.performance_measurement_rate = 1.0;
   config.activation_conditions.priority = 500;
   return config;
@@ -287,7 +292,7 @@ Configuration Configuration::MakePresetForPerformanceTestingDryRunOnAllSites() {
 
 // static
 Configuration Configuration::MakePresetForLiveRunForBetterAds() {
-  Configuration config(ActivationLevel::ENABLED,
+  Configuration config(mojom::ActivationLevel::kEnabled,
                        ActivationScope::ACTIVATION_LIST,
                        ActivationList::BETTER_ADS);
   config.activation_conditions.priority = 800;
@@ -295,7 +300,7 @@ Configuration Configuration::MakePresetForLiveRunForBetterAds() {
 }
 
 Configuration::Configuration() = default;
-Configuration::Configuration(ActivationLevel activation_level,
+Configuration::Configuration(mojom::ActivationLevel activation_level,
                              ActivationScope activation_scope,
                              ActivationList activation_list) {
   activation_options.activation_level = activation_level;
@@ -347,9 +352,10 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
   return value;
 }
 
-ActivationState Configuration::GetActivationState(
-    ActivationLevel effective_activation_level) const {
-  ActivationState state = ActivationState(effective_activation_level);
+mojom::ActivationState Configuration::GetActivationState(
+    mojom::ActivationLevel effective_activation_level) const {
+  mojom::ActivationState state;
+  state.activation_level = effective_activation_level;
 
   double measurement_rate = activation_options.performance_measurement_rate;
   state.measure_performance =
@@ -358,8 +364,9 @@ ActivationState Configuration::GetActivationState(
 
   // This bit keeps track of BAS enforcement-style logging, not warning logging.
   // TODO(csharrison): Consider removing it since it can be computed directly
-  // from the ActivationLevel.
-  state.enable_logging = effective_activation_level == ActivationLevel::ENABLED;
+  // from the mojom::ActivationLevel.
+  state.enable_logging =
+      effective_activation_level == mojom::ActivationLevel::kEnabled;
   return state;
 }
 

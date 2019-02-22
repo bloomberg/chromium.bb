@@ -82,9 +82,6 @@ void PaintWidget(cc::PaintCanvas* canvas,
 }
 
 SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
-  const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
-  const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
-
   switch (color_id) {
     // Windows
     case ui::NativeTheme::kColorId_WindowBackground:
@@ -135,7 +132,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
     case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
     case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
-      return kInvalidColorIdColor;
+      return gfx::kPlaceholderColor;
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
@@ -310,68 +307,15 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused),
           0x80);
-    case ui::NativeTheme::kColorId_ResultsTableSelectedBackground:
-      return SkColorFromColorId(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
-    case ui::NativeTheme::kColorId_ResultsTableHoveredText:
       return SkColorFromColorId(
           ui::NativeTheme::kColorId_TextfieldDefaultColor);
-    case ui::NativeTheme::kColorId_ResultsTableSelectedText:
-      return SkColorFromColorId(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor);
-    case ui::NativeTheme::kColorId_ResultsTableNormalDimmedText:
-    case ui::NativeTheme::kColorId_ResultsTableHoveredDimmedText:
+    case ui::NativeTheme::kColorId_ResultsTableDimmedText:
       return color_utils::AlphaBlend(
           SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor),
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           0x80);
-    case ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText:
-      return color_utils::AlphaBlend(
-          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldSelectionColor),
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-          0x80);
-    case ui::NativeTheme::kColorId_ResultsTableNormalUrl:
-    case ui::NativeTheme::kColorId_ResultsTableHoveredUrl:
-      return NormalURLColor(
-          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor));
-    case ui::NativeTheme::kColorId_ResultsTableSelectedUrl:
-      return SelectedURLColor(
-          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldSelectionColor),
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-    case ui::NativeTheme::kColorId_ResultsTablePositiveText:
-      return color_utils::GetReadableColor(
-          kPositiveTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
-    case ui::NativeTheme::kColorId_ResultsTablePositiveHoveredText:
-      return color_utils::GetReadableColor(
-          kPositiveTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
-    case ui::NativeTheme::kColorId_ResultsTablePositiveSelectedText:
-      return color_utils::GetReadableColor(
-          kPositiveTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-    case ui::NativeTheme::kColorId_ResultsTableNegativeText:
-      return color_utils::GetReadableColor(
-          kNegativeTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
-    case ui::NativeTheme::kColorId_ResultsTableNegativeHoveredText:
-      return color_utils::GetReadableColor(
-          kNegativeTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
-    case ui::NativeTheme::kColorId_ResultsTableNegativeSelectedText:
-      return color_utils::GetReadableColor(
-          kNegativeTextColor,
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
 
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
@@ -400,15 +344,15 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       NOTREACHED();
       break;
   }
-  return kInvalidColorIdColor;
+  return gfx::kPlaceholderColor;
 }
 
 }  // namespace
 
 // static
 NativeThemeGtk* NativeThemeGtk::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
-  return &s_native_theme;
+  static base::NoDestructor<NativeThemeGtk> s_native_theme;
+  return s_native_theme.get();
 }
 
 NativeThemeGtk::NativeThemeGtk() {

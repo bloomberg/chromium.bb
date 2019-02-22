@@ -96,6 +96,8 @@ class SystemLogUploader : public UploadJob::Delegate {
   void OnSuccess() override;
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
+  bool upload_enabled() const { return upload_enabled_; }
+
  private:
   // Updates the system log upload enabled field from settings.
   void RefreshUploadSettings();

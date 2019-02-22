@@ -13,10 +13,9 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -28,10 +27,10 @@ class MemoryMappedRuleset;
 // |document_url| in a frame, based on the parent document's |activation_state|,
 // the |parent_document_origin|, as well as any applicable deactivation rules in
 // non-null |ruleset|.
-ActivationState ComputeActivationState(
+mojom::ActivationState ComputeActivationState(
     const GURL& document_url,
     const url::Origin& parent_document_origin,
-    const ActivationState& parent_activation_state,
+    const mojom::ActivationState& parent_activation_state,
     const MemoryMappedRuleset* ruleset);
 
 // An asynchronous wrapper around DocumentSubresourceFilter (DSF).
@@ -46,40 +45,41 @@ ActivationState ComputeActivationState(
 // while the DSF is retrieved on the |task_runner| in a deferred manner.
 class AsyncDocumentSubresourceFilter {
  public:
-  using LoadPolicyCallback = base::Callback<void(LoadPolicy)>;
+  using LoadPolicyCallback = base::OnceCallback<void(LoadPolicy)>;
 
   class Core;
 
   // Encapsulates the parameters needed for computing the frame-level
-  // ActivationState appropriate for the frame this ADSF is created for. These
-  // parameters are posted to ADSF::Core during its initialization.
+  // mojom::ActivationState appropriate for the frame this ADSF is created for.
+  // These parameters are posted to ADSF::Core during its initialization.
   struct InitializationParams {
     InitializationParams();
 
-    // Takes parameters needed for calculating the main-frame ActivationState,
-    // that is: the main-frame |document| URL, the page-level
-    // |activation_level|, and whether or not to |measure_performance|.
+    // Takes parameters needed for calculating the main-frame
+    // mojom::ActivationState, that is: the main-frame |document| URL, the
+    // page-level |activation_level|, and whether or not to
+    // |measure_performance|.
     InitializationParams(GURL document_url,
-                         ActivationLevel activation_level,
+                         mojom::ActivationLevel activation_level,
                          bool measure_performance);
 
-    // Takes parameters needed for calculating the sub-frame ActivationState,
-    // that is: the sub-frame |document| URL, the origin of its |parent|, as
-    // well as the parent's |activation_state|.
+    // Takes parameters needed for calculating the sub-frame
+    // mojom::ActivationState, that is: the sub-frame |document| URL, the origin
+    // of its |parent|, as well as the parent's |activation_state|.
     InitializationParams(GURL document_url,
                          url::Origin parent_document_origin,
-                         ActivationState parent_activation_state);
+                         mojom::ActivationState parent_activation_state);
 
     ~InitializationParams();
 
     InitializationParams(InitializationParams&& other);
     InitializationParams& operator=(InitializationParams&& other);
 
-    // Parameters used to compute ActivationState for the |document| before
-    // creating a DocumentSubresourceFilter.
+    // Parameters used to compute mojom::ActivationState for the |document|
+    // before creating a DocumentSubresourceFilter.
     GURL document_url;
     url::Origin parent_document_origin;
-    ActivationState parent_activation_state;
+    mojom::ActivationState parent_activation_state;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitializationParams);
@@ -90,18 +90,19 @@ class AsyncDocumentSubresourceFilter {
   // |ruleset_handle|. The core remains owned by |this| object, but lives on
   // (and is accessed on) the |task_runner|.
   //
-  // Once the ActivationState for the current frame is calculated, it is
+  // Once the mojom::ActivationState for the current frame is calculated, it is
   // reported back via |activation_state_callback| on the task runner associated
   // with the current thread. If MemoryMappedRuleset is not present or
-  // malformed, then a default ActivationState is reported (with ActivationLevel
-  // equal to DISABLED).
+  // malformed, then a default mojom::ActivationState is reported (with
+  // mojom::ActivationLevel equal to DISABLED).
   //
   // If deleted before |activation_state_callback| is called, the callback will
   // never be called.
   AsyncDocumentSubresourceFilter(
       VerifiedRuleset::Handle* ruleset_handle,
       InitializationParams params,
-      base::Callback<void(ActivationState)> activation_state_callback);
+      base::OnceCallback<void(mojom::ActivationState)>
+          activation_state_callback);
 
   ~AsyncDocumentSubresourceFilter();
 
@@ -124,10 +125,11 @@ class AsyncDocumentSubresourceFilter {
   // Posts a task to update the state in |core_|, so any calls to
   // GetLoadPolicyForSubdocument that are called before this will get the old
   // state.
-  void UpdateWithMoreAccurateState(const ActivationState& updated_page_state);
+  void UpdateWithMoreAccurateState(
+      const mojom::ActivationState& updated_page_state);
 
   // Must be called after activation state computation is finished.
-  const ActivationState& activation_state() const;
+  const mojom::ActivationState& activation_state() const;
 
   bool has_activation_state() const { return activation_state_.has_value(); }
 
@@ -139,15 +141,16 @@ class AsyncDocumentSubresourceFilter {
 
  private:
   void OnActivateStateCalculated(
-      base::Callback<void(ActivationState)> activation_state_callback,
-      ActivationState activation_state);
+      base::OnceCallback<void(mojom::ActivationState)>
+          activation_state_callback,
+      mojom::ActivationState activation_state);
 
   // Note: Raw pointer, |core_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<Core, base::OnTaskRunnerDeleter> core_;
   base::OnceClosure first_disallowed_load_callback_;
 
-  base::Optional<ActivationState> activation_state_;
+  base::Optional<mojom::ActivationState> activation_state_;
 
   base::SequenceChecker sequence_checker_;
 
@@ -173,13 +176,13 @@ class AsyncDocumentSubresourceFilter::Core {
  private:
   friend class AsyncDocumentSubresourceFilter;
 
-  // Updates the ActivationState in |filter_|.
-  void SetActivationState(const ActivationState& state);
+  // Updates the mojom::ActivationState in |filter_|.
+  void SetActivationState(const mojom::ActivationState& state);
 
-  // Computes ActivationState from |params| and initializes a DSF using it.
-  // Returns the computed activation state.
-  ActivationState Initialize(InitializationParams params,
-                             VerifiedRuleset* verified_ruleset);
+  // Computes mojom::ActivationState from |params| and initializes a DSF using
+  // it. Returns the computed activation state.
+  mojom::ActivationState Initialize(InitializationParams params,
+                                    VerifiedRuleset* verified_ruleset);
 
   base::Optional<DocumentSubresourceFilter> filter_;
   base::SequenceChecker sequence_checker_;

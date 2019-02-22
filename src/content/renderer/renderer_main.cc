@@ -167,7 +167,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   InitializeWebRtcModule();
 
   {
-    bool run_loop = true;
+    bool should_run_loop = true;
     bool need_sandbox =
         !command_line.HasSwitch(service_manager::switches::kNoSandbox);
 
@@ -176,7 +176,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     // except Windows and Mac.
     // TODO(markus): Check if it is OK to remove ifdefs for Windows and Mac.
     if (need_sandbox) {
-      run_loop = platform.EnableSandbox();
+      should_run_loop = platform.EnableSandbox();
       need_sandbox = false;
     }
 #endif
@@ -184,20 +184,22 @@ int RendererMain(const MainFunctionParams& parameters) {
     std::unique_ptr<RenderProcess> render_process = RenderProcessImpl::Create();
     // It's not a memory leak since RenderThread has the same lifetime
     // as a renderer process.
-    new RenderThreadImpl(std::move(main_thread_scheduler));
+    base::RunLoop run_loop;
+    new RenderThreadImpl(run_loop.QuitClosure(),
+                         std::move(main_thread_scheduler));
 
     if (need_sandbox)
-      run_loop = platform.EnableSandbox();
+      should_run_loop = platform.EnableSandbox();
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 
-    if (run_loop) {
+    if (should_run_loop) {
 #if defined(OS_MACOSX)
       if (pool)
         pool->Recycle();
 #endif
       TRACE_EVENT_ASYNC_BEGIN0("toplevel", "RendererMain.START_MSG_LOOP", 0);
-      base::RunLoop().Run();
+      run_loop.Run();
       TRACE_EVENT_ASYNC_END0("toplevel", "RendererMain.START_MSG_LOOP", 0);
     }
 

@@ -30,11 +30,7 @@ constexpr base::FilePath::CharType kCachedLogoDirectory[] =
     FILE_PATH_LITERAL("Search Logos");
 
 bool UseGrayLogo() {
-#if defined(OS_ANDROID)
-  return !chrome::android::GetIsChromeModernDesignEnabled();
-#else
   return false;
-#endif
 }
 
 }  // namespace

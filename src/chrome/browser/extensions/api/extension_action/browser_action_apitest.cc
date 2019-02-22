@@ -103,11 +103,11 @@ void VerifyIconsMatch(const gfx::Image& bar_rendering,
   icon_portion.ClampToCenteredSize(model_icon.Size());
 
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(
-      model_icon.AsImageSkia().GetRepresentation(1.0f).sk_bitmap(),
+      model_icon.AsImageSkia().GetRepresentation(1.0f).GetBitmap(),
       gfx::ImageSkiaOperations::ExtractSubset(bar_rendering.AsImageSkia(),
                                               icon_portion)
           .GetRepresentation(1.0f)
-          .sk_bitmap()));
+          .GetBitmap()));
 }
 
 class BrowserActionApiTest : public ExtensionApiTest {
@@ -1051,8 +1051,9 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, Webpage) {
 
 // Tests that an extension pop-up can be navigated to another page
 // in the same extension.
+// Times out on all platforms: https://crbug.com/882200
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
-                       PageInSameExtension) {
+                       DISABLED_PageInSameExtension) {
   GURL other_page_in_same_extension =
       popup_extension().GetResourceURL("other_page.html");
   TestPopupNavigationViaGet(other_page_in_same_extension,

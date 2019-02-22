@@ -37,6 +37,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void UpdateProfile(const AutofillProfile& profile) override;
   void RemoveByGUID(const std::string& guid) override;
   void AddCreditCard(const CreditCard& credit_card) override;
+  void DeleteLocalCreditCards(const std::vector<CreditCard>& cards) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void AddFullServerCreditCard(const CreditCard& credit_card) override;
   std::vector<AutofillProfile*> GetProfiles() const override;
@@ -51,6 +52,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   bool ShouldSuggestServerCards() const override;
   std::string CountryCodeForCurrentTimezone() const override;
   void ClearAllLocalData() override;
+  CreditCard* GetCreditCardByNumber(const std::string& number) override;
   bool IsDataLoaded() const override;
   bool IsSyncFeatureEnabled() const override;
   AccountInfo GetAccountInfoForPaymentsServer() const override;

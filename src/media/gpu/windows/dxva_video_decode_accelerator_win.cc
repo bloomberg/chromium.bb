@@ -280,12 +280,14 @@ bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
 
   D3D11_VIDEO_DECODER_CONFIG config = {};
   hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
+  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.GetDecoderConfigStatus", SUCCEEDED(hr));
   if (FAILED(hr))
     return false;
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device->CreateVideoDecoder(&desc, &config,
                                         video_decoder.GetAddressOf());
+  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.CreateDecoderStatus", !!video_decoder);
   return !!video_decoder;
 }
 
@@ -774,7 +776,7 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
 
 bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
-  if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
+  if (!get_gl_context_cb_ || !make_context_current_cb_) {
     NOTREACHED() << "GL callbacks are required for this VDA";
     return false;
   }

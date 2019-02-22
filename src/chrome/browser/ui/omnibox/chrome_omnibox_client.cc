@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
@@ -37,9 +36,11 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
+#include "chrome/browser/ui/omnibox/query_in_omnibox_factory.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -55,6 +56,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -221,6 +223,10 @@ const AutocompleteSchemeClassifier&
 
 AutocompleteClassifier* ChromeOmniboxClient::GetAutocompleteClassifier() {
   return AutocompleteClassifierFactory::GetForProfile(profile_);
+}
+
+QueryInOmnibox* ChromeOmniboxClient::GetQueryInOmnibox() {
+  return QueryInOmniboxFactory::GetForProfile(profile_);
 }
 
 gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
@@ -477,6 +483,24 @@ void ChromeOmniboxClient::DiscardNonCommittedNavigations() {
   controller_->GetWebContents()->GetController().DiscardNonCommittedEntries();
 }
 
+void ChromeOmniboxClient::PromptPageTranslation() {
+  content::WebContents* contents = controller_->GetWebContents();
+  if (contents) {
+    ChromeTranslateClient* translate_client =
+        ChromeTranslateClient::FromWebContents(contents);
+    if (translate_client) {
+      const translate::LanguageState& state =
+          translate_client->GetLanguageState();
+      // Here we pass triggered_from_menu as true because that is meant to
+      // capture whether the user explicitly requested the translation.
+      translate_client->ShowTranslateUI(
+          translate::TRANSLATE_STEP_BEFORE_TRANSLATE, state.original_language(),
+          state.AutoTranslateTo(), translate::TranslateErrors::NONE,
+          /*triggered_from_menu=*/true);
+    }
+  }
+}
+
 void ChromeOmniboxClient::DoPrerender(
     const AutocompleteMatch& match) {
   content::WebContents* web_contents = controller_->GetWebContents();
@@ -501,10 +525,6 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
   if (loading_predictor) {
     loading_predictor->PrepareForPageLoad(
         match.destination_url, predictors::HintOrigin::OMNIBOX,
-        predictors::AutocompleteActionPredictor::IsPreconnectable(match));
-  } else if (profile_->GetNetworkPredictor()) {
-    profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
-        match.destination_url,
         predictors::AutocompleteActionPredictor::IsPreconnectable(match));
   }
   // We could prefetch the alternate nav URL, if any, but because there

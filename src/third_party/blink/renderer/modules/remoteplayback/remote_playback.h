@@ -106,10 +106,9 @@ class MODULES_EXPORT RemotePlayback final
   void OnConnectionError(const mojom::blink::PresentationError&);
 
   // mojom::blink::PresentationConnection implementation.
-  void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
-                 OnMessageCallback) override;
+  void OnMessage(mojom::blink::PresentationConnectionMessagePtr) override;
   void DidChangeState(mojom::blink::PresentationConnectionState) override;
-  void RequestClose() override;
+  void DidClose(mojom::blink::PresentationConnectionCloseReason) override;
 
   // WebRemotePlaybackClient implementation.
   void StateChanged(WebRemotePlaybackState) override;
@@ -150,6 +149,9 @@ class MODULES_EXPORT RemotePlayback final
   // Stops listening for remote playback device availability (unconditionally).
   // May be called more than once in a row.
   void StopListeningForAvailability();
+
+  // Clears bindings after remote playback stops.
+  void CleanupConnections();
 
   WebRemotePlaybackState state_;
   WebRemotePlaybackAvailability availability_;

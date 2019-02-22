@@ -843,14 +843,14 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  ASSERT_EQ(4U, entries->size());
+  ASSERT_EQ(5U, entries->size());
 
   // The found three directories should be /drive/root, /drive/other,
   // /drive/trash and /drive/team_drives.
   std::set<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i)
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
-  EXPECT_EQ(4U, found.size());
+  EXPECT_EQ(5U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
                     util::kDriveMyDriveRootDirName)));
   EXPECT_EQ(1U, found.count(
@@ -859,6 +859,8 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
                     base::FilePath::FromUTF8Unsafe(util::kDriveTrashDirName)));
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
                     util::kDriveTeamDrivesDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
+                    util::kDriveComputersDirName)));
 }
 
 TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
@@ -1328,26 +1330,6 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
 
   // Now able to remove the cache entry.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(entry->local_id()));
-}
-
-TEST_F(FileSystemTest, GetShareUrl) {
-  ASSERT_TRUE(LoadFullResourceList());
-
-  const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const GURL kEmbedOrigin("chrome-extension://test-id");
-
-  // Try to fetch the URL for the sharing dialog.
-  FileError error = FILE_ERROR_FAILED;
-  GURL share_url;
-  file_system_->GetShareUrl(
-      kFileInRoot,
-      kEmbedOrigin,
-      google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
-  content::RunAllTasksUntilIdle();
-
-  // Verify the share url to the sharing dialog.
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(share_url.is_valid());
 }
 
 TEST_F(FileSystemTest, FreeDiskSpaceIfNeededFor) {

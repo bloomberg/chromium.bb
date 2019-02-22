@@ -15,16 +15,6 @@ template <>
 struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
   static gfx::mojom::BufferFormat ToMojom(gfx::BufferFormat format) {
     switch (format) {
-      case gfx::BufferFormat::ATC:
-        return gfx::mojom::BufferFormat::ATC;
-      case gfx::BufferFormat::ATCIA:
-        return gfx::mojom::BufferFormat::ATCIA;
-      case gfx::BufferFormat::DXT1:
-        return gfx::mojom::BufferFormat::DXT1;
-      case gfx::BufferFormat::DXT5:
-        return gfx::mojom::BufferFormat::DXT5;
-      case gfx::BufferFormat::ETC1:
-        return gfx::mojom::BufferFormat::ETC1;
       case gfx::BufferFormat::R_8:
         return gfx::mojom::BufferFormat::R_8;
       case gfx::BufferFormat::R_16:
@@ -63,21 +53,6 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
   static bool FromMojom(gfx::mojom::BufferFormat input,
                         gfx::BufferFormat* out) {
     switch (input) {
-      case gfx::mojom::BufferFormat::ATC:
-        *out = gfx::BufferFormat::ATC;
-        return true;
-      case gfx::mojom::BufferFormat::ATCIA:
-        *out = gfx::BufferFormat::ATCIA;
-        return true;
-      case gfx::mojom::BufferFormat::DXT1:
-        *out = gfx::BufferFormat::DXT1;
-        return true;
-      case gfx::mojom::BufferFormat::DXT5:
-        *out = gfx::BufferFormat::DXT5;
-        return true;
-      case gfx::mojom::BufferFormat::ETC1:
-        *out = gfx::BufferFormat::ETC1;
-        return true;
       case gfx::mojom::BufferFormat::R_8:
         *out = gfx::BufferFormat::R_8;
         return true;

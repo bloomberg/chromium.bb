@@ -25,6 +25,7 @@
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
@@ -54,7 +55,9 @@ bool IsSideShelf(aura::Window* root_window) {
 
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
-    : controller_(controller) {}
+    : controller_(controller), display_observer_(this) {
+  display_observer_.Add(display::Screen::GetScreen());
+}
 
 AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
   Shell::Get()->RemovePreTargetHandler(this);
@@ -77,11 +80,12 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
 
   app_list::AppListView::InitParams params;
-  params.parent =
+  aura::Window* parent_window =
       RootWindowController::ForWindow(root_window)
           ->GetContainer(IsHomeLauncherEnabledInTabletMode()
                              ? kShellWindowId_AppListTabletModeContainer
                              : kShellWindowId_AppListContainer);
+  params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = Shell::Get()
                               ->tablet_mode_controller()
@@ -90,6 +94,7 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
 
   view->Initialize(params);
 
+  SnapAppListBoundsToDisplayEdge();
   wm::GetWindowState(view->GetWidget()->GetNativeWindow())
       ->set_ignored_by_shelf(true);
   Shell::Get()->AddPreTargetHandler(this);
@@ -106,11 +111,15 @@ void AppListPresenterDelegateImpl::OnShown(int64_t display_id) {
   controller_->ViewShown(display_id);
 }
 
-void AppListPresenterDelegateImpl::OnDismissed() {
+void AppListPresenterDelegateImpl::OnClosing() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
   controller_->ViewClosing();
+}
+
+void AppListPresenterDelegateImpl::OnClosed() {
+  controller_->ViewClosed();
 }
 
 gfx::Vector2d AppListPresenterDelegateImpl::GetVisibilityAnimationOffset(
@@ -169,6 +178,16 @@ void AppListPresenterDelegateImpl::OnVisibilityChanged(
 void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
   // Notify Chrome the target visibility change.
   controller_->OnTargetVisibilityChanged(visible);
+}
+
+void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!presenter_->GetWindow())
+    return;
+
+  view_->OnParentWindowBoundsChanged();
+  SnapAppListBoundsToDisplayEdge();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,6 +258,14 @@ void AppListPresenterDelegateImpl::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_PRESS) {
     ProcessLocatedEvent(event);
   }
+}
+
+void AppListPresenterDelegateImpl::SnapAppListBoundsToDisplayEdge() {
+  CHECK(view_ && view_->GetWidget());
+  aura::Window* window = view_->GetWidget()->GetNativeView();
+  const gfx::Rect bounds =
+      ash::screen_util::SnapBoundsToDisplayEdge(window->bounds(), window);
+  window->SetBounds(bounds);
 }
 
 }  // namespace ash

@@ -25,7 +25,7 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
 
  private:
   // Invoked when cache size has been computed.
-  void OnCacheSizeCalculated(int cache_size);
+  void OnCacheSizeCalculated(int64_t cache_size);
 
   ios::ChromeBrowserState* browser_state_;
 

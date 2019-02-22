@@ -34,8 +34,9 @@ function Scheduler() {
   this.activeRequests_ = [];
 
   /**
-   * Hash array of requests being added to the queue, but not finalized yet.
-   * @type {Object}
+   * Map of requests being added to the queue, but not finalized yet. Keyed by
+   * the ImageRequest id.
+   * @type {Object<string, ImageRequest>}>
    * @private
    */
   this.requests_ = {};

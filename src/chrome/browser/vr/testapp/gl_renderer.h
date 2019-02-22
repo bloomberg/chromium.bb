@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/base_compositor_delegate.h"
+#include "chrome/browser/vr/base_graphics_delegate.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gl {
@@ -20,16 +20,18 @@ namespace vr {
 class VrTestContext;
 
 // This class manages an OpenGL context and initiates per-frame rendering.
-class GlRenderer : public BaseCompositorDelegate {
+class GlRenderer : public BaseGraphicsDelegate {
  public:
   GlRenderer();
   ~GlRenderer() override;
 
-  // CompositorDelegate implementation.
+  // GraphicsDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
+  void OnResume() override;
   FovRectangles GetRecommendedFovs() override;
   float GetZNear() override;
-  RenderInfo GetRenderInfo(FrameType frame_type) override;
+  RenderInfo GetRenderInfo(FrameType frame_type,
+                           const gfx::Transform& head_pose) override;
   RenderInfo GetOptimizedRenderInfoForFovs(const FovRectangles& fovs) override;
   void InitializeBuffers() override;
   void PrepareBufferForWebXr() override;
@@ -46,13 +48,9 @@ class GlRenderer : public BaseCompositorDelegate {
   void GetContentQuadDrawParams(Transform* uv_transform,
                                 float* border_x,
                                 float* border_y) override;
-  void SubmitFrame(FrameType frame_type) override;
-  void SetUiInterface(CompositorUiInterface* ui) override;
-  void SetShowingVrDialog(bool showing) override;
   int GetContentBufferWidth() override;
-  void ConnectPresentingService(
-      device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRRuntimeSessionOptionsPtr options) override;
+
+  void SetFrameDumpFilepathBase(std::string& filepath_base) override;
 
   void RenderFrame();
   void PostRenderFrameTask();

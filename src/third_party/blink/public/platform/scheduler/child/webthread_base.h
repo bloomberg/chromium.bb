@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace base {
 namespace sequence_manager {
@@ -25,16 +25,18 @@ namespace blink {
 namespace scheduler {
 
 // TODO(scheduler-dev): Do not expose this class in Blink public API.
-class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
+class BLINK_PLATFORM_EXPORT WebThreadBase : public Thread {
  public:
   ~WebThreadBase() override;
 
+  // CreateWorkerThread() may be called from a non-main thread.
   static std::unique_ptr<WebThreadBase> CreateWorkerThread(
-      const WebThreadCreationParams& params);
-  static std::unique_ptr<WebThreadBase> CreateCompositorThread(
-      const WebThreadCreationParams& params);
+      const ThreadCreationParams& params);
 
-  // WebThread implementation.
+  static std::unique_ptr<WebThreadBase> CreateCompositorThread(
+      const ThreadCreationParams& params);
+
+  // Thread implementation.
   bool IsCurrentThread() const override;
   PlatformThreadId ThreadId() const override = 0;
 
@@ -63,7 +65,7 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   virtual void RemoveTaskTimeObserverInternal(
       base::sequence_manager::TaskTimeObserver*) {}
 
-  static void RunWebThreadIdleTask(WebThread::IdleTask idle_task,
+  static void RunWebThreadIdleTask(Thread::IdleTask idle_task,
                                    base::TimeTicks deadline);
 
  private:

@@ -81,8 +81,7 @@ static_assert(arraysize(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
 
 const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // Devices using Empia 2860 or 2820 chips, see https://crbug.com/849636.
-    "eb1a:2860", "eb1a:2820",
-};
+    "eb1a:2860", "eb1a:2820", "1ce6:2820"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
@@ -596,7 +595,7 @@ void VideoCaptureDeviceFactoryWin::DeviceInfoReady(
     com_thread_.Stop();
   }
 
-  base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
+  std::move(result_callback).Run(std::move(device_descriptors));
 }
 
 void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(

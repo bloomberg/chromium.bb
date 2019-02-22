@@ -10,9 +10,8 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_gdi_object.h"
-#include "base/win/win_client_metrics.h"
-#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/native_theme/native_theme_win.h"
 
 using ui::NativeTheme;
@@ -21,15 +20,9 @@ namespace views {
 
 void MenuConfig::Init() {
   arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
+  font_list = gfx::FontList(gfx::PlatformFontWin::GetSystemFont(
+      gfx::PlatformFontWin::SystemFont::kMenu));
 
-  NONCLIENTMETRICS_XP metrics;
-  base::win::GetNonClientMetrics(&metrics);
-  l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
-  {
-    base::win::ScopedHFONT new_font(CreateFontIndirect(&metrics.lfMenuFont));
-    DLOG_ASSERT(new_font.is_valid());
-    font_list = gfx::FontList(gfx::Font(new_font.get()));
-  }
   NativeTheme::ExtraParams extra;
   gfx::Size arrow_size = NativeTheme::GetInstanceForNativeUi()->GetPartSize(
       NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);

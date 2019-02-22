@@ -74,11 +74,15 @@ GpuInProcessThreadService::GpuInProcessThreadService(
 
 GpuInProcessThreadService::~GpuInProcessThreadService() = default;
 
-bool GpuInProcessThreadService::ForceVirtualizedGLContexts() {
+bool GpuInProcessThreadService::ForceVirtualizedGLContexts() const {
   return false;
 }
 
-bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() {
+bool GpuInProcessThreadService::ShouldCreateMemoryTracker() const {
+  return true;
+}
+
+bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() const {
   return false;
 }
 

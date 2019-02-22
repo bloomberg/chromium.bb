@@ -28,17 +28,15 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
+
   void Initialize(const std::string& cache_guid,
+                  const std::string& session_name,
                   const std::string& signin_scoped_device_id) override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
   void Clear() override;
 
  private:
-  void InitializeContinuation(const std::string& guid,
-                              const std::string& signin_scoped_device_id,
-                              const std::string& session_name);
-
   // The channel (CANARY, DEV, BETA, etc.) of the current client.
   const version_info::Channel channel_;
 

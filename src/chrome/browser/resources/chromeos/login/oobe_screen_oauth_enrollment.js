@@ -135,8 +135,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
+        this.offlineAdUi_.loading = true;
         chrome.send('oauthEnrollAdCompleteLogin', [
-          e.detail.machinename, e.detail.distinguished_name,
+          e.detail.machine_name, e.detail.distinguished_name,
           e.detail.encryption_types, e.detail.username, e.detail.password
         ]);
       }.bind(this));
@@ -297,6 +298,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.navigation_.disabled = false;
 
+      this.offlineAdUi_.onBeforeShow();
       this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },
 
@@ -387,21 +389,22 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();
       } else if (step == STEP_LICENSE_TYPE) {
-        $('oauth-enroll-license-ui').submitButton.focus();
+        $('oauth-enroll-license-ui').show();
       } else if (step == STEP_ERROR) {
         $('oauth-enroll-error-card').submitButton.focus();
       } else if (step == STEP_SUCCESS) {
-        $('oauth-enroll-success-card').focus();
+        $('oauth-enroll-success-card').show();
       } else if (step == STEP_ABE_SUCCESS) {
-        $('oauth-enroll-abe-success-card').focus();
+        $('oauth-enroll-abe-success-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT) {
-        $('oauth-enroll-step-attribute-prompt').focus();
+        $('oauth-enroll-attribute-prompt-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
       } else if (step == STEP_ACTIVE_DIRECTORY_JOIN_ERROR) {
         $('oauth-enroll-active-directory-join-error-card').submitButton.focus();
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
+        this.offlineAdUi_.loading = false;
         this.offlineAdUi_.focus();
       }
 
@@ -450,8 +453,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     setAdJoinParams: function(
         machineName, userName, errorState, showUnlockConfig) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.setUser(userName, machineName);
-      this.offlineAdUi_.setInvalid(errorState);
+      this.offlineAdUi_.machineName = machineName;
+      this.offlineAdUi_.userName = userName;
+      this.offlineAdUi_.errorState = errorState;
       this.offlineAdUi_.unlockPasswordStep = showUnlockConfig;
     },
 
@@ -538,7 +542,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     onEnrollmentFinished_: function() {
       chrome.send('oauthEnrollClose', ['done']);
-    }
+    },
 
+    updateLocalizedContent: function() {
+      this.offlineAdUi_.i18nUpdateLocale();
+    },
   };
 });

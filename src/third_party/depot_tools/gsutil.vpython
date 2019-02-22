@@ -100,3 +100,19 @@ wheel: <
 ##
 # END "cryptography" dependencies.
 ##
+
+wheel: <
+  name: "infra/python/wheels/crcmod/${vpython_platform}"
+  version: "version:1.7"
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_i686"
+  >
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_x86_64"
+  >
+  match_tag: <
+    platform: "macosx_10_6_intel"
+  >
+>

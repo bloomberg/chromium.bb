@@ -118,6 +118,12 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   void set_lxd_container_created_signal_connected(bool connected) {
     is_lxd_container_created_signal_connected_ = connected;
   }
+
+  // Set LxdContainerCreatedSignalConnected response status
+  void set_lxd_container_created_signal_status(
+      vm_tools::cicerone::LxdContainerCreatedSignal_Status status) {
+    lxd_container_created_signal_status_ = status;
+  }
   // Set LxdContainerDownloadingSignalConnected state
   void set_lxd_container_downloading_signal_connected(bool connected) {
     is_lxd_container_downloading_signal_connected_ = connected;
@@ -170,6 +176,14 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     setup_lxd_container_user_response_ = setup_lxd_container_user_response;
   }
 
+  // Additional functions to allow tests to trigger Signals.
+  void NotifyLxdContainerCreated(
+      const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
+  void NotifyContainerStarted(
+      const vm_tools::cicerone::ContainerStartedSignal& signal);
+  void NotifyTremplinStarted(
+      const vm_tools::cicerone::TremplinStartedSignal& signal);
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
@@ -180,6 +194,10 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   bool is_lxd_container_created_signal_connected_ = true;
   bool is_lxd_container_downloading_signal_connected_ = true;
   bool is_tremplin_started_signal_connected_ = true;
+
+  vm_tools::cicerone::LxdContainerCreatedSignal_Status
+      lxd_container_created_signal_status_ =
+          vm_tools::cicerone::LxdContainerCreatedSignal::CREATED;
 
   vm_tools::cicerone::LaunchContainerApplicationResponse
       launch_container_application_response_;

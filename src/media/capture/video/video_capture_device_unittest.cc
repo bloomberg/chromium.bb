@@ -206,11 +206,27 @@ class VideoCaptureDeviceTest
   }
 #endif
 
+  void RunOpenInvalidDeviceTestCase();
+  void RunCaptureWithSizeTestCase();
+  void RunAllocateBadSizeTestCase();
+  void RunReAllocateCameraTestCase();
+  void RunCaptureMjpegTestCase();
+  void RunNoCameraSupportsPixelFormatMaxTestCase();
+  void RunTakePhotoTestCase();
+  void RunGetPhotoStateTestCase();
+
  protected:
   typedef VideoCaptureDevice::Client Client;
 
   VideoCaptureDeviceTest()
-      : device_descriptors_(new VideoCaptureDeviceDescriptors()),
+      :
+#if defined(OS_MACOSX)
+        // Video capture code on MacOSX must run on a CFRunLoop enabled thread
+        // for interaction with AVFoundation.
+        scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+#endif
+        device_descriptors_(new VideoCaptureDeviceDescriptors()),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         video_capture_client_(CreateDeviceClient()),
         image_capture_client_(new MockImageCaptureClient()) {
@@ -257,8 +273,7 @@ class VideoCaptureDeviceTest
   std::unique_ptr<MockVideoCaptureDeviceClient> CreateDeviceClient() {
     auto result = std::make_unique<MockVideoCaptureDeviceClient>();
     ON_CALL(*result, OnError(_, _, _)).WillByDefault(Invoke(DumpError));
-    EXPECT_CALL(*result, ReserveOutputBuffer(_, _, _)).Times(0);
-    EXPECT_CALL(*result, ResurrectLastOutputBuffer(_, _, _)).Times(0);
+    EXPECT_CALL(*result, ReserveOutputBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
         .Times(0);
@@ -296,7 +311,8 @@ class VideoCaptureDeviceTest
   }
 
   void WaitForCapturedFrame() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_.reset(
+        new base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed));
     run_loop_->Run();
   }
 
@@ -378,6 +394,38 @@ class VideoCaptureDeviceTest
     return true;
   }
 
+  gfx::Size GetSupportedCaptureSize(
+      const VideoCaptureDeviceDescriptor& device) {
+    VideoCaptureFormats supported_formats;
+    video_capture_device_factory_->GetSupportedFormats(device,
+                                                       &supported_formats);
+    if (supported_formats.size() == 0)
+      return gfx::Size(0, 0);
+
+    return supported_formats.begin()->frame_size;
+  }
+
+  void RunTestCase(base::OnceClosure test_case) {
+#if defined(OS_MACOSX)
+    // In order to make the test case run on the actual message loop that has
+    // been created for this thread, we need to run it inside a RunLoop. This is
+    // required, because on MacOS the capture code must run on a CFRunLoop
+    // enabled message loop.
+    base::RunLoop run_loop;
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, base::OnceClosure* test_case) {
+              std::move(*test_case).Run();
+              run_loop->Quit();
+            },
+            &run_loop, &test_case));
+    run_loop.Run();
+#else
+    std::move(test_case).Run();
+#endif
+  }
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
@@ -403,6 +451,11 @@ class VideoCaptureDeviceTest
 #endif
 // Tries to allocate an invalid device and verifies it doesn't work.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
+  RunTestCase(
+      base::BindOnce(&VideoCaptureDeviceTest::RunOpenInvalidDeviceTestCase,
+                     base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunOpenInvalidDeviceTestCase() {
   VideoCaptureDeviceDescriptor invalid_descriptor;
   invalid_descriptor.device_id = "jibberish";
   invalid_descriptor.set_display_name("jibberish");
@@ -442,6 +495,11 @@ TEST(VideoCaptureDeviceDescriptor, RemoveTrailingWhitespaceFromDisplayName) {
 
 // Allocates the first enumerated device, and expects a frame.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
+  RunTestCase(
+      base::BindOnce(&VideoCaptureDeviceTest::RunCaptureWithSizeTestCase,
+                     base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunCaptureWithSizeTestCase() {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
     return;
@@ -492,6 +550,11 @@ INSTANTIATE_TEST_CASE_P(
 // Allocates a device with an uncommon resolution and verifies frames are
 // captured in a close, much more typical one.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
+  RunTestCase(
+      base::BindOnce(&VideoCaptureDeviceTest::RunAllocateBadSizeTestCase,
+                     base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunAllocateBadSizeTestCase() {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
     return;
@@ -519,6 +582,11 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
 
 // Cause hangs on Windows, Linux. Fails Android. https://crbug.com/417824
 WRAPPED_TEST_P(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
+  RunTestCase(
+      base::BindOnce(&VideoCaptureDeviceTest::RunReAllocateCameraTestCase,
+                     base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunReAllocateCameraTestCase() {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
     return;
@@ -563,6 +631,10 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
 
 // Starts the camera in 720p to try and capture MJPEG format.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
+  RunTestCase(base::BindOnce(&VideoCaptureDeviceTest::RunCaptureMjpegTestCase,
+                             base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
   std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
       GetFirstDeviceDescriptorSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
   if (!device_descriptor) {
@@ -600,6 +672,11 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
 }
 
 WRAPPED_TEST_P(VideoCaptureDeviceTest, NoCameraSupportsPixelFormatMax) {
+  RunTestCase(base::BindOnce(
+      &VideoCaptureDeviceTest::RunNoCameraSupportsPixelFormatMaxTestCase,
+      base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunNoCameraSupportsPixelFormatMaxTestCase() {
   // Use PIXEL_FORMAT_MAX to iterate all device names for testing
   // GetDeviceSupportedFormats().
   std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
@@ -612,8 +689,16 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, NoCameraSupportsPixelFormatMax) {
 // Starts the camera and verifies that a photo can be taken. The correctness of
 // the photo is enforced by MockImageCaptureClient.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
+  RunTestCase(base::BindOnce(&VideoCaptureDeviceTest::RunTakePhotoTestCase,
+                             base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunTakePhotoTestCase() {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
+    return;
+
+  const gfx::Size frame_size = GetSupportedCaptureSize(*descriptor);
+  if (frame_size == gfx::Size(0, 0))
     return;
 
 #if defined(OS_ANDROID)
@@ -629,10 +714,10 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _, _)).Times(0);
-  EXPECT_CALL(*video_capture_client_, OnStarted());
+  EXPECT_CALL(*video_capture_client_, OnStarted()).Times(testing::AtLeast(1));
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(320, 240);
+  capture_params.requested_format.frame_size = frame_size;
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));
@@ -640,7 +725,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   VideoCaptureDevice::TakePhotoCallback scoped_callback = base::BindOnce(
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken())
       .Times(1)
@@ -654,8 +739,16 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
 
 // Starts the camera and verifies that the photo capabilities can be retrieved.
 WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
+  RunTestCase(base::BindOnce(&VideoCaptureDeviceTest::RunGetPhotoStateTestCase,
+                             base::Unretained(this)));
+}
+void VideoCaptureDeviceTest::RunGetPhotoStateTestCase() {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
+    return;
+
+  const gfx::Size frame_size = GetSupportedCaptureSize(*descriptor);
+  if (frame_size == gfx::Size(0, 0))
     return;
 
 #if defined(OS_ANDROID)
@@ -674,7 +767,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(320, 240);
+  capture_params.requested_format.frame_size = frame_size;
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));
@@ -686,7 +779,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   // On Chrome OS AllocateAndStart() is asynchronous, so wait until we get the
   // first frame.
   WaitForCapturedFrame();
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState())
       .Times(1)
@@ -747,7 +840,7 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, CheckPhotoCallbackRelease) {
   VideoCaptureDevice::TakePhotoCallback scoped_callback = base::BindOnce(
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   base::RepeatingClosure quit_closure =
       BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken())

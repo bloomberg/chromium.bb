@@ -17,8 +17,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.AsyncTask;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -51,8 +51,8 @@ public class ShareIntentTest {
      */
     private static class MockChromeActivity extends ChromeTabbedActivity {
         private final Object mLock = new Object();
-        private boolean mCheckCompleted = false;
-        private ChromeActivity mActivity = null;
+        private boolean mCheckCompleted;
+        private ChromeActivity mActivity;
 
         public MockChromeActivity(ChromeActivity activity) {
             mActivity = activity;

@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "hb-private.hh"
+#include "hb.hh"
 
-#include "hb-unicode-private.hh"
-#include "hb-machinery-private.hh"
+#include "hb-unicode.hh"
+#include "hb-machinery.hh"
 
 #include "ucdn.h"
 
@@ -240,7 +240,9 @@ hb_ucdn_decompose_compatibility(hb_unicode_funcs_t *ufuncs HB_UNUSED,
 }
 
 
+#ifdef HB_USE_ATEXIT
 static void free_static_ucdn_funcs (void);
+#endif
 
 static struct hb_ucdn_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader_t<hb_ucdn_unicode_funcs_lazy_loader_t>
 {
@@ -272,6 +274,9 @@ void free_static_ucdn_funcs (void)
 #endif
 
 extern "C" HB_INTERNAL
+hb_unicode_funcs_t *
+hb_ucdn_get_unicode_funcs (void);
+
 hb_unicode_funcs_t *
 hb_ucdn_get_unicode_funcs (void)
 {

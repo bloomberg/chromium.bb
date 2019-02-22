@@ -14,7 +14,6 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -214,7 +213,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
       if (expected_batch_operations[i]->response) {
         ASSERT_EQ(expected_batch_operations[i]->response->url_list.size(),
                   batch_operations[i]->response->url_list.size());
-        for (size_t j = 0;
+        for (wtf_size_t j = 0;
              j < expected_batch_operations[i]->response->url_list.size(); ++j) {
           EXPECT_EQ(expected_batch_operations[i]->response->url_list[j],
                     batch_operations[i]->response->url_list[j]);
@@ -516,12 +515,11 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   Request* request = NewRequestFromUrl(url);
   DCHECK(request);
 
-  WebServiceWorkerResponse web_response;
-  std::vector<KURL> url_list;
-  url_list.push_back(KURL(url));
-  web_response.SetURLList(url_list);
-  web_response.SetStatusText("OK");
-  Response* response = Response::Create(GetScriptState(), web_response);
+  auto fetch_response = mojom::blink::FetchAPIResponse::New();
+  fetch_response->url_list.push_back(KURL(url));
+  fetch_response->response_type = network::mojom::FetchResponseType::kDefault;
+  fetch_response->status_text = String("OK");
+  Response* response = Response::Create(GetScriptState(), *fetch_response);
 
   Vector<mojom::blink::BatchOperationPtr> expected_delete_operations;
   {

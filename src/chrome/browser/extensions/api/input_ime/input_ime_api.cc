@@ -275,9 +275,18 @@ InputImeEventRouterFactory::~InputImeEventRouterFactory() {
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   if (!profile)
     return nullptr;
+  // The |router_map_| is keyed by the original profile.
+  // Refers to the comments in |RemoveProfile| method for the reason.
+  profile = profile->GetOriginalProfile();
   InputImeEventRouter* router = router_map_[profile];
   if (!router) {
-    router = new InputImeEventRouter(profile);
+    // The router must attach to the profile from which the extension can
+    // receive events. If |profile| has an off-the-record profile, attach the
+    // off-the-record profile. e.g. In guest mode, the extension is running with
+    // the incognito profile instead of its original profile.
+    router = new InputImeEventRouter(profile->HasOffTheRecordProfile()
+                                         ? profile->GetOffTheRecordProfile()
+                                         : profile);
     router_map_[profile] = router;
   }
   return router;
@@ -287,6 +296,10 @@ void InputImeEventRouterFactory::RemoveProfile(Profile* profile) {
   if (!profile || router_map_.empty())
     return;
   auto it = router_map_.find(profile);
+  // The routers are common between an incognito profile and its original
+  // profile, and are keyed on the original profiles.
+  // When a profile is removed, exact matching is used to ensure that the router
+  // is deleted only when the original profile is removed.
   if (it != router_map_.end() && it->first == profile) {
     delete it->second;
     router_map_.erase(it);
@@ -445,8 +458,6 @@ BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
   if (!profile)
     return nullptr;
-  if (profile->HasOffTheRecordProfile())
-    profile = profile->GetOffTheRecordProfile();
   return extensions::InputImeEventRouterFactory::GetInstance()->GetRouter(
       profile);
 }

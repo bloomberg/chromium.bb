@@ -22,7 +22,7 @@
 namespace blink {
 
 class CORE_EXPORT TestEnumOrTestEnumSequence final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   TestEnumOrTestEnumSequence();
   bool IsNull() const { return type_ == SpecificType::kNone; }

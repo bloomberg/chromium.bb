@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/optional.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -97,7 +99,12 @@ bool CastDialogView::ShouldShowCloseButton() const {
 }
 
 base::string16 CastDialogView::GetWindowTitle() const {
-  return dialog_title_;
+  // |dialog_title_| may contain the presentation URL origin which is not
+  // relevant for non-tab sources. So we override it with the default title for
+  // those sources.
+  return selected_source_ == kTabSource
+             ? dialog_title_
+             : l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE);
 }
 
 int CastDialogView::GetDialogButtons() const {
@@ -143,7 +150,9 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
 
 void CastDialogView::OnControllerInvalidated() {
   controller_ = nullptr;
-  MaybeSizeToContents();
+  // We don't call HideDialog() here because if the invalidation was caused by
+  // activating the toolbar icon in order to close the dialog, then it would
+  // cause the dialog to immediately open again.
 }
 
 void CastDialogView::ButtonPressed(views::Button* sender,
@@ -154,8 +163,8 @@ void CastDialogView::ButtonPressed(views::Button* sender,
     // SinkPressed() invokes a refresh of the sink list, which deletes the
     // sink button. So we must call this after the button is done handling the
     // press event.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&CastDialogView::SinkPressed, weak_factory_.GetWeakPtr(),
                        sender->tag()));
   }
@@ -183,6 +192,7 @@ bool CastDialogView::IsCommandIdEnabled(int command_id) const {
 void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
   selected_source_ = command_id;
   DisableUnsupportedSinks();
+  GetWidget()->UpdateWindowTitle();
   metrics_.OnCastModeSelected();
 }
 
@@ -268,6 +278,19 @@ void CastDialogView::ShowScrollView() {
 }
 
 void CastDialogView::RestoreSinkListState() {
+  if (selected_sink_index_ &&
+      selected_sink_index_.value() < sink_buttons_.size()) {
+    CastDialogSinkButton* sink_button =
+        sink_buttons_.at(selected_sink_index_.value());
+    // Focus on the sink so that the screen reader reads its label, which has
+    // likely been updated.
+    sink_button->RequestFocus();
+    // If the state became AVAILABLE, the screen reader no longer needs to read
+    // the label until the user selects a sink again.
+    if (sink_button->sink().state == UIMediaSinkState::AVAILABLE)
+      selected_sink_index_.reset();
+  }
+
   views::ScrollBar* scroll_bar =
       const_cast<views::ScrollBar*>(scroll_view_->vertical_scroll_bar());
   if (scroll_bar) {
@@ -283,8 +306,8 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
     const UIMediaSink& sink = sinks.at(i);
-    CastDialogSinkButton* sink_button = new CastDialogSinkButton(this, sink);
-    sink_button->set_tag(i);
+    CastDialogSinkButton* sink_button =
+        new CastDialogSinkButton(this, sink, /** button_tag */ i);
     sink_buttons_.push_back(sink_button);
     sink_list_view->AddChildView(sink_button);
   }
@@ -313,6 +336,10 @@ void CastDialogView::ShowSourcesMenu() {
 }
 
 void CastDialogView::SinkPressed(size_t index) {
+  if (!controller_)
+    return;
+
+  selected_sink_index_ = index;
   const UIMediaSink& sink = sink_buttons_.at(index)->sink();
   if (sink.route_id.empty()) {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
@@ -347,9 +374,7 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
 
 void CastDialogView::DisableUnsupportedSinks() {
   for (CastDialogSinkButton* sink_button : sink_buttons_) {
-    const bool enable =
-        sink_button->sink().state == UIMediaSinkState::CONNECTED ||
-        GetCastModeToUse(sink_button->sink()).has_value();
+    const bool enable = GetCastModeToUse(sink_button->sink()).has_value();
     sink_button->SetEnabled(enable);
   }
 }
@@ -357,8 +382,8 @@ void CastDialogView::DisableUnsupportedSinks() {
 void CastDialogView::RecordSinkCountWithDelay() {
   // Record the number of sinks after three seconds. This is consistent with the
   // WebUI dialog.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastDialogView::RecordSinkCount,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(3));

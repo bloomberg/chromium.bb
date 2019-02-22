@@ -28,7 +28,10 @@ class BarPlotter {
     this.scaleForYAxis_ = this.createYAxisScale_(graph, chartDimensions);
     this.xAxisGenerator_ = d3.axisBottom(this.outerBandScale_);
     this.yAxisGenerator_ = d3.axisLeft(this.scaleForYAxis_);
+    // Wrap in untransformed g tag to preserve co ordinate system of chart.
     chart.append('g')
+        .attr('class', 'xaxis')
+        .append('g')
         .call(this.xAxisGenerator_)
         .attr('transform', `translate(0, ${chartDimensions.height})`);
     this.yAxisDrawing_ = chart.append('g')
@@ -58,8 +61,11 @@ class BarPlotter {
   }
 
   createYAxisScale_(graph, chartDimensions) {
+    const maxHeight =
+        Math.round(graph.max(row => this.computeAverage_(row[this.y_])));
+    const defaultRange = 1;
     return d3.scaleLinear()
-        .domain([graph.max(row => this.computeAverage_(row[this.y_])), 0])
+        .domain([maxHeight || defaultRange, 0]).nice()
         .range([0, chartDimensions.height]);
   }
 
@@ -82,6 +88,47 @@ class BarPlotter {
     }
     return data.reduce((a, b) => a + b, 0) / data.length || 0;
   }
+
+  /**
+   * Calculates the standard error of the mean for the sample.
+   * See https://en.wikipedia.org/wiki/Standard_error.
+   * @param {Array<number>} sample The input data.
+   * @returns {number} The standard error of the mean for sample.
+   */
+  standardError_(sample) {
+    const sampleSize = sample.length;
+    if (sampleSize < 2) {
+      return 0;
+    }
+    const mean = this.computeAverage_(sample);
+    const sampleStandardDeviation = (sample) => {
+      let sum = 0;
+      for (const val of sample) {
+        sum += Math.pow((val - mean), 2);
+      }
+      return Math.sqrt(sum / (sampleSize - 1));
+    };
+    return sampleStandardDeviation(sample) / Math.sqrt(sampleSize);
+  }
+
+  statistics_(sample) {
+    const mean = this.computeAverage_(sample);
+    const se = this.standardError_(sample);
+    return {
+      mean,
+      upper: mean + se,
+      lower: mean - se,
+    };
+  }
+
+  barStart_(category, key) {
+    return this.outerBandScale_(category) + this.innerBandScale_(key);
+  }
+
+  barWidthQuantile_(category, key, quantile) {
+    return this.barStart_(category, key) +
+        this.innerBandScale_.bandwidth() * quantile;
+  }
   /**
    * Draws a bar chart to the canvas. If there are multiple dataSources it will
    * plot them both and label their colors in the legend. This expects the data
@@ -99,31 +146,102 @@ class BarPlotter {
     this.initChart_(graph, chart, chartDimensions);
     const computeAllAverages = stories =>
       stories.map(
-          ([story, rawData]) => [story, this.computeAverage_(rawData)]);
+          ([story, rawData]) => [story, this.statistics_(rawData)]);
     const dataInAverages = graph.process(computeAllAverages);
     const getClassNameSuffix = GraphUtils.getClassNameSuffixFactory();
     dataInAverages.forEach(({ data, color, key }, index) => {
-      const barStart = category =>
-        this.outerBandScale_(category) + this.innerBandScale_(key);
-      const barWidth = this.innerBandScale_.bandwidth();
-      const barHeight = value =>
-        chartDimensions.height - this.scaleForYAxis_(value);
       chart.selectAll(`.bar-${getClassNameSuffix(key)}`)
           .data(data)
           .enter()
-          .append('rect')
-          .attr('class', `.bar-${getClassNameSuffix(key)}`)
-          .attr('x', d => barStart(d[this.x_]))
-          .attr('y', d => this.scaleForYAxis_(d[this.y_]))
-          .attr('width', barWidth)
-          .attr('height', d => barHeight(d[this.y_]))
+          .call(
+              this.appendBar_.bind(this),
+              graph,
+              color,
+              key,
+              chartDimensions,
+              getClassNameSuffix)
+          .call(this.appendErrorLine_.bind(this), key)
+          .call(this.appendErrorLineCaps_.bind(this), key);
+      const boxSize = 10;
+      const offset = `${index}em`;
+      legend.append('rect')
           .attr('fill', color)
-          .on('click', d =>
-            graph.interactiveCallbackForBarPlot(d[this.x_], key));
+          .attr('height', boxSize)
+          .attr('width', boxSize)
+          .attr('y', offset)
+          .attr('x', 0);
       legend.append('text')
           .text(key)
-          .attr('y', index + 'em')
-          .attr('fill', color);
+          .attr('x', boxSize)
+          .attr('y', offset)
+          .attr('dy', boxSize)
+          .attr('text-anchor', 'start');
     });
+    const tickRotation = -30;
+    d3.select('.xaxis')
+        .attr('clip-path', 'url(#regionForXAxisTickText)')
+        .selectAll('text')
+        .attr('text-anchor', 'end')
+        .attr('font-size', 12)
+        .attr('transform', `rotate(${tickRotation})`)
+        .append('title')
+        .text(text => text);
+  }
+
+  appendBar_(
+      selection, graph, color, key, chartDimensions, getClassNameSuffix) {
+    const barWidth = this.innerBandScale_.bandwidth();
+    const barHeight = value =>
+      chartDimensions.height - this.scaleForYAxis_(value);
+    selection.append('rect')
+        .attr('class', `.bar-${getClassNameSuffix(key)}`)
+        .attr('x', d => this.barStart_(d[this.x_], key))
+        .attr('y', d => this.scaleForYAxis_(d[this.y_].mean))
+        .attr('width', barWidth)
+        .attr('height', d => barHeight(d[this.y_].mean))
+        .attr('fill', color)
+        .on('click', d =>
+          graph.interactiveCallbackForCategory(d[this.x_]))
+        .on('mouseover', function() {
+          d3.select(this).attr('opacity', 0.5);
+        })
+        .on('mouseout', function() {
+          d3.select(this).attr('opacity', 1);
+        });
+    return selection;
+  }
+
+  appendErrorLine_(selection, key) {
+    const middle = 0.5;
+    const getXPosition =
+        ([category]) => this.barWidthQuantile_(category, key, middle);
+    selection.append('line')
+        .attr('x1', getXPosition)
+        .attr('x2', getXPosition)
+        .attr('y1', ([, data]) => this.scaleForYAxis_(data.lower))
+        .attr('y2', ([, data]) => this.scaleForYAxis_(data.upper))
+        .attr('stroke-width', 2)
+        .attr('stroke', 'black');
+    return selection;
+  }
+
+  appendErrorLineCaps_(selection, key) {
+    const quarter = 0.25;
+    const upperQuarter = 0.75;
+    const getXPosition = (category, quantile) =>
+      this.barWidthQuantile_(category, key, quantile);
+    const appendLine = (selection, error) => {
+      selection.append('line')
+          .attr('x1', ([category]) => getXPosition(category, quarter))
+          .attr('x2', ([category]) => getXPosition(category, upperQuarter))
+          .attr('y1', ([, data]) => this.scaleForYAxis_(data[error]))
+          .attr('y2', ([, data]) => this.scaleForYAxis_(data[error]))
+          .attr('stroke-width', 2)
+          .attr('stroke', 'black');
+      return selection;
+    };
+    return selection
+        .call(appendLine.bind(this), 'upper')
+        .call(appendLine.bind(this), 'lower');
   }
 }

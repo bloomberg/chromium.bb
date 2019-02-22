@@ -57,6 +57,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     virtual void OnGpuServiceConnection(GpuServiceImpl* gpu_service) = 0;
     virtual void PostCompositorThreadCreated(
         base::SingleThreadTaskRunner* task_runner) = 0;
+    virtual void QuitMainMessageLoop() = 0;
   };
 
   struct ExternalDependencies {
@@ -77,8 +78,6 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     DISALLOW_COPY_AND_ASSIGN(ExternalDependencies);
   };
 
-  // TODO(kylechar): Provide a quit closure for the appropriate RunLoop instance
-  // to stop the thread and remove base::RunLoop::QuitCurrentDeprecated() usage.
   VizMainImpl(Delegate* delegate,
               ExternalDependencies dependencies,
               std::unique_ptr<gpu::GpuInit> gpu_init = nullptr);
@@ -110,14 +109,14 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     return discardable_shared_memory_manager_.get();
   }
 
+  // Cleanly exits the process.
+  void ExitProcess();
+
  private:
   // Initializes GPU's UkmRecorder if GPU is running in it's own process.
   void CreateUkmRecorderIfNeeded(service_manager::Connector* connector);
 
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);
-
-  // Cleanly exits the process.
-  void ExitProcess();
 
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;

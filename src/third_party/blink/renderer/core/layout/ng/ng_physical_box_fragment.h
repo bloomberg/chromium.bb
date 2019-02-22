@@ -13,6 +13,7 @@
 
 namespace blink {
 
+enum class NGOutlineType;
 class CORE_EXPORT NGPhysicalBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
@@ -24,9 +25,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         Vector<NGLink>& children,
                         const NGPhysicalBoxStrut& border,
                         const NGPhysicalBoxStrut& padding,
-                        const NGPhysicalOffsetRect& contents_ink_overflow,
                         Vector<NGBaseline>& baselines,
                         NGBoxType box_type,
+                        bool is_fieldset_container,
+                        bool is_rendered_legend,
                         bool is_old_layout_root,
                         unsigned,  // NGBorderEdges::Physical
                         scoped_refptr<NGBreakToken> break_token = nullptr);
@@ -48,6 +50,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // overflow clip; i.e., AllowOverflowClip() returns false.
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
+  bool HasControlClip() const;
 
   NGPhysicalOffsetRect ScrollableOverflow() const;
 
@@ -67,8 +70,16 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // Ink overflow including contents, in the local coordinates.
   NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
 
-  void AddSelfOutlineRects(Vector<LayoutRect>*,
-                           const LayoutPoint& additional_offset) const;
+  // Ink overflow of children in local coordinates.
+  NGPhysicalOffsetRect ContentsInkOverflow() const;
+
+  NGPhysicalOffsetRect ComputeContentsInkOverflow() const;
+
+  // Fragment offset is this fragment's offset from parent.
+  // Needed to compensate for LayoutInline Legacy code offsets.
+  void AddSelfOutlineRects(Vector<LayoutRect>* outline_rects,
+                           const LayoutPoint& additional_offset,
+                           NGOutlineType include_block_overflows) const;
 
   UBiDiLevel BidiLevel() const override;
 
@@ -81,11 +92,14 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGPhysicalOffsetRect descendant_outlines_;
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->Type() == NGPhysicalFragment::kFragmentBox,
-                  fragment.Type() == NGPhysicalFragment::kFragmentBox);
+DEFINE_TYPE_CASTS(
+    NGPhysicalBoxFragment,
+    NGPhysicalFragment,
+    fragment,
+    (fragment->Type() == NGPhysicalFragment::kFragmentBox ||
+     fragment->Type() == NGPhysicalFragment::kFragmentRenderedLegend),
+    (fragment.Type() == NGPhysicalFragment::kFragmentBox ||
+     fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend));
 
 }  // namespace blink
 

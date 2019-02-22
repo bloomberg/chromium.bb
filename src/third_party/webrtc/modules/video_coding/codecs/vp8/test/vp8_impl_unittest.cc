@@ -15,12 +15,20 @@
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/video_coding/codecs/test/video_codec_unittest.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
-#include "modules/video_coding/codecs/vp8/temporal_layers.h"
+#include "modules/video_coding/codecs/vp8/include/vp8_temporal_layers.h"
+#include "modules/video_coding/codecs/vp8/libvpx_vp8_encoder.h"
+#include "modules/video_coding/codecs/vp8/test/mock_libvpx_interface.h"
+#include "modules/video_coding/include/mock/mock_video_codec_interface.h"
 #include "modules/video_coding/utility/vp8_header_parser.h"
 #include "rtc_base/timeutils.h"
 #include "test/video_codec_settings.h"
 
 namespace webrtc {
+
+using testing::Invoke;
+using testing::NiceMock;
+using testing::Return;
+using testing::_;
 
 namespace {
 constexpr uint32_t kInitialTimestampRtp = 123;
@@ -70,7 +78,7 @@ class TestVp8Impl : public VideoCodecUnitTest {
     VerifyQpParser(*encoded_frame);
     EXPECT_STREQ("libvpx", codec_specific_info->codec_name);
     EXPECT_EQ(kVideoCodecVP8, codec_specific_info->codecType);
-    EXPECT_EQ(0u, codec_specific_info->codecSpecific.VP8.simulcastIdx);
+    EXPECT_EQ(0, encoded_frame->SpatialIndex());
   }
 
   void EncodeAndExpectFrameWith(const VideoFrame& input_frame,
@@ -378,6 +386,43 @@ TEST_F(TestVp8Impl, DontDropKeyframes) {
   EncodeAndExpectFrameWith(*NextInputFrame(), 0, true);
   EncodeAndExpectFrameWith(*NextInputFrame(), 0, true);
   EncodeAndExpectFrameWith(*NextInputFrame(), 0, true);
+}
+
+TEST_F(TestVp8Impl, KeepsTimestampOnReencode) {
+  auto* const vpx = new NiceMock<MockLibvpxVp8Interface>();
+  LibvpxVp8Encoder encoder((std::unique_ptr<LibvpxInterface>(vpx)));
+
+  // Settings needed to trigger ScreenshareLayers usage, which is required for
+  // overshoot-drop-reencode logic.
+  codec_settings_.targetBitrate = 200;
+  codec_settings_.maxBitrate = 1000;
+  codec_settings_.mode = VideoCodecMode::kScreensharing;
+  codec_settings_.VP8()->numberOfTemporalLayers = 2;
+
+  EXPECT_CALL(*vpx, img_wrap(_, _, _, _, _, _))
+      .WillOnce(Invoke([](vpx_image_t* img, vpx_img_fmt_t fmt, unsigned int d_w,
+                          unsigned int d_h, unsigned int stride_align,
+                          unsigned char* img_data) {
+        img->fmt = fmt;
+        img->d_w = d_w;
+        img->d_h = d_h;
+        img->img_data = img_data;
+        return img;
+      }));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            encoder.InitEncode(&codec_settings_, 1, 1000));
+  MockEncodedImageCallback callback;
+  encoder.RegisterEncodeCompleteCallback(&callback);
+
+  // Simulate overshoot drop, re-encode: encode function will be called twice
+  // with the same parameters. codec_get_cx_data() will by default return no
+  // image data and be interpreted as drop.
+  EXPECT_CALL(*vpx, codec_encode(_, _, /* pts = */ 0, _, _, _))
+      .Times(2)
+      .WillRepeatedly(Return(vpx_codec_err_t::VPX_CODEC_OK));
+
+  auto delta_frame = std::vector<FrameType>{kVideoFrameDelta};
+  encoder.Encode(*NextInputFrame(), nullptr, &delta_frame);
 }
 
 }  // namespace webrtc

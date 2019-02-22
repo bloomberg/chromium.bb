@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "net/dns/dns_client.h"
-#include "net/dns/dns_config_service.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_protocol.h"
 
 namespace net {

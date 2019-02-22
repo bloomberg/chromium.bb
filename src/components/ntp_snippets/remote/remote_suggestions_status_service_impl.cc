@@ -112,15 +112,12 @@ bool RemoteSuggestionsStatusServiceImpl::IsExplicitlyDisabled() const {
     return true;
   }
 
-  if (base::FeatureList::IsEnabled(
-          ntp_snippets::kArticleSuggestionsExpandableHeader) &&
-      !list_visible_during_session_) {
+  if (!list_visible_during_session_) {
     DVLOG(1) << "[GetStatusFromDeps] Disabled because articles list hidden.";
     return true;
   }
 
-  // |additional_toggle_pref_| will always be empty when
-  // kArticleSuggestionsExpandableHeader is enabled.
+  // |additional_toggle_pref_| will always be empty on Android.
   if (!additional_toggle_pref_.empty()) {
     if (!pref_service_->GetBoolean(additional_toggle_pref_)) {
       DVLOG(1) << "[GetStatusFromDeps] Disabled via additional pref";

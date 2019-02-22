@@ -37,7 +37,8 @@
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -67,6 +68,7 @@ class ResourceRequest;
 class SecurityOrigin;
 class SecurityPolicyViolationEventInit;
 class SourceLocation;
+enum class ResourceType : uint8_t;
 
 typedef int SandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
@@ -107,10 +109,14 @@ class CORE_EXPORT ContentSecurityPolicy
     kReportTo,
     kReportURI,
     kRequireSRIFor,
-    kRequireTrustedTypes,
+    kTrustedTypes,
     kSandbox,
     kScriptSrc,
+    kScriptSrcAttr,
+    kScriptSrcElem,
     kStyleSrc,
+    kStyleSrcAttr,
+    kStyleSrcElem,
     kTreatAsPublicAddress,
     kUndefined,
     kUpgradeInsecureRequests,
@@ -249,6 +255,7 @@ class CORE_EXPORT ContentSecurityPolicy
                     RedirectStatus = RedirectStatus::kNoRedirect,
                     SecurityViolationReportingPolicy =
                         SecurityViolationReportingPolicy::kReport) const;
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
   bool AllowWorkerContextFromSource(
       const KURL&,
       RedirectStatus = RedirectStatus::kNoRedirect,
@@ -310,14 +317,14 @@ class CORE_EXPORT ContentSecurityPolicy
   bool IsFrameAncestorsEnforced() const;
 
   bool AllowRequestWithoutIntegrity(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       RedirectStatus = RedirectStatus::kNoRedirect,
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
-  bool AllowRequest(WebURLRequest::RequestContext,
+  bool AllowRequest(mojom::RequestContextType,
                     const KURL&,
                     const String& nonce,
                     const IntegrityMetadataSet&,
@@ -412,7 +419,7 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool ExperimentalFeaturesEnabled() const;
 
-  bool ShouldSendCSPHeader(Resource::Type) const;
+  bool ShouldSendCSPHeader(ResourceType) const;
 
   CSPSource* GetSelfSource() const { return self_source_; }
 
@@ -463,6 +470,23 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool HasPolicyFromSource(ContentSecurityPolicyHeaderSource) const;
 
+  static bool IsScriptDirective(
+      ContentSecurityPolicy::DirectiveType directive_type) {
+    return (
+        directive_type == ContentSecurityPolicy::DirectiveType::kScriptSrc ||
+        directive_type ==
+            ContentSecurityPolicy::DirectiveType::kScriptSrcAttr ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
+  }
+
+  static bool IsStyleDirective(
+      ContentSecurityPolicy::DirectiveType directive_type) {
+    return (
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrc ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcAttr ||
+        directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
@@ -495,7 +519,7 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static void FillInCSPHashValues(const String& source,
                                   uint8_t hash_algorithms_used,
-                                  Vector<CSPHashValue>& csp_hash_values);
+                                  Vector<CSPHashValue>* csp_hash_values);
 
   // checks a vector of csp hashes against policy, probably a good idea
   // to use in tandem with FillInCSPHashValues.
@@ -535,4 +559,4 @@ class CORE_EXPORT ContentSecurityPolicy
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CONTENT_SECURITY_POLICY_H_

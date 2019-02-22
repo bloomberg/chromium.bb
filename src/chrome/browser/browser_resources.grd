@@ -61,6 +61,35 @@
         <structure name="IDR_DICE_WELCOME_BROWSER_PROXY_JS" file="resources\welcome\dice_welcome\welcome_browser_proxy.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_HTML" file="resources\welcome\dice_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_DICE_WELCOME_APP_JS" file="resources\welcome\dice_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML" file="resources\welcome\onboarding_welcome\landing_view.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS" file="resources\welcome\onboarding_welcome\landing_view.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_HTML" file="resources\welcome\onboarding_welcome\navigation_behavior.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_JS" file="resources\welcome\onboarding_welcome\navigation_behavior.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML" file="resources\welcome\onboarding_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS" file="resources\welcome\onboarding_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_HTML" file="resources\welcome\onboarding_welcome\welcome_browser_proxy.html" type="chrome_html"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS" file="resources\welcome\onboarding_welcome\welcome_browser_proxy.js" type="chrome_html"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS" file="resources\welcome\onboarding_welcome\welcome.css" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML" file="resources\welcome\onboarding_welcome\welcome.html" type="chrome_html" preprocess="true"/>
+         <!-- NUX files -->
+        <structure name="IDR_NUX_EMAIL_CHOOSER_HTML" file="resources\welcome\onboarding_welcome\email\email_chooser.html" type="chrome_html" />
+        <structure name="IDR_NUX_EMAIL_CHOOSER_JS" file="resources\welcome\onboarding_welcome\email\email_chooser.js" type="chrome_html" />
+        <structure name="IDR_NUX_EMAIL_HTML" file="resources\welcome\onboarding_welcome\email\nux_email.html" type="chrome_html" />
+        <structure name="IDR_NUX_EMAIL_JS" file="resources\welcome\onboarding_welcome\email\nux_email.js" type="chrome_html" />
+        <structure name="IDR_NUX_EMAIL_PROXY_HTML" file="resources\welcome\onboarding_welcome\email\nux_email_proxy.html" type="chrome_html" />
+        <structure name="IDR_NUX_EMAIL_PROXY_JS" file="resources\welcome\onboarding_welcome\email\nux_email_proxy.js" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_HTML" file="resources\welcome\onboarding_welcome\google_apps\nux_google_apps.html" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_JS" file="resources\welcome\onboarding_welcome\google_apps\nux_google_apps.js" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_PROXY_HTML" file="resources\welcome\onboarding_welcome\google_apps\nux_google_apps_proxy.html" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_PROXY_JS" file="resources\welcome\onboarding_welcome\google_apps\nux_google_apps_proxy.js" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_CHOOSER_HTML" file="resources\welcome\onboarding_welcome\google_apps\apps_chooser.html" type="chrome_html" />
+        <structure name="IDR_NUX_GOOGLE_APPS_CHOOSER_JS" file="resources\welcome\onboarding_welcome\google_apps\apps_chooser.js" type="chrome_html" />
+        <structure name="IDR_NUX_SET_AS_DEFAULT_HTML" file="resources\welcome\onboarding_welcome\set_as_default\nux_set_as_default.html" type="chrome_html" />
+        <structure name="IDR_NUX_SET_AS_DEFAULT_JS" file="resources\welcome\onboarding_welcome\set_as_default\nux_set_as_default.js" type="chrome_html" />
+        <structure name="IDR_NUX_SET_AS_DEFAULT_PROXY_HTML" file="resources\welcome\onboarding_welcome\set_as_default\nux_set_as_default_proxy.html" type="chrome_html" />
+        <structure name="IDR_NUX_SET_AS_DEFAULT_PROXY_JS" file="resources\welcome\onboarding_welcome\set_as_default\nux_set_as_default_proxy.js" type="chrome_html" />
+        <structure name="IDR_NUX_CHOOSER_SHARED_CSS" file="resources\welcome\onboarding_welcome\shared\chooser_shared_css.html" type="chrome_html" />
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML" file="resources\welcome\onboarding_welcome\shared\i18n_setup.html" type="chrome_html" />
       </if>
       <if expr="is_win">
         <structure name="IDR_WELCOME_WIN10_CSS" file="resources\welcome\welcome_win10.css" type="chrome_html" />
@@ -70,11 +99,20 @@
     </structures>
     <includes>
       <if expr="is_win or is_macosx or desktop_linux or chromeos">
-        <include name="IDR_ABOUT_DISCARDS_CSS" file="resources\discards\discards.css" type="BINDATA" />
-        <include name="IDR_ABOUT_DISCARDS_HTML" file="resources\discards\discards.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
-        <include name="IDR_ABOUT_DISCARDS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_ABOUT_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_DATABASE_TAB_HTML" file="resources\discards\database_tab.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DATABASE_TAB_JS" file="resources\discards\database_tab.js" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_MAIN_HTML" file="resources\discards\discards_main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_MAIN_JS" file="resources\discards\discards_main.js" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_TAB_HTML" file="resources\discards\discards_tab.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_TAB_JS" file="resources\discards\discards_tab.js" type="BINDATA" />
+        <include name="IDR_DISCARDS_HTML" file="resources\discards\discards.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
+        <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML" file="resources\discards\sorted_table_behavior.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" type="BINDATA" />
+        <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS" file="${root_gen_dir}\services\resource_coordinator\public\mojom\webui_graph_dump.mojom.js" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
@@ -225,8 +263,6 @@
             <include name="IDR_MD_BOOKMARKS_DEBOUNCER_JS" file="resources\md_bookmarks\debouncer.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML" file="resources\md_bookmarks\dialog_focus_manager.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS" file="resources\md_bookmarks\dialog_focus_manager.js" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_DND_CHIP_HTML" file="resources\md_bookmarks\dnd_chip.html" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_DND_CHIP_JS" file="resources\md_bookmarks\dnd_chip.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DND_MANAGER_HTML" file="resources\md_bookmarks\dnd_manager.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DND_MANAGER_JS" file="resources\md_bookmarks\dnd_manager.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\md_bookmarks\edit_dialog.html" type="BINDATA" />
@@ -398,6 +434,9 @@
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA" compress="gzip" />
       <include name="IDR_POLICY_COMMON_CSS" file="resources\policy_common.css" type="BINDATA" compress="gzip" />
       <if expr="not is_android">
+        <include name="IDR_MANAGEMENT_HTML" file="resources\management\management.html" allowexternalscript="true" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_JS" file="resources\management\management.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_CSS" file="resources\management\management.css" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_HTML" file="resources\policy_tool.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_CSS" file="resources\policy_tool.css" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_JS" file="resources\policy_tool.js" type="BINDATA" compress="gzip" />
@@ -649,6 +688,30 @@
       <include name="IDR_NACL_LOADER_MANIFEST" file="../../components/nacl/loader/nacl_loader_manifest.json" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_NACL_BROKER_MANIFEST" file="../../components/nacl/broker/nacl_broker_manifest.json" type="BINDATA" />
+      </if>
+      <if expr="not is_android and not chromeos">
+        <include name="IDR_NUX_EMAIL_AOL_1X" file="resources\welcome\onboarding_welcome\images\aol_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_AOL_2X" file="resources\welcome\onboarding_welcome\images\aol_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_GMAIL_1X" file="resources\welcome\onboarding_welcome\images\gmail_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_GMAIL_2X" file="resources\welcome\onboarding_welcome\images\gmail_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_ICLOUD_1X" file="resources\welcome\onboarding_welcome\images\icloud_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_ICLOUD_2X" file="resources\welcome\onboarding_welcome\images\icloud_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_OUTLOOK_1X" file="resources\welcome\onboarding_welcome\images\outlook_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_OUTLOOK_2X" file="resources\welcome\onboarding_welcome\images\outlook_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_YAHOO_1X" file="resources\welcome\onboarding_welcome\images\yahoo_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_YAHOO_2X" file="resources\welcome\onboarding_welcome\images\yahoo_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="resources\welcome\onboarding_welcome\images\chrome_store_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X" file="resources\welcome\onboarding_welcome\images\chrome_store_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_LOGO_1X" file="resources\welcome\onboarding_welcome\images\google_apps_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_LOGO_2X" file="resources\welcome\onboarding_welcome\images\google_apps_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X" file="resources\welcome\onboarding_welcome\images\maps_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X" file="resources\welcome\onboarding_welcome\images\maps_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X" file="resources\welcome\onboarding_welcome\images\news_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_NEWS_2X" file="resources\welcome\onboarding_welcome\images\news_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_1X" file="resources\welcome\onboarding_welcome\images\translate_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="resources\welcome\onboarding_welcome\images\translate_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="resources\welcome\onboarding_welcome\images\youtube_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="resources\welcome\onboarding_welcome\images\youtube_2x.png" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_WELCOME_WIN10_DEFAULT_WEBP" file="resources\welcome\default.webp" type="BINDATA" />

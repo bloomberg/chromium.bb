@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -20,6 +21,8 @@ class ImageSkia;
 }  // namespace gfx
 
 class Profile;
+
+namespace crostini {
 
 // Enables/disables overriding IsCrostiniUIAllowedForProfile's normal
 // behaviour and returning true instead.
@@ -74,7 +77,11 @@ std::string CryptohomeIdForProfile(Profile* profile);
 std::string ContainerUserNameForProfile(Profile* profile);
 
 // Returns the home directory within the container for a given profile.
-base::FilePath HomeDirectoryForProfile(Profile* profile);
+base::FilePath ContainerHomeDirectoryForProfile(Profile* profile);
+
+// Returns the mount directory within the container where paths from the Chrome
+// OS host such as within Downloads are shared with the container.
+base::FilePath ContainerChromeOSBaseDirectory();
 
 // The Terminal opens Crosh but overrides the Browser's app_name so that we can
 // identify it as the Crostini Terminal. In the future, we will also use these
@@ -111,9 +118,14 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 // In order to be compatible with sync folder id must match standard.
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
+constexpr char kCrostiniDefaultImageServerUrl[] =
+    "https://storage.googleapis.com/cros-containers";
+constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 
 // Whether running Crostini is allowed for unaffiliated users per enterprise
 // policy.
 bool IsUnaffiliatedCrostiniAllowedByPolicy();
+
+}  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_

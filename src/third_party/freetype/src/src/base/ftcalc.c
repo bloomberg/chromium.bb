@@ -65,7 +65,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_calc
+#define FT_COMPONENT  calc
 
 
   /* transfer sign, leaving a positive number;                        */
@@ -701,8 +701,8 @@
     if ( !delta )
       return FT_THROW( Invalid_Argument );  /* matrix can't be inverted */
 
-    matrix->xy = - FT_DivFix( matrix->xy, delta );
-    matrix->yx = - FT_DivFix( matrix->yx, delta );
+    matrix->xy = -FT_DivFix( matrix->xy, delta );
+    matrix->yx = -FT_DivFix( matrix->yx, delta );
 
     xx = matrix->xx;
     yy = matrix->yy;
@@ -783,6 +783,10 @@
       if ( val[i] && val[i] < nonzero_minval )
         nonzero_minval = val[i];
     }
+
+    /* we only handle 32bit values */
+    if ( maxval > 0x7FFFFFFFL )
+      return 0;
 
     if ( maxval > 23170 )
     {
@@ -979,9 +983,13 @@
                          FT_Pos  out_x,
                          FT_Pos  out_y )
   {
+    /* we silently ignore overflow errors since such large values */
+    /* lead to even more (harmless) rendering errors later on     */
+
 #ifdef FT_LONG64
 
-    FT_Int64  delta = (FT_Int64)in_x * out_y - (FT_Int64)in_y * out_x;
+    FT_Int64  delta = SUB_INT64( MUL_INT64( in_x, out_y ),
+                                 MUL_INT64( in_y, out_x ) );
 
 
     return ( delta > 0 ) - ( delta < 0 );
@@ -991,8 +999,6 @@
     FT_Int  result;
 
 
-    /* we silently ignore overflow errors, since such large values */
-    /* lead to even more (harmless) rendering errors later on      */
     if ( ADD_LONG( FT_ABS( in_x ), FT_ABS( out_y ) ) <= 131071L &&
          ADD_LONG( FT_ABS( in_y ), FT_ABS( out_x ) ) <= 131071L )
     {

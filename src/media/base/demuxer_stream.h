@@ -27,6 +27,9 @@ class MEDIA_EXPORT DemuxerStream {
     TYPE_MAX = TEXT,
   };
 
+  // Returns a string representation of |type|.
+  static const char* GetTypeName(Type type);
+
   enum Liveness {
     LIVENESS_UNKNOWN,
     LIVENESS_RECORDED,
@@ -59,6 +62,8 @@ class MEDIA_EXPORT DemuxerStream {
     kError,
     kStatusMax = kError,
   };
+
+  static const char* GetStatusName(Status status);
 
   // Request a buffer to returned via the provided callback.
   //

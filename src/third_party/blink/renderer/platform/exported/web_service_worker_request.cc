@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -32,8 +33,8 @@ class WebServiceWorkerRequestPrivate
   mojom::FetchCacheMode cache_mode_ = mojom::FetchCacheMode::kDefault;
   network::mojom::FetchRedirectMode redirect_mode_ =
       network::mojom::FetchRedirectMode::kFollow;
-  WebURLRequest::RequestContext request_context_ =
-      WebURLRequest::kRequestContextUnspecified;
+  mojom::RequestContextType request_context_ =
+      mojom::RequestContextType::UNSPECIFIED;
   network::mojom::RequestContextFrameType frame_type_ =
       network::mojom::RequestContextFrameType::kNone;
   WebString integrity_;
@@ -42,6 +43,7 @@ class WebServiceWorkerRequestPrivate
   WebString client_id_;
   bool is_reload_ = false;
   bool is_history_navigation_ = false;
+  base::UnguessableToken window_id_;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
@@ -226,12 +228,11 @@ network::mojom::FetchRedirectMode WebServiceWorkerRequest::RedirectMode()
 }
 
 void WebServiceWorkerRequest::SetRequestContext(
-    WebURLRequest::RequestContext request_context) {
+    mojom::RequestContextType request_context) {
   private_->request_context_ = request_context;
 }
 
-WebURLRequest::RequestContext WebServiceWorkerRequest::GetRequestContext()
-    const {
+mojom::RequestContextType WebServiceWorkerRequest::GetRequestContext() const {
   return private_->request_context_;
 }
 
@@ -267,6 +268,14 @@ void WebServiceWorkerRequest::SetIsHistoryNavigation(bool b) {
 
 bool WebServiceWorkerRequest::IsHistoryNavigation() const {
   return private_->is_history_navigation_;
+}
+
+void WebServiceWorkerRequest::SetWindowId(const base::UnguessableToken& id) {
+  private_->window_id_ = id;
+}
+
+const base::UnguessableToken& WebServiceWorkerRequest::GetWindowId() const {
+  return private_->window_id_;
 }
 
 }  // namespace blink

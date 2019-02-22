@@ -25,6 +25,10 @@ class SequenceManager;
 }
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ukm {
 class UkmRecorder;
 }
@@ -53,6 +57,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
@@ -64,7 +69,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   // NonMainThreadSchedulerImpl implementation:
   scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
   void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
-                       const base::sequence_manager::TaskQueue::Task& task,
+                       const base::sequence_manager::Task& task,
                        const base::sequence_manager::TaskQueue::TaskTiming&
                            task_timing) override;
 
@@ -128,7 +133,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   void RecordTaskUkm(
       NonMainThreadTaskQueue* worker_task_queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   const WebThreadType thread_type_;
@@ -160,6 +165,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   const FrameStatus initial_frame_status_;
 
   const ukm::SourceId ukm_source_id_;
+  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);

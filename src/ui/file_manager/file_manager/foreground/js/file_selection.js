@@ -104,7 +104,7 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
  * @param {!FileOperationManager} fileOperationManager
  * @param {!ListContainer} listContainer
  * @param {!MetadataModel} metadataModel
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
@@ -133,7 +133,7 @@ function FileSelectionHandler(
   this.metadataModel_ = metadataModel;
 
   /**
-   * @private {VolumeManagerWrapper}
+   * @private {VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;

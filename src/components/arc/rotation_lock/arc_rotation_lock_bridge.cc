@@ -4,7 +4,6 @@
 
 #include "components/arc/rotation_lock/arc_rotation_lock_bridge.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/singleton.h"

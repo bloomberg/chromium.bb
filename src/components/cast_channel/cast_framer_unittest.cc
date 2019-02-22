@@ -30,7 +30,7 @@ class CastFramerTest : public testing::Test {
     cast_message_.set_payload_utf8("payload");
     ASSERT_TRUE(MessageFramer::Serialize(cast_message_, &cast_message_str_));
 
-    buffer_ = new net::GrowableIOBuffer;
+    buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
     buffer_->SetCapacity(MessageFramer::MessageHeader::max_message_size());
     framer_.reset(new MessageFramer(buffer_.get()));
   }

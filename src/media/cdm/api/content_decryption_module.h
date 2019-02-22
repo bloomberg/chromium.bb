@@ -113,6 +113,26 @@ struct Pattern {
 };
 CHECK_TYPE(Pattern, 8, 8);
 
+enum class ColorRange : uint8_t {
+  kInvalid,
+  kLimited,  // 709 color range with RGB values ranging from 16 to 235.
+  kFull,     // Full RGB color range with RGB values from 0 to 255.
+  kDerived   // Range is defined by |transfer_id| and |matrix_id|.
+};
+CHECK_TYPE(ColorRange, 1, 1);
+
+// Described in ISO 23001-8:2016, section 7. All the IDs are in the range
+// [0, 255] so 8-bit integer is sufficient. An unspecified ColorSpace should be
+// {2, 2, 2, ColorRange::kInvalid}, where value 2 means "Unspecified" for all
+// the IDs, as defined by the spec.
+struct ColorSpace {
+  uint8_t primary_id;   // 7.1 colour primaries, table 2
+  uint8_t transfer_id;  // 7.2 transfer characteristics, table 3
+  uint8_t matrix_id;    // 7.3 matrix coefficients, table 4
+  ColorRange range;
+};
+CHECK_TYPE(ColorSpace, 4, 4);
+
 // Time is defined as the number of seconds since the Epoch
 // (00:00:00 UTC, January 1, 1970), not including any added leap second.
 // Also see Time definition in spec: https://w3c.github.io/encrypted-media/#time
@@ -277,7 +297,8 @@ enum VideoCodec : uint32_t {
   kUnknownVideoCodec = 0,
   kCodecVp8,
   kCodecH264,
-  kCodecVp9
+  kCodecVp9,
+  kCodecAv1
 };
 CHECK_TYPE(VideoCodec, 4, 4);
 
@@ -295,11 +316,14 @@ enum VideoCodecProfile : uint32_t {
   kVP9Profile0,
   kVP9Profile1,
   kVP9Profile2,
-  kVP9Profile3
+  kVP9Profile3,
+  kAv1ProfileMain,
+  kAv1ProfileHigh,
+  kAv1ProfilePro
 };
 CHECK_TYPE(VideoCodecProfile, 4, 4);
 
-// Deprecated: New CDM implementations should use VideoDecoderConfig_2.
+// Deprecated: New CDM implementations should use VideoDecoderConfig_3.
 struct VideoDecoderConfig_1 {
   VideoCodec codec;
   VideoCodecProfile profile;
@@ -316,6 +340,7 @@ struct VideoDecoderConfig_1 {
 };
 CHECK_TYPE(VideoDecoderConfig_1, 28, 40);
 
+// Deprecated: New CDM implementations should use VideoDecoderConfig_3.
 // Note that this struct is organized so that sizeof(VideoDecoderConfig_2)
 // equals the sum of sizeof() all members in both 32-bit and 64-bit compiles.
 // Padding has been added to keep the fields aligned.
@@ -338,6 +363,25 @@ struct VideoDecoderConfig_2 {
   EncryptionScheme encryption_scheme;
 };
 CHECK_TYPE(VideoDecoderConfig_2, 36, 40);
+
+struct VideoDecoderConfig_3 {
+  VideoCodec codec;
+  VideoCodecProfile profile;
+  VideoFormat format;
+  ColorSpace color_space;
+
+  // Width and height of video frame immediately post-decode. Not all pixels
+  // in this region are valid.
+  Size coded_size;
+
+  // Optional byte data required to initialize video decoders, such as H.264
+  // AAVC data.
+  uint8_t* extra_data;
+  uint32_t extra_data_size;
+
+  EncryptionScheme encryption_scheme;
+};
+CHECK_TYPE(VideoDecoderConfig_3, 36, 40);
 
 enum StreamType : uint32_t { kStreamTypeAudio = 0, kStreamTypeVideo = 1 };
 CHECK_TYPE(StreamType, 4, 4);
@@ -446,7 +490,8 @@ enum HdcpVersion : uint32_t {
   kHdcpVersion1_4,
   kHdcpVersion2_0,
   kHdcpVersion2_1,
-  kHdcpVersion2_2
+  kHdcpVersion2_2,
+  kHdcpVersion2_3
 };
 CHECK_TYPE(HdcpVersion, 4, 4);
 
@@ -491,15 +536,16 @@ class CDM_CLASS_API DecryptedBlock {
   virtual ~DecryptedBlock() {}
 };
 
+enum VideoPlane : uint32_t {
+  kYPlane = 0,
+  kUPlane = 1,
+  kVPlane = 2,
+  kMaxPlanes = 3,
+};
+CHECK_TYPE(VideoPlane, 4, 4);
+
 class CDM_CLASS_API VideoFrame {
  public:
-  enum VideoPlane : uint32_t {
-    kYPlane = 0,
-    kUPlane = 1,
-    kVPlane = 2,
-    kMaxPlanes = 3,
-  };
-
   virtual void SetFormat(VideoFormat format) = 0;
   virtual VideoFormat Format() const = 0;
 
@@ -515,12 +561,31 @@ class CDM_CLASS_API VideoFrame {
   virtual void SetStride(VideoPlane plane, uint32_t stride) = 0;
   virtual uint32_t Stride(VideoPlane plane) = 0;
 
+  // Sets and gets the presentation timestamp which is in microseconds.
   virtual void SetTimestamp(int64_t timestamp) = 0;
   virtual int64_t Timestamp() const = 0;
 
  protected:
   VideoFrame() {}
   virtual ~VideoFrame() {}
+};
+
+// Represents a decoded video frame. The CDM should call the interface methods
+// to set the frame attributes. See DecryptAndDecodeFrame().
+class CDM_CLASS_API VideoFrame_2 {
+ public:
+  virtual void SetFormat(VideoFormat format) = 0;
+  virtual void SetSize(cdm::Size size) = 0;
+  virtual void SetFrameBuffer(Buffer* frame_buffer) = 0;
+  virtual void SetPlaneOffset(VideoPlane plane, uint32_t offset) = 0;
+  virtual void SetStride(VideoPlane plane, uint32_t stride) = 0;
+  // Sets the presentation timestamp which is in microseconds.
+  virtual void SetTimestamp(int64_t timestamp) = 0;
+  virtual void SetColorSpace(ColorSpace color_space) = 0;
+
+ protected:
+  VideoFrame_2() {}
+  virtual ~VideoFrame_2() {}
 };
 
 // Represents decrypted and decoded audio frames. AudioFrames can contain
@@ -1152,8 +1217,12 @@ class CDM_CLASS_API ContentDecryptionModule_11 {
                             const char* session_id,
                             uint32_t session_id_size) = 0;
 
-  // Removes any stored session data associated with this session. Will only be
-  // called for persistent sessions. The CDM must respond by calling either
+  // Removes any stored session data associated with this session. Removes all
+  // license(s) and key(s) associated with the session, whether they are in
+  // memory, persistent store, or both. For persistent session types, other
+  // session data (e.g. record of license destruction) will be cleared as
+  // defined for each session type once a release message acknowledgment is
+  // processed by UpdateSession(). The CDM must respond by calling either
   // Host::OnResolvePromise() or Host::OnRejectPromise() when the request has
   // been processed.
   virtual void RemoveSession(uint32_t promise_id,
@@ -1200,7 +1269,7 @@ class CDM_CLASS_API ContentDecryptionModule_11 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeVideoDecoder(
-      const VideoDecoderConfig_2& video_decoder_config) = 0;
+      const VideoDecoderConfig_3& video_decoder_config) = 0;
 
   // De-initializes the CDM decoder and sets it to an uninitialized state. The
   // caller can initialize the decoder again after this call to re-initialize
@@ -1229,7 +1298,7 @@ class CDM_CLASS_API ContentDecryptionModule_11 {
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
   virtual Status DecryptAndDecodeFrame(const InputBuffer_2& encrypted_buffer,
-                                       VideoFrame* video_frame) = 0;
+                                       VideoFrame_2* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
   // |audio_frames|. Upon end-of-stream, the caller should call this function

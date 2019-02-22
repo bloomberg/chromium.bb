@@ -55,19 +55,21 @@ class UpdateCheckerImpl : public UpdateChecker {
   ~UpdateCheckerImpl() override;
 
   // Overrides for UpdateChecker.
-  void CheckForUpdates(const std::string& session_id,
-                       const std::vector<std::string>& ids_checked,
-                       const IdToComponentPtrMap& components,
-                       const std::string& additional_attributes,
-                       bool enabled_component_updates,
-                       UpdateCheckCallback update_check_callback) override;
+  void CheckForUpdates(
+      const std::string& session_id,
+      const std::vector<std::string>& ids_checked,
+      const IdToComponentPtrMap& components,
+      const base::flat_map<std::string, std::string>& additional_attributes,
+      bool enabled_component_updates,
+      UpdateCheckCallback update_check_callback) override;
 
  private:
   void ReadUpdaterStateAttributes();
-  void CheckForUpdatesHelper(const std::string& session_id,
-                             const IdToComponentPtrMap& components,
-                             const std::string& additional_attributes,
-                             bool enabled_component_updates);
+  void CheckForUpdatesHelper(
+      const std::string& session_id,
+      const IdToComponentPtrMap& components,
+      const base::flat_map<std::string, std::string>& additional_attributes,
+      bool enabled_component_updates);
   void OnRequestSenderComplete(int error,
                                const std::string& response,
                                int retry_after_sec);
@@ -101,7 +103,7 @@ void UpdateCheckerImpl::CheckForUpdates(
     const std::string& session_id,
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     bool enabled_component_updates,
     UpdateCheckCallback update_check_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -136,7 +138,7 @@ void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
 void UpdateCheckerImpl::CheckForUpdatesHelper(
     const std::string& session_id,
     const IdToComponentPtrMap& components,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     bool enabled_component_updates) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

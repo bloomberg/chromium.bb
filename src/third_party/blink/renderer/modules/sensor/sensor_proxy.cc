@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -114,10 +115,11 @@ bool SensorProxy::ShouldSuspendUpdates() const {
     return true;
 
   LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
-  if (!focused_frame)
+  LocalFrame* this_frame = provider_->GetSupplementable()->GetFrame();
+
+  if (!focused_frame || !this_frame)
     return true;
 
-  LocalFrame* this_frame = provider_->GetSupplementable();
   if (focused_frame == this_frame)
     return false;
 

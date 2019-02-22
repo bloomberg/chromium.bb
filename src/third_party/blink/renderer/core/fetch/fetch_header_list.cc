@@ -108,15 +108,6 @@ bool FetchHeaderList::Get(const String& name, String& result) const {
   return found;
 }
 
-// This is going to be removed: see crbug.com/645492.
-void FetchHeaderList::GetAll(const String& name, Vector<String>& result) const {
-  result.clear();
-  auto range = header_list_.equal_range(name);
-  for (auto header = range.first; header != range.second; ++header) {
-    result.push_back(header->second);
-  }
-}
-
 bool FetchHeaderList::Has(const String& name) const {
   // https://fetch.spec.whatwg.org/#header-list-contains
   // "A header list (|list|) contains a name (|name|) if |list| contains a
@@ -126,13 +117,6 @@ bool FetchHeaderList::Has(const String& name) const {
 
 void FetchHeaderList::ClearList() {
   header_list_.clear();
-}
-
-bool FetchHeaderList::ContainsNonCORSSafelistedHeader() const {
-  return std::any_of(
-      header_list_.cbegin(), header_list_.cend(), [](const Header& header) {
-        return !CORS::IsCORSSafelistedHeader(header.first, header.second);
-      });
 }
 
 Vector<FetchHeaderList::Header> FetchHeaderList::SortAndCombine() const {

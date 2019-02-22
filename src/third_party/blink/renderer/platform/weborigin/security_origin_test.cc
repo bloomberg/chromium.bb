@@ -32,10 +32,12 @@
 
 #include <stdint.h>
 
+#include "services/network/public/mojom/cors.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -156,14 +158,9 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
     EXPECT_EQ(inputs[i].access_granted, origin->IsPotentiallyTrustworthy());
   }
 
-  // Opaque origins are not considered secure.
+  // Anonymous opaque origins are not considered secure.
   scoped_refptr<SecurityOrigin> opaque_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
-  // ... unless they are specially marked as such.
-  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-  EXPECT_TRUE(opaque_origin->IsPotentiallyTrustworthy());
-  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(false);
   EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
 }
 
@@ -244,6 +241,91 @@ TEST_F(SecurityOriginTest, CanAccess) {
         SecurityOrigin::CreateFromString(tests[i].origin2);
     EXPECT_EQ(tests[i].can_access, origin1->CanAccess(origin2.get()));
     EXPECT_EQ(tests[i].can_access, origin2->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(origin2.get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(origin2.get()));
+    EXPECT_FALSE(origin2->CanAccess(origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->CanAccess(origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin1->CanAccess(origin2->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->CanAccess(origin2->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(
+        origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(
+        origin2->DeriveNewOpaqueOrigin().get()));
+  }
+}
+
+TEST_F(SecurityOriginTest, CanAccessDetail) {
+  struct TestCase {
+    SecurityOrigin::AccessResultDomainDetail expected;
+    const char* origin1;
+    const char* domain1;
+    const char* origin2;
+    const char* domain2;
+  };
+
+  TestCase tests[] = {
+      // Actually cross-origin origins
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotSet,
+       "https://example.com", nullptr, "https://not-example.com", nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotRelevant,
+       "https://example.com", "example.com", "https://not-example.com",
+       nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotRelevant,
+       "https://example.com", nullptr, "https://not-example.com",
+       "not-example.com"},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotRelevant,
+       "https://example.com", "example.com", "https://not-example.com",
+       "not-example.com"},
+
+      // Same-origin origins
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotSet,
+       "https://example.com", nullptr, "https://example.com", nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainSetByOnlyOneOrigin,
+       "https://example.com", "example.com", "https://example.com", nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainSetByOnlyOneOrigin,
+       "https://example.com", nullptr, "https://example.com", "example.com"},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainMismatch,
+       "https://www.example.com", "www.example.com", "https://www.example.com",
+       "example.com"},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainMatchUnnecessary,
+       "https://example.com", "example.com", "https://example.com",
+       "example.com"},
+
+      // Same-origin-domain origins
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotSet,
+       "https://a.example.com", nullptr, "https://b.example.com", nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotRelevant,
+       "https://a.example.com", "example.com", "https://b.example.com",
+       nullptr},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainNotRelevant,
+       "https://a.example.com", nullptr, "https://b.example.com",
+       "example.com"},
+      {SecurityOrigin::AccessResultDomainDetail::kDomainMatchNecessary,
+       "https://a.example.com", "example.com", "https://b.example.com",
+       "example.com"},
+  };
+
+  for (TestCase test : tests) {
+    SCOPED_TRACE(testing::Message()
+                 << "\nOrigin 1: `" << test.origin1 << "` ("
+                 << (test.domain1 ? test.domain1 : "") << ") \n"
+                 << "Origin 2: `" << test.origin2 << "` ("
+                 << (test.domain2 ? test.domain2 : "") << ")\n");
+    scoped_refptr<SecurityOrigin> origin1 =
+        SecurityOrigin::CreateFromString(test.origin1);
+    if (test.domain1)
+      origin1->SetDomainFromDOM(test.domain1);
+    scoped_refptr<SecurityOrigin> origin2 =
+        SecurityOrigin::CreateFromString(test.origin2);
+    if (test.domain2)
+      origin2->SetDomainFromDOM(test.domain2);
+    SecurityOrigin::AccessResultDomainDetail detail;
+    origin1->CanAccess(origin2.get(), detail);
+    EXPECT_EQ(test.expected, detail);
+    origin2->CanAccess(origin1.get(), detail);
+    EXPECT_EQ(test.expected, detail);
   }
 }
 
@@ -267,16 +349,108 @@ TEST_F(SecurityOriginTest, CanRequest) {
   }
 }
 
-TEST_F(SecurityOriginTest, CanRequestWithWhitelistedAccess) {
+TEST_F(SecurityOriginTest, CanRequestWithAllowListedAccess) {
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://chromium.org");
   const blink::KURL url("https://example.com");
 
   EXPECT_FALSE(origin->CanRequest(url));
-  // Adding the url to the access whitelist should allow the request.
-  SecurityPolicy::AddOriginAccessAllowListEntry(*origin, "https", "example.com",
-                                                false);
+  // Adding the url to the access allowlist should allow the request.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "example.com", false,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
   EXPECT_TRUE(origin->CanRequest(url));
+}
+
+TEST_F(SecurityOriginTest, CannotRequestWithBlockListedAccess) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL allowed_url("https://test.example.com");
+  const blink::KURL blocked_url("https://example.com");
+
+  // BlockList that is more or same specificity wins.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "example.com", false,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  // Block since example.com is on the allowlist & blocklist.
+  EXPECT_FALSE(origin->CanRequest(blocked_url));
+  // Allow since *.example.com is on the allowlist but not the blocklist.
+  EXPECT_TRUE(origin->CanRequest(allowed_url));
+}
+
+TEST_F(SecurityOriginTest, CanRequestWithMoreSpecificAllowList) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL allowed_url("https://test.example.com");
+  const blink::KURL blocked_url("https://example.com");
+
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "test.example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  // Allow since test.example.com (allowlist) has a higher priority than
+  // *.example.com (blocklist).
+  EXPECT_TRUE(origin->CanRequest(allowed_url));
+  // Block since example.com isn't on the allowlist.
+  EXPECT_FALSE(origin->CanRequest(blocked_url));
+}
+
+TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL unicode_url("https://☃.net/");
+  const blink::KURL punycode_url("https://xn--n3h.net/");
+
+  // Sanity check: Origin blocked by default.
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify unicode origin can not be allowlisted.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "☃.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify punycode allowlist only affects punycode URLs.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "xn--n3h.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Clear enterprise policy allowlist.
+  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*origin);
+
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Simulate <all_urls> being in the extension permissions.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "", true,
+      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify unicode origin can not be blocklisted.
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "☃.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify punycode blocklist only affects punycode URLs.
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "xn--n3h.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
 }
 
 TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
@@ -314,6 +488,7 @@ TEST_F(SecurityOriginTest, CreateFromTuple) {
       {"https", "example.com", 444, "https://example.com:444"},
       {"file", "", 0, "file://"},
       {"file", "example.com", 0, "file://"},
+      {"gopher", "Foo.com", 70, "gopher://foo.com"},
   };
 
   for (const auto& test : cases) {
@@ -396,12 +571,18 @@ TEST_F(SecurityOriginTest, CanonicalizeHost) {
 }
 
 TEST_F(SecurityOriginTest, UrlOriginConversions) {
+  url::AddLocalScheme("nonstandard-but-local");
+  SchemeRegistry::RegisterURLSchemeAsLocal("nonstandard-but-local");
   struct TestCases {
     const char* const url;
     const char* const scheme;
     const char* const host;
     uint16_t port;
+    bool opaque = false;
   } cases[] = {
+      // Nonstandard scheme registered as local scheme
+      {"nonstandard-but-local:really?really", "nonstandard-but-local", "", 0},
+
       // IP Addresses
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
       {"http://[2001:db8::1]/", "http", "[2001:db8::1]", 80},
@@ -419,6 +600,11 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
       {"http://example.com:123/?query", "http", "example.com", 123},
       {"https://example.com/#1234", "https", "example.com", 443},
       {"https://u:p@example.com:123/?query#1234", "https", "example.com", 123},
+
+      // Nonstandard schemes.
+      {"unrecognized-scheme://localhost/", "", "", 0, true},
+      {"mailto:localhost/", "", "", 0, true},
+      {"about:blank", "", "", 0, true},
 
       // Registered URLs
       {"ftp://example.com/", "ftp", "example.com", 21},
@@ -444,22 +630,67 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
        123},
       {"blob:https://example.com/guid-goes-here", "https", "example.com", 443},
       {"blob:http://u:p@example.com/guid-goes-here", "http", "example.com", 80},
+
+      // Gopher:
+      {"gopher://8u.9.Vx6/", "gopher", "8u.9.vx6", 70},
   };
 
   for (const auto& test_case : cases) {
-    url::Origin url_origin1 = url::Origin::Create(GURL(test_case.url));
+    SCOPED_TRACE(test_case.url);
+    GURL gurl(test_case.url);
+    KURL kurl(String::FromUTF8(test_case.url));
+    EXPECT_TRUE(gurl.is_valid());
+    EXPECT_TRUE(kurl.IsValid());
+    url::Origin origin_via_gurl = url::Origin::Create(gurl);
+    scoped_refptr<const SecurityOrigin> security_origin_via_kurl =
+        SecurityOrigin::Create(kurl);
+    EXPECT_EQ(origin_via_gurl.scheme(), test_case.scheme);
 
     // Test CreateFromUrlOrigin
-    scoped_refptr<const SecurityOrigin> security_origin =
-        SecurityOrigin::CreateFromUrlOrigin(url_origin1);
-    EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
-        SecurityOrigin::Create(test_case.scheme, test_case.host, test_case.port)
-            .get()));
+    scoped_refptr<const SecurityOrigin> security_origin_via_gurl =
+        SecurityOrigin::CreateFromUrlOrigin(origin_via_gurl);
+    EXPECT_EQ(test_case.scheme, security_origin_via_gurl->Protocol());
+    EXPECT_EQ(test_case.scheme, security_origin_via_kurl->Protocol());
+    EXPECT_EQ(test_case.host, security_origin_via_gurl->Host());
+    EXPECT_EQ(test_case.host, security_origin_via_kurl->Host());
+    EXPECT_EQ(security_origin_via_gurl->Port(),
+              security_origin_via_kurl->Port());
+    EXPECT_EQ(test_case.port, security_origin_via_gurl->EffectivePort());
+    EXPECT_EQ(test_case.port, security_origin_via_kurl->EffectivePort());
+    EXPECT_EQ(test_case.opaque, security_origin_via_gurl->IsOpaque());
+    EXPECT_EQ(test_case.opaque, security_origin_via_kurl->IsOpaque());
+    EXPECT_EQ(!test_case.opaque, security_origin_via_kurl->IsSameSchemeHostPort(
+                                     security_origin_via_gurl.get()));
+    EXPECT_EQ(!test_case.opaque, security_origin_via_gurl->IsSameSchemeHostPort(
+                                     security_origin_via_kurl.get()));
+
+    if (!test_case.opaque) {
+      scoped_refptr<const SecurityOrigin> security_origin =
+          SecurityOrigin::Create(test_case.scheme, test_case.host,
+                                 test_case.port);
+      EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
+          security_origin_via_gurl.get()));
+      EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
+          security_origin_via_kurl.get()));
+      EXPECT_TRUE(security_origin_via_gurl->IsSameSchemeHostPort(
+          security_origin.get()));
+      EXPECT_TRUE(security_origin_via_kurl->IsSameSchemeHostPort(
+          security_origin.get()));
+    }
 
     // Test ToUrlOrigin
-    url::Origin url_origin2 = security_origin->ToUrlOrigin();
-    EXPECT_TRUE(url_origin1.IsSameOriginWith(url_origin2))
-        << test_case.url << " : " << url_origin2.Serialize();
+    url::Origin origin_roundtrip_via_kurl =
+        security_origin_via_kurl->ToUrlOrigin();
+    url::Origin origin_roundtrip_via_gurl =
+        security_origin_via_gurl->ToUrlOrigin();
+
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_kurl.opaque());
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_gurl.opaque());
+    EXPECT_EQ(origin_roundtrip_via_gurl, origin_via_gurl);
+    if (!test_case.opaque) {
+      EXPECT_EQ(origin_via_gurl, origin_roundtrip_via_kurl);
+      EXPECT_EQ(origin_roundtrip_via_kurl, origin_roundtrip_via_gurl);
+    }
   }
 }
 
@@ -535,6 +766,23 @@ TEST_F(SecurityOriginTest, ToTokenForFastCheck) {
         SecurityOrigin::CreateFromString(test.url);
     EXPECT_EQ(test.token, origin->ToTokenForFastCheck()) << test.token;
   }
+}
+
+TEST_F(SecurityOriginTest, NonStandardScheme) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("cow://");
+  EXPECT_TRUE(origin->IsOpaque());
+}
+
+TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
+  url::EnableNonStandardSchemesForAndroidWebView();
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("cow://");
+  EXPECT_FALSE(origin->IsOpaque());
+  EXPECT_EQ("cow", origin->Protocol());
+  EXPECT_EQ("", origin->Host());
+  EXPECT_EQ(0, origin->Port());
+  url::Shutdown();
 }
 
 }  // namespace blink

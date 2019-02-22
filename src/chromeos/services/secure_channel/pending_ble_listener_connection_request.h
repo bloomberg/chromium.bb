@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_BLE_LISTENER_CONNECTION_REQUEST_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_BLE_LISTENER_CONNECTION_REQUEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
-#include "chromeos/services/secure_channel/pending_connection_request_base.h"
+#include "chromeos/services/secure_channel/pending_ble_connection_request_base.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
@@ -17,7 +19,7 @@ namespace secure_channel {
 
 // ConnectionRequest corresponding to BLE connections in the listener role.
 class PendingBleListenerConnectionRequest
-    : public PendingConnectionRequestBase<BleListenerFailureType> {
+    : public PendingBleConnectionRequestBase<BleListenerFailureType> {
  public:
   class Factory {
    public:
@@ -28,7 +30,8 @@ class PendingBleListenerConnectionRequest
     BuildInstance(std::unique_ptr<ClientConnectionParameters>
                       client_connection_parameters,
                   ConnectionPriority connection_priority,
-                  PendingConnectionRequestDelegate* delegate);
+                  PendingConnectionRequestDelegate* delegate,
+                  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
    private:
     static Factory* test_factory_;
@@ -40,7 +43,8 @@ class PendingBleListenerConnectionRequest
   PendingBleListenerConnectionRequest(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority,
-      PendingConnectionRequestDelegate* delegate);
+      PendingConnectionRequestDelegate* delegate,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
   // PendingConnectionRequest<BleListenerFailureType>:
   void HandleConnectionFailure(BleListenerFailureType failure_detail) override;

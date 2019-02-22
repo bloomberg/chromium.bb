@@ -39,6 +39,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
@@ -113,7 +114,9 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/pc/sessiondescription.h"
 
 namespace blink {
 
@@ -325,12 +328,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   } else {
-    if (!RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
+    if (!base::FeatureList::IsEnabled(features::kRTCUnifiedPlanByDefault) &&
+        !RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
       // By default: The default SDP semantics is: "kPlanB".
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
     } else {
       // Override default SDP semantics to "kUnifiedPlan" with
-      // RuntimeEnabled=RTCUnifiedPlanByDefault.
+      // --enable-features=RTCUnifiedPlanByDefault or with
+      // --enable-blink-features=RTCUnifiedPlanByDefault.
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   }
@@ -549,7 +554,8 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   RTCPeerConnection* peer_connection = new RTCPeerConnection(
-      context, std::move(configuration), constraints, exception_state);
+      context, std::move(configuration), rtc_configuration.hasSdpSemantics(),
+      constraints, exception_state);
   peer_connection->PauseIfNeeded();
   if (exception_state.HadException())
     return nullptr;
@@ -564,6 +570,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
 RTCPeerConnection::RTCPeerConnection(
     ExecutionContext* context,
     webrtc::PeerConnectionInterface::RTCConfiguration configuration,
+    bool sdp_semantics_specified,
     WebMediaConstraints constraints,
     ExceptionState& exception_state)
     : PausableObject(context),
@@ -582,8 +589,9 @@ RTCPeerConnection::RTCPeerConnection(
       stopped_(false),
       closed_(false),
       has_data_channels_(false),
-      sdp_semantics_(configuration.sdp_semantics) {
-  Document* document = ToDocument(GetExecutionContext());
+      sdp_semantics_(configuration.sdp_semantics),
+      sdp_semantics_specified_(sdp_semantics_specified) {
+  Document* document = To<Document>(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
@@ -838,9 +846,47 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
   return nullptr;
 }
 
+bool RTCPeerConnection::ShouldShowComplexPlanBSdpWarning(
+    const RTCSessionDescriptionInit& session_description_init) const {
+  if (sdp_semantics_specified_)
+    return false;
+  if (!session_description_init.hasType() || !session_description_init.hasSdp())
+    return false;
+  std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
+      webrtc::CreateSessionDescription(
+          session_description_init.type().Utf8().data(),
+          session_description_init.sdp().Utf8().data(), nullptr));
+  if (!session_description)
+    return false;
+  size_t num_audio_mlines = 0u;
+  size_t num_video_mlines = 0u;
+  size_t num_audio_tracks = 0u;
+  size_t num_video_tracks = 0u;
+  for (const cricket::ContentInfo& content :
+       session_description->description()->contents()) {
+    cricket::MediaType media_type = content.media_description()->type();
+    size_t num_tracks = std::max(static_cast<size_t>(1u),
+                                 content.media_description()->streams().size());
+    if (media_type == cricket::MEDIA_TYPE_AUDIO) {
+      ++num_audio_mlines;
+      num_audio_tracks += num_tracks;
+    } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
+      ++num_video_mlines;
+      num_video_tracks += num_tracks;
+    }
+  }
+  return (num_audio_mlines == 1u && num_audio_tracks > 1u) ||
+         (num_video_mlines == 1u && num_video_tracks > 1u);
+}
+
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   String sdp;
   DOMException* exception = checkSdpForStateErrors(
       ExecutionContext::From(script_state), session_description_init, &sdp);
@@ -861,6 +907,11 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit& session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -926,6 +977,11 @@ RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
@@ -948,6 +1004,11 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit& session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -1928,6 +1989,13 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   if (receiver_it == rtp_receivers_.end()) {
     // Create new receiver.
     receiver = new RTCRtpReceiver(std::move(web_receiver), track, {});
+    // Receiving tracks should be muted by default. SetReadyState() propagates
+    // the related state changes to ensure it is muted on all layers. It also
+    // fires events - which is not desired - but because they fire synchronously
+    // there are no listeners to detect this so this is indistinguishable from
+    // having constructed the track in an already muted state.
+    receiver->track()->Component()->Source()->SetReadyState(
+        MediaStreamSource::kReadyStateMuted);
     rtp_receivers_.push_back(receiver);
   } else {
     // Update existing receiver is a no-op.
@@ -2193,6 +2261,7 @@ void RTCPeerConnection::DidModifyTransceivers(
       remove_list;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>> add_list;
   HeapVector<Member<RTCRtpTransceiver>> track_events;
+  MediaStreamVector previous_streams = getRemoteStreams();
   for (auto& web_transceiver : web_transceivers) {
     auto* it = FindTransceiver(*web_transceiver);
     bool previously_had_recv =
@@ -2212,11 +2281,23 @@ void RTCPeerConnection::DidModifyTransceivers(
       ProcessRemovalOfRemoteTrack(transceiver, &remove_list, &mute_tracks);
     }
   }
+  MediaStreamVector current_streams = getRemoteStreams();
 
   for (auto& track : mute_tracks) {
+    // Mute the track. Fires "track.onmute" synchronously.
     track->Component()->Source()->SetReadyState(
         MediaStreamSource::kReadyStateMuted);
   }
+  // Remove/add tracks to streams, this fires "stream.onremovetrack" and
+  // "stream.onaddtrack" asynchronously (delayed with ScheduleDispatchEvent()).
+  // This means that the streams will be updated immediately, but the
+  // corresponding events will fire after "pc.ontrack".
+  // TODO(https://crbug.com/788558): These should probably also fire
+  // synchronously (before "pc.ontrack"). The webrtc-pc spec references the
+  // mediacapture-streams spec for adding and removing tracks to streams, which
+  // adds/removes and fires synchronously, but it says to do this in a queued
+  // task, which would lead to unexpected behavior: the streams would be empty
+  // at "pc.ontrack".
   for (auto& pair : remove_list) {
     auto& stream = pair.first;
     auto& track = pair.second;
@@ -2232,10 +2313,34 @@ void RTCPeerConnection::DidModifyTransceivers(
     }
   }
 
+  // Legacy APIs: "pc.onaddstream" and "pc.onremovestream".
+  for (const auto& current_stream : current_streams) {
+    if (!previous_streams.Contains(current_stream)) {
+      ScheduleDispatchEvent(
+          MediaStreamEvent::Create(EventTypeNames::addstream, current_stream));
+    }
+  }
+  for (const auto& previous_stream : previous_streams) {
+    if (!current_streams.Contains(previous_stream)) {
+      ScheduleDispatchEvent(MediaStreamEvent::Create(
+          EventTypeNames::removestream, previous_stream));
+    }
+  }
+
+  // Fire "pc.ontrack" synchronously.
   for (auto& transceiver : track_events) {
-    ScheduleDispatchEvent(new RTCTrackEvent(
+    auto* track_event = new RTCTrackEvent(
         transceiver->receiver(), transceiver->receiver()->track(),
-        transceiver->receiver()->streams(), transceiver));
+        transceiver->receiver()->streams(), transceiver);
+    DispatchEvent(*track_event);
+  }
+
+  // Unmute "pc.ontrack" tracks. Fires "track.onunmute" synchronously.
+  // TODO(https://crbug.com/889487): The correct thing to do is to unmute in
+  // response to receiving RTP packets.
+  for (auto& transceiver : track_events) {
+    transceiver->receiver()->track()->Component()->Source()->SetReadyState(
+        MediaStreamSource::kReadyStateLive);
   }
 }
 
@@ -2321,7 +2426,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   ukm::SourceId source_id = document->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
@@ -2446,7 +2551,7 @@ void RTCPeerConnection::CloseInternal() {
     transceiver->OnPeerConnectionClosed();
   }
 
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
 
@@ -2483,7 +2588,7 @@ void RTCPeerConnection::DispatchScheduledEvent() {
 }
 
 void RTCPeerConnection::RecordRapporMetrics() {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   for (const auto& component : tracks_.Keys()) {
     switch (component->Source()->GetType()) {
       case MediaStreamSource::kTypeAudio:

@@ -47,8 +47,10 @@ VideoEncodeAccelerator::Config::Config(
       input_visible_size(input_visible_size),
       output_profile(output_profile),
       initial_bitrate(initial_bitrate),
-      initial_framerate(initial_framerate),
-      h264_output_level(h264_output_level),
+      initial_framerate(initial_framerate.value_or(
+          VideoEncodeAccelerator::kDefaultFramerate)),
+      h264_output_level(h264_output_level.value_or(
+          VideoEncodeAccelerator::kDefaultH264Level)),
       content_type(content_type) {}
 
 VideoEncodeAccelerator::Config::~Config() = default;
@@ -64,7 +66,8 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
     str += base::StringPrintf(", initial_framerate: %u",
                               initial_framerate.value());
   }
-  if (h264_output_level) {
+  if (h264_output_level &&
+      VideoCodecProfileToVideoCodec(output_profile) == kCodecH264) {
     str += base::StringPrintf(", h264_output_level: %u",
                               h264_output_level.value());
   }
@@ -85,6 +88,10 @@ void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   // TODO(owenlin): implements this https://crbug.com/755889.
   NOTIMPLEMENTED();
   std::move(flush_callback).Run(false);
+}
+
+bool VideoEncodeAccelerator::IsFlushSupported() {
+  return false;
 }
 
 void VideoEncodeAccelerator::RequestEncodingParametersChange(

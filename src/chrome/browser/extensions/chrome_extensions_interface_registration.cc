@@ -17,10 +17,13 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/services/ime/public/cpp/features.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #endif
 
@@ -57,12 +60,32 @@ void RegisterChromeInterfacesForExtension(
   }
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::ime::kImeServiceConnectable) &&
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kImeServiceConnectable) &&
       extension->permissions_data()->HasAPIPermission(
           APIPermission::kInputMethodPrivate)) {
     registry->AddInterface(base::BindRepeating(
         &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
         chromeos::ime::mojom::kServiceName));
+  }
+
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kMediaPerceptionPrivate)) {
+    extensions::ExtensionsAPIClient* client =
+        extensions::ExtensionsAPIClient::Get();
+    extensions::MediaPerceptionAPIDelegate* delegate = nullptr;
+    if (client)
+      delegate = client->GetMediaPerceptionAPIDelegate();
+    if (delegate) {
+      // Note that it is safe to use base::Unretained here because |delegate| is
+      // owned by the |client|, which is instantiated by the
+      // ChromeExtensionsBrowserClient, which in turn is owned and lives as long
+      // as the BrowserProcessImpl.
+      registry->AddInterface(
+          base::BindRepeating(&extensions::MediaPerceptionAPIDelegate::
+                                  ForwardMediaPerceptionRequest,
+                              base::Unretained(delegate)));
+    }
   }
 #endif
 }

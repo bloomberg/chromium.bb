@@ -287,7 +287,7 @@ bool GetColorsFromRect(LayoutRect rect,
           colors.push_back(background_color);
           found_opaque_color = true;
         } else {
-          for (size_t i = 0; i < colors.size(); i++)
+          for (wtf_size_t i = 0; i < colors.size(); i++)
             colors[i] = colors[i].Blend(background_color);
           found_opaque_color =
               found_opaque_color || background_color.HasAlpha();
@@ -1051,8 +1051,8 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
-  for (size_t i = 0; animation_data && i < animation_data->NameList().size();
-       ++i) {
+  for (wtf_size_t i = 0;
+       animation_data && i < animation_data->NameList().size(); ++i) {
     AtomicString animation_name(animation_data->NameList()[i]);
     if (animation_name == CSSAnimationData::InitialName())
       continue;
@@ -1162,9 +1162,19 @@ Response InspectorCSSAgent::getComputedStyleForNode(
 
 void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
     LayoutObject* layout_object,
-    HashCountedSet<std::pair<int, String>>* font_stats) {
-  if (!layout_object->IsText())
+    HashCountedSet<std::pair<int, String>>* font_stats,
+    unsigned descendants_depth) {
+  if (!layout_object->IsText()) {
+    if (!descendants_depth)
+      return;
+    if (!layout_object->IsAnonymous())
+      --descendants_depth;
+    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      CollectPlatformFontsForLayoutObject(child, font_stats, descendants_depth);
+    }
     return;
+  }
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
@@ -1214,15 +1224,9 @@ Response InspectorCSSAgent::getPlatformFontsForNode(
   HashCountedSet<std::pair<int, String>> font_stats;
   LayoutObject* root = node->GetLayoutObject();
   if (root) {
-    CollectPlatformFontsForLayoutObject(root, &font_stats);
     // Iterate upto two layers deep.
-    for (LayoutObject* child = root->SlowFirstChild(); child;
-         child = child->NextSibling()) {
-      CollectPlatformFontsForLayoutObject(child, &font_stats);
-      for (LayoutObject* child2 = child->SlowFirstChild(); child2;
-           child2 = child2->NextSibling())
-        CollectPlatformFontsForLayoutObject(child2, &font_stats);
-    }
+    const unsigned descendants_depth = 2;
+    CollectPlatformFontsForLayoutObject(root, &font_stats, descendants_depth);
   }
   *platform_fonts = protocol::Array<protocol::CSS::PlatformFontUsage>::create();
   for (auto& font : font_stats) {
@@ -1392,18 +1396,18 @@ Response InspectorCSSAgent::setKeyframeKey(
 Response InspectorCSSAgent::MultipleStyleTextsActions(
     std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits,
     HeapVector<Member<StyleSheetAction>>* actions) {
-  int n = edits->length();
+  size_t n = edits->length();
   if (n == 0)
     return Response::Error("Edits should not be empty");
 
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     protocol::CSS::StyleDeclarationEdit* edit = edits->get(i);
     InspectorStyleSheetBase* inspector_style_sheet = nullptr;
     Response response =
         AssertStyleSheetForId(edit->getStyleSheetId(), inspector_style_sheet);
     if (!response.isSuccess()) {
-      return Response::Error(
-          String::Format("StyleSheet not found for edit #%d of %d", i + 1, n));
+      return Response::Error(String::Format(
+          "StyleSheet not found for edit #%zu of %zu", i + 1, n));
     }
 
     SourceRange range;
@@ -1661,14 +1665,14 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
       protocol::Array<protocol::CSS::MediaQuery>::create();
   MediaValues* media_values = MediaValues::CreateDynamicIfFrameExists(frame);
   bool has_media_query_items = false;
-  for (size_t i = 0; i < query_vector.size(); ++i) {
+  for (wtf_size_t i = 0; i < query_vector.size(); ++i) {
     MediaQuery& query = *query_vector.at(i);
     const ExpressionHeapVector& expressions = query.Expressions();
     std::unique_ptr<protocol::Array<protocol::CSS::MediaQueryExpression>>
         expression_array =
             protocol::Array<protocol::CSS::MediaQueryExpression>::create();
     bool has_expression_items = false;
-    for (size_t j = 0; j < expressions.size(); ++j) {
+    for (wtf_size_t j = 0; j < expressions.size(); ++j) {
       const MediaQueryExp& media_query_exp = expressions.at(j);
       MediaQueryExpValue exp_value = media_query_exp.ExpValue();
       if (!exp_value.is_value)
@@ -2025,7 +2029,7 @@ InspectorCSSAgent::BuildArrayForMatchedRuleList(
     std::unique_ptr<protocol::Array<int>> matching_selectors =
         protocol::Array<int>::create();
     const CSSSelectorList& selector_list = rule->GetStyleRule()->SelectorList();
-    long index = 0;
+    wtf_size_t index = 0;
     PseudoId element_pseudo_id =
         matches_for_pseudo_id ? matches_for_pseudo_id : element->GetPseudoId();
     for (const CSSSelector* selector = selector_list.First(); selector;

@@ -330,6 +330,8 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
     } else if (type_param == "unwanted") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
+    } else if (type_param == "billing") {
+      threat_type = safe_browsing::SB_THREAT_TYPE_BILLING;
     } else if (type_param == "giant") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
       is_giant_webview = true;
@@ -407,8 +409,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile,
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
                               std::make_unique<InterstitialHTMLSource>());
 }
 

@@ -175,7 +175,7 @@ cr.define('settings_autofill_section', function() {
           createAutofillSection([], {profile_enabled: {value: false}});
 
       assertFalse(section.$$('#autofillProfileToggle').disabled);
-      assertTrue(section.$$('#addAddress').disabled);
+      assertTrue(section.$$('#addAddress').hidden);
     });
 
     test('verifyAddressFields', function() {
@@ -329,7 +329,10 @@ cr.define('settings_autofill_section', function() {
 
             // Default country is 'US' expecting: Name, Organization,
             // Street address, City, State, ZIP code, Phone, and Email.
-            assertEquals(8, testElements.length);
+            // Unless Company name is disabled.
+            const company_enabled =
+                loadTimeData.getBoolean('EnableCompanyName');
+            assertEquals(company_enabled ? 8 : 7, testElements.length);
 
             return asyncForEach(testElements, function(element) {
               return expectEvent(
@@ -386,7 +389,7 @@ cr.define('settings_autofill_section', function() {
     // Test will timeout if save-address event is not fired.
     test('verifyDefaultCountryIsAppliedWhenSaving', function() {
       const address = FakeDataMaker.emptyAddressEntry();
-      address.companyName = 'Google';
+      address.fullNames = ['Name'];
       return createAddressDialog(address).then(function(dialog) {
         return expectEvent(dialog, 'save-address', function() {
                  // Verify |countryCode| is not set.
@@ -432,7 +435,7 @@ cr.define('settings_autofill_section', function() {
     // US address has 3 fields on the same line.
     test('verifyEditingUSAddress', function() {
       const address = FakeDataMaker.emptyAddressEntry();
-
+      const company_enabled = loadTimeData.getBoolean('EnableCompanyName');
       address.fullNames = ['Name'];
       address.companyName = 'Organization';
       address.addressLines = 'Street address';
@@ -445,39 +448,47 @@ cr.define('settings_autofill_section', function() {
 
       return createAddressDialog(address).then(function(dialog) {
         const rows = dialog.$.dialog.querySelectorAll('.address-row');
-        assertEquals(6, rows.length);
+        assertEquals(company_enabled ? 6 : 5, rows.length);
 
+        let index = 0;
         // Name
-        let row = rows[0];
+        let row = rows[index];
         let cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.fullNames[0], cols[0].value);
+        index++;
         // Organization
-        row = rows[1];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
-        assertEquals(address.companyName, cols[0].value);
+        if (company_enabled) {
+          row = rows[index];
+          cols = row.querySelectorAll('.address-column');
+          assertEquals(1, cols.length);
+          assertEquals(address.companyName, cols[0].value);
+          index++;
+        }
         // Street address
-        row = rows[2];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.addressLines, cols[0].value);
+        index++;
         // City, State, ZIP code
-        row = rows[3];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(3, cols.length);
         assertEquals(address.addressLevel2, cols[0].value);
         assertEquals(address.addressLevel1, cols[1].value);
         assertEquals(address.postalCode, cols[2].value);
+        index++;
         // Country
-        row = rows[4];
+        row = rows[index];
         const countrySelect = row.querySelector('select');
         assertTrue(!!countrySelect);
         assertEquals(
             'United States',
             countrySelect.selectedOptions[0].textContent.trim());
+        index++;
         // Phone, Email
-        row = rows[5];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(2, cols.length);
         assertEquals(address.phoneNumbers[0], cols[0].value);
@@ -488,6 +499,7 @@ cr.define('settings_autofill_section', function() {
     // GB address has 1 field per line for all lines that change.
     test('verifyEditingGBAddress', function() {
       const address = FakeDataMaker.emptyAddressEntry();
+      const company_enabled = loadTimeData.getBoolean('EnableCompanyName');
 
       address.fullNames = ['Name'];
       address.companyName = 'Organization';
@@ -500,42 +512,51 @@ cr.define('settings_autofill_section', function() {
 
       return createAddressDialog(address).then(function(dialog) {
         const rows = dialog.$.dialog.querySelectorAll('.address-row');
-        assertEquals(7, rows.length);
+        assertEquals(company_enabled ? 7 : 6, rows.length);
 
+        let index = 0;
         // Name
-        let row = rows[0];
+        let row = rows[index];
         let cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.fullNames[0], cols[0].value);
+        index++;
         // Organization
-        row = rows[1];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
-        assertEquals(address.companyName, cols[0].value);
+        if (company_enabled) {
+          row = rows[index];
+          cols = row.querySelectorAll('.address-column');
+          assertEquals(1, cols.length);
+          assertEquals(address.companyName, cols[0].value);
+          index++;
+        }
         // Street address
-        row = rows[2];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.addressLines, cols[0].value);
+        index++;
         // Post Town
-        row = rows[3];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.addressLevel2, cols[0].value);
+        index++;
         // Postal code
-        row = rows[4];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.postalCode, cols[0].value);
+        index++;
         // Country
-        row = rows[5];
+        row = rows[index];
         const countrySelect = row.querySelector('select');
         assertTrue(!!countrySelect);
         assertEquals(
             'United Kingdom',
             countrySelect.selectedOptions[0].textContent.trim());
+        index++;
         // Phone, Email
-        row = rows[6];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(2, cols.length);
         assertEquals(address.phoneNumbers[0], cols[0].value);
@@ -547,6 +568,7 @@ cr.define('settings_autofill_section', function() {
     // RTL locale shouldn't affect this test.
     test('verifyEditingILAddress', function() {
       const address = FakeDataMaker.emptyAddressEntry();
+      const company_enabled = loadTimeData.getBoolean('EnableCompanyName');
 
       address.fullNames = ['Name'];
       address.companyName = 'Organization';
@@ -559,37 +581,46 @@ cr.define('settings_autofill_section', function() {
 
       return createAddressDialog(address).then(function(dialog) {
         const rows = dialog.$.dialog.querySelectorAll('.address-row');
-        assertEquals(6, rows.length);
+        assertEquals(company_enabled ? 6 : 5, rows.length);
 
+        let index = 0;
         // Name
-        let row = rows[0];
+        let row = rows[index];
         let cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.fullNames[0], cols[0].value);
+        index++;
         // Organization
-        row = rows[1];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
-        assertEquals(address.companyName, cols[0].value);
+
+        if (company_enabled) {
+          row = rows[index];
+          cols = row.querySelectorAll('.address-column');
+          assertEquals(1, cols.length);
+          assertEquals(address.companyName, cols[0].value);
+          index++;
+        }
         // Street address
-        row = rows[2];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
         assertEquals(address.addressLines, cols[0].value);
+        index++;
         // City, Postal code
-        row = rows[3];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(2, cols.length);
         assertEquals(address.addressLevel2, cols[0].value);
         assertEquals(address.postalCode, cols[1].value);
+        index++;
         // Country
-        row = rows[4];
+        row = rows[index];
         const countrySelect = row.querySelector('select');
         assertTrue(!!countrySelect);
         assertEquals(
             'Israel', countrySelect.selectedOptions[0].textContent.trim());
+        index++;
         // Phone, Email
-        row = rows[5];
+        row = rows[index];
         cols = row.querySelectorAll('.address-column');
         assertEquals(2, cols.length);
         assertEquals(address.phoneNumbers[0], cols[0].value);
@@ -601,6 +632,7 @@ cr.define('settings_autofill_section', function() {
     // persisted when switching to IL then back to US.
     test('verifyAddressPersistanceWhenSwitchingCountries', function() {
       const address = FakeDataMaker.emptyAddressEntry();
+      const company_enabled = loadTimeData.getBoolean('EnableCompanyName');
       address.countryCode = 'US';
 
       return createAddressDialog(address).then(function(dialog) {
@@ -615,10 +647,10 @@ cr.define('settings_autofill_section', function() {
                      // US:
                      const rows =
                          dialog.$.dialog.querySelectorAll('.address-row');
-                     assertEquals(6, rows.length);
+                     assertEquals(company_enabled ? 6 : 5, rows.length);
 
                      // City, State, ZIP code
-                     const row = rows[3];
+                     const row = rows[company_enabled ? 3 : 2];
                      const cols = row.querySelectorAll('.address-column');
                      assertEquals(3, cols.length);
                      cols[0].value = city;
@@ -633,10 +665,10 @@ cr.define('settings_autofill_section', function() {
                   dialog, 'on-update-address-wrapper', function() {
                     // IL:
                     rows = dialog.$.dialog.querySelectorAll('.address-row');
-                    assertEquals(6, rows.length);
+                    assertEquals(company_enabled ? 6 : 5, rows.length);
 
                     // City, Postal code
-                    row = rows[3];
+                    row = rows[company_enabled ? 3 : 2];
                     cols = row.querySelectorAll('.address-column');
                     assertEquals(2, cols.length);
                     assertEquals(city, cols[0].value);
@@ -649,10 +681,10 @@ cr.define('settings_autofill_section', function() {
             .then(function() {
               // US:
               const rows = dialog.$.dialog.querySelectorAll('.address-row');
-              assertEquals(6, rows.length);
+              assertEquals(company_enabled ? 6 : 5, rows.length);
 
               // City, State, ZIP code
-              row = rows[3];
+              row = rows[company_enabled ? 3 : 2];
               cols = row.querySelectorAll('.address-column');
               assertEquals(3, cols.length);
               assertEquals(city, cols[0].value);

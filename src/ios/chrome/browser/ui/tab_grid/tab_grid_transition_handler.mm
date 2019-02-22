@@ -23,32 +23,28 @@
 animationControllerForPresentedController:(UIViewController*)presented
                      presentingController:(UIViewController*)presenting
                          sourceController:(UIViewController*)source {
-  id<UIViewControllerAnimatedTransitioning> animator;
-  if (UIAccessibilityIsReduceMotionEnabled() ||
-      !self.provider.selectedCellVisible) {
-    ReducedMotionAnimator* simpleAnimator =
-        [[ReducedMotionAnimator alloc] init];
-    simpleAnimator.presenting = YES;
-    animator = simpleAnimator;
-  } else {
-    animator =
-        [[GridToVisibleTabAnimator alloc] initWithStateProvider:self.provider];
+  if (@available(iOS 11, *)) {
+    if (!UIAccessibilityIsReduceMotionEnabled() &&
+        self.provider.selectedCellVisible) {
+      return [[GridToVisibleTabAnimator alloc]
+          initWithStateProvider:self.provider];
+    }
   }
-  return animator;
+  ReducedMotionAnimator* simpleAnimator = [[ReducedMotionAnimator alloc] init];
+  simpleAnimator.presenting = YES;
+  return simpleAnimator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)
 animationControllerForDismissedController:(UIViewController*)dismissed {
-  id<UIViewControllerAnimatedTransitioning> animator;
-  if (UIAccessibilityIsReduceMotionEnabled()) {
-    ReducedMotionAnimator* simpleAnimator =
-        [[ReducedMotionAnimator alloc] init];
-    simpleAnimator.presenting = NO;
-    animator = simpleAnimator;
-  } else {
-    animator = [[TabToGridAnimator alloc] initWithStateProvider:self.provider];
+  if (@available(iOS 11, *)) {
+    if (!UIAccessibilityIsReduceMotionEnabled()) {
+      return [[TabToGridAnimator alloc] initWithStateProvider:self.provider];
+    }
   }
-  return animator;
+  ReducedMotionAnimator* simpleAnimator = [[ReducedMotionAnimator alloc] init];
+  simpleAnimator.presenting = NO;
+  return simpleAnimator;
 }
 
 @end

@@ -45,6 +45,11 @@ const char kBrowserStartupDialog[]          = "browser-startup-dialog";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// Tells whether the code is running browser tests (this changes the startup URL
+// used by the content shell and also disables features that can make tests
+// flaky [like monitoring of memory pressure]).
+const char kBrowserTest[] = "browser-test";
+
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";
@@ -478,6 +483,9 @@ const char kDisableOopRasterization[] = "disable-oop-rasterization";
 // would have been used.  Enables the chromium_raster_transport extension.
 const char kEnableOopRasterization[] = "enable-oop-rasterization";
 
+// Turns on skia deferred display list for out of process raster.
+const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
+
 // The number of multisample antialiasing samples for GPU rasterization.
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.
 const char kGpuRasterizationMSAASampleCount[] =
@@ -563,15 +571,6 @@ const char kLogFile[] = "log-file";
 // portrait mode (i.e. Android) so the page should be rescaled to fit.
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
-
-// Specifies the maximum cache size per an origin for the ApplicationCache.
-// The default value is 5MB.
-const char kMaxAppCacheOriginCacheSizeMb[] =
-    "max-appcache-origin-cache-size-mb";
-
-// Specifies the maximum disk cache size for the ApplicationCache. The default
-// value is 250MB.
-const char kMaxAppCacheDiskCacheSizeMb[] = "max-appcache-disk-cache-size-mb";
 
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";

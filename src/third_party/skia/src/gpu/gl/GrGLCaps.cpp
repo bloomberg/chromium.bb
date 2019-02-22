@@ -61,10 +61,11 @@ GrGLCaps::GrGLCaps(const GrContextOptions& contextOptions,
     fUseDrawInsteadOfAllRenderTargetWrites = false;
     fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines = false;
     fRequiresFlushBetweenNonAndInstancedDraws = false;
+    fDetachStencilFromMSAABuffersBeforeReadPixels = false;
     fProgramBinarySupport = false;
 
     fBlitFramebufferFlags = kNoSupport_BlitFramebufferFlag;
-    fMaxInstancesPerDrawArraysWithoutCrashing = 0;
+    fMaxInstancesPerDrawWithoutCrashing = 0;
 
     fShaderCaps.reset(new GrShaderCaps(contextOptions));
 
@@ -155,7 +156,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     // GL_PRIMITIVE_RESTART (where the client must call glPrimitiveRestartIndex) appears in 3.1.
     if (kGLES_GrGLStandard == standard) {
         // Primitive restart can cause a 3x slowdown on Adreno. Enable conservatively.
-        // TODO: Evaluate on PowerVR.
         // FIXME: Primitive restart would likely be a win on iOS if we had an enum value for it.
         if (kARM_GrGLVendor == ctxInfo.vendor()) {
             fUsePrimitiveRestart = version >= GR_GL_VER(3,0);
@@ -290,6 +290,10 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
         fClearTextureSupport = true;
     }
 
+#if defined(SK_BUILD_FOR_ANDROID) && __ANDROID_API__ >= 26
+    fSupportsAHardwareBufferImages = true;
+#endif
+
     /**************************************************************************
     * GrShaderCaps fields
     **************************************************************************/
@@ -356,16 +360,8 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     // Protect ourselves against tracking huge amounts of texture state.
     static const uint8_t kMaxSaneSamplers = 32;
     GrGLint maxSamplers;
-    GR_GL_GetIntegerv(gli, GR_GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &maxSamplers);
-    shaderCaps->fMaxVertexSamplers = SkTMin<GrGLint>(kMaxSaneSamplers, maxSamplers);
-    if (shaderCaps->fGeometryShaderSupport) {
-        GR_GL_GetIntegerv(gli, GR_GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS, &maxSamplers);
-        shaderCaps->fMaxGeometrySamplers = SkTMin<GrGLint>(kMaxSaneSamplers, maxSamplers);
-    }
     GR_GL_GetIntegerv(gli, GR_GL_MAX_TEXTURE_IMAGE_UNITS, &maxSamplers);
     shaderCaps->fMaxFragmentSamplers = SkTMin<GrGLint>(kMaxSaneSamplers, maxSamplers);
-    GR_GL_GetIntegerv(gli, GR_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxSamplers);
-    shaderCaps->fMaxCombinedSamplers = SkTMin<GrGLint>(kMaxSaneSamplers, maxSamplers);
 
     // SGX and Mali GPUs that are based on a tiled-deferred architecture that have trouble with
     // frequently changing VBOs. We've measured a performance increase using non-VBO vertex
@@ -570,6 +566,18 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
 
     // Safely moving textures between contexts requires fences.
     fCrossContextTextureSupport = fFenceSyncSupport;
+
+    // Half float vertex attributes requires GL3 or ES3
+    // It can also work with OES_VERTEX_HALF_FLOAT, but that requires a different enum.
+    if (kGL_GrGLStandard == standard) {
+        if (version >= GR_GL_VER(3, 0)) {
+            fHalfFloatVertexAttributeSupport = true;
+        }
+    } else if (version >= GR_GL_VER(3, 0)) {
+        fHalfFloatVertexAttributeSupport = true;
+    }
+
+    fDynamicStateArrayGeometryProcessorTextureSupport = true;
 
     if (kGL_GrGLStandard == standard) {
         if (version >= GR_GL_VER(4, 1)) {
@@ -1046,6 +1054,7 @@ void GrGLCaps::initStencilSupport(const GrGLContextInfo& ctxInfo) {
     }
 }
 
+#ifdef SK_ENABLE_DUMP_GPU
 void GrGLCaps::onDumpJSON(SkJSONWriter* writer) const {
 
     // We are called by the base class, which has already called beginObject(). We choose to nest
@@ -1133,8 +1142,8 @@ void GrGLCaps::onDumpJSON(SkJSONWriter* writer) const {
                        fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO);
     writer->appendBool("Intermediate texture for all updates of textures bound to FBOs",
                        fUseDrawInsteadOfAllRenderTargetWrites);
-    writer->appendBool("Max instances per glDrawArraysInstanced without crashing (or zero)",
-                       fMaxInstancesPerDrawArraysWithoutCrashing);
+    writer->appendBool("Max instances per draw without crashing (or zero)",
+                       fMaxInstancesPerDrawWithoutCrashing);
 
     writer->beginArray("configs");
 
@@ -1158,6 +1167,9 @@ void GrGLCaps::onDumpJSON(SkJSONWriter* writer) const {
     writer->endArray();
     writer->endObject();
 }
+#else
+void GrGLCaps::onDumpJSON(SkJSONWriter* writer) const { }
+#endif
 
 bool GrGLCaps::bgraIsInternalFormat() const {
     return fConfigTable[kBGRA_8888_GrPixelConfig].fFormats.fBaseInternalFormat == GR_GL_BGRA;
@@ -1390,7 +1402,12 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
         // We require some form of FBO support and all GLs with FBO support can render to RGBA8
         fConfigTable[kRGBA_8888_GrPixelConfig].fFlags |= allRenderFlags;
     } else {
-        if (version >= GR_GL_VER(3,0) || ctxInfo.hasExtension("GL_OES_rgb8_rgba8") ||
+        bool isWebGL = false;
+        // hack for skbug:8378
+        #if IS_WEBGL==1
+        isWebGL = true;
+        #endif
+        if (isWebGL || version >= GR_GL_VER(3,0) || ctxInfo.hasExtension("GL_OES_rgb8_rgba8") ||
             ctxInfo.hasExtension("GL_ARM_rgba8")) {
             fConfigTable[kRGBA_8888_GrPixelConfig].fFlags |= allRenderFlags;
         }
@@ -1734,7 +1751,8 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
     bool hasFP16Textures = false;
     bool rgIsTexturable = false;
     bool hasFP32RenderTargets = false;
-    bool hasFP16RenderTargets = false;
+    enum class HalfFPRenderTargetSupport { kNone, kRGBAOnly, kAll };
+    HalfFPRenderTargetSupport halfFPRenderTargetSupport = HalfFPRenderTargetSupport::kNone;
     // for now we don't support floating point MSAA on ES
     uint32_t fpRenderFlags = (kGL_GrGLStandard == standard) ? allRenderFlags : nonMSAARenderFlags;
 
@@ -1744,7 +1762,7 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
             hasFP16Textures = true;
             rgIsTexturable = true;
             hasFP32RenderTargets = true;
-            hasFP16RenderTargets = true;
+            halfFPRenderTargetSupport = HalfFPRenderTargetSupport::kAll;
         }
     } else {
         if (version >= GR_GL_VER(3, 0)) {
@@ -1764,14 +1782,15 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
             // For now we only enable rendering to fp32 on desktop, because on ES we'd have to solve
             // many precision issues and no clients actually want this yet.
             // hasFP32RenderTargets = true;
-            hasFP16RenderTargets = true;
+            halfFPRenderTargetSupport = HalfFPRenderTargetSupport::kAll;
         } else if (ctxInfo.hasExtension("GL_EXT_color_buffer_float")) {
             // For now we only enable rendering to fp32 on desktop, because on ES we'd have to
             // solve many precision issues and no clients actually want this yet.
             // hasFP32RenderTargets = true;
-            hasFP16RenderTargets = true;
+            halfFPRenderTargetSupport = HalfFPRenderTargetSupport::kAll;
         } else if (ctxInfo.hasExtension("GL_EXT_color_buffer_half_float")) {
-            hasFP16RenderTargets = true;
+            // This extension only enables half float support rendering for RGBA.
+            halfFPRenderTargetSupport = HalfFPRenderTargetSupport::kRGBAOnly;
         }
     }
 
@@ -1811,7 +1830,7 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
     if (textureRedSupport && hasFP16Textures) {
         redHalf.fFlags = ConfigInfo::kTextureable_Flag;
 
-        if (hasFP16RenderTargets) {
+        if (halfFPRenderTargetSupport == HalfFPRenderTargetSupport::kAll) {
             redHalf.fFlags |= fpRenderFlags;
         }
 
@@ -1834,7 +1853,7 @@ void GrGLCaps::initConfigTable(const GrContextOptions& contextOptions,
     if (hasFP16Textures) {
         fConfigTable[kRGBA_half_GrPixelConfig].fFlags = ConfigInfo::kTextureable_Flag;
         // ES requires 3.2 or EXT_color_buffer_half_float.
-        if (hasFP16RenderTargets) {
+        if (halfFPRenderTargetSupport != HalfFPRenderTargetSupport::kNone) {
             fConfigTable[kRGBA_half_GrPixelConfig].fFlags |= fpRenderFlags;
         }
     }
@@ -2312,11 +2331,14 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         fClearTextureSupport = false;
     }
 
-    // On at least some MacBooks, GLSL 4.0 geometry shaders break if we use invocations.
 #ifdef SK_BUILD_FOR_MAC
-    if (shaderCaps->fGeometryShaderSupport) {
-        shaderCaps->fGSInvocationsSupport = false;
+    // Radeon MacBooks hit a crash in glReadPixels() when using geometry shaders.
+    // http://skbug.com/8097
+    if (kATI_GrGLVendor == ctxInfo.vendor()) {
+        shaderCaps->fGeometryShaderSupport = false;
     }
+    // On at least some MacBooks, GLSL 4.0 geometry shaders break if we use invocations.
+    shaderCaps->fGSInvocationsSupport = false;
 #endif
 
     // Qualcomm driver @103.0 has been observed to crash compiling ccpr geometry
@@ -2430,12 +2452,20 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         fRequiresFlushBetweenNonAndInstancedDraws = true;
     }
 
-    // Our Chromebook with kPowerVRRogue_GrGLRenderer seems to crash when glDrawArraysInstanced is
-    // given 1 << 15 or more instances.
+    // This was reproduced on a Pixel 1, but the unit test + config + options that exercise it are
+    // only tested on very specific bots. The driver claims that ReadPixels is an invalid operation
+    // when reading from an auto-resolving MSAA framebuffer that has stencil attached.
+    if (kQualcomm_GrGLDriver == ctxInfo.driver()) {
+        fDetachStencilFromMSAABuffersBeforeReadPixels = true;
+    }
+
     if (kPowerVRRogue_GrGLRenderer == ctxInfo.renderer()) {
-        fMaxInstancesPerDrawArraysWithoutCrashing = 0x7fff;
+        // Our Chromebook with kPowerVRRogue_GrGLRenderer crashes on large instanced draws. The
+        // current minimum number of instances observed to crash is somewhere between 2^14 and 2^15.
+        // Keep the number of instances below 1000, just to be safe.
+        fMaxInstancesPerDrawWithoutCrashing = 999;
     } else if (fDriverBugWorkarounds.disallow_large_instanced_draw) {
-        fMaxInstancesPerDrawArraysWithoutCrashing = 0x4000000;
+        fMaxInstancesPerDrawWithoutCrashing = 0x4000000;
     }
 
     // Texture uploads sometimes seem to be ignored to textures bound to FBOS on Tegra3.
@@ -2664,35 +2694,13 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     // https://bugreport.apple.com/web/?problemID=39948888
     fUnpackRowLengthSupport = false;
 #endif
-
-#ifdef SK_BUILD_FOR_MAC
-    // Radeon MacBooks hit a crash in glReadPixels() when using CCPR.
-    // http://skbug.com/8097
-    if (kATI_GrGLVendor == ctxInfo.vendor()) {
-        fBlacklistCoverageCounting = true;
-    }
-#endif
-
-    // "shapes_mixed_10000_32x33" bench crashes PowerVRGX6250 in Release mode with ccpr.
-    // http://skbug.com/8098
-    if (kPowerVRRogue_GrGLRenderer == ctxInfo.renderer()) {
-        fBlacklistCoverageCounting = true;
-    }
-
-    // CCPR edge AA is busted on Mesa, Sandy Bridge/Bay Trail.
-    // http://skbug.com/8162
-    if (kMesa_GrGLDriver == ctxInfo.driver() &&
-        (kIntelSandyBridge_GrGLRenderer == ctxInfo.renderer() ||
-         kIntelBayTrail_GrGLRenderer == ctxInfo.renderer())) {
-        fBlacklistCoverageCounting = true;
-    }
 }
 
 void GrGLCaps::onApplyOptionsOverrides(const GrContextOptions& options) {
     if (options.fDisableDriverCorrectnessWorkarounds) {
         SkASSERT(!fDoManualMipmapping);
         SkASSERT(!fClearToBoundaryValuesIsBroken);
-        SkASSERT(0 == fMaxInstancesPerDrawArraysWithoutCrashing);
+        SkASSERT(0 == fMaxInstancesPerDrawWithoutCrashing);
         SkASSERT(!fDrawArraysBaseVertexIsBroken);
         SkASSERT(!fUseDrawToClearColor);
         SkASSERT(!fUseDrawToClearStencilClip);
@@ -2700,6 +2708,7 @@ void GrGLCaps::onApplyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fUseDrawInsteadOfAllRenderTargetWrites);
         SkASSERT(!fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines);
         SkASSERT(!fRequiresFlushBetweenNonAndInstancedDraws);
+        SkASSERT(!fDetachStencilFromMSAABuffersBeforeReadPixels);
     }
     if (GrContextOptions::Enable::kNo == options.fUseDrawInsteadOfGLClear) {
         fUseDrawToClearColor = false;

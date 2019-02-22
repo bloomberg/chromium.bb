@@ -10,13 +10,13 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -41,7 +41,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/view.h"
 
@@ -167,21 +166,21 @@ class ShutdownPolicyInSessionTest
 
   // Returns true if the shutdown button's tooltip matches the text of the
   // resource |message_id|.
-  bool HasShutdownButtonTooltip(int message_id) {
+  bool HasShutdownButtonTooltip(const std::string& tooltip) {
     ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
     base::string16 actual_tooltip;
     wait_for.GetBubbleViewTooltip(ash::VIEW_ID_POWER_BUTTON, &actual_tooltip);
-    return l10n_util::GetStringUTF16(message_id) == actual_tooltip;
+    return base::UTF8ToUTF16(tooltip) == actual_tooltip;
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyInSessionTest);
 };
 
-// Tests that by default the shutdown button tooltip is "shutdown".
+// Tests that by default the shutdown button tooltip is "Shut down".
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, TestBasic) {
   OpenSystemTrayMenu();
-  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  EXPECT_TRUE(HasShutdownButtonTooltip("Shut down"));
   CloseSystemTrayMenu();
 }
 
@@ -197,9 +196,8 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, DISABLED_PolicyChange) {
   SyncRefreshDevicePolicy();
   content::RunAllPendingInMessageLoop();
 
-  // When the menu is opened the tooltip reads "reboot".
   OpenSystemTrayMenu();
-  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_REBOOT));
+  EXPECT_TRUE(HasShutdownButtonTooltip("Restart"));
   CloseSystemTrayMenu();
 
   // Change the policy to shutdown and let it propagate over mojo to ash.
@@ -207,9 +205,8 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, DISABLED_PolicyChange) {
   SyncRefreshDevicePolicy();
   content::RunAllPendingInMessageLoop();
 
-  // When the menu is opened the tooltip reads "shutdown".
   OpenSystemTrayMenu();
-  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  EXPECT_TRUE(HasShutdownButtonTooltip("Shut down"));
   CloseSystemTrayMenu();
 }
 

@@ -131,12 +131,10 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
-  SetV8FlagIfFeature(features::kModuleScriptsDynamicImport,
-                     "--harmony-dynamic-import");
-  SetV8FlagIfFeature(features::kModuleScriptsImportMetaUrl,
-                     "--harmony-import-meta");
-  SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
-  SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
+
+  constexpr char kModuleFlags[] =
+      "--harmony-dynamic-import --harmony-import-meta";
+  v8::V8::SetFlagsFromString(kModuleFlags, sizeof(kModuleFlags));
 
   SetV8FlagIfFeature(features::kV8Orinoco, "--no-single-threaded-gc");
   SetV8FlagIfNotFeature(features::kV8Orinoco, "--single-threaded-gc");
@@ -235,6 +233,14 @@ void RenderProcessImpl::AddBindings(int bindings) {
 
 int RenderProcessImpl::GetEnabledBindings() const {
   return enabled_bindings_;
+}
+
+void RenderProcessImpl::AddRefProcess() {
+  NOTREACHED();
+}
+
+void RenderProcessImpl::ReleaseProcess() {
+  NOTREACHED();
 }
 
 }  // namespace content

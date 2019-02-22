@@ -102,6 +102,7 @@ public class PrintingControllerTest {
     }
 
     private static class WaitForOnWriteHelper extends CallbackHelper {
+        @Override
         public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
             waitForCallback(msg, 0, 1, TEST_TIMEOUT, TimeUnit.MILLISECONDS);
         }

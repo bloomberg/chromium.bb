@@ -35,10 +35,10 @@ class UnderlyingSizeListChecker
                const InterpolationValue& underlying) const final {
     const auto& underlying_list =
         ToNonInterpolableList(*underlying.non_interpolable_value);
-    size_t underlying_length = underlying_list.length();
+    wtf_size_t underlying_length = underlying_list.length();
     if (underlying_length != underlying_list_->length())
       return false;
-    for (size_t i = 0; i < underlying_length; i++) {
+    for (wtf_size_t i = 0; i < underlying_length; i++) {
       bool compatible =
           SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
               underlying_list.Get(i), underlying_list_->Get(i));
@@ -83,7 +83,7 @@ InterpolationValue ConvertSizeList(const SizeList& size_list, float zoom) {
   // cover keywords.
   return ListInterpolationFunctions::CreateList(
       size_list.size() * 2,
-      [&size_list, zoom](size_t index) -> InterpolationValue {
+      [&size_list, zoom](wtf_size_t index) -> InterpolationValue {
         bool convert_width = index % 2 == 0;
         return SizeInterpolationFunctions::ConvertFillSizeSide(
             size_list[index / 2], zoom, convert_width);
@@ -105,7 +105,7 @@ InterpolationValue MaybeConvertCSSSizeList(const CSSValue& value) {
   // Flatten pairs of width/height into individual items, even for contain and
   // cover keywords.
   return ListInterpolationFunctions::CreateList(
-      list->length() * 2, [list](size_t index) -> InterpolationValue {
+      list->length() * 2, [list](wtf_size_t index) -> InterpolationValue {
         const CSSValue& css_size = list->Item(index / 2);
         bool convert_width = index % 2 == 0;
         return SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
@@ -121,7 +121,7 @@ InterpolationValue CSSSizeListInterpolationType::MaybeConvertNeutral(
   conversion_checkers.push_back(
       UnderlyingSizeListChecker::Create(underlying_list));
   return ListInterpolationFunctions::CreateList(
-      underlying_list.length(), [&underlying_list](size_t index) {
+      underlying_list.length(), [&underlying_list](wtf_size_t index) {
         return SizeInterpolationFunctions::CreateNeutralValue(
             underlying_list.Get(index));
       });
@@ -188,12 +188,12 @@ void CSSSizeListInterpolationType::ApplyStandardPropertyValue(
   const auto& interpolable_list = ToInterpolableList(interpolable_value);
   const auto& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
-  size_t length = interpolable_list.length();
+  wtf_size_t length = interpolable_list.length();
   DCHECK_EQ(length, non_interpolable_list.length());
   DCHECK_EQ(length % 2, 0ul);
-  size_t size_list_length = length / 2;
+  wtf_size_t size_list_length = length / 2;
   SizeList size_list(size_list_length);
-  for (size_t i = 0; i < size_list_length; i++) {
+  for (wtf_size_t i = 0; i < size_list_length; i++) {
     size_list[i] = SizeInterpolationFunctions::CreateFillSize(
         *interpolable_list.Get(i * 2), non_interpolable_list.Get(i * 2),
         *interpolable_list.Get(i * 2 + 1), non_interpolable_list.Get(i * 2 + 1),

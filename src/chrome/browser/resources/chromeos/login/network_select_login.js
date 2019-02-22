@@ -49,6 +49,12 @@ Polymer({
    */
   networkLastSelectedGuid_: '',
 
+  /**
+   * Flag that ensures that OOBE configuration is applied only once.
+   * @private {boolean}
+   */
+  configuration_applied_: false,
+
   /** Refreshes the list of the networks. */
   refresh: function() {
     this.$.networkSelect.refreshNetworks();
@@ -194,13 +200,44 @@ Polymer({
   },
 
   /**
+   * Event triggered when a list of networks get changed.
+   * @param {!{detail: !Array<!CrOnc.NetworkStateProperties>}} event
+   * @private
+   */
+  onNetworkListChanged_: function(event) {
+    if (this.configuration_applied_)
+      return;
+    var networks = event.detail;
+    var configuration = Oobe.getInstance().getOobeConfiguration();
+    if (!configuration)
+      return;
+    if (configuration.networkSelectGuid) {
+      var network =
+          networks.find(state => state.GUID == configuration.networkSelectGuid);
+      if (network) {
+        this.handleNetworkSelection_(network);
+        this.configuration_applied_ = true;
+      }
+    }
+  },
+
+  /**
    * This is called when user taps on network entry in networks list.
    *
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
   onNetworkListNetworkItemSelected_: function(event) {
-    var state = event.detail;
+    this.handleNetworkSelection_(event.detail);
+  },
+
+  /**
+   * Handles selection of particular network.
+   *
+   * @param {!CrOnc.NetworkStateProperties} network state.
+   * @private
+   */
+  handleNetworkSelection_: function(state) {
     assert(state);
     // If |configureConnected| is false and a connected network is selected,
     // continue to the next screen.

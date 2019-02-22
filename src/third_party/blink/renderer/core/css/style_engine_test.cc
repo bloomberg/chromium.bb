@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -846,14 +848,12 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
-  EXPECT_TRUE(
-      GetDocument().GetStyleEngine().HasViewportDependentMediaQueries());
+  EXPECT_TRUE(GetStyleEngine().HasViewportDependentMediaQueries());
 
   GetDocument().body()->RemoveChild(style_element);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(
-      GetDocument().GetStyleEngine().HasViewportDependentMediaQueries());
+  EXPECT_FALSE(GetStyleEngine().HasViewportDependentMediaQueries());
 }
 
 TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
@@ -1480,7 +1480,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  StyleEngine& engine = GetDocument().GetStyleEngine();
+  StyleEngine& engine = GetStyleEngine();
   engine.SetStatsEnabled(true);
 
   StyleResolverStats* stats = engine.Stats();
@@ -1491,7 +1491,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   div->SetInlineStyleProperty(CSSPropertyColor, "green");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kNoChange);
+  GetStyleEngine().RecalcStyle(kNoChange);
 
   // Should fast reject ".not-in-filter div::before {}" for both the div and its
   // ::before pseudo element.
@@ -1512,36 +1512,101 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d1->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d1));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d2->firstChild()->remove();
   d2->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d2));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d2));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d3->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d3));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_TRUE(GetDocument().ChildNeedsReattachLayoutTree());
+}
+
+TEST_F(StyleEngineTest, FirstLetterRemoved) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>.fl::first-letter { color: pink }</style>
+    <div class=fl id=d1><div><span id=f1>A</span></div></div>
+    <div class=fl id=d2><div><span id=f2>BB</span></div></div>
+    <div class=fl id=d3><div><span id=f3>C<!---->C</span></div></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* d1 = GetDocument().getElementById("d1");
+  Element* d2 = GetDocument().getElementById("d2");
+  Element* d3 = GetDocument().getElementById("d3");
+
+  FirstLetterPseudoElement* fl1 =
+      ToFirstLetterPseudoElement(d1->GetPseudoElement(kPseudoIdFirstLetter));
+  EXPECT_TRUE(fl1);
+
+  GetDocument().getElementById("f1")->firstChild()->remove();
+
+  EXPECT_FALSE(d1->firstChild()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(d1->firstChild()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(d1->firstChild()->NeedsReattachLayoutTree());
+  EXPECT_TRUE(d1->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(fl1->NeedsStyleRecalc());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(
+      ToFirstLetterPseudoElement(d1->GetPseudoElement(kPseudoIdFirstLetter)));
+
+  FirstLetterPseudoElement* fl2 =
+      ToFirstLetterPseudoElement(d2->GetPseudoElement(kPseudoIdFirstLetter));
+  EXPECT_TRUE(fl2);
+
+  GetDocument().getElementById("f2")->firstChild()->remove();
+
+  EXPECT_FALSE(d2->firstChild()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(d2->firstChild()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(d2->firstChild()->NeedsReattachLayoutTree());
+  EXPECT_TRUE(d2->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(fl2->NeedsStyleRecalc());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(
+      ToFirstLetterPseudoElement(d2->GetPseudoElement(kPseudoIdFirstLetter)));
+
+  FirstLetterPseudoElement* fl3 =
+      ToFirstLetterPseudoElement(d3->GetPseudoElement(kPseudoIdFirstLetter));
+  EXPECT_TRUE(fl3);
+
+  Element* f3 = GetDocument().getElementById("f3");
+  f3->firstChild()->remove();
+
+  EXPECT_FALSE(d3->firstChild()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(d3->firstChild()->ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(d3->firstChild()->NeedsReattachLayoutTree());
+  EXPECT_TRUE(d3->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(fl3->NeedsStyleRecalc());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  fl3 = ToFirstLetterPseudoElement(d3->GetPseudoElement(kPseudoIdFirstLetter));
+  EXPECT_TRUE(fl3);
+  EXPECT_EQ(f3->lastChild()->GetLayoutObject(),
+            fl3->RemainingTextLayoutObject());
 }
 
 }  // namespace blink

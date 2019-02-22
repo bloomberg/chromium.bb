@@ -165,14 +165,15 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
                                          check_results_to_consider);
 
   // Compute the activation level.
-  ActivationLevel activation_level =
+  mojom::ActivationLevel activation_level =
       selection.config.activation_options.activation_level;
 
-  if (selection.warning && activation_level == ActivationLevel::ENABLED) {
+  if (selection.warning &&
+      activation_level == mojom::ActivationLevel::kEnabled) {
     NavigationConsoleLogger::LogMessageOnCommit(
         navigation_handle(), content::CONSOLE_MESSAGE_LEVEL_WARNING,
         kActivationWarningConsoleMessage);
-    activation_level = ActivationLevel::DISABLED;
+    activation_level = mojom::ActivationLevel::kDisabled;
   }
 
   // Let the embedder get the last word when it comes to activation level.
@@ -193,7 +194,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
 void SubresourceFilterSafeBrowsingActivationThrottle::
     LogMetricsOnChecksComplete(ActivationList matched_list,
                                ActivationDecision decision,
-                               ActivationLevel level) const {
+                               mojom::ActivationLevel level) const {
   DCHECK(HasFinishedAllSafeBrowsingChecks());
 
   base::TimeDelta delay = defer_time_.is_null()
@@ -205,8 +206,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::SubresourceFilter builder(source_id);
   builder.SetActivationDecision(static_cast<int64_t>(decision));
-  if (level == subresource_filter::ActivationLevel::DRYRUN) {
-    DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED, decision);
+  if (level == mojom::ActivationLevel::kDryRun) {
+    DCHECK_EQ(ActivationDecision::ACTIVATED, decision);
     builder.SetDryRun(true);
   }
   builder.Record(ukm::UkmRecorder::Get());
@@ -300,7 +301,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
   // report where in the redirect chain it was triggered.
   if (selected_config->config.activation_conditions.activation_scope ==
           ActivationScope::ACTIVATION_LIST &&
-      activation_level == ActivationLevel::ENABLED) {
+      activation_level == mojom::ActivationLevel::kEnabled) {
     ActivationPosition position;
     if (configs.size() == 1) {
       position = ActivationPosition::kOnly;
@@ -316,7 +317,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
   }
 
   // Compute and return the activation decision.
-  return activation_level == ActivationLevel::DISABLED
+  return activation_level == mojom::ActivationLevel::kDisabled
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;
 }
@@ -349,6 +350,14 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
           matched_list == ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL) {
         // Handling special case, where activation on the phishing sites also
         // mean the activation on the sites with social engineering metadata.
+        return true;
+      }
+      if (conditions.activation_list == ActivationList::BETTER_ADS &&
+          matched_list == ActivationList::ABUSIVE &&
+          base::FeatureList::IsEnabled(kFilterAdsOnAbusiveSites)) {
+        // Trigger activation on abusive sites if the condition says to trigger
+        // on Better Ads sites. This removes the need for adding a separate
+        // Configuration for Abusive enforcement.
         return true;
       }
       return false;

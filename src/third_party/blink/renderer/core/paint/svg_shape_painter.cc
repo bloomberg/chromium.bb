@@ -12,9 +12,10 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_container_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -54,21 +55,21 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
   }
   // Shapes cannot have children so do not call UpdateCullRect.
 
-  SVGTransformContext transform_context(paint_info_before_filtering,
-                                        layout_svg_shape_,
-                                        layout_svg_shape_.LocalSVGTransform());
+  ScopedSVGTransformState transform_state(
+      paint_info_before_filtering, layout_svg_shape_,
+      layout_svg_shape_.LocalSVGTransform());
   {
-    SVGPaintContext paint_context(layout_svg_shape_,
-                                  paint_info_before_filtering);
-    if (paint_context.ApplyClipMaskAndFilterIfNecessary() &&
+    ScopedSVGPaintState paint_state(layout_svg_shape_,
+                                    paint_info_before_filtering);
+    if (paint_state.ApplyClipMaskAndFilterIfNecessary() &&
         !DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_context.GetPaintInfo().context, layout_svg_shape_,
-            paint_context.GetPaintInfo().phase)) {
+            paint_state.GetPaintInfo().context, layout_svg_shape_,
+            paint_state.GetPaintInfo().phase)) {
       if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
         SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_, paint_info);
-      DrawingRecorder recorder(paint_context.GetPaintInfo().context,
+      DrawingRecorder recorder(paint_state.GetPaintInfo().context,
                                layout_svg_shape_,
-                               paint_context.GetPaintInfo().phase);
+                               paint_state.GetPaintInfo().phase);
       const SVGComputedStyle& svg_style =
           layout_svg_shape_.StyleRef().SvgStyle();
 
@@ -79,20 +80,20 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
         switch (svg_style.PaintOrderType(i)) {
           case PT_FILL: {
             PaintFlags fill_flags;
-            if (!SVGPaintContext::PaintForLayoutObject(
-                    paint_context.GetPaintInfo(), layout_svg_shape_.StyleRef(),
-                    layout_svg_shape_, kApplyToFillMode, fill_flags))
+            if (!SVGObjectPainter(layout_svg_shape_)
+                     .PreparePaint(paint_state.GetPaintInfo(),
+                                   layout_svg_shape_.StyleRef(),
+                                   kApplyToFillMode, fill_flags))
               break;
             fill_flags.setAntiAlias(should_anti_alias);
-            FillShape(
-                paint_context.GetPaintInfo().context, fill_flags,
-                FillRuleFromStyle(paint_context.GetPaintInfo(), svg_style));
+            FillShape(paint_state.GetPaintInfo().context, fill_flags,
+                      FillRuleFromStyle(paint_state.GetPaintInfo(), svg_style));
             break;
           }
           case PT_STROKE:
             if (svg_style.HasVisibleStroke()) {
               GraphicsContextStateSaver state_saver(
-                  paint_context.GetPaintInfo().context, false);
+                  paint_state.GetPaintInfo().context, false);
               AffineTransform non_scaling_transform;
               const AffineTransform* additional_paint_server_transform =
                   nullptr;
@@ -110,11 +111,11 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
               }
 
               PaintFlags stroke_flags;
-              if (!SVGPaintContext::PaintForLayoutObject(
-                      paint_context.GetPaintInfo(),
-                      layout_svg_shape_.StyleRef(), layout_svg_shape_,
-                      kApplyToStrokeMode, stroke_flags,
-                      additional_paint_server_transform))
+              if (!SVGObjectPainter(layout_svg_shape_)
+                       .PreparePaint(paint_state.GetPaintInfo(),
+                                     layout_svg_shape_.StyleRef(),
+                                     kApplyToStrokeMode, stroke_flags,
+                                     additional_paint_server_transform))
                 break;
               stroke_flags.setAntiAlias(should_anti_alias);
 
@@ -124,11 +125,11 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
                   layout_svg_shape_.DashScaleFactor());
               stroke_data.SetupPaint(&stroke_flags);
 
-              StrokeShape(paint_context.GetPaintInfo().context, stroke_flags);
+              StrokeShape(paint_state.GetPaintInfo().context, stroke_flags);
             }
             break;
           case PT_MARKERS:
-            PaintMarkers(paint_context.GetPaintInfo(),
+            PaintMarkers(paint_state.GetPaintInfo(),
                          layout_svg_shape_.VisualRectInLocalSVGCoordinates());
             break;
           default:

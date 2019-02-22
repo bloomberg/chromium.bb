@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_TEXT_FINDER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -46,7 +47,6 @@ class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
 class WebString;
-struct WebFindOptions;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebRect;
@@ -58,7 +58,7 @@ class CORE_EXPORT TextFinder final
 
   bool Find(int identifier,
             const WebString& search_text,
-            const WebFindOptions&,
+            const mojom::blink::FindOptions& options,
             bool wrap_within_frame,
             bool* active_now = nullptr);
   void ClearActiveFindMatch();
@@ -74,7 +74,7 @@ class CORE_EXPORT TextFinder final
   // asyncronously calls scopeStringMatches().
   void StartScopingStringMatches(int identifier,
                                  const WebString& search_text,
-                                 const WebFindOptions&);
+                                 const mojom::blink::FindOptions& options);
 
   // Cancels any outstanding requests for scoping string matches on the frame.
   void CancelPendingScopingEffort();
@@ -108,7 +108,7 @@ class CORE_EXPORT TextFinder final
   ~TextFinder();
 
   class FindMatch {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     FindMatch(Range*, int ordinal);
@@ -166,7 +166,7 @@ class CORE_EXPORT TextFinder final
   // is a repeat search that already returned nothing last time the same prefix
   // was searched.
   bool ShouldScopeMatches(const WTF::String& search_text,
-                          const WebFindOptions&);
+                          const mojom::blink::FindOptions&);
 
   // Removes the current frame from the global scoping effort and triggers any
   // updates if appropriate. This method does not mark the scoping operation
@@ -189,18 +189,18 @@ class CORE_EXPORT TextFinder final
   void ScopeStringMatches(IdleDeadline* deadline,
                           int identifier,
                           const WebString& search_text,
-                          const WebFindOptions&);
+                          const mojom::blink::FindOptions&);
 
   // Queue up a deferred call to scopeStringMatches.
   void ScopeStringMatchesSoon(int identifier,
                               const WebString& search_text,
-                              const WebFindOptions&);
+                              const mojom::blink::FindOptions&);
 
   // Called by an IdleScopeStringMatchesCallback instance.
   void ResumeScopingStringMatches(IdleDeadline* deadline,
                                   int identifier,
                                   const WebString& search_text,
-                                  const WebFindOptions&);
+                                  const mojom::blink::FindOptions&);
 
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
@@ -242,7 +242,7 @@ class CORE_EXPORT TextFinder final
 
   // Keeps track of how many matches this frame has found so far, so that we
   // don't lose count between scoping efforts, and is also used (in conjunction
-  // with m_lastSearchString) to figure out if we need to search the frame
+  // with last_search_string_) to figure out if we need to search the frame
   // again.
   int last_match_count_;
 

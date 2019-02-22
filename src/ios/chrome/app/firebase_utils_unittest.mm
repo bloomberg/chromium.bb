@@ -18,6 +18,9 @@
 #if BUILDFLAG(FIREBASE_ENABLED)
 #import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRApp.h"
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -27,6 +30,29 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if BUILDFLAG(FIREBASE_ENABLED)
+class LegacyUserAppDistributionProvider : public TestAppDistributionProvider {
+ public:
+  bool IsPreFirebaseLegacyUser(int64_t install_date) override { return true; }
+};
+
+class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
+ public:
+  FakeChromeBrowserProvider()
+      : app_distribution_provider_(
+            std::make_unique<LegacyUserAppDistributionProvider>()) {}
+  ~FakeChromeBrowserProvider() override {}
+
+  AppDistributionProvider* GetAppDistributionProvider() const override {
+    return app_distribution_provider_.get();
+  }
+
+ private:
+  std::unique_ptr<LegacyUserAppDistributionProvider> app_distribution_provider_;
+  DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserProvider);
+};
+#endif  // BUILDFLAG(FIREBASE_ENABLED)
 
 class FirebaseUtilsTest : public PlatformTest {
  public:
@@ -84,7 +110,7 @@ TEST_F(FirebaseUtilsTest, DisabledInitializedOutsideWindow) {
   // window.
   int64_t before_attribution =
       base::TimeDelta::FromDays(kConversionAttributionWindowInDays + 1)
-          .InMilliseconds();
+          .InSeconds();
   SetInstallDate(base::Time::Now().ToTimeT() - before_attribution);
   // Expects Firebase SDK initialization to be not called.
   [[firapp_ reject] configure];
@@ -92,6 +118,23 @@ TEST_F(FirebaseUtilsTest, DisabledInitializedOutsideWindow) {
   histogram_tester_.ExpectUniqueSample(
       kFirebaseConfiguredHistogramName,
       FirebaseConfiguredState::kDisabledConversionWindow, 1);
+  EXPECT_OCMOCK_VERIFY(firapp_);
+}
+
+TEST_F(FirebaseUtilsTest, DisabledLegacyInstallation) {
+  // Sets up the ChromeProviderEnvironment with a fake provider that responds
+  // positively that user is a legacy user predating Firebase integration.
+  IOSChromeScopedTestingChromeBrowserProvider provider_(
+      std::make_unique<FakeChromeBrowserProvider>());
+  // Set an app install date that is at least a year ago.
+  int64_t a_year_ago = base::TimeDelta::FromDays(365).InSeconds();
+  SetInstallDate(base::Time::Now().ToTimeT() - a_year_ago);
+  // Expects Firebase SDK initialization to be not called.
+  [[firapp_ reject] configure];
+  InitializeFirebase(/*is_first_run=*/true);
+  histogram_tester_.ExpectUniqueSample(
+      kFirebaseConfiguredHistogramName,
+      FirebaseConfiguredState::kDisabledLegacyInstallation, 1);
   EXPECT_OCMOCK_VERIFY(firapp_);
 }
 

@@ -181,51 +181,6 @@ class GtestTestInstanceTests(unittest.TestCase):
     actual = gtest_test_instance.ParseGTestXML(None)
     self.assertEquals([], actual)
 
-  def testConvertTestFilterFile_commentsAndBlankLines(self):
-    input_lines = [
-      'positive1',
-      '# comment',
-      'positive2  # Another comment',
-      ''
-      'positive3'
-    ]
-    actual = gtest_test_instance \
-        .ConvertTestFilterFileIntoGTestFilterArgument(input_lines)
-    expected = 'positive1:positive2:positive3'
-    self.assertEquals(expected, actual)
-
-  def testConvertTestFilterFile_onlyPositive(self):
-    input_lines = [
-      'positive1',
-      'positive2'
-    ]
-    actual = gtest_test_instance \
-        .ConvertTestFilterFileIntoGTestFilterArgument(input_lines)
-    expected = 'positive1:positive2'
-    self.assertEquals(expected, actual)
-
-  def testConvertTestFilterFile_onlyNegative(self):
-    input_lines = [
-      '-negative1',
-      '-negative2'
-    ]
-    actual = gtest_test_instance \
-        .ConvertTestFilterFileIntoGTestFilterArgument(input_lines)
-    expected = '-negative1:negative2'
-    self.assertEquals(expected, actual)
-
-  def testConvertTestFilterFile_positiveAndNegative(self):
-    input_lines = [
-      'positive1',
-      'positive2',
-      '-negative1',
-      '-negative2'
-    ]
-    actual = gtest_test_instance \
-        .ConvertTestFilterFileIntoGTestFilterArgument(input_lines)
-    expected = 'positive1:positive2-negative1:negative2'
-    self.assertEquals(expected, actual)
-
   def testTestNameWithoutDisabledPrefix_disabled(self):
     test_name_list = [
       'A.DISABLED_B',

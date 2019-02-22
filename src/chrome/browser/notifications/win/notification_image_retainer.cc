@@ -4,21 +4,18 @@
 
 #include "chrome/browser/notifications/win/notification_image_retainer.h"
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
-
-using base::FilePath;
 
 namespace {
 
@@ -31,24 +28,34 @@ constexpr base::FilePath::CharType kImageRoot[] =
 // notifications that can be shown on-screen at once (1).
 constexpr base::TimeDelta kDeletionDelay = base::TimeDelta::FromSeconds(12);
 
-// Writes |data| to a new temporary file and returns the path to the new file,
-// or an empty path if the function fails.
-FilePath WriteDataToTmpFile(const FilePath& file_path,
-                            const base::string16& subdirectory,
-                            const scoped_refptr<base::RefCountedMemory>& data) {
+// Returns the temporary directory within the user data directory. The regular
+// temporary directory is not used to minimize the risk of files getting deleted
+// by accident. It is also not profile-bound because the notification bridge
+// handles images for multiple profiles and the separation is handled by
+// RegisterTemporaryImage.
+base::FilePath DetermineImageDirectory() {
+  base::FilePath data_dir;
+  bool success = base::PathService::Get(chrome::DIR_USER_DATA, &data_dir);
+  DCHECK(success);
+  return data_dir.Append(kImageRoot);
+}
+
+// Writes |data| to a new temporary file at |dir_path| and returns the path to
+// the new file, or an empty path if the function fails.
+base::FilePath WriteDataToTmpFile(
+    const base::FilePath& dir_path,
+    const scoped_refptr<base::RefCountedMemory>& data) {
+  if (!base::CreateDirectoryAndGetError(dir_path, nullptr))
+    return base::FilePath();
+
+  base::FilePath temp_file;
+  if (!base::CreateTemporaryFileInDir(dir_path, &temp_file))
+    return base::FilePath();
+
   int data_len = data->size();
-  if (data_len == 0)
-    return FilePath();
-
-  FilePath new_temp = file_path.Append(subdirectory);
-  if (!base::CreateDirectoryAndGetError(new_temp, nullptr))
-    return FilePath();
-
-  FilePath temp_file;
-  if (!base::CreateTemporaryFileInDir(new_temp, &temp_file))
-    return FilePath();
   if (base::WriteFile(temp_file, data->front_as<char>(), data_len) != data_len)
-    return FilePath();
+    return base::FilePath();
+
   return temp_file;
 }
 
@@ -61,32 +68,42 @@ NotificationImageRetainer::NotificationImageRetainer(
     : task_runner_(task_runner) {}
 
 NotificationImageRetainer::~NotificationImageRetainer() {
-  if (!image_directory_.empty())
+  if (!image_directory_.empty()) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Notifications.Windows.ImageRetainerDestructionTime");
     base::DeleteFile(image_directory_, true);
+  }
 }
 
-FilePath NotificationImageRetainer::RegisterTemporaryImage(
+base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
     const gfx::Image& image,
     const std::string& profile_id,
     const GURL& origin) {
   base::AssertBlockingAllowed();
+
+  scoped_refptr<base::RefCountedMemory> image_data = image.As1xPNGBytes();
+  if (image_data->size() == 0)
+    return base::FilePath();
+
   if (!initialized_) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Notifications.Windows.ImageRetainerInitializationTime");
     image_directory_ = DetermineImageDirectory();
     // Delete the old image directory.
     DeleteFile(image_directory_, /*recursive=*/true);
     // Recreate the image directory.
     if (!base::CreateDirectoryAndGetError(image_directory_, nullptr))
-      return FilePath();
+      return base::FilePath();
     initialized_ = true;
   }
 
   // To minimize the risk of collisions, separate each request by subdirectory
   // generated from hashes of the profile and the origin. Each file within the
   // subdirectory will also be given a unique filename.
-  base::string16 directory = base::UintToString16(base::Hash(
-      base::UTF8ToUTF16(profile_id) + base::UTF8ToUTF16(origin.spec())));
-  FilePath temp_file =
-      WriteDataToTmpFile(image_directory_, directory, image.As1xPNGBytes());
+  base::string16 directory =
+      base::UintToString16(base::Hash(profile_id + origin.spec()));
+  base::FilePath temp_file =
+      WriteDataToTmpFile(image_directory_.Append(directory), image_data);
 
   // Add a future task to try to delete the file. It is OK to fail, the file
   // will get deleted later.
@@ -104,13 +121,6 @@ FilePath NotificationImageRetainer::RegisterTemporaryImage(
 
 // static
 void NotificationImageRetainer::OverrideTempFileLifespanForTesting(
-    bool override) {
-  override_file_destruction_ = override;
-}
-
-FilePath NotificationImageRetainer::DetermineImageDirectory() {
-  FilePath data_dir;
-  bool success = base::PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-  DCHECK(success);
-  return data_dir.Append(kImageRoot);
+    bool override_file_destruction) {
+  override_file_destruction_ = override_file_destruction;
 }

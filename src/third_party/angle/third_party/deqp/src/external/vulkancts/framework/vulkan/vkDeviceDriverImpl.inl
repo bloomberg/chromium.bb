@@ -782,6 +782,26 @@ void DeviceDriver::cmdPushDescriptorSetWithTemplateKHR (VkCommandBuffer commandB
 	m_vk.cmdPushDescriptorSetWithTemplateKHR(commandBuffer, descriptorUpdateTemplate, layout, set, pData);
 }
 
+VkResult DeviceDriver::createRenderPass2KHR (VkDevice device, const VkRenderPassCreateInfo2KHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) const
+{
+	return m_vk.createRenderPass2KHR(device, pCreateInfo, pAllocator, pRenderPass);
+}
+
+void DeviceDriver::cmdBeginRenderPass2KHR (VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfoKHR* pSubpassBeginInfo) const
+{
+	m_vk.cmdBeginRenderPass2KHR(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
+}
+
+void DeviceDriver::cmdNextSubpass2KHR (VkCommandBuffer commandBuffer, const VkSubpassBeginInfoKHR* pSubpassBeginInfo, const VkSubpassEndInfoKHR* pSubpassEndInfo) const
+{
+	m_vk.cmdNextSubpass2KHR(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
+}
+
+void DeviceDriver::cmdEndRenderPass2KHR (VkCommandBuffer commandBuffer, const VkSubpassEndInfoKHR* pSubpassEndInfo) const
+{
+	m_vk.cmdEndRenderPass2KHR(commandBuffer, pSubpassEndInfo);
+}
+
 VkResult DeviceDriver::getSwapchainStatusKHR (VkDevice device, VkSwapchainKHR swapchain) const
 {
 	return m_vk.getSwapchainStatusKHR(device, swapchain);
@@ -965,6 +985,11 @@ VkResult DeviceDriver::mergeValidationCachesEXT (VkDevice device, VkValidationCa
 VkResult DeviceDriver::getValidationCacheDataEXT (VkDevice device, VkValidationCacheEXT validationCache, deUintptr* pDataSize, void* pData) const
 {
 	return m_vk.getValidationCacheDataEXT(device, validationCache, pDataSize, pData);
+}
+
+VkResult DeviceDriver::getMemoryHostPointerPropertiesEXT (VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties) const
+{
+	return m_vk.getMemoryHostPointerPropertiesEXT(device, handleType, pHostPointer, pMemoryHostPointerProperties);
 }
 
 VkResult DeviceDriver::getAndroidHardwareBufferPropertiesANDROID (VkDevice device, const struct pt::AndroidHardwareBufferPtr buffer, VkAndroidHardwareBufferPropertiesANDROID* pProperties) const

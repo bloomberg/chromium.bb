@@ -37,8 +37,6 @@
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_form_element.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -60,10 +58,8 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "v8/include/v8.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace {
 
@@ -157,10 +153,13 @@ WebString WebDocument::Title() const {
   return WebString(ConstUnwrap<Document>()->title());
 }
 
-WebString WebDocument::ContentAsTextForTesting() const {
+WebString WebDocument::ContentAsTextForTesting(bool use_inner_text) const {
   Element* document_element = ConstUnwrap<Document>()->documentElement();
   if (!document_element)
     return WebString();
+  if (use_inner_text)
+    return document_element->innerText();
+
   // TODO(editing-dev): We should use |Element::innerText()|.
   const_cast<Document*>(ConstUnwrap<Document>())
       ->UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(document_element);
@@ -256,25 +255,6 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
   return draggable_regions;
 }
 
-v8::Local<v8::Value> WebDocument::RegisterEmbedderCustomElement(
-    const WebString& name,
-    v8::Local<v8::Value> options) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  Document* document = Unwrap<Document>();
-  DummyExceptionStateForTesting exception_state;
-  ElementRegistrationOptions registration_options;
-  V8ElementRegistrationOptions::ToImpl(isolate, options, registration_options,
-                                       exception_state);
-  if (exception_state.HadException())
-    return v8::Local<v8::Value>();
-  ScriptValue constructor = document->registerElement(
-      ScriptState::Current(isolate), name, registration_options,
-      exception_state, V0CustomElement::kEmbedderNames);
-  if (exception_state.HadException())
-    return v8::Local<v8::Value>();
-  return constructor.V8Value();
-}
-
 WebURL WebDocument::ManifestURL() const {
   const Document* document = ConstUnwrap<Document>();
   HTMLLinkElement* link_element = document->LinkManifest();
@@ -315,7 +295,7 @@ WebDocument& WebDocument::operator=(Document* elem) {
 }
 
 WebDocument::operator Document*() const {
-  return ToDocument(private_.Get());
+  return blink::To<Document>(private_.Get());
 }
 
 }  // namespace blink

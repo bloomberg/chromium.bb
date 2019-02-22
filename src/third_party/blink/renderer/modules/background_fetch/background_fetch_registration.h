@@ -39,7 +39,7 @@ class BackgroundFetchRegistration final
       unsigned long long uploaded,
       unsigned long long download_total,
       unsigned long long downloaded,
-      mojom::BackgroundFetchState state,
+      mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason);
 
   BackgroundFetchRegistration(
@@ -57,7 +57,10 @@ class BackgroundFetchRegistration final
   void OnProgress(uint64_t upload_total,
                   uint64_t uploaded,
                   uint64_t download_total,
-                  uint64_t downloaded) override;
+                  uint64_t downloaded,
+                  mojom::BackgroundFetchResult result,
+                  mojom::BackgroundFetchFailureReason failure_reason) override;
+  void OnRecordsUnavailable() override;
 
   // Web Exposed attribute defined in the IDL file. Corresponds to the
   // |developer_id| used elsewhere in the codebase.
@@ -77,7 +80,8 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded() const;
   unsigned long long downloadTotal() const;
   unsigned long long downloaded() const;
-  const String state() const;
+  bool recordsAvailable() const;
+  const String result() const;
   const String failureReason() const;
 
   const String& unique_id() const { return unique_id_; }
@@ -122,7 +126,8 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded_;
   unsigned long long download_total_;
   unsigned long long downloaded_;
-  mojom::BackgroundFetchState state_;
+  bool records_available_ = true;
+  mojom::BackgroundFetchResult result_;
   mojom::BackgroundFetchFailureReason failure_reason_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>

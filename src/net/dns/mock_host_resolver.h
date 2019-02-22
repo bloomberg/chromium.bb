@@ -22,6 +22,10 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/host_resolver_source.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace net {
 
 class HostCache;
@@ -124,6 +128,7 @@ class MockHostResolverBase
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
                  HostCache::EntryStaleness* stale_out) const override;
+  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
 
   // Detach cancelled request.
   void DetachRequest(size_t id);
@@ -151,6 +156,10 @@ class MockHostResolverBase
   // DEFAULT_PRIORITY if Resolve() hasn't been called yet).
   RequestPriority last_request_priority() const {
     return last_request_priority_;
+  }
+
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
   }
 
  protected:
@@ -193,6 +202,8 @@ class MockHostResolverBase
 
   size_t num_resolve_;
   size_t num_resolve_from_cache_;
+
+  const base::TickClock* tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
 

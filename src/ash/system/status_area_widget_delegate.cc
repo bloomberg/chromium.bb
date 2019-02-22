@@ -29,6 +29,8 @@ constexpr int kAnimationDurationMs = 250;
 
 constexpr int kPaddingFromEdgeOfShelf = 3;
 
+constexpr int kPaddingBetweenWidgetsNewUi = 8;
+
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
  public:
@@ -194,20 +196,23 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
-  const int padding = (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
+  const int vertical_padding =
+      (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
 
   // Edges for horizontal alignment (right-to-left, default).
-  int top_edge = padding;
+  int top_edge = vertical_padding;
   int left_edge = 0;
-  int bottom_edge = padding;
+  int bottom_edge = vertical_padding;
   int right_edge =
       !features::IsSystemTrayUnifiedEnabled() && extend_border_to_edge
           ? kPaddingFromEdgeOfShelf
           : 0;
-  // In the new UI, since all corners are rounded, add some extra space so that
-  // borders don't overlap.
-  if (chromeos::switches::ShouldUseShelfNewUi())
-    right_edge += ShelfConstants::control_border_radius() / 3;
+
+  // Since all corners are rounded, add some extra space so that borders
+  // don't overlap. This padding between items also takes care of padding
+  // at the edge of the shelf.
+  right_edge = kPaddingBetweenWidgetsNewUi;
+  left_edge = 0;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

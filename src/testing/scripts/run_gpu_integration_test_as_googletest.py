@@ -68,6 +68,13 @@ def main():
     index += 1
   if args.isolated_script_test_filter:
     filter_list = common.extract_filter_list(args.isolated_script_test_filter)
+
+    # isolated_script_test_filter comes in like:
+    #   gpu_tests.webgl_conformance_integration_test.WebGLConformanceIntegrationTest.WebglExtension_WEBGL_depth_texture  # pylint: disable=line-too-long
+    # but we need to pass it to --test-filter like this:
+    #   WebglExtension_WEBGL_depth_texture
+    filter_list = [f.split('.')[-1] for f in filter_list]
+
     # Need to convert this to a valid regex.
     filter_regex = '(' + '|'.join(filter_list) + ')'
     rest_args.append('--test-filter=' + filter_regex)

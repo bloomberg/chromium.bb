@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
@@ -99,8 +100,9 @@ blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews() {
 
 }  // namespace
 
-PreviewsService::PreviewsService()
-    : previews_lite_page_decider_(std::make_unique<PreviewsLitePageDecider>()) {
+PreviewsService::PreviewsService(content::BrowserContext* browser_context)
+    : previews_lite_page_decider_(
+          std::make_unique<PreviewsLitePageDecider>(browser_context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -130,5 +132,10 @@ void PreviewsService::Initialize(
                 optimization_guide_service, io_task_runner)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
-      std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews());
+      std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),
+      g_browser_process->network_quality_tracker());
+}
+
+void PreviewsService::Shutdown() {
+  previews_lite_page_decider_->Shutdown();
 }

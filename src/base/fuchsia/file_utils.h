@@ -19,6 +19,11 @@ namespace fuchsia {
 // namespace.
 BASE_EXPORT zx::handle GetHandleFromFile(base::File file);
 
+// Makes a File object from a Zircon handle.
+// Returns an empty File if |handle| is invalid or not a valid PA_FDIO_REMOTE
+// descriptor.
+BASE_EXPORT base::File GetFileFromHandle(zx::handle handle);
+
 }  // namespace fuchsia
 }  // namespace base
 

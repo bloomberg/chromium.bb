@@ -43,11 +43,25 @@ void ClientSurfaceEmbedder::SetPrimarySurfaceId(
       false /* stretch_content_to_fill_bounds */);
 }
 
+bool ClientSurfaceEmbedder::HasPrimarySurfaceId() const {
+  return surface_layer_owner_->layer()->GetPrimarySurfaceId() != nullptr;
+}
+
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   fallback_surface_info_ = surface_info;
   surface_layer_owner_->layer()->SetFallbackSurfaceId(surface_info.id());
   UpdateSizeAndGutters();
+}
+
+void ClientSurfaceEmbedder::SetClientAreaInsets(
+    const gfx::Insets& client_area_insets) {
+  if (client_area_insets_ == client_area_insets)
+    return;
+
+  client_area_insets_ = client_area_insets;
+  if (inject_gutter_)
+    UpdateSizeAndGutters();
 }
 
 void ClientSurfaceEmbedder::UpdateSizeAndGutters() {

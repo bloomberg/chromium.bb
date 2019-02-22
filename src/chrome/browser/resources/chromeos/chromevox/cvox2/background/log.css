@@ -9,6 +9,17 @@ body {
   margin: 0;
 }
 
+h1 {
+  background: rgb(247, 152, 58);
+  color: white;
+  display: block;
+  font-size: 16px;
+  height: 56px;
+  line-height: 56px;
+  text-align: center;
+  width: 100%;
+}
+
 /* Log Filters */
 #logFilters {
   margin: 5px;
@@ -40,6 +51,12 @@ body {
   margin: 2px;
 }
 
+#logList pre {
+  font-family: monospace;
+  line-height: 20px;
+  margin-left: 205px;
+}
+
 /* Log tags */
 
 .log-type-tag {
@@ -50,7 +67,7 @@ body {
   margin-inline-end: 5px;
   margin-top: 2px;
   padding: 0 4px 2px 4px;
-  width: 50px;
+  width: 75px;
 }
 
 .log-time-tag {

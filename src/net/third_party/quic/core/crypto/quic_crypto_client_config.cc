@@ -115,7 +115,7 @@ QuicCryptoClientConfig::CachedState::GetServerConfig() const {
   }
 
   if (!scfg_.get()) {
-    scfg_ = CryptoFramer::ParseMessage(server_config_, Perspective::IS_CLIENT);
+    scfg_ = CryptoFramer::ParseMessage(server_config_);
     DCHECK(scfg_.get());
   }
   return scfg_.get();
@@ -154,8 +154,7 @@ QuicCryptoClientConfig::CachedState::SetServerConfig(
   const CryptoHandshakeMessage* new_scfg;
 
   if (!matches_existing) {
-    new_scfg_storage =
-        CryptoFramer::ParseMessage(server_config, Perspective::IS_CLIENT);
+    new_scfg_storage = CryptoFramer::ParseMessage(server_config);
     new_scfg = new_scfg_storage.get();
   } else {
     new_scfg = GetServerConfig();
@@ -490,8 +489,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   if (!certs.empty()) {
     std::vector<uint64_t> hashes;
     hashes.reserve(certs.size());
-    for (std::vector<QuicString>::const_iterator i = certs.begin();
-         i != certs.end(); ++i) {
+    for (auto i = certs.begin(); i != certs.end(); ++i) {
       hashes.push_back(QuicUtils::FNV1a_64_Hash(*i));
     }
     out->SetVector(kCCRT, hashes);
@@ -632,8 +630,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     cetv.set_tag(kCETV);
 
     QuicString hkdf_input;
-    const QuicData& client_hello_serialized =
-        out->GetSerialized(Perspective::IS_CLIENT);
+    const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
     hkdf_input.append(reinterpret_cast<char*>(&connection_id),
@@ -663,7 +660,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
 
-    const QuicData& cetv_plaintext = cetv.GetSerialized(Perspective::IS_CLIENT);
+    const QuicData& cetv_plaintext = cetv.GetSerialized();
     const size_t encrypted_len =
         crypters.encrypter->GetCiphertextSize(cetv_plaintext.length());
     std::unique_ptr<char[]> output(new char[encrypted_len]);
@@ -690,8 +687,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out_params->hkdf_input_suffix.clear();
   out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&connection_id),
                                        sizeof(connection_id));
-  const QuicData& client_hello_serialized =
-      out->GetSerialized(Perspective::IS_CLIENT);
+  const QuicData& client_hello_serialized = out->GetSerialized();
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());
   out_params->hkdf_input_suffix.append(cached->server_config());
@@ -957,7 +953,7 @@ void QuicCryptoClientConfig::PreferAesGcm() {
   if (aead.size() <= 1) {
     return;
   }
-  QuicTagVector::iterator pos = std::find(aead.begin(), aead.end(), kAESG);
+  auto pos = std::find(aead.begin(), aead.end(), kAESG);
   if (pos != aead.end()) {
     aead.erase(pos);
     aead.insert(aead.begin(), kAESG);

@@ -120,17 +120,17 @@ const base::Feature kAllowClientHintsToThirdParty{
 
 enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
-enum class ResourceType { kIsMainResource, kIsNotMainResource };
+enum class MainResourceType { kIsMainResource, kIsNotMainResource };
 
 void MaybeRecordCTPolicyComplianceUseCounter(
     LocalFrame* frame,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     ResourceResponse::CTPolicyCompliance compliance,
     DocumentLoader* loader) {
   if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
     return;
   // Exclude main-frame navigation requests; those are tracked elsewhere.
-  if (!frame->Tree().Parent() && resource_type == Resource::kMainResource)
+  if (!frame->Tree().Parent() && resource_type == ResourceType::kMainResource)
     return;
   if (loader) {
     loader->GetUseCounter().Count(
@@ -143,9 +143,9 @@ void MaybeRecordCTPolicyComplianceUseCounter(
 }
 
 void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
-                                        Resource::Type resource_type) {
+                                        ResourceType resource_type) {
   // Main resources are counted in DocumentLoader.
-  if (resource_type == Resource::kMainResource) {
+  if (resource_type == ResourceType::kMainResource) {
     return;
   }
   UseCounter::Count(frame, WebFeature::kLegacySymantecCertInSubresource);
@@ -157,7 +157,7 @@ void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
 // conversion logic into a separate function.
 mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
                                          RequestType request_type,
-                                         ResourceType resource_type,
+                                         MainResourceType resource_type,
                                          WebFrameLoadType load_type) {
   switch (load_type) {
     case WebFrameLoadType::kStandard:
@@ -172,7 +172,7 @@ mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
                  ? mojom::FetchCacheMode::kOnlyIfCached
                  : mojom::FetchCacheMode::kForceCache;
     case WebFrameLoadType::kReload:
-      return resource_type == ResourceType::kIsMainResource
+      return resource_type == MainResourceType::kIsMainResource
                  ? mojom::FetchCacheMode::kValidateCache
                  : mojom::FetchCacheMode::kDefault;
     case WebFrameLoadType::kReloadBypassingCache:
@@ -188,7 +188,7 @@ mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
 // TODO(toyoshim): Remove |resourceType| to realize the design described above.
 // See also comments in resourceRequestCachePolicy().
 mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
-                                              ResourceType resource_type) {
+                                              MainResourceType resource_type) {
   if (!frame)
     return mojom::FetchCacheMode::kDefault;
   if (!frame->IsLocalFrame())
@@ -198,7 +198,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   // TODO(toyoshim): We should be able to remove following parents' policy check
   // if each frame has a relevant WebFrameLoadType for reload and history
   // navigations.
-  if (resource_type == ResourceType::kIsNotMainResource &&
+  if (resource_type == MainResourceType::kIsNotMainResource &&
       ToLocalFrame(frame)->GetDocument()->LoadEventFinished()) {
     return mojom::FetchCacheMode::kDefault;
   }
@@ -219,7 +219,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   // kIsNotMainResource to obtain a representative policy for the frame.
   return DetermineCacheMode(RequestMethod::kIsNotPost,
                             RequestType::kIsNotConditional,
-                            ResourceType::kIsNotMainResource, load_type);
+                            MainResourceType::kIsNotMainResource, load_type);
 }
 
 }  // namespace
@@ -231,7 +231,6 @@ struct FrameFetchContext::FrozenState final
               const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
               KURL site_for_cookies,
-              scoped_refptr<const SecurityOrigin> requestor_origin,
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
@@ -242,7 +241,6 @@ struct FrameFetchContext::FrozenState final
         address_space(address_space),
         content_security_policy(content_security_policy),
         site_for_cookies(site_for_cookies),
-        requestor_origin(requestor_origin),
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
@@ -254,7 +252,6 @@ struct FrameFetchContext::FrozenState final
   const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
-  const scoped_refptr<const SecurityOrigin> requestor_origin;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
@@ -285,7 +282,11 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
-    : document_loader_(loader),
+    : BaseFetchContext(
+          document ? document->GetTaskRunner(blink::TaskType::kNetworking)
+                   : loader->GetFrame()->GetTaskRunner(
+                         blink::TaskType::kNetworking)),
+      document_loader_(loader),
       document_(document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
@@ -339,15 +340,15 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
 scoped_refptr<base::SingleThreadTaskRunner>
 FrameFetchContext::GetLoadingTaskRunner() {
   if (IsDetached())
-    return FetchContext::GetLoadingTaskRunner();
-  return GetFrame()->GetTaskRunner(TaskType::kNetworking);
+    return Platform::Current()->CurrentThread()->GetTaskRunner();
+  return FetchContext::GetLoadingTaskRunner();
 }
 
 std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
 FrameFetchContext::CreateResourceLoadingTaskRunnerHandle() {
   if (IsDetached()) {
     return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-        FetchContext::GetLoadingTaskRunner());
+        GetLoadingTaskRunner());
   }
   return GetFrame()
       ->GetFrameScheduler()
@@ -435,6 +436,14 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   }
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
+      WebURLRequest::kResourceLoadingHintsOn) {
+    request.AddHTTPHeaderField(
+        "Intervention",
+        "<https://www.chromestatus.com/features/4510564810227712>; "
+        "level=\"warning\"");
+  }
+
+  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kClientLoFiOn) {
     request.AddHTTPHeaderField(
         "Intervention",
@@ -449,19 +458,19 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 // instance.
 mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     const ResourceRequest& request,
-    Resource::Type type,
+    ResourceType type,
     FetchParameters::DeferOption defer) const {
   if (IsDetached())
     return mojom::FetchCacheMode::kDefault;
 
   DCHECK(GetFrame());
-  if (type == Resource::kMainResource) {
+  if (type == ResourceType::kMainResource) {
     const auto cache_mode = DetermineCacheMode(
         request.HttpMethod() == HTTPNames::POST ? RequestMethod::kIsPost
                                                 : RequestMethod::kIsNotPost,
         request.IsConditional() ? RequestType::kIsConditional
                                 : RequestType::kIsNotConditional,
-        ResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
+        MainResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
     // Follows the parent frame's policy.
     // TODO(toyoshim): Probably, WebFrameLoadType for each frame should have a
     // right type for reload or history navigations, and should not need to
@@ -471,11 +480,11 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     if (cache_mode != mojom::FetchCacheMode::kDefault)
       return cache_mode;
     return DetermineFrameCacheMode(GetFrame()->Tree().Parent(),
-                                   ResourceType::kIsMainResource);
+                                   MainResourceType::kIsMainResource);
   }
 
   const auto cache_mode =
-      DetermineFrameCacheMode(GetFrame(), ResourceType::kIsNotMainResource);
+      DetermineFrameCacheMode(GetFrame(), MainResourceType::kIsNotMainResource);
 
   // TODO(toyoshim): Revisit to consider if this clause can be merged to
   // determineWebCachePolicy or determineFrameCacheMode.
@@ -516,7 +525,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
 
 void FrameFetchContext::PrepareRequest(ResourceRequest& request,
                                        RedirectType redirect_type) {
-  SetFirstPartyCookieAndRequestorOrigin(request);
+  SetFirstPartyCookie(request);
 
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
@@ -544,7 +553,7 @@ void FrameFetchContext::DispatchWillSendRequest(
     unsigned long identifier,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
   if (IsDetached())
     return;
@@ -573,13 +582,16 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType response_type) {
   if (IsDetached())
     return;
 
   DCHECK(resource);
+
+  if (GetSubresourceFilter() && resource->GetResourceRequest().IsAdResource())
+    GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
 
   MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
                                           response.GetCTPolicyCompliance(),
@@ -616,7 +628,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // Further, the navigation response should be from a top level frame (i.e.,
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
-  if ((resource->GetType() == Resource::kMainResource) &&
+  if ((resource->GetType() == ResourceType::kMainResource) &&
       (IsMainFrame() || IsFirstPartyOrigin(response.Url()))) {
     ParseAndPersistClientHints(response);
   }
@@ -753,7 +765,7 @@ void FrameFetchContext::DispatchDidLoadResourceFromMemoryCache(
       resource_request, resource_response);
 }
 
-bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
+bool FrameFetchContext::ShouldLoadNewResource(ResourceType type) const {
   if (!document_loader_)
     return true;
 
@@ -761,14 +773,14 @@ bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
     return false;
 
   FrameLoader& loader = document_loader_->GetFrame()->Loader();
-  if (type == Resource::kMainResource)
+  if (type == ResourceType::kMainResource)
     return document_loader_ == loader.GetProvisionalDocumentLoader();
   return document_loader_ == loader.GetDocumentLoader();
 }
 
 void FrameFetchContext::RecordLoadingActivity(
     const ResourceRequest& request,
-    Resource::Type type,
+    ResourceType type,
     const AtomicString& fetch_initiator_name) {
   if (!document_loader_ || document_loader_->Fetcher()->Archive() ||
       !request.Url().IsValid())
@@ -991,8 +1003,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
-    unsigned long rtt = GetNetworkStateNotifier().RoundRtt(
-        request.Url().Host(), GetNetworkStateNotifier().HttpRtt());
+    base::Optional<TimeDelta> http_rtt =
+        GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
+    if (!http_rtt) {
+      http_rtt = GetNetworkStateNotifier().HttpRtt();
+    }
+
+    unsigned long rtt =
+        GetNetworkStateNotifier().RoundRtt(request.Url().Host(), http_rtt);
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kRtt)],
@@ -1001,9 +1019,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
                            hints_preferences, enabled_hints)) {
-    double mbps = GetNetworkStateNotifier().RoundMbps(
-        request.Url().Host(),
-        GetNetworkStateNotifier().DownlinkThroughputMbps());
+    base::Optional<double> throughput_mbps =
+        GetNetworkStateNotifier().GetWebHoldbackDownlinkThroughputMbps();
+    if (!throughput_mbps) {
+      throughput_mbps = GetNetworkStateNotifier().DownlinkThroughputMbps();
+    }
+
+    double mbps = GetNetworkStateNotifier().RoundMbps(request.Url().Host(),
+                                                      throughput_mbps);
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kDownlink)],
@@ -1012,16 +1035,21 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
                            enabled_hints)) {
+    base::Optional<WebEffectiveConnectionType> holdback_ect =
+        GetNetworkStateNotifier().GetWebHoldbackEffectiveType();
+    if (!holdback_ect)
+      holdback_ect = GetNetworkStateNotifier().EffectiveType();
+
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kEct)],
         AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
-            GetNetworkStateNotifier().EffectiveType())));
+            holdback_ect.value())));
   }
 }
 
 void FrameFetchContext::PopulateResourceRequest(
-    Resource::Type type,
+    ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
@@ -1033,8 +1061,7 @@ void FrameFetchContext::PopulateResourceRequest(
     request.AddHTTPHeaderField("CSP", "active");
 }
 
-void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
-    ResourceRequest& request) {
+void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
@@ -1045,18 +1072,6 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     } else {
       request.SetSiteForCookies(GetSiteForCookies());
     }
-  }
-
-  // * For subresources, the initiator origin is the origin of the
-  //   |document_| that contains them.
-  // * For loading a new document in the frame, the initiator is not set here.
-  //   In most of the cases, it is set in the FrameLoadRequest constructor.
-  //   Otherwise, it must be set immediately after the request has been created.
-  //   See the calls to ResourceRequest::SetRequestorOrigin().
-  if (request.GetFrameType() ==
-      network::mojom::RequestContextFrameType::kNone) {
-    if (!request.RequestorOrigin())
-      request.SetRequestorOrigin(GetRequestorOrigin());
   }
 }
 
@@ -1120,7 +1135,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
-    Resource::Type resource_type) const {
+    ResourceType resource_type) const {
   if (IsDetached())
     return;
   probe::didBlockRequest(GetFrame()->GetDocument(), resource_request,
@@ -1179,7 +1194,7 @@ FrameFetchContext::CreateWebSocketHandshakeThrottle() {
 }
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
@@ -1209,7 +1224,7 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     return false;
 
   if (resource_request.GetRequestContext() ==
-      WebURLRequest::kRequestContextXMLHttpRequest) {
+      mojom::RequestContextType::XML_HTTP_REQUEST) {
     return false;
   }
 
@@ -1293,26 +1308,6 @@ String FrameFetchContext::GetUserAgent() const {
   if (IsDetached())
     return frozen_state_->user_agent;
   return GetFrame()->Loader().UserAgent();
-}
-
-scoped_refptr<const SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
-  if (IsDetached())
-    return frozen_state_->requestor_origin;
-
-  // Should not be called during the document load, and |document_| should be
-  // always set beforehand for a subresource loading.
-  DCHECK(document_);
-
-  // If sandbox is enabled and allow-same-origin is not set in the attribute,
-  // |document|'s SecurityOrigin is set to the unique opaque origin, and
-  // FrameFetchContext::GetSecurityOrigin also respects the unique origin.
-  // But, we still need to set the unveiled document origin to the requestor
-  // origin. See also sandbox's spec;
-  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-sandbox.
-  if (document_->IsSandboxed(kSandboxOrigin))
-    return SecurityOrigin::Create(document_->Url());
-
-  return GetSecurityOrigin();
 }
 
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
@@ -1406,8 +1401,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   // callsite when we make Shared Worker loading off-main-thread.
   if (document_ && request.Url().ProtocolIs("blob") &&
       BlobUtils::MojoBlobURLsEnabled() && !url_loader_factory &&
-      request.GetRequestContext() !=
-          WebURLRequest::kRequestContextSharedWorker) {
+      request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
     document_->GetPublicURLManager().Resolve(request.Url(),
                                              MakeRequest(&url_loader_factory));
   }
@@ -1436,19 +1430,18 @@ FetchContext* FrameFetchContext::Detach() {
   if (document_) {
     frozen_state_ = new FrozenState(
         Url(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(), GetRequestorOrigin(),
+        GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ =
-        new FetchClientSettingsObjectSnapshot(*document_);
+        document_->CreateFetchClientSettingsObjectSnapshot();
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
         NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
-        SecurityOrigin::CreateUniqueOpaque(), GetClientHintsPreferences(),
-        GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
-        IsSVGImageChromeClient());
+        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
+        IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ = new FetchClientSettingsObjectSnapshot(
         NullURL(), nullptr, kReferrerPolicyDefault, String());
   }
@@ -1527,7 +1520,7 @@ void FrameFetchContext::DispatchNetworkQuiet() {
 }
 
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,

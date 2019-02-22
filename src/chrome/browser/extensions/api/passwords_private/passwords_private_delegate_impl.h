@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/browser/password_manager/reauth_purpose.h"
 #include "chrome/browser/ui/passwords/password_access_authenticator.h"
 #include "chrome/browser/ui/passwords/password_manager_porter.h"
@@ -61,9 +62,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
-  void ShowPassword(
-      size_t index,
-      const base::string16& plaintext_password) override;
+  void ShowPassword(const std::string& sort_key,
+                    const base::string16& plaintext_password) override;
   void SetPasswordList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
       override;
@@ -122,6 +122,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // having to request them from |password_manager_presenter_| again.
   UiEntries current_entries_;
   ExceptionEntries current_exceptions_;
+
+  // Generators that map between sort keys used by |password_manager_presenter_|
+  // and ids used by the JavaScript front end.
+  SortKeyIdGenerator password_id_generator_;
+  SortKeyIdGenerator exception_id_generator_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
   // whether this class has been initialized, meaning both have been called.

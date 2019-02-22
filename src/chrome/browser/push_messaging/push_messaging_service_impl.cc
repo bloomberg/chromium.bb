@@ -552,6 +552,7 @@ void PushMessagingServiceImpl::DoSubscribe(
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(options.sender_info), kGCMScope,
                  std::map<std::string, std::string>() /* options */,
+                 false /* is_lazy */,
                  base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                             weak_factory_.GetWeakPtr(), app_identifier,
                             options.sender_info, register_callback));

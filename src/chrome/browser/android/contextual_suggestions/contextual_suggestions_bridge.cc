@@ -72,6 +72,9 @@ static jboolean JNI_ContextualSuggestionsBridge_IsDisabledByEnterprisePolicy(
   if (!profile)
     return false;
 
+  if (profile->IsSupervised())
+    return true;
+
   policy::ProfilePolicyConnector* policy_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
 

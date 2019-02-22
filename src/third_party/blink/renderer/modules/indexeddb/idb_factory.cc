@@ -56,11 +56,9 @@ static const char kPermissionDeniedErrorMessage[] =
 IDBFactory::IDBFactory() = default;
 
 static bool IsContextValid(ExecutionContext* context) {
-  DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
-  if (context->IsDocument()) {
-    Document* document = ToDocument(context);
+  DCHECK(IsA<Document>(context) || context->IsWorkerGlobalScope());
+  if (auto* document = DynamicTo<Document>(context))
     return document->GetFrame() && document->GetPage();
-  }
   return true;
 }
 

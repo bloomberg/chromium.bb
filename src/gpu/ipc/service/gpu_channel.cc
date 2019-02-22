@@ -304,39 +304,6 @@ bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
   return true;
 }
 
-// Definitions for constructor and destructor of this interface are needed to
-// avoid MSVC LNK2019.
-FilteredSender::FilteredSender() = default;
-
-FilteredSender::~FilteredSender() = default;
-
-SyncChannelFilteredSender::SyncChannelFilteredSender(
-    IPC::ChannelHandle channel_handle,
-    IPC::Listener* listener,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
-    base::WaitableEvent* shutdown_event)
-    : channel_(IPC::SyncChannel::Create(channel_handle,
-                                        IPC::Channel::MODE_SERVER,
-                                        listener,
-                                        ipc_task_runner,
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        false,
-                                        shutdown_event)) {}
-
-SyncChannelFilteredSender::~SyncChannelFilteredSender() = default;
-
-bool SyncChannelFilteredSender::Send(IPC::Message* msg) {
-  return channel_->Send(msg);
-}
-
-void SyncChannelFilteredSender::AddFilter(IPC::MessageFilter* filter) {
-  channel_->AddFilter(filter);
-}
-
-void SyncChannelFilteredSender::RemoveFilter(IPC::MessageFilter* filter) {
-  channel_->RemoveFilter(filter);
-}
-
 GpuChannel::GpuChannel(
     GpuChannelManager* gpu_channel_manager,
     Scheduler* scheduler,
@@ -361,29 +328,42 @@ GpuChannel::GpuChannel(
   DCHECK(gpu_channel_manager_);
   DCHECK(client_id_);
   filter_ = new GpuChannelMessageFilter(this, scheduler, task_runner);
+  // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
+  // route.
+  const int32_t shared_image_route_id =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
+  shared_image_stub_ =
+      std::make_unique<SharedImageStub>(this, shared_image_route_id);
+  filter_->AddRoute(shared_image_route_id, shared_image_stub_->sequence());
+  router_.AddRoute(shared_image_route_id, shared_image_stub_.get());
 }
 
 GpuChannel::~GpuChannel() {
   // Clear stubs first because of dependencies.
   stubs_.clear();
 
-  // Destroy filter first so that scheduler gets no more messages.
+  // Destroy filter first to stop posting tasks to scheduler.
   filter_->Destroy();
 
   for (const auto& kv : stream_sequences_)
     scheduler_->DestroySequence(kv.second);
 }
 
-void GpuChannel::Init(std::unique_ptr<FilteredSender> channel) {
-  channel_ = std::move(channel);
-  channel_->AddFilter(filter_.get());
-  // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
-  // route.
-  const int32_t route_id =
-      static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
-  shared_image_stub_ = std::make_unique<SharedImageStub>(this, route_id);
-  filter_->AddRoute(route_id, shared_image_stub_->sequence());
-  router_.AddRoute(route_id, shared_image_stub_.get());
+void GpuChannel::Init(IPC::ChannelHandle channel_handle,
+                      base::WaitableEvent* shutdown_event) {
+  sync_channel_ = IPC::SyncChannel::Create(
+      channel_handle, IPC::Channel::MODE_SERVER, this, io_task_runner_.get(),
+      task_runner_.get(), false, shutdown_event);
+  sync_channel_->AddFilter(filter_.get());
+  channel_ = sync_channel_.get();
+}
+
+void GpuChannel::InitForTesting(IPC::Channel* channel) {
+  channel_ = channel;
+  // |channel| is an IPC::TestSink in tests, so don't add the filter to it
+  // because it will forward sent messages back to the filter.
+  // Call OnFilterAdded() to prevent DCHECK failures.
+  filter_->OnFilterAdded(channel);
 }
 
 void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {

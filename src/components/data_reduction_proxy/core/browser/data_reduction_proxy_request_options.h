@@ -42,7 +42,7 @@ extern const char kAndroidWebViewProtocolVersion[];
 
 class DataReductionProxyConfig;
 
-typedef base::RepeatingCallback<void(net::HttpRequestHeaders)>
+typedef base::RepeatingCallback<void(const net::HttpRequestHeaders&)>
     UpdateHeaderCallback;
 
 class DataReductionProxyRequestOptions {

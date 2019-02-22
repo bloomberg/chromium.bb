@@ -31,10 +31,7 @@ bool IsSavableURL(const GURL& url) {
   return false;
 }
 
-// PlzNavigate
 bool IsURLHandledByNetworkStack(const GURL& url) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
   // Javascript URLs, srcdoc, schemes that don't load data should not send a
   // request to the network stack.
   if (url.SchemeIs(url::kJavaScriptScheme) || url.is_empty() ||
@@ -117,8 +114,11 @@ bool IsRendererDebugURL(const GURL& url) {
 bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
   static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
       std::set<std::string>({
-          url::kAboutScheme, url::kDataScheme, url::kFileScheme,
-          url::kFileSystemScheme,
+        url::kAboutScheme, url::kDataScheme, url::kFileScheme,
+            url::kFileSystemScheme,
+#if defined(OS_ANDROID)
+            url::kContentScheme,
+#endif
       }));
   if (HasWebUIScheme(to_url))
     return false;

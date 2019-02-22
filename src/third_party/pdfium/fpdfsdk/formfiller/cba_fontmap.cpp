@@ -11,6 +11,7 @@
 
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_page.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
@@ -19,6 +20,7 @@
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fxge/cfx_substfont.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
+#include "third_party/base/ptr_util.h"
 
 CBA_FontMap::CBA_FontMap(CPDFSDK_Annot* pAnnot,
                          CFX_SystemHandler* pSystemHandler)

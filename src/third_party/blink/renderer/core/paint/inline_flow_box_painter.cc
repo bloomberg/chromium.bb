@@ -341,9 +341,9 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestData::RecordTouchActionRect(
+  HitTestData::RecordHitTestRect(
       paint_info.context, inline_flow_box_,
-      TouchActionRect(AdjustedPaintRect(paint_offset), touch_action));
+      HitTestRect(AdjustedPaintRect(paint_offset), touch_action));
 }
 
 void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,

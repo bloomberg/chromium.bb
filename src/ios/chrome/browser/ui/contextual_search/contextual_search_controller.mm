@@ -439,7 +439,8 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
       __weak ContextualSearchController* weakSelf = self;
       auto callback = base::BindRepeating(
           ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-                bool userIsInteracting, bool isMainFrame) {
+                bool userIsInteracting, bool isMainFrame,
+                web::WebFrame* senderFrame) {
             if (!isMainFrame) {
               // Contextual search is only supported on main frame.
               return false;

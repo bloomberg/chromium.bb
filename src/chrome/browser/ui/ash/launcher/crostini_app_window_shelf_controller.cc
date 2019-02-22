@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -29,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -63,15 +65,17 @@ void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  if (aura::Env::HasInstance())
-    aura::Env::GetInstance()->AddObserver(this);
+  // TODO(mash): Find another way to observe for crostini app window creation.
+  // https://crbug.com/887156
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-  if (aura::Env::HasInstance())
-    aura::Env::GetInstance()->RemoveObserver(this);
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->RemoveObserver(this);
 }
 
 void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
@@ -130,13 +134,12 @@ void CrostiniAppWindowShelfController::OnWindowInitialized(
     aura::Window* window) {
   // An Crostini window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
   // is a top level views widget. Tooltips, menus, and other kinds of transient
-  // windows that can't activate are filtered out.
+  // windows that can't activate are filtered out. The transient child is set
+  // up after window Init so add it here but remove it later.
   if (window->type() != aura::client::WINDOW_TYPE_NORMAL || !window->delegate())
     return;
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (!widget || !widget->is_top_level())
-    return;
-  if (wm::GetTransientParent(window) != nullptr)
     return;
   if (!widget->CanActivate())
     return;
@@ -151,6 +154,17 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   if (!visible)
     return;
 
+  // Transient windows are set up after window Init, so remove them here.
+  if (wm::GetTransientParent(window)) {
+    DCHECK(aura_window_to_app_window_.find(window) ==
+           aura_window_to_app_window_.end());
+    auto it = observed_windows_.find(window);
+    DCHECK(it != observed_windows_.end());
+    observed_windows_.erase(it);
+    window->RemoveObserver(this);
+    return;
+  }
+
   // Skip when this window has been handled. This can happen when the window
   // becomes visible again.
   auto app_window_it = aura_window_to_app_window_.find(window);
@@ -161,7 +175,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   Browser* browser = chrome::FindBrowserWithWindow(window);
   if (browser) {
     base::Optional<std::string> app_id =
-        CrostiniAppIdFromAppName(browser->app_name());
+        crostini::CrostiniAppIdFromAppName(browser->app_name());
     if (!app_id)
       return;
     RegisterAppWindow(window, app_id.value());

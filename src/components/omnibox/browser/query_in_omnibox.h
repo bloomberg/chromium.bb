@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -15,7 +16,7 @@ class TemplateURLService;
 
 // This class holds the business logic for Query in Omnibox shared between both
 // Android and Desktop.
-class QueryInOmnibox {
+class QueryInOmnibox : public KeyedService {
  public:
   QueryInOmnibox(AutocompleteClassifier* autocomplete_classifier,
                  TemplateURLService* template_url_service);
@@ -32,10 +33,11 @@ class QueryInOmnibox {
   //  - The extracted search terms look too much like a URL (could confuse user)
   //
   // This method can be called with nullptr |search_terms| if the caller wants
-  // to check the display status only.
-  bool GetDisplaySearchTerms(security_state::SecurityLevel security_level,
-                             const GURL& url,
-                             base::string16* search_terms);
+  // to check the display status only. Virtual for testing purposes.
+  virtual bool GetDisplaySearchTerms(
+      security_state::SecurityLevel security_level,
+      const GURL& url,
+      base::string16* search_terms);
 
   //  Sets a flag telling the model to ignore the security level in its check
   // for whether to display search terms or not. This is useful for avoiding the
@@ -43,6 +45,10 @@ class QueryInOmnibox {
   void set_ignore_security_level(bool ignore_security_level) {
     ignore_security_level_ = ignore_security_level;
   }
+
+ protected:
+  // For testing only.
+  QueryInOmnibox();
 
  private:
   // Extracts search terms from |url|. Returns an empty string if |url| is not

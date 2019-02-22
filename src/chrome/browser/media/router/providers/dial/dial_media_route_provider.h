@@ -89,11 +89,9 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
   void TerminateRoute(const std::string& route_id,
                       TerminateRouteCallback callback) override;
   void SendRouteMessage(const std::string& media_route_id,
-                        const std::string& message,
-                        SendRouteMessageCallback callback) override;
+                        const std::string& message) override;
   void SendRouteBinaryMessage(const std::string& media_route_id,
-                              const std::vector<uint8_t>& data,
-                              SendRouteBinaryMessageCallback callback) override;
+                              const std::vector<uint8_t>& data) override;
   void StartObservingMediaSinks(const std::string& media_source) override;
   void StopObservingMediaSinks(const std::string& media_source) override;
   void StartObservingMediaRoutes(const std::string& media_source) override;

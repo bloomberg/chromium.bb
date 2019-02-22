@@ -19,7 +19,7 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
     return base::AdoptRef(new BasicShapeNonInterpolableValue(type));
   }
   static scoped_refptr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
-                                                           size_t size) {
+                                                           wtf_size_t size) {
     return base::AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
   }
 
@@ -29,7 +29,7 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
     DCHECK_EQ(GetShapeType(), BasicShape::kBasicShapePolygonType);
     return wind_rule_;
   }
-  size_t size() const {
+  wtf_size_t size() const {
     DCHECK_EQ(GetShapeType(), BasicShape::kBasicShapePolygonType);
     return size_;
   }
@@ -57,14 +57,14 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
       : type_(type), wind_rule_(RULE_NONZERO), size_(0) {
     DCHECK_NE(type, BasicShape::kBasicShapePolygonType);
   }
-  BasicShapeNonInterpolableValue(WindRule wind_rule, size_t size)
+  BasicShapeNonInterpolableValue(WindRule wind_rule, wtf_size_t size)
       : type_(BasicShape::kBasicShapePolygonType),
         wind_rule_(wind_rule),
         size_(size) {}
 
   const BasicShape::ShapeType type_;
   const WindRule wind_rule_;
-  const size_t size_;
+  const wtf_size_t size_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(BasicShapeNonInterpolableValue);
@@ -454,9 +454,9 @@ namespace PolygonFunctions {
 
 InterpolationValue ConvertCSSValue(
     const cssvalue::CSSBasicShapePolygonValue& polygon) {
-  size_t size = polygon.Values().size();
+  wtf_size_t size = polygon.Values().size();
   std::unique_ptr<InterpolableList> list = InterpolableList::Create(size);
-  for (size_t i = 0; i < size; i++)
+  for (wtf_size_t i = 0; i < size; i++)
     list->Set(i, ConvertCSSLength(polygon.Values()[i].Get()));
   return InterpolationValue(std::move(list),
                             BasicShapeNonInterpolableValue::CreatePolygon(
@@ -465,9 +465,9 @@ InterpolationValue ConvertCSSValue(
 
 InterpolationValue ConvertBasicShape(const BasicShapePolygon& polygon,
                                      double zoom) {
-  size_t size = polygon.Values().size();
+  wtf_size_t size = polygon.Values().size();
   std::unique_ptr<InterpolableList> list = InterpolableList::Create(size);
-  for (size_t i = 0; i < size; i++)
+  for (wtf_size_t i = 0; i < size; i++)
     list->Set(i, ConvertLength(polygon.Values()[i], zoom));
   return InterpolationValue(std::move(list),
                             BasicShapeNonInterpolableValue::CreatePolygon(
@@ -478,7 +478,7 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue(
     const BasicShapeNonInterpolableValue& non_interpolable_value) {
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(non_interpolable_value.size());
-  for (size_t i = 0; i < non_interpolable_value.size(); i++)
+  for (wtf_size_t i = 0; i < non_interpolable_value.size(); i++)
     list->Set(i,
               LengthInterpolationFunctions::CreateNeutralInterpolableValue());
   return std::move(list);
@@ -491,10 +491,10 @@ scoped_refptr<BasicShape> CreateBasicShape(
   scoped_refptr<BasicShapePolygon> polygon = BasicShapePolygon::Create();
   polygon->SetWindRule(non_interpolable_value.GetWindRule());
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  size_t size = non_interpolable_value.size();
+  wtf_size_t size = non_interpolable_value.size();
   DCHECK_EQ(list.length(), size);
   DCHECK_EQ(size % 2, 0U);
-  for (size_t i = 0; i < size; i += 2) {
+  for (wtf_size_t i = 0; i < size; i += 2) {
     polygon->AppendPoint(
         LengthInterpolationFunctions::CreateLength(
             *list.Get(i), nullptr, conversion_data, kValueRangeAll),

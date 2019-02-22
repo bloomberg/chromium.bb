@@ -8,9 +8,99 @@
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_image_view.h"
 
 namespace gpu {
+
+namespace {
+
+VkPipelineStageFlags GetPipelineStageFlags(const VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+      return VK_PIPELINE_STAGE_HOST_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return VK_PIPELINE_STAGE_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+             VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
+             VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
+             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+      return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    default:
+      NOTREACHED() << "layout=" << layout;
+  }
+  return 0;
+}
+
+VkAccessFlags GetAccessMask(const VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return 0;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      DLOG(WARNING) << "VK_IMAGE_LAYOUT_GENERAL is used.";
+      return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+             VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT |
+             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_HOST_WRITE_BIT |
+             VK_ACCESS_HOST_READ_BIT;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+      return VK_ACCESS_HOST_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+      return VK_ACCESS_TRANSFER_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return VK_ACCESS_TRANSFER_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+      return 0;
+    default:
+      NOTREACHED() << "layout=" << layout;
+  }
+  return 0;
+}
+
+void CmdSetImageLayout(VulkanCommandBuffer* command_buffer,
+                       VkImage image,
+                       VkImageLayout layout,
+                       VkImageLayout old_layout) {
+  DCHECK_NE(layout, old_layout);
+  VkImageMemoryBarrier image_memory_barrier = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .pNext = nullptr,
+      .srcAccessMask = GetAccessMask(old_layout),
+      .dstAccessMask = GetAccessMask(layout),
+      .oldLayout = old_layout,
+      .newLayout = layout,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .image = image,
+      .subresourceRange =
+          {
+              .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+              .baseMipLevel = 0,
+              .levelCount = 1,
+              .baseArrayLayer = 0,
+              .layerCount = 1,
+          },
+  };
+
+  ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
+  vkCmdPipelineBarrier(recorder.handle(), GetPipelineStageFlags(old_layout),
+                       GetPipelineStageFlags(layout), 0, 0, nullptr, 0, nullptr,
+                       1, &image_memory_barrier);
+}
+
+}  // namespace
 
 VulkanSwapChain::VulkanSwapChain() {}
 
@@ -44,12 +134,19 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkQueue queue = device_queue_->GetVulkanQueue();
 
-  std::unique_ptr<ImageData>& current_image_data = images_[current_image_];
+  auto& current_image_data = images_[current_image_];
 
-  // Submit our command buffer for the current buffer.
-  if (!current_image_data->command_buffer->Submit(
-          1, &current_image_data->present_semaphore, 1,
-          &current_image_data->render_semaphore)) {
+  current_image_data->post_raster_command_buffer->Clear();
+  CmdSetImageLayout(current_image_data->post_raster_command_buffer.get(),
+                    current_image_data->image,
+                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR /* layout */,
+                    current_image_data->layout /* old_layout */);
+  current_image_data->layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+  // Submit our post_raster_command_buffer for the current buffer. It sets the
+  // image layout for presenting.
+  if (!current_image_data->post_raster_command_buffer->Submit(
+          0, nullptr, 1, &current_image_data->render_semaphore)) {
     return gfx::SwapResult::SWAP_FAILED;
   }
 
@@ -67,21 +164,37 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
     return gfx::SwapResult::SWAP_FAILED;
   }
 
+  uint32_t next_image = 0;
   // Acquire then next image.
   result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX,
                                  next_present_semaphore_, VK_NULL_HANDLE,
-                                 &current_image_);
+                                 &next_image);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
   }
 
+  auto& next_image_data = images_[next_image];
   // Swap in the "next_present_semaphore" into the newly acquired image. The
   // old "present_semaphore" for the image becomes the place holder for the next
   // present semaphore for the next image.
-  std::swap(images_[current_image_]->present_semaphore,
-            next_present_semaphore_);
+  std::swap(next_image_data->present_semaphore, next_present_semaphore_);
 
+  // Submit our pre_raster_command_buffer for the next buffer. It sets the image
+  // layout for rastering.
+  next_image_data->pre_raster_command_buffer->Clear();
+  CmdSetImageLayout(next_image_data->pre_raster_command_buffer.get(),
+                    next_image_data->image,
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL /* layout */,
+                    next_image_data->layout /* old_layout */);
+  next_image_data->layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  if (!next_image_data->pre_raster_command_buffer->Submit(
+          1, &next_image_data->present_semaphore, 0, nullptr)) {
+    return gfx::SwapResult::SWAP_FAILED;
+  }
+
+  current_image_ = next_image;
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -168,24 +281,6 @@ bool VulkanSwapChain::InitializeSwapImages(
   VkSemaphoreCreateInfo semaphore_create_info = {};
   semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-  // Default image subresource range.
-  VkImageSubresourceRange image_subresource_range = {};
-  image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  image_subresource_range.baseMipLevel = 0;
-  image_subresource_range.levelCount = 1;
-  image_subresource_range.baseArrayLayer = 0;
-  image_subresource_range.layerCount = 1;
-
-  // The image memory barrier is used to setup the image layout.
-  VkImageMemoryBarrier image_memory_barrier = {};
-  image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-  image_memory_barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-  image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-  image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-  image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-  image_memory_barrier.subresourceRange = image_subresource_range;
-
   command_pool_ = device_queue_->CreateCommandPool();
   if (!command_pool_)
     return false;
@@ -212,23 +307,10 @@ bool VulkanSwapChain::InitializeSwapImages(
     }
 
     // Initialize the command buffer for this buffer data.
-    image_data->command_buffer = command_pool_->CreatePrimaryCommandBuffer();
-
-    // Setup the Image Layout as the first command that gets issued in each
-    // command buffer.
-    ScopedSingleUseCommandBufferRecorder recorder(*image_data->command_buffer);
-    image_memory_barrier.image = images[i];
-    vkCmdPipelineBarrier(recorder.handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0,
-                         nullptr, 1, &image_memory_barrier);
-
-    // Create the image view.
-    image_data->image_view.reset(new VulkanImageView(device_queue_));
-    if (!image_data->image_view->Initialize(
-            images[i], VK_IMAGE_VIEW_TYPE_2D, VulkanImageView::IMAGE_TYPE_COLOR,
-            surface_format.format, size_.width(), size_.height(), 0, 1, 0, 1)) {
-      return false;
-    }
+    image_data->pre_raster_command_buffer =
+        command_pool_->CreatePrimaryCommandBuffer();
+    image_data->post_raster_command_buffer =
+        command_pool_->CreatePrimaryCommandBuffer();
   }
 
   result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
@@ -262,18 +344,16 @@ void VulkanSwapChain::DestroySwapImages() {
   }
 
   for (const std::unique_ptr<ImageData>& image_data : images_) {
-    if (image_data->command_buffer) {
+    if (image_data->post_raster_command_buffer) {
       // Make sure command buffer is done processing.
-      image_data->command_buffer->Wait(UINT64_MAX);
+      image_data->pre_raster_command_buffer->Wait(UINT64_MAX);
+      image_data->pre_raster_command_buffer->Destroy();
+      image_data->pre_raster_command_buffer.reset();
 
-      image_data->command_buffer->Destroy();
-      image_data->command_buffer.reset();
-    }
-
-    // Destroy Image View.
-    if (image_data->image_view) {
-      image_data->image_view->Destroy();
-      image_data->image_view.reset();
+      // Make sure command buffer is done processing.
+      image_data->post_raster_command_buffer->Wait(UINT64_MAX);
+      image_data->post_raster_command_buffer->Destroy();
+      image_data->post_raster_command_buffer.reset();
     }
 
     // Destroy Semaphores.

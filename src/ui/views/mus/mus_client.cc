@@ -270,7 +270,7 @@ MusClient::ConfigurePropertiesFromParams(
 
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
-    SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
+    SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).GetBitmap();
     if (!app_bitmap.isNull()) {
       properties[WindowManager::kAppIcon_Property] =
           mojo::ConvertTo<TransportType>(app_bitmap);
@@ -278,7 +278,7 @@ MusClient::ConfigurePropertiesFromParams(
 
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
-    SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).sk_bitmap();
+    SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).GetBitmap();
     if (!window_bitmap.isNull()) {
       properties[WindowManager::kWindowIcon_Property] =
           mojo::ConvertTo<TransportType>(window_bitmap);

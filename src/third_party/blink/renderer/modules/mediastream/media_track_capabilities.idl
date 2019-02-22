@@ -23,12 +23,14 @@ dictionary MediaTrackCapabilities {
     sequence<DOMString>  exposureMode;
     sequence<DOMString>  focusMode;
     MediaSettingsRange   exposureCompensation;
+    MediaSettingsRange   exposureTime;
     MediaSettingsRange   colorTemperature;
     MediaSettingsRange   iso;
     MediaSettingsRange   brightness;
     MediaSettingsRange   contrast;
     MediaSettingsRange   saturation;
     MediaSettingsRange   sharpness;
+    MediaSettingsRange   focusDistance;
     MediaSettingsRange   zoom;
     boolean              torch;
 };

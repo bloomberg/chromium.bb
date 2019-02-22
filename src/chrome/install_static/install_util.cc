@@ -372,6 +372,18 @@ std::wstring GetClientStateKeyPath() {
   return GetClientStateKeyPath(GetAppGuid());
 }
 
+std::wstring GetClientStateMediumKeyPath() {
+  return GetClientStateMediumKeyPath(GetAppGuid());
+}
+
+std::wstring GetClientStateKeyPathForBinaries() {
+  return GetBinariesClientStateKeyPath();
+}
+
+std::wstring GetClientStateMediumKeyPathForBinaries() {
+  return GetBinariesClientStateMediumKeyPath();
+}
+
 std::wstring GetUninstallRegistryPath() {
   std::wstring result(
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\");
@@ -391,6 +403,18 @@ const CLSID& GetToastActivatorClsid() {
 
 const CLSID& GetElevatorClsid() {
   return InstallDetails::Get().elevator_clsid();
+}
+
+std::wstring GetElevationServiceName() {
+  std::wstring name = GetElevationServiceDisplayName();
+  name.erase(std::remove_if(name.begin(), name.end(), isspace), name.end());
+  return name;
+}
+
+std::wstring GetElevationServiceDisplayName() {
+  static constexpr wchar_t kElevationServiceDisplayName[] =
+      L" Elevation Service";
+  return GetBaseAppName() + kElevationServiceDisplayName;
 }
 
 std::wstring GetBaseAppName() {

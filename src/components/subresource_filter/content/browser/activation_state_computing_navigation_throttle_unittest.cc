@@ -19,11 +19,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -109,11 +108,13 @@ class ActivationStateComputingNavigationThrottleTest
 
   void NavigateAndCommitMainFrameWithPageActivationState(
       const GURL& document_url,
-      const ActivationState& page_activation) {
+      const mojom::ActivationLevel& level) {
+    mojom::ActivationState state;
+    state.activation_level = level;
     CreateTestNavigationForMainFrame(document_url);
     SimulateStartAndExpectToProceed();
 
-    NotifyPageActivation(page_activation);
+    NotifyPageActivation(state);
     SimulateCommitAndExpectToProceed();
   }
 
@@ -126,7 +127,7 @@ class ActivationStateComputingNavigationThrottleTest
   void CreateSubframeAndInitTestNavigation(
       const GURL& first_url,
       content::RenderFrameHost* parent,
-      const ActivationState& parent_activation_state) {
+      const mojom::ActivationState& parent_activation_state) {
     ASSERT_TRUE(parent);
     parent_activation_state_ = parent_activation_state;
     content::RenderFrameHost* navigating_subframe =
@@ -166,15 +167,14 @@ class ActivationStateComputingNavigationThrottleTest
         std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
   }
 
-  void NotifyPageActivation(ActivationState state) {
+  void NotifyPageActivation(mojom::ActivationState state) {
     test_throttle_->NotifyPageActivationWithRuleset(ruleset_handle_.get(),
                                                     state);
   }
 
-  ActivationState last_activation_state() {
+  mojom::ActivationState last_activation_state() {
     EXPECT_TRUE(last_activation_state_.has_value());
-    return last_activation_state_.value_or(
-        ActivationState(ActivationLevel::DISABLED));
+    return last_activation_state_.value_or(mojom::ActivationState());
   }
 
   content::RenderFrameHost* last_committed_frame_host() {
@@ -185,7 +185,7 @@ class ActivationStateComputingNavigationThrottleTest
     return simple_task_runner_;
   }
 
-  void set_parent_activation_state(const ActivationState& state) {
+  void set_parent_activation_state(const mojom::ActivationState& state) {
     parent_activation_state_ = state;
   }
 
@@ -201,8 +201,10 @@ class ActivationStateComputingNavigationThrottleTest
                   navigation_handle, ruleset_handle_.get(),
                   parent_activation_state_.value());
     if (navigation_handle->IsInMainFrame() && dryrun_speculation_) {
-      throttle->NotifyPageActivationWithRuleset(
-          ruleset_handle_.get(), ActivationState(ActivationLevel::DRYRUN));
+      mojom::ActivationState dryrun_state;
+      dryrun_state.activation_level = mojom::ActivationLevel::kDryRun;
+      throttle->NotifyPageActivationWithRuleset(ruleset_handle_.get(),
+                                                dryrun_state);
     }
     test_throttle_ = throttle.get();
     navigation_handle->RegisterThrottleForTesting(std::move(throttle));
@@ -217,11 +219,11 @@ class ActivationStateComputingNavigationThrottleTest
       test_throttle_->WillSendActivationToRenderer();
 
     if (auto filter = test_throttle_->ReleaseFilter()) {
-      EXPECT_NE(ActivationLevel::DISABLED,
+      EXPECT_NE(mojom::ActivationLevel::kDisabled,
                 filter->activation_state().activation_level);
       last_activation_state_ = filter->activation_state();
     } else {
-      last_activation_state_ = ActivationState(ActivationLevel::DISABLED);
+      last_activation_state_ = mojom::ActivationState();
     }
   }
 
@@ -248,8 +250,8 @@ class ActivationStateComputingNavigationThrottleTest
 
   // Owned by the current navigation.
   ActivationStateComputingNavigationThrottle* test_throttle_;
-  base::Optional<ActivationState> last_activation_state_;
-  base::Optional<ActivationState> parent_activation_state_;
+  base::Optional<mojom::ActivationState> last_activation_state_;
+  base::Optional<mojom::ActivationState> parent_activation_state_;
 
   // Needed for potential cross process navigations which swap hosts.
   content::RenderFrameHost* last_committed_frame_host_ = nullptr;
@@ -266,9 +268,9 @@ typedef ActivationStateComputingNavigationThrottleTest
 
 TEST_P(ActivationStateComputingThrottleMainFrameTest, Activate) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+      GURL("http://example.test/"), mojom::ActivationLevel::kEnabled);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_FALSE(state.filtering_disabled_for_document);
 }
 
@@ -281,41 +283,39 @@ TEST_P(ActivationStateComputingThrottleMainFrameTest,
   // Never send NotifyPageActivation.
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled, state.activation_level);
 }
 
 TEST_P(ActivationStateComputingThrottleMainFrameTest,
        WhitelistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      GURL("http://whitelisted.com/"), mojom::ActivationLevel::kEnabled);
 
-  ActivationState state = last_activation_state();
+  mojom::ActivationState state = last_activation_state();
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
 }
 
 TEST_P(ActivationStateComputingThrottleMainFrameTest,
        Whitelisted_DisablesFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://whitelisted-always.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      GURL("http://whitelisted-always.com/"), mojom::ActivationLevel::kEnabled);
 
-  ActivationState state = last_activation_state();
+  mojom::ActivationState state = last_activation_state();
   EXPECT_TRUE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest, Activate) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
+      GURL("http://example.test/"), mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(GURL("http://example.child/"),
                                       last_committed_frame_host(),
@@ -324,8 +324,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Activate) {
   SimulateRedirectAndExpectToProceed(GURL("http://example.child/?v=1"));
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
@@ -334,7 +334,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
        WhitelistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://disallows-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com/"),
                                       last_committed_frame_host(),
@@ -342,8 +342,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
@@ -352,7 +352,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
        Whitelisted_DisableDocumentFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com/"),
                                       last_committed_frame_host(),
@@ -360,17 +360,17 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
+  mojom::ActivationState state = last_activation_state();
   EXPECT_TRUE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
        Whitelisted_DisablesGenericRules) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(GURL("http://whitelisted-generic.com/"),
                                       last_committed_frame_host(),
@@ -378,16 +378,17 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
+  mojom::ActivationState state = last_activation_state();
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), ActivationState(ActivationLevel::DRYRUN));
-  EXPECT_EQ(ActivationLevel::DRYRUN, last_activation_state().activation_level);
+      GURL("http://example.test/"), mojom::ActivationLevel::kDryRun);
+  EXPECT_EQ(mojom::ActivationLevel::kDryRun,
+            last_activation_state().activation_level);
 
   CreateSubframeAndInitTestNavigation(GURL("http://example.child/"),
                                       last_committed_frame_host(),
@@ -396,19 +397,26 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
   SimulateRedirectAndExpectToProceed(GURL("http://example.child/?v=1"));
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::DRYRUN, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kDryRun, state.activation_level);
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
        DryRunWithLoggingIsPropagated) {
-  ActivationState page_state(ActivationLevel::DRYRUN);
+  mojom::ActivationState page_state;
+  page_state.activation_level = mojom::ActivationLevel::kDryRun;
   page_state.enable_logging = true;
-  NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), page_state);
-  EXPECT_EQ(ActivationLevel::DRYRUN, last_activation_state().activation_level);
+
+  CreateTestNavigationForMainFrame(GURL("http://example.test/"));
+  SimulateStartAndExpectToProceed();
+
+  NotifyPageActivation(page_state);
+  SimulateCommitAndExpectToProceed();
+
+  EXPECT_EQ(mojom::ActivationLevel::kDryRun,
+            last_activation_state().activation_level);
 
   CreateSubframeAndInitTestNavigation(GURL("http://example.child/"),
                                       last_committed_frame_host(),
@@ -417,8 +425,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   SimulateRedirectAndExpectToProceed(GURL("http://example.child/?v=1"));
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::DRYRUN, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kDryRun, state.activation_level);
   EXPECT_TRUE(state.enable_logging);
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
@@ -427,7 +435,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com"),
                                       last_committed_frame_host(),
@@ -441,8 +449,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_TRUE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
@@ -450,7 +458,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
-      ActivationState(ActivationLevel::ENABLED));
+      mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(
       GURL("http://whitelisted-generic-with-disabled-child.com/"),
@@ -458,7 +466,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
+  mojom::ActivationState state = last_activation_state();
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
 
@@ -469,7 +477,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   SimulateCommitAndExpectToProceed();
 
   state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_TRUE(state.filtering_disabled_for_document);
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
 }
@@ -477,9 +485,9 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
   base::HistogramTester histogram_tester;
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+      GURL("http://example.test/"), mojom::ActivationLevel::kEnabled);
+  mojom::ActivationState state = last_activation_state();
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
   EXPECT_FALSE(state.filtering_disabled_for_document);
 
   const char kActivationDelay[] =
@@ -504,8 +512,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
   SimulateCommitAndExpectToProceed();
 
   state = last_activation_state();
-  EXPECT_EQ(dryrun_speculation() ? ActivationLevel::DRYRUN
-                                 : ActivationLevel::DISABLED,
+  EXPECT_EQ(dryrun_speculation() ? mojom::ActivationLevel::kDryRun
+                                 : mojom::ActivationLevel::kDisabled,
             state.activation_level);
   int extra_activation = dryrun_speculation() ? 1 : 0;
   histogram_tester.ExpectTotalCount(kActivationDelay, 2 + extra_activation);
@@ -533,7 +541,9 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
   main_histogram_tester.ExpectTotalCount(kActivationCPU,
                                          ExpectThreadTimers(main_frame_checks));
 
-  NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
+  mojom::ActivationState state;
+  state.activation_level = mojom::ActivationLevel::kEnabled;
+  NotifyPageActivation(state);
   SimulateCommitAndExpectToProceed();
   main_frame_checks += dryrun_speculation() ? 0 : 1;
   main_histogram_tester.ExpectTotalCount(kActivationCPU,
@@ -578,7 +588,10 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   EXPECT_FALSE(simulator->IsDeferred());
   main_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
-  NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
+  mojom::ActivationState state;
+  state.activation_level = mojom::ActivationLevel::kEnabled;
+  NotifyPageActivation(state);
+
   simulator->ReadyToCommit();
   EXPECT_TRUE(simulator->IsDeferred());
   EXPECT_LT(0u, simple_task_runner()->NumPendingTasks());

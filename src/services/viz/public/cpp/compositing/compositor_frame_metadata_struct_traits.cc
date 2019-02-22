@@ -35,12 +35,12 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->request_presentation_feedback = data.request_presentation_feedback();
   out->root_background_color = data.root_background_color();
   out->min_page_scale_factor = data.min_page_scale_factor();
+  out->top_controls_height = data.top_controls_height();
+  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
 
 #if defined(OS_ANDROID)
   out->max_page_scale_factor = data.max_page_scale_factor();
   out->root_overflow_y_hidden = data.root_overflow_y_hidden();
-  out->top_controls_height = data.top_controls_height();
-  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
   out->bottom_controls_height = data.bottom_controls_height();
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
 #endif

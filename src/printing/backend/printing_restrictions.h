@@ -5,6 +5,8 @@
 #ifndef PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 #define PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 
+#include <vector>
+
 #include "base/optional.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,6 +49,7 @@ struct PRINTING_EXPORT PrintingRestrictions {
 // Must coincide with the name of field in |print_preview.Policies| in
 // chrome/browser/resources/print_preview/native_layer.js
 PRINTING_EXPORT extern const char kAllowedColorModes[];
+PRINTING_EXPORT extern const char kAllowedDuplexModes[];
 
 // Dictionary keys to be used with |kPrintingAllowedPageSizes| and
 // |kPrintingSizeDefault| policies.

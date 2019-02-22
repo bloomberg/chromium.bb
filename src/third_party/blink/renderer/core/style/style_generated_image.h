@@ -66,6 +66,8 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  private:
   StyleGeneratedImage(const CSSImageGeneratorValue&);
 
+  bool IsEqual(const StyleImage&) const override;
+
   // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once
   // Member<> supports const types.
   Member<CSSImageGeneratorValue> image_generator_value_;

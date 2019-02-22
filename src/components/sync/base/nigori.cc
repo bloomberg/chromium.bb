@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/time/default_tick_clock.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
@@ -84,12 +85,8 @@ const char* GetHistogramSuffixForKeyDerivationMethod(
 }  // namespace
 
 KeyDerivationParams::KeyDerivationParams(KeyDerivationMethod method,
-                                         const std::string& pbkdf2_hostname,
-                                         const std::string& pbkdf2_username,
                                          const std::string& scrypt_salt)
     : method_(method),
-      pbkdf2_hostname_(pbkdf2_hostname),
-      pbkdf2_username_(pbkdf2_username),
       scrypt_salt_(scrypt_salt) {}
 
 KeyDerivationParams::KeyDerivationParams(const KeyDerivationParams& other) =
@@ -101,81 +98,64 @@ KeyDerivationParams& KeyDerivationParams::operator=(
 
 bool KeyDerivationParams::operator==(const KeyDerivationParams& other) const {
   return method_ == other.method_ &&
-         pbkdf2_hostname_ == other.pbkdf2_hostname_ &&
-         pbkdf2_username_ == other.pbkdf2_username_ &&
          scrypt_salt_ == other.scrypt_salt_;
 }
 
-const std::string& KeyDerivationParams::pbkdf2_username() const {
-  DCHECK(method_ == KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
-  return pbkdf2_username_;
+bool KeyDerivationParams::operator!=(const KeyDerivationParams& other) const {
+  return !(*this == other);
 }
-const std::string& KeyDerivationParams::pbkdf2_hostname() const {
-  DCHECK(method_ == KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
-  return pbkdf2_hostname_;
-}
+
 const std::string& KeyDerivationParams::scrypt_salt() const {
-  DCHECK(method_ == KeyDerivationMethod::SCRYPT_8192_8_11);
+  DCHECK_EQ(method_, KeyDerivationMethod::SCRYPT_8192_8_11);
   return scrypt_salt_;
 }
 
-KeyDerivationParams KeyDerivationParams::CreateForPbkdf2(
-    const std::string& hostname,
-    const std::string& username) {
-  return {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, hostname, username,
-          /* scrypt_salt_ = */ ""};
+KeyDerivationParams KeyDerivationParams::CreateForPbkdf2() {
+  return {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, /*scrypt_salt_=*/""};
 }
 
 KeyDerivationParams KeyDerivationParams::CreateForScrypt(
     const std::string& salt) {
-  return {KeyDerivationMethod::SCRYPT_8192_8_11,
-          /* pbkdf2_hostname_ = */ "", /* pbkf2_username = */ "", salt};
+  return {KeyDerivationMethod::SCRYPT_8192_8_11, salt};
 }
 
 KeyDerivationParams KeyDerivationParams::CreateWithUnsupportedMethod() {
-  return {KeyDerivationMethod::UNSUPPORTED, /* pbkdf2_hostname_ = */ "",
-          /* pbkdf2_username_ = */ "", /* scrypt_salt_ = */ ""};
+  return {KeyDerivationMethod::UNSUPPORTED, /*scrypt_salt_=*/""};
 }
 
 Nigori::Keys::Keys() = default;
 Nigori::Keys::~Keys() = default;
 
-bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& hostname,
-                                               const std::string& username,
-                                               const std::string& password) {
-  const char kSaltSalt[] =
-      "saltsalt";  // The salt used to derive the user salt.
-  const size_t kSaltIterations = 1001;
+bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
+  // Previously (<=M70) this value has been recalculated every time based on a
+  // constant hostname (hardcoded to "localhost") and username (hardcoded to
+  // "dummy") as PBKDF2_HMAC_SHA1(Ns("dummy") + Ns("localhost"), "saltsalt",
+  // 1001, 128), where Ns(S) is the NigoriStream representation of S (32-bit
+  // big-endian length of S followed by S itself).
+  const char kRawConstantSalt[] = {0xc7, 0xca, 0xfb, 0x23, 0xec, 0x2a,
+                                   0x9d, 0x4c, 0x03, 0x5a, 0x90, 0xae,
+                                   0xed, 0x8b, 0xa4, 0x98};
   const size_t kUserIterations = 1002;
   const size_t kEncryptionIterations = 1003;
   const size_t kSigningIterations = 1004;
-  const size_t kSaltKeySizeInBits = 128;
 
-  NigoriStream salt_password;
-  salt_password << username << hostname;
-
-  // Suser = PBKDF2(Username || Servername, "saltsalt", Nsalt, 8)
-  std::unique_ptr<SymmetricKey> user_salt(
-      SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
-          SymmetricKey::HMAC_SHA1, salt_password.str(), kSaltSalt,
-          kSaltIterations, kSaltKeySizeInBits));
-  DCHECK(user_salt);
+  std::string salt(kRawConstantSalt, sizeof(kRawConstantSalt));
 
   // Kuser = PBKDF2(P, Suser, Nuser, 16)
   user_key = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
-      SymmetricKey::AES, password, user_salt->key(), kUserIterations,
+      SymmetricKey::AES, password, salt, kUserIterations,
       kDerivedKeySizeInBits);
   DCHECK(user_key);
 
   // Kenc = PBKDF2(P, Suser, Nenc, 16)
   encryption_key = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
-      SymmetricKey::AES, password, user_salt->key(), kEncryptionIterations,
+      SymmetricKey::AES, password, salt, kEncryptionIterations,
       kDerivedKeySizeInBits);
   DCHECK(encryption_key);
 
   // Kmac = PBKDF2(P, Suser, Nmac, 16)
   mac_key = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
-      SymmetricKey::HMAC_SHA1, password, user_salt->key(), kSigningIterations,
+      SymmetricKey::HMAC_SHA1, password, salt, kSigningIterations,
       kDerivedKeySizeInBits);
   DCHECK(mac_key);
 
@@ -230,19 +210,17 @@ bool Nigori::Keys::InitByImport(const std::string& user_key_str,
   return encryption_key && mac_key;
 }
 
-Nigori::Nigori() {}
+Nigori::Nigori() : tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 Nigori::~Nigori() {}
 
 bool Nigori::InitByDerivation(const KeyDerivationParams& key_derivation_params,
                               const std::string& password) {
-  base::TimeTicks begin_time = base::TimeTicks::Now();
+  base::TimeTicks begin_time = tick_clock_->NowTicks();
   bool result = false;
   switch (key_derivation_params.method()) {
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      result = keys_.InitByDerivationUsingPbkdf2(
-          key_derivation_params.pbkdf2_hostname(),
-          key_derivation_params.pbkdf2_username(), password);
+      result = keys_.InitByDerivationUsingPbkdf2(password);
       break;
     case KeyDerivationMethod::SCRYPT_8192_8_11:
       DCHECK(!base::FeatureList::IsEnabled(
@@ -258,7 +236,7 @@ bool Nigori::InitByDerivation(const KeyDerivationParams& key_derivation_params,
       base::StringPrintf("Sync.Crypto.NigoriKeyDerivationDuration.%s",
                          GetHistogramSuffixForKeyDerivationMethod(
                              key_derivation_params.method())),
-      base::TimeTicks::Now() - begin_time);
+      tick_clock_->NowTicks() - begin_time);
 
   return result;
 }
@@ -357,12 +335,7 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
   if (!hmac.Init(keys_.mac_key->key()))
     return false;
 
-  std::vector<unsigned char> expected(kHashSize);
-  if (!hmac.Sign(ciphertext, &expected[0], expected.size()))
-    return false;
-
-  if (hash.compare(0, hash.size(), reinterpret_cast<char*>(&expected[0]),
-                   expected.size()))
+  if (!hmac.Verify(ciphertext, hash))
     return false;
 
   crypto::Encryptor encryptor;

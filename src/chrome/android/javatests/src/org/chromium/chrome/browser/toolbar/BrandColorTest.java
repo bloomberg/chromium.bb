@@ -30,13 +30,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
-import org.chromium.content.browser.test.InterstitialPageDelegateAndroid;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.InterstitialPageDelegateAndroid;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
@@ -110,9 +109,8 @@ public class BrandColorTest {
         mActivityTestRule.startMainActivityWithURL(url);
         mToolbar = (ToolbarPhone) mActivityTestRule.getActivity().findViewById(R.id.toolbar);
         mToolbarDataProvider = mToolbar.getToolbarDataProvider();
-        mDefaultColor =
-                ColorUtils.getDefaultThemeColor(mActivityTestRule.getActivity().getResources(),
-                        FeatureUtilities.isChromeModernDesignEnabled(), /* isIncognito =*/false);
+        mDefaultColor = ColorUtils.getDefaultThemeColor(
+                mActivityTestRule.getActivity().getResources(), /* isIncognito = */ false);
         // TODO(https://crbug.com/871805): Use helper class to determine whether dark status icons
         // are supported.
         mSupportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
@@ -262,6 +260,6 @@ public class BrandColorTest {
             }
         });
         checkForBrandColor(ColorUtils.getDefaultThemeColor(
-                mActivityTestRule.getActivity().getResources(), true, false));
+                mActivityTestRule.getActivity().getResources(), false));
     }
 }

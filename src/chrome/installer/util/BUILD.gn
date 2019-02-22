@@ -30,8 +30,7 @@ import("//testing/test.gni")
 # all case", there is no definition of what works and doesn't work, and this may
 # also change over time. As an example at the time of this writing, chrome.exe
 # calls GoogleUpdateSettings::UpdateDidRunState. This function doesn't use any
-# strings, but lots of other functions in BrowserDistribution do use localized
-# strings.
+# strings, but other functions in InstallUtil do use localized strings.
 #
 # Ideally, this should be cleaved in two parts: the main "installer util" and
 # some kind of mini installer util that just contains the functions needed by
@@ -53,8 +52,6 @@ static_library("with_no_strings") {
 
   if (is_win) {
     sources = [
-      "chrome_browser_operations.cc",
-      "chrome_browser_operations.h",
       "delete_after_reboot_helper.cc",
       "delete_after_reboot_helper.h",
       "experiment.cc",
@@ -65,8 +62,6 @@ static_library("with_no_strings") {
       "experiment_metrics.h",
       "experiment_storage.cc",
       "experiment_storage.h",
-      "google_chrome_distribution.cc",
-      "google_chrome_distribution.h",
       "html_dialog.h",
       "html_dialog_impl.cc",
       "logging_installer.cc",
@@ -77,9 +72,6 @@ static_library("with_no_strings") {
       "lzma_util.h",
       "master_preferences.cc",
       "master_preferences.h",
-      "product.cc",
-      "product.h",
-      "product_operations.h",
       "registry_entry.cc",
       "registry_entry.h",
       "scoped_token_privilege.cc",
@@ -90,8 +82,6 @@ static_library("with_no_strings") {
       "self_cleaning_temp_dir.h",
       "shell_util.cc",
       "shell_util.h",
-      "uninstall_metrics.cc",
-      "uninstall_metrics.h",
     ]
 
     deps += [
@@ -107,8 +97,6 @@ static_library("with_no_strings") {
       "//courgette:courgette_lib",
       "//crypto",
       "//rlz/buildflags",
-      "//third_party/bspatch",
-      "//third_party/crashpad/crashpad/client",
       "//third_party/icu",
       "//third_party/lzma_sdk",
     ]
@@ -132,13 +120,10 @@ static_library("with_no_strings") {
       "app_command.h",
       "app_commands.cc",
       "app_commands.h",
-      "app_registration_data.h",
       "auto_launch_util.cc",
       "auto_launch_util.h",
       "beacons.cc",
       "beacons.h",
-      "browser_distribution.cc",
-      "browser_distribution.h",
       "callback_work_item.cc",
       "callback_work_item.h",
       "channel_info.cc",
@@ -183,16 +168,12 @@ static_library("with_no_strings") {
       "master_preferences_constants.h",
       "move_tree_work_item.cc",
       "move_tree_work_item.h",
-      "non_updating_app_registration_data.cc",
-      "non_updating_app_registration_data.h",
       "registry_key_backup.cc",
       "registry_key_backup.h",
       "self_reg_work_item.cc",
       "self_reg_work_item.h",
       "set_reg_value_work_item.cc",
       "set_reg_value_work_item.h",
-      "updating_app_registration_data.cc",
-      "updating_app_registration_data.h",
       "util_constants.cc",
       "util_constants.h",
       "work_item.cc",
@@ -317,9 +298,6 @@ if (is_win) {
       "self_cleaning_temp_dir_unittest.cc",
       "set_reg_value_work_item_unittest.cc",
       "shell_util_unittest.cc",
-      "test_app_registration_data.cc",
-      "test_app_registration_data.h",
-      "uninstall_metrics_unittest.cc",
       "work_item_list_unittest.cc",
       "work_item_mocks.cc",
       "work_item_mocks.h",
@@ -333,6 +311,7 @@ if (is_win) {
       "//base:i18n",
       "//base/test:test_support",
       "//chrome:other_version",
+      "//chrome/common:constants",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static/test:test_support",
       "//chrome/installer/setup:lib",

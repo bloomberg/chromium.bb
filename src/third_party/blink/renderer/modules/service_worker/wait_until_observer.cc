@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
@@ -110,14 +111,16 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
-  event_dispatch_time_ = WTF::CurrentTime();
-  // When handling a notificationclick or paymentrequest event, we want to
-  // allow one window to be focused or opened. These calls are allowed between
-  // the call to willDispatchEvent() and the last call to
+  event_dispatch_time_ = WTF::CurrentTimeTicks();
+  // When handling a notificationclick, paymentrequest, or backgroundfetchclick
+  // event, we want to allow one window to be focused or opened. These calls are
+  // allowed between the call to willDispatchEvent() and the last call to
   // DecrementPendingPromiseCount(). If waitUntil() isn't called, that means
   // between willDispatchEvent() and didDispatchEvent().
-  if (type_ == kNotificationClick || type_ == kPaymentRequest)
+  if (type_ == kNotificationClick || type_ == kPaymentRequest ||
+      type_ == kBackgroundFetchClick) {
     execution_context_->AllowWindowInteraction();
+  }
 
   DCHECK_EQ(EventDispatchState::kInitial, event_dispatch_state_);
   event_dispatch_state_ = EventDispatchState::kDispatching;
@@ -179,11 +182,17 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
   }
 
   IncrementPendingPromiseCount();
+
+  // Call Then() separately for fulfilled and rejected cases. This ensures
+  // throwing an exception in |on_promise_fulfilled| doesn't invoke
+  // |on_promise_rejected|.
   script_promise.Then(
       ThenFunction::CreateFunction(script_state, this, ThenFunction::kFulfilled,
                                    std::move(on_promise_fulfilled)),
-      ThenFunction::CreateFunction(script_state, this, ThenFunction::kRejected,
-                                   std::move(on_promise_rejected)));
+      {});
+  script_promise.Then({}, ThenFunction::CreateFunction(
+                              script_state, this, ThenFunction::kRejected,
+                              std::move(on_promise_rejected)));
 }
 
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,

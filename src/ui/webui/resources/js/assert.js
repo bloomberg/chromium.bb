@@ -22,6 +22,8 @@ function assert(condition, opt_message) {
       message = message + ': ' + opt_message;
     var error = new Error(message);
     var global = function() {
+      /** @type {boolean} */
+      this.traceAssertionsForTesting;
       return this;
     }();
     if (global.traceAssertionsForTesting)

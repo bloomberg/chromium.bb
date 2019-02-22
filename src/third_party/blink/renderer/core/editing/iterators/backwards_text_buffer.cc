@@ -10,12 +10,12 @@ const UChar* BackwardsTextBuffer::Data() const {
   return BufferEnd() - Size();
 }
 
-UChar* BackwardsTextBuffer::CalcDestination(size_t length) {
+UChar* BackwardsTextBuffer::CalcDestination(wtf_size_t length) {
   DCHECK_LE(Size() + length, Capacity());
   return BufferEnd() - Size() - length;
 }
 
-void BackwardsTextBuffer::ShiftData(size_t old_capacity) {
+void BackwardsTextBuffer::ShiftData(wtf_size_t old_capacity) {
   DCHECK_LE(old_capacity, Capacity());
   DCHECK_LE(Size(), old_capacity);
   std::copy_backward(BufferBegin() + old_capacity - Size(),

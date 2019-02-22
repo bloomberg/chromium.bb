@@ -320,7 +320,7 @@ void ThroughputAnalyzer::OnConnectionTypeChanged() {
   // computation are now spanning a connection change event. These requests
   // would now degrade the throughput computation accuracy. So, move them to
   // |accuracy_degrading_requests_|.
-  for (Requests::iterator it = requests_.begin(); it != requests_.end(); ++it) {
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
     accuracy_degrading_requests_.insert(it->first);
   }
   requests_.clear();
@@ -389,10 +389,7 @@ void ThroughputAnalyzer::BoundRequestsSize() {
 void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (params_->hanging_request_duration_http_rtt_multiplier() <= 0) {
-    // Experiment is not enabled.
-    return;
-  }
+  DCHECK_LT(0, params_->hanging_request_duration_http_rtt_multiplier());
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
@@ -401,7 +398,7 @@ void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
           base::TimeDelta::FromSeconds(60));
 
   size_t count_request_erased = 0;
-  Requests::iterator request_it = requests_.find(&request);
+  auto request_it = requests_.find(&request);
   if (request_it != requests_.end()) {
     base::TimeDelta time_since_last_received = now - request_it->second;
 
@@ -418,7 +415,7 @@ void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
     // Hanging request check is done at most once per second.
     last_hanging_request_check_ = now;
 
-    for (Requests::iterator it = requests_.begin(); it != requests_.end();) {
+    for (auto it = requests_.begin(); it != requests_.end();) {
       base::TimeDelta time_since_last_received = now - it->second;
 
       if (time_since_last_received >=

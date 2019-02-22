@@ -89,6 +89,14 @@ struct OverlayCapability {
   bool is_scaling_supported;
 };
 
+// gpu::Dx12VulkanVersionInfo
+struct Dx12VulkanVersionInfo {
+  bool supports_dx12;
+  bool supports_vulkan;
+  uint32 d3d12_feature_level;
+  uint32 vulkan_version;
+};
+
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
 struct GpuInfo {
   mojo_base.mojom.TimeDelta initialization_time;
@@ -124,13 +132,7 @@ struct GpuInfo {
   [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
   [EnableIf=is_win]
-  bool supports_dx12;
-  [EnableIf=is_win]
-  bool supports_vulkan;
-  [EnableIf=is_win]
-  uint32 d3d12_feature_level;
-  [EnableIf=is_win]
-  uint32 vulkan_version;
+  Dx12VulkanVersionInfo dx12_vulkan_version_info;
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;

@@ -180,7 +180,9 @@ class QuicChromiumClientSessionTest
 
   void TearDown() override {
     if (session_)
-      session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR);
+      session_->CloseSessionOnError(
+          ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+          quic::ConnectionCloseBehavior::SILENT_CLOSE);
   }
 
   void CompleteCryptoHandshake() {

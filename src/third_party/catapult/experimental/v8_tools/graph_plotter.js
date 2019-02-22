@@ -17,13 +17,13 @@ class GraphPlotter {
     /** @private {number} */
     this.canvasHeight_ = 720;
     /** @private {number} */
-    this.canvasWidth_ = 1280;
+    this.canvasWidth_ = 1880;
     /* Provides spacing around the chart for labels and the axes. */
     const margins = {
       top: 50,
-      right: 200,
-      left: 80,
-      bottom: 50,
+      right: 700,
+      left: 180,
+      bottom: 100,
     };
     const width = this.canvasWidth_ - margins.left - margins.right;
     const height = this.canvasHeight_ - margins.top - margins.bottom;
@@ -69,16 +69,14 @@ class GraphPlotter {
   }
 
   createLegend_() {
-    const padding = 5;
     return this.chart_.append('g')
         .attr('class', 'legend')
-        .attr('transform',
-            `translate(${this.chartDimensions_.width + padding},
-                ${this.chartDimensions_.margins.top})`);
+        .attr('transform', `translate(${this.chartDimensions_.width}, 0)`);
   }
 
   labelTitle_() {
     this.chart_.append('text')
+        .attr('class', 'title')
         .attr('x', this.chartDimensions_.width / 2)
         .attr('y', 0 - this.chartDimensions_.margins.top / 2)
         .attr('text-anchor', 'middle')
@@ -87,14 +85,27 @@ class GraphPlotter {
 
   labelAxis_() {
     const chartBottom =
-      this.chartDimensions_.height + this.chartDimensions_.margins.bottom;
-    this.chart_.append('text')
+        this.chartDimensions_.height + this.chartDimensions_.margins.bottom;
+    const xAxisText = this.chart_.append('text')
+        .attr('class', 'title')
         .attr('transform', `translate(${this.chartDimensions_.width / 2}, 
             ${chartBottom})`)
         .attr('text-anchor', 'middle')
+        .attr('font-weight', 'bold')
+        .attr('alignment-baseline', 'after-edge')
         .text(this.graph_.xAxis());
-
+    const textHeight = xAxisText.node().getBBox().height;
+    // Use this clip path on an element using the chart's co-ordinate system to
+    // prevent drawings from overlapping the x axis label.
+    this.chart_.select('defs')
+        .append('clipPath')
+        .attr('id', 'regionForXAxisTickText')
+        .append('rect')
+        .attr('y', this.chartDimensions_.height)
+        .attr('width', this.chartDimensions_.width)
+        .attr('height', this.chartDimensions_.margins.bottom - textHeight);
     this.chart_.append('text')
+        .attr('class', 'title')
         .attr('transform', 'rotate(-90)')
         .attr('y', 0 - (this.chartDimensions_.margins.left / 2))
         .attr('x', 0 - (this.chartDimensions_.height / 2))

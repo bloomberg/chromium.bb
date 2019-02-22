@@ -37,8 +37,9 @@ GetStaticStringEntries<MorphologyOperatorType>() {
 
 inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMorphologyTag, document),
-      radius_(
-          SVGAnimatedNumberOptionalNumber::Create(this, SVGNames::radiusAttr)),
+      radius_(SVGAnimatedNumberOptionalNumber::Create(this,
+                                                      SVGNames::radiusAttr,
+                                                      0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
       svg_operator_(SVGAnimatedEnumeration<MorphologyOperatorType>::Create(
           this,

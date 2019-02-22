@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
@@ -162,6 +163,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void SetSystemURLLoaderFactoryForTests(
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
 
+  // Set a refresh token to be used in tests instead of the user context refresh
+  // token when fetching the policy OAuth token.
+  void SetUserContextRefreshTokenForTests(const std::string& refresh_token);
+
  protected:
   // CloudPolicyManager:
   void GetChromePolicy(PolicyMap* policy_map) override;
@@ -290,6 +295,15 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
       system_url_loader_factory_for_tests_;
   scoped_refptr<network::SharedURLLoaderFactory>
       signin_url_loader_factory_for_tests_;
+
+  // Refresh token used in tests instead of the user context refresh token to
+  // fetch the policy OAuth token.
+  base::Optional<std::string> user_context_refresh_token_for_tests_;
+
+  // Used to track the reregistration state of the CloudPolicyClient, i.e.
+  // whether this class has triggered a re-registration after the client failed
+  // to load policy with error |DM_STATUS_SERVICE_DEVICE_NOT_FOUND|.
+  bool is_in_reregistration_state_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

@@ -200,8 +200,6 @@ The following is a table of all string options currently supported by this repos
 | Option | Platform | Default | Description |
 | ------ | -------- | ------- | ----------- |
 | CMAKE_OSX_DEPLOYMENT_TARGET | MacOS | `10.12` | The minimum version of MacOS for loader deployment. |
-| FALLBACK_CONFIG_DIRS | Linux/MacOS | `/etc/xdg` | Configuration path(s) to use instead of `XDG_CONFIG_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
-| FALLBACK_DATA_DIRS | Linux/MacOS | `/usr/local/share:/usr/share` | Configuration path(s) to use instead of `XDG_DATA_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
 
 These variables should be set using the `-D` option when invoking CMake to
 generate the native platform files.
@@ -536,18 +534,13 @@ To uninstall the files from the system directories, you can execute:
 
 #### Linux Tests
 
-The Vulkan-Loader repository contains some simple unit tests for the loader
-but no other test clients.
+To run the **validation test script**, in a terminal change to the build/tests directory and run:
 
-To run the loader test script, change to the `build/tests` directory, and run:
-
-    ./run_all_tests.sh
+    VK_LAYER_PATH=../layers ./run_all_tests.sh
 
 This script will run the following tests:
 
-- `vk_loader_validation_tests`:
-  Vulkan loader handle wrapping, allocation callback,
-   and loader/layer interface tests
+- `vk_layer_validation_tests`: Test Vulkan validation layers
 
 #### Linux 32-bit support
 

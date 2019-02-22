@@ -148,6 +148,10 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
 
 class MockPeerConnectionTracker : public PeerConnectionTracker {
  public:
+  MockPeerConnectionTracker()
+      : PeerConnectionTracker(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
+
   MOCK_METHOD1(UnregisterPeerConnection,
                void(RTCPeerConnectionHandler* pc_handler));
   // TODO(jiayl): add coverage for the following methods

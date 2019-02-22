@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
@@ -177,7 +178,7 @@ class UkmBrowserTestBase : public SyncTest {
   }
   bool HasSource(ukm::SourceId source_id) const {
     auto* service = ukm_service();
-    return service ? !!service->sources().count(source_id) : false;
+    return service && base::ContainsKey(service->sources(), source_id);
   }
   void RecordDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();
@@ -871,7 +872,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleSyncSignoutCheck) {
   uint64_t original_client_id = client_id();
   EXPECT_NE(0U, original_client_id);
 
-  harness->SignoutSyncService();
+  harness->SignOutPrimaryAccount();
   EXPECT_FALSE(ukm_enabled());
   EXPECT_NE(original_client_id, client_id());
 
@@ -903,7 +904,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiSyncSignoutCheck) {
   EXPECT_TRUE(ukm_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
-  harness2->SignoutSyncService();
+  harness2->SignOutPrimaryAccount();
   EXPECT_FALSE(ukm_enabled());
   EXPECT_NE(original_client_id, client_id());
 

@@ -29,15 +29,18 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -209,8 +212,11 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
       job->GetRequest()->mutable_register_browser_request()->set_machine_name(
           machine_name);
     }
-    if (!enrollment_token.empty())
-      job->SetEnrollmentToken(enrollment_token);
+    if (!enrollment_token.empty()) {
+      job->SetAuthData(DMAuth::FromEnrollmentToken(enrollment_token));
+    } else {
+      job->SetAuthData(DMAuth::NoAuth());
+    }
     job->SetClientID(kClientID);
     job->Start(base::Bind(
         &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
@@ -238,7 +244,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
           *chrome_desktop_report;
     }
 
-    job->SetDMToken(kDMToken);
+    job->SetAuthData(DMAuth::FromDMToken(kDMToken));
     job->SetClientID(kClientID);
     job->Start(base::Bind(
         &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
@@ -351,7 +357,8 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     std::unique_ptr<MachineLevelUserCloudPolicyManager> manager =
         std::make_unique<MachineLevelUserCloudPolicyManager>(
             std::move(policy_store), nullptr, policy_dir,
-            base::ThreadTaskRunnerHandle::Get());
+            base::ThreadTaskRunnerHandle::Get(),
+            base::BindRepeating(&content::GetNetworkConnectionTracker));
     manager->Init(&schema_registry);
 
     manager->store()->RemoveObserver(&observer);
@@ -395,6 +402,13 @@ class MachineLevelUserCloudPolicyEnrollmentTest
 
     histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
   }
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);
+  }
+#endif
 
   void TearDownInProcessBrowserTestFixture() override {
     // Test body is skipped if enrollment failed as Chrome quit early.

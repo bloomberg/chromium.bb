@@ -45,32 +45,6 @@
 
 #define MAX_VP9_HEADER_SIZE 80
 
-static int is_compound_reference_allowed(const VP9_COMMON *cm) {
-  int i;
-  for (i = 1; i < REFS_PER_FRAME; ++i)
-    if (cm->ref_frame_sign_bias[i + 1] != cm->ref_frame_sign_bias[1]) return 1;
-
-  return 0;
-}
-
-static void setup_compound_reference_mode(VP9_COMMON *cm) {
-  if (cm->ref_frame_sign_bias[LAST_FRAME] ==
-      cm->ref_frame_sign_bias[GOLDEN_FRAME]) {
-    cm->comp_fixed_ref = ALTREF_FRAME;
-    cm->comp_var_ref[0] = LAST_FRAME;
-    cm->comp_var_ref[1] = GOLDEN_FRAME;
-  } else if (cm->ref_frame_sign_bias[LAST_FRAME] ==
-             cm->ref_frame_sign_bias[ALTREF_FRAME]) {
-    cm->comp_fixed_ref = GOLDEN_FRAME;
-    cm->comp_var_ref[0] = LAST_FRAME;
-    cm->comp_var_ref[1] = ALTREF_FRAME;
-  } else {
-    cm->comp_fixed_ref = LAST_FRAME;
-    cm->comp_var_ref[0] = GOLDEN_FRAME;
-    cm->comp_var_ref[1] = ALTREF_FRAME;
-  }
-}
-
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
 }
@@ -118,7 +92,7 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, vpx_reader *r) {
 
 static REFERENCE_MODE read_frame_reference_mode(const VP9_COMMON *cm,
                                                 vpx_reader *r) {
-  if (is_compound_reference_allowed(cm)) {
+  if (vp9_compound_reference_allowed(cm)) {
     return vpx_read_bit(r)
                ? (vpx_read_bit(r) ? REFERENCE_MODE_SELECT : COMPOUND_REFERENCE)
                : SINGLE_REFERENCE;
@@ -1976,7 +1950,7 @@ static int read_compressed_header(VP9Decoder *pbi, const uint8_t *data,
 
     cm->reference_mode = read_frame_reference_mode(cm, &r);
     if (cm->reference_mode != SINGLE_REFERENCE)
-      setup_compound_reference_mode(cm);
+      vp9_setup_compound_reference_mode(cm);
     read_frame_reference_mode_probs(cm, &r);
 
     for (j = 0; j < BLOCK_SIZE_GROUPS; j++)

@@ -178,6 +178,7 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   if (webui_instances_.empty()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
+    ClearClientDownloadResponsesReceived();
     ClearPGEvents();
     ClearPGPings();
     ClearLogMessages();
@@ -862,6 +863,15 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
   request_dict.SetKey("clicked_through_interstitial",
                       base::Value(request.clicked_through_interstitial()));
   request_dict.SetKey("content_type", base::Value(request.content_type()));
+
+  if (request.has_content_area_height()) {
+    request_dict.SetKey("content_area_height",
+                        base::Value(request.content_area_height()));
+  }
+  if (request.has_content_area_width()) {
+    request_dict.SetKey("content_area_width",
+                        base::Value(request.content_area_width()));
+  }
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);

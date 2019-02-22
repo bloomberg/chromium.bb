@@ -420,8 +420,8 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
   scaled_font.Update(document.GetStyleEngine().GetFontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::AbsoluteVisualRect() const {
-  return Parent()->AbsoluteVisualRect();
+LayoutRect LayoutSVGInlineText::VisualRectInDocument() const {
+  return Parent()->VisualRectInDocument();
 }
 
 FloatRect LayoutSVGInlineText::VisualRectInLocalSVGCoordinates() const {

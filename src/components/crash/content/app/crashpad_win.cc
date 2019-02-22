@@ -163,19 +163,11 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 
 // We need to prevent ICF from folding DumpProcessForHungInputThread(),
 // together, since that makes them indistinguishable in crash dumps.
-// We do this by making the function body unique, and prevent optimization
-// from shuffling things around.
-MSVC_DISABLE_OPTIMIZE()
-MSVC_PUSH_DISABLE_WARNING(4748)
-
-DWORD WINAPI DumpProcessForHungInputThread(void* param) {
+// We do this by making the function body unique, and turning off inlining.
+NOINLINE DWORD WINAPI DumpProcessForHungInputThread(void* param) {
   DumpWithoutCrashing();
   return 0;
 }
-
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE()
-
 
 #if defined(ARCH_CPU_X86_64)
 

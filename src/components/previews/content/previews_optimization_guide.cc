@@ -10,8 +10,7 @@
 #include "base/task_runner_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/core/previews_user_data.h"
-#include "net/url_request/url_request.h"
+#include "components/previews/content/previews_user_data.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -32,22 +31,30 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
   optimization_guide_service_->RemoveObserver(this);
 }
 
-bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
+bool PreviewsOptimizationGuide::IsWhitelisted(PreviewsUserData* previews_data,
+                                              const GURL& url,
                                               PreviewsType type) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
   int inflation_percent = 0;
-  if (!hints_->IsWhitelisted(request.url(), type, &inflation_percent))
+  if (!hints_->IsWhitelisted(url, type, &inflation_percent))
     return false;
 
-  previews::PreviewsUserData* previews_user_data =
-      previews::PreviewsUserData::GetData(request);
-  if (inflation_percent != 0 && previews_user_data)
-    previews_user_data->SetDataSavingsInflationPercent(inflation_percent);
+  if (inflation_percent != 0 && previews_data)
+    previews_data->SetDataSavingsInflationPercent(inflation_percent);
 
   return true;
+}
+
+bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
+                                              PreviewsType type) const {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (!hints_)
+    return false;
+
+  return hints_->IsBlacklisted(url, type);
 }
 
 void PreviewsOptimizationGuide::OnLoadedHint(
@@ -65,18 +72,23 @@ void PreviewsOptimizationGuide::OnLoadedHint(
   std::vector<std::string> resource_patterns_to_block;
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
-    if (optimization.optimization_type() ==
+    if (optimization.optimization_type() !=
         optimization_guide::proto::RESOURCE_LOADING) {
-      for (const auto& resource_loading_hint :
-           optimization.resource_loading_hints()) {
-        if (!resource_loading_hint.resource_pattern().empty() &&
-            resource_loading_hint.loading_optimization_type() ==
-                optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
-          resource_patterns_to_block.push_back(
-              resource_loading_hint.resource_pattern());
-        }
+      continue;
+    }
+
+    // TODO(jegray): When persistence is added for hints, address handling of
+    // disabled experimental optimizations.
+    for (const auto& resource_loading_hint :
+         optimization.resource_loading_hints()) {
+      if (!resource_loading_hint.resource_pattern().empty() &&
+          resource_loading_hint.loading_optimization_type() ==
+              optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
+        resource_patterns_to_block.push_back(
+            resource_loading_hint.resource_pattern());
       }
     }
+    break;
   }
   if (!resource_patterns_to_block.empty()) {
     std::move(callback).Run(document_url, resource_patterns_to_block);
@@ -84,7 +96,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
 }
 
 bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
-    const net::URLRequest& request,
+    const GURL& url,
     ResourceLoadingHintsCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
@@ -92,9 +104,19 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
     return false;
 
   return hints_->MaybeLoadOptimizationHints(
-      request.url(), base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
-                                    io_weak_ptr_factory_.GetWeakPtr(),
-                                    std::move(callback), request.url()));
+      url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
+                          io_weak_ptr_factory_.GetWeakPtr(),
+                          std::move(callback), url));
+}
+
+void PreviewsOptimizationGuide::LogHintCacheMatch(
+    const GURL& url,
+    bool is_committed,
+    net::EffectiveConnectionType ect) const {
+  if (!hints_)
+    return;
+
+  hints_->LogHintCacheMatch(url, is_committed, ect);
 }
 
 void PreviewsOptimizationGuide::OnHintsProcessed(

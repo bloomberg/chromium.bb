@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -24,7 +25,7 @@ import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FRO
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.view.ViewStub;
+import android.support.v4.view.ViewPager;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -45,11 +47,14 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
@@ -68,16 +73,15 @@ public class ManualFillingControllerTest {
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
-    private ViewStub mMockViewStub;
+    private KeyboardAccessoryView mMockKeyboardAccessoryView;
     @Mock
-    private KeyboardAccessoryView mMockView;
+    private ViewPager mMockViewPager;
     @Mock
     private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
     private ListObservable.ListObserver<Void> mMockItemListObserver;
     @Mock
     private TabModelSelector mMockTabModelSelector;
-    private ChromeFullscreenManager mFullScreenManager;
     @Mock
     private Drawable mMockIcon;
     @Mock
@@ -88,19 +92,22 @@ public class ManualFillingControllerTest {
 
     private ManualFillingCoordinator mController = new ManualFillingCoordinator();
 
+    private final UserDataHost mUserDataHost = new UserDataHost();
+
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        when(mMockViewStub.inflate()).thenReturn(mMockView);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
-        mFullScreenManager = new ChromeFullscreenManager(mMockActivity, 0);
-        when(mMockActivity.getFullscreenManager()).thenReturn(mFullScreenManager);
+        ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
+        when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
         when(mMockActivity.getResources()).thenReturn(mMockResources);
         when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
-        mController.initialize(mMockWindow, mMockViewStub, mMockViewStub);
+        mController.initialize(mMockWindow,
+                new FakeViewProvider<>(mMockKeyboardAccessoryView),
+                new FakeViewProvider<>(mMockViewPager));
     }
 
     @Test
@@ -114,23 +121,28 @@ public class ManualFillingControllerTest {
 
     @Test
     public void testAddingNewTabIsAddedToAccessoryAndSheet() {
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mController.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
-        keyboardAccessoryModel.addTabListObserver(mMockTabListObserver);
-        AccessorySheetModel accessorySheetModel = mController.getMediatorForTesting()
-                                                          .getAccessorySheet()
-                                                          .getMediatorForTesting()
-                                                          .getModelForTesting();
-        accessorySheetModel.getTabList().addObserver(mMockTabListObserver);
+        keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS)
+                .addObserver(mMockTabListObserver);
 
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        PropertyModel accessorySheetModel = mController.getMediatorForTesting()
+                                                    .getAccessorySheet()
+                                                    .getMediatorForTesting()
+                                                    .getModelForTesting();
+        accessorySheetModel.get(AccessorySheetProperties.TABS).addObserver(mMockTabListObserver);
+
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(0));
         mController.getMediatorForTesting().addTab(
                 new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
 
-        verify(mMockTabListObserver).onItemRangeInserted(keyboardAccessoryModel.getTabList(), 0, 1);
-        verify(mMockTabListObserver).onItemRangeInserted(accessorySheetModel.getTabList(), 0, 1);
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
-        assertThat(accessorySheetModel.getTabList().size(), is(1));
+        verify(mMockTabListObserver)
+                .onItemRangeInserted(
+                        keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS), 0, 1);
+        verify(mMockTabListObserver)
+                .onItemRangeInserted(accessorySheetModel.get(AccessorySheetProperties.TABS), 0, 1);
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(1));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
     }
 
     @Test
@@ -192,10 +204,9 @@ public class ManualFillingControllerTest {
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         PropertyProvider<Action> secondTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        ListModel<Action> keyboardActions = mediator.getKeyboardAccessory()
-                                                    .getMediatorForTesting()
-                                                    .getModelForTesting()
-                                                    .getActionList();
+        ListModel<Action> keyboardActions =
+                mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting().get(
+                        KeyboardAccessoryProperties.ACTIONS);
         keyboardActions.addObserver(mMockItemListObserver);
 
         // Simulate opening a new tab which automatically triggers the registration:
@@ -227,68 +238,68 @@ public class ManualFillingControllerTest {
     @Test
     public void testPasswordTabRestoredWhenSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
-        AccessorySheetModel accessorySheetModel =
+        PropertyModel accessorySheetModel =
                 mediator.getAccessorySheet().getMediatorForTesting().getModelForTesting();
 
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
-        assertThat(accessorySheetModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(0));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(0));
 
         // Create a new tab with a passwords tab:
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(new PropertyProvider<>());
         // There should be a tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
-        assertThat(accessorySheetModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(1));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
 
         // Simulate creating a second tab without any tabs:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         // There should be no tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
-        assertThat(accessorySheetModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(0));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(0));
 
         // Simulate switching back to the first tab:
         switchTab(mediator, /*from=*/secondTab, /*to=*/firstTab);
         // There should be a tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
-        assertThat(accessorySheetModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(1));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
 
         // And back to the second:
         switchTab(mediator, /*from=*/firstTab, /*to=*/secondTab);
         // Still no tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
-        assertThat(accessorySheetModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(0));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(0));
     }
 
     @Test
     public void testPasswordTabRestoredWhenClosingTabIsUndone() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(TABS).size(), is(0));
 
         // Create a new tab with a passwords tab:
         Tab tab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(new PropertyProvider<>());
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.get(TABS).size(), is(1));
 
         // Simulate closing the tab:
         mediator.getTabModelObserverForTesting().willCloseTab(tab, false);
-        mediator.getTabObserverForTesting().onHidden(tab);
+        mediator.getTabObserverForTesting().onHidden(tab, TabHidingType.CHANGED_TABS);
         // Temporary removes the tab, but keeps it in memory so it can be brought back on undo:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(TABS).size(), is(0));
 
         // Simulate undo closing the tab and selecting it:
         mediator.getTabModelObserverForTesting().tabClosureUndone(tab);
         switchTab(mediator, null, tab);
         // There should still be a tab in the accessory:
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.get(TABS).size(), is(1));
 
         // Simulate closing the tab and committing to it (i.e. wait out undo message):
         closeTab(mediator, tab, null);
         mediator.getTabModelObserverForTesting().tabClosureCommitted(tab);
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(TABS).size(), is(0));
     }
 
     @Test
@@ -307,7 +318,7 @@ public class ManualFillingControllerTest {
     @Test
     public void testTreatNeverProvidedActionsAsEmptyActionList() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
 
         // Open a tab.
@@ -315,7 +326,7 @@ public class ManualFillingControllerTest {
         // Add an action provider that never provided actions.
         mController.registerActionProvider(
                 new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC));
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create a new tab with an action:
         Tab secondTab = addTab(mediator, 1111, tab);
@@ -324,16 +335,16 @@ public class ManualFillingControllerTest {
         mController.registerActionProvider(provider);
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(1));
 
         switchTab(mediator, secondTab, tab);
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
     }
 
     @Test
     public void testUpdatesInactiveAccessory() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
 
         // Open a tab.
@@ -342,7 +353,7 @@ public class ManualFillingControllerTest {
         PropertyProvider<Action> delayedProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(delayedProvider);
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create and switch to a new tab:
         Tab secondTab = addTab(mediator, 1111, tab);
@@ -358,24 +369,28 @@ public class ManualFillingControllerTest {
                 new Action[] {new Action("Delayed", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
 
         // The current tab should not be influenced by the delayed provider.
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("Test Action"));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(1));
+        assertThat(
+                keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).get(0).getCaption(),
+                is("Test Action"));
 
         // Switching tabs back should only show the action that was received in the background.
         switchTab(mediator, secondTab, tab);
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("Delayed"));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(1));
+        assertThat(
+                keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).get(0).getCaption(),
+                is("Delayed"));
     }
 
     @Test
     public void testDestroyingTabCleansModelForThisTab() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        KeyboardAccessoryModel keyboardAccessoryModel =
+        PropertyModel keyboardAccessoryModel =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
-        AccessorySheetModel accessorySheetModel = mController.getMediatorForTesting()
-                                                          .getAccessorySheet()
-                                                          .getMediatorForTesting()
-                                                          .getModelForTesting();
+        PropertyModel accessorySheetModel = mController.getMediatorForTesting()
+                                                    .getAccessorySheet()
+                                                    .getMediatorForTesting()
+                                                    .getModelForTesting();
 
         Provider<Item> firstTabProvider = new PropertyProvider<>();
         PropertyProvider<Action> firstActionProvider =
@@ -403,19 +418,23 @@ public class ManualFillingControllerTest {
                 new Action[] {new Action("2BKept", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
 
         // The current tab should be valid.
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
-        assertThat(accessorySheetModel.getTabList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("2BKept"));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(1));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(1));
+        assertThat(
+                keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).get(0).getCaption(),
+                is("2BKept"));
 
         // Request destruction of the first Tab:
         mediator.getTabObserverForTesting().onDestroyed(firstTab);
 
         // The current tab should not be influenced by the destruction.
-        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
-        assertThat(accessorySheetModel.getTabList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
-        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("2BKept"));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).size(), is(1));
+        assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(1));
+        assertThat(
+                keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).get(0).getCaption(),
+                is("2BKept"));
 
         // The other tabs data should be gone.
         ManualFillingMediator.AccessoryState oldState = mediator.getModelForTesting().get(firstTab);
@@ -469,13 +488,14 @@ public class ManualFillingControllerTest {
         int lastId = INVALID_TAB_ID;
         if (lastTab != null) {
             lastId = lastTab.getId();
-            mediator.getTabObserverForTesting().onHidden(lastTab);
+            mediator.getTabObserverForTesting().onHidden(lastTab, TabHidingType.CHANGED_TABS);
         }
         Tab tab = mock(Tab.class);
         when(tab.getId()).thenReturn(id);
+        when(tab.getUserDataHost()).thenReturn(mUserDataHost);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
-        mediator.getTabObserverForTesting().onShown(tab);
+        mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);
         return tab;
     }
@@ -490,11 +510,11 @@ public class ManualFillingControllerTest {
         int lastId = INVALID_TAB_ID;
         if (from != null) {
             lastId = from.getId();
-            mediator.getTabObserverForTesting().onHidden(from);
+            mediator.getTabObserverForTesting().onHidden(from, TabHidingType.CHANGED_TABS);
         }
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(to);
         mediator.getTabModelObserverForTesting().didSelectTab(to, FROM_USER, lastId);
-        mediator.getTabObserverForTesting().onShown(to);
+        mediator.getTabObserverForTesting().onShown(to, FROM_USER);
     }
 
     /**
@@ -505,7 +525,7 @@ public class ManualFillingControllerTest {
      */
     private void closeTab(ManualFillingMediator mediator, Tab tabToBeClosed, @Nullable Tab next) {
         mediator.getTabModelObserverForTesting().willCloseTab(tabToBeClosed, false);
-        mediator.getTabObserverForTesting().onHidden(tabToBeClosed);
+        mediator.getTabObserverForTesting().onHidden(tabToBeClosed, TabHidingType.CHANGED_TABS);
         if (next != null) {
             when(mMockTabModelSelector.getCurrentTab()).thenReturn(next);
             mediator.getTabModelObserverForTesting().didSelectTab(

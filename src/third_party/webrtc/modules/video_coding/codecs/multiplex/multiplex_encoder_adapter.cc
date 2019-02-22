@@ -12,7 +12,7 @@
 
 #include <cstring>
 
-#include "common_video/include/video_frame.h"
+#include "api/video/encoded_image.h"
 #include "common_video/include/video_frame_buffer.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/include/module_common_types.h"
@@ -285,7 +285,6 @@ EncodedImageCallback::Result MultiplexEncoderAdapter::OnEncodedImage(
 
       CodecSpecificInfo codec_info = *codecSpecificInfo;
       codec_info.codecType = kVideoCodecMultiplex;
-      codec_info.codecSpecific.generic.simulcast_idx = 0;
       encoded_complete_callback_->OnEncodedImage(combined_image_, &codec_info,
                                                  fragmentation);
     }

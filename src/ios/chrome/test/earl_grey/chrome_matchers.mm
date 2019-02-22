@@ -34,8 +34,6 @@
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -245,6 +243,10 @@ id<GREYMatcher> ToolsMenuButton() {
 id<GREYMatcher> ShareButton() {
   return grey_allOf(ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE),
                     grey_sufficientlyVisible(), nil);
+}
+
+id<GREYMatcher> TabletTabSwitcherOpenButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
 }
 
 id<GREYMatcher> ShowTabsButton() {
@@ -459,6 +461,16 @@ id<GREYMatcher> SystemSelectionCalloutCopyButton() {
 
 id<GREYMatcher> ContextMenuCopyButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_COPY);
+}
+
+id<GREYMatcher> NewTabPageOmnibox() {
+  return grey_allOf(
+      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
+      grey_minimumVisiblePercent(0.2), nil);
+}
+
+id<GREYMatcher> WebViewMatcher() {
+  return web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
 }
 
 }  // namespace chrome_test_util

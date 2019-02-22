@@ -627,17 +627,36 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
     switch (annotation->opcode()) {
       case SpvOpDecorate:
       case SpvOpMemberDecorate:
-      case SpvOpDecorateId:
       case SpvOpDecorateStringGOOGLE:
         if (IsTargetDead(annotation)) {
           context()->KillInst(annotation);
           modified = true;
         }
         break;
+      case SpvOpDecorateId:
+        if (IsTargetDead(annotation)) {
+          context()->KillInst(annotation);
+          modified = true;
+        } else {
+          if (annotation->GetSingleWordInOperand(1) ==
+              SpvDecorationHlslCounterBufferGOOGLE) {
+            // HlslCounterBuffer will reference an id other than the target.
+            // If that id is dead, then the decoration can be removed as well.
+            uint32_t counter_buffer_id = annotation->GetSingleWordInOperand(2);
+            Instruction* counter_buffer_inst =
+                get_def_use_mgr()->GetDef(counter_buffer_id);
+            if (IsDead(counter_buffer_inst)) {
+              context()->KillInst(annotation);
+              modified = true;
+            }
+          }
+        }
+        break;
       case SpvOpGroupDecorate: {
         // Go through the targets of this group decorate. Remove each dead
         // target. If all targets are dead, remove this decoration.
         bool dead = true;
+        bool removed_operand = false;
         for (uint32_t i = 1; i < annotation->NumOperands();) {
           Instruction* opInst =
               get_def_use_mgr()->GetDef(annotation->GetSingleWordOperand(i));
@@ -645,6 +664,7 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
             // Don't increment |i|.
             annotation->RemoveOperand(i);
             modified = true;
+            removed_operand = true;
           } else {
             i++;
             dead = false;
@@ -653,6 +673,8 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
         if (dead) {
           context()->KillInst(annotation);
           modified = true;
+        } else if (removed_operand) {
+          context()->UpdateDefUse(annotation);
         }
         break;
       }
@@ -661,6 +683,7 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
         // dead target (and member index). If all targets are dead, remove this
         // decoration.
         bool dead = true;
+        bool removed_operand = false;
         for (uint32_t i = 1; i < annotation->NumOperands();) {
           Instruction* opInst =
               get_def_use_mgr()->GetDef(annotation->GetSingleWordOperand(i));
@@ -669,6 +692,7 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
             annotation->RemoveOperand(i + 1);
             annotation->RemoveOperand(i);
             modified = true;
+            removed_operand = true;
           } else {
             i += 2;
             dead = false;
@@ -677,6 +701,8 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
         if (dead) {
           context()->KillInst(annotation);
           modified = true;
+        } else if (removed_operand) {
+          context()->UpdateDefUse(annotation);
         }
         break;
       }
@@ -749,6 +775,12 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_GOOGLE_hlsl_functionality1",
       "SPV_NV_shader_subgroup_partitioned",
       "SPV_EXT_descriptor_indexing",
+      "SPV_NV_fragment_shader_barycentric",
+      "SPV_NV_compute_shader_derivatives",
+      "SPV_NV_shader_image_footprint",
+      "SPV_NV_shading_rate",
+      "SPV_NV_mesh_shader",
+      "SPV_NVX_raytracing",
   });
 }
 

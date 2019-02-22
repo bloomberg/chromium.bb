@@ -265,8 +265,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate
-  void OnMusEmbeddedFrameSurfaceChanged(
-      const viz::SurfaceInfo& surface_info) override;
   void OnMusEmbeddedFrameSinkIdAllocated(
       const viz::FrameSinkId& frame_sink_id) override;
 #endif
@@ -274,7 +272,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;
   void SetLayer(scoped_refptr<cc::Layer> layer,
-                bool prevent_contents_opaque_changes) override;
+                bool prevent_contents_opaque_changes,
+                bool is_surface_layer) override;
   SkBitmap* GetSadPageBitmap() override;
 
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;

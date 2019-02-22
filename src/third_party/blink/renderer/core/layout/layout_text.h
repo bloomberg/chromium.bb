@@ -187,8 +187,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   LayoutRect VisualOverflowRect() const;
 
   FloatPoint FirstRunOrigin() const;
-  float FirstRunX() const;
-  float FirstRunY() const;
 
   virtual void SetText(scoped_refptr<StringImpl>,
                        bool force = false,
@@ -418,6 +416,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned contains_only_whitespace_or_nbsp_ : 2;
 
  private:
+  // Used for LayoutNG with accessibility. True if inline fragments are
+  // associated to |NGAbstractInlineTextBox|.
+  unsigned has_abstract_inline_text_box_ : 1;
   float min_width_;
   float max_width_;
   float first_line_min_width_;
@@ -432,7 +433,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     InlineTextBoxList text_boxes_;
     // The first fragment of text boxes associated with this object.
     // Valid only when IsInLayoutNGInlineFormattingContext().
-    scoped_refptr<NGPaintFragment> first_paint_fragment_;
+    NGPaintFragment* first_paint_fragment_;
   };
 };
 
@@ -442,7 +443,7 @@ inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
 }
 
 inline NGPaintFragment* LayoutText::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_.get()
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
                                                : nullptr;
 }
 

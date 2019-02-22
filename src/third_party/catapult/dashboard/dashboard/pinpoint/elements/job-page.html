@@ -10,7 +10,6 @@ found in the LICENSE file.
 
 <link rel="import" href="/elements/base-style.html">
 <link rel="import" href="/elements/job-page/change-details.html">
-<link rel="import" href="/elements/job-page/job-chart-icon.html">
 <link rel="import" href="/elements/job-page/job-chart.html">
 <link rel="import" href="/elements/job-page/job-details.html">
 <link rel="import" href="/elements/job-page/job-menu-fab.html">
@@ -38,6 +37,9 @@ found in the LICENSE file.
 
       h1 {
         margin-bottom: 0.1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       #layout {
@@ -84,19 +86,19 @@ found in the LICENSE file.
 
     <app-route route="{{route}}" pattern="/:jobId" data="{{routeData}}"></app-route>
 
-    <h1>
-      Job [[routeData.jobId]]
-      <template is="dom-if" if="[[failed(job)]]">
-        <span id="failed" class="badge">Error</span>
-        <paper-tooltip for="failed" animation-delay="0">
-          <div id="failed-tooltip">[[job.exception]]</div>
-        </paper-tooltip>
-      </template>
-      <template is="dom-if" if="[[running(job)]]">
-        <span id="running" class="badge">Running</span>
-      </template>
-    </h1>
     <loading-wrapper url="/api/job/[[routeData.jobId]]?o=STATE" response="{{job}}">
+      <h1>
+        <template is="dom-if" if="[[failed(job)]]">
+          <span id="failed" class="badge">Error</span>
+          <paper-tooltip for="failed" animation-delay="0">
+            <div id="failed-tooltip">[[job.exception]]</div>
+          </paper-tooltip>
+        </template>
+        <template is="dom-if" if="[[running(job)]]">
+          <span id="running" class="badge">Running</span>
+        </template>
+        [[job.name]]
+      </h1>
       <p class="byline">
         For [[job.user]]
         <span class="middle-dot"></span>

@@ -102,8 +102,6 @@ class TestObserver : public WindowTreeHostManager::Observer,
     if (metrics & DISPLAY_METRIC_PRIMARY)
       ++primary_changed_count_;
   }
-  void OnDisplayAdded(const display::Display& new_display) override {}
-  void OnDisplayRemoved(const display::Display& old_display) override {}
 
   // Overridden from aura::client::FocusChangeObserver
   void OnWindowFocused(aura::Window* gained_focus,
@@ -1289,13 +1287,14 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
 
   ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("0,375", event_handler.GetLocationAndReset());
+  // The mouse location must be inside the root bounds in dp.
+  EXPECT_EQ("0,374", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("249,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("249,375", event_handler.GetLocationAndReset());
+  EXPECT_EQ("249,374", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/u@0.8");
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1305,13 +1304,13 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
 
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("375,250", event_handler.GetLocationAndReset());
+  EXPECT_EQ("374,249", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("0,250", event_handler.GetLocationAndReset());
+  EXPECT_EQ("0,249", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("375,0", event_handler.GetLocationAndReset());
+  EXPECT_EQ("374,0", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/l@0.8");
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1321,9 +1320,9 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
 
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("250,0", event_handler.GetLocationAndReset());
+  EXPECT_EQ("249,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("250,374", event_handler.GetLocationAndReset());
+  EXPECT_EQ("249,374", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,374", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
@@ -1470,10 +1469,10 @@ TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
 
   aura::Env* env = Shell::Get()->aura_env();
 
-  ui::test::EventGenerator generator(root_windows[0]);
+  ui::test::EventGenerator generator_on_2nd(root_windows[1]);
 
   // Set the initial position.
-  generator.MoveMouseToInHost(350, 150);
+  generator_on_2nd.MoveMouseToInHost(150, 150);
   EXPECT_EQ("350,150", env->last_mouse_location().ToString());
 
   // A mouse pointer will stay in the 2nd display.
@@ -1496,7 +1495,8 @@ TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
   EXPECT_EQ("150,150", env->last_mouse_location().ToString());
 
   // Move the mouse pointer to the bottom of 1st display.
-  generator.MoveMouseToInHost(150, 290);
+  ui::test::EventGenerator generator_on_1st(root_windows[0]);
+  generator_on_1st.MoveMouseToInHost(150, 290);
   EXPECT_EQ("150,290", env->last_mouse_location().ToString());
 
   // The mouse pointer is now on 2nd display.
@@ -1706,7 +1706,8 @@ TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
   dispatcher_api.set_target(
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           GetSecondaryDisplay().id()));
-  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(&key_event);
+  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(
+      &key_event, base::NullCallback());
   // As long as nothing crashes, we're good.
 }
 

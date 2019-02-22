@@ -12,7 +12,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -1237,7 +1236,9 @@ void WallpaperController::RemoveUserWallpaper(
 void WallpaperController::RemovePolicyWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {
-  DCHECK(IsPolicyControlled(user_info->account_id, user_info->is_ephemeral));
+  if (!IsPolicyControlled(user_info->account_id, user_info->is_ephemeral))
+    return;
+
   // Updates the screen only when the user has logged in.
   const bool show_wallpaper =
       Shell::Get()->session_controller()->IsActiveUserSessionStarted();

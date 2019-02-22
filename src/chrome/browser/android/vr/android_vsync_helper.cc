@@ -4,8 +4,9 @@
 
 #include "chrome/browser/android/vr/android_vsync_helper.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "jni/AndroidVSyncHelper_jni.h"
 
@@ -14,7 +15,8 @@ using base::android::JavaParamRef;
 
 namespace vr {
 
-AndroidVSyncHelper::AndroidVSyncHelper() {
+AndroidVSyncHelper::AndroidVSyncHelper(Callback callback)
+    : callback_(std::move(callback)) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_AndroidVSyncHelper_create(env, reinterpret_cast<jlong>(this)));
@@ -31,33 +33,30 @@ void AndroidVSyncHelper::OnVSync(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jlong time_nanos) {
   // See WindowAndroid::OnVSync.
+  DCHECK(vsync_requested_);
+  vsync_requested_ = false;
   DCHECK_EQ(base::TimeTicks::GetClock(),
             base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
-  DCHECK(!callback_.is_null());
   base::TimeTicks frame_time =
-      base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(time_nanos /
-                                        base::Time::kNanosecondsPerMicrosecond);
+      base::TimeTicks() + base::TimeDelta::FromNanoseconds(time_nanos);
   last_interval_ = frame_time - last_vsync_;
   last_vsync_ = frame_time;
-  base::ResetAndReturn(&callback_).Run(frame_time);
+  callback_.Run(frame_time);
 }
 
-void AndroidVSyncHelper::RequestVSync(
-    const base::RepeatingCallback<void(base::TimeTicks)>& callback) {
-  DCHECK(callback_.is_null());
-  DCHECK(!callback.is_null());
-  callback_ = callback;
+void AndroidVSyncHelper::RequestVSync() {
+  DCHECK(!vsync_requested_);
+  vsync_requested_ = true;
   JNIEnv* env = AttachCurrentThread();
   Java_AndroidVSyncHelper_requestVSync(env, j_object_);
 }
 
 void AndroidVSyncHelper::CancelVSyncRequest() {
-  if (callback_.is_null())
+  if (!vsync_requested_)
     return;
+  vsync_requested_ = false;
   JNIEnv* env = AttachCurrentThread();
   Java_AndroidVSyncHelper_cancelVSyncRequest(env, j_object_);
-  callback_.Reset();
 }
 
 }  // namespace vr

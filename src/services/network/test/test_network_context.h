@@ -71,6 +71,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override {}
   void CloseAllConnections(CloseAllConnectionsCallback callback) override {}
+  void CloseIdleConnections(CloseIdleConnectionsCallback callback) override {}
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
@@ -80,6 +81,15 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override {}
+  void AddExpectCT(const std::string& domain,
+                   base::Time expiry,
+                   bool enforce,
+                   const GURL& report_uri,
+                   AddExpectCTCallback callback) override {}
+  void SetExpectCTTestReport(const GURL& report_uri,
+                             SetExpectCTTestReportCallback callback) override {}
+  void GetExpectCTState(const std::string& domain,
+                        GetExpectCTStateCallback callback) override {}
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override {}
   void CreateTCPServerSocket(
@@ -91,10 +101,16 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
+      mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest socket,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override {}
+  void CreateTCPBoundSocket(
+      const net::IPEndPoint& local_addr,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPBoundSocketRequest request,
+      CreateTCPBoundSocketCallback callback) override {}
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override {}
   void CreateWebSocket(mojom::WebSocketRequest request,
@@ -122,10 +138,17 @@ class TestNetworkContext : public mojom::NetworkContext {
       VerifyCertForSignedExchangeCallback callback) override {}
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override {}
-  void AddHSTSForTesting(const std::string& host,
-                         base::Time expiry,
-                         bool include_subdomains,
-                         AddHSTSForTestingCallback callback) override {}
+  void SetCorsOriginAccessListsForOrigin(
+      const url::Origin& source_origin,
+      std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override {}
+  void AddHSTS(const std::string& host,
+               base::Time expiry,
+               bool include_subdomains,
+               AddHSTSCallback callback) override {}
+  void GetHSTSState(const std::string& domain,
+                    GetHSTSStateCallback callback) override {}
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override {}
@@ -138,6 +161,12 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override {}
   void ResetURLLoaderFactories() override {}
+  void ForceReloadProxyConfig(
+      ForceReloadProxyConfigCallback callback) override {}
+  void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override {}
+  void DeleteDynamicDataForHost(
+      const std::string& host,
+      DeleteDynamicDataForHostCallback callback) override {}
 };
 
 }  // namespace network

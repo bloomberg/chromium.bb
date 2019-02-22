@@ -40,7 +40,8 @@ bool RelocRvaReaderWin32::FindRelocBlocks(
   ConstBufferView reloc_data = image[reloc_region];
   reloc_block_offsets->clear();
   while (reloc_data.size() >= sizeof(pe::RelocHeader)) {
-    reloc_block_offsets->push_back(reloc_data.begin() - image.begin());
+    reloc_block_offsets->push_back(
+        base::checked_cast<offset_t>(reloc_data.begin() - image.begin()));
     auto size = reloc_data.read<pe::RelocHeader>(0).size;
     // |size| must be aligned to 4-bytes.
     if (size < sizeof(pe::RelocHeader) || size % 4 || size > reloc_data.size())
@@ -78,7 +79,8 @@ RelocRvaReaderWin32::RelocRvaReaderWin32(
     return;  // Nothing left.
 
   // Skip |cur_reloc_units_| to |lo|, truncating up.
-  offset_t cur_reloc_units_offset = cur_reloc_units_.begin() - image_.begin();
+  offset_t cur_reloc_units_offset =
+      base::checked_cast<offset_t>(cur_reloc_units_.begin() - image_.begin());
   if (lo > cur_reloc_units_offset) {
     offset_t delta =
         AlignCeil<offset_t>(lo - cur_reloc_units_offset, kRelocUnitSize);
@@ -100,7 +102,8 @@ base::Optional<RelocUnitWin32> RelocRvaReaderWin32::GetNext() {
   if (end_it_ - cur_reloc_units_.begin() < kRelocUnitSize)
     return base::nullopt;
   // "Inner loop" to extract single reloc unit.
-  offset_t location = cur_reloc_units_.begin() - image_.begin();
+  offset_t location =
+      base::checked_cast<offset_t>(cur_reloc_units_.begin() - image_.begin());
   uint16_t entry = cur_reloc_units_.read<uint16_t>(0);
   uint8_t type = static_cast<uint8_t>(entry >> 12);
   rva_t rva = rva_hi_bits_ + (entry & 0xFFF);
@@ -149,7 +152,7 @@ base::Optional<Reference> RelocReaderWin32::GetNext() {
     offset_t target = entry_rva_to_offset_.Convert(unit->target_rva);
     if (target == kInvalidOffset)
       continue;
-    // Ensures the target (abs32 reference) lies entirely within the image.
+    // Ensure that |target| (abs32 reference) lies entirely within the image.
     if (target >= offset_bound_)
       continue;
     offset_t location = unit->location;

@@ -20,10 +20,6 @@ const char kAndroidStdinPort[] = "android-stdin-port";
 const char kAndroidStdoutPort[] = "android-stdout-port";
 #endif // defined(OS_ANDROID)
 
-// Check whether all system dependencies for running layout tests are met.
-// TODO(tkent): Rename this to "check-web-test-sys-deps".
-const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
-
 // When specified to "enable-leak-detection" command-line option,
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
@@ -59,6 +55,11 @@ const char kRunWebTests[] = "run-web-tests";
 // kRunLayoutTest is set. For the features' level, see
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
+
+// Test files are in //third_party/blink/web_tests, not in
+// //third_party/WebKit/LayoutTests.
+// TODO(tkent): Remove this flag after the move.
+const char kTestsInBlink[] = "tests-in-blink";
 
 // Enable pixel dumps via "real" surface readbacks, instead of synchronously
 // compositing and reading back pixels.

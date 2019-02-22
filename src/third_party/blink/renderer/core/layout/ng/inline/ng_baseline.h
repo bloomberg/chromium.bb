@@ -25,10 +25,12 @@ enum class NGBaselineAlgorithmType {
 struct NGBaselineRequest {
   NGBaselineAlgorithmType algorithm_type;
   FontBaseline baseline_type;
-};
 
-bool operator==(const NGBaselineRequest&, const NGBaselineRequest&);
-bool operator!=(const NGBaselineRequest&, const NGBaselineRequest&);
+  bool operator==(const NGBaselineRequest& other) const;
+  bool operator!=(const NGBaselineRequest& other) const {
+    return !(*this == other);
+  }
+};
 
 // Represents a computed baseline position.
 struct NGBaseline {

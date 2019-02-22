@@ -33,9 +33,6 @@
 
 namespace content {
 
-using base::Time;
-using base::TimeDelta;
-using base::TimeTicks;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -185,10 +182,10 @@ void InputRouterImpl::SendGestureEvent(
 
 void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
-  TouchEventWithLatencyInfo updatd_touch_event = touch_event;
-  SetMovementXYForTouchPoints(&updatd_touch_event.event);
-  input_stream_validator_.Validate(updatd_touch_event.event);
-  touch_event_queue_.QueueEvent(updatd_touch_event);
+  TouchEventWithLatencyInfo updated_touch_event = touch_event;
+  SetMovementXYForTouchPoints(&updated_touch_event.event);
+  input_stream_validator_.Validate(updated_touch_event.event);
+  touch_event_queue_.QueueEvent(updated_touch_event);
 }
 
 void InputRouterImpl::NotifySiteIsMobileOptimized(bool is_mobile_optimized) {
@@ -335,21 +332,30 @@ void InputRouterImpl::SendTouchEventImmediately(
 void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                       InputEventAckSource ack_source,
                                       InputEventAckState ack_result) {
-  // Touchstart events sent to the renderer indicate a new touch sequence, but
-  // in some cases we may filter out sending the touchstart - catch those here.
-  if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
-      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+  if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
     touch_action_filter_.AppendToGestureSequenceForDebugging("T");
-    // Touch action must be auto when there is no consumer
-    touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
-    touch_action_filter_.SetActiveTouchInProgress(true);
-    UpdateTouchAckTimeoutEnabled();
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        base::NumberToString(ack_result).c_str());
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        base::NumberToString(event.event.unique_touch_event_id).c_str());
+    touch_action_filter_.IncreaseActiveTouches();
+    // There are some cases the touch action may not have value when receiving
+    // the ACK for the touch start, such as input ack state is
+    // NO_CONSUMER_EXISTS, or the renderer has swapped out. In these cases, set
+    // touch action Auto.
+    if (!touch_action_filter_.allowed_touch_action().has_value()) {
+      touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+      UpdateTouchAckTimeoutEnabled();
+    }
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
+    touch_action_filter_.AppendToGestureSequenceForDebugging("E");
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        base::NumberToString(event.event.unique_touch_event_id).c_str());
+    touch_action_filter_.DecreaseActiveTouches();
     touch_action_filter_.ReportAndResetTouchAction();
-    touch_action_filter_.SetActiveTouchInProgress(false);
     UpdateTouchAckTimeoutEnabled();
   }
 }
@@ -596,7 +602,6 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
-  touch_action_filter_.SetActiveTouchInProgress(true);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
@@ -614,9 +619,8 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
 
   touch_action_filter_.AppendToGestureSequenceForDebugging("S");
   touch_action_filter_.AppendToGestureSequenceForDebugging(
-      std::to_string(touch_action).c_str());
+      base::NumberToString(touch_action).c_str());
   touch_action_filter_.OnSetTouchAction(touch_action);
-  touch_action_filter_.SetActiveTouchInProgress(true);
 
   // kTouchActionNone should disable the touch ack timeout.
   UpdateTouchAckTimeoutEnabled();

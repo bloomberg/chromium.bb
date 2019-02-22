@@ -1286,7 +1286,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       "    city: 'CITY ERROR'"
       "  }"
       "}",
-      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED, dialog_view());
 
   EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
             GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
@@ -1322,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(
       "    city: 'CITY ERROR'"
       "  }"
       "}",
-      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED, dialog_view());
 
   EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
             GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
@@ -1349,7 +1349,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       "    addressLine: 'ADDRESS LINE ERROR',"
       "    city: 'CITY ERROR'"
       "  }"
-      "}");
+      "}",
+      dialog_view());
 
   const int kErrorLabelOffset =
       static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET);
@@ -1358,6 +1359,32 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                                        autofill::ADDRESS_HOME_STREET_ADDRESS));
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(kErrorLabelOffset +
                                                 autofill::ADDRESS_HOME_CITY));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       UpdateWithShippingAddressErrors) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.SetRawInfo(autofill::ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("KR"));
+  AddAutofillProfile(address);
+
+  InvokePaymentRequestUI();
+  OpenShippingAddressSectionScreen();
+
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED});
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+  WaitForObservedEvent();
+
+  EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(base::ASCIIToUTF16("CITY ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_CITY));
 }
 
 }  // namespace payments

@@ -79,7 +79,7 @@ NonClientFrameView* InfoBubble::CreateNonClientFrameView(Widget* widget) {
   frame_ = new InfoBubbleFrame(margins());
   frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
   frame_->SetBubbleBorder(std::unique_ptr<BubbleBorder>(
-      new BubbleBorder(arrow(), shadow(), color())));
+      new BubbleBorder(arrow(), GetShadow(), color())));
   return frame_;
 }
 

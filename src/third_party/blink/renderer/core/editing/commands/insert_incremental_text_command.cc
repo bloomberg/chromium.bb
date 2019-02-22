@@ -21,12 +21,12 @@ namespace blink {
 
 namespace {
 
-size_t ComputeCommonPrefixLength(const String& str1, const String& str2) {
-  const size_t max_common_prefix_length =
+wtf_size_t ComputeCommonPrefixLength(const String& str1, const String& str2) {
+  const wtf_size_t max_common_prefix_length =
       std::min(str1.length(), str2.length());
   ForwardCodePointStateMachine code_point_state_machine;
-  size_t result = 0;
-  for (size_t index = 0; index < max_common_prefix_length; ++index) {
+  wtf_size_t result = 0;
+  for (wtf_size_t index = 0; index < max_common_prefix_length; ++index) {
     if (str1[index] != str2[index])
       return result;
     code_point_state_machine.FeedFollowingCodeUnit(str1[index]);
@@ -37,21 +37,22 @@ size_t ComputeCommonPrefixLength(const String& str1, const String& str2) {
   return max_common_prefix_length;
 }
 
-size_t ComputeCommonSuffixLength(const String& str1, const String& str2) {
-  const size_t length1 = str1.length();
-  const size_t length2 = str2.length();
-  const size_t max_common_suffix_length = std::min(length1, length2);
-  for (size_t index = 0; index < max_common_suffix_length; ++index) {
+wtf_size_t ComputeCommonSuffixLength(const String& str1, const String& str2) {
+  const wtf_size_t length1 = str1.length();
+  const wtf_size_t length2 = str2.length();
+  const wtf_size_t max_common_suffix_length = std::min(length1, length2);
+  for (wtf_size_t index = 0; index < max_common_suffix_length; ++index) {
     if (str1[length1 - index - 1] != str2[length2 - index - 1])
       return index;
   }
   return max_common_suffix_length;
 }
 
-size_t ComputeCommonGraphemeClusterPrefixLength(const Position& selection_start,
-                                                const String& old_text,
-                                                const String& new_text) {
-  const size_t common_prefix_length =
+wtf_size_t ComputeCommonGraphemeClusterPrefixLength(
+    const Position& selection_start,
+    const String& old_text,
+    const String& new_text) {
+  const wtf_size_t common_prefix_length =
       ComputeCommonPrefixLength(old_text, new_text);
   const int selection_offset = selection_start.ComputeOffsetInContainerNode();
   const ContainerNode* selection_node =
@@ -64,15 +65,16 @@ size_t ComputeCommonGraphemeClusterPrefixLength(const Position& selection_start,
   if (range.IsNull())
     return 0;
   const Position& position = range.EndPosition();
-  const size_t diff = ComputeDistanceToLeftGraphemeBoundary(position);
+  const wtf_size_t diff = ComputeDistanceToLeftGraphemeBoundary(position);
   DCHECK_GE(common_prefix_length, diff);
   return common_prefix_length - diff;
 }
 
-size_t ComputeCommonGraphemeClusterSuffixLength(const Position& selection_start,
-                                                const String& old_text,
-                                                const String& new_text) {
-  const size_t common_suffix_length =
+wtf_size_t ComputeCommonGraphemeClusterSuffixLength(
+    const Position& selection_start,
+    const String& old_text,
+    const String& new_text) {
+  const wtf_size_t common_suffix_length =
       ComputeCommonSuffixLength(old_text, new_text);
   const int selection_offset = selection_start.ComputeOffsetInContainerNode();
   const ContainerNode* selection_node =
@@ -86,15 +88,15 @@ size_t ComputeCommonGraphemeClusterSuffixLength(const Position& selection_start,
   if (range.IsNull())
     return 0;
   const Position& position = range.EndPosition();
-  const size_t diff = ComputeDistanceToRightGraphemeBoundary(position);
+  const wtf_size_t diff = ComputeDistanceToRightGraphemeBoundary(position);
   if (diff > common_suffix_length)
     return 0;
   return common_suffix_length - diff;
 }
 
 const String ComputeTextForInsertion(const String& new_text,
-                                     const size_t common_prefix_length,
-                                     const size_t common_suffix_length) {
+                                     const wtf_size_t common_prefix_length,
+                                     const wtf_size_t common_suffix_length) {
   return new_text.Substring(
       common_prefix_length,
       new_text.length() - common_prefix_length - common_suffix_length);
@@ -143,14 +145,17 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
   const String& new_text = text_;
 
   const Position& selection_start = visible_selection.Start();
-  const size_t new_text_length = new_text.length();
-  const size_t old_text_length = old_text.length();
-  const size_t common_prefix_length = ComputeCommonGraphemeClusterPrefixLength(
-      selection_start, old_text, new_text);
+  const wtf_size_t new_text_length = new_text.length();
+  const wtf_size_t old_text_length = old_text.length();
+  const wtf_size_t common_prefix_length =
+      ComputeCommonGraphemeClusterPrefixLength(selection_start, old_text,
+                                               new_text);
   // We should ignore common prefix when finding common suffix.
-  const size_t common_suffix_length = ComputeCommonGraphemeClusterSuffixLength(
-      selection_start, old_text.Right(old_text_length - common_prefix_length),
-      new_text.Right(new_text_length - common_prefix_length));
+  const wtf_size_t common_suffix_length =
+      ComputeCommonGraphemeClusterSuffixLength(
+          selection_start,
+          old_text.Right(old_text_length - common_prefix_length),
+          new_text.Right(new_text_length - common_prefix_length));
   DCHECK_GE(old_text_length, common_prefix_length + common_suffix_length);
 
   text_ = ComputeTextForInsertion(text_, common_prefix_length,

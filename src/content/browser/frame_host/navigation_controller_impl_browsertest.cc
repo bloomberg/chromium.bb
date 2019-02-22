@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,7 +29,6 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -36,6 +36,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
@@ -984,8 +985,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -4912,10 +4913,10 @@ void DoReplaceStateWhilePending(Shell* shell,
   EXPECT_TRUE(NavigateToURL(shell, start_url));
 
   // Have the user decide to go to a different page which is very slow.
-  NavigationStallDelegate stall_delegate(stalled_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
-  controller.LoadURL(
-      stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  TestNavigationManager stalled_navigation(shell->web_contents(), stalled_url);
+  controller.LoadURL(stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                     std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -4936,16 +4937,13 @@ void DoReplaceStateWhilePending(Shell* shell,
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
   }
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 }  // namespace
 
-// Flaky on Linux TSan: https://crbug.com/847326
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    DISABLED_NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
+    NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL url2(embedded_test_server()->GetURL(
@@ -4971,10 +4969,9 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url, url, "x");
 }
 
-// Flaky on Linux TSan: https://crbug.com/847326
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    DISABLED_NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
+    NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
@@ -5003,11 +5000,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Start a cross-process navigation with replacement, which never completes.
   GURL foo_url(embedded_test_server()->GetURL(
       "foo.com", "/navigation_controller/page_with_links.html"));
-  NavigationStallDelegate stall_delegate(foo_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(), foo_url);
   NavigationController::LoadURLParams params(foo_url);
   params.should_replace_current_entry = true;
   controller.LoadURLWithParams(params);
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -5033,8 +5030,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(entry_count + 1, controller.GetEntryCount());
   EXPECT_EQ(push_state_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(start_url, controller.GetEntryAtIndex(0)->GetURL());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // This test ensures that if we go back from a page that has a replaceState()
@@ -5275,7 +5270,7 @@ class FailureWatcher : public WebContentsObserver {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       DISABLED_StopCausesFailureDespiteJavaScriptURL) {
+                       StopCausesFailureDespiteJavaScriptURL) {
   NavigationControllerImpl& controller =
       static_cast<NavigationControllerImpl&>(
           shell()->web_contents()->GetController());
@@ -5292,9 +5287,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Have the user decide to go to a different page which will not commit.
   GURL url2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
-  NavigationStallDelegate stall_delegate(url2);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(), url2);
   controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForResponse());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -5306,16 +5301,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FailureWatcher watcher(root);
     GURL js("javascript:(function(){})()");
     controller.LoadURL(js, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    // This LoadURL ends up purging the pending entry, which is why this is
-    // tricky.
-    EXPECT_EQ(nullptr, controller.GetPendingEntry());
+    EXPECT_EQ(entry, controller.GetPendingEntry());
     EXPECT_TRUE(shell()->web_contents()->IsLoading());
     shell()->web_contents()->Stop();
     watcher.Wait();
     EXPECT_FALSE(shell()->web_contents()->IsLoading());
   }
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 namespace {
@@ -6020,6 +6011,21 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_TRUE(controller.CanGoForward());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+}
+
+// Make sure that a 304 response to a navigation aborts the navigation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, NavigateTo304) {
+  // URL that just returns a blank page.
+  GURL initial_url = embedded_test_server()->GetURL("/set-header");
+  // URL that returns a response with a 304 status code.
+  GURL not_modified_url = embedded_test_server()->GetURL("/echo?status=304");
+
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  EXPECT_EQ(initial_url, shell()->web_contents()->GetVisibleURL());
+
+  // The navigation should be aborted.
+  EXPECT_FALSE(NavigateToURL(shell(), not_modified_url));
+  EXPECT_EQ(initial_url, shell()->web_contents()->GetVisibleURL());
 }
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
@@ -6765,7 +6771,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Verify the expected origin through JavaScript. It also has the additional
   // verification of the process also being still alive.
   EXPECT_EQ(url::Origin::Create(start_url).Serialize(),
-            EvalJs(web_contents, "document.origin"));
+            EvalJs(web_contents, "self.origin"));
 }
 
 // Helper to trigger a history-back navigation in the WebContents after the
@@ -6854,7 +6860,7 @@ IN_PROC_BROWSER_TEST_F(
   // Verify the expected origin through JavaScript. It also has the additional
   // verification of the process also being still alive.
   EXPECT_EQ(url::Origin::Create(start_url).Serialize(),
-            EvalJs(web_contents, "document.origin"));
+            EvalJs(web_contents, "self.origin"));
 }
 
 // Test that verifies that Referer and Origin http headers are correctly sent
@@ -8204,6 +8210,46 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
               root->current_frame_host()->GetSiteInstance());
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
   }
+}
+
+// history.back() called twice in the renderer process should not make the user
+// navigate back twice.
+// Regression test for https://crbug.com/869710
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HistoryBackTwiceFromRendererWithoutUserGesture) {
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// history.back() called twice in the renderer process should not make the user
+// navigate back twice. Even with a user gesture.
+// Regression test for https://crbug.com/869710
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HistoryBackTwiceFromRendererWithUserGesture) {
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+
+  EXPECT_TRUE(ExecuteScript(shell(), "history.back(); history.back();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // TODO(https://crbug.com/869710): This should be url2.
+  EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
 }  // namespace content

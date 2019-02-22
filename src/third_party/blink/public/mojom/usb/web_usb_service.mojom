@@ -28,5 +28,5 @@ interface WebUsbService {
       => (device.mojom.UsbDeviceInfo? result);
 
   // Sets the client for this WebUsbService.
-  SetClient(device.mojom.UsbDeviceManagerClient client);
+  SetClient(associated device.mojom.UsbDeviceManagerClient client);
 };

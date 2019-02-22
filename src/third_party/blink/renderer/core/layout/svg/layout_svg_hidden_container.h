@@ -48,16 +48,17 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     return true;
   }
-  LayoutRect AbsoluteVisualRect() const final { return LayoutRect(); }
+  LayoutRect VisualRectInDocument() const final { return LayoutRect(); }
   FloatRect VisualRectInLocalSVGCoordinates() const final {
     return FloatRect();
   }
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final {}
 
-  bool NodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& point_in_parent,
-                        HitTestAction) final;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   HitTestAction) final;
 };
 }  // namespace blink
 

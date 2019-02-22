@@ -106,16 +106,23 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override { return true; }
 
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override { return true; }
+
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     return true;
   }
 
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool /*last_range*/) override {
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
     return true;
   }
+
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    return true;
+  }
+
+  bool OnAckFrameEnd(QuicPacketNumber start) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     return true;
@@ -124,6 +131,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override { return true; }
 
   bool OnPingFrame(const QuicPingFrame& frame) override { return true; }
+
+  bool OnMessageFrame(const QuicMessageFrame& frame) override { return true; }
 
   void OnPacketComplete() override {}
 
@@ -163,6 +172,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override { return true; }
+
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return true;
   }
@@ -188,7 +199,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   // Utility functions to do actual framing/deframing.
-  bool TryStreamFrame(char* packet_buffer,
+  void TryStreamFrame(char* packet_buffer,
                       size_t packet_buffer_size,
                       const char* xmit_packet_data,
                       size_t xmit_packet_data_size,
@@ -217,6 +228,10 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // A StreamFrame to hold the results... we know the frame type,
     // put it into the QuicIetfStreamFrame
     QuicStreamFrame sink_stream_frame;
+    if (xmit_packet_data_size) {
+      EXPECT_EQ(sink_stream_frame.data_buffer, nullptr);
+      EXPECT_EQ(sink_stream_frame.data_length, 0u);
+    }
 
     EXPECT_TRUE(QuicFramerPeer::ProcessIetfStreamFrame(
         &framer_, &reader, frame_type, &sink_stream_frame));
@@ -233,12 +248,17 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
       // Offset not in frame, so it better come out 0.
       EXPECT_EQ(sink_stream_frame.offset, 0u);
     }
-    EXPECT_NE(sink_stream_frame.data_buffer, nullptr);
-    EXPECT_NE(source_stream_frame.data_buffer, nullptr);
-    EXPECT_EQ(
-        strcmp(sink_stream_frame.data_buffer, source_stream_frame.data_buffer),
-        0);
-    return true;
+    if (xmit_packet_data_size) {
+      ASSERT_NE(sink_stream_frame.data_buffer, nullptr);
+      ASSERT_NE(source_stream_frame.data_buffer, nullptr);
+      EXPECT_EQ(strcmp(sink_stream_frame.data_buffer,
+                       source_stream_frame.data_buffer),
+                0);
+    } else {
+      // No data in the frame.
+      EXPECT_EQ(source_stream_frame.data_length, 0u);
+      EXPECT_EQ(sink_stream_frame.data_length, 0u);
+    }
   }
 
   // Overall ack frame encode/decode/compare function
@@ -489,66 +509,56 @@ struct stream_frame_variant {
     {kStreamId0, kOffset0, true, false, IETF_STREAM3},
     {kStreamId0, kOffset0, false, false, IETF_STREAM2},
 
-    {kStreamId8, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId8, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId4, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId4, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId2, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId2, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId1, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId1, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId0, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId0, kOffset0, false, true, IETF_STREAM2},
-
-    // try some cases where the offset is _not_ present; we will give
-    // the framer a non-0 offset; however, if we say that there is to be
-    // no offset, the de-framer should come up with 0...
-    {kStreamId8, kOffset8, true, true, IETF_STREAM3},
-    {kStreamId8, kOffset8, false, true, IETF_STREAM2},
-    {kStreamId8, kOffset8, true, false, IETF_STREAM3},
-    {kStreamId8, kOffset8, false, false, IETF_STREAM2},
-
-    {0, 0, false, false, IETF_STREAM6},
+    {kStreamId8, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId8, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId4, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId4, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId2, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId2, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId1, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId1, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId0, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId0, kOffset0, false, true, IETF_STREAM0},
 };
 
 TEST_F(QuicIetfFramerTest, StreamFrame) {
@@ -559,14 +569,27 @@ TEST_F(QuicIetfFramerTest, StreamFrame) {
       "input and output are the same!";
 
   size_t transmit_packet_data_len = strlen(transmit_packet_data) + 1;
-  struct stream_frame_variant* variant = stream_frame_to_test;
-  while (variant->stream_id != 0) {
-    EXPECT_TRUE(TryStreamFrame(
-        packet_buffer, sizeof(packet_buffer), transmit_packet_data,
-        transmit_packet_data_len, variant->stream_id, variant->offset,
-        variant->fin_bit, variant->last_frame_bit,
-        static_cast<QuicIetfFrameType>(variant->frame_type)));
-    variant++;
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(stream_frame_to_test); ++i) {
+    SCOPED_TRACE(i);
+    struct stream_frame_variant* variant = &stream_frame_to_test[i];
+    TryStreamFrame(packet_buffer, sizeof(packet_buffer), transmit_packet_data,
+                   transmit_packet_data_len, variant->stream_id,
+                   variant->offset, variant->fin_bit, variant->last_frame_bit,
+                   static_cast<QuicIetfFrameType>(variant->frame_type));
+  }
+}
+// As the previous test, but with no data.
+TEST_F(QuicIetfFramerTest, ZeroLengthStreamFrame) {
+  char packet_buffer[kNormalPacketBufferSize];
+
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(stream_frame_to_test); ++i) {
+    SCOPED_TRACE(i);
+    struct stream_frame_variant* variant = &stream_frame_to_test[i];
+    TryStreamFrame(packet_buffer, sizeof(packet_buffer),
+                   /* xmit_packet_data = */ NULL,
+                   /* xmit_packet_data_size = */ 0, variant->stream_id,
+                   variant->offset, variant->fin_bit, variant->last_frame_bit,
+                   static_cast<QuicIetfFrameType>(variant->frame_type));
   }
 }
 
@@ -583,6 +606,7 @@ TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   QuicConnectionCloseFrame sent_frame;
   sent_frame.error_code = static_cast<QuicErrorCode>(0);
   sent_frame.error_details = test_string;
+  sent_frame.frame_type = 123;
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_, sent_frame, &writer));
@@ -1053,11 +1077,13 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   EXPECT_TRUE(QuicFramerPeer::AppendNewConnectionIdFrame(
       &framer_, transmit_frame, &writer));
   // Check that buffer length is correct
-  EXPECT_EQ(28u, writer.length());
+  EXPECT_EQ(29u, writer.length());
   // clang-format off
   uint8_t packet[] = {
     // sequence number, 0x80 for varint62 encoding
     0x80 + 0x01, 0x02, 0x03, 0x04,
+    // new connection id length, is not varint62 encoded.
+    0x08,
     // new connection id, is not varint62 encoded.
     0x0E, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x01,
     // the reset token:

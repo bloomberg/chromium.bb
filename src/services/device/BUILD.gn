@@ -25,8 +25,12 @@ source_set("lib") {
     "device_service.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
+    "//device/usb/mojo",
+    "//device/usb/public/mojom",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
@@ -51,7 +55,10 @@ source_set("lib") {
   }
 
   if (is_chromeos && use_dbus) {
-    deps += [ "//services/device/media_transfer_protocol" ]
+    deps += [
+      "//services/device/bluetooth:bluetooth_system",
+      "//services/device/media_transfer_protocol",
+    ]
   }
 
   if (is_serial_enabled_platform) {
@@ -140,6 +147,7 @@ source_set("tests") {
     deps += [
       "//chromeos",
       "//dbus",
+      "//services/device/bluetooth:bluetooth_system_tests",
       "//services/device/fingerprint",
       "//third_party/protobuf:protobuf_lite",
     ]

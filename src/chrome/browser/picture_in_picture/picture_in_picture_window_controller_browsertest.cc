@@ -6,7 +6,6 @@
 
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -25,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,7 +56,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(Show, gfx::Size());
   MOCK_METHOD2(Close, void(bool, bool));
   MOCK_METHOD0(OnWindowDestroyed, void());
-  MOCK_METHOD1(ClickCustomControl, void(const std::string&));
   MOCK_METHOD1(SetPictureInPictureCustomControls,
                void(const std::vector<blink::PictureInPictureControlInfo>&));
   MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
@@ -68,6 +65,8 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
   MOCK_METHOD0(TogglePlayPause, bool());
+  MOCK_METHOD1(CustomControlPressed, void(const std::string&));
+  MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureWindowController);
@@ -78,9 +77,7 @@ class MockPictureInPictureWindowController
 class PictureInPictureWindowControllerBrowserTest
     : public InProcessBrowserTest {
  public:
-  PictureInPictureWindowControllerBrowserTest() {
-    feature_list_.InitWithFeatures({media::kUseSurfaceLayerForVideoMS}, {});
-  }
+  PictureInPictureWindowControllerBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -150,7 +147,6 @@ class PictureInPictureWindowControllerBrowserTest
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
-  base::test::ScopedFeatureList feature_list_;
   MockPictureInPictureWindowController mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
@@ -432,8 +428,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
   std::string control_id = "Test custom control ID";
   base::string16 expected_title = base::ASCIIToUTF16(control_id);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(control_id);
+  window_controller()->CustomControlPressed(control_id);
 
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
@@ -471,8 +466,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 expected_title = base::ASCIIToUTF16(kControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kControlId);
+  window_controller()->CustomControlPressed(kControlId);
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -512,8 +506,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 left_expected_title = base::ASCIIToUTF16(kLeftControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kLeftControlId);
+  window_controller()->CustomControlPressed(kLeftControlId);
   EXPECT_EQ(left_expected_title,
             content::TitleWatcher(active_web_contents, left_expected_title)
                 .WaitAndGetTitle());
@@ -553,8 +546,7 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
 
   base::string16 right_expected_title = base::ASCIIToUTF16(kRightControlId);
 
-  static_cast<OverlayWindowViews*>(overlay_window)
-      ->ClickCustomControl(kRightControlId);
+  window_controller()->CustomControlPressed(kRightControlId);
   EXPECT_EQ(right_expected_title,
             content::TitleWatcher(active_web_contents, right_expected_title)
                 .WaitAndGetTitle());
@@ -1230,15 +1222,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #if !defined(OS_ANDROID)
 
-// TODO(mlamouri): enable this tests on other platforms when aspect ratio is
-// implemented.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 // Tests that when a new surface id is sent to the Picture-in-Picture window, it
 // doesn't move back to its default position.
-// TODO(https://crbug.com/862505): test is currently flaky.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       DISABLED_SurfaceIdChangeDoesNotMoveWindow) {
+                       SurfaceIdChangeDoesNotMoveWindow) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::WebContents* active_web_contents =
@@ -1264,7 +1251,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  // Simulate a new surface layer and a change in aspect ratio and wait for ack.
+  // Simulate a new surface layer and a change in aspect ratio then wait for
+  // ack.
   {
     WidgetBoundsChangeWaiter waiter(overlay_window);
 
@@ -1283,8 +1271,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_LT(overlay_window->GetBounds().x(), 100);
   EXPECT_LT(overlay_window->GetBounds().y(), 100);
 }
-
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Tests that the Picture-in-Picture state is properly updated when the window
 // is closed at a system level.
@@ -1495,8 +1481,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 
   // Attaching devtools triggers the change in timing that leads to the crash.
-  DevToolsWindowTesting::OpenDevToolsWindowSync(browser(),
-                                                true /*is_docked=*/);
+  DevToolsWindow* window = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser(), true /*is_docked=*/);
 
   {
     bool result = false;
@@ -1519,6 +1505,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   content::WebContentsDestroyedWatcher destroyed_watcher(active_web_contents);
   browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
   destroyed_watcher.Wait();
+
+  // Make sure the window and therefore Chrome_DevToolsADBThread shutdown
+  // gracefully.
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
 #if defined(OS_CHROMEOS)
@@ -1569,4 +1559,103 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                                           "isPaused();", &is_paused));
   EXPECT_FALSE(is_paused);
 }
+
+// Tests that the close and resize icons move properly as the window changes
+// quadrants.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       MovingQuadrantsMovesResizeControl) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  ASSERT_TRUE(result);
+
+  OverlayWindowViews* overlay_window_views =
+      static_cast<OverlayWindowViews*>(overlay_window);
+
+  // The PiP window starts in the bottom-right quadrant of the screen.
+  gfx::Rect bottom_right_bounds = overlay_window_views->GetBounds();
+  // The relative center point of the window.
+  gfx::Point center(bottom_right_bounds.width() / 2,
+                    bottom_right_bounds.height() / 2);
+  gfx::Point close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  gfx::Point resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the top left corner.
+  EXPECT_GT(center.x(), resize_button_position.x());
+  EXPECT_GT(center.y(), resize_button_position.y());
+
+  // Move the window to the bottom left corner.
+  gfx::Rect bottom_left_bounds(0, bottom_right_bounds.y(),
+                               bottom_right_bounds.width(),
+                               bottom_right_bounds.height());
+  overlay_window_views->SetBounds(bottom_left_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top left corner.
+  EXPECT_GT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the top right corner.
+  EXPECT_LT(center.x(), resize_button_position.x());
+  EXPECT_GT(center.y(), resize_button_position.y());
+
+  // Move the window to the top right corner.
+  gfx::Rect top_right_bounds(bottom_right_bounds.x(), 0,
+                             bottom_right_bounds.width(),
+                             bottom_right_bounds.height());
+  overlay_window_views->SetBounds(top_right_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the bottom left corner.
+  EXPECT_GT(center.x(), resize_button_position.x());
+  EXPECT_LT(center.y(), resize_button_position.y());
+
+  // Move the window to the top left corner.
+  gfx::Rect top_left_bounds(0, 0, bottom_right_bounds.width(),
+                            bottom_right_bounds.height());
+  overlay_window_views->SetBounds(top_left_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the bottom right corner.
+  EXPECT_LT(center.x(), resize_button_position.x());
+  EXPECT_LT(center.y(), resize_button_position.y());
+}
+
 #endif  // defined(OS_CHROMEOS)

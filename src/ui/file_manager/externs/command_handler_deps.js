@@ -89,12 +89,12 @@ CommandHandlerDeps.prototype.taskController;
 CommandHandlerDeps.prototype.ui;
 
 /**
- * @type {VolumeManagerWrapper}
+ * @type {!VolumeManager}
  */
 CommandHandlerDeps.prototype.volumeManager;
 
 /**
- * @return {DirectoryEntry|FakeEntry|FilesAppEntry}
+ * @return {DirectoryEntry|FilesAppEntry}
  */
 CommandHandlerDeps.prototype.getCurrentDirectoryEntry = function() {};
 

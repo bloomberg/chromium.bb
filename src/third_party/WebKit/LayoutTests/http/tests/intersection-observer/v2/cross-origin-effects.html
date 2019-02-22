@@ -22,51 +22,48 @@ function waitForFrame(f) {
 }
 
 async_test(function(t) {
-  var container = document.getElementById("container");
-  var iframe = document.querySelector("iframe");
+  let container = document.getElementById("container");
+  let iframe = document.querySelector("iframe");
 
   function step0(event) {
+    assert_equals(event.data,"");
+  }
+
+  function step1(event) {
     container.style.opacity = "0.99";
     assert_equals(JSON.stringify(event.data),
                   JSON.stringify([true]));
   }
 
-  function step1(event) {
+  function step2(event) {
     container.style.opacity = "";
     assert_equals(JSON.stringify(event.data),
                   JSON.stringify([false]));
   }
 
-  function step2(event) {
+  function step3(event) {
     container.style.transform = "skew(30deg)";
     assert_equals(JSON.stringify(event.data),
                   JSON.stringify([true]));
   }
 
-  function step3(event) {
+  function step4(event) {
     assert_equals(JSON.stringify(event.data),
                   JSON.stringify([false]));
   }
 
-  var steps = [step0, step1, step2, step3];
+  let steps = [step0, step1, step2, step3, step4];
 
-  function handleMessage(event) {
+  window.addEventListener("message", event => {
     if (steps.length) {
+      t.step_func(steps.shift(), event);
       waitForFrame(() => {
         iframe.contentWindow.postMessage("", "*")
       });
-      steps.shift()(event);
     } else {
       t.done();
     }
-  }
-
-  window.addEventListener("message", t.step_func(handleMessage));
-
-  iframe.onload = t.step_func(function() {
-    waitForFrame(() => {
-      iframe.contentWindow.postMessage("", "*")
-    })
   });
+
 }, "Intersection observer V2 test with visual effects on iframe.");
 </script>

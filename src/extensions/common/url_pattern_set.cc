@@ -150,8 +150,7 @@ std::ostream& operator<<(std::ostream& out,
                          const URLPatternSet& url_pattern_set) {
   out << "{ ";
 
-  std::set<URLPattern>::const_iterator iter =
-      url_pattern_set.patterns().begin();
+  auto iter = url_pattern_set.patterns().cbegin();
   if (!url_pattern_set.patterns().empty()) {
     out << *iter;
     ++iter;
@@ -195,7 +194,8 @@ bool URLPatternSet::AddOrigin(int valid_schemes, const GURL& origin) {
   DCHECK(real_origin.IsSameOriginWith(url::Origin::Create(origin.GetOrigin())));
   URLPattern origin_pattern(valid_schemes);
   // Origin adding could fail if |origin| does not match |valid_schemes|.
-  if (origin_pattern.Parse(origin.spec()) != URLPattern::PARSE_SUCCESS) {
+  if (origin_pattern.Parse(origin.spec()) !=
+      URLPattern::ParseResult::kSuccess) {
     return false;
   }
   origin_pattern.SetPath("/*");
@@ -203,8 +203,7 @@ bool URLPatternSet::AddOrigin(int valid_schemes, const GURL& origin) {
 }
 
 bool URLPatternSet::Contains(const URLPatternSet& other) const {
-  for (URLPatternSet::const_iterator it = other.begin();
-       it != other.end(); ++it) {
+  for (auto it = other.begin(); it != other.end(); ++it) {
     if (!ContainsPattern(*it))
       return false;
   }
@@ -213,8 +212,7 @@ bool URLPatternSet::Contains(const URLPatternSet& other) const {
 }
 
 bool URLPatternSet::ContainsPattern(const URLPattern& pattern) const {
-  for (URLPatternSet::const_iterator it = begin();
-       it != end(); ++it) {
+  for (auto it = begin(); it != end(); ++it) {
     if (it->Contains(pattern))
       return true;
   }
@@ -222,8 +220,8 @@ bool URLPatternSet::ContainsPattern(const URLPattern& pattern) const {
 }
 
 bool URLPatternSet::MatchesURL(const GURL& url) const {
-  for (URLPatternSet::const_iterator pattern = patterns_.begin();
-       pattern != patterns_.end(); ++pattern) {
+  for (auto pattern = patterns_.cbegin(); pattern != patterns_.cend();
+       ++pattern) {
     if (pattern->MatchesURL(url))
       return true;
   }
@@ -232,7 +230,7 @@ bool URLPatternSet::MatchesURL(const GURL& url) const {
 }
 
 bool URLPatternSet::MatchesAllURLs() const {
-  for (URLPatternSet::const_iterator host = begin(); host != end(); ++host) {
+  for (auto host = begin(); host != end(); ++host) {
     if (host->match_all_urls() ||
         (host->match_subdomains() && host->host().empty()))
       return true;
@@ -241,8 +239,8 @@ bool URLPatternSet::MatchesAllURLs() const {
 }
 
 bool URLPatternSet::MatchesSecurityOrigin(const GURL& origin) const {
-  for (URLPatternSet::const_iterator pattern = patterns_.begin();
-       pattern != patterns_.end(); ++pattern) {
+  for (auto pattern = patterns_.begin(); pattern != patterns_.end();
+       ++pattern) {
     if (pattern->MatchesSecurityOrigin(origin))
       return true;
   }
@@ -253,10 +251,9 @@ bool URLPatternSet::MatchesSecurityOrigin(const GURL& origin) const {
 bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
   // Two extension extents overlap if there is any one URL that would match at
   // least one pattern in each of the extents.
-  for (URLPatternSet::const_iterator i = patterns_.begin();
-       i != patterns_.end(); ++i) {
-    for (URLPatternSet::const_iterator j = other.patterns().begin();
-         j != other.patterns().end(); ++j) {
+  for (auto i = patterns_.cbegin(); i != patterns_.cend(); ++i) {
+    for (auto j = other.patterns().cbegin(); j != other.patterns().cend();
+         ++j) {
       if (i->OverlapsWith(*j))
         return true;
     }
@@ -267,8 +264,7 @@ bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
 
 std::unique_ptr<base::ListValue> URLPatternSet::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
-  for (URLPatternSet::const_iterator i = patterns_.begin();
-       i != patterns_.end(); ++i)
+  for (auto i = patterns_.cbegin(); i != patterns_.cend(); ++i)
     value->AppendIfNotPresent(std::make_unique<base::Value>(i->GetAsString()));
   return value;
 }
@@ -280,7 +276,7 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
   ClearPatterns();
   for (size_t i = 0; i < patterns.size(); ++i) {
     URLPattern pattern(valid_schemes);
-    if (pattern.Parse(patterns[i]) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(patterns[i]) != URLPattern::ParseResult::kSuccess) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
                                                 patterns[i]);
@@ -301,9 +297,7 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
 std::unique_ptr<std::vector<std::string>> URLPatternSet::ToStringVector()
     const {
   std::unique_ptr<std::vector<std::string>> value(new std::vector<std::string>);
-  for (URLPatternSet::const_iterator i = patterns_.begin();
-       i != patterns_.end();
-       ++i) {
+  for (auto i = patterns_.cbegin(); i != patterns_.cend(); ++i) {
     value->push_back(i->GetAsString());
   }
   return value;

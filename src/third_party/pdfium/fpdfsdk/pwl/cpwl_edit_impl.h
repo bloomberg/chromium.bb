@@ -96,7 +96,7 @@ class CPWL_EditImpl_Undo {
 
 class IFX_Edit_UndoItem {
  public:
-  virtual ~IFX_Edit_UndoItem() {}
+  virtual ~IFX_Edit_UndoItem() = default;
 
   virtual void Undo() = 0;
   virtual void Redo() = 0;
@@ -303,7 +303,6 @@ class CPWL_EditImpl {
   int32_t GetCharArray() const;
   CFX_FloatRect GetContentRect() const;
   WideString GetRangeText(const CPVT_WordRange& range) const;
-  int32_t GetHorzScale() const;
   float GetCharSpace() const;
   void SetSelection(int32_t nStartChar, int32_t nEndChar);
   void GetSelection(int32_t& nStartChar, int32_t& nEndChar) const;

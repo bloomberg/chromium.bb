@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/texture_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 class GrContext;
 
@@ -104,20 +104,17 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       IntSize mailbox_size);
 
   void CreateImageFromMailboxIfNeeded();
-  void CheckThread();
   void WaitSyncTokenIfNeeded();
   void RetainOriginalSkImage();
 
   std::unique_ptr<TextureHolder> texture_holder_;
 
-  base::ThreadChecker thread_checker_;
-  bool detach_thread_at_next_check_ = false;
+  THREAD_CHECKER(thread_checker_);
   PaintImage::ContentId paint_image_content_id_;
 
   // For RetainOriginalSkImageForCopyOnWrite()
   sk_sp<SkImage> original_skia_image_;
   scoped_refptr<base::SingleThreadTaskRunner> original_skia_image_task_runner_;
-  PlatformThreadId original_skia_image_thread_id_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
 };

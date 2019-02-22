@@ -51,6 +51,12 @@ HTMLScriptElement* HTMLScriptElement::Create(Document& document,
   return new HTMLScriptElement(document, flags);
 }
 
+const HashSet<AtomicString>& HTMLScriptElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src", "text"}));
+  return attribute_set;
+}
+
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == srcAttr ||
          HTMLElement::IsURLAttribute(attribute);

@@ -748,6 +748,14 @@ static inline const FilterOperations& BackgroundFilters(LayerImpl* layer) {
   return layer->test_properties()->background_filters;
 }
 
+static inline float BackdropFilterQuality(Layer* layer) {
+  return layer->backdrop_filter_quality();
+}
+
+static inline float BackdropFilterQuality(LayerImpl* layer) {
+  return layer->test_properties()->backdrop_filter_quality;
+}
+
 static inline bool HideLayerAndSubtree(Layer* layer) {
   return layer->hide_layer_and_subtree();
 }
@@ -984,6 +992,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->has_copy_request = HasCopyRequest(layer);
   node->filters = Filters(layer);
   node->background_filters = BackgroundFilters(layer);
+  node->backdrop_filter_quality = BackdropFilterQuality(layer);
   node->filters_origin = FiltersOrigin(layer);
   node->trilinear_filtering = TrilinearFiltering(layer);
   node->has_potential_opacity_animation = has_potential_opacity_animation;
@@ -1134,7 +1143,6 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     ScrollNode node;
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
-    node.non_fast_scrollable_region = layer->non_fast_scrollable_region();
     node.scrolls_inner_viewport = layer == inner_viewport_scroll_layer_;
     node.scrolls_outer_viewport = layer == outer_viewport_scroll_layer_;
 
@@ -1405,7 +1413,7 @@ static void CheckClipPointersForLayer(Layer* layer) {
     return;
 
   if (layer->clip_children()) {
-    for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
+    for (auto it = layer->clip_children()->begin();
          it != layer->clip_children()->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), layer);
     }

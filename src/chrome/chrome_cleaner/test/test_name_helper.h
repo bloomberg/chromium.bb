@@ -5,8 +5,6 @@
 #ifndef CHROME_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
 #define CHROME_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
 
-#include <stdint.h>
-
 #include <string>
 
 #include "base/strings/string_util.h"

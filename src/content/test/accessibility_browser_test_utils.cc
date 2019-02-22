@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/view_message_enums.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -83,11 +83,11 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
 }
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXTree, empty_tree, ());
+  static base::NoDestructor<ui::AXTree> empty_tree;
   const ui::AXTree* tree = frame_host_->GetAXTreeForTesting();
   if (tree)
     return *tree;
-  return empty_tree;
+  return *empty_tree;
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(

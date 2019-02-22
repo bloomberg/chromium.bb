@@ -1,6 +1,11 @@
 {
   "name": "content_browser",
   "display_name": "Content (browser process)",
+  "options": {
+    "can_connect_to_other_services_as_any_user": true,
+    "can_connect_to_other_services_with_any_instance_name": true,
+    "can_create_other_service_instances": true
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -38,6 +43,7 @@
           "blink.mojom.BlobRegistry",
           "blink.mojom.BroadcastChannelProvider",
           "blink.mojom.ClipboardHost",
+          "blink.mojom.CodeCacheHost",
           "blink.mojom.FontUniqueNameLookup",
           "blink.mojom.EmbeddedFrameSinkProvider",
           "blink.mojom.FileUtilitiesHost",
@@ -64,6 +70,7 @@
           "device.mojom.GamepadHapticsManager",
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.KeySystemSupport",
+          "media.mojom.InterfaceFactory",
           "media.mojom.VideoCaptureHost",
           "media.mojom.VideoDecodePerfHistory",
           "memory_coordinator.mojom.MemoryCoordinatorHandle",
@@ -105,11 +112,13 @@
           "device:mtp",
           "device:nfc",
           "device:serial",
+          "device:usb",
           "device:vibration",
           "device:wake_lock"
         ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
+        "media_session": [ "media_session:app" ],
         "metrics": [ "url_keyed_metrics" ],
         "network": [
           "network_service",
@@ -124,10 +133,7 @@
           "page_signal"
         ],
         "service_manager": [
-          "service_manager:client_process",
-          "service_manager:instance_name",
-          "service_manager:service_manager",
-          "service_manager:user_id"
+          "service_manager:service_manager"
         ],
         "shape_detection": [
           "barcode_detection",
@@ -159,6 +165,7 @@
           "blink.mojom.CredentialManager",
           "blink.mojom.DisplayCutoutHost",
           "blink.mojom.DedicatedWorkerFactory",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.GeolocationService",
           "blink.mojom.InsecureInputService",
@@ -224,6 +231,7 @@
         "renderer": [
           "blink.mojom.CacheStorage",
           "blink.mojom.DedicatedWorkerFactory",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
@@ -260,6 +268,7 @@
       "provides": {
         "renderer": [
           "blink.mojom.CacheStorage",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",

@@ -51,13 +51,20 @@ class CHROMECAST_EXPORT RebootShlib {
     // detected.
     CRASH_UPLOADER = 7,
 
-    // A reboot caused by an FDR  related source.
+    // A reboot caused by an FDR related source.
     // Note: Calling RebootNow(RebootSource::FDR) does not imply that
     // an FDR must happen upon reboot; it is simply an indicator that a reboot
     // request is coming from an FDR-related source.
     // Only if SetFdrForNextReboot() has been called must reboot to result
     // in an OTA update.
     FDR = 8,
+
+    // A reboot caused by hardware watchdog. This requires additional
+    // information from the SoC. Otherwise, it can be categorized as forced.
+    HW_WATCHDOG = 9,
+
+    // A reboot caused by other software reason that is not listed above.
+    SW_OTHER = 10,
   };
 
   // Initializes any platform-specific reboot systems.

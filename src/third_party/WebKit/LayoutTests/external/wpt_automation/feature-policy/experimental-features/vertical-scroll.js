@@ -1,23 +1,10 @@
 const delta_for_scroll = 100;
+// See synthetic_gesture_params.h.
+const ScrollSource = { Touch: 1, Wheel : 2};
 
-function ensurePlatformAPIExists(input_src) {
-  if (input_src === "touch" &&
-     (!window.chrome || !window.chrome.gpuBenchmarking)) {
+function ensurePlatformAPIExists() {
+  if (!window.chrome || !window.chrome.gpuBenchmarking)
     throw "'gpuBenchmarking' needed for this test.";
-  } else if (input_src === "wheel" && !window.eventSender) {
-    throw "'eventSender' is needed for this test.";
-  }
-}
-
-function getScrollDeltaFromDirection(direction) {
-  let delta_x = (direction === "left") ? delta_for_scroll :
-                (direction === "right") ? -delta_for_scroll : 0;
-  let delta_y = (delta_x !== 0) ? 0 :
-                (direction === "up") ? delta_for_scroll :
-                (direction === "down") ? -delta_for_scroll : 0;
-  if (delta_x === delta_y)
-    throw `Invlaid direction ${direction}.`;
-  return {x: delta_x, y: delta_y};
 }
 
 function waitForCompositorCommit() {
@@ -30,27 +17,17 @@ function waitForCompositorCommit() {
   });
 }
 
-function touchScrollGesture(touch_point, delta) {
-  return new Promise((resolve) => {
-            chrome.gpuBenchmarking.pointerActionSequence( [
-                {source: "touch",
-                 actions: [
-                    { name: "pointerDown", x: touch_point.x, y: touch_point.y},
-                    { name: "pointerMove",
-                      x: (touch_point.x + delta.x),
-                      y: (touch_point.y + delta.y)
-                    },
-                    { name: "pause", duration: 0.1 },
-                    { name: "pointerUp" }
-                ]}], resolve);
-            });
-}
-
 async function touchScroll(direction, start_x, start_y) {
   ensurePlatformAPIExists("touch");
-  let delta = getScrollDeltaFromDirection(direction);
   await waitForCompositorCommit();
-  await touchScrollGesture({x: start_x, y: start_y}, delta);
+  await new Promise((resolve) => {
+    chrome.gpuBenchmarking.smoothScrollBy(delta_for_scroll,
+                                          resolve,
+                                          start_x,
+                                          start_y,
+                                          ScrollSource.Touch,
+                                          direction);
+  });
   await waitForCompositorCommit();
 }
 
@@ -99,16 +76,18 @@ async function pinchZoom(direction, start_x_1, start_y_1, start_x_2, start_y_2) 
   await waitForCompositorCommit();
 }
 
-function wheelScroll(direction, start_x, start_y) {
+async function wheelScroll(direction, start_x, start_y) {
   ensurePlatformAPIExists("wheel");
-  let delta = getScrollDeltaFromDirection(direction);
-  return new Promise((resolve) => {
-          eventSender.mouseMoveTo(start_x, start_y);
-          eventSender.mouseDown(0);
-          eventSender.mouseUp(0);
-          eventSender.mouseScrollBy(delta.x , delta.y);
-          resolve();
+  await waitForCompositorCommit();
+  await new Promise((resolve) => {
+    chrome.gpuBenchmarking.smoothScrollBy(delta_for_scroll,
+                                          resolve,
+                                          start_x,
+                                          start_y,
+                                          ScrollSource.Wheel,
+                                          direction);
   });
+  await waitForCompositorCommit();
 }
 
 window.input_api_ready = true;

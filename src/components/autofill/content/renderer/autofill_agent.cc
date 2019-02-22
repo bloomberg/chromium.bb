@@ -169,8 +169,8 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
          std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
 }
 
-void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
-                                             bool is_same_document_navigation) {
+void AutofillAgent::DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                             ui::PageTransition transition) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
   // http://crbug.com/443155
@@ -312,6 +312,9 @@ void AutofillAgent::Shutdown() {
 
 void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
   GetAutofillDriver()->DidEndTextFieldEditing();
+  password_autofill_agent_->DidEndTextFieldEditing();
+  if (password_generation_agent_)
+    password_generation_agent_->DidEndTextFieldEditing(element);
 }
 
 void AutofillAgent::SetUserGestureRequired(bool required) {
@@ -549,7 +552,6 @@ void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
 }
 
 void AutofillAgent::ShowInitialPasswordAccountSuggestions(
-    int32_t key,
     const PasswordFormFillData& form_data) {
   std::vector<blink::WebInputElement> elements;
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
@@ -560,7 +562,7 @@ void AutofillAgent::ShowInitialPasswordAccountSuggestions(
                            STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
   }
   password_autofill_agent_->GetFillableElementFromFormData(
-      key, form_data, logger.get(), &elements);
+      form_data, logger.get(), &elements);
 
   // If wait_for_username is true, we don't want to initially show form options
   // until the user types in a valid username.
@@ -668,6 +670,67 @@ void AutofillAgent::SetSecureContextRequired(bool required) {
 
 void AutofillAgent::SetFocusRequiresScroll(bool require) {
   focus_requires_scroll_ = require;
+}
+
+void AutofillAgent::GetElementFormAndFieldData(
+    const std::vector<std::string>& selectors,
+    GetElementFormAndFieldDataCallback callback) {
+  FormData form;
+  FormFieldData field;
+  blink::WebElement target_element = FindUniqueWebElement(selectors);
+  if (target_element.IsNull() || !target_element.IsFormControlElement()) {
+    return std::move(callback).Run(form, field);
+  }
+
+  blink::WebFormControlElement target_form_control_element =
+      target_element.To<blink::WebFormControlElement>();
+  bool success = form_util::FindFormAndFieldForFormControlElement(
+      target_form_control_element, &form, &field);
+  if (success) {
+    // Remember this element so as to autofill the form without focusing the
+    // field for Autofill Assistant.
+    element_ = target_form_control_element;
+  }
+  // Do not expect failure.
+  DCHECK(success);
+
+  return std::move(callback).Run(form, field);
+}
+
+blink::WebElement AutofillAgent::FindUniqueWebElement(
+    const std::vector<std::string>& selectors) {
+  DCHECK(selectors.size() > 0);
+
+  blink::WebVector<blink::WebElement> elements =
+      render_frame()->GetWebFrame()->GetDocument().QuerySelectorAll(
+          blink::WebString::FromUTF8(selectors[0]));
+  if (elements.size() != 1) {
+    return blink::WebElement();
+  }
+
+  // Get the unique element in |elements| and match the next selector inside it
+  // if there are remaining selectors haven't been matched.
+  blink::WebElement query_element = elements[0];
+  for (size_t i = 1; i < selectors.size(); i++) {
+    elements = query_element.QuerySelectorAll(
+        blink::WebString::FromUTF8(selectors[i]));
+
+    // Query shadow DOM if necessary.
+    if (elements.size() == 0 && !query_element.ShadowRoot().IsNull()) {
+      // TODO(806868): Query shadow dom when Autofill is available for forms in
+      // shadow DOM (crbug.com/746593).
+      return blink::WebElement();
+    }
+
+    // Return an empty element if there are multiple matching elements.
+    if (elements.size() != 1) {
+      return blink::WebElement();
+    }
+
+    query_element = elements[0];
+  }
+
+  return query_element;
 }
 
 void AutofillAgent::QueryAutofillSuggestions(

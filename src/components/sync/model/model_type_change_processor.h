@@ -30,7 +30,8 @@ class ModelTypeChangeProcessor {
   // Inform the processor of a new or updated entity. The |entity_data| param
   // does not need to be fully set, but it should at least have specifics and
   // non-unique name. The processor will fill in the rest if the bridge does
-  // not have a reason to care.
+  // not have a reason to care. For example, if |client_tag_hash| is not set,
+  // the bridge's GetClientTag() will be exercised (and must be supported).
   virtual void Put(const std::string& storage_key,
                    std::unique_ptr<EntityData> entity_data,
                    MetadataChangeList* metadata_change_list) = 0;
@@ -82,6 +83,10 @@ class ModelTypeChangeProcessor {
   // false, and ModelReadyToSync() has already been called, then Put and Delete
   // will no-op and can be omitted by bridge.
   virtual bool IsTrackingMetadata() = 0;
+
+  // Returns the account ID for which metadata is being tracked, or empty if not
+  // tracking metadata.
+  virtual std::string TrackedAccountId() = 0;
 
   // Report an error in the model to sync. Should be called for any persistence
   // or consistency error the bridge encounters outside of a method that allows

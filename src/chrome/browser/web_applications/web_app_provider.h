@@ -25,6 +25,7 @@ namespace web_app {
 
 class PendingAppManager;
 class WebAppPolicyManager;
+class SystemWebAppManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -57,8 +58,9 @@ class WebAppProvider : public KeyedService,
 
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
+  std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 

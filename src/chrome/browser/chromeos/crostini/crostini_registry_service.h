@@ -88,6 +88,9 @@ class CrostiniRegistryService : public KeyedService {
     base::Time InstallTime() const;
     base::Time LastLaunchTime() const;
 
+    // Whether this app should scale up when displayed.
+    bool IsScaled() const;
+
    private:
     std::string LocalizedString(base::StringPiece key) const;
 
@@ -171,6 +174,9 @@ class CrostiniRegistryService : public KeyedService {
 
   // Serializes the current time and stores it in |dictionary|.
   void SetCurrentTime(base::Value* dictionary, const char* key) const;
+
+  // Set the display scaled setting of the |app_id| to |scaled|.
+  void SetAppScaled(const std::string& app_id, bool scaled);
 
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {setVisibleTraceTime} from '../common/actions';
+import {Actions} from '../common/actions';
 import {TimeSpan} from '../common/time';
 
 import {globals} from './globals';
@@ -27,6 +27,7 @@ export class FrontendLocalState {
   timeScale = new TimeScale(this.visibleWindowTime, [0, 0]);
   private _visibleTimeLastUpdate = 0;
   private pendingGlobalTimeUpdate?: TimeSpan;
+  perfDebug = false;
 
   // TODO: there is some redundancy in the fact that both |visibleWindowTime|
   // and a |timeScale| have a notion of time range. That should live in one
@@ -43,13 +44,22 @@ export class FrontendLocalState {
     this.pendingGlobalTimeUpdate = this.visibleWindowTime;
     if (alreadyPosted) return;
     setTimeout(() => {
-      globals.dispatch(setVisibleTraceTime(this.pendingGlobalTimeUpdate!));
       this._visibleTimeLastUpdate = Date.now() / 1000;
+      globals.dispatch(Actions.setVisibleTraceTime({
+        startSec: this.pendingGlobalTimeUpdate!.start,
+        endSec: this.pendingGlobalTimeUpdate!.end,
+        lastUpdate: this._visibleTimeLastUpdate,
+      }));
       this.pendingGlobalTimeUpdate = undefined;
     }, 100);
   }
 
   get visibleTimeLastUpdate() {
     return this._visibleTimeLastUpdate;
+  }
+
+  togglePerfDebug() {
+    this.perfDebug = !this.perfDebug;
+    globals.rafScheduler.scheduleFullRedraw();
   }
 }

@@ -63,12 +63,27 @@ namespace nativegl_gl
 
 static bool MeetsRequirements(const FunctionsGL *functions, const nativegl::SupportRequirement &requirements)
 {
-    for (const std::string &extension : requirements.requiredExtensions)
+    bool hasRequiredExtensions = false;
+    for (const std::vector<std::string> &exts : requirements.requiredExtensions)
     {
-        if (!functions->hasExtension(extension))
+        bool hasAllExtensionsInSet = true;
+        for (const std::string &extension : exts)
         {
-            return false;
+            if (!functions->hasExtension(extension))
+            {
+                hasAllExtensionsInSet = false;
+                break;
+            }
         }
+        if (hasAllExtensionsInSet)
+        {
+            hasRequiredExtensions = true;
+            break;
+        }
+    }
+    if (!requirements.requiredExtensions.empty() && !hasRequiredExtensions)
+    {
+        return false;
     }
 
     if (functions->version >= requirements.version)
@@ -983,10 +998,13 @@ void GenerateCaps(const FunctionsGL *functions,
     extensions->copyTexture = true;
     extensions->syncQuery   = SyncQueryGL::IsSupported(functions);
 
-    // Note that ANGLE_texture_multisample_array support could be extended down to GL 3.2 if we
-    // emulated texStorage* API on top of texImage*.
-    extensions->textureMultisampleArray =
+    // Note that OES_texture_storage_multisample_2d_array support could be extended down to GL 3.2
+    // if we emulated texStorage* API on top of texImage*.
+    extensions->textureStorageMultisample2DArray =
         functions->isAtLeastGL(gl::Version(4, 2)) || functions->isAtLeastGLES(gl::Version(3, 2));
+
+    extensions->multiviewMultisample =
+        extensions->textureStorageMultisample2DArray && extensions->multiview;
 
     // NV_path_rendering
     // We also need interface query which is available in
@@ -1113,6 +1131,20 @@ void GenerateCaps(const FunctionsGL *functions,
         caps->maxShaderStorageBlocks[gl::ShaderType::Geometry] =
             QuerySingleGLInt(functions, GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_EXT);
     }
+
+    // EXT_blend_func_extended.
+    // Note that this could be implemented also on top of native EXT_blend_func_extended, but it's
+    // currently not fully implemented.
+    extensions->blendFuncExtended = !workarounds.disableBlendFuncExtended &&
+                                    functions->standard == STANDARD_GL_DESKTOP &&
+                                    functions->hasGLExtension("GL_ARB_blend_func_extended");
+    if (extensions->blendFuncExtended)
+    {
+        // TODO(http://anglebug.com/1085): Support greater values of
+        // MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT queried from the driver. See comments in ProgramGL.cpp
+        // for more information about this limitation.
+        extensions->maxDualSourceDrawBuffers = 1;
+    }
 }
 
 void GenerateWorkarounds(const FunctionsGL *functions, WorkaroundsGL *workarounds)
@@ -1205,6 +1237,8 @@ void GenerateWorkarounds(const FunctionsGL *functions, WorkaroundsGL *workaround
 
     workarounds->dontUseLoopsToInitializeVariables = !IsNvidia(vendor);
 #endif
+
+    workarounds->disableBlendFuncExtended = IsAMD(vendor) || IsIntel(vendor);
 }
 
 void ApplyWorkarounds(const FunctionsGL *functions, gl::Workarounds *workarounds)
@@ -1356,17 +1390,20 @@ uint8_t *MapBufferRangeWithFallback(const FunctionsGL *functions,
     }
 }
 
-gl::ErrorOrResult<bool> ShouldApplyLastRowPaddingWorkaround(const gl::Extents &size,
-                                                            const gl::PixelStoreStateBase &state,
-                                                            const gl::Buffer *pixelBuffer,
-                                                            GLenum format,
-                                                            GLenum type,
-                                                            bool is3D,
-                                                            const void *pixels)
+angle::Result ShouldApplyLastRowPaddingWorkaround(ContextGL *contextGL,
+                                                  const gl::Extents &size,
+                                                  const gl::PixelStoreStateBase &state,
+                                                  const gl::Buffer *pixelBuffer,
+                                                  GLenum format,
+                                                  GLenum type,
+                                                  bool is3D,
+                                                  const void *pixels,
+                                                  bool *shouldApplyOut)
 {
     if (pixelBuffer == nullptr)
     {
-        return false;
+        *shouldApplyOut = false;
+        return angle::Result::Continue();
     }
 
     // We are using an pack or unpack buffer, compute what the driver thinks is going to be the
@@ -1375,10 +1412,11 @@ gl::ErrorOrResult<bool> ShouldApplyLastRowPaddingWorkaround(const gl::Extents &s
 
     const gl::InternalFormat &glFormat = gl::GetInternalFormatInfo(format, type);
     GLuint endByte                     = 0;
-    ANGLE_TRY_CHECKED_MATH(glFormat.computePackUnpackEndByte(type, size, state, is3D, &endByte));
+    ANGLE_CHECK_GL_MATH(contextGL,
+                        glFormat.computePackUnpackEndByte(type, size, state, is3D, &endByte));
     GLuint rowPitch = 0;
-    ANGLE_TRY_CHECKED_MATH(
-        glFormat.computeRowPitch(type, size.width, state.alignment, state.rowLength, &rowPitch));
+    ANGLE_CHECK_GL_MATH(contextGL, glFormat.computeRowPitch(type, size.width, state.alignment,
+                                                            state.rowLength, &rowPitch));
 
     CheckedNumeric<size_t> checkedPixelBytes = glFormat.computePixelBytes(type);
     CheckedNumeric<size_t> checkedEndByte =
@@ -1386,15 +1424,16 @@ gl::ErrorOrResult<bool> ShouldApplyLastRowPaddingWorkaround(const gl::Extents &s
 
     // At this point checkedEndByte is the actual last byte read.
     // The driver adds an extra row padding (if any), mimic it.
-    ANGLE_TRY_CHECKED_MATH(checkedPixelBytes.IsValid());
+    ANGLE_CHECK_GL_MATH(contextGL, checkedPixelBytes.IsValid());
     if (checkedPixelBytes.ValueOrDie() * size.width < rowPitch)
     {
         checkedEndByte += rowPitch - checkedPixelBytes * size.width;
     }
 
-    ANGLE_TRY_CHECKED_MATH(checkedEndByte.IsValid());
+    ANGLE_CHECK_GL_MATH(contextGL, checkedEndByte.IsValid());
 
-    return checkedEndByte.ValueOrDie() > static_cast<size_t>(pixelBuffer->getSize());
+    *shouldApplyOut = checkedEndByte.ValueOrDie() > static_cast<size_t>(pixelBuffer->getSize());
+    return angle::Result::Continue();
 }
 
 std::vector<ContextCreationTry> GenerateContextCreationToTry(EGLint requestedType, bool isMesaGLX)

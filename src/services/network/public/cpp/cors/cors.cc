@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
@@ -41,18 +42,6 @@ std::string ExtractMIMETypeFromMediaType(const std::string& media_type) {
     return top_level_type + "/" + subtype;
   }
   return std::string();
-}
-
-// url::Origin::Serialize() serializes all Origins with a 'file' scheme to
-// 'file://', but it isn't desirable for CORS check. Returns 'null' instead to
-// be aligned with HTTP Origin header calculation in Blink SecurityOrigin.
-// |allow_file_origin| is used to realize a behavior change that
-// the --allow-file-access-from-files command-line flag needs.
-// TODO(mkwst): Generalize and move to url/Origin.
-std::string Serialize(const url::Origin& origin, bool allow_file_origin) {
-  if (!allow_file_origin && origin.scheme() == url::kFileScheme)
-    return "null";
-  return origin.Serialize();
 }
 
 // Returns true only if |header_value| satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
@@ -101,10 +90,9 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
 bool IsCORSSafelistedLowerCaseContentType(
     const std::string& lower_case_media_type) {
   DCHECK_EQ(lower_case_media_type, base::ToLowerASCII(lower_case_media_type));
-  static const std::set<std::string> safe_types = {
-      "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"};
   std::string mime_type = ExtractMIMETypeFromMediaType(lower_case_media_type);
-  return safe_types.find(mime_type) != safe_types.end();
+  return mime_type == "application/x-www-form-urlencoded" ||
+         mime_type == "multipart/form-data" || mime_type == "text/plain";
 }
 
 }  // namespace
@@ -135,8 +123,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin) {
+    const url::Origin& origin) {
   // TODO(toyoshim): This response status code check should not be needed. We
   // have another status code check after a CheckAccess() call if it is needed.
   if (!response_status_code)
@@ -159,7 +146,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
       return CORSErrorStatus(mojom::CORSError::kWildcardOriginNotAllowed);
   } else if (!allow_origin_header) {
     return CORSErrorStatus(mojom::CORSError::kMissingAllowOriginHeader);
-  } else if (*allow_origin_header != Serialize(origin, allow_file_origin)) {
+  } else if (*allow_origin_header != origin.Serialize()) {
     // We do not use url::Origin::IsSameOriginWith() here for two reasons below.
     //  1. Allow "null" to match here. The latest spec does not have a clear
     //     information about this (https://fetch.spec.whatwg.org/#cors-check),
@@ -217,12 +204,10 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode actual_credentials_mode,
-    const url::Origin& origin,
-    bool allow_file_origin) {
+    const url::Origin& origin) {
   const auto error_status =
       CheckAccess(response_url, response_status_code, allow_origin_header,
-                  allow_credentials_header, actual_credentials_mode, origin,
-                  allow_file_origin);
+                  allow_credentials_header, actual_credentials_mode, origin);
   if (!error_status)
     return base::nullopt;
 
@@ -315,12 +300,38 @@ bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode) {
          mode == mojom::FetchRequestMode::kCORSWithForcedPreflight;
 }
 
+mojom::FetchResponseType CalculateResponseTainting(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag) {
+  if (url.SchemeIs(url::kDataScheme))
+    return mojom::FetchResponseType::kBasic;
+
+  if (cors_flag) {
+    DCHECK(IsCORSEnabledRequestMode(request_mode));
+    return mojom::FetchResponseType::kCORS;
+  }
+
+  if (!origin) {
+    // This is actually not defined in the fetch spec, but in this case CORS
+    // is disabled so no one should care this value.
+    return mojom::FetchResponseType::kBasic;
+  }
+
+  if (request_mode == mojom::FetchRequestMode::kNoCORS &&
+      !origin->IsSameOriginWith(url::Origin::Create(url))) {
+    return mojom::FetchResponseType::kOpaque;
+  }
+  return mojom::FetchResponseType::kBasic;
+}
+
 bool IsCORSSafelistedMethod(const std::string& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
-  static const std::set<std::string> safe_methods = {
-      net::HttpRequestHeaders::kGetMethod, kHeadMethod, kPostMethod};
-  return safe_methods.find(base::ToUpperASCII(method)) != safe_methods.end();
+  std::string method_upper = base::ToUpperASCII(method);
+  return method_upper == net::HttpRequestHeaders::kGetMethod ||
+         method_upper == kHeadMethod || method_upper == kPostMethod;
 }
 
 bool IsCORSSafelistedContentType(const std::string& media_type) {
@@ -328,6 +339,10 @@ bool IsCORSSafelistedContentType(const std::string& media_type) {
 }
 
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
+  // If |value|’s length is greater than 128, then return false.
+  if (value.size() > 128)
+    return false;
+
   // https://fetch.spec.whatwg.org/#cors-safelisted-request-header
   // "A CORS-safelisted header is a header whose name is either one of `Accept`,
   // `Accept-Language`, and `Content-Language`, or whose name is
@@ -343,7 +358,7 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   //
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
-  static const std::set<std::string> safe_names = {
+  static const char* const safe_names[] = {
       "accept", "accept-language", "content-language", "intervention",
       "content-type", "save-data",
       // The Device Memory header field is a number that indicates the client’s
@@ -354,7 +369,8 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
       // for more details.
       "device-memory", "dpr", "width", "viewport-width"};
   const std::string lower_name = base::ToLowerASCII(name);
-  if (safe_names.find(lower_name) == safe_names.end())
+  if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
+      std::end(safe_names))
     return false;
 
   // Client hints are device specific, and not origin specific. As such all
@@ -369,18 +385,102 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   if (lower_name == "save-data")
     return lower_value == "on";
 
+  if (lower_name == "accept") {
+    return (value.end() == std::find_if(value.begin(), value.end(), [](char c) {
+              return (c < 0x20 && c != 0x09) || c == 0x22 || c == 0x28 ||
+                     c == 0x29 || c == 0x3a || c == 0x3c || c == 0x3e ||
+                     c == 0x3f || c == 0x40 || c == 0x5b || c == 0x5c ||
+                     c == 0x5d || c == 0x7b || c == 0x7d || c >= 0x7f;
+            }));
+  }
+
+  if (lower_name == "accept-language" || lower_name == "content-language") {
+    return (value.end() == std::find_if(value.begin(), value.end(), [](char c) {
+              return !isalnum(c) && c != 0x20 && c != 0x2a && c != 0x2c &&
+                     c != 0x2d && c != 0x2e && c != 0x3b && c != 0x3d;
+            }));
+  }
+
   if (lower_name == "content-type")
     return IsCORSSafelistedLowerCaseContentType(lower_value);
 
   return true;
 }
 
+bool IsNoCORSSafelistedHeader(const std::string& name,
+                              const std::string& value) {
+  const std::string lower_name = base::ToLowerASCII(name);
+
+  if (lower_name != "accept" && lower_name != "accept-language" &&
+      lower_name != "content-language" && lower_name != "content-type") {
+    return false;
+  }
+
+  return IsCORSSafelistedHeader(lower_name, value);
+}
+
+std::vector<std::string> CORSUnsafeRequestHeaderNames(
+    const net::HttpRequestHeaders::HeaderVector& headers) {
+  std::vector<std::string> potentially_unsafe_names;
+  std::vector<std::string> header_names;
+
+  constexpr size_t kSafeListValueSizeMax = 1024;
+  size_t safe_list_value_size = 0;
+
+  for (const auto& header : headers) {
+    if (!IsCORSSafelistedHeader(header.key, header.value)) {
+      header_names.push_back(base::ToLowerASCII(header.key));
+    } else {
+      potentially_unsafe_names.push_back(base::ToLowerASCII(header.key));
+      safe_list_value_size += header.value.size();
+    }
+  }
+  if (safe_list_value_size > kSafeListValueSizeMax) {
+    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
+                        potentially_unsafe_names.end());
+  }
+  return header_names;
+}
+
+std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
+    const net::HttpRequestHeaders::HeaderVector& headers,
+    bool is_revalidating) {
+  std::vector<std::string> header_names;
+  std::vector<std::string> potentially_unsafe_names;
+
+  constexpr size_t kSafeListValueSizeMax = 1024;
+  size_t safe_list_value_size = 0;
+
+  for (const auto& header : headers) {
+    if (IsForbiddenHeader(header.key))
+      continue;
+
+    const std::string name = base::ToLowerASCII(header.key);
+
+    if (is_revalidating) {
+      if (name == "if-modified-since" || name == "if-none-match" ||
+          name == "cache-control") {
+        continue;
+      }
+    }
+    if (!IsCORSSafelistedHeader(name, header.value)) {
+      header_names.push_back(name);
+    } else {
+      potentially_unsafe_names.push_back(name);
+      safe_list_value_size += header.value.size();
+    }
+  }
+  if (safe_list_value_size > kSafeListValueSizeMax) {
+    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
+                        potentially_unsafe_names.end());
+  }
+  return header_names;
+}
+
 bool IsForbiddenMethod(const std::string& method) {
-  static const std::vector<std::string> forbidden_methods = {"trace", "track",
-                                                             "connect"};
   const std::string lower_method = base::ToLowerASCII(method);
-  return std::find(forbidden_methods.begin(), forbidden_methods.end(),
-                   lower_method) != forbidden_methods.end();
+  return lower_method == "trace" || lower_method == "track" ||
+         lower_method == "connect";
 }
 
 bool IsForbiddenHeader(const std::string& name) {
@@ -393,38 +493,81 @@ bool IsForbiddenHeader(const std::string& name) {
   //   `User-Agent`, `Via`
   // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
   // `Sec-`)."
-  static const std::set<std::string> forbidden_names = {
-      "accept-charset",
-      "accept-encoding",
-      "access-control-request-headers",
-      "access-control-request-method",
-      "connection",
-      "content-length",
-      "cookie",
-      "cookie2",
-      "date",
-      "dnt",
-      "expect",
-      "host",
-      "keep-alive",
-      "origin",
-      "referer",
-      "te",
-      "trailer",
-      "transfer-encoding",
-      "upgrade",
-      "user-agent",
-      "via"};
+  static const base::NoDestructor<std::set<std::string>> forbidden_names(
+      std::set<std::string>{"accept-charset",
+                            "accept-encoding",
+                            "access-control-request-headers",
+                            "access-control-request-method",
+                            "connection",
+                            "content-length",
+                            "cookie",
+                            "cookie2",
+                            "date",
+                            "dnt",
+                            "expect",
+                            "host",
+                            "keep-alive",
+                            "origin",
+                            "referer",
+                            "te",
+                            "trailer",
+                            "transfer-encoding",
+                            "upgrade",
+                            "user-agent",
+                            "via"});
   const std::string lower_name = base::ToLowerASCII(name);
   if (StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
       StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE)) {
     return true;
   }
-  return forbidden_names.find(lower_name) != forbidden_names.end();
+  return forbidden_names->find(lower_name) != forbidden_names->end();
 }
 
 bool IsOkStatus(int status) {
   return status >= 200 && status < 300;
+}
+
+bool IsCORSSameOriginResponseType(mojom::FetchResponseType type) {
+  switch (type) {
+    case mojom::FetchResponseType::kBasic:
+    case mojom::FetchResponseType::kCORS:
+    case mojom::FetchResponseType::kDefault:
+      return true;
+    case mojom::FetchResponseType::kError:
+    case mojom::FetchResponseType::kOpaque:
+    case mojom::FetchResponseType::kOpaqueRedirect:
+      return false;
+  }
+}
+
+bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type) {
+  switch (type) {
+    case mojom::FetchResponseType::kBasic:
+    case mojom::FetchResponseType::kCORS:
+    case mojom::FetchResponseType::kDefault:
+    case mojom::FetchResponseType::kError:
+      return false;
+    case mojom::FetchResponseType::kOpaque:
+    case mojom::FetchResponseType::kOpaqueRedirect:
+      return true;
+  }
+}
+
+bool CalculateCredentialsFlag(mojom::FetchCredentialsMode credentials_mode,
+                              mojom::FetchResponseType response_tainting) {
+  // Let |credentials flag| be set if one of
+  //  - |request|’s credentials mode is "include"
+  //  - |request|’s credentials mode is "same-origin" and |request|’s
+  //    response tainting is "basic"
+  // is true, and unset otherwise.
+  switch (credentials_mode) {
+    case network::mojom::FetchCredentialsMode::kOmit:
+      return false;
+    case network::mojom::FetchCredentialsMode::kSameOrigin:
+      return response_tainting == network::mojom::FetchResponseType::kBasic;
+    case network::mojom::FetchCredentialsMode::kInclude:
+      return true;
+  }
 }
 
 }  // namespace cors

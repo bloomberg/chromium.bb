@@ -24,4 +24,3 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   """Presubmit checks on commit."""
   return CommonChecks(input_api, output_api)
-

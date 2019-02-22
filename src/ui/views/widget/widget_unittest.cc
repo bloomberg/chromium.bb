@@ -2034,11 +2034,6 @@ TEST_F(WidgetWindowTitleTest, SetWindowTitleChanged_DesktopNativeWidget) {
 #endif  // !OS_CHROMEOS
 
 TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
-  // TODO: test uses GetContext(), which is not applicable to aura-mus.
-  // http://crbug.com/663809.
-  if (IsMus())
-    return;
-
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
@@ -2049,10 +2044,14 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
 
-  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  ui::test::EventGenerator generator(
+      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow());
 
   WidgetDeletionObserver deletion_observer(widget);
-  generator.ClickLeftButton();
+  generator.PressLeftButton();
+  if (deletion_observer.IsWidgetAlive())
+    generator.ReleaseLeftButton();
   EXPECT_FALSE(deletion_observer.IsWidgetAlive());
 
   // Yay we did not crash!
@@ -4080,7 +4079,7 @@ class CompositingWidgetTest : public views::test::WidgetTest {
       const Widget::InitParams::WindowOpacity opacity) {
     for (const auto& widget_type : widget_types_) {
 #if defined(OS_MACOSX)
-      // Tooltips are native on Mac. See BridgedNativeWidget::Init.
+      // Tooltips are native on Mac. See BridgedNativeWidgetImpl::Init.
       if (widget_type == Widget::InitParams::TYPE_TOOLTIP)
         continue;
 #elif defined(OS_WIN)

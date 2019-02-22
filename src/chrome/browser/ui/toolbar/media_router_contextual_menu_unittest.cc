@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
@@ -85,7 +86,8 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     MediaRouterActionController::SetAlwaysShowActionPref(profile(), true);
 
     media_router::MediaRouterUIServiceFactory::GetInstance()->SetTestingFactory(
-        profile()->GetOffTheRecordProfile(), &BuildUIService);
+        profile()->GetOffTheRecordProfile(),
+        base::BindRepeating(&BuildUIService));
   }
 
   void TearDown() override {
@@ -96,10 +98,11 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{media_router::MediaRouterFactory::GetInstance(),
-             &media_router::MockMediaRouter::Create},
+             base::BindRepeating(&media_router::MockMediaRouter::Create)},
             {media_router::MediaRouterUIServiceFactory::GetInstance(),
-             &BuildUIService},
-            {SigninManagerFactory::GetInstance(), &BuildFakeSigninManagerBase}};
+             base::BindRepeating(&BuildUIService)},
+            {SigninManagerFactory::GetInstance(),
+             base::BindRepeating(&BuildFakeSigninManagerBase)}};
   }
 
  protected:
@@ -229,6 +232,25 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
   menu.ExecuteCommand(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE, 0);
   EXPECT_FALSE(menu.IsCommandIdChecked(
       IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
+}
+
+TEST_F(MediaRouterContextualMenuUnitTest, ToggleMediaRemotingItem) {
+  MediaRouterContextualMenu menu(browser(), kInToolbar, kShownByPolicy,
+                                 &observer_);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kMediaRouterMediaRemotingEnabled, false);
+  EXPECT_FALSE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING, 0);
+  EXPECT_TRUE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+  EXPECT_TRUE(
+      pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
+
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING, 0);
+  EXPECT_FALSE(menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING));
+  EXPECT_FALSE(
+      pref_service->GetBoolean(prefs::kMediaRouterMediaRemotingEnabled));
 }
 
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleAlwaysShowIconItem) {

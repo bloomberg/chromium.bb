@@ -15,7 +15,7 @@
 #include "components/invalidation/impl/sync_system_resources.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 class GoogleServiceAuthError;
@@ -52,10 +52,11 @@ struct GCMNetworkChannelDiagnostic {
 // messages through GCMService.
 class INVALIDATION_EXPORT GCMNetworkChannel
     : public SyncNetworkChannel,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   GCMNetworkChannel(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   ~GCMNetworkChannel() override;
@@ -72,9 +73,9 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) override;
 
-  // NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType connection_type) override;
+  // NetworkConnectionObserver implementation.
+  void OnConnectionChanged(
+      network::mojom::ConnectionType connection_type) override;
 
  protected:
   void ResetRegisterBackoffEntryForTest(
@@ -101,6 +102,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
   std::unique_ptr<GCMNetworkChannelDelegate> delegate_;
 
   // Message is saved until all conditions are met: there is valid

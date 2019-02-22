@@ -101,7 +101,7 @@ class CORE_EXPORT DocumentLoader
 
   ResourceTimingInfo* GetNavigationTimingInfo() const;
 
-  virtual void DetachFromFrame();
+  virtual void DetachFromFrame(bool flush_microtask_queue);
 
   unsigned long MainResourceIdentifier() const;
 
@@ -204,7 +204,6 @@ class CORE_EXPORT DocumentLoader
         : was_scrolled_by_user(false), did_restore_from_history(false) {}
 
     bool was_scrolled_by_user;
-    bool was_scrolled_by_js;
     bool did_restore_from_history;
   };
   InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
@@ -215,7 +214,7 @@ class CORE_EXPORT DocumentLoader
   void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
                                   LinkLoader::MediaPreloadPolicy);
 
-  Resource* StartPreload(Resource::Type, FetchParameters&);
+  Resource* StartPreload(ResourceType, FetchParameters&);
 
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>);
@@ -235,6 +234,7 @@ class CORE_EXPORT DocumentLoader
   void LoadFailed(const ResourceError&);
 
   void SetUserActivated();
+  void SetHadTransientUserActivation();
 
   const AtomicString& RequiredCSP();
 
@@ -291,6 +291,8 @@ class CORE_EXPORT DocumentLoader
       const SecurityOrigin* previous_security_origin,
       const Document& new_document);
 
+  bool had_transient_activation() const { return had_transient_activation_; }
+
   Vector<KURL> redirect_chain_;
 
  private:
@@ -307,7 +309,7 @@ class CORE_EXPORT DocumentLoader
                           InstallNewDocumentReason,
                           ParserSynchronizationPolicy,
                           const KURL& overriding_url);
-  void DidInstallNewDocument(Document*);
+  void DidInstallNewDocument(Document*, const ContentSecurityPolicy*);
   void WillCommitNavigation();
   void DidCommitNavigation(WebGlobalObjectReusePolicy);
 
@@ -430,8 +432,11 @@ class CORE_EXPORT DocumentLoader
   scoped_refptr<SharedBuffer> data_buffer_;
   base::UnguessableToken devtools_navigation_token_;
 
-  // Whether this load request comes from a user activation.
-  bool user_activated_;
+  // Whether this load request comes with a sitcky user activation.
+  bool had_sticky_activation_;
+  // Whether this load request had a user activation when created.
+  bool had_transient_activation_;
+
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
   // Once commited, feature usage will be piped to the browser side page load

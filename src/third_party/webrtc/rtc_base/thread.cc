@@ -24,10 +24,11 @@
 #pragma warning(disable : 4722)
 #endif
 
+#include <utility>  // for move
+
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/nullsocketserver.h"
-#include "rtc_base/platform_thread.h"
 #include "rtc_base/stringutils.h"
 #include "rtc_base/timeutils.h"
 #include "rtc_base/trace_event.h"
@@ -451,6 +452,11 @@ void Thread::InvokeInternal(const Location& posted_from,
   Send(posted_from, handler);
 }
 
+bool Thread::IsProcessingMessagesForTesting() {
+  return (owned_ || IsCurrent()) &&
+         MessageQueue::IsProcessingMessagesForTesting();
+}
+
 void Thread::Clear(MessageHandler* phandler,
                    uint32_t id,
                    MessageList* removed) {
@@ -477,7 +483,7 @@ void Thread::Clear(MessageHandler* phandler,
     ++iter;
   }
 
-  MessageQueue::Clear(phandler, id, removed);
+  ClearInternal(phandler, id, removed);
 }
 
 #if !defined(WEBRTC_MAC)

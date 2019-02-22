@@ -20,43 +20,16 @@ NGContainerFragmentBuilder::NGContainerFragmentBuilder(
 
 NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetInlineSize(
-    LayoutUnit inline_size) {
-  DCHECK_GE(inline_size, LayoutUnit());
-  size_.inline_size = inline_size;
-  return *this;
-}
-
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetEndMarginStrut(
-    const NGMarginStrut& end_margin_strut) {
-  end_margin_strut_ = end_margin_strut;
-  return *this;
-}
-
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
-    std::unique_ptr<const NGExclusionSpace> exclusion_space) {
-  exclusion_space_ = std::move(exclusion_space);
-  return *this;
-}
-
-NGContainerFragmentBuilder&
-NGContainerFragmentBuilder::SetUnpositionedListMarker(
-    const NGUnpositionedListMarker& marker) {
-  DCHECK(!unpositioned_list_marker_ || !marker);
-  unpositioned_list_marker_ = marker;
-  return *this;
-}
-
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    scoped_refptr<NGLayoutResult> child,
+    const NGLayoutResult& child,
     const NGLogicalOffset& child_offset) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
-  const auto& out_of_flow_descendants = child->OutOfFlowPositionedDescendants();
+  const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
   if (!out_of_flow_descendants.IsEmpty()) {
     NGLogicalOffset top_left_offset;
-    NGPhysicalSize child_size = child->PhysicalFragment()->Size();
+    NGPhysicalSize child_size = child.PhysicalFragment()->Size();
     switch (GetWritingMode()) {
       case WritingMode::kHorizontalTb:
         top_left_offset =
@@ -91,7 +64,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  return AddChild(child->PhysicalFragment(), child_offset);
+  return AddChild(child.PhysicalFragment(), child_offset);
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
@@ -104,6 +77,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
         has_last_resort_break_ = true;
     }
   }
+  // Assume that if we have one child, we may have more than one and try to
+  // limit the number of allocations we would do in that case.
+  if (!children_.capacity())
+    children_.ReserveCapacity(16);
   children_.emplace_back(std::move(child), NGPhysicalOffset());
   offsets_.push_back(child_offset);
   return *this;

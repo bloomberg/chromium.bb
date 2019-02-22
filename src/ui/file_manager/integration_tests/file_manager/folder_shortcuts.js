@@ -16,10 +16,6 @@ const TREEITEM_C = TREEITEM_B + '[entry-label="C"] ';
 const TREEITEM_D = TREEITEM_DRIVE + ' [entry-label="D"] ';
 const TREEITEM_E = TREEITEM_D + '[entry-label="E"] ';
 
-const EXPAND_ICON = '> .tree-row > .expand-icon';
-const ITEM_ICON = '> .tree-row > .item-icon';
-const EXPANDED_SUBTREE = '> .tree-children[expanded]';
-
 /**
  * Entry set used for the folder shortcut tests.
  * @type {Array<TestEntryInfo>}
@@ -35,7 +31,7 @@ const FOLDER_ENTRY_SET = [
 
 /**
  * Constants for each folder.
- * @type {Array<Object>}
+ * @type {Object}
  */
 const DIRECTORY = {
   Drive: {
@@ -77,260 +73,227 @@ const DIRECTORY = {
 };
 
 /**
- * Opens two file manager windows.
- * @return {Promise} Promise fulfilled with an array containing two window IDs.
- */
-function openWindows() {
-  return Promise.all([
-    openNewWindow(null, RootPath.DRIVE),
-    openNewWindow(null, RootPath.DRIVE)
-  ]).then(function(windowIds) {
-    return Promise.all([
-      remoteCall.waitForElement(windowIds[0], '#detail-table'),
-      remoteCall.waitForElement(windowIds[1], '#detail-table')
-    ]).then(function() {
-      return windowIds;
-    });
-  });
-}
-
-/**
- * Expands tree item on the directory tree by clicking expand icon.
- * @param {string} windowId ID of target window.
+ * Expands a directory tree item by clicking on its expand icon.
+ *
+ * @param {string} appId Files app windowId.
  * @param {Object} directory Directory whose tree item should be expanded.
  * @return {Promise} Promise fulfilled on success.
  */
-function expandTreeItem(windowId, directory) {
-  return remoteCall.waitForElement(
-      windowId, directory.treeItem + EXPAND_ICON).then(function() {
-    return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, [directory.treeItem + EXPAND_ICON]);
+function expandTreeItem(appId, directory) {
+  const expandIcon =
+      directory.treeItem + '> .tree-row[has-children=true] > .expand-icon';
+  return remoteCall.waitForElement(appId, expandIcon).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [expandIcon]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElement(windowId,
-                                     directory.treeItem + EXPANDED_SUBTREE);
+    const expandedSubtree = directory.treeItem + '> .tree-children[expanded]';
+    return remoteCall.waitForElement(appId, expandedSubtree);
   });
 }
 
 /**
- * Expands whole directory tree.
- * @param {string} windowId ID of target window.
+ * Expands whole directory tree under DIRECTORY.Drive.
+ *
+ * @param {string} appId Files app windowId.
  * @return {Promise} Promise fulfilled on success.
  */
-function expandDirectoryTree(windowId) {
-  return expandTreeItem(windowId, DIRECTORY.Drive).then(function() {
-    return expandTreeItem(windowId, DIRECTORY.A);
+function expandDirectoryTree(appId) {
+  return expandTreeItem(appId, DIRECTORY.Drive).then(function() {
+    return expandTreeItem(appId, DIRECTORY.A);
   }).then(function() {
-    return expandTreeItem(windowId, DIRECTORY.B);
+    return expandTreeItem(appId, DIRECTORY.B);
   }).then(function() {
-    return expandTreeItem(windowId, DIRECTORY.D);
+    return expandTreeItem(appId, DIRECTORY.D);
   });
 }
 
 /**
- * Makes |directory| the current directory.
- * @param {string} windowId ID of target window.
- * @param {Object} directory Directory which should be a current directory.
+ * Navigate to |directory| (makes |directory| the current directory).
+ *
+ * @param {string} appId Files app windowId.
+ * @param {Object} directory Directory to navigate to.
  * @return {Promise} Promise fulfilled on success.
  */
-function navigateToDirectory(windowId, directory) {
-  return remoteCall.waitForElement(
-      windowId, directory.treeItem + ITEM_ICON).then(function() {
-    return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, [directory.treeItem + ITEM_ICON]);
+function navigateToDirectory(appId, directory) {
+  const itemIcon = directory.treeItem + '> .tree-row > .item-icon';
+  return remoteCall.waitForElement(appId, itemIcon).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [itemIcon]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForFiles(windowId, directory.contents);
+    return remoteCall.waitForFiles(appId, directory.contents);
   });
 }
 
 /**
- * Creates folder shortcut to |directory|.
- * The current directory must be a parent of the |directory|.
- * @param {string} windowId ID of target window.
+ * Creates a folder shortcut to |directory| using the context menu. Note the
+ * current directory must be a parent of the given |directory|.
+ *
+ * @param {string} appId Files app windowId.
  * @param {Object} directory Directory of shortcut to be created.
  * @return {Promise} Promise fulfilled on success.
  */
-function createShortcut(windowId, directory) {
+function createShortcut(appId, directory) {
   return remoteCall.callRemoteTestUtil(
-      'selectFile', windowId, [directory.name]).then(function(result) {
+      'selectFile', appId, [directory.name]).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElement(windowId, ['.table-row[selected]']);
+    return remoteCall.waitForElement(appId, ['.table-row[selected]']);
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
-        'fakeMouseRightClick', windowId, ['.table-row[selected]']);
+        'fakeMouseRightClick', appId, ['.table-row[selected]']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForElement(
-        windowId, '#file-context-menu:not([hidden])');
+        appId, '#file-context-menu:not([hidden])');
   }).then(function() {
     return remoteCall.waitForElement(
-        windowId,
+        appId,
         '[command="#create-folder-shortcut"]:not([hidden]):not([disabled])');
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId,
+        'fakeMouseClick', appId,
         ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElement(windowId, directory.navItem);
+    return remoteCall.waitForElement(appId, directory.navItem);
   });
 }
 
 /**
- * Removes folder shortcut to |directory|.
- * The current directory must be a parent of the |directory|.
- * @param {string} windowId ID of target window.
- * @param {Object} directory Directory of shortcut ot be removed.
- * @return {Promise} Promise fullfilled on success.
+ * Removes the folder shortcut to |directory|. Note the current directory must
+ * be a parent of the given |directory|.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {Object} directory Directory of shortcut to be removed.
+ * @return {Promise} Promise fulfilled on success.
  */
-function removeShortcut(windowId, directory) {
+function removeShortcut(appId, directory) {
   // Focus the item first since actions are calculated asynchronously. The
   // context menu wouldn't show if there are no visible items. Focusing first,
   // will force the actions controller to refresh actions.
   // TODO(mtomasz): Remove this hack (if possible).
-  return remoteCall.callRemoteTestUtil('focus',
-      windowId, [directory.navItem]).then(function(result) {
+  return remoteCall.callRemoteTestUtil(
+      'focus', appId, [directory.navItem]).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.callRemoteTestUtil(
-      'fakeMouseRightClick',
-      windowId,
-      [directory.navItem]);
+        'fakeMouseRightClick', appId, [directory.navItem]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForElement(
-        windowId, '#roots-context-menu:not([hidden])');
+        appId, '#roots-context-menu:not([hidden])');
   }).then(function() {
     return remoteCall.waitForElement(
-        windowId,
+        appId,
         '[command="#remove-folder-shortcut"]:not([hidden]):not([disabled])');
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId,
+        'fakeMouseClick', appId,
         ['#roots-context-menu [command="#remove-folder-shortcut"]:' +
          'not([hidden])']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElementLost(windowId, directory.navItem);
+    return remoteCall.waitForElementLost(appId, directory.navItem);
   });
 }
 
 /**
- * Waits until the current directory become |currentDir| and folder shortcut to
- * |shortcutDir| is selected.
- * @param {string} windowId ID of target window.
+ * Waits until the current directory becomes |currentDir| and current selection
+ * becomes the shortcut to |shortcutDir|.
+ *
+ * @param {string} appId Files app windowId.
  * @param {Object} currentDir Directory which should be a current directory.
  * @param {Object} shortcutDir Directory whose shortcut should be selected.
- * @return {Promise} Promise fullfilled on success.
+ * @return {Promise} Promise fulfilled on success.
  */
-function expectSelection(windowId, currentDir, shortcutDir) {
-  return remoteCall.waitForFiles(windowId, currentDir.contents).
-      then(function() {
-        return remoteCall.waitForElement(
-            windowId, shortcutDir.navItem + '[selected]');
-      });
+function expectSelection(appId, currentDir, shortcutDir) {
+  const shortcut = shortcutDir.navItem;
+  return remoteCall.waitForFiles(appId, currentDir.contents).then(function() {
+    return remoteCall.waitForElement(appId, shortcut + '[selected]');
+  });
 }
 
 /**
  * Clicks folder shortcut to |directory|.
- * @param {string} windowId ID of target window.
+ *
+ * @param {string} appId Files app windowId.
  * @param {Object} directory Directory whose shortcut will be clicked.
- * @return {Promise} Promise fullfilled with result of fakeMouseClick.
+ * @return {Promise} Promise fulfilled on success.
  */
-function clickShortcut(windowId, directory) {
-  return remoteCall.waitForElement(windowId, directory.navItem).
-    then(function() {
-      return remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', windowId, [directory.navItem]);
-    });
+function clickShortcut(appId, directory) {
+  const shortcut = directory.navItem;
+  return remoteCall.waitForElement(appId, shortcut).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [shortcut]);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+  });
 }
 
 /**
  * Creates some shortcuts and traverse them and some other directories.
  */
 testcase.traverseFolderShortcuts = function() {
-  var windowId;
+  let appId;
+
   StepsRunner.run([
-    // Set up each window.
+    // Open Files app on Drive.
     function() {
-      addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], FOLDER_ENTRY_SET);
     },
+    // Expand the directory tree.
+    function(results) {
+      appId = results.windowId;
+      expandDirectoryTree(appId).then(this.next);
+    },
+    // Create a shortcut to directory D.
+    function() {
+      createShortcut(appId, DIRECTORY.D).then(this.next);
+    },
+    // Navigate to directory B.
+    function() {
+      navigateToDirectory(appId, DIRECTORY.B).then(this.next);
+    },
+    // Create a shortcut to directory C.
+    function() {
+      createShortcut(appId, DIRECTORY.C).then(this.next);
+    },
+    // Click the Drive root (My Drive) shortcut.
+    function() {
+      clickShortcut(appId, DIRECTORY.Drive).then(this.next);
+    },
+    // Check: current directory and selection should be the Drive root.
+    function() {
+      expectSelection(appId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
+    },
+    // Send Ctrl+3 key to file-list to select 3rd shortcut.
+    function() {
+      const key = ['#file-list', '3', true, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Check: current directory and selection should be D.
     function(result) {
       chrome.test.assertTrue(result);
-      openNewWindow(null, RootPath.DRIVE).then(this.next);
+      expectSelection(appId, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-    function(inWindowId) {
-      windowId = inWindowId;
-      remoteCall.waitForElement(windowId, '#detail-table').then(this.next);
-    },
+    // Send UpArrow key to directory tree to select the shortcut above D.
     function() {
-      expandDirectoryTree(windowId).then(this.next);
+      const key = ['#directory-tree', 'ArrowUp', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
-    function() {
-      remoteCall.waitForFiles(windowId, DIRECTORY.Drive.contents).
-          then(this.next);
-    },
-
-    // Create shortcut to D
-    function() {
-      createShortcut(windowId, DIRECTORY.D).then(this.next);
-    },
-
-    // Create sortcut to C
-    function() {
-      navigateToDirectory(windowId, DIRECTORY.B).then(this.next);
-    },
-    function() {
-      createShortcut(windowId, DIRECTORY.C).then(this.next);
-    },
-
-    // Click shortcut to drive.
-    // Current directory should be Drive root.
-    // Shortcut to Drive root should be selected.
-    function() {
-      clickShortcut(windowId, DIRECTORY.Drive).then(this.next);
-    },
-    function() {
-      expectSelection(
-          windowId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
-    },
-    // Press Ctrl+3 to select 3d shortcut.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', windowId, ['#file-list', '3', '3', true, false, false],
-          this.next);
-    },
-    // Current directory should be D.
+    // Check: current directory should be D, with shortcut C selected.
     function(result) {
       chrome.test.assertTrue(result);
-      expectSelection(windowId, DIRECTORY.D, DIRECTORY.D).then(this.next);
+      expectSelection(appId, DIRECTORY.D, DIRECTORY.C).then(this.next);
     },
-    // Press UP to select shortcut (above D).
-    // Current directory should remain D.
-    // But Shortcut to C should be selected.
+    // Send Enter key to the directory tree to change to directory C.
     function() {
-      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'ArrowUp', 'Up', false, false, false], this.next);
+      const key = ['#directory-tree', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
     },
-    // Current directory should remain D.
+    // Check: current directory and selection should be C.
     function(result) {
       chrome.test.assertTrue(result);
-      expectSelection(windowId, DIRECTORY.D, DIRECTORY.C).then(this.next);
+      expectSelection(appId, DIRECTORY.C, DIRECTORY.C).then(this.next);
     },
-    // Press Enter to change the directory to C.
-    // Then current directory should change to C.
-    function() {
-      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'Enter', 'Enter', false, false, false],
-           this.next);
-    },
-
-    // Current directory should be C.
-    function(result) {
-      chrome.test.assertTrue(result);
-      expectSelection(windowId, DIRECTORY.C, DIRECTORY.C).then(this.next);
-    },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     }
@@ -342,72 +305,68 @@ testcase.traverseFolderShortcuts = function() {
  * directories and selected navigation items are correct.
  */
 testcase.addRemoveFolderShortcuts = function() {
-  var windowId1;
-  var windowId2;
+  let appId1;
+  let appId2;
+
+  function openFilesAppOnDrive() {
+    let appId;
+    return new Promise(function(resolve) {
+      return openNewWindow(null, RootPath.DRIVE, resolve);
+    }).then(function(windowId) {
+      appId = windowId;
+      return remoteCall.waitForElement(appId, '#file-list');
+    }).then(function() {
+      return remoteCall.waitForFiles(appId, DIRECTORY.Drive.contents);
+    }).then(function() {
+      return appId;
+    });
+  }
+
   StepsRunner.run([
-    // Set up each window.
+    // Add entries to Drive.
     function() {
       addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
     },
+    // Open one Files app window on Drive.
     function(result) {
       chrome.test.assertTrue(result);
-      openWindows().then(this.next);
+      openFilesAppOnDrive().then(this.next);
     },
-    function(windowIds) {
-      windowId1 = windowIds[0];
-      windowId2 = windowIds[1];
-      expandDirectoryTree(windowId1).then(this.next);
+    // Open another Files app window on Drive.
+    function(windowId) {
+      appId1 = windowId;
+      openFilesAppOnDrive().then(this.next);
     },
+    // Create a shortcut to D.
+    function(windowId) {
+      appId2 = windowId;
+      createShortcut(appId1, DIRECTORY.D).then(this.next);
+    },
+    // Click the shortcut to D.
     function() {
-      expandDirectoryTree(windowId2).then(this.next);
+      clickShortcut(appId1, DIRECTORY.D).then(this.next);
     },
+    // Check: current directory and selection should be D.
     function() {
-      remoteCall.waitForFiles(windowId1, DIRECTORY.Drive.contents).
-          then(this.next);
+      expectSelection(appId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
+    // Create a shortcut to A from the other window.
     function() {
-      remoteCall.waitForFiles(windowId2, DIRECTORY.Drive.contents).
-          then(this.next);
+      createShortcut(appId2, DIRECTORY.A).then(this.next);
     },
-
-    // Create shortcut to D
+    // Check: current directory and selection should still be D.
     function() {
-      createShortcut(windowId1, DIRECTORY.D).then(this.next);
+      expectSelection(appId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-
-    // Click D.
-    // Current directory should be D.
-    // Shortcut to D should be selected.
+    // Remove shortcut to D from the other window.
     function() {
-      clickShortcut(windowId1, DIRECTORY.D).then(this.next);
+      removeShortcut(appId2, DIRECTORY.D).then(this.next);
     },
+    // Check: directory D in the directory tree should be selected.
     function() {
-      expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
+      const selection = TREEITEM_D + '[selected]';
+      remoteCall.waitForElement(appId1, selection).then(this.next);
     },
-
-    // Create shortcut to A in another window.
-    function() {
-      createShortcut(windowId2, DIRECTORY.A).then(this.next);
-    },
-
-    // The index of shortcut to D is changed.
-    // Current directory should remain D.
-    // Shortcut to D should keep selected.
-    function() {
-      expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
-    },
-
-    // Remove shortcut to D in another window.
-    function() {
-      removeShortcut(windowId2, DIRECTORY.D).then(this.next);
-    },
-
-    // Directory D in the directory tree should be selected.
-    function() {
-      remoteCall.waitForElement(windowId1, TREEITEM_D + '[selected]').
-          then(this.next);
-    },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     }

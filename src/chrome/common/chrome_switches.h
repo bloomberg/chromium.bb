@@ -105,7 +105,6 @@ extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
-extern const char kEnableTabAudioMuting[];
 extern const char kEnableUiDevTools[];
 extern const char kExtensionContentVerification[];
 extern const char kExtensionContentVerificationBootstrap[];
@@ -182,7 +181,6 @@ extern const char kSimulateElevatedRecovery[];
 extern const char kSimulateOutdated[];
 extern const char kSimulateOutdatedNoAU[];
 extern const char kSimulateUpgrade[];
-extern const char kSSLKeyLogFile[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionTLSv1[];
@@ -198,7 +196,6 @@ extern const char kTestName[];
 extern const char kTLS13Variant[];
 extern const char kTLS13VariantDisabled[];
 extern const char kTLS13VariantDraft23[];
-extern const char kTLS13VariantDraft28[];
 extern const char kTLS13VariantFinal[];
 extern const char kTrustedDownloadSources[];
 extern const char kTryChromeAgain[];
@@ -234,8 +231,8 @@ extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableContextualSearch[];
 extern const char kEnableHungRendererInfoBar[];
 extern const char kForceShowUpdateMenuBadge[];
-extern const char kForceShowUpdateMenuItem[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
+extern const char kForceUpdateMenuType[];
 extern const char kMarketUrlForTesting[];
 extern const char kProgressBarAnimation[];
 extern const char kTrustedCDNBaseURLForTests[];
@@ -260,17 +257,14 @@ extern const char kWmClass[];
 #if defined(OS_MACOSX)
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kDisableAppInfoDialogMac[];
-extern const char kDisableAppWindowCycling[];
 extern const char kDisableFullscreenTabDetaching[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kDisableHostedAppsInWindows[];
 extern const char kDisableMacViewsNativeAppWindows[];
 extern const char kEnableAppInfoDialogMac[];
-extern const char kEnableAppWindowCycling[];
 extern const char kEnableFullscreenTabDetaching[];
 extern const char kEnableFullscreenToolbarReveal[];
 extern const char kEnableHostedAppsInWindows[];
-extern const char kEnableMacViewsNativeAppWindows[];
 extern const char kEnableUserMetrics[];
 extern const char kHostedAppQuitNotification[];
 extern const char kMetricsClientID[];
@@ -310,6 +304,11 @@ extern const char kEnableInputImeAPI[];
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kEnableNewAppMenuIcon[];
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    !defined(GOOGLE_CHROME_BUILD)
+extern const char kEnableMachineLevelUserCloudPolicy[];
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

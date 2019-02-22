@@ -314,8 +314,9 @@ std::vector<uint8_t> GetTestCredentialRawIdBytes() {
 // /specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-
 // 20170927.html
 TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
-  auto make_credential_response =
-      ReadCTAPMakeCredentialResponse(test_data::kTestMakeCredentialResponse);
+  auto make_credential_response = ReadCTAPMakeCredentialResponse(
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
   auto cbor_attestation_object = cbor::CBORReader::Read(
       make_credential_response->GetCBOREncodedAttestationObject());
@@ -368,8 +369,9 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
 }
 
 TEST(CTAPResponseTest, TestMakeCredentialNoneAttestationResponse) {
-  auto make_credential_response =
-      ReadCTAPMakeCredentialResponse(test_data::kTestMakeCredentialResponse);
+  auto make_credential_response = ReadCTAPMakeCredentialResponse(
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
   make_credential_response->EraseAttestationStatement();
   EXPECT_THAT(make_credential_response->GetCBOREncodedAttestationObject(),
@@ -397,6 +399,7 @@ TEST(CTAPResponseTest, TestReadGetAssertionResponse) {
 TEST(CTAPResponseTest, TestParseRegisterResponseData) {
   auto response =
       AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
+          FidoTransportProtocol::kUsbHumanInterfaceDevice,
           test_data::kApplicationParameter,
           test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(response);
@@ -636,10 +639,12 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
   certificate_chain.emplace_back(fido_parsing_utils::Materialize(
       test_data::kCtap2MakeCredentialCertificate));
   attestation_map.emplace("x5c", std::move(certificate_chain));
-  AuthenticatorMakeCredentialResponse response(AttestationObject(
-      std::move(authenticator_data),
-      std::make_unique<OpaqueAttestationStatement>(
-          "packed", cbor::CBORValue(std::move(attestation_map)))));
+  AuthenticatorMakeCredentialResponse response(
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      AttestationObject(
+          std::move(authenticator_data),
+          std::make_unique<OpaqueAttestationStatement>(
+              "packed", cbor::CBORValue(std::move(attestation_map)))));
   EXPECT_THAT(
       GetSerializedCtapDeviceResponse(response),
       ::testing::ElementsAreArray(

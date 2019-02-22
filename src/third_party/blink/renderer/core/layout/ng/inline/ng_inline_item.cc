@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 
@@ -72,7 +73,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
       end_collapse_type_(kNotCollapsible),
       is_end_collapsible_newline_(false),
-      is_symbol_marker_(false) {
+      is_symbol_marker_(false),
+      is_generated_(false) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
 }
@@ -97,7 +99,8 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       style_variant_(other.style_variant_),
       end_collapse_type_(other.end_collapse_type_),
       is_end_collapsible_newline_(other.is_end_collapsible_newline_),
-      is_symbol_marker_(other.is_symbol_marker_) {
+      is_symbol_marker_(other.is_symbol_marker_),
+      is_generated_(other.is_generated_) {
   DCHECK_GE(end, start);
 }
 
@@ -121,8 +124,10 @@ void NGInlineItem::ComputeBoxProperties() {
       is_empty_item_ = true;
       should_create_box_fragment_ =
           ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
-          style_->HasOutline() || style_->CanContainAbsolutePositionObjects() ||
+          style_->CanContainAbsolutePositionObjects() ||
           style_->CanContainFixedPositionObjects(false) ||
+          NGOutlineUtils::HasPaintedOutline(*style_,
+                                            layout_object_->GetNode()) ||
           ToLayoutBoxModelObject(layout_object_)
               ->ShouldApplyPaintContainment() ||
           ToLayoutBoxModelObject(layout_object_)

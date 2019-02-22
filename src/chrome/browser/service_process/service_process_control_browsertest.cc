@@ -16,6 +16,7 @@
 #include "base/process/process_iterator.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,6 +31,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_WIN)
+#include <Tlhelp32.h>
+#include <windows.h>
+
+#include "base/threading/platform_thread.h"
+#endif
 
 class ServiceProcessControlBrowserTest
     : public InProcessBrowserTest {
@@ -69,6 +77,22 @@ class ServiceProcessControlBrowserTest
   }
 
   void SetUp() override {
+#if defined(OS_MACOSX)
+    // browser_tests and the child processes run as standalone executables,
+    // rather than bundled apps. For this test, set up the CHILD_PROCESS_EXE to
+    // point to a bundle so that the service process has an Info.plist.
+    base::FilePath exe_path;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+    exe_path = exe_path.DirName()
+                   .DirName()
+                   .Append("Contents")
+                   .Append("Versions")
+                   .Append(chrome::kChromeVersion)
+                   .Append(chrome::kHelperProcessExecutablePath);
+    child_process_exe_override_ = std::make_unique<base::ScopedPathOverride>(
+        content::CHILD_PROCESS_EXE, exe_path);
+#endif
+
     InProcessBrowserTest::SetUp();
 
     // This should not be needed because TearDown() ends with a closed
@@ -80,10 +104,14 @@ class ServiceProcessControlBrowserTest
   void TearDown() override {
     if (ServiceProcessControl::GetInstance()->IsConnected())
       EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
+
 #if defined(OS_MACOSX)
     // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
+
+    child_process_exe_override_.reset();
 #endif  // OS_MACOSX
+
     if (service_process_.IsValid()) {
       int exit_code;
       EXPECT_TRUE(service_process_.WaitForExitWithTimeout(
@@ -117,6 +145,9 @@ class ServiceProcessControlBrowserTest
   }
 
  private:
+#if defined(OS_MACOSX)
+  std::unique_ptr<base::ScopedPathOverride> child_process_exe_override_;
+#endif
   base::Process service_process_;
 };
 
@@ -415,3 +446,66 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_Histograms) {
   EXPECT_CALL(*this, MockHistogramsCallback()).Times(1);
   run_loop.Run();
 }
+
+#if defined(OS_WIN)
+// Test for https://crbug.com/860827 to make sure it is possible to stop the
+// Cloud Print service with WM_QUIT.
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, StopViaWmQuit) {
+  LaunchServiceProcessControlAndWait();
+
+  // Make sure we are connected to the service process.
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
+      &cloud_print_proxy);
+  base::RunLoop run_loop;
+  cloud_print_proxy->GetCloudPrintProxyInfo(
+      base::BindOnce([](base::OnceClosure done, bool, const std::string&,
+                        const std::string&) { std::move(done).Run(); },
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  base::ProcessId pid =
+      ServiceProcessControl::GetInstance()->GetLaunchedPidForTesting();
+  base::Process process = base::Process::Open(pid);
+  ASSERT_TRUE(process.IsValid());
+
+  // Find the first thread associated with |pid|.
+  base::PlatformThreadId tid = 0;
+  {
+    HANDLE snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
+    ASSERT_NE(INVALID_HANDLE_VALUE, snapshot);
+
+    THREADENTRY32 thread_entry = {0};
+    thread_entry.dwSize = sizeof(THREADENTRY32);
+
+    BOOL result = ::Thread32First(snapshot, &thread_entry);
+    while (result) {
+      if (thread_entry.th32OwnerProcessID == pid) {
+        tid = thread_entry.th32ThreadID;
+        break;
+      }
+      result = Thread32Next(snapshot, &thread_entry);
+    }
+  }
+  ASSERT_NE(base::kInvalidThreadId, tid);
+
+  // And then shutdown the service process via WM_QUIT.
+  ASSERT_TRUE(::PostThreadMessage(tid, WM_QUIT, 0, 0));
+
+  // And wait for it to stop running.
+  constexpr int kRetries = 5;
+  for (int retry = 0; retry < kRetries; ++retry) {
+    if (!process.IsRunning()) {
+      // |process| stopped running. Test is done.
+      return;
+    }
+
+    // |process| did not stop running. Wait.
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+  }
+
+  // |process| still did not stop running after |kRetries|.
+  FAIL();
+}
+#endif  // defined(OS_WIN)

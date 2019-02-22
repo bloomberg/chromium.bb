@@ -5,8 +5,10 @@
   },
 
   data: [
+    "element",
     "event",
     "firstInput",
+    "layoutJank",
     "longtask",
     "mark",
     "measure",

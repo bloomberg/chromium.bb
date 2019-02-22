@@ -39,12 +39,9 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
   // |identifier|.
   static void ResetGlobalsForTesting(BrowserThread::ID identifier);
 
-  // Creates and registers a TaskExecutor that facilitates posting tasks to a
-  // BrowserThread via //base/task/post_task.h.
-  static void CreateTaskExecutor();
-
-  // Unregister and delete the TaskExecutor after a test.
-  static void ResetTaskExecutorForTesting();
+  // Exposed for BrowserTaskExecutor. Other code should use
+  // base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI/IO}).
+  using BrowserThread::GetTaskRunnerForThread;
 
  private:
   // Restrict instantiation to BrowserProcessSubThread as it performs important

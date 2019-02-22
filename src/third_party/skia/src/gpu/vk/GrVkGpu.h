@@ -51,8 +51,10 @@ public:
 
     GrVkMemoryAllocator* memoryAllocator() const { return fMemoryAllocator.get(); }
 
+    VkPhysicalDevice physicalDevice() const { return fPhysicalDevice; }
     VkDevice device() const { return fDevice; }
     VkQueue  queue() const { return fQueue; }
+    uint32_t  queueIndex() const { return fQueueIndex; }
     VkCommandPool cmdPool() const { return fCmdPool; }
     VkPhysicalDeviceProperties physicalDeviceProperties() const {
         return fPhysDevProps;
@@ -74,8 +76,8 @@ public:
 
 #if GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                     GrPixelConfig config, bool isRenderTarget,
-                                                     GrMipMapped) override;
+                                                     GrColorType colorType, bool isRenderTarget,
+                                                     GrMipMapped, size_t rowBytes = 0) override;
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
     void deleteTestingOnlyBackendTexture(const GrBackendTexture&) override;
 
@@ -88,8 +90,6 @@ public:
     GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                 int width,
                                                                 int height) override;
-
-    void clearStencil(GrRenderTarget* target, int clearValue) override;
 
     GrGpuRTCommandBuffer* getCommandBuffer(
             GrRenderTarget*, GrSurfaceOrigin,
@@ -224,7 +224,7 @@ private:
 #if GR_TEST_UTILS
     bool createTestingOnlyVkImage(GrPixelConfig config, int w, int h, bool texturable,
                                   bool renderable, GrMipMapped mipMapped, const void* srcData,
-                                  GrVkImageInfo* info);
+                                  size_t srcRowBytes, GrVkImageInfo* info);
 #endif
 
     sk_sp<const GrVkInterface>             fInterface;
@@ -232,8 +232,10 @@ private:
     sk_sp<GrVkCaps>                        fVkCaps;
 
     VkInstance                             fInstance;
+    VkPhysicalDevice                       fPhysicalDevice;
     VkDevice                               fDevice;
     VkQueue                                fQueue;    // Must be Graphics queue
+    uint32_t                               fQueueIndex;
 
     // Created by GrVkGpu
     GrVkResourceProvider                   fResourceProvider;

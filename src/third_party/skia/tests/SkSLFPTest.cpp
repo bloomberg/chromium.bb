@@ -151,7 +151,7 @@ DEF_TEST(SkSLFPInput, r) {
          "}",
          *SkSL::ShaderCapsFactory::Default(),
          {
-             "SkPoint point() const { return fPoint; }",
+             "const SkPoint& point() const { return fPoint; }",
              "static std::unique_ptr<GrFragmentProcessor> Make(SkPoint point) {",
              "return std::unique_ptr<GrFragmentProcessor>(new GrTest(point));",
              "GrTest(SkPoint point)",
@@ -181,6 +181,9 @@ DEF_TEST(SkSLFPUniform, r) {
          });
 }
 
+// SkSLFPInUniform tests the simplest plumbing case, default type, no tracking
+// with a setUniform template that supports inlining the value call with no
+// local variable.
 DEF_TEST(SkSLFPInUniform, r) {
     test(r,
          "in uniform half4 color;"
@@ -194,8 +197,100 @@ DEF_TEST(SkSLFPInUniform, r) {
          {
             "fColorVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType, "
                                                          "kDefault_GrSLPrecision, \"color\");",
-            "const SkRect colorValue = _outer.color();",
-            "pdman.set4fv(fColorVar, 1, (float*) &colorValue);"
+            "pdman.set4fv(fColorVar, 1, reinterpret_cast<const float*>(&(_outer.color())));"
+         });
+}
+
+// As above, but tests in uniform's ability to override the default ctype.
+DEF_TEST(SkSLFPInUniformCType, r) {
+    test(r,
+         "layout(ctype=GrColor4f) in uniform half4 color;"
+         "void main() {"
+         "sk_OutColor = color;"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+             "static std::unique_ptr<GrFragmentProcessor> Make(GrColor4f color) {",
+         },
+         {
+            "fColorVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType, "
+                                                         "kDefault_GrSLPrecision, \"color\");",
+            "pdman.set4fv(fColorVar, 1, (_outer.color()).fRGBA);"
+         });
+}
+
+// Add state tracking to the default typed SkRect <-> half4 uniform. But since
+// it now has to track state, the value inlining previously done for the
+// setUniform call is removed in favor of a local variable.
+DEF_TEST(SkSLFPTrackedInUniform, r) {
+    test(r,
+         "layout(tracked) in uniform half4 color;"
+         "void main() {"
+         "sk_OutColor = color;"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+             "static std::unique_ptr<GrFragmentProcessor> Make(SkRect color) {",
+         },
+         {
+            "SkRect fColorPrev = SkRect::MakeEmpty();",
+            "fColorVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType, "
+                                                         "kDefault_GrSLPrecision, \"color\");",
+            "const SkRect& colorValue = _outer.color();",
+            "if (fColorPrev.isEmpty() || fColorPrev != colorValue) {",
+            "fColorPrev = colorValue;",
+            "pdman.set4fv(fColorVar, 1, reinterpret_cast<const float*>(&colorValue));"
+         });
+}
+
+// Test the case where the template does not support variable inlining in
+// setUniform (i.e. it references the value multiple times).
+DEF_TEST(SkSLFPNonInlinedInUniform, r) {
+    test(r,
+         "in uniform half2 point;"
+         "void main() {"
+         "sk_OutColor = half4(point, point);"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+             "static std::unique_ptr<GrFragmentProcessor> Make(SkPoint point) {",
+         },
+         {
+            "fPointVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf2_GrSLType, "
+                                                         "kDefault_GrSLPrecision, \"point\");",
+            "const SkPoint& pointValue = _outer.point();",
+            "pdman.set2f(fPointVar, pointValue.fX, pointValue.fY);"
+         });
+}
+
+// Test handling conditional uniforms (that use when= in layout), combined with
+// state tracking and custom ctypes to really put the code generation through its paces.
+DEF_TEST(SkSLFPConditionalInUniform, r) {
+    test(r,
+         "in bool test;"
+         "layout(ctype=GrColor4f, tracked, when=test) in uniform half4 color;"
+         "void main() {"
+         "  if (test) {"
+         "    sk_OutColor = color;"
+         "  } else {"
+         "    sk_OutColor = half4(1);"
+         "  }"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+             "static std::unique_ptr<GrFragmentProcessor> Make(bool test, GrColor4f color) {",
+         },
+         {
+            "GrColor4f fColorPrev = GrColor4f::kIllegalConstructor",
+            "auto test = _outer.test();",
+            "if (test) {",
+            "fColorVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType, "
+                                                         "kDefault_GrSLPrecision, \"color\");",
+            "if (fColorVar.isValid()) {",
+            "const GrColor4f& colorValue = _outer.color();",
+            "if (fColorPrev != colorValue) {",
+            "fColorPrev = colorValue;",
+            "pdman.set4fv(fColorVar, 1, colorValue.fRGBA);"
          });
 }
 
@@ -379,5 +474,155 @@ DEF_TEST(SkSLFPChildProcessors, r) {
             "this->emitChild(1, &_child1, args);",
             "this->registerChildProcessor(src.childProcessor(0).clone());",
             "this->registerChildProcessor(src.childProcessor(1).clone());"
+         });
+}
+
+DEF_TEST(SkSLFPChildProcessorsWithInput, r) {
+    test(r,
+         "in fragmentProcessor child1;"
+         "in fragmentProcessor child2;"
+         "void main() {"
+         "    half4 childIn = sk_InColor;"
+         "    half4 childOut1 = process(child1, childIn);"
+         "    half4 childOut2 = process(child2, childOut1);"
+         "    sk_OutColor = childOut2;"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child1));",
+            "this->registerChildProcessor(std::move(child2));"
+         },
+         {
+            "SkString _input0(\"childIn\");",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, _input0.c_str(), &_child0, args);",
+            "SkString _input1(\"childOut1\");",
+            "SkString _child1(\"_child1\");",
+            "this->emitChild(1, _input1.c_str(), &_child1, args);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());",
+            "this->registerChildProcessor(src.childProcessor(1).clone());"
+         });
+}
+
+DEF_TEST(SkSLFPChildProcessorWithInputExpression, r) {
+    test(r,
+         "in fragmentProcessor child;"
+         "void main() {"
+         "    sk_OutColor = process(child, sk_InColor * half4(0.5));"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child));",
+         },
+         {
+            "SkString _input0 = SkStringPrintf(\"%s * half4(0.5)\", args.fInputColor);",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, _input0.c_str(), &_child0, args);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());",
+         });
+}
+
+DEF_TEST(SkSLFPNestedChildProcessors, r) {
+    test(r,
+         "in fragmentProcessor child1;"
+         "in fragmentProcessor child2;"
+         "void main() {"
+         "    sk_OutColor = process(child2, sk_InColor * process(child1, sk_InColor * half4(0.5)));"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child1));",
+            "this->registerChildProcessor(std::move(child2));"
+         },
+         {
+            "SkString _input0 = SkStringPrintf(\"%s * half4(0.5)\", args.fInputColor);",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, _input0.c_str(), &_child0, args);",
+            "SkString _input1 = SkStringPrintf(\"%s * %s\", args.fInputColor, _child0.c_str());",
+            "SkString _child1(\"_child1\");",
+            "this->emitChild(1, _input1.c_str(), &_child1, args);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());",
+            "this->registerChildProcessor(src.childProcessor(1).clone());"
+         });
+}
+
+DEF_TEST(SkSLFPChildFPAndGlobal, r) {
+    test(r,
+         "in fragmentProcessor child;"
+         "bool hasCap = sk_Caps.externalTextureSupport;"
+         "void main() {"
+         "    if (hasCap) {"
+         "        sk_OutColor = process(child, sk_InColor);"
+         "    } else {"
+         "        sk_OutColor = half4(1);"
+         "    }"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child));"
+         },
+         {
+            "hasCap = sk_Caps.externalTextureSupport;",
+            "fragBuilder->codeAppendf(\"bool hasCap = %s;\\nif (hasCap) {\", "
+                    "(hasCap ? \"true\" : \"false\"));",
+            "SkString _input0 = SkStringPrintf(\"%s\", args.fInputColor);",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, _input0.c_str(), &_child0, args);",
+            "fragBuilder->codeAppendf(\"\\n    %s = %s;\\n} else {\\n    %s = half4(1.0);\\n}"
+                    "\\n\", args.fOutputColor, _child0.c_str(), args.fOutputColor);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());"
+         });
+}
+
+DEF_TEST(SkSLFPChildProcessorInlineFieldAccess, r) {
+    test(r,
+         "in fragmentProcessor child;"
+         "void main() {"
+         "    if (child.preservesOpaqueInput) {"
+         "        sk_OutColor = process(child, sk_InColor);"
+         "    } else {"
+         "        sk_OutColor = half4(1);"
+         "    }"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child));"
+         },
+         {
+            "fragBuilder->codeAppendf(\"if (%s) {\", "
+                    "(_outer.childProcessor(0).preservesOpaqueInput() ? \"true\" : \"false\"));",
+            "SkString _input0 = SkStringPrintf(\"%s\", args.fInputColor);",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, _input0.c_str(), &_child0, args);",
+            "fragBuilder->codeAppendf(\"\\n    %s = %s;\\n} else {\\n    %s = half4(1.0);\\n}\\n\""
+                    ", args.fOutputColor, _child0.c_str(), args.fOutputColor);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());"
+         });
+}
+
+DEF_TEST(SkSLFPChildProcessorFieldAccess, r) {
+    test(r,
+         "in fragmentProcessor child;"
+         "bool opaque = child.preservesOpaqueInput;"
+         "void main() {"
+         "    if (opaque) {"
+         "        sk_OutColor = process(child);"
+         "    } else {"
+         "        sk_OutColor = half4(0.5);"
+         "    }"
+         "}",
+         *SkSL::ShaderCapsFactory::Default(),
+         {
+            "this->registerChildProcessor(std::move(child));"
+         },
+         {
+            "opaque = _outer.childProcessor(0).preservesOpaqueInput();",
+            "fragBuilder->codeAppendf(\"bool opaque = %s;\\nif (opaque) {\", "
+                    "(opaque ? \"true\" : \"false\"));",
+            "SkString _child0(\"_child0\");",
+            "this->emitChild(0, &_child0, args);",
+            "fragBuilder->codeAppendf(\"\\n    %s = %s;\\n} else {\\n    %s = half4(0.5);\\n}\\n\""
+                    ", args.fOutputColor, _child0.c_str(), args.fOutputColor);",
+            "this->registerChildProcessor(src.childProcessor(0).clone());"
          });
 }

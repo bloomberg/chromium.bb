@@ -10,11 +10,9 @@
 #include <algorithm>
 #include <iterator>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "core/fxcrt/fx_system.h"
-#include "core/fxcrt/unowned_ptr.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"

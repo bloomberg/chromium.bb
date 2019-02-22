@@ -3,7 +3,7 @@ https://chromium.googlesource.com/chromium/src/+/a3f9d4fac81fc86065d867ab08fa491
 
 Files in ./devtools_api/ are from //src/headless/lib/browser/devtools_api/
 
-assistant_devtools_client.cc/h are from //src/headless/lib/browser/headless_devtools_client_impl.cc
+devtools_client.cc/h are from //src/headless/lib/browser/headless_devtools_client_impl.cc
 
 error_reporter.cc/h are from //src/headless/public/util/error_reporter.cc/h
 

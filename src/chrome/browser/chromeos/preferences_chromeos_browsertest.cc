@@ -32,7 +32,9 @@ namespace chromeos {
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
-      : LoginManagerTest(true), input_settings_(nullptr), keyboard_(nullptr) {
+      : LoginManagerTest(true, true),
+        input_settings_(nullptr),
+        keyboard_(nullptr) {
     struct {
       const char* email;
       const char* gaia_id;

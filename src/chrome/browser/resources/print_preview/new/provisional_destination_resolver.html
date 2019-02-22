@@ -2,39 +2,39 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
-<link rel="import" href="button_css.html">
 <link rel="import" href="print_preview_shared_css.html">
-<link rel="import" href="search_dialog_css.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="throbber_css.html">
 
 <dom-module id="print-preview-provisional-destination-resolver">
   <template>
-    <style include="print-preview-shared search-dialog button cr-hidden-style throbber">
-      :host #dialog {
+    <style include="print-preview-shared paper-button-style cr-hidden-style throbber">
+      #dialog {
         --cr-dialog-native: {
-          border-radius: 2px;
-          box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
-            0 2px 6px rgba(0, 0, 0, 0.15);
-          width: 360px;
+          height: -webkit-fit-content;
+          max-height: calc(100vh - 4 * var(--print-preview-dialog-margin));
+          max-width:  calc(100vw - 4 * var(--print-preview-dialog-margin));
         };
-        --cr-dialog-top-container-min-height: 35px;
       }
 
-      :host .throbber-placeholder {
+      .throbber-placeholder {
         height: 16px;
         margin: 4px;
         width: 16px;
       }
 
       .message {
-        line-height: 1.4rem;
+        line-height: calc(20/13 * 1em);
         margin: 0;
-        padding-bottom: 35px;
+        padding-bottom: 12px;
+        padding-top: 16px;
       }
 
       .extension-desc {
@@ -49,16 +49,23 @@
       }
 
       .extension-name {
+        color: var(--google-grey-900);
+        display: flex;
         flex: 1;
-        line-height: 24px;
+        flex-direction: column;
+        justify-content: center;
+        line-height: 20px;
+        margin-inline-start: 1em;
         overflow-wrap: break-word;
       }
 
-      div[slot='button-container'] {
-        margin: 0 3px 10px;
+      /* override print preview shared style */
+      #dialog #buttons {
+        box-shadow: none;
       }
     </style>
-    <cr-dialog id="dialog" on-close="onCancel_" show-close-button>
+    <cr-dialog id="dialog" on-close="onCancel_">
+      <div slot="title">$i18n{resolveExtensionUSBDialogTitle}</div>
       <div slot="body">
         <p class="message">
           [[getPermissionMessage_(state_, destination_.extensionName)]]
@@ -72,13 +79,16 @@
           </div>
         </div>
       </div>
-      <div slot="button-container">
-        <button class="cancel" on-click="onCancel_">$i18n{goBackButton}</button>
-        <button class="default" hidden="[[isInErrorState_(state_)]]"
+      <div slot="button-container" id="buttons">
+        <paper-button class="cancel-button" on-click="onCancelClick_">
+          $i18n{goBackButton}
+        </paper-button>
+        <paper-button class="action-button"
+            hidden="[[isInErrorState_(state_)]]"
             disabled="[[!isInActiveState_(state_)]]"
             on-click="startResolveDestination_">
           $i18n{selectButton}
-        </button>
+        </paper-button>
       </div>
     </cr-dialog>
   </template>

@@ -41,8 +41,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/third_party/skcms/skcms.h"
+
+class SkColorSpace;
 
 namespace blink {
 
@@ -118,7 +119,7 @@ class PLATFORM_EXPORT ImageDecoder {
 
   enum AlphaOption { kAlphaPremultiplied, kAlphaNotPremultiplied };
   enum HighBitDepthDecodingOption {
-    // Decode everything to 8-8-8-8 pixel format (kN32 channel order).
+    // Decode everything to uint8 pixel format (kN32 channel order).
     kDefaultBitDepth,
     // Decode high bit depth images to half float pixel format.
     kHighBitDepthToHalfFloat
@@ -302,15 +303,6 @@ class PLATFORM_EXPORT ImageDecoder {
   // Callers may pass WTF::kNotFound to clear all frames.
   // Note: If |frame_buffer_cache_| contains only one frame, it won't be
   // cleared. Returns the number of bytes of frame data actually cleared.
-  //
-  // This is a virtual method because MockImageDecoder needs to override it in
-  // order to run the test ImageFrameGeneratorTest::ClearMultiFrameDecode.
-  //
-  // @TODO  Let MockImageDecoder override ImageFrame::ClearFrameBuffer instead,
-  //        so this method can be made non-virtual. It is used in the test
-  //        ImageFrameGeneratorTest::ClearMultiFrameDecode. The test needs to
-  //        be modified since two frames may be kept in cache, instead of
-  //        always just one, with this ClearCacheExceptFrame implementation.
   virtual size_t ClearCacheExceptFrame(size_t);
 
   // If the image has a cursor hot-spot, stores it in the argument
@@ -453,7 +445,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // |index| is smaller than |frame_buffer_cache_|.size().
   virtual bool FrameStatusSufficientForSuccessors(size_t index) {
     DCHECK(index < frame_buffer_cache_.size());
-    return frame_buffer_cache_[index].GetStatus() != ImageFrame::kFrameEmpty;
+    ImageFrame::Status frame_status = frame_buffer_cache_[index].GetStatus();
+    return frame_status == ImageFrame::kFramePartial ||
+           frame_status == ImageFrame::kFrameComplete;
   }
 
  private:

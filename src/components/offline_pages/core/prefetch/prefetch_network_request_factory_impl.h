@@ -14,7 +14,10 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/version_info/channel.h"
-#include "net/url_request/url_request_context_getter.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace offline_pages {
 class GeneratePageBundleRequest;
@@ -23,7 +26,7 @@ class GetOperationRequest;
 class PrefetchNetworkRequestFactoryImpl : public PrefetchNetworkRequestFactory {
  public:
   PrefetchNetworkRequestFactoryImpl(
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       version_info::Channel channel,
       const std::string& user_agent);
 
@@ -70,7 +73,7 @@ class PrefetchNetworkRequestFactoryImpl : public PrefetchNetworkRequestFactory {
 
   uint64_t GetNextRequestId();
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   version_info::Channel channel_;
   std::string user_agent_;
 

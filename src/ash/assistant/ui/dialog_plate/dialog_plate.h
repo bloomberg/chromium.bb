@@ -73,10 +73,9 @@ class DialogPlate : public views::View,
   void RemoveObserver(DialogPlateObserver* observer);
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
   void RequestFocus() override;
 
   // ButtonListener:
@@ -94,6 +93,9 @@ class DialogPlate : public views::View,
                              AssistantVisibility old_visibility,
                              AssistantSource source) override;
 
+  // Returns the first focusable view or nullptr to defer to views::FocusSearch.
+  views::View* FindFirstFocusableView();
+
  private:
   void InitLayout();
   void InitKeyboardLayoutContainer();
@@ -105,7 +107,6 @@ class DialogPlate : public views::View,
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
   void SetFocus(InputModality modality);
-  void SetFocusMode(InputModality modality);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

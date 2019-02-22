@@ -79,9 +79,10 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+
 #include <initguid.h>
 #include "base/logging_win.h"
-#include "content/shell/common/v8_breakpad_support_win.h"
+#include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -163,7 +164,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
 
-  v8_breakpad_support::SetUp();
+  v8_crashpad_support::SetUp();
 #endif
 #if defined(OS_LINUX)
   breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
@@ -181,16 +182,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging(command_line);
 
-  if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
-    // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
-    // continue and try to load the fonts in BlinkTestPlatformInitialize
-    // below, and then try to bring up the rest of the content module.
-    if (!CheckLayoutSystemDeps()) {
-      *exit_code = 1;
-      return true;
-    }
-  }
-
   if (command_line.HasSwitch("run-layout-test")) {
     std::cerr << std::string(79, '*') << "\n"
               << "* The flag --run-layout-test is obsolete. Please use --"
@@ -200,6 +191,16 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   if (command_line.HasSwitch(switches::kRunWebTests)) {
+    // Only run CheckLayoutSystemDeps on the browser process.
+    if (!command_line.HasSwitch(switches::kProcessType)) {
+      // If CheckLayoutSystemDeps fails, we early exit as there's no point in
+      // running the tests.
+      if (!CheckLayoutSystemDeps()) {
+        *exit_code = 1;
+        return true;
+      }
+    }
+
     EnableBrowserLayoutTestMode();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -266,9 +267,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
     }
 
-    // If the virtual test suite didn't specify a color space, then force sRGB.
-    if (!command_line.HasSwitch(switches::kForceColorProfile))
-      command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+    // If the virtual test suite didn't specify a display color space, then
+    // force sRGB.
+    if (!command_line.HasSwitch(switches::kForceDisplayColorProfile)) {
+      command_line.AppendSwitchASCII(switches::kForceDisplayColorProfile,
+                                     "srgb");
+    }
 
     // We want stable/baseline results when running layout tests.
     command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
@@ -354,8 +358,7 @@ int ShellMainDelegate::RunProcess(
 
   browser_runner_.reset(BrowserMainRunner::Create());
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kRunWebTests) ||
-                 command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)
+  return command_line.HasSwitch(switches::kRunWebTests)
              ? LayoutTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
 }
@@ -417,8 +420,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 void ShellMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_ANDROID)
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunWebTests) ||
-      command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
+  if (command_line.HasSwitch(switches::kRunWebTests)) {
     bool success =
         base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
     CHECK(success) << "Unable to initialize the message pump for Android";

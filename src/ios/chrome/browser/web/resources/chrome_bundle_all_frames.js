@@ -6,4 +6,9 @@
 goog.provide('__crWeb.chromeBundleAllFrames');
 
 goog.require('__crWeb.accessibility');
+goog.require('__crWeb.autofill');
+goog.require('__crWeb.fill');
 goog.require('__crWeb.form');
+goog.require('__crWeb.formHandlers');
+goog.require('__crWeb.print');
+goog.require('__crWeb.suggestion');

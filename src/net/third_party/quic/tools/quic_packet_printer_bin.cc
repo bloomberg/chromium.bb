@@ -105,16 +105,30 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
               << " }\n";
     return true;
   }
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
+    std::cerr << "OnCryptoFrame: " << frame;
+    std::cerr << "         data: { "
+              << QuicTextUtils::HexEncode(frame.data_buffer, frame.data_length)
+              << " }\n";
+    return true;
+  }
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta /*ack_delay_time*/) override {
     std::cerr << "OnAckFrameStart, largest_acked: " << largest_acked;
     return true;
   }
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range) override {
-    std::cerr << "OnAckRange: [" << start << ", " << end
-              << "),  last_range: " << last_range;
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
+    std::cerr << "OnAckRange: [" << start << ", " << end << ")";
+    return true;
+  }
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    std::cerr << "OnAckTimestamp: [" << packet_number << ", "
+              << timestamp.ToDebuggingValue() << ")";
+    return true;
+  }
+  bool OnAckFrameEnd(QuicPacketNumber start) override {
+    std::cerr << "OnAckFrameEnd, start: " << start;
     return true;
   }
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
@@ -144,6 +158,10 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   }
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
     std::cerr << "OnNewConnectionIdFrame: " << frame;
+    return true;
+  }
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override {
+    std::cerr << "OnNewTokenFrame: " << frame;
     return true;
   }
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
@@ -176,6 +194,10 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   }
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
     std::cerr << "OnBlockedFrame: " << frame;
+    return true;
+  }
+  bool OnMessageFrame(const QuicMessageFrame& frame) override {
+    std::cerr << "OnMessageFrame: " << frame;
     return true;
   }
   void OnPacketComplete() override { std::cerr << "OnPacketComplete\n"; }

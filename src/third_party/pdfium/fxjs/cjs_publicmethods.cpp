@@ -17,10 +17,10 @@
 #include <utility>
 #include <vector>
 
-#include "core/fpdfdoc/cpdf_interform.h"
+#include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_extension.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
-#include "fpdfsdk/cpdfsdk_interform.h"
+#include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fxjs/cjs_color.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_eventhandler.h"
@@ -1584,9 +1584,9 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
   if ((params[1].IsEmpty() || !params[1]->IsArray()) && !params[1]->IsString())
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  CPDFSDK_InterForm* pReaderInterForm =
-      pRuntime->GetFormFillEnv()->GetInterForm();
-  CPDF_InterForm* pInterForm = pReaderInterForm->GetInterForm();
+  CPDFSDK_InteractiveForm* pReaderForm =
+      pRuntime->GetFormFillEnv()->GetInteractiveForm();
+  CPDF_InteractiveForm* pForm = pReaderForm->GetInteractiveForm();
 
   WideString sFunction = pRuntime->ToWideString(params[0]);
   double dValue = wcscmp(sFunction.c_str(), L"PRD") == 0 ? 1.0 : 0.0;
@@ -1598,8 +1598,8 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
     WideString wsFieldName =
         pRuntime->ToWideString(pRuntime->GetArrayElement(FieldNameArray, i));
 
-    for (size_t j = 0; j < pInterForm->CountFields(wsFieldName); ++j) {
-      CPDF_FormField* pFormField = pInterForm->GetField(j, wsFieldName);
+    for (size_t j = 0; j < pForm->CountFields(wsFieldName); ++j) {
+      CPDF_FormField* pFormField = pForm->GetField(j, wsFieldName);
       if (!pFormField)
         continue;
 

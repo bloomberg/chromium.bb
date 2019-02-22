@@ -21,6 +21,7 @@
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace chromeos {
 
@@ -46,7 +47,8 @@ class PendingConnectionManagerImpl : public PendingConnectionManager,
     virtual ~Factory();
     virtual std::unique_ptr<PendingConnectionManager> BuildInstance(
         Delegate* delegate,
-        BleConnectionManager* ble_connection_manager);
+        BleConnectionManager* ble_connection_manager,
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
    private:
     static Factory* test_factory_;
@@ -55,8 +57,10 @@ class PendingConnectionManagerImpl : public PendingConnectionManager,
   ~PendingConnectionManagerImpl() override;
 
  private:
-  PendingConnectionManagerImpl(Delegate* delegate,
-                               BleConnectionManager* ble_connection_manager);
+  PendingConnectionManagerImpl(
+      Delegate* delegate,
+      BleConnectionManager* ble_connection_manager,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
   // PendingConnectionManager:
   void HandleConnectionRequest(
@@ -95,6 +99,7 @@ class PendingConnectionManagerImpl : public PendingConnectionManager,
       details_to_attempt_details_map_;
 
   BleConnectionManager* ble_connection_manager_;
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionManagerImpl);
 };

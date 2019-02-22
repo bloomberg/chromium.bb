@@ -180,6 +180,10 @@ const char* Event::GetName() const {
   return EventTypeName(type_);
 }
 
+void Event::SetProperties(const Properties& properties) {
+  properties_ = std::make_unique<Properties>(properties);
+}
+
 bool Event::IsMousePointerEvent() const {
   return IsPointerEvent() &&
          AsPointerEvent()->pointer_details().pointer_type ==
@@ -363,7 +367,34 @@ Event::Event(const Event& copy)
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED),
-      source_device_id_(copy.source_device_id_) {
+      source_device_id_(copy.source_device_id_),
+      properties_(copy.properties_
+                      ? std::make_unique<Properties>(*copy.properties_)
+                      : nullptr) {}
+
+Event& Event::operator=(const Event& rhs) {
+  if (this != &rhs) {
+    if (delete_native_event_)
+      ReleaseCopiedNativeEvent(native_event_);
+
+    type_ = rhs.type_;
+    time_stamp_ = rhs.time_stamp_;
+    latency_ = rhs.latency_;
+    flags_ = rhs.flags_;
+    native_event_ = CopyNativeEvent(rhs.native_event_);
+    delete_native_event_ = true;
+    cancelable_ = rhs.cancelable_;
+    target_ = rhs.target_;
+    phase_ = rhs.phase_;
+    result_ = rhs.result_;
+    source_device_id_ = rhs.source_device_id_;
+    if (rhs.properties_)
+      properties_ = std::make_unique<Properties>(*rhs.properties_);
+    else
+      properties_.reset();
+  }
+  latency_.set_source_event_type(ui::SourceEventType::OTHER);
+  return *this;
 }
 
 void Event::SetType(EventType type) {
@@ -795,8 +826,7 @@ TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        base::TimeTicks time_stamp,
                        const PointerDetails& pointer_details,
-                       int flags,
-                       float angle)
+                       int flags)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(location),
@@ -808,7 +838,6 @@ TouchEvent::TouchEvent(EventType type,
       hovering_(false),
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-  pointer_details_.twist = angle;
 }
 
 TouchEvent::TouchEvent(const TouchEvent& copy)
@@ -1103,7 +1132,7 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 #if defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_) {
-    key_ = DomKey::FromCharacter(native_event.wParam);
+    key_ = DomKey::FromCharacter(static_cast<int32_t>(native_event.wParam));
     set_flags(PlatformKeyMap::ReplaceControlAndAltWithAltGraph(flags()));
   } else {
     int adjusted_flags = flags();
@@ -1161,10 +1190,7 @@ KeyEvent::KeyEvent(const KeyEvent& rhs)
       key_code_(rhs.key_code_),
       code_(rhs.code_),
       is_char_(rhs.is_char_),
-      key_(rhs.key_),
-      properties_(rhs.properties_
-                      ? std::make_unique<Properties>(*rhs.properties_)
-                      : nullptr) {}
+      key_(rhs.key_) {}
 
 KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
   if (this != &rhs) {
@@ -1173,12 +1199,7 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
-    if (rhs.properties_)
-      properties_ = std::make_unique<Properties>(*rhs.properties_);
-    else
-      properties_.reset();
   }
-  latency()->set_source_event_type(ui::SourceEventType::OTHER);
   return *this;
 }
 
@@ -1310,10 +1331,6 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() | mask);
   else
     set_flags(flags() & ~mask);
-}
-
-void KeyEvent::SetProperties(const Properties& properties) {
-  properties_ = std::make_unique<Properties>(properties);
 }
 
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {

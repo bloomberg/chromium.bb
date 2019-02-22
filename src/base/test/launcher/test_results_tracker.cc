@@ -337,10 +337,8 @@ bool TestResultsTracker::SaveSummaryAsJSON(
     std::unique_ptr<DictionaryValue> current_iteration_data(
         new DictionaryValue);
 
-    for (PerIterationData::ResultsMap::const_iterator j =
-             per_iteration_data_[i].results.begin();
-         j != per_iteration_data_[i].results.end();
-         ++j) {
+    for (auto j = per_iteration_data_[i].results.begin();
+         j != per_iteration_data_[i].results.end(); ++j) {
       std::unique_ptr<ListValue> test_results(new ListValue);
 
       for (size_t k = 0; k < j->second.test_results.size(); k++) {
@@ -488,10 +486,8 @@ TestResultsTracker::TestStatusMap
 
 void TestResultsTracker::GetTestStatusForIteration(
     int iteration, TestStatusMap* map) const {
-  for (PerIterationData::ResultsMap::const_iterator j =
-           per_iteration_data_[iteration].results.begin();
-       j != per_iteration_data_[iteration].results.end();
-       ++j) {
+  for (auto j = per_iteration_data_[iteration].results.begin();
+       j != per_iteration_data_[iteration].results.end(); ++j) {
     // Use the last test result as the final one.
     const TestResult& result = j->second.test_results.back();
     (*map)[result.status].insert(result.full_name);

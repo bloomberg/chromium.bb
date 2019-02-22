@@ -254,7 +254,7 @@ class CBuildbotMetadata(object):
     if key:
       return json.dumps(self.GetValue(key))
     else:
-      return json.dumps(self.GetDict())
+      return json.dumps(self.GetDict(), indent=2, sort_keys=True)
 
   def RecordCLAction(self, change, action, timestamp=None, reason=''):
     """Record an action that was taken on a CL, to the metadata.

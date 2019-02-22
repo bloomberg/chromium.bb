@@ -64,12 +64,24 @@ GeometryMapper::SourceToDestinationProjectionInternal(
     const TransformPaintPropertyNode* destination,
     bool& success) {
   DCHECK(source && destination);
-  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, (TransformationMatrix()));
-  DEFINE_STATIC_LOCAL(TransformationMatrix, temp, (TransformationMatrix()));
+  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, ());
+  DEFINE_STATIC_LOCAL(TransformationMatrix, temp, ());
+
+  source = source->Unalias();
+  destination = destination->Unalias();
 
   if (source == destination) {
     success = true;
     return identity;
+  }
+
+  if (source->Parent() && destination == source->Parent()->Unalias() &&
+      // The result will be translate(origin)*matrix*translate(-origin) which
+      // equals to matrix if the origin is zero or if the matrix is just
+      // identity or 2d translation.
+      (source->Origin().IsZero() || source->IsIdentityOr2DTranslation())) {
+    success = true;
+    return source->Matrix();
   }
 
   const GeometryMapperTransformCache& source_cache =
@@ -77,7 +89,22 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   const GeometryMapperTransformCache& destination_cache =
       destination->GetTransformCache();
 
-  // Case 1: Check if source and destination are known to be coplanar.
+  // Case 1a (fast path of case 1b): check if source and destination are under
+  // the same 2d translation root.
+  if (source_cache.root_of_2d_translation() ==
+      destination_cache.root_of_2d_translation()) {
+    success = true;
+    if (source == destination_cache.root_of_2d_translation())
+      return destination_cache.from_2d_translation_root();
+    if (destination == source_cache.root_of_2d_translation())
+      return source_cache.to_2d_translation_root();
+    temp = destination_cache.from_2d_translation_root();
+    temp.Translate(source_cache.to_2d_translation_root().E(),
+                   source_cache.to_2d_translation_root().F());
+    return temp;
+  }
+
+  // Case 1b: Check if source and destination are known to be coplanar.
   // Even if destination may have invertible screen projection,
   // this formula is likely to be numerically more stable.
   if (source_cache.plane_root() == destination_cache.plane_root()) {
@@ -94,6 +121,9 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   // Case 2: Check if we can fallback to the canonical definition of
   // flatten(destination_to_screen)^-1 * flatten(source_to_screen)
   // If flatten(destination_to_screen)^-1 is invalid, we are out of luck.
+  // Screen transform data are updated lazily because they are rarely used.
+  source->UpdateScreenTransform();
+  destination->UpdateScreenTransform();
   if (!destination_cache.projection_from_screen_is_valid()) {
     success = false;
     return identity;
@@ -115,18 +145,6 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   return temp;
 }
 
-void GeometryMapper::SourceToDestinationRect(
-    const TransformPaintPropertyNode* source_transform_node,
-    const TransformPaintPropertyNode* destination_transform_node,
-    FloatRect& mapping_rect) {
-  bool success = false;
-  const TransformationMatrix& source_to_destination =
-      SourceToDestinationProjectionInternal(
-          source_transform_node, destination_transform_node, success);
-  mapping_rect =
-      success ? source_to_destination.MapRect(mapping_rect) : FloatRect();
-}
-
 bool GeometryMapper::LocalToAncestorVisualRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
@@ -145,8 +163,9 @@ bool GeometryMapper::PointVisibleInAncestorSpace(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     const FloatPoint& local_point) {
-  for (const auto* clip = local_state.Clip();
-       clip && clip != ancestor_state.Clip(); clip = clip->Parent()) {
+  auto* ancestor_clip = ancestor_state.Clip()->Unalias();
+  for (const auto* clip = local_state.Clip()->Unalias();
+       clip && clip != ancestor_clip; clip = SafeUnalias(clip->Parent())) {
     FloatPoint mapped_point =
         SourceToDestinationProjection(local_state.Transform(),
                                       clip->LocalTransformSpace())
@@ -175,7 +194,8 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     return true;
   }
 
-  if (local_state.Effect() != ancestor_state.Effect()) {
+  if (SafeUnalias(local_state.Effect()) !=
+      SafeUnalias(ancestor_state.Effect())) {
     return SlowLocalToAncestorVisualRectWithEffects(
         local_state, ancestor_state, rect_to_map, clip_behavior,
         inclusive_behavior, success);
@@ -236,8 +256,10 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
   PropertyTreeState last_transform_and_clip_state(local_state.Transform(),
                                                   local_state.Clip(), nullptr);
 
-  for (const auto* effect = local_state.Effect();
-       effect && effect != ancestor_state.Effect(); effect = effect->Parent()) {
+  auto* ancestor_effect = ancestor_state.Effect()->Unalias();
+  for (const auto* effect = local_state.Effect()->Unalias();
+       effect && effect != ancestor_effect;
+       effect = SafeUnalias(effect->Parent())) {
     if (!effect->HasFilterThatMovesPixels())
       continue;
 
@@ -272,7 +294,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     OverlayScrollbarClipBehavior clip_behavior) {
-  if (local_state.Clip() == ancestor_state.Clip())
+  if (local_state.Clip()->Unalias() == ancestor_state.Clip()->Unalias())
     return FloatClipRect();
 
   bool success = false;
@@ -282,7 +304,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   DCHECK(success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
-  if (local_state.Effect() != ancestor_state.Effect())
+  if (SafeUnalias(local_state.Effect()) != SafeUnalias(ancestor_state.Effect()))
     result.ClearIsTight();
 
   return result;
@@ -290,6 +312,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
 
 static FloatClipRect GetClipRect(const ClipPaintPropertyNode* clip_node,
                                  OverlayScrollbarClipBehavior clip_behavior) {
+  clip_node = clip_node->Unalias();
   FloatClipRect clip_rect(
       UNLIKELY(clip_behavior == kExcludeOverlayScrollbarSizeForHitTesting)
           ? clip_node->ClipRectExcludingOverlayScrollbars()
@@ -306,12 +329,14 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     OverlayScrollbarClipBehavior clip_behavior,
     InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
+  descendant = descendant->Unalias();
+  ancestor_clip = ancestor_clip->Unalias();
   if (descendant == ancestor_clip) {
     success = true;
     return FloatClipRect();
   }
-
-  if (descendant->Parent() == ancestor_clip &&
+  ancestor_transform = ancestor_transform->Unalias();
+  if (SafeUnalias(descendant->Parent()) == ancestor_clip &&
       descendant->LocalTransformSpace() == ancestor_transform) {
     success = true;
     return GetClipRect(descendant, clip_behavior);
@@ -337,7 +362,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     }
 
     intermediate_nodes.push_back(clip_node);
-    clip_node = clip_node->Parent();
+    clip_node = SafeUnalias(clip_node->Parent());
   }
   if (!clip_node) {
     success = false;

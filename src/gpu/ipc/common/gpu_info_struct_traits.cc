@@ -258,6 +258,18 @@ bool StructTraits<
   out->is_scaling_supported = data.is_scaling_supported();
   return data.ReadFormat(&out->format);
 }
+
+// static
+bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
+                  gpu::Dx12VulkanVersionInfo>::
+    Read(gpu::mojom::Dx12VulkanVersionInfoDataView data,
+         gpu::Dx12VulkanVersionInfo* out) {
+  out->supports_dx12 = data.supports_dx12();
+  out->supports_vulkan = data.supports_vulkan();
+  out->d3d12_feature_level = data.d3d12_feature_level();
+  out->vulkan_version = data.vulkan_version();
+  return true;
+}
 #endif
 
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
@@ -285,10 +297,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 #if defined(OS_WIN)
   out->direct_composition = data.direct_composition();
   out->supports_overlays = data.supports_overlays();
-  out->supports_dx12 = data.supports_dx12();
-  out->supports_vulkan = data.supports_vulkan();
-  out->d3d12_feature_level = data.d3d12_feature_level();
-  out->vulkan_version = data.vulkan_version();
 #endif
 
   return data.ReadInitializationTime(&out->initialization_time) &&
@@ -309,6 +317,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 #if defined(OS_WIN)
          data.ReadOverlayCapabilities(&out->overlay_capabilities) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
+         data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif
          data.ReadVideoDecodeAcceleratorCapabilities(
              &out->video_decode_accelerator_capabilities) &&

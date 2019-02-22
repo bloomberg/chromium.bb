@@ -9,6 +9,10 @@
 
 #import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
 
+namespace infobars {
+class InfoBarDelegate;
+}  // namespace infobars
+
 class InfoBarControllerDelegate;
 @protocol InfoBarViewSizing;
 
@@ -36,6 +40,14 @@ class InfoBarControllerDelegate;
 - (UIView<InfoBarViewSizing>*)view;
 
 @property(nonatomic, assign) InfoBarControllerDelegate* delegate;  // weak
+
+@property(nonatomic, readonly)
+    infobars::InfoBarDelegate* infoBarDelegate;  // weak
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithInfoBarDelegate:
+    (infobars::InfoBarDelegate*)infoBarDelegate NS_DESIGNATED_INITIALIZER;
 
 @end
 

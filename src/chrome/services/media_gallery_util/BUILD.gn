@@ -26,6 +26,13 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
   ]
 
+  if (is_android) {
+    sources += [
+      "media_parser_android.cc",
+      "media_parser_android.h",
+    ]
+  }
+
   public_deps = [
     "//chrome/services/media_gallery_util/public/mojom",
     "//services/service_manager/public/cpp",
@@ -35,6 +42,27 @@ source_set("lib") {
     deps += [
       "//third_party/ffmpeg",
       "//third_party/ffmpeg:ffmpeg_features",
+    ]
+  }
+}
+
+if (is_android) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "media_parser_android_unittest.cc",
+    ]
+
+    data = [
+      "//media/test/data/bear.mp4",
+      "//media/test/data/bear-vp8-webvtt.webm",
+      "//media/test/data/bear-vp8a.webm",
+      "//media/test/data/sfx.mp3",
+    ]
+
+    deps = [
+      ":lib",
+      "//testing/gtest",
     ]
   }
 }

@@ -271,7 +271,7 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 }
 
 // static
-bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
   return true;
 }
 

@@ -4,9 +4,11 @@
 #ifndef SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
 
+#include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "services/viz/privileged/interfaces/compositing/renderer_settings.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 template <>
@@ -79,6 +81,12 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
   static bool requires_alpha_channel(const viz::RendererSettings& input) {
     return input.requires_alpha_channel;
   }
+
+#if defined(OS_ANDROID)
+  static gfx::Size initial_screen_size(const viz::RendererSettings& input) {
+    return input.initial_screen_size;
+  }
+#endif
 
   static bool Read(viz::mojom::RendererSettingsDataView data,
                    viz::RendererSettings* out);

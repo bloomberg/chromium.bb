@@ -43,11 +43,6 @@ const int kWaitForReleaseDelayMs = 500;
 
 GLenum GLInternalFormat(gfx::BufferFormat format) {
   const GLenum kGLInternalFormats[] = {
-      GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD,  // ATC
-      GL_COMPRESSED_RGB_S3TC_DXT1_EXT,     // ATCIA
-      GL_COMPRESSED_RGB_S3TC_DXT1_EXT,     // DXT1
-      GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,    // DXT5
-      GL_ETC1_RGB8_OES,                    // ETC1
       GL_R8_EXT,                           // R_8
       GL_R16_EXT,                          // R_16
       GL_RG8_EXT,                          // RG_88

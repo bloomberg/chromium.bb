@@ -34,6 +34,7 @@ from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 
+FORCE_BUILD_PACKAGES = '10774.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -53,12 +54,29 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
       build_root: Fully qualified path to use as a string.
     """
     super(WorkspaceStageBase, self).__init__(
-        builder_run, build_root=build_root, **kwargs)
+        builder_run, build_root=build_root,
+        **kwargs)
 
     self._orig_root = builder_run.buildroot
 
+  def GetWorkspaceRepo(self):
+    """Fetch a repo object for the workspace.
+
+    Returns:
+      repository.RepoRepository instance for the workspace.
+    """
+    # TODO: Properly select the manifest. Currently hard coded to internal
+    # branch checkouts.
+    site_config = config_lib.GetConfig()
+    manifest_url = site_config.params['MANIFEST_INT_URL']
+
+    return repository.RepoRepository(
+        manifest_url, self._build_root,
+        branch=self._run.config.workspace_branch,
+        git_cache_dir=self._run.options.git_cache_dir)
+
   def GetWorkspaceVersionInfo(self):
-    """WorkspaceVersion
+    """Fetch a VersionInfo for the workspace.
 
     Only valid after the workspace has been synced.
 
@@ -66,6 +84,18 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
       manifest-version.VersionInfo object based on the workspace checkout.
     """
     return manifest_version.VersionInfo.from_repo(self._build_root)
+
+  def BeforeLimit(self, limit):
+    """Is worksapce version older that cutoff limit?
+
+    Args:
+      limit: String version of format '123.0.0'
+
+    Returns:
+      bool: True if workspace has older version than limit.
+    """
+    version_info = self.GetWorkspaceVersionInfo()
+    return version_info < manifest_version.VersionInfo(limit)
 
 
 class WorkspaceCleanStage(WorkspaceStageBase):
@@ -77,9 +107,7 @@ class WorkspaceCleanStage(WorkspaceStageBase):
     """Clean stuff!."""
     logging.info('Cleaning: %s', self._build_root)
 
-    site_config = config_lib.GetConfig()
-    manifest_url = site_config.params['MANIFEST_INT_URL']
-    repo = repository.RepoRepository(manifest_url, self._build_root)
+    repo = self.GetWorkspaceRepo()
 
     #
     # TODO: This logic is copied from cbuildbot_launch, need to share.
@@ -111,34 +139,12 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, build_root, workspace_branch, **kwargs):
-    """Initializer.
-
-    Args:
-      builder_run: BuilderRun object.
-      build_root: Fully qualified path to use as a string.
-      workspace_branch: branch to sync into the workspace.
-    """
-    super(WorkspaceSyncStage, self).__init__(
-        builder_run, build_root, **kwargs)
-    self.workspace_branch = workspace_branch
-
   def PerformStage(self):
     """Sync stuff!."""
     logging.info('Syncing %s branch into %s',
-                 self.workspace_branch, self._build_root)
+                 self._run.config.workspace_branch, self._build_root)
 
-    #
-    # TODO: This logic is copied from cbuildbot_launch, need to share.
-    #
-
-    site_config = config_lib.GetConfig()
-    manifest_url = site_config.params['MANIFEST_INT_URL']
-    repo = repository.RepoRepository(
-        manifest_url, self._build_root,
-        branch=self.workspace_branch,
-        git_cache_dir=self._run.options.git_cache_dir)
-
+    repo = self.GetWorkspaceRepo()
     repo.Sync(detach=True)
 
 
@@ -168,6 +174,49 @@ class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
                        workspace=self._build_root)
 
 
+class WorkspacePublishBuildspecStage(WorkspaceStageBase):
+  """Increment the ChromeOS version, and publish a buildspec."""
+
+  def PerformStage(self):
+    """Increment ChromeOS version, and publish buildpec."""
+    site_params = config_lib.GetSiteParams()
+
+    # Use the manifest-versions directories that exist in the original
+    # checkout. They may already be populated.
+    int_manifest_versions_path = os.path.join(
+        self._orig_root, site_params.INTERNAL_MANIFEST_VERSIONS_PATH)
+    manifest_version.RefreshManifestCheckout(
+        int_manifest_versions_path,
+        site_params.MANIFEST_VERSIONS_INT_GOB_URL)
+
+    ext_manifest_versions_path = os.path.join(
+        self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
+    manifest_version.RefreshManifestCheckout(
+        ext_manifest_versions_path,
+        site_params.MANIFEST_VERSIONS_GOB_URL)
+
+    repo = self.GetWorkspaceRepo()
+
+    # TODO: Add 'patch' support somehow,
+    if repo.branch == 'master':
+      incr_type = 'build'
+    else:
+      incr_type = 'branch'
+
+    build_spec_path = manifest_version.GenerateAndPublishOfficialBuildSpec(
+        repo,
+        incr_type,
+        manifest_versions_int=int_manifest_versions_path,
+        manifest_versions_ext=ext_manifest_versions_path,
+        dryrun=self._run.options.debug)
+
+    if self._run.options.debug:
+      msg = 'DEBUG: Would have defined: %s' % build_spec_path
+    else:
+      msg = 'Defined: %s' % build_spec_path
+
+    logging.PrintBuildbotStepText(msg)
+
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""
 
@@ -181,7 +230,7 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
     cmd = ['cros_sdk', '--create']
     commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
 
-    post_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
+    post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     logging.PrintBuildbotStepText(post_ver)
 
 
@@ -194,24 +243,27 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
-        chrome_binhost_only=self._run.config.chrome_binhost_only,
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env, chroot_upgrade=True,
         profile=self._run.options.profile or self._run.config.profile)
 
 
-class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage):
+class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
+                                  WorkspaceStageBase):
   """Build Chromium OS packages."""
 
   category = constants.PRODUCT_OS_STAGE
 
   def PerformStage(self):
+    usepkg = self._run.config.usepkg_build_packages
+    if self.BeforeLimit(FORCE_BUILD_PACKAGES):
+      usepkg = False
+
     packages = self.GetListOfPackagesToBuild()
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=False,
-                   usepkg=self._run.config.usepkg_build_packages,
-                   chrome_binhost_only=self._run.config.chrome_binhost_only,
+                   usepkg=usepkg,
                    packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,

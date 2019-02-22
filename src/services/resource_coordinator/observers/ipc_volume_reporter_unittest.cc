@@ -55,7 +55,8 @@ TEST_F(IPCVolumeReporterTest, Basic) {
   cu_graph.page->SetUKMSourceId(1);
   cu_graph.page->OnFaviconUpdated();
   cu_graph.page->OnTitleUpdated();
-  cu_graph.page->OnMainFrameNavigationCommitted(1u, "http://example.org");
+  cu_graph.page->OnMainFrameNavigationCommitted(
+      ResourceCoordinatorClock::NowTicks(), 1u, "http://example.org");
 
   cu_graph.process->SetCPUUsage(1.0);
   cu_graph.process->SetExpectedTaskQueueingDuration(
@@ -76,7 +77,7 @@ TEST_F(IPCVolumeReporterTest, Basic) {
   histogram_tester_.ExpectTotalCount("ResourceCoordinator.IPCPerMinute.Process",
                                      1);
   histogram_tester_.ExpectUniqueSample(
-      "ResourceCoordinator.IPCPerMinute.Process", 5, 1);
+      "ResourceCoordinator.IPCPerMinute.Process", 4, 1);
 
   EXPECT_TRUE(reporter_->mock_timer()->IsRunning());
 };

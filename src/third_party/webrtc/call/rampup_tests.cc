@@ -208,7 +208,8 @@ void RampUpTester::ModifyVideoConfigs(
     recv_config.rtp.extensions = send_config->rtp.extensions;
     recv_config.decoders.reserve(1);
     recv_config.decoders[0].payload_type = send_config->rtp.payload_type;
-    recv_config.decoders[0].payload_name = send_config->rtp.payload_name;
+    recv_config.decoders[0].video_format =
+        SdpVideoFormat(send_config->rtp.payload_name);
 
     recv_config.rtp.remote_ssrc = video_ssrcs_[i];
     recv_config.rtp.nack.rtp_history_ms = send_config->rtp.nack.rtp_history_ms;
@@ -306,7 +307,6 @@ void RampUpTester::PollStats() {
     if (sender_call_) {
       Call::Stats stats = sender_call_->GetStats();
 
-      EXPECT_GE(stats.send_bandwidth_bps, start_bitrate_bps_);
       EXPECT_GE(expected_bitrate_bps_, 0);
       if (stats.send_bandwidth_bps >= expected_bitrate_bps_ &&
           (min_run_time_ms_ == -1 ||

@@ -130,8 +130,8 @@ class MetricsServiceClient {
   // Returns whether UKM notification listeners were attached to all profiles.
   virtual bool AreNotificationListenersEnabledOnAllProfiles();
 
-  // Gets the Chrome package name for Android. Returns empty string for other
-  // platforms.
+  // Gets Chrome's package name in Android Chrome, or the host app's package
+  // name in Android WebView, or an empty string on other platforms.
   virtual std::string GetAppPackageName();
 
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.

@@ -30,6 +30,7 @@ PACKAGE_FILTER = [
     "libasound.so",
     "libatk-1.0.so",
     "libatk-bridge-2.0.so",
+    "libatspi.so.0",
     "libc.so",
     "libcairo.so",
     "libcups.so",

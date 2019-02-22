@@ -208,8 +208,7 @@ CPDF_ContentParser::Stage CPDF_ContentParser::Parse() {
   if (m_StreamSegmentOffsets.empty())
     m_StreamSegmentOffsets.push_back(0);
 
-  m_CurrentOffset += m_pParser->Parse(m_pData.Get() + m_CurrentOffset,
-                                      m_Size - m_CurrentOffset,
+  m_CurrentOffset += m_pParser->Parse(m_pData.Get(), m_Size, m_CurrentOffset,
                                       PARSE_STEP_LIMIT, m_StreamSegmentOffsets);
   return Stage::kParse;
 }
@@ -235,9 +234,7 @@ CPDF_ContentParser::Stage CPDF_ContentParser::CheckClip() {
     CFX_PointF point0 = ClipPath.GetPoint(0);
     CFX_PointF point2 = ClipPath.GetPoint(2);
     CFX_FloatRect old_rect(point0.x, point0.y, point2.x, point2.y);
-    CFX_FloatRect obj_rect(pObj->m_Left, pObj->m_Bottom, pObj->m_Right,
-                           pObj->m_Top);
-    if (old_rect.Contains(obj_rect))
+    if (old_rect.Contains(pObj->GetRect()))
       pObj->m_ClipPath.SetNull();
   }
   return Stage::kComplete;

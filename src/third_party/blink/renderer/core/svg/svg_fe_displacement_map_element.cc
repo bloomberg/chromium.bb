@@ -41,9 +41,7 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag,
                                            document),
-      scale_(SVGAnimatedNumber::Create(this,
-                                       SVGNames::scaleAttr,
-                                       SVGNumber::Create(0))),
+      scale_(SVGAnimatedNumber::Create(this, SVGNames::scaleAttr, 0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
       in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
       x_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(

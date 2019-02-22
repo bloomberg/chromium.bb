@@ -21,7 +21,7 @@ except ImportError:
 
 
 # Used with the settitle helper below.
-_SCRIPT_NAME = os.path.basename(main.__file__)
+_SCRIPT_NAME = os.path.basename(getattr(main, '__file__', 'chromite'))
 
 
 # Used to distinguish between different runs.

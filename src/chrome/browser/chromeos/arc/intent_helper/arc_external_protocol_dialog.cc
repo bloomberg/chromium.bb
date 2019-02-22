@@ -78,6 +78,13 @@ bool IsChromeAnAppCandidate(
   return false;
 }
 
+// Returns true if |handlers| only contains Chrome as an app candidate for the
+// current navigation.
+bool IsChromeOnlyAppCandidate(
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
+  return handlers.size() == 1 && IsChromeAnAppCandidate(handlers);
+}
+
 // Returns true if the |handler| is for opening ARC IME settings page.
 bool ForOpeningArcImeSettingsPage(const mojom::IntentHandlerInfoPtr& handler) {
   return (handler->package_name == kPackageForOpeningArcImeSettingsPage) &&
@@ -498,8 +505,12 @@ void OnUrlHandlerList(int render_process_host_id,
       web_contents ? ArcIntentHelperBridge::GetForBrowserContext(
                          web_contents->GetBrowserContext())
                    : nullptr;
-  if (!instance || !intent_helper_bridge) {
-    // ARC is not running anymore. Show the Chrome OS dialog.
+
+  // We only reach here if Chrome doesn't think it can handle the URL. If ARC is
+  // not running anymore, or Chrome is the only candidate returned, show the
+  // usual Chrome OS dialog that says we cannot handle the URL.
+  if (!instance || !intent_helper_bridge ||
+      IsChromeOnlyAppCandidate(handlers)) {
     ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);
     return;
   }

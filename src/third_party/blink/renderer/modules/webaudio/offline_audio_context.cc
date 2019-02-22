@@ -50,13 +50,12 @@ OfflineAudioContext* OfflineAudioContext::Create(
     float sample_rate,
     ExceptionState& exception_state) {
   // FIXME: add support for workers.
-  if (!context || !context->IsDocument()) {
+  auto* document = DynamicTo<Document>(context);
+  if (!document) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Workers are not supported.");
     return nullptr;
   }
-
-  Document* document = ToDocument(context);
 
   if (!number_of_frames) {
     exception_state.ThrowDOMException(
@@ -222,12 +221,6 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
   return complete_resolver_->Promise();
 }
 
-ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state) {
-  LOG(FATAL) << "This CANNOT be called on OfflineAudioContext; this is only to "
-                "implement the pure virtual interface from BaseAudioContext.";
-  return ScriptPromise();
-}
-
 ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
                                                   double when) {
   DCHECK(IsMainThread());
@@ -379,6 +372,8 @@ void OfflineAudioContext::FireCompletionEvent() {
   }
 
   is_rendering_started_ = false;
+
+  PerformCleanupOnMainThread();
 }
 
 bool OfflineAudioContext::HandlePreOfflineRenderTasks() {

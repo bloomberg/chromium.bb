@@ -157,27 +157,33 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
 
 }  // namespace
 
-GpuChildThread::GpuChildThread(std::unique_ptr<gpu::GpuInit> gpu_init,
+GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
+                               std::unique_ptr<gpu::GpuInit> gpu_init,
                                viz::VizMainImpl::LogMessages log_messages)
-    : GpuChildThread(GetOptions(), std::move(gpu_init)) {
+    : GpuChildThread(std::move(quit_closure),
+                     GetOptions(),
+                     std::move(gpu_init)) {
   viz_main_.SetLogMessagesForHost(std::move(log_messages));
 }
 
 GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
-    : GpuChildThread(ChildThreadImpl::Options::Builder()
+    : GpuChildThread(base::DoNothing(),
+                     ChildThreadImpl::Options::Builder()
                          .InBrowserProcess(params)
                          .AutoStartServiceManagerConnection(false)
                          .ConnectToBrowser(true)
                          .Build(),
                      std::move(gpu_init)) {}
 
-GpuChildThread::GpuChildThread(const ChildThreadImpl::Options& options,
+GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
+                               const ChildThreadImpl::Options& options,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
-    : ChildThreadImpl(options),
+    : ChildThreadImpl(MakeQuitSafelyClosure(), options),
       viz_main_(this,
                 CreateVizMainDependencies(GetConnector()),
                 std::move(gpu_init)),
+      quit_closure_(std::move(quit_closure)),
       weak_factory_(this) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -272,6 +278,7 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
   service_factory_.reset(new GpuServiceFactory(
       gpu_service->gpu_preferences(),
       gpu_service->gpu_channel_manager()->gpu_driver_bug_workarounds(),
+      gpu_service->gpu_feature_info(),
       gpu_service->media_gpu_channel_manager()->AsWeakPtr(),
       std::move(overlay_factory_cb)));
 
@@ -288,6 +295,10 @@ void GpuChildThread::PostCompositorThreadCreated(
   auto* gpu_client = GetContentClient()->gpu();
   if (gpu_client)
     gpu_client->PostCompositorThreadCreated(task_runner);
+}
+
+void GpuChildThread::QuitMainMessageLoop() {
+  quit_closure_.Run();
 }
 
 void GpuChildThread::BindServiceFactoryRequest(
@@ -313,6 +324,28 @@ void GpuChildThread::OnPurgeMemory() {
   if (viz_main_.discardable_shared_memory_manager())
     viz_main_.discardable_shared_memory_manager()->ReleaseFreeMemory();
   SkGraphics::PurgeAllCaches();
+}
+
+void GpuChildThread::QuitSafelyHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // Post a new task (even if we're called on the |task_runner|'s thread) to
+  // ensure that we are post-init.
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        ChildThreadImpl* current_child_thread = ChildThreadImpl::current();
+        if (!current_child_thread)
+          return;
+        GpuChildThread* gpu_child_thread =
+            static_cast<GpuChildThread*>(current_child_thread);
+        gpu_child_thread->viz_main_.ExitProcess();
+      }));
+}
+
+// Returns a closure which calls into the VizMainImpl to perform shutdown
+// before quitting the main message loop. Must be called on the main thread.
+base::RepeatingClosure GpuChildThread::MakeQuitSafelyClosure() {
+  return base::BindRepeating(&GpuChildThread::QuitSafelyHelper,
+                             base::ThreadTaskRunnerHandle::Get());
 }
 
 #if defined(OS_ANDROID)

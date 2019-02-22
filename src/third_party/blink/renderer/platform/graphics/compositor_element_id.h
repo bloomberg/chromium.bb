@@ -19,6 +19,7 @@ enum class CompositorElementIdNamespace {
   kPrimary,
   kUniqueObjectId,
   kScroll,
+  kStickyTranslation,
   // The following are SPv2-only.
   kEffectFilter,
   kEffectMask,

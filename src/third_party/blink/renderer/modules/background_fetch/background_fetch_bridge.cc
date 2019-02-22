@@ -64,10 +64,11 @@ void BackgroundFetchBridge::Fetch(
     Vector<WebServiceWorkerRequest> requests,
     mojom::blink::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
+    mojom::blink::BackgroundFetchUkmDataPtr ukm_data,
     RegistrationCallback callback) {
   GetService()->Fetch(
       GetSupplementable()->WebRegistration()->RegistrationId(), developer_id,
-      std::move(requests), std::move(options), icon,
+      std::move(requests), std::move(options), icon, std::move(ukm_data),
       WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
                 WrapPersistent(this), WTF::Passed(std::move(callback))));
 }
@@ -112,7 +113,7 @@ void BackgroundFetchBridge::DidGetRegistration(
 
   if (registration) {
     DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
-    DCHECK_EQ(registration->state(), "pending");
+    DCHECK_EQ(registration->result(), "");
     registration->Initialize(GetSupplementable());
   }
 

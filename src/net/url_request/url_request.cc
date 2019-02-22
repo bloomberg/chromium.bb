@@ -479,7 +479,7 @@ void URLRequest::set_first_party_url_policy(
 
 void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
   DCHECK(!is_pending_);
-  DCHECK(!initiator.has_value() || initiator.value().unique() ||
+  DCHECK(!initiator.has_value() || initiator.value().opaque() ||
          initiator.value().GetURL().is_valid());
   initiator_ = initiator;
 }
@@ -963,7 +963,6 @@ void URLRequest::Redirect(
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
   site_for_cookies_ = redirect_info.new_site_for_cookies;
-  token_binding_referrer_ = redirect_info.referred_token_binding_host;
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;
@@ -1077,7 +1076,9 @@ bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
   bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_get_cookies = network_delegate_->CanGetCookies(*this, cookie_list);
+    can_get_cookies =
+        network_delegate_->CanGetCookies(*this, cookie_list,
+                                         /*allowed_from_caller=*/true);
   }
 
   if (!can_get_cookies)
@@ -1090,7 +1091,9 @@ bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   bool can_set_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_set_cookies = network_delegate_->CanSetCookie(*this, cookie, options);
+    can_set_cookies =
+        network_delegate_->CanSetCookie(*this, cookie, options,
+                                        /*allowed_from_caller=*/true);
   }
   if (!can_set_cookies)
     net_log_.AddEvent(NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);

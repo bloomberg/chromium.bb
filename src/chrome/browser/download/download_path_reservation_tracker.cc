@@ -296,7 +296,7 @@ PathValidationResult CreateReservation(const CreateReservationInfo& info,
 // associated with |key| to |new_path|.
 void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
   DCHECK(g_reservation_map != NULL);
-  ReservationMap::iterator iter = g_reservation_map->find(key);
+  auto iter = g_reservation_map->find(key);
   if (iter != g_reservation_map->end()) {
     iter->second = new_path;
   } else {

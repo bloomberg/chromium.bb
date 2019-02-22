@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -23,6 +24,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -77,8 +79,8 @@ class CacheCounterTest : public PlatformTest {
     current_operation_ = OPERATION_ADD_ENTRY;
     next_step_ = STEP_GET_BACKEND;
 
-    web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::IO},
         base::BindOnce(&CacheCounterTest::CacheOperationStep,
                        base::Unretained(this), net::OK));
     WaitForIOThread();
@@ -89,8 +91,8 @@ class CacheCounterTest : public PlatformTest {
     current_operation_ = OPERATION_CLEAR_CACHE;
     next_step_ = STEP_GET_BACKEND;
 
-    web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::IO},
         base::BindOnce(&CacheCounterTest::CacheOperationStep,
                        base::Unretained(this), net::OK));
     WaitForIOThread();
@@ -195,8 +197,7 @@ class CacheCounterTest : public PlatformTest {
           next_step_ = STEP_CALLBACK;
 
           std::string data = "entry data";
-          scoped_refptr<net::StringIOBuffer> buffer =
-              new net::StringIOBuffer(data);
+          auto buffer = base::MakeRefCounted<net::StringIOBuffer>(data);
 
           rv = entry_->WriteData(
               0, 0, buffer.get(), data.size(),
@@ -213,7 +214,7 @@ class CacheCounterTest : public PlatformTest {
           if (current_operation_ == OPERATION_ADD_ENTRY)
             entry_->Close();
 
-          web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+          base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                    base::BindOnce(&CacheCounterTest::Callback,
                                                   base::Unretained(this)));
 

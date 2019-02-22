@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer.h"
@@ -18,6 +17,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 #if defined(OS_WIN)
@@ -62,11 +62,14 @@ WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
 // so that the location bar shows through.
 class TopBackgroundView : public views::View {
  public:
-  explicit TopBackgroundView(SkColor color) {
-    auto background =
-        std::make_unique<BackgroundWith1PxBorder>(SK_ColorTRANSPARENT, color);
-    background->set_blend_mode(SkBlendMode::kSrc);
-    SetBackground(std::move(background));
+  TopBackgroundView(const LocationBarView* location_bar,
+                    SkColor background_color) {
+    // Paint a stroke of the background color as a 1 px border to hide the
+    // underlying antialiased location bar/toolbar edge.  The round rect here is
+    // not antialiased, since the goal is to completely cover the underlying
+    // pixels, and AA would let those on the edge partly bleed through.
+    SetBackground(location_bar->CreateRoundRectBackground(
+        SK_ColorTRANSPARENT, background_color, SkBlendMode::kSrc, false));
   }
 
 #if !defined(USE_AURA)
@@ -116,8 +119,9 @@ gfx::Insets GetContentInsets() {
 
 }  // namespace
 
-RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
-                                                       OmniboxTint tint)
+RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
+    views::View* contents,
+    const LocationBarView* location_bar)
     : contents_(contents) {
   // Host the contents in its own View to simplify layout and clipping.
   contents_host_ = new views::View();
@@ -125,7 +129,8 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
   // Use a solid background. Note this is clipped to get rounded corners.
-  SkColor background_color =
+  const OmniboxTint tint = location_bar->tint();
+  const SkColor background_color =
       GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));
 
@@ -141,7 +146,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
   contents_mask_->layer()->SetFillsBoundsOpaquely(false);
   contents_host_->layer()->SetMaskLayer(contents_mask_->layer());
 
-  top_background_ = new TopBackgroundView(background_color);
+  top_background_ = new TopBackgroundView(location_bar, background_color);
   contents_host_->AddChildView(top_background_);
   contents_host_->AddChildView(contents_);
 
@@ -191,15 +196,9 @@ int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
 
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
-  switch (ui::MaterialDesignController::GetMode()) {
-    case ui::MaterialDesignController::MATERIAL_REFRESH:
-      return gfx::Insets(4, 6);
-    case ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH:
-      return gfx::Insets(6, 1, 5, 1);
-    default:
-      return gfx::Insets(4);
-  }
-  NOTREACHED();
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? gfx::Insets(6, 1, 5, 1)
+             : gfx::Insets(4, 6);
 }
 
 // static
@@ -236,7 +235,13 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
   // portion of the Widget to pass through to the omnibox beneath it.
   auto results_targeter = std::make_unique<aura::WindowTargeter>();
   results_targeter->SetInsets(GetInsets() + GetContentInsets());
-  GetWidget()->GetNativeWindow()->SetEventTargeter(std::move(results_targeter));
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  if (features::IsUsingWindowService()) {
+    // The WindowService ends up creating an additional window (by way of
+    // DesktopNativeWidgetAura). The targeter needs to be installed on it.
+    window = window->GetRootWindow();
+  }
+  window->SetEventTargeter(std::move(results_targeter));
 #endif  // USE_AURA
 }
 

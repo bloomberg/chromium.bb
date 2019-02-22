@@ -12,30 +12,55 @@
 
 namespace blink {
 
-// Maintains the parent element stack (and bloom filter) inside recalcStyle.
-class SelectorFilterParentScope final {
+// Maintains the parent element stack (and bloom filter) inside RecalcStyle.
+// SelectorFilterParentScope for the parent element is added to the stack before
+// recalculating style for its children. The bloom filter is populated lazily by
+// PushParentIfNeeded().
+class CORE_EXPORT SelectorFilterParentScope {
   STACK_ALLOCATED();
 
  public:
-  explicit SelectorFilterParentScope(Element& parent);
+  explicit SelectorFilterParentScope(Element& parent)
+      : SelectorFilterParentScope(parent, ScopeType::kParent) {}
   ~SelectorFilterParentScope();
 
   static void EnsureParentStackIsPushed();
 
+ protected:
+  enum class ScopeType { kParent, kAncestors };
+  SelectorFilterParentScope(Element& parent, ScopeType scope);
+
  private:
   void PushParentIfNeeded();
+  void PushAncestors(Element&);
+  void PopAncestors(Element&);
 
   Member<Element> parent_;
-  bool pushed_;
+  bool pushed_ = false;
+  ScopeType scope_type_;
   SelectorFilterParentScope* previous_;
   Member<StyleResolver> resolver_;
 
   static SelectorFilterParentScope* current_scope_;
 };
 
-inline SelectorFilterParentScope::SelectorFilterParentScope(Element& parent)
+// When starting the style recalc from an element which is not the root, we push
+// an object of this class onto the stack to push all ancestors instead of
+// having to push a SelectorFilterParentScope for each of the ancestors.
+class CORE_EXPORT SelectorFilterAncestorScope final
+    : private SelectorFilterParentScope {
+  STACK_ALLOCATED();
+
+ public:
+  explicit SelectorFilterAncestorScope(Element& parent)
+      : SelectorFilterParentScope(parent, ScopeType::kAncestors) {}
+};
+
+inline SelectorFilterParentScope::SelectorFilterParentScope(
+    Element& parent,
+    ScopeType scope_type)
     : parent_(parent),
-      pushed_(false),
+      scope_type_(scope_type),
       previous_(current_scope_),
       resolver_(parent.GetDocument().GetStyleResolver()) {
   DCHECK(parent.GetDocument().InStyleRecalc());
@@ -47,6 +72,8 @@ inline SelectorFilterParentScope::~SelectorFilterParentScope() {
   if (!pushed_)
     return;
   resolver_->GetSelectorFilter().PopParent(*parent_);
+  if (scope_type_ == ScopeType::kAncestors)
+    PopAncestors(*parent_);
 }
 
 inline void SelectorFilterParentScope::EnsureParentStackIsPushed() {
@@ -57,8 +84,11 @@ inline void SelectorFilterParentScope::EnsureParentStackIsPushed() {
 inline void SelectorFilterParentScope::PushParentIfNeeded() {
   if (pushed_)
     return;
+  DCHECK(!previous_ || scope_type_ == ScopeType::kParent);
   if (previous_)
     previous_->PushParentIfNeeded();
+  if (scope_type_ == ScopeType::kAncestors)
+    PushAncestors(*parent_);
   resolver_->GetSelectorFilter().PushParent(*parent_);
   pushed_ = true;
 }

@@ -37,9 +37,8 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/add_event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
@@ -123,12 +122,13 @@ base::TimeDelta BlockedEventsWarningThreshold(ExecutionContext* context,
                                        PerformanceMonitor::kBlockedEvent);
 }
 
-void ReportBlockedEvent(ExecutionContext* context,
+void ReportBlockedEvent(EventTarget& target,
                         const Event& event,
                         RegisteredEventListener* registered_listener,
                         base::TimeDelta delayed) {
-  if (registered_listener->Callback()->GetType() !=
-      EventListener::kJSEventListenerType)
+  JSBasedEventListener* listener =
+      JSBasedEventListener::Cast(registered_listener->Callback());
+  if (!listener)
     return;
 
   String message_text = String::Format(
@@ -137,10 +137,9 @@ void ReportBlockedEvent(ExecutionContext* context,
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
       event.type().GetString().Utf8().data(), delayed.InMilliseconds());
-
   PerformanceMonitor::ReportGenericViolation(
-      context, PerformanceMonitor::kBlockedEvent, message_text, delayed,
-      GetFunctionLocation(context, registered_listener->Callback()));
+      target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
+      message_text, delayed, listener->GetSourceLocation(target));
   registered_listener->SetBlockedEventWarningEmitted();
 }
 
@@ -199,7 +198,7 @@ ServiceWorker* EventTarget::ToServiceWorker() {
 // because it will increase the size of EventTarget and all of its
 // subclasses with code that are mostly unnecessary for them,
 // resulting in a performance decrease.
-// We also don't use ImplementedAs=EventTargetImpl in EventTarget.idl
+// We also don't use ImplementedAs=EventTargetImpl in event_target.idl
 // because it will result in some complications with classes that are
 // currently derived from EventTarget.
 // Spec: https://dom.spec.whatwg.org/#dom-eventtarget-eventtarget
@@ -289,31 +288,33 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
       event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
       event_listener && !options.hasPassive()) {
-    if (V8AbstractEventListener* v8_listener =
-            V8AbstractEventListener::Cast(event_listener)) {
-      v8::Local<v8::Object> function = v8_listener->GetExistingListenerObject();
-      if (function->IsFunction() &&
-          strcmp("ssc_wheel",
-                 *v8::String::Utf8Value(
-                     v8::Isolate::GetCurrent(),
-                     v8::Local<v8::Function>::Cast(function)->GetName())) ==
-              0) {
-        options.setPassive(true);
-        if (executing_window) {
-          UseCounter::Count(executing_window->document(),
-                            WebFeature::kSmoothScrollJSInterventionActivated);
+    JSBasedEventListener* v8_listener =
+        JSBasedEventListener::Cast(event_listener);
+    if (!v8_listener)
+      return;
+    v8::Local<v8::Value> callback_object =
+        v8_listener->GetListenerObject(*this);
+    if (!callback_object.IsEmpty() && callback_object->IsFunction() &&
+        strcmp(
+            "ssc_wheel",
+            *v8::String::Utf8Value(
+                v8::Isolate::GetCurrent(),
+                v8::Local<v8::Function>::Cast(callback_object)->GetName())) ==
+            0) {
+      options.setPassive(true);
+      if (executing_window) {
+        UseCounter::Count(executing_window->document(),
+                          WebFeature::kSmoothScrollJSInterventionActivated);
 
-          executing_window->GetFrame()->Console().AddMessage(
-              ConsoleMessage::Create(
-                  kInterventionMessageSource, kWarningMessageLevel,
-                  "Registering mousewheel event as passive due to "
-                  "smoothscroll.js usage. The smoothscroll.js library is "
-                  "buggy, no longer necessary and degrades performance. See "
-                  "https://www.chromestatus.com/feature/5749447073988608"));
-        }
-
-        return;
+        executing_window->GetFrame()->Console().AddMessage(
+            ConsoleMessage::Create(
+                kInterventionMessageSource, kWarningMessageLevel,
+                "Registering mousewheel event as passive due to "
+                "smoothscroll.js usage. The smoothscroll.js library is "
+                "buggy, no longer necessary and degrades performance. See "
+                "https://www.chromestatus.com/feature/5749447073988608"));
       }
+      return;
     }
   }
 
@@ -402,8 +403,7 @@ bool EventTarget::AddEventListenerInternal(
       event_type, listener, options, &registered_listener);
   if (added) {
     AddedEventListener(event_type, registered_listener);
-    if (V8AbstractEventListener::Cast(listener) &&
-        IsInstrumentedForAsyncStack(event_type)) {
+    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
   }
@@ -478,7 +478,7 @@ bool EventTarget::RemoveEventListenerInternal(
   if (!d)
     return false;
 
-  size_t index_of_removed_listener;
+  wtf_size_t index_of_removed_listener;
   RegisteredEventListener registered_listener;
 
   if (!d->event_listener_map.Remove(event_type, listener, options,
@@ -521,7 +521,7 @@ RegisteredEventListener* EventTarget::GetAttributeRegisteredEventListener(
 
   for (auto& event_listener : *listener_vector) {
     EventListener* listener = event_listener.Callback();
-    if (listener->IsAttribute() &&
+    if (listener->IsEventHandler() &&
         listener->BelongsToTheCurrentWorld(GetExecutionContext()))
       return &event_listener;
   }
@@ -538,8 +538,7 @@ bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
     return false;
   }
   if (registered_listener) {
-    if (V8AbstractEventListener::Cast(listener) &&
-        IsInstrumentedForAsyncStack(event_type)) {
+    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
     registered_listener->SetCallback(listener);
@@ -788,8 +787,8 @@ bool EventTarget::FireEventListeners(Event& event,
   if (!context)
     return false;
 
-  size_t i = 0;
-  size_t size = entry.size();
+  wtf_size_t i = 0;
+  wtf_size_t size = entry.size();
   if (!d->firing_event_iterators)
     d->firing_event_iterators = std::make_unique<FiringEventIteratorVector>();
   d->firing_event_iterators->push_back(
@@ -814,11 +813,7 @@ bool EventTarget::FireEventListeners(Event& event,
     // EventTarget::removeEventListener.
     ++i;
 
-    if (event.eventPhase() == Event::kCapturingPhase &&
-        !registered_listener.Capture())
-      continue;
-    if (event.eventPhase() == Event::kBubblingPhase &&
-        registered_listener.Capture())
+    if (!registered_listener.ShouldFire(event))
       continue;
 
     EventListener* listener = registered_listener.Callback();
@@ -852,7 +847,7 @@ bool EventTarget::FireEventListeners(Event& event,
         entry[i - 1].Callback() == listener && !entry[i - 1].Passive() &&
         !entry[i - 1].BlockedEventWarningEmitted() &&
         !event.defaultPrevented()) {
-      ReportBlockedEvent(context, event, &entry[i - 1],
+      ReportBlockedEvent(*this, event, &entry[i - 1],
                          now - event.PlatformTimeStamp());
     }
 

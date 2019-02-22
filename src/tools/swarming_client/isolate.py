@@ -26,6 +26,7 @@ import sys
 
 import auth
 import isolate_format
+import isolate_storage
 import isolated_format
 import isolateserver
 import run_isolated
@@ -53,6 +54,15 @@ EXIT_CODE_UPLOAD_ERROR = 101
 
 # Supported version of *.isolated.gen.json files consumed by CMDbatcharchive.
 ISOLATED_GEN_JSON_VERSION = 1
+
+
+# Warning printed when variables are used. This is meant to reduce the use of
+# variables.
+_VARIABLE_WARNING = """\
+WARNING: --config-variables, --path-variables and --extra-variables
+will be unsupported soon. Please contact the LUCI team.
+https://crbug.com/907880
+"""
 
 
 class ExecutionError(Exception):
@@ -313,7 +323,8 @@ class SavedState(Flattenable):
 
     # The default algorithm used.
     self.OS = sys.platform
-    self.algo = isolated_format.SUPPORTED_ALGOS['sha-1']
+    self.algo_name = 'sha-1'
+    self.algo = isolated_format.SUPPORTED_ALGOS[self.algo_name]
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
@@ -376,7 +387,7 @@ class SavedState(Flattenable):
       return dict((k, data[k]) for k in ('h', 'l', 'm', 's') if k in data)
 
     out = {
-      'algo': isolated_format.SUPPORTED_ALGOS_REVERSE[self.algo],
+      'algo': self.algo_name,
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
       # The version of the .state file is different than the one of the
@@ -558,12 +569,14 @@ class CompleteState(object):
       follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept.
-    infiles = isolated_format.expand_directories_and_symlinks(
+    # TODO(maruel): This code is not smart enough to leverage the generator, so
+    # materialize the list.
+    infiles = list(isolated_format.expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
         tools.gen_blacklist(blacklist),
         follow_symlinks,
-        ignore_broken_items)
+        ignore_broken_items))
 
     # Finally, update the new data to be able to generate the foo.isolated file,
     # the file that is used by run_isolated.py.
@@ -735,7 +748,7 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
 
 @tools.profile
 def prepare_for_archival(options, cwd):
-  """Loads the isolated file and create 'infiles' for archival."""
+  """Loads the isolated file and create |infiles| for archival."""
   complete_state = load_complete_state(
       options, cwd, options.subdir, False)
   # Make sure that complete_state isn't modified until save_files() is
@@ -767,14 +780,41 @@ def prepare_for_archival(options, cwd):
   return complete_state, infiles, isolated_hash
 
 
-def isolate_and_archive(trees, isolate_server, namespace):
+def _process_infiles(infiles):
+  """Converts |infiles| into FileItem ready to upload.
+
+  Convert |infiles| into a list of FileItem objects, skip duplicates.
+
+  Arguments:
+    infiles: iterable of pairs (absolute path, metadata dict) of files.
+
+  Yields:
+    isolateserver.FileItem() items.
+  """
+  # Filter out symlinks, since they are not represented by items on isolate
+  # server side.
+  seen = set()
+  skipped = 0
+  for filepath, metadata in infiles:
+    if 'l' not in metadata and filepath not in seen:
+      seen.add(filepath)
+      yield isolateserver.FileItem(
+          path=filepath,
+          digest=metadata['h'],
+          size=metadata['s'],
+          high_priority=metadata.get('priority') == '0')
+    else:
+      skipped += 1
+  logging.info('Skipped %d duplicated entries', skipped)
+
+
+def isolate_and_archive(trees, server_ref):
   """Isolates and uploads a bunch of isolated trees.
 
   Args:
     trees: list of pairs (Options, working directory) that describe what tree
         to isolate. Options are processed by 'process_isolate_options'.
-    isolate_server: URL of Isolate Server to upload to.
-    namespace: namespace to upload to.
+    server_ref: isolate_storage.ServerRef instance.
 
   Returns a dict {target name -> isolate hash or None}, where target name is
   a name of *.isolated file without an extension (e.g. 'base_unittests').
@@ -789,7 +829,7 @@ def isolate_and_archive(trees, isolate_server, namespace):
     return {}
 
   # Helper generator to avoid materializing the full (huge) list of files until
-  # the very end (in upload_tree).
+  # the very end (in upload_items()).
   def emit_files(root_dir, files):
     for path, meta in files.iteritems():
       yield (os.path.join(root_dir, path), meta)
@@ -819,10 +859,9 @@ def isolate_and_archive(trees, isolate_server, namespace):
   # Now upload all necessary files at once.
   with tools.Profiler('Upload'):
     try:
-      isolateserver.upload_tree(
-          base_url=isolate_server,
-          infiles=itertools.chain(*files_generators),
-          namespace=namespace)
+      items = _process_infiles(itertools.chain(*files_generators))
+      with isolateserver.get_storage(server_ref) as storage:
+        storage.upload_items(items)
     except Exception:
       logging.exception('Exception while uploading files')
       return None
@@ -864,10 +903,9 @@ def CMDarchive(parser, args):
   process_isolate_options(parser, options)
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options, True, True)
-  result = isolate_and_archive(
-      [(options, unicode(os.getcwd()))],
-      options.isolate_server,
-      options.namespace)
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  result = isolate_and_archive([(options, unicode(os.getcwd()))], server_ref)
   if result is None:
     return EXIT_CODE_UPLOAD_ERROR
   assert len(result) == 1, result
@@ -926,8 +964,9 @@ def CMDbatcharchive(parser, args):
     work_units.append((parse_archive_command_line(args, cwd), cwd))
 
   # Perform the archival, all at once.
-  isolated_hashes = isolate_and_archive(
-      work_units, options.isolate_server, options.namespace)
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  isolated_hashes = isolate_and_archive(work_units, server_ref)
 
   # TODO(vadimsh): isolate_and_archive returns None on upload failure, there's
   # no way currently to figure out what *.isolated file from a batch were
@@ -1204,6 +1243,10 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
       (k, try_make_int(v)) for k, v in options.config_variables)
   options.path_variables = dict(options.path_variables)
   options.extra_variables = dict(options.extra_variables)
+  # Account for default EXECUTABLE_SUFFIX.
+  if (options.config_variables or options.path_variables or
+      len(options.extra_variables) > 1):
+    sys.stderr.write(_VARIABLE_WARNING)
 
   # Normalize the path in --isolate.
   if options.isolate:

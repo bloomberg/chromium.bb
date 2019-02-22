@@ -350,6 +350,21 @@ For the optional packages on Arch Linux:
     in AUR/`yaourt`
 *   `sun-java6-fonts` do not seem to be in main repository or AUR.
 
+### Crostini (Debian based)
+
+First install the `file` command for the script to run properly:
+
+```shell
+$ sudo apt-get install file
+```
+
+Then invoke install-build-deps.sh with the `--no-arm` argument,
+because the ARM toolchain doesn't exist for this configuration:
+
+```shell
+$ sudo install-build-deps.sh --no-arm
+```
+
 ### Debian
 
 Some tests require the `ttf-mscorefonts-installer` package from the `contrib`

@@ -60,7 +60,8 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
       break;
   }
 
-  PlatformNotificationData* notification_data = &output->notification_data;
+  blink::PlatformNotificationData* notification_data =
+      &output->notification_data;
   const NotificationDatabaseDataProto::NotificationData& payload =
       message.notification_data();
 
@@ -69,14 +70,15 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   switch (payload.direction()) {
     case NotificationDatabaseDataProto::NotificationData::LEFT_TO_RIGHT:
       notification_data->direction =
-          PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+          blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
       break;
     case NotificationDatabaseDataProto::NotificationData::RIGHT_TO_LEFT:
       notification_data->direction =
-          PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+          blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
       break;
     case NotificationDatabaseDataProto::NotificationData::AUTO:
-      notification_data->direction = PlatformNotificationData::DIRECTION_AUTO;
+      notification_data->direction =
+          blink::PlatformNotificationData::DIRECTION_AUTO;
       break;
   }
 
@@ -110,14 +112,14 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   notification_data->actions.clear();
 
   for (const auto& payload_action : payload.actions()) {
-    PlatformNotificationAction action;
+    blink::PlatformNotificationAction action;
 
     switch (payload_action.type()) {
       case NotificationDatabaseDataProto::NotificationAction::BUTTON:
-        action.type = PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+        action.type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
         break;
       case NotificationDatabaseDataProto::NotificationAction::TEXT:
-        action.type = PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+        action.type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
         break;
       default:
         NOTREACHED();
@@ -143,20 +145,21 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   std::unique_ptr<NotificationDatabaseDataProto::NotificationData> payload(
       new NotificationDatabaseDataProto::NotificationData());
 
-  const PlatformNotificationData& notification_data = input.notification_data;
+  const blink::PlatformNotificationData& notification_data =
+      input.notification_data;
 
   payload->set_title(base::UTF16ToUTF8(notification_data.title));
 
   switch (notification_data.direction) {
-    case PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+    case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::LEFT_TO_RIGHT);
       break;
-    case PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+    case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::RIGHT_TO_LEFT);
       break;
-    case PlatformNotificationData::DIRECTION_AUTO:
+    case blink::PlatformNotificationData::DIRECTION_AUTO:
       payload->set_direction(
           NotificationDatabaseDataProto::NotificationData::AUTO);
       break;
@@ -182,16 +185,17 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
                       notification_data.data.size());
   }
 
-  for (const PlatformNotificationAction& action : notification_data.actions) {
+  for (const blink::PlatformNotificationAction& action :
+       notification_data.actions) {
     NotificationDatabaseDataProto::NotificationAction* payload_action =
         payload->add_actions();
 
     switch (action.type) {
-      case PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
+      case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
         payload_action->set_type(
             NotificationDatabaseDataProto::NotificationAction::BUTTON);
         break;
-      case PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
+      case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
         payload_action->set_type(
             NotificationDatabaseDataProto::NotificationAction::TEXT);
         break;

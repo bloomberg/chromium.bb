@@ -51,7 +51,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
   auto result = context->Initialize(
       nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, attribs,
       gpu::SharedMemoryLimits(), gpu_memory_buffer_manager, image_factory,
-      nullptr, std::move(task_runner));
+      std::move(task_runner));
 
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   return context;
@@ -160,6 +160,15 @@ class GrContext* TestInProcessContextProvider::GrContext() {
       max_resource_cache_bytes, max_glyph_cache_texture_bytes));
   cache_controller_->SetGrContext(gr_context_->get());
   return gr_context_->get();
+}
+
+gpu::SharedImageInterface*
+TestInProcessContextProvider::SharedImageInterface() {
+  if (gles2_context_) {
+    return gles2_context_->GetSharedImageInterface();
+  } else {
+    return raster_context_->GetSharedImageInterface();
+  }
 }
 
 viz::ContextCacheController* TestInProcessContextProvider::CacheController() {

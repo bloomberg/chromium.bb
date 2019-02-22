@@ -164,9 +164,7 @@ class SetIcon : public ContentAction {
 // Helper for getting JS collections into C++.
 static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
                                         std::vector<std::string>* append_to) {
-  for (base::ListValue::const_iterator it = append_strings.begin();
-       it != append_strings.end();
-       ++it) {
+  for (auto it = append_strings.begin(); it != append_strings.end(); ++it) {
     std::string value;
     if (it->GetAsString(&value)) {
       append_to->push_back(value);
@@ -343,17 +341,15 @@ void RequestContentScript::InitScript(const HostID& host_id,
   script_.set_run_location(UserScript::BROWSER_DRIVEN);
   script_.set_match_all_frames(script_data.all_frames);
   script_.set_match_about_blank(script_data.match_about_blank);
-  for (std::vector<std::string>::const_iterator it =
-           script_data.css_file_names.begin();
-       it != script_data.css_file_names.end(); ++it) {
+  for (auto it = script_data.css_file_names.cbegin();
+       it != script_data.css_file_names.cend(); ++it) {
     GURL url = extension->GetResourceURL(*it);
     ExtensionResource resource = extension->GetResource(*it);
     script_.css_scripts().push_back(std::make_unique<UserScript::File>(
         resource.extension_root(), resource.relative_path(), url));
   }
-  for (std::vector<std::string>::const_iterator it =
-           script_data.js_file_names.begin();
-       it != script_data.js_file_names.end(); ++it) {
+  for (auto it = script_data.js_file_names.cbegin();
+       it != script_data.js_file_names.cend(); ++it) {
     GURL url = extension->GetResourceURL(*it);
     ExtensionResource resource = extension->GetResource(*it);
     script_.js_scripts().push_back(std::make_unique<UserScript::File>(
@@ -436,8 +432,7 @@ std::unique_ptr<ContentAction> ContentAction::Create(
   }
 
   ContentActionFactory& factory = g_content_action_factory.Get();
-  std::map<std::string, ContentActionFactory::FactoryMethod>::iterator
-      factory_method_iter = factory.factory_methods.find(instance_type);
+  auto factory_method_iter = factory.factory_methods.find(instance_type);
   if (factory_method_iter != factory.factory_methods.end())
     return (*factory_method_iter->second)(
         browser_context, extension, action_dict, error);

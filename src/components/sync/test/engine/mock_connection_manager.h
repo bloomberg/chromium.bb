@@ -268,7 +268,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // Adds a new progress marker to the last update.
   sync_pb::DataTypeProgressMarker* AddUpdateProgressMarker();
 
-  void ResetAuthToken() { InvalidateAndClearAuthToken(); }
+  void ResetAuthToken() { ClearAuthToken(); }
 
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,

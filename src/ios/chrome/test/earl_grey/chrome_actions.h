@@ -30,6 +30,10 @@ id<GREYAction> TurnSettingsSwitchOn(BOOL on);
 // Action to turn the switch of a SyncSwitchCell to the given |on| state.
 id<GREYAction> TurnSyncSwitchOn(BOOL on);
 
+// Action to tap a web element with id equal to |element_id| on the current web
+// state.
+id<GREYAction> TapWebElement(const std::string& element_id);
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_

@@ -92,7 +92,7 @@ class PERFETTO_EXPORT TracingService {
     // Args:
     // |target_buffer| is the target buffer ID where the data produced by the
     // writer should be stored by the tracing service. This value is passed
-    // upon creation of the data source (CreateDataSourceInstance()) in the
+    // upon creation of the data source (StartDataSource()) in the
     // DataSourceConfig.target_buffer().
     virtual std::unique_ptr<TraceWriter> CreateTraceWriter(
         BufferID target_buffer) = 0;
@@ -101,7 +101,7 @@ class PERFETTO_EXPORT TracingService {
     // for the flush request has been committed.
     virtual void NotifyFlushComplete(FlushRequestID) = 0;
 
-    // Called in response to one or more Producer::TearDownDataSourceInstance(),
+    // Called in response to one or more Producer::StopDataSource(),
     // if the data source registered setting the flag
     // DataSourceDescriptor.will_notify_on_stop.
     virtual void NotifyDataSourceStopped(DataSourceInstanceID) = 0;
@@ -120,8 +120,20 @@ class PERFETTO_EXPORT TracingService {
 
     // Enables tracing with the given TraceConfig. The ScopedFile argument is
     // used only when TraceConfig.write_into_file == true.
+    // If TraceConfig.deferred_start == true data sources are configured via
+    // SetupDataSource() but are not started until StartTracing() is called.
+    // This is to support pre-initialization and fast triggering of traces.
+    // The ScopedFile argument is used only when TraceConfig.write_into_file
+    // == true.
     virtual void EnableTracing(const TraceConfig&,
                                base::ScopedFile = base::ScopedFile()) = 0;
+
+    // Starts all data sources configured in the trace config. This is used only
+    // after calling EnableTracing() with TraceConfig.deferred_start=true.
+    // It's a no-op if called after a regular EnableTracing(), without setting
+    // deferred_start.
+    virtual void StartTracing() = 0;
+
     virtual void DisableTracing() = 0;
 
     // Requests all data sources to flush their data immediately and invokes the

@@ -55,7 +55,6 @@ class WebRequestProxyingURLLoaderFactory
         int32_t routing_id,
         int32_t network_service_request_id,
         uint32_t options,
-        bool is_non_navigation_browser_request,
         const network::ResourceRequest& request,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
         network::mojom::URLLoaderRequest loader_request,
@@ -116,7 +115,6 @@ class WebRequestProxyingURLLoaderFactory
     const int32_t network_service_request_id_;
     const int32_t routing_id_;
     const uint32_t options_;
-    const bool is_non_navigation_browser_request_;
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
     mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
     network::mojom::URLLoaderClientPtr target_client_;

@@ -17,7 +17,6 @@ source_set("libfuzzer") {
     "src/FuzzerDataFlowTrace.cpp",
     "src/FuzzerDriver.cpp",
     "src/FuzzerExtFunctionsDlsym.cpp",
-    "src/FuzzerExtFunctionsDlsymWin.cpp",
     "src/FuzzerExtFunctionsWeak.cpp",
     "src/FuzzerExtFunctionsWeakAlias.cpp",
     "src/FuzzerExtraCounters.cpp",
@@ -42,7 +41,11 @@ source_set("libfuzzer") {
   ]
 
   configs -= fuzzing_engine_remove_configs
-  configs += fuzzing_engine_add_configs
+  if (!is_win) {
+    # TODO(crbug.com/883948): Remove the check for is_win when libFuzzer on
+    # Windows handles the nosanitize attribute properly.
+    configs += fuzzing_engine_add_configs
+  }
 }
 
 source_set("afl_driver") {

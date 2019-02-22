@@ -26,6 +26,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
  public:
   QuicSimpleServerStream(QuicStreamId id,
                          QuicSpdySession* session,
+                         StreamType type,
                          QuicSimpleServerBackend* quic_simple_server_backend);
   QuicSimpleServerStream(const QuicSimpleServerStream&) = delete;
   QuicSimpleServerStream& operator=(const QuicSimpleServerStream&) = delete;

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -23,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
@@ -92,7 +92,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
 
 // Ensure shelf items are added and removed for some unknown windows in mash.
 TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
+  if (!::features::IsSingleProcessMash() && !::features::IsMultiProcessMash())
     return;
 
   // Windows with no valid ShelfItemType and ShelfID properties get shelf items.
@@ -143,7 +143,8 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  const bool is_mash = Shell::GetAshConfig() == Config::MASH_DEPRECATED;
+  const bool is_mash =
+      ::features::IsSingleProcessMash() || ::features::IsMultiProcessMash();
   EXPECT_EQ(is_mash ? 4 : 2, model_->item_count());
 
   // Create a ShelfItem for the first window.

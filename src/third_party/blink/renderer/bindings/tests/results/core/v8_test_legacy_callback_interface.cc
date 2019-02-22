@@ -69,6 +69,7 @@ static void InstallV8TestLegacyCallbackInterfaceTemplate(v8::Isolate* isolate, c
   static_assert(42 == TestLegacyCallbackInterface::kConstValueUshort42, "the value of TestLegacyCallbackInterface_kConstValueUshort42 does not match with implementation");
 }
 
+// static
 v8::Local<v8::FunctionTemplate> V8TestLegacyCallbackInterface::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
@@ -79,6 +80,19 @@ v8::Local<v8::FunctionTemplate> V8TestLegacyCallbackInterface::DomTemplate(v8::I
 
 const char* V8TestLegacyCallbackInterface::NameInHeapSnapshot() const {
   return "V8TestLegacyCallbackInterface";
+}
+
+// static
+V8TestLegacyCallbackInterface* V8TestLegacyCallbackInterface::CreateOrNull(v8::Local<v8::Object> callback_object) {
+  v8::Local<v8::Context> creation_context = callback_object->CreationContext();
+  // When |callback_object| is an object in RemoteContext (i.e. RemoteInstance),
+  // the object has no creation context, and no way to proceed.
+  // TODO(crbug.com/886588): Make CreateOrNull into Create removing the early
+  // return with nullptr.
+  if (creation_context.IsEmpty())
+    return nullptr;
+
+  return new V8TestLegacyCallbackInterface(callback_object, creation_context);
 }
 
 v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* callback_this_value, Node* node) {

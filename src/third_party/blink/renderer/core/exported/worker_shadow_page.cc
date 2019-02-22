@@ -70,8 +70,10 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   CString content("");
   scoped_refptr<SharedBuffer> buffer(
       SharedBuffer::Create(content.data(), content.length()));
-  main_frame_->GetFrame()->Loader().CommitNavigation(FrameLoadRequest(
-      nullptr, ResourceRequest(script_url), SubstituteData(buffer)));
+  main_frame_->GetFrame()->Loader().CommitNavigation(
+      ResourceRequest(script_url), SubstituteData(buffer),
+      ClientRedirectPolicy::kNotClientRedirect,
+      base::UnguessableToken::Create());
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {
@@ -131,9 +133,8 @@ void WorkerShadowPage::AdvanceState(State new_state) {
   }
 }
 
-void WorkerShadowPage::BindDevToolsAgent(
-    mojom::blink::DevToolsAgentAssociatedRequest request) {
-  main_frame_->DevToolsAgentImpl()->BindRequest(std::move(request));
+WebDevToolsAgentImpl* WorkerShadowPage::DevToolsAgent() {
+  return main_frame_->DevToolsAgentImpl();
 }
 
 }  // namespace blink

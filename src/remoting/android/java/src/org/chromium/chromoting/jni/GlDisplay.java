@@ -34,7 +34,7 @@ public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
 
     private long mNativeJniGlDisplay;
     private InputFeedbackRadiusMapper mFeedbackRadiusMapper;
-    private float mScaleFactor = 0;
+    private float mScaleFactor;
 
     private GlDisplay(long nativeJniGlDisplay) {
         mNativeJniGlDisplay = nativeJniGlDisplay;

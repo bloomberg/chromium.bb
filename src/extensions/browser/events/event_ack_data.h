@@ -38,17 +38,26 @@ class EventAckData {
                               base::OnceClosure failure_callback);
 
  private:
-  void DidStartExternalRequest(int render_process_id,
-                               int event_id,
-                               std::unique_ptr<std::string> uuid_result);
+  class IOEventInfo;
 
-  // Information about an unacked event.
-  //   std::string - GUID for that particular event.
-  //   int - RenderProcessHost id.
-  using UnackedEventInfo = std::pair<std::string, int>;
+  static void StartExternalRequestOnIO(
+      content::ServiceWorkerContext* context,
+      int render_process_id,
+      int64_t version_id,
+      int event_id,
+      scoped_refptr<EventAckData::IOEventInfo> unacked_events);
 
-  // A map of unacked event information keyed by event id.
-  std::map<int, UnackedEventInfo> unacked_events_;
+  static void FinishExternalRequestOnIO(
+      content::ServiceWorkerContext* context,
+      int render_process_id,
+      int64_t version_id,
+      int event_id,
+      scoped_refptr<IOEventInfo> unacked_events,
+      base::OnceClosure failure_callback);
+
+  // Contains map of unacked event information keyed by event id.
+  // Created on UI thread, but accessed only on IO thread.
+  scoped_refptr<IOEventInfo> unacked_events_;
 
   base::WeakPtrFactory<EventAckData> weak_factory_;
 

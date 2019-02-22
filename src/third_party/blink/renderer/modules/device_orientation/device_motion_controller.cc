@@ -92,12 +92,12 @@ void DeviceMotionController::RegisterWithDispatcher() {
         frame->GetTaskRunner(TaskType::kSensor);
     motion_event_pump_ = new DeviceMotionEventPump(task_runner);
   }
-  motion_event_pump_->AddController(this);
+  motion_event_pump_->SetController(this);
 }
 
 void DeviceMotionController::UnregisterWithDispatcher() {
   if (motion_event_pump_)
-    motion_event_pump_->RemoveController(this);
+    motion_event_pump_->RemoveController();
 }
 
 Event* DeviceMotionController::LastEvent() const {

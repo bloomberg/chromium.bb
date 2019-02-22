@@ -64,6 +64,9 @@ class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
 
   static AnimatedPropertyType ClassType() { return kAnimatedInteger; }
 
+  void SetInitial(unsigned value) { SetValue(static_cast<int>(value)); }
+  static constexpr int kInitialValueBits = 2;
+
  protected:
   explicit SVGInteger(int);
 

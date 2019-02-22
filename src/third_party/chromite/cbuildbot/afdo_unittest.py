@@ -111,7 +111,10 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
                 'package':None,
                 'version_no_rev':None,
                 'rev':None,
-                'category':None}
+                'category':None,
+                'cpv': None,
+                'cp': None,
+                'cpf': None}
       cpv = portage_util.CPV(version=version, **unused)
       profile = afdo.GetCWPProfile(cpv, 'silvermont', 'unused', gs.GSContext())
       # Expect the most recent profile on the same branch.

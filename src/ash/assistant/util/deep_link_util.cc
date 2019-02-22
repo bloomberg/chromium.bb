@@ -4,8 +4,10 @@
 
 #include "ash/assistant/util/deep_link_util.h"
 
+#include <array>
 #include <set>
 
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -21,10 +23,12 @@ namespace {
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
 constexpr char kQueryParamKey[] = "q";
+constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 
 // Supported deep link prefixes. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
+constexpr char kChromeSettingsPrefix[] = "googleassistant://chrome-settings";
 constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
 constexpr char kAssistantQueryPrefix[] = "googleassistant://send-query";
@@ -32,14 +36,9 @@ constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
 constexpr char kAssistantScreenshotPrefix[] =
     "googleassistant://take-screenshot";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
+constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
-
-// TODO(b/113357196): Make these URLs configurable for development purposes.
-constexpr char kAssistantRemindersWebUrl[] =
-    "https://assistant.google.com/reminders/mainview";
-constexpr char kAssistantSettingsWebUrl[] =
-    "https://assistant.google.com/settings/mainpage";
 
 }  // namespace
 
@@ -79,6 +78,7 @@ base::Optional<std::string> GetDeepLinkParam(
     DeepLinkParam param) {
   // Map of supported deep link params to their keys.
   static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
+      {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
       {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
 
@@ -106,12 +106,14 @@ base::Optional<bool> GetDeepLinkParamAsBool(
 DeepLinkType GetDeepLinkType(const GURL& url) {
   // Map of supported deep link types to their prefixes.
   static const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
+      {DeepLinkType::kChromeSettings, kChromeSettingsPrefix},
       {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
       {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
       {DeepLinkType::kQuery, kAssistantQueryPrefix},
       {DeepLinkType::kReminders, kAssistantRemindersPrefix},
       {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
       {DeepLinkType::kSettings, kAssistantSettingsPrefix},
+      {DeepLinkType::kTaskManager, kAssistantTaskManagerPrefix},
       {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
 
   for (const auto& supported_deep_link : kSupportedDeepLinks) {
@@ -131,24 +133,48 @@ bool IsDeepLinkUrl(const GURL& url) {
   return GetDeepLinkType(url) != DeepLinkType::kUnsupported;
 }
 
+GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
+  static constexpr char kChromeSettingsUrl[] = "chrome://settings/";
+
+  // Note that we only allow deep linking to a subset of pages. If a deep link
+  // requests a page not contained in this array, we fallback gracefully to
+  // top-level Chrome Settings.
+  static constexpr std::array<char[16], 2> kAllowedPages = {"googleAssistant",
+                                                            "languages"};
+
+  return page && std::find(kAllowedPages.begin(), kAllowedPages.end(),
+                           page.value()) != kAllowedPages.end()
+             ? GURL(kChromeSettingsUrl + page.value())
+             : GURL(kChromeSettingsUrl);
+}
+
 base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
   return GetWebUrl(GetDeepLinkType(deep_link));
 }
 
 base::Optional<GURL> GetWebUrl(DeepLinkType type) {
+  // TODO(b/113357196): Make these URLs configurable for development purposes.
+  static constexpr char kAssistantRemindersWebUrl[] =
+      "https://assistant.google.com/reminders/mainview?hl=";
+  static constexpr char kAssistantSettingsWebUrl[] =
+      "https://assistant.google.com/settings/mainpage?hl=";
+
   if (!IsWebDeepLinkType(type))
     return base::nullopt;
 
   switch (type) {
     case DeepLinkType::kReminders:
-      return GURL(kAssistantRemindersWebUrl);
+      return GURL(kAssistantRemindersWebUrl +
+                  base::i18n::GetConfiguredLocale());
     case DeepLinkType::kSettings:
-      return GURL(kAssistantSettingsWebUrl);
+      return GURL(kAssistantSettingsWebUrl + base::i18n::GetConfiguredLocale());
     case DeepLinkType::kUnsupported:
+    case DeepLinkType::kChromeSettings:
     case DeepLinkType::kFeedback:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kScreenshot:
+    case DeepLinkType::kTaskManager:
     case DeepLinkType::kWhatsOnMyScreen:
       NOTREACHED();
       return base::nullopt;

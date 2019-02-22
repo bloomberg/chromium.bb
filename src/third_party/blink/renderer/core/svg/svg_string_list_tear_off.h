@@ -36,12 +36,12 @@
 
 namespace blink {
 
-class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
+class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringListBase> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static SVGStringListTearOff* Create(
-      SVGStringList* target,
+      SVGStringListBase* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
     return new SVGStringListTearOff(target, binding, property_is_anim_val);
@@ -49,8 +49,8 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
 
   // SVGStringList DOM interface:
 
-  // WebIDL requires "unsigned long" type instead of size_t.
-  unsigned long length() { return Target()->length(); }
+  // WebIDL requires "unsigned long" type which is uint32_t.
+  uint32_t length() { return Target()->length(); }
 
   void clear(ExceptionState& exception_state) {
     if (IsImmutable()) {
@@ -71,12 +71,12 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
     return item;
   }
 
-  String getItem(unsigned long index, ExceptionState& exception_state) {
+  String getItem(uint32_t index, ExceptionState& exception_state) {
     return Target()->GetItem(index, exception_state);
   }
 
   String insertItemBefore(const String& item,
-                          unsigned long index,
+                          uint32_t index,
                           ExceptionState& exception_state) {
     if (IsImmutable()) {
       ThrowReadOnly(exception_state);
@@ -88,7 +88,7 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
   }
 
   String replaceItem(const String& item,
-                     unsigned long index,
+                     uint32_t index,
                      ExceptionState& exception_state) {
     if (IsImmutable()) {
       ThrowReadOnly(exception_state);
@@ -99,14 +99,14 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
     return item;
   }
 
-  bool AnonymousIndexedSetter(unsigned index,
+  bool AnonymousIndexedSetter(uint32_t index,
                               const String& item,
                               ExceptionState& exception_state) {
     replaceItem(item, index, exception_state);
     return true;
   }
 
-  String removeItem(unsigned long index, ExceptionState& exception_state) {
+  String removeItem(uint32_t index, ExceptionState& exception_state) {
     if (IsImmutable()) {
       ThrowReadOnly(exception_state);
       return String();
@@ -127,7 +127,7 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
   }
 
  protected:
-  SVGStringListTearOff(SVGStringList*,
+  SVGStringListTearOff(SVGStringListBase*,
                        SVGAnimatedPropertyBase* binding,
                        PropertyIsAnimValType);
 };

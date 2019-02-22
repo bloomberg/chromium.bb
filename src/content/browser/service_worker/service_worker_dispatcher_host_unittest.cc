@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -22,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
@@ -50,8 +52,8 @@ struct RemoteProviderInfo {
 std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
     ServiceWorkerContextWrapper* context_wrapper) {
   std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(
           [](ServiceWorkerContextWrapper* wrapper) {
             return std::make_unique<ServiceWorkerNavigationHandleCore>(nullptr,
@@ -107,7 +109,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     options.scope = scope;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(registration_.get(), script_url, 1L,
+    version_ = new ServiceWorkerVersion(registration_.get(), script_url,
+                                        blink::mojom::ScriptType::kClassic, 1L,
                                         context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(

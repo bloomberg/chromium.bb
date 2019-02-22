@@ -1,9 +1,12 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -13,7 +16,6 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
@@ -26,8 +28,9 @@ namespace {
 
 // Passes the |result| to the |output| pointer.
 void PassFileChooserFileInfoList(FileChooserFileInfoList* output,
-                                 const FileChooserFileInfoList& result) {
-  *output = result;
+                                 FileChooserFileInfoList result) {
+  for (const auto& file : result)
+    output->push_back(file->Clone());
 }
 
 // Creates the drive integration service for the |profile|.
@@ -107,35 +110,33 @@ TEST(FileManagerFileAPIUtilTest,
   // Run the test target.
   FileChooserFileInfoList result;
   ConvertSelectedFileInfoListToFileChooserFileInfoList(
-      context,
-      GURL("http://example.com"),
-      selected_info_list,
-      base::Bind(&PassFileChooserFileInfoList, &result));
+      context, GURL("http://example.com"), selected_info_list,
+      base::BindOnce(&PassFileChooserFileInfoList, &result));
   content::RunAllTasksUntilIdle();
 
   // Check the result.
   ASSERT_EQ(3u, result.size());
 
+  EXPECT_TRUE(result[0]->is_native_file());
   EXPECT_EQ(FILE_PATH_LITERAL("/native/File 1.txt"),
-            result[0].file_path.value());
-  EXPECT_EQ("display_name", result[0].display_name);
-  EXPECT_FALSE(result[0].file_system_url.is_valid());
+            result[0]->get_native_file()->file_path.value());
+  EXPECT_EQ(base::ASCIIToUTF16("display_name"),
+            result[0]->get_native_file()->display_name);
 
+  EXPECT_TRUE(result[1]->is_native_file());
   EXPECT_EQ(FILE_PATH_LITERAL("/native/cache/xxx"),
-            result[1].file_path.value());
-  EXPECT_EQ("display_name", result[1].display_name);
-  EXPECT_FALSE(result[1].file_system_url.is_valid());
+            result[1]->get_native_file()->file_path.value());
+  EXPECT_EQ(base::ASCIIToUTF16("display_name"),
+            result[1]->get_native_file()->display_name);
 
-  EXPECT_EQ(FILE_PATH_LITERAL("/special/drive-test-user-hash/root/File 1.txt"),
-            result[2].file_path.value());
-  EXPECT_TRUE(result[2].display_name.empty());
-  EXPECT_TRUE(result[2].file_system_url.is_valid());
+  EXPECT_TRUE(result[2]->is_file_system());
+  EXPECT_TRUE(result[2]->get_file_system()->url.is_valid());
   const storage::FileSystemURL url =
-      context->CrackURL(result[2].file_system_url);
+      context->CrackURL(result[2]->get_file_system()->url);
   EXPECT_EQ(GURL("http://example.com"), url.origin());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(storage::kFileSystemTypeDrive, url.type());
-  EXPECT_EQ(26u, result[2].length);
+  EXPECT_EQ(26u, result[2]->get_file_system()->length);
 }
 
 }  // namespace

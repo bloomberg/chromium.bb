@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/screen_provider_observer.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"

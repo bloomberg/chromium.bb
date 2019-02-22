@@ -29,6 +29,7 @@
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 using testing::_;
 
@@ -55,7 +56,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       const BackgroundFetchRegistrationId& registration_id) {
     if (finished_requests_.count(registration_id)) {
       DCHECK_NE(finished_requests_[registration_id],
-                BackgroundFetchReasonToAbort::NONE);
+                blink::mojom::BackgroundFetchFailureReason::NONE);
 
       return JobCompletionStatus::kAborted;
     }
@@ -75,6 +76,20 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     EXPECT_GE(pending_requests_counts_[registration_id], 1);
     pending_requests_counts_[registration_id]--;
+  }
+
+  // To be called when a request for |registration_id| has finished.
+  // Moves |request_info| to |out_request_info|.
+  void GetRequestInfoOnRequestFinished(
+      const BackgroundFetchRegistrationId& registration_id,
+      scoped_refptr<content::BackgroundFetchRequestInfo>* out_request_info,
+      scoped_refptr<content::BackgroundFetchRequestInfo> request_info) {
+    DCHECK(pending_requests_counts_.count(registration_id));
+    DCHECK(out_request_info);
+
+    EXPECT_GE(pending_requests_counts_[registration_id], 1);
+    pending_requests_counts_[registration_id]--;
+    *out_request_info = request_info;
   }
 
   // Creates a new Background Fetch registration, whose id will be stored in the
@@ -140,7 +155,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
                        base::Unretained(this)));
 
     controller->InitializeRequestStatus(
-        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */);
+        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */,
+        /* start_paused = */ false);
 
     return controller;
   }
@@ -179,7 +195,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   uint64_t last_downloaded_ = 0;
 
   std::map<BackgroundFetchRegistrationId, int> pending_requests_counts_;
-  std::map<BackgroundFetchRegistrationId, BackgroundFetchReasonToAbort>
+  std::map<BackgroundFetchRegistrationId,
+           blink::mojom::BackgroundFetchFailureReason>
       finished_requests_;
 
   // Closure that will be invoked every time the JobController receives a
@@ -190,17 +207,16 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   BackgroundFetchDelegate* delegate_;
 
  private:
-  void DidUpdateProgress(const std::string& unique_id,
-                         uint64_t download_total,
-                         uint64_t downloaded) {
-    last_downloaded_ = downloaded;
+  void DidUpdateProgress(const BackgroundFetchRegistration& registration) {
+    last_downloaded_ = registration.downloaded;
 
     if (job_progress_closure_)
       job_progress_closure_.Run();
   }
 
-  void DidFinishJob(const BackgroundFetchRegistrationId& registration_id,
-                    BackgroundFetchReasonToAbort reason_to_abort) {
+  void DidFinishJob(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
     auto iter = pending_requests_counts_.find(registration_id);
     DCHECK(iter != pending_requests_counts_.end());
 
@@ -233,6 +249,32 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
   EXPECT_EQ(JobCompletionStatus::kCompleted,
             GetCompletionStatus(registration_id));
+}
+
+TEST_F(BackgroundFetchJobControllerTest, SingleRequestJobWithInsecureOrigin) {
+  BackgroundFetchRegistrationId registration_id;
+
+  auto requests = CreateRegistrationForRequests(
+      &registration_id, {{GURL("http://example.com/funny_cat.png"), "GET"}},
+      true /* auto_complete_requests */);
+
+  EXPECT_EQ(JobCompletionStatus::kRunning,
+            GetCompletionStatus(registration_id));
+
+  std::unique_ptr<BackgroundFetchJobController> controller =
+      CreateJobController(registration_id, requests.size());
+
+  controller->StartRequest(
+      requests[0],
+      base::BindOnce(
+          &BackgroundFetchJobControllerTest::GetRequestInfoOnRequestFinished,
+          base::Unretained(this), registration_id, &requests[0]));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(JobCompletionStatus::kCompleted,
+            GetCompletionStatus(registration_id));
+  EXPECT_FALSE(requests[0]->IsResultSuccess());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
@@ -282,6 +324,46 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
             GetCompletionStatus(registration_id));
 }
 
+TEST_F(BackgroundFetchJobControllerTest, MultipleRequestsJobWithMixedContent) {
+  BackgroundFetchRegistrationId registration_id;
+
+  auto requests = CreateRegistrationForRequests(
+      &registration_id,
+      {{GURL("http://example.com/funny_cat.png"), "GET"},
+       {GURL("https://example.com/scary_cat.png"), "GET"}},
+      true /* auto_complete_requests */);
+
+  EXPECT_EQ(JobCompletionStatus::kRunning,
+            GetCompletionStatus(registration_id));
+
+  std::unique_ptr<BackgroundFetchJobController> controller =
+      CreateJobController(registration_id, requests.size());
+
+  controller->StartRequest(
+      requests[0],
+      base::BindOnce(
+          &BackgroundFetchJobControllerTest::GetRequestInfoOnRequestFinished,
+          base::Unretained(this), registration_id, &requests[0]));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(JobCompletionStatus::kRunning,
+            GetCompletionStatus(registration_id));
+  EXPECT_FALSE(requests[0]->IsResultSuccess());
+
+  controller->StartRequest(
+      requests[1],
+      base::BindOnce(
+          &BackgroundFetchJobControllerTest::GetRequestInfoOnRequestFinished,
+          base::Unretained(this), registration_id, &requests[1]));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(JobCompletionStatus::kCompleted,
+            GetCompletionStatus(registration_id));
+  EXPECT_TRUE(requests[1]->IsResultSuccess());
+}
+
 TEST_F(BackgroundFetchJobControllerTest, Abort) {
   BackgroundFetchRegistrationId registration_id;
 
@@ -300,7 +382,8 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
       base::BindOnce(&BackgroundFetchJobControllerTest::OnRequestFinished,
                      base::Unretained(this), registration_id));
 
-  controller->Abort(BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
+  controller->Abort(
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
 
   base::RunLoop().RunUntilIdle();
 

@@ -5,8 +5,10 @@
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -71,8 +73,8 @@ void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
   DCHECK(cache.get());
   NSSet* allowed_certs = [NSSet setWithSet:allowed_certs_];
   const scoped_refptr<web::CertificatePolicyCache> cache_copy = cache;
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
         for (CRWSessionCertificateStorage* cert in allowed_certs) {
           cache_copy->AllowCertForHost(cert.certificate, cert.host,
                                        cert.status);

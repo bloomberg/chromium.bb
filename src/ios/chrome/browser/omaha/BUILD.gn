@@ -51,6 +51,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }

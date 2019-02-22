@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_MODEL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_MODEL_H_
 
+#include "third_party/blink/renderer/core/animation/animation_time_delta.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
@@ -58,7 +59,7 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
   virtual ~EffectModel() = default;
   virtual bool Sample(int iteration,
                       double fraction,
-                      double iteration_duration,
+                      AnimationTimeDelta iteration_duration,
                       HeapVector<Member<Interpolation>>&) const = 0;
 
   virtual bool Affects(const PropertyHandle&) const { return false; }

@@ -13,7 +13,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace {
 
@@ -53,15 +53,11 @@ bool OpenPrinterConfigDialog(const char* const* command) {
 // Detect the command based on the deskop environment and open the printer
 // manager dialog.
 void DetectAndOpenPrinterConfigDialog() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   bool opened = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
-               OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
-      break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
       opened = OpenPrinterConfigDialog(kKde4KcmPrinterCommand) ||
                OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
@@ -70,17 +66,18 @@ void DetectAndOpenPrinterConfigDialog() {
       opened = OpenPrinterConfigDialog(kKde5KcmPrinterCommand) ||
                OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
       break;
-    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
       break;
+    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
+    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-      LOG(ERROR)
-          << "Failed to detect the command to open printer config dialog";
-      return;
+      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
+               OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
+      break;
   }
   LOG_IF(ERROR, !opened) << "Failed to open printer manager dialog ";
 }

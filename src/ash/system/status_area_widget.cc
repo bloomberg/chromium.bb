@@ -5,7 +5,6 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -84,7 +83,7 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  if (::features::IsMultiProcessMash()) {
+  if (::features::IsSingleProcessMash() || ::features::IsMultiProcessMash()) {
     flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
     status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
   }
@@ -97,6 +96,8 @@ void StatusAreaWidget::Initialize() {
   if (notification_tray_) {
     system_tray_->InitializeTrayItems(notification_tray_.get());
     notification_tray_->Initialize();
+  } else {
+    unified_system_tray_->Initialize();
   }
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
@@ -211,7 +212,7 @@ bool StatusAreaWidget::ShouldShowShelf() const {
     return system_tray_->ShouldShowShelf();
 
   // All other tray bubbles will force the shelf to be visible.
-  return views::TrayBubbleView::IsATrayBubbleOpen();
+  return TrayBubbleView::IsATrayBubbleOpen();
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
@@ -266,6 +267,30 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
     dictation_button_tray_->UpdateShelfItemBackground(color);
   palette_tray_->UpdateShelfItemBackground(color);
   overview_button_tray_->UpdateShelfItemBackground(color);
+}
+
+void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
+  // Clicking anywhere except the virtual keyboard tray icon should hide the
+  // virtual keyboard.
+  gfx::Point location = event->location();
+  views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !virtual_keyboard_tray_->HitTestPoint(location)) {
+    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  }
+  views::Widget::OnMouseEvent(event);
+}
+
+void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
+  // Tapping anywhere except the virtual keyboard tray icon should hide the
+  // virtual keyboard.
+  gfx::Point location = event->location();
+  views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+      !virtual_keyboard_tray_->HitTestPoint(location)) {
+    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  }
+  views::Widget::OnGestureEvent(event);
 }
 
 }  // namespace ash

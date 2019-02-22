@@ -1,29 +1,31 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="number_settings_section.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
+<link rel="import" href="settings_section.html">
 
 <dom-module id="print-preview-scaling-settings">
   <template>
-    <style include="print-preview-shared checkbox-radio">
+    <style include="print-preview-shared">
     </style>
-    <print-preview-number-settings-section max-value="200" min-value="10"
-        default-value="100" input-label="$i18n{scalingLabel}"
-        disabled="[[disabled]]" current-value="{{currentValue_}}"
-        input-valid="{{inputValid_}}" hint-message="$i18n{scalingInstruction}"
-        class="multirow-controls">
-      <div slot="opt-outside-content" class="checkbox"
-          hidden$="[[!settings.fitToPage.available]]">
-        <label aria-live="polite">
-          <input type="checkbox" id="fit-to-page-checkbox" tabindex="1"
-              disabled$="[[getDisabled_(disabled, inputValid_)]]"
-              on-change="onFitToPageChange_">
-          <span>$i18n{optionFitToPage}</span>
-        </label>
+    <print-preview-settings-section hidden$="[[!settings.fitToPage.available]]">
+      <span slot="title">$i18n{scalingLabel}</span>
+      <div slot="controls" class="checkbox">
+        <cr-checkbox id="fit-to-page-checkbox" tabindex="1"
+            disabled$="[[getDisabled_(disabled, currentState_)]]"
+            on-change="onFitToPageChange_" aria-live="polite">
+          $i18n{optionFitToPage}
+        </cr-checkbox>
       </div>
+    </print-preview-settings-section>
+    <print-preview-number-settings-section max-value="200" min-value="10"
+        default-value="100" input-aria-label="$i18n{scalingLabel}"
+        input-label="[[getScalingInputLabel_(settings.fitToPage.available)]]"
+        disabled="[[disabled]]" current-value="{{currentValue_}}"
+        input-valid="{{inputValid_}}" hint-message="$i18n{scalingInstruction}">
     </print-preview-number-settings-section>
   </template>
   <script src="scaling_settings.js"></script>

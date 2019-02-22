@@ -1,15 +1,15 @@
-#Blacklist component#
+# Blacklist component #
 
 The goal of the blacklist component is to provide various blacklists that allow
 different policies for features to consume. Currently, the only implemented
 blacklist is the opt out blacklist.
 
-##Opt out blacklist##
+## Opt out blacklist ##
 The opt out blacklist makes decisions based on user history actions. Each user
 action is evaluated based on action type, time of the evaluation, host name of
 the action (can be any string representation), and previous action history.
 
-###Expected feature behavior###
+### Expected feature behavior ###
 When a feature action is allowed, the feature may perform said action. After
 performing the action, the user interaction should be determined to be an opt
 out (the user did not like the action) or a non-opt out (the user was not
@@ -24,7 +24,7 @@ dismisses the InfoBar, that could be considered an opt out; if the user does
 not dismiss the InfoBar that could be considered a non-opt out. All of the
 information related to that action should be reported to the blacklist.
 
-###Supported evaluation policies###
+### Supported evaluation policies ###
 In general, policies follow a specific form: the most recent _n_ actions are
 evaluated, and if _t_ or more of them are opt outs the action will not be
 allowed for a specified duration, _d_. For each policy, the feature specifies
@@ -51,7 +51,7 @@ prevented from having an action performed for the specific user. The feature
 specifies a set of enabled types and versions for each type. This allows
 removing past versions of types to be removed from the backing store.
 
-###Clearing the blacklist###
+### Clearing the blacklist ###
 Because many actions should be cleared when user clears history, the opt out
 blacklist allows clearing history in certain time ranges. All entries are
 cleared for the specified time range, and the data in memory is repopulated

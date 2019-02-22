@@ -43,6 +43,9 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
                      const SkBitmap& drag_image,
                      const blink::WebPoint& image_offset) override;
 
+  // WebWidgetClient overrides that are not used.
+  bool AllowsBrokenNullLayerTreeView() const override;
+
  private:
   void AnimateNow();
 

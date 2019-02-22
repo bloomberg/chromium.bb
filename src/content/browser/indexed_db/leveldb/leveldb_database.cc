@@ -387,7 +387,7 @@ leveldb::Status LevelDBDatabase::Remove(const StringPiece& key) {
 
   const leveldb::Status s =
       db_->Delete(write_options, leveldb_env::MakeSlice(key));
-  if (!s.IsNotFound())
+  if (!s.ok() && !s.IsNotFound())
     LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
   last_modified_ = clock_->Now();
   return s;

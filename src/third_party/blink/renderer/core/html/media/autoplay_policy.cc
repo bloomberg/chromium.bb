@@ -8,7 +8,10 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
@@ -100,8 +103,14 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (DocumentHasForceAllowFlag(document))
     return true;
 
+  if (DocumentIsCapturingUserMedia(document))
+    return true;
+
   if (!document.GetFrame())
     return false;
+
+  bool feature_policy_enabled =
+      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay);
 
   for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
@@ -116,9 +125,8 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
       return true;
     }
 
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
+    if (!feature_policy_enabled)
       return false;
-    }
   }
 
   return false;
@@ -153,6 +161,25 @@ bool AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
     const Document& document) {
   return GetAutoplayPolicyForDocument(document) !=
          AutoplayPolicy::Type::kNoUserGestureRequired;
+}
+
+// static
+bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
+  if (!document.GetFrame())
+    return false;
+
+  WebFrame* web_frame = WebFrame::FromFrame(document.GetFrame());
+  if (!web_frame)
+    return false;
+  
+  WebLocalFrame* frame = web_frame->ToWebLocalFrame();
+  if (!frame || !frame->Client())
+    return false;
+
+  if (WebUserMediaClient* media_client = frame->Client()->UserMediaClient())
+    return media_client->IsCapturing();
+
+  return false;
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
@@ -273,7 +300,8 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
 }
 
 base::Optional<DOMExceptionCode> AutoplayPolicy::RequestPlay() {
-  if (!Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
+  if (!LocalFrame::HasTransientUserActivation(
+          element_->GetDocument().GetFrame())) {
     autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
     if (IsGestureNeededForPlayback()) {
       autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
@@ -324,8 +352,8 @@ bool AutoplayPolicy::IsLockedPendingUserGesture() const {
 }
 
 void AutoplayPolicy::TryUnlockingUserGesture() {
-  if (IsLockedPendingUserGesture() &&
-      Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
+  if (IsLockedPendingUserGesture() && LocalFrame::HasTransientUserActivation(
+                                          element_->GetDocument().GetFrame())) {
     UnlockUserGesture();
   }
 }
@@ -361,9 +389,6 @@ void AutoplayPolicy::EnsureAutoplayInitiatedSet() {
 
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
     const {
-  if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
-    return false;
-
   // We want to allow muted video to autoplay if:
   // - the flag is enabled;
   // - Data Saver is not enabled;
@@ -415,15 +440,19 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
     return;
 
   autoplay_initiated_ = true;
-  for (Frame* frame = element_->GetDocument().GetFrame(); frame;
+
+  const Document& document = element_->GetDocument();
+  bool feature_policy_enabled =
+      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay);
+
+  for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
     if (frame->HasBeenActivated() ||
         frame->HasReceivedUserGestureBeforeNavigation()) {
       autoplay_initiated_ = false;
       break;
     }
-
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay))
+    if (!feature_policy_enabled)
       break;
   }
 }

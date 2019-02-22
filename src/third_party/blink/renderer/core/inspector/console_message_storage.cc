@@ -11,10 +11,60 @@ namespace blink {
 
 static const unsigned kMaxConsoleMessageCount = 1000;
 
+namespace {
+
+const char* MessageSourceToString(MessageSource source) {
+  switch (source) {
+    case kXMLMessageSource:
+      return "XML";
+    case kJSMessageSource:
+      return "JS";
+    case kNetworkMessageSource:
+      return "Network";
+    case kConsoleAPIMessageSource:
+      return "ConsoleAPI";
+    case kStorageMessageSource:
+      return "Storage";
+    case kAppCacheMessageSource:
+      return "AppCache";
+    case kRenderingMessageSource:
+      return "Rendering";
+    case kSecurityMessageSource:
+      return "Security";
+    case kOtherMessageSource:
+      return "Other";
+    case kDeprecationMessageSource:
+      return "Deprecation";
+    case kWorkerMessageSource:
+      return "Worker";
+    case kViolationMessageSource:
+      return "Violation";
+    case kInterventionMessageSource:
+      return "Intervention";
+    case kRecommendationMessageSource:
+      return "Recommendation";
+  }
+  LOG(FATAL) << "Unreachable code.";
+  return nullptr;
+}
+
+void TraceConsoleMessageEvent(ConsoleMessage* message) {
+  // Change in this function requires adjustment of Catapult/Telemetry metric
+  // tracing/tracing/metrics/console_error_metric.html.
+  // See https://crbug.com/880432
+  if (message->Level() == kErrorMessageLevel) {
+    TRACE_EVENT_INSTANT1("blink.console", "ConsoleMessage::Error",
+                         TRACE_EVENT_SCOPE_THREAD, "source",
+                         MessageSourceToString(message->Source()));
+  }
+}
+}  // anonymous namespace
+
 ConsoleMessageStorage::ConsoleMessageStorage() : expired_count_(0) {}
 
 void ConsoleMessageStorage::AddConsoleMessage(ExecutionContext* context,
                                               ConsoleMessage* message) {
+  TraceConsoleMessageEvent(message);
   probe::consoleMessageAdded(context, message);
   DCHECK(messages_.size() <= kMaxConsoleMessageCount);
   if (messages_.size() == kMaxConsoleMessageCount) {
@@ -29,11 +79,11 @@ void ConsoleMessageStorage::Clear() {
   expired_count_ = 0;
 }
 
-size_t ConsoleMessageStorage::size() const {
+wtf_size_t ConsoleMessageStorage::size() const {
   return messages_.size();
 }
 
-ConsoleMessage* ConsoleMessageStorage::at(size_t index) const {
+ConsoleMessage* ConsoleMessageStorage::at(wtf_size_t index) const {
   return messages_[index].Get();
 }
 

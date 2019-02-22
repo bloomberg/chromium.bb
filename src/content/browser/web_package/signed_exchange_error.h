@@ -13,6 +13,37 @@
 
 namespace content {
 
+// This enum is used for recording histograms. Treat as append-only.
+enum class SignedExchangeLoadResult {
+  kSuccess,
+  // SXG was served from non-secure origin.
+  kSXGServedFromNonHTTPS,
+  // SXG parse error (couldn't extract fallback URL).
+  kFallbackURLParseError,
+  // Unsupported version of SXG (could extract fallback URL).
+  kVersionMismatch,
+  // SXG parse error (could extract fallback URL).
+  kHeaderParseError,
+  // Network error occurred while loading SXG header.
+  kSXGHeaderNetError,
+  // Failed to fetch certificate chain.
+  kCertFetchError,
+  // Failed to parse certificate chain.
+  kCertParseError,
+  // Signature verification failed.
+  kSignatureVerificationError,
+  // Cert verification failed.
+  kCertVerificationError,
+  // CT verification failed.
+  kCTVerificationError,
+  // OCSP check failed.
+  kOCSPError,
+  // Certificate Requirements aren't met.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-cert-req
+  kCertRequirementsNotMet,
+  kMaxValue = kCertRequirementsNotMet
+};
+
 struct SignedExchangeError {
  public:
   enum class Field {

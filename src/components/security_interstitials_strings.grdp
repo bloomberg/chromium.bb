@@ -235,9 +235,6 @@
   <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE" desc="Label for the link to SafeBrowsing Privacy policy page">
     Privacy policy
   </message>
-  <message name="IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
-    <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>Automatically report<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
-  </message>
   <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE" desc="SafeBrowsing Scout label next to checkbox">
     Help improve Safe Browsing by sending some <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>system information and page content<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
   </message>
@@ -310,6 +307,12 @@
   </message>
   <message name="IDS_HARMFUL_WEBVIEW_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page. Allows the user to proceed using a link.">
     This content might try to install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_BILLING_WEBVIEW_HEADING" desc="Title of a security warning. Shown when the user wants to visit a site that may trick them into signing up for a recurring charge to their mobile phone plan. 'Potential' indicates likelihood. 'charges' refers to financial charges to user's mobile phone plan.">
+    Potential charges ahead.
+  </message>
+  <message name="IDS_BILLING_WEBVIEW_EXPLANATION_PARAGRAPH" desc="Body of a security warning. Shown when the user wants to visit a site that may trick them into signing up for a recurring charge to their mobile phone plan. 'charges' refers to financial charges to user's mobile phone plan. 'not obvious' means the site may, for example, include a pricing disclosure in hard-to-see text.">
+    These charges could be one-time or recurring and may not be obvious. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 
   <message name="IDS_CONNECTION_HELP_SHOW_MORE" desc="The button label to expand sections for the chrome://connection-help site. Paired with IDS_CONNECTION_HELP_SHOW_LESS">
@@ -397,7 +400,7 @@
     These charges could be one-time or recurring and may not be obvious.
   </message>
   <message name="IDS_BILLING_PRIMARY_BUTTON" desc="The text for the billing interstitial primary button.">
-    Go Back
+    Go back
   </message>
   <message name="IDS_BILLING_PROCEED_BUTTON" desc="The text for the billing interstitial proceed button.">
     Proceed

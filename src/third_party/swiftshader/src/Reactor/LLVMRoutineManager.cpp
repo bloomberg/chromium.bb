@@ -14,11 +14,13 @@
 
 #include "LLVMRoutineManager.hpp"
 
+#if SWIFTSHADER_LLVM_VERSION < 7
+
 #include "LLVMRoutine.hpp"
 #include "llvm/Function.h"
-#include "../Common/Memory.hpp"
-#include "../Common/Thread.hpp"
-#include "../Common/Debug.hpp"
+#include "Common/Memory.hpp"
+#include "Common/Thread.hpp"
+#include "Common/Debug.hpp"
 
 namespace sw
 {
@@ -146,3 +148,5 @@ namespace sw
 		return result;
 	}
 }
+
+#endif  // SWIFTSHADER_LLVM_VERSION < 7

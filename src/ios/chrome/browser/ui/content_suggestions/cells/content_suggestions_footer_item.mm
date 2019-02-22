@@ -14,7 +14,6 @@
 #endif
 
 namespace {
-const CGFloat kButtonMargin = 2;
 const CGFloat kButtonPadding = 16;
 }
 
@@ -89,10 +88,8 @@ const CGFloat kButtonPadding = 16;
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
-    if (IsUIRefreshPhase1Enabled()) {
-      _button.titleLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    }
+    _button.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _button.contentEdgeInsets =
         UIEdgeInsetsMake(0, kButtonPadding, 0, kButtonPadding);
     [_button addTarget:self
@@ -103,14 +100,7 @@ const CGFloat kButtonPadding = 16;
     [self.contentView addSubview:_activityIndicator];
 
     AddSameConstraints(self.contentView, _activityIndicator);
-    if (IsUIRefreshPhase1Enabled()) {
-      AddSameConstraints(self.contentView, _button);
-    } else {
-      ApplyVisualConstraintsWithMetrics(
-          @[ @"V:|-(margin)-[button]-(margin)-|", @"H:|-(margin)-[button]" ],
-          @{@"button" : _button},
-          @{ @"margin" : @(kButtonMargin) });
-    }
+    AddSameConstraints(self.contentView, _button);
   }
   return self;
 }

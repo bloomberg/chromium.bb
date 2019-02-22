@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -51,7 +52,7 @@ void LinkHighlights::SetTapHighlights(
   // don't get a new target to highlight.
   RemoveAllHighlights();
 
-  for (size_t i = 0; i < highlight_nodes.size(); ++i) {
+  for (wtf_size_t i = 0; i < highlight_nodes.size(); ++i) {
     Node* node = highlight_nodes[i];
 
     if (!node || !node->GetLayoutObject())

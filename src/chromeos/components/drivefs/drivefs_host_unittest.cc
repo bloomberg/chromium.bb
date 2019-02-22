@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_host.h"
 
+#include <type_traits>
 #include <utility>
 
 #include "base/logging.h"
@@ -106,7 +107,8 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   MockOAuth2MintTokenFlow* mock_;
 };
 
-class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
+class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
+                                   public DriveFsHost::MountObserver {
  public:
   TestingDriveFsHostDelegate(
       std::unique_ptr<service_manager::Connector> connector,
@@ -119,7 +121,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
     pending_bootstrap_ = std::move(pending_bootstrap);
   }
 
-  // DriveFsHost::Delegate:
+  // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD1(OnMountFailed, void(base::Optional<base::TimeDelta>));
   MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
@@ -173,6 +175,8 @@ class MockIdentityManager {
           const std::string& account_id,
           const ::identity::ScopeSet& scopes,
           const std::string& consumer_id));
+
+  mojo::BindingSet<identity::mojom::IdentityManager>* bindings_ = nullptr;
 };
 
 class FakeIdentityService
@@ -183,7 +187,10 @@ class FakeIdentityService
     binder_registry_.AddInterface(
         base::BindRepeating(&FakeIdentityService::BindIdentityManagerRequest,
                             base::Unretained(this)));
+    mock_->bindings_ = &bindings_;
   }
+
+  ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
 
  private:
   void OnBindInterface(const service_manager::BindSourceInfo& source,
@@ -233,6 +240,9 @@ class MockDriveFsHostObserver : public DriveFsHostObserver {
  public:
   MOCK_METHOD0(OnUnmounted, void());
   MOCK_METHOD1(OnSyncingStatusUpdate, void(const mojom::SyncingStatus& status));
+  MOCK_METHOD1(OnFilesChanged,
+               void(const std::vector<mojom::FileChange>& changes));
+  MOCK_METHOD1(OnError, void(const mojom::DriveError& error));
 };
 
 ACTION_P(RunQuitClosure, quit) {
@@ -259,8 +269,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
         connector_factory_->CreateConnector(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
-    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get(),
-                                          std::move(timer));
+    host_ =
+        std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get(),
+                                      host_delegate_.get(), std::move(timer));
   }
 
   void TearDown() override {
@@ -273,8 +284,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
       chromeos::disks::DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-    static_cast<chromeos::disks::DiskMountManager::Observer&>(*host_)
-        .OnMountEvent(event, error_code, mount_info);
+    disk_manager_->NotifyMountEvent(event, error_code, mount_info);
   }
 
   std::string StartMount() {
@@ -378,6 +388,11 @@ TEST_F(DriveFsHostTest, Basic) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
+            host_->GetMountPath());
+}
+
+TEST_F(DriveFsHostTest, GetMountPathWhileUnmounted) {
+  EXPECT_EQ(base::FilePath("/media/fuse/drivefs-salt-g-ID"),
             host_->GetMountPath());
 }
 
@@ -585,7 +600,7 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         connector_factory_->CreateConnector(), account);
     host_ = std::make_unique<DriveFsHost>(
-        profile_path_, host_delegate_.get(),
+        profile_path_, host_delegate_.get(), host_delegate_.get(),
         std::make_unique<base::MockOneShotTimer>());
     EXPECT_FALSE(host_->Mount());
     EXPECT_FALSE(host_->IsMounted());
@@ -771,12 +786,35 @@ TEST_F(DriveFsHostTest, GetAccessToken_MintTokenFailure_Transient) {
   run_loop.Run();
 }
 
+TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_identity_manager_,
+              GetAccessToken("test@example.com", _, "drivefs"))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
+          testing::Return(std::make_pair(
+              base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED))));
+  host_delegate_->mock_flow().ExpectNoStartCalls();
+
+  base::RunLoop run_loop;
+  delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+  delegate_ptr_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting([](mojom::AccessTokenStatus status,
+                                    const std::string& token) { FAIL(); }));
+  run_loop.Run();
+  EXPECT_FALSE(host_->IsMounted());
+
+  // Wait for the response to reach the InterfacePtr if it's still open.
+  mock_identity_manager_.bindings_->FlushForTesting();
+}
+
 ACTION_P(CloneStruct, output) {
   *output = arg0.Clone();
 }
 
-TEST_F(DriveFsHostTest,
-       GetAccessToken_OnSyncingStatusUpdate_ForwardToObservers) {
+TEST_F(DriveFsHostTest, OnSyncingStatusUpdate_ForwardToObservers) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
   ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
@@ -793,6 +831,65 @@ TEST_F(DriveFsHostTest,
   testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(status, observed_status);
+}
+
+ACTION_P(CloneVectorOfStructs, output) {
+  for (auto& s : arg0) {
+    output->emplace_back(s.Clone());
+  }
+}
+
+TEST_F(DriveFsHostTest, OnFilesChanged_ForwardToObservers) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  std::vector<mojom::FileChangePtr> changes;
+  changes.emplace_back(base::in_place, base::FilePath("/create"),
+                       mojom::FileChange::Type::kCreate);
+  changes.emplace_back(base::in_place, base::FilePath("/delete"),
+                       mojom::FileChange::Type::kDelete);
+  changes.emplace_back(base::in_place, base::FilePath("/modify"),
+                       mojom::FileChange::Type::kModify);
+  std::vector<mojom::FileChangePtr> observed_changes;
+  EXPECT_CALL(observer, OnFilesChanged(_))
+      .WillOnce(CloneVectorOfStructs(&observed_changes));
+  delegate_ptr_->OnFilesChanged(mojo::Clone(changes));
+  delegate_ptr_.FlushForTesting();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_EQ(changes, observed_changes);
+}
+
+TEST_F(DriveFsHostTest, OnError_ForwardToObservers) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  auto error = mojom::DriveError::New(
+      mojom::DriveError::Type::kCantUploadStorageFull, base::FilePath("/foo"));
+  mojom::DriveErrorPtr observed_error;
+  EXPECT_CALL(observer, OnError(_)).WillOnce(CloneStruct(&observed_error));
+  delegate_ptr_->OnError(error.Clone());
+  delegate_ptr_.FlushForTesting();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_EQ(error, observed_error);
+}
+
+TEST_F(DriveFsHostTest, OnError_IgnoreUnknownErrorTypes) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  EXPECT_CALL(observer, OnError(_)).Times(0);
+  delegate_ptr_->OnError(mojom::DriveError::New(
+      static_cast<mojom::DriveError::Type>(
+          static_cast<std::underlying_type_t<mojom::DriveError::Type>>(
+              mojom::DriveError::Type::kMaxValue) +
+          1),
+      base::FilePath("/foo")));
+  delegate_ptr_.FlushForTesting();
 }
 
 }  // namespace

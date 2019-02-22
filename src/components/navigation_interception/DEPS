@@ -1,6 +1,5 @@
 include_rules = [
   "+jni",
-  "+net",
   "+ui/base",
 
   "+content/public/browser",

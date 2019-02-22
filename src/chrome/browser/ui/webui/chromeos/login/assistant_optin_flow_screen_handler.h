@@ -36,6 +36,9 @@ class AssistantOptInFlowScreenHandler
   void Show() override;
   void Hide() override;
 
+  // Setup Assistant settings manager connection.
+  void SetupAssistantConnection();
+
   // Send messages to the page.
   void ShowNextScreen();
 
@@ -65,7 +68,6 @@ class AssistantOptInFlowScreenHandler
   void OnUpdateSettingsResponse(const std::string& settings);
 
   // Handler for JS WebUI message.
-  void HandleLoadingScreenUserAction(const std::string& action);
   void HandleValuePropScreenUserAction(const std::string& action);
   void HandleThirdPartyScreenUserAction(const std::string& action);
   void HandleGetMoreScreenUserAction(const bool screen_context,
@@ -75,6 +77,7 @@ class AssistantOptInFlowScreenHandler
   void HandleThirdPartyScreenShown();
   void HandleGetMoreScreenShown();
   void HandleReadyScreenShown();
+  void HandleLoadingTimeout();
   void HandleHotwordResult(bool enable_hotword);
   void HandleFlowFinished();
   void HandleFlowInitialized();
@@ -98,6 +101,12 @@ class AssistantOptInFlowScreenHandler
 
   // Whether user chose to enable hotword.
   bool enable_hotword_ = true;
+
+  // Time that get settings request is sent.
+  base::TimeTicks send_request_time_;
+
+  // Counter for the number of loading timeout happens.
+  int loading_timeout_counter_ = 0;
 
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_;

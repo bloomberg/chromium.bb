@@ -19,9 +19,11 @@ TellAction::~TellAction() {}
 
 void TellAction::ProcessAction(ActionDelegate* delegate,
                                ProcessActionCallback callback) {
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   // tell.message in the proto is localized.
   delegate->ShowStatusMessage(proto_.tell().message());
-  std::move(callback).Run(true);
+  UpdateProcessedAction(ACTION_APPLIED);
+  std::move(callback).Run(std::move(processed_action_proto_));
 }
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

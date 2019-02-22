@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/ukm_source_id.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -19,6 +21,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
@@ -27,12 +30,25 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/console_message_level.h"
 #include "net/url_request/url_request.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace content {
 
 namespace {
 
 const char kSSLManagerKeyName[] = "content_ssl_manager";
+
+// Used to log type of mixed content displayed/ran, matches histogram enum
+// (MixedContentType). DO NOT REORDER.
+enum class MixedContentType {
+  kDisplayMixedContent = 0,
+  kDisplayWithCertErrors = 1,
+  kMixedForm = 2,
+  kScriptingMixedContent = 3,
+  kScriptingWithCertErrors = 4,
+  kMaxValue = kScriptingWithCertErrors,
+};
 
 void OnAllowCertificateWithRecordDecision(
     bool record_decision,
@@ -121,6 +137,15 @@ void HandleSSLErrorOnUI(
   manager->OnCertError(std::move(handler));
 }
 
+void LogMixedContentMetrics(MixedContentType type,
+                            ukm::SourceId source_id,
+                            ukm::UkmRecorder* recorder) {
+  UMA_HISTOGRAM_ENUMERATION("SSL.MixedContentShown", type);
+  ukm::builders::SSL_MixedContentShown(source_id)
+      .SetType(static_cast<int64_t>(type))
+      .Record(recorder);
+}
+
 }  // namespace
 
 // static
@@ -146,8 +171,8 @@ void SSLManager::OnSSLCertificateError(
 
   // TODO(jam): remove the logic to call this from IO thread once the
   // network service code path is the only one.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
                      BrowserThread::IO, resource_type, url, ssl_info, fatal));
 }
@@ -223,10 +248,28 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
 }
 
 void SSLManager::DidDisplayMixedContent() {
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (entry && entry->GetURL().SchemeIsCryptographic() &&
+      entry->GetSSL().certificate) {
+    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+        controller_->delegate()->GetWebContents());
+    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    LogMixedContentMetrics(MixedContentType::kDisplayMixedContent, source_id,
+                           ukm::UkmRecorder::Get());
+  }
   UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT, 0);
 }
 
 void SSLManager::DidContainInsecureFormAction() {
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (entry && entry->GetURL().SchemeIsCryptographic() &&
+      entry->GetSSL().certificate) {
+    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+        controller_->delegate()->GetWebContents());
+    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    LogMixedContentMetrics(MixedContentType::kMixedForm, source_id,
+                           ukm::UkmRecorder::Get());
+  }
   UpdateLastCommittedEntry(SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION, 0);
 }
 
@@ -237,6 +280,11 @@ void SSLManager::DidDisplayContentWithCertErrors() {
   // Only record information about subresources with cert errors if the
   // main page is HTTPS with a certificate.
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
+    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+        controller_->delegate()->GetWebContents());
+    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    LogMixedContentMetrics(MixedContentType::kDisplayWithCertErrors, source_id,
+                           ukm::UkmRecorder::Get());
     UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS, 0);
   }
 }
@@ -245,6 +293,14 @@ void SSLManager::DidRunMixedContent(const GURL& security_origin) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)
     return;
+
+  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
+    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+        controller_->delegate()->GetWebContents());
+    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    LogMixedContentMetrics(MixedContentType::kScriptingMixedContent, source_id,
+                           ukm::UkmRecorder::Get());
+  }
 
   SiteInstance* site_instance = entry->site_instance();
   if (!site_instance)
@@ -263,6 +319,14 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)
     return;
+
+  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
+    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+        controller_->delegate()->GetWebContents());
+    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    LogMixedContentMetrics(MixedContentType::kScriptingWithCertErrors,
+                           source_id, ukm::UkmRecorder::Get());
+  }
 
   SiteInstance* site_instance = entry->site_instance();
   if (!site_instance)
@@ -411,8 +475,7 @@ void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
   SSLManagerSet* managers =
       static_cast<SSLManagerSet*>(context->GetUserData(kSSLManagerKeyName));
 
-  for (std::set<SSLManager*>::iterator i = managers->get().begin();
-       i != managers->get().end(); ++i) {
+  for (auto i = managers->get().begin(); i != managers->get().end(); ++i) {
     (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry(), 0, 0);
   }
 }

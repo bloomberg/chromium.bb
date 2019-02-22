@@ -85,6 +85,30 @@ TEST_F(ValidateDecorations, ValidateOpMemberDecorateRegistration) {
                                  Decoration(SpvDecorationBufferBlock)}));
 }
 
+TEST_F(ValidateDecorations, ValidateOpMemberDecorateOutOfBound) {
+  std::string spirv = R"(
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %1 "Main"
+               OpExecutionMode %1 OriginUpperLeft
+               OpMemberDecorate %_struct_2 1 RelaxedPrecision
+       %void = OpTypeVoid
+          %4 = OpTypeFunction %void
+      %float = OpTypeFloat 32
+  %_struct_2 = OpTypeStruct %float
+          %1 = OpFunction %void None %4
+          %6 = OpLabel
+               OpReturn
+               OpFunctionEnd
+)";
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateAndRetrieveValidationState());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Index 1 provided in OpMemberDecorate for struct <id> "
+                        "2 is out of bounds. The structure has 1 members. "
+                        "Largest valid index is 0."));
+}
+
 TEST_F(ValidateDecorations, ValidateGroupDecorateRegistration) {
   std::string spirv = R"(
                OpCapability Shader
@@ -263,6 +287,8 @@ TEST_F(ValidateDecorations, MultipleBuiltInObjectsConsumedByOpEntryPointBad) {
                OpCapability Geometry
                OpMemoryModel Logical GLSL450
                OpEntryPoint Geometry %main "main" %in_1 %in_2
+               OpExecutionMode %main InputPoints
+               OpExecutionMode %main OutputPoints
                OpMemberDecorate %struct_1 0 BuiltIn InvocationId
                OpMemberDecorate %struct_2 0 BuiltIn Position
       %int = OpTypeInt 32 1
@@ -295,6 +321,8 @@ TEST_F(ValidateDecorations,
                OpCapability Geometry
                OpMemoryModel Logical GLSL450
                OpEntryPoint Geometry %main "main" %in_1 %out_1
+               OpExecutionMode %main InputPoints
+               OpExecutionMode %main OutputPoints
                OpMemberDecorate %struct_1 0 BuiltIn InvocationId
                OpMemberDecorate %struct_2 0 BuiltIn Position
       %int = OpTypeInt 32 1
@@ -322,6 +350,8 @@ TEST_F(ValidateDecorations, NoBuiltInObjectsConsumedByOpEntryPointGood) {
                OpCapability Geometry
                OpMemoryModel Logical GLSL450
                OpEntryPoint Geometry %main "main" %in_1 %out_1
+               OpExecutionMode %main InputPoints
+               OpExecutionMode %main OutputPoints
       %int = OpTypeInt 32 1
      %void = OpTypeVoid
      %func = OpTypeFunction %void
@@ -2522,7 +2552,7 @@ TEST_F(ValidateDecorations,
           "offset 4 overlaps previous member ending at offset 15"));
 }
 
-TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderBadUniversal1_0) {
+TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderGoodUniversal1_0) {
   std::string spirv = R"(
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
@@ -2547,17 +2577,11 @@ TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderBadUniversal1_0) {
   )";
 
   CompileSuccessfully(spirv);
-  EXPECT_EQ(SPV_ERROR_INVALID_ID,
+  EXPECT_EQ(SPV_SUCCESS,
             ValidateAndRetrieveValidationState(SPV_ENV_UNIVERSAL_1_0));
-  EXPECT_THAT(
-      getDiagnosticString(),
-      HasSubstr(
-          "Structure id 3 decorated as Block for variable in Uniform storage "
-          "class must follow standard uniform buffer layout rules: member 0 at "
-          "offset 4 has a higher offset than member 1 at offset 0"));
 }
 
-TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderBadOpenGL4_5) {
+TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderGoodOpenGL4_5) {
   std::string spirv = R"(
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
@@ -2582,14 +2606,8 @@ TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderBadOpenGL4_5) {
   )";
 
   CompileSuccessfully(spirv);
-  EXPECT_EQ(SPV_ERROR_INVALID_ID,
+  EXPECT_EQ(SPV_SUCCESS,
             ValidateAndRetrieveValidationState(SPV_ENV_OPENGL_4_5));
-  EXPECT_THAT(
-      getDiagnosticString(),
-      HasSubstr(
-          "Structure id 3 decorated as Block for variable in Uniform storage "
-          "class must follow standard uniform buffer layout rules: member 0 at "
-          "offset 4 has a higher offset than member 1 at offset 0"));
 }
 
 TEST_F(ValidateDecorations, BlockLayoutOffsetOutOfOrderGoodVulkan1_1) {
@@ -3026,6 +3044,7 @@ TEST_F(ValidateDecorations, EntryPointVariableWrongStorageClass) {
 OpCapability Shader
 OpMemoryModel Logical GLSL450
 OpEntryPoint Fragment %1 "func" %var
+OpExecutionMode %1 OriginUpperLeft
 %void = OpTypeVoid
 %int = OpTypeInt 32 0
 %ptr_int_Workgroup = OpTypePointer Workgroup %int
@@ -3044,6 +3063,353 @@ OpFunctionEnd
                         "Storage Class of Input(1) or Output(3). Found Storage "
                         "Class 4 for Entry Point id 1."));
 }
+
+TEST_F(ValidateDecorations, VulkanMemoryModelNonCoherent) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability VulkanMemoryModelKHR
+OpCapability Linkage
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpMemoryModel Logical VulkanKHR
+OpDecorate %1 Coherent
+%2 = OpTypeInt 32 0
+%3 = OpTypePointer StorageBuffer %2
+%1 = OpVariable %3 StorageBuffer
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Coherent decoration targeting 1 is banned when using "
+                        "the Vulkan memory model."));
+}
+
+TEST_F(ValidateDecorations, VulkanMemoryModelNoCoherentMember) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability VulkanMemoryModelKHR
+OpCapability Linkage
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpMemoryModel Logical VulkanKHR
+OpMemberDecorate %1 0 Coherent
+%2 = OpTypeInt 32 0
+%1 = OpTypeStruct %2 %2
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Coherent decoration targeting 1 (member index 0) is "
+                        "banned when using "
+                        "the Vulkan memory model."));
+}
+
+TEST_F(ValidateDecorations, VulkanMemoryModelNoVolatile) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability VulkanMemoryModelKHR
+OpCapability Linkage
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpMemoryModel Logical VulkanKHR
+OpDecorate %1 Volatile
+%2 = OpTypeInt 32 0
+%3 = OpTypePointer StorageBuffer %2
+%1 = OpVariable %3 StorageBuffer
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Volatile decoration targeting 1 is banned when using "
+                        "the Vulkan memory model."));
+}
+
+TEST_F(ValidateDecorations, VulkanMemoryModelNoVolatileMember) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability VulkanMemoryModelKHR
+OpCapability Linkage
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpMemoryModel Logical VulkanKHR
+OpMemberDecorate %1 1 Volatile
+%2 = OpTypeInt 32 0
+%1 = OpTypeStruct %2 %2
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Volatile decoration targeting 1 (member index 1) is "
+                        "banned when using "
+                        "the Vulkan memory model."));
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeGood) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%float = OpTypeFloat 32
+%float_1_25 = OpConstant %float 1.25
+%half_ptr = OpTypePointer StorageBuffer %half
+%half_ptr_var = OpVariable %half_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %float_1_25
+OpStore %half_ptr_var %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeNotOpFConvert) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%short = OpTypeInt 16 1
+%int = OpTypeInt 32 1
+%int_17 = OpConstant %int 17
+%short_ptr = OpTypePointer StorageBuffer %short
+%short_ptr_var = OpVariable %short_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpSConvert %short %int_17
+OpStore %short_ptr_var %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateAndRetrieveValidationState());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("FPRoundingMode decoration can be applied only to a "
+                        "width-only conversion instruction for floating-point "
+                        "object."));
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeNoOpStoreGood) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%float = OpTypeFloat 32
+%float_1_25 = OpConstant %float 1.25
+%half_ptr = OpTypePointer StorageBuffer %half
+%half_ptr_var = OpVariable %half_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %float_1_25
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeFConvert64to16Good) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpCapability Float64
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%double = OpTypeFloat 64
+%double_1_25 = OpConstant %double 1.25
+%half_ptr = OpTypePointer StorageBuffer %half
+%half_ptr_var = OpVariable %half_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %double_1_25
+OpStore %half_ptr_var %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeNotStoreInFloat16) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpCapability Float64
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%float = OpTypeFloat 32
+%double = OpTypeFloat 64
+%double_1_25 = OpConstant %double 1.25
+%float_ptr = OpTypePointer StorageBuffer %float
+%float_ptr_var = OpVariable %float_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %float %double_1_25
+OpStore %float_ptr_var %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateAndRetrieveValidationState());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("FPRoundingMode decoration can be applied only to the "
+                        "Object operand of an OpStore storing through a "
+                        "pointer to a 16-bit floating-point object."));
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeBadStorageClass) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%float = OpTypeFloat 32
+%float_1_25 = OpConstant %float 1.25
+%half_ptr = OpTypePointer Private %half
+%half_ptr_var = OpVariable %half_ptr Private
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %float_1_25
+OpStore %half_ptr_var %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateAndRetrieveValidationState());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("FPRoundingMode decoration can be applied only to the "
+                "Object operand of an OpStore in the StorageBuffer, Uniform, "
+                "PushConstant, Input, or Output Storage Classes."));
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeMultipleOpStoreGood) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%float = OpTypeFloat 32
+%float_1_25 = OpConstant %float 1.25
+%half_ptr = OpTypePointer StorageBuffer %half
+%half_ptr_var_0 = OpVariable %half_ptr StorageBuffer
+%half_ptr_var_1 = OpVariable %half_ptr StorageBuffer
+%half_ptr_var_2 = OpVariable %half_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %float_1_25
+OpStore %half_ptr_var_0 %_
+OpStore %half_ptr_var_1 %_
+OpStore %half_ptr_var_2 %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateDecorations, FPRoundingModeMultipleUsesBad) {
+  std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability StorageBuffer16BitAccess
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpExtension "SPV_KHR_variable_pointers"
+OpExtension "SPV_KHR_16bit_storage"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %_ FPRoundingMode RTE
+%half = OpTypeFloat 16
+%float = OpTypeFloat 32
+%float_1_25 = OpConstant %float 1.25
+%half_ptr = OpTypePointer StorageBuffer %half
+%half_ptr_var_0 = OpVariable %half_ptr StorageBuffer
+%half_ptr_var_1 = OpVariable %half_ptr StorageBuffer
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+%_ = OpFConvert %half %float_1_25
+OpStore %half_ptr_var_0 %_
+%result = OpFAdd %half %_ %_
+OpStore %half_ptr_var_1 %_
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateAndRetrieveValidationState());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("FPRoundingMode decoration can be applied only to the "
+                        "Object operand of an OpStore."));
+}
+
 }  // namespace
 }  // namespace val
 }  // namespace spvtools

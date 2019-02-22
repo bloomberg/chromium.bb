@@ -18,11 +18,39 @@ from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
 
 
-_DEFAULT_EXTRA_ARGS = [
-    '--isolated-script-test-output', '${ISOLATED_OUTDIR}/output.json',
-    '--isolated-script-test-chartjson-output',
-    '${ISOLATED_OUTDIR}/chartjson-output.json',
-]
+_CACHE_NAME = 'pinpoint_cache'
+_CACHE_BASE = '.pinpoint_cache'
+_VPYTHON_VERSION = 'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'
+_VPYTHON_PARAMS = {
+    'caches': [
+        {
+            'name': '_'.join((_CACHE_NAME, 'vpython')),
+            'path': '/'.join((_CACHE_BASE, 'vpython')),
+        },
+    ],
+    'cipd_input': {
+        'client_package': None,
+        'packages': [
+            {
+                'package_name': 'infra/tools/luci/vpython/${platform}',
+                'path': '',
+                'version': _VPYTHON_VERSION,
+            },
+            {
+                'package_name': 'infra/tools/luci/vpython-native/${platform}',
+                'path': '',
+                'version': _VPYTHON_VERSION,
+            },
+        ],
+        'server': None,
+    },
+    'env': [
+        {
+            'key': 'VPYTHON_VIRTUALENV_ROOT',
+            'value': '/'.join((_CACHE_BASE, 'vpython')),
+        }
+    ],
+}
 
 
 class RunTestError(Exception):
@@ -108,8 +136,7 @@ class RunTest(quest.Quest):
 
     extra_test_args = cls._ExtraTestArgs(arguments)
 
-    return cls(swarming_server, dimensions,
-               extra_test_args + _DEFAULT_EXTRA_ARGS)
+    return cls(swarming_server, dimensions, extra_test_args)
 
   @classmethod
   def _ExtraTestArgs(cls, arguments):
@@ -268,6 +295,7 @@ class _RunTestExecution(execution_module.Execution):
             'io_timeout_secs': '1200',  # 20 minutes, to match the perf bots.
         },
     }
+    body.update(_VPYTHON_PARAMS)
     if not hasattr(self, '_swarming_server'):
       # TODO: Remove after data migration. crbug.com/822008
       self._swarming_server = 'https://chromium-swarm.appspot.com'

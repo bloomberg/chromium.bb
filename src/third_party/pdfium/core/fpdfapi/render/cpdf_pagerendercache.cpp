@@ -13,6 +13,8 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/render/cpdf_imagecacheentry.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
+#include "core/fxge/dib/cfx_dibitmap.h"
+#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -27,17 +29,9 @@ struct CacheInfo {
 
 }  // namespace
 
-CPDF_PageRenderCache::CPDF_PageRenderCache(CPDF_Page* pPage)
-    : m_pPage(pPage),
-      m_pCurImageCacheEntry(nullptr),
-      m_nTimeCount(0),
-      m_nCacheSize(0),
-      m_bCurFindCache(false) {}
+CPDF_PageRenderCache::CPDF_PageRenderCache(CPDF_Page* pPage) : m_pPage(pPage) {}
 
-CPDF_PageRenderCache::~CPDF_PageRenderCache() {
-  for (const auto& it : m_ImageCache)
-    delete it.second;
-}
+CPDF_PageRenderCache::~CPDF_PageRenderCache() = default;
 
 void CPDF_PageRenderCache::CacheOptimization(int32_t dwLimitCacheSize) {
   if (m_nCacheSize <= (uint32_t)dwLimitCacheSize)
@@ -75,7 +69,6 @@ void CPDF_PageRenderCache::ClearImageCacheEntry(CPDF_Stream* pStream) {
     return;
 
   m_nCacheSize -= it->second->EstimateSize();
-  delete it->second;
   m_ImageCache.erase(it);
 }
 
@@ -89,10 +82,10 @@ bool CPDF_PageRenderCache::StartGetCachedBitmap(
   const auto it = m_ImageCache.find(pStream);
   m_bCurFindCache = it != m_ImageCache.end();
   if (m_bCurFindCache) {
-    m_pCurImageCacheEntry = it->second;
+    m_pCurImageCacheEntry = it->second.get();
   } else {
-    m_pCurImageCacheEntry =
-        new CPDF_ImageCacheEntry(m_pPage->GetDocument(), pImage);
+    m_pCurImageCacheEntry = pdfium::MakeUnique<CPDF_ImageCacheEntry>(
+        m_pPage->GetDocument(), pImage);
   }
   CPDF_DIBBase::LoadState ret = m_pCurImageCacheEntry->StartGetCachedBitmap(
       pRenderStatus->GetFormResource(), m_pPage->m_pPageResources.Get(), bStdCS,
@@ -102,7 +95,7 @@ bool CPDF_PageRenderCache::StartGetCachedBitmap(
 
   m_nTimeCount++;
   if (!m_bCurFindCache)
-    m_ImageCache[pStream] = m_pCurImageCacheEntry;
+    m_ImageCache[pStream] = m_pCurImageCacheEntry.Release();
 
   if (ret == CPDF_DIBBase::LoadState::kFail)
     m_nCacheSize += m_pCurImageCacheEntry->EstimateSize();
@@ -119,27 +112,21 @@ bool CPDF_PageRenderCache::Continue(PauseIndicatorIface* pPause,
   m_nTimeCount++;
   if (!m_bCurFindCache) {
     m_ImageCache[m_pCurImageCacheEntry->GetImage()->GetStream()] =
-        m_pCurImageCacheEntry;
+        m_pCurImageCacheEntry.Release();
   }
   m_nCacheSize += m_pCurImageCacheEntry->EstimateSize();
   return false;
 }
 
-void CPDF_PageRenderCache::ResetBitmap(const RetainPtr<CPDF_Image>& pImage,
-                                       const RetainPtr<CFX_DIBitmap>& pBitmap) {
+void CPDF_PageRenderCache::ResetBitmap(const RetainPtr<CPDF_Image>& pImage) {
   CPDF_ImageCacheEntry* pEntry;
   CPDF_Stream* pStream = pImage->GetStream();
   const auto it = m_ImageCache.find(pStream);
-  if (it == m_ImageCache.end()) {
-    if (!pBitmap)
-      return;
+  if (it == m_ImageCache.end())
+    return;
 
-    pEntry = new CPDF_ImageCacheEntry(m_pPage->GetDocument(), pImage);
-    m_ImageCache[pStream] = pEntry;
-  } else {
-    pEntry = it->second;
-  }
+  pEntry = it->second.get();
   m_nCacheSize -= pEntry->EstimateSize();
-  pEntry->Reset(pBitmap);
+  pEntry->Reset(nullptr);
   m_nCacheSize += pEntry->EstimateSize();
 }

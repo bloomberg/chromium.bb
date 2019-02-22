@@ -66,6 +66,11 @@ struct TypeConverter<blink::mojom::blink::AuthenticatorTransport, String> {
 };
 
 template <>
+struct TypeConverter<String, blink::mojom::blink::AuthenticatorTransport> {
+  static String Convert(const blink::mojom::blink::AuthenticatorTransport&);
+};
+
+template <>
 struct TypeConverter<blink::mojom::blink::UserVerificationRequirement, String> {
   static blink::mojom::blink::UserVerificationRequirement Convert(
       const String&);

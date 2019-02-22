@@ -59,7 +59,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   registration.developer_id = "my_id";
   registration.unique_id = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
   registration.download_total = 9001;
-  registration.state = blink::mojom::BackgroundFetchState::FAILURE;
+  registration.result = blink::mojom::BackgroundFetchResult::FAILURE;
   registration.failure_reason =
       blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI;
 
@@ -72,7 +72,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   EXPECT_EQ(roundtrip_registration.unique_id, registration.unique_id);
 
   EXPECT_EQ(roundtrip_registration.download_total, registration.download_total);
-  EXPECT_EQ(roundtrip_registration.state, registration.state);
+  EXPECT_EQ(roundtrip_registration.result, registration.result);
   EXPECT_EQ(roundtrip_registration.failure_reason, registration.failure_reason);
 }
 

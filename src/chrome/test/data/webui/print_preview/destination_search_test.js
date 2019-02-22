@@ -10,6 +10,8 @@ cr.define('destination_search_test', function() {
     ReceiveFailedSetup: 'receive failed setup',
     GetCapabilitiesFails: 'get capabilities fails',
     CloudKioskPrinter: 'cloud kiosk printer',
+    ReceiveSuccessfulSetupWithPolicies:
+        'receive successful setup with policies',
   };
 
   const suiteName = 'NewDestinationSearchTest';
@@ -101,7 +103,7 @@ cr.define('destination_search_test', function() {
         success: true,
       };
       if (cr.isChromeOS) {
-        nativeLayer.setSetupPrinterResponse(false, response);
+        nativeLayer.setSetupPrinterResponse(response);
       } else {
         nativeLayer.setLocalDestinationCapabilities(
             print_preview_test_utils.getCddTemplate(destId));
@@ -131,7 +133,7 @@ cr.define('destination_search_test', function() {
       const destId = '001122DEADBEEF';
       const originalDestination = destinationStore.selectedDestination;
       nativeLayer.setSetupPrinterResponse(
-          true, {printerId: destId, success: false});
+          {printerId: destId, success: false}, true);
       requestSetup(destId);
       return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
         assertEquals(destId, actualId);
@@ -152,7 +154,7 @@ cr.define('destination_search_test', function() {
             print_preview_test_utils.getCddTemplate(destId).capabilities,
         success: false,
       };
-      nativeLayer.setSetupPrinterResponse(false, response);
+      nativeLayer.setSetupPrinterResponse(response);
       requestSetup(destId);
       return nativeLayer.whenCalled('setupPrinter')
           .then(function(actualDestId) {
@@ -200,6 +202,38 @@ cr.define('destination_search_test', function() {
 
       // Verify that the destination has been selected.
       assertEquals(printerId, destinationStore.selectedDestination.id);
+    });
+
+    // Tests that if policies are set correctly if they are present
+    // for a destination. ChromeOS only.
+    test(assert(TestNames.ReceiveSuccessfulSetupWithPolicies), function() {
+      const destId = '00112233DEADBEEF';
+      const response = {
+        printerId: destId,
+        capabilities:
+            print_preview_test_utils.getCddTemplate(destId).capabilities,
+        policies: {
+          allowedColorModes: print_preview.ColorMode.GRAY,
+          allowedDuplexModes: print_preview.DuplexModeRestriction.DUPLEX,
+        },
+        success: true,
+      };
+      nativeLayer.setSetupPrinterResponse(response);
+      requestSetup(destId);
+      return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
+        assertEquals(destId, actualId);
+        const selectedDestination = destinationStore.selectedDestination;
+        assertNotEquals(null, selectedDestination);
+        assertEquals(destId, selectedDestination.id);
+        assertNotEquals(null, selectedDestination.capabilities);
+        assertNotEquals(null, selectedDestination.policies);
+        assertEquals(
+            print_preview.ColorMode.GRAY,
+            selectedDestination.policies.allowedColorModes);
+        assertEquals(
+            print_preview.DuplexModeRestriction.DUPLEX,
+            selectedDestination.policies.allowedDuplexModes);
+      });
     });
   });
 

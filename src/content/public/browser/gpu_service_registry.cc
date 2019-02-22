@@ -4,13 +4,14 @@
 
 #include "content/public/browser/gpu_service_registry.h"
 
+#include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 
 namespace content {
 
 void BindInterfaceInGpuProcess(const std::string& interface_name,
                                mojo::ScopedMessagePipeHandle interface_pipe) {
-  GpuProcessHost* host = GpuProcessHost::Get();
+  auto* host = GpuProcessHost::Get()->gpu_host();
   return host->BindInterface(interface_name, std::move(interface_pipe));
 }
 

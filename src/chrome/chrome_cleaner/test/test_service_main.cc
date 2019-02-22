@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/test/test_timeouts.h"
@@ -23,8 +24,10 @@ class TestService {
   TestService() {
     service_status_.dwCurrentState = SERVICE_START_PENDING;
     service_status_.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-    service_status_.dwWaitHint =
-        TestTimeouts::action_max_timeout().InMilliseconds();
+    // action_max_timeout can be overridden by command line to a value that
+    // could overflow.
+    service_status_.dwWaitHint = base::checked_cast<DWORD>(
+        TestTimeouts::action_max_timeout().InMilliseconds());
     service_stop_event_ = ::CreateEvent(nullptr, TRUE, FALSE, nullptr);
   }
 

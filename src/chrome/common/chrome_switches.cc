@@ -329,9 +329,6 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
-// Enables user control over muting tab audio from the tab strip.
-const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
-
 // Enables DevTools server for UI (mus, ash, etc). Value should be the port the
 // server is started on. Default port is 9223.
 const char kEnableUiDevTools[] = "enable-ui-devtools";
@@ -622,12 +619,6 @@ const char kSimulateOutdatedNoAU[]          = "simulate-outdated-no-au";
 // Simulates an update being available.
 const char kSimulateUpgrade[]               = "simulate-upgrade";
 
-// Causes SSL key material to be logged to the specified file for debugging
-// purposes. See
-// https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Key_Log_Format
-// for the format.
-const char kSSLKeyLogFile[]               = "ssl-key-log-file";
-
 // Specifies the maximum SSL/TLS version ("tls1.2" or "tls1.3").
 const char kSSLVersionMax[] = "ssl-version-max";
 
@@ -670,8 +661,7 @@ const char kTaskManagerShowExtraRenderers[] =
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Specifies the enabled TLS 1.3 variant ("disabled", "draft23", "draft28",
-// "final").
+// Specifies the enabled TLS 1.3 variant ("disabled", "draft23", "final").
 const char kTLS13Variant[] = "tls13-variant";
 
 // This mode disables the TLS 1.3 for the |kTLS13Variant| switch.
@@ -679,9 +669,6 @@ const char kTLS13VariantDisabled[] = "disabled";
 
 // This mode enables TLS 1.3 draft-23 for the |kTLS13Variant| switch.
 const char kTLS13VariantDraft23[] = "draft23";
-
-// This mode enables TLS 1.3 draft-28 for the |kTLS13Variant| switch.
-const char kTLS13VariantDraft28[] = "draft28";
 
 // This mode enables TLS 1.3 final for the |kTLS13Variant| switch.
 const char kTLS13VariantFinal[] = "final";
@@ -796,8 +783,8 @@ const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 // Forces the update menu badge to show.
 const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 
-// Forces the update menu item to show.
-const char kForceShowUpdateMenuItem[] = "force-show-update-menu-item";
+// Forces the update menu type to a specific type.
+const char kForceUpdateMenuType[] = "force-update-menu-type";
 
 // Forces a custom summary to be displayed below the update menu item.
 const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
@@ -864,9 +851,6 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 // Disable the toolkit-views App Info dialog for Mac.
 const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 
-// Disables custom Cmd+` window cycling for platform apps and hosted apps.
-const char kDisableAppWindowCycling[] = "disable-app-window-cycling";
-
 // Disables tab detaching in fullscreen mode on Mac.
 const char kDisableFullscreenTabDetaching[] =
     "disable-fullscreen-tab-detaching";
@@ -888,9 +872,6 @@ const char kEnableUserMetrics[] = "enable-user-metrics";
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
 
-// Enables custom Cmd+` window cycling for platform apps and hosted apps.
-const char kEnableAppWindowCycling[] = "enable-app-window-cycling";
-
 // Enables tab detaching in fullscreen mode on Mac.
 const char kEnableFullscreenTabDetaching[] = "enable-fullscreen-tab-detaching";
 
@@ -900,10 +881,6 @@ const char kEnableFullscreenToolbarReveal[] =
 
 // Allows hosted apps to be opened in windows on Mac.
 const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
-
-// Enables use of toolkit-views based native app windows.
-const char kEnableMacViewsNativeAppWindows[] =
-    "enable-mac-views-native-app-windows";
 
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.
@@ -999,6 +976,14 @@ const char kEnableInputImeAPI[] = "enable-input-ime-api";
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    !defined(GOOGLE_CHROME_BUILD)
+// Enables Machine level user cloud policy on Chromium build. This policy is
+// always enabled on the branded builds.
+const char kEnableMachineLevelUserCloudPolicy[] =
+    "enable-machine-level-user-cloud-policy";
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

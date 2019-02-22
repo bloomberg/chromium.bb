@@ -14,10 +14,6 @@ namespace chrome {
 
 void DisableFindBarAnimationsDuringTesting(bool disable) {
   DropdownBarHost::disable_animations_during_testing_ = disable;
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    DisableFindBarCocoaAnimationsDuringTesting(disable);
-#endif
 }
 
 }  // namespace chrome

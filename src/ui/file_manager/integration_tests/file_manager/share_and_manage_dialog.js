@@ -8,7 +8,7 @@
  * Test sharing dialog for a file or directory on Drive
  * @param {string} path Path for a file or a directory to be shared.
  */
-function share(path) {
+function share(path, expected_share_url) {
   var appId;
   var caller = getCaller();
   StepsRunner.run([
@@ -46,31 +46,14 @@ function share(path) {
       const item = ['#share-menu [command="#share"]'];
       remoteCall.callRemoteTestUtil('fakeMouseClick', appId, item, this.next);
     },
-    // Wait until the share dialog's (mocked) content is shown.
+    // Wait for the browser window to appear.
     function(result) {
       chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(appId, '.share-dialog-webview-wrapper.loaded')
-          .then(this.next);
+      remoteCall.callRemoteTestUtil('getLastVisitedURL', appId, [], this.next);
     },
-    // Wait until the share dialog's contents are shown.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'executeScriptInWebView', appId,
-          [
-            '.share-dialog-webview-wrapper.loaded webview',
-            'document.querySelector("button").click()'
-          ],
-          this.next);
-    },
-    // Wait until the share dialog's contents are hidden.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall
-          .waitForElementLost(appId, '.share-dialog-webview-wrapper.loaded')
-          .then(this.next);
-    },
-    // Check for Javascript errros.
-    function() {
+    // Check we went to the correct URL, and for Javascript errors.
+    function(visitedUrl) {
+      chrome.test.assertEq(expected_share_url, visitedUrl);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -153,14 +136,16 @@ function manage(path, expected_manage_url) {
  * Tests sharing a file on Drive.
  */
 testcase.shareFileDrive = function() {
-  share('world.ogv');
+  share(
+      'world.ogv',
+      'https://file_alternate_link/world.ogv?userstoinvite=%22%22');
 };
 
 /**
  * Tests sharing a directory on Drive.
  */
 testcase.shareDirectoryDrive = function() {
-  share('photos');
+  share('photos', 'https://folder_alternate_link/photos?userstoinvite=%22%22');
 };
 
 // TODO(sashab): Add tests for sharing a file on Team Drives.

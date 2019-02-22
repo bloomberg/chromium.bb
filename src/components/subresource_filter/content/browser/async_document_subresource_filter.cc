@@ -19,10 +19,10 @@
 
 namespace subresource_filter {
 
-ActivationState ComputeActivationState(
+mojom::ActivationState ComputeActivationState(
     const GURL& document_url,
     const url::Origin& parent_document_origin,
-    const ActivationState& parent_activation_state,
+    const mojom::ActivationState& parent_activation_state,
     const MemoryMappedRuleset* ruleset) {
   DCHECK(ruleset);
 
@@ -32,18 +32,18 @@ ActivationState ComputeActivationState(
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
 
   auto page_wall_duration_timer = ScopedTimers::StartIf(
-      parent_document_origin.unique(), [](base::TimeDelta delta) {
+      parent_document_origin.opaque(), [](base::TimeDelta delta) {
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.PageLoad.Activation.WallDuration", delta);
       });
   auto page_cpu_duration_timer = ScopedThreadTimers::StartIf(
-      parent_document_origin.unique(), [](base::TimeDelta delta) {
+      parent_document_origin.opaque(), [](base::TimeDelta delta) {
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.PageLoad.Activation.CPUDuration", delta);
       });
 
   IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
-  ActivationState activation_state = parent_activation_state;
+  mojom::ActivationState activation_state = parent_activation_state;
   if (activation_state.filtering_disabled_for_document)
     return activation_state;
 
@@ -59,8 +59,8 @@ ActivationState ComputeActivationState(
     activation_state.generic_blocking_rules_disabled = true;
   }
 
-  // Careful note: any new state computed for ActivationState in this method
-  // must also update UpdateWithMoreAccurateState..
+  // Careful note: any new state computed for mojom::ActivationState in this
+  // method must also update UpdateWithMoreAccurateState..
   return activation_state;
 }
 
@@ -71,23 +71,24 @@ using InitializationParams =
 
 InitializationParams::InitializationParams() = default;
 
-InitializationParams::InitializationParams(GURL document_url,
-                                           ActivationLevel activation_level,
-                                           bool measure_performance)
-    : document_url(std::move(document_url)),
-      parent_activation_state(activation_level) {
-  DCHECK_NE(ActivationLevel::DISABLED, activation_level);
+InitializationParams::InitializationParams(
+    GURL document_url,
+    mojom::ActivationLevel activation_level,
+    bool measure_performance)
+    : document_url(std::move(document_url)) {
+  DCHECK_NE(mojom::ActivationLevel::kDisabled, activation_level);
+  parent_activation_state.activation_level = activation_level;
   parent_activation_state.measure_performance = measure_performance;
 }
 
 InitializationParams::InitializationParams(
     GURL document_url,
     url::Origin parent_document_origin,
-    ActivationState parent_activation_state)
+    mojom::ActivationState parent_activation_state)
     : document_url(std::move(document_url)),
       parent_document_origin(std::move(parent_document_origin)),
       parent_activation_state(parent_activation_state) {
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             parent_activation_state.activation_level);
 }
 
@@ -101,11 +102,11 @@ InitializationParams& InitializationParams::operator=(InitializationParams&&) =
 AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     VerifiedRuleset::Handle* ruleset_handle,
     InitializationParams params,
-    base::Callback<void(ActivationState)> activation_state_callback)
+    base::OnceCallback<void(mojom::ActivationState)> activation_state_callback)
     : task_runner_(ruleset_handle->task_runner()),
       core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)),
       weak_ptr_factory_(this) {
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             params.parent_activation_state.activation_level);
 
   // Note: It is safe to post |ruleset_handle|'s VerifiedRuleset pointer,
@@ -126,10 +127,10 @@ AsyncDocumentSubresourceFilter::~AsyncDocumentSubresourceFilter() {
 }
 
 void AsyncDocumentSubresourceFilter::OnActivateStateCalculated(
-    base::Callback<void(ActivationState)> activation_state_callback,
-    ActivationState activation_state) {
+    base::OnceCallback<void(mojom::ActivationState)> activation_state_callback,
+    mojom::ActivationState activation_state) {
   activation_state_ = activation_state;
-  activation_state_callback.Run(activation_state);
+  std::move(activation_state_callback).Run(activation_state);
 }
 
 void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
@@ -141,7 +142,7 @@ void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
   // too big and won't be allowed anyway (e.g., it's a data: URI).
   base::PostTaskAndReplyWithResult(
       task_runner_, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](AsyncDocumentSubresourceFilter::Core* core,
              const GURL& subdocument_url) {
             DCHECK(core);
@@ -162,16 +163,16 @@ void AsyncDocumentSubresourceFilter::ReportDisallowedLoad() {
 }
 
 void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
-    const ActivationState& updated_page_state) {
+    const mojom::ActivationState& updated_page_state) {
   // DISABLED activation level implies that the ruleset is somehow invalid. Make
   // sure that we don't update the state in that case.
   DCHECK(has_activation_state());
-  if (activation_state_->activation_level == ActivationLevel::DISABLED)
+  if (activation_state_->activation_level == mojom::ActivationLevel::kDisabled)
     return;
 
-  // TODO(csharrison): Split ActivationState into multiple structs, with one
-  // that includes members that are inherited from the parent without change,
-  // and one that includes members that need to be computed.
+  // TODO(csharrison): Split mojom::ActivationState into multiple structs, with
+  // one that includes members that are inherited from the parent without
+  // change, and one that includes members that need to be computed.
   bool filtering_disabled = activation_state_->filtering_disabled_for_document;
   bool generic_disabled = activation_state_->generic_blocking_rules_disabled;
 
@@ -184,7 +185,7 @@ void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
                      base::Unretained(core_.get()), *activation_state_));
 }
 
-const ActivationState& AsyncDocumentSubresourceFilter::activation_state()
+const mojom::ActivationState& AsyncDocumentSubresourceFilter::activation_state()
     const {
   CHECK(activation_state_);
   return activation_state_.value();
@@ -201,25 +202,26 @@ AsyncDocumentSubresourceFilter::Core::~Core() {
 }
 
 void AsyncDocumentSubresourceFilter::Core::SetActivationState(
-    const ActivationState& state) {
+    const mojom::ActivationState& state) {
   DCHECK(filter_);
   filter_->set_activation_state(state);
 }
 
-ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(
+mojom::ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(
     InitializationParams params,
     VerifiedRuleset* verified_ruleset) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(verified_ruleset);
 
   if (!verified_ruleset->Get())
-    return ActivationState(ActivationLevel::DISABLED);
+    return mojom::ActivationState();
 
-  ActivationState activation_state = ComputeActivationState(
+  mojom::ActivationState activation_state = ComputeActivationState(
       params.document_url, params.parent_document_origin,
       params.parent_activation_state, verified_ruleset->Get());
 
-  DCHECK_NE(ActivationLevel::DISABLED, activation_state.activation_level);
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            activation_state.activation_level);
   filter_.emplace(url::Origin::Create(params.document_url), activation_state,
                   verified_ruleset->Get());
 

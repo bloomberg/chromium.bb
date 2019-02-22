@@ -29,6 +29,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
@@ -80,6 +81,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
+      network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // These methods are forwarded to the invalidation_state_tracker_.

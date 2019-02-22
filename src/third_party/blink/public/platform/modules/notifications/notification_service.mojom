@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/platform/modules/notifications/notification.mojom";
+import "third_party/blink/public/mojom/notifications/notification.mojom";
 import "third_party/blink/public/platform/modules/permissions/permission_status.mojom";
 
 // Interface for receiving events relating to non-persistent notifications.

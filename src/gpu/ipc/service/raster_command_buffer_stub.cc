@@ -103,19 +103,19 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return ContextResult::kFatalFailure;
   }
 
-  scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
+  auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
       manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
   gpu::GpuMemoryBufferFactory* gmb_factory =
       manager->gpu_memory_buffer_factory();
-  context_group_ = new gles2::ContextGroup(
+  context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
       manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
       manager->mailbox_manager(), CreateMemoryTracker(init_params),
       manager->shader_translator_cache(),
-      manager->framebuffer_completeness_cache(), feature_info,
+      manager->framebuffer_completeness_cache(), std::move(feature_info),
       init_params.attribs.bind_generates_resource, channel_->image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-      manager->watchdog() /* progress_reporter */, manager->gpu_feature_info(),
-      manager->discardable_manager());
+      /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
+      manager->discardable_manager(), manager->shared_image_manager());
 
   ContextResult result;
   auto raster_decoder_context_state =

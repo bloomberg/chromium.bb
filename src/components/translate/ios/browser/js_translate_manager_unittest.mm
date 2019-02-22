@@ -16,18 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface JsTranslateManager (Testing)
-- (double)performanceNow;
-@end
-
-@implementation JsTranslateManager (Testing)
-// Returns the time in milliseconds.
-- (double)performanceNow {
-  id result = web::test::ExecuteJavaScript(self.receiver, @"performance.now()");
-  return [result doubleValue];
-}
-@end
-
 class JsTranslateManagerTest : public PlatformTest {
  protected:
   JsTranslateManagerTest() {
@@ -50,36 +38,13 @@ class JsTranslateManagerTest : public PlatformTest {
   JsTranslateManager* manager_;
 };
 
-// Checks that performance.now() returns "correct" time by comparing time delta
-// to time measured using NSDate. As javascript is executed asynchronously and
-// -sleepForTimeInterval: guarantee to sleep for at least as long as timeout,
-// the time delta measured by using performance.now() should be greater than
-// the timeout and smaller than the time measured in process with NSDate.
-TEST_F(JsTranslateManagerTest, PerformancePlaceholder) {
-  [manager_ inject];
-  EXPECT_TRUE(IsDefined(@"performance"));
-  EXPECT_TRUE(IsDefined(@"performance.now"));
-
-  NSDate* startDate = [NSDate date];
-  NSTimeInterval intervalInSeconds = 0.3;
-  const double startTimeInMilliSeconds = [manager_ performanceNow];
-  [NSThread sleepForTimeInterval:intervalInSeconds];
-  const double timeElapsedInSecondsMeasuredByPerformanceNow =
-      ([manager_ performanceNow] - startTimeInMilliSeconds) / 1000;
-  const double timeElapsedInSecondsMeasuredByNSDate =
-      [[NSDate date] timeIntervalSinceDate:startDate];
-
-  EXPECT_GE(timeElapsedInSecondsMeasuredByPerformanceNow, intervalInSeconds);
-  EXPECT_LE(timeElapsedInSecondsMeasuredByPerformanceNow,
-            timeElapsedInSecondsMeasuredByNSDate);
-}
-
 // Checks that cr.googleTranslate.libReady is available after the code has
 // been injected in the page.
 TEST_F(JsTranslateManagerTest, Inject) {
   [manager_ inject];
   EXPECT_TRUE([manager_ hasBeenInjected]);
   EXPECT_EQ(nil, [manager_ script]);
+  EXPECT_TRUE(IsDefined(@"cr.googleTranslate"));
   EXPECT_NSEQ(@NO, web::test::ExecuteJavaScript(
                        manager_, @"cr.googleTranslate.libReady"));
 }

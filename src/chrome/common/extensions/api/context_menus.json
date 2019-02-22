@@ -17,7 +17,7 @@
         "id": "ContextType",
         "type": "string",
         "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"],
-        "description": "The different contexts a menu can appear in. Specifying 'all' is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is only supported by apps and is used to add menu items to the context menu that appears when clicking on the app icon in the launcher/taskbar/dock/etc. Different platforms might put limitations on what is actually supported in a launcher context menu."
+        "description": "The different contexts a menu can appear in. Specifying 'all' is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is only supported by apps and is used to add menu items to the context menu that appears when clicking the app icon in the launcher/taskbar/dock/etc. Different platforms might put limitations on what is actually supported in a launcher context menu."
       },
       {
         "id": "ItemType",
@@ -30,7 +30,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "Creates a new context menu item. Note that if an error occurs during creation, you may not find out until the creation callback fires (the details will be in chrome.runtime.lastError).",
+        "description": "Creates a new context menu item. If an error occurs during creation, it may not be detected until the creation callback fires; details will be in <code>chrome.runtime.lastError</code>.",
         "returns": {
           "choices": [
             { "type": "integer" },
@@ -46,7 +46,7 @@
               "type": {
                 "$ref": "ItemType",
                 "optional": true,
-                "description": "The type of menu item. Defaults to 'normal' if not specified."
+                "description": "The type of menu item. Defaults to <code>normal</code>."
               },
               "id": {
                 "type": "string",
@@ -56,12 +56,12 @@
               "title": {
                 "type": "string",
                 "optional": true,
-                "description": "The text to be displayed in the item; this is <em>required</em> unless <code>type</code> is 'separator'. When the context is 'selection', you can use <code>%s</code> within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word \"cool\", the context menu item for the selection is \"Translate 'cool' to Pig Latin\"."
+                "description": "The text to display in the item; this is <em>required</em> unless <code>type</code> is <code>separator</code>. When the context is <code>selection</code>, use <code>%s</code> within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word \"cool\", the context menu item for the selection is \"Translate 'cool' to Pig Latin\"."
               },
               "checked": {
                 "type": "boolean",
                 "optional": true,
-                "description": "The initial state of a checkbox or radio item: true for selected and false for unselected. Only one radio item can be selected at a time in a given group of radio items."
+                "description": "The initial state of a checkbox or radio button: <code>true</code> for selected, <code>false</code> for unselected. Only one radio button can be selected at a time in a given group."
               },
               "contexts": {
                 "type": "array",
@@ -70,7 +70,7 @@
                 },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
+                "description": "List of contexts this menu item will appear in. Defaults to <code>['page']</code>."
               },
               "visible": {
                 "type": "boolean",
@@ -80,7 +80,7 @@
               "onclick": {
                 "type": "function",
                 "optional": true,
-                "description": "A function that will be called back when the menu item is clicked. Event pages cannot use this; instead, they should register a listener for chrome.contextMenus.onClicked.",
+                "description": "A function that is called back when the menu item is clicked. Event pages cannot use this; instead, they should register a listener for $(ref:contextMenus.onClicked).",
                 "parameters": [
                   {
                     "name": "info",
@@ -90,7 +90,7 @@
                   {
                     "name": "tab",
                     "$ref": "tabs.Tab",
-                    "description": "The details of the tab where the click took place. Note: this parameter only present for extensions."
+                    "description": "The details of the tab where the click took place. This parameter is not present for platform apps."
                   }
                 ]
               },
@@ -106,18 +106,18 @@
                 "type": "array",
                 "items": {"type": "string"},
                 "optional": true,
-                "description": "Lets you restrict the item to apply only to documents whose URL matches one of the given patterns. (This applies to frames as well.) For details on the format of a pattern, see <a href='match_patterns'>Match Patterns</a>."
+                "description": "Restricts the item to apply only to documents or frames whose URL matches one of the given patterns. For details on pattern formats, see <a href='match_patterns'>Match Patterns</a>."
               },
               "targetUrlPatterns": {
                 "type": "array",
                 "items": {"type": "string"},
                 "optional": true,
-                "description": "Similar to documentUrlPatterns, but lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags."
+                "description": "Similar to <code>documentUrlPatterns</code>, filters based on the <code>src</code> attribute of <code>img</code>, <code>audio</code>, and <code>video</code> tags and the <code>href</code> attribute of <code>a</code> tags."
               },
               "enabled": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether this context menu item is enabled or disabled. Defaults to true."
+                "description": "Whether this context menu item is enabled or disabled. Defaults to <code>true</code>."
               }
             }
           },
@@ -125,7 +125,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the item has been created in the browser. If there were any problems creating the item, details will be available in chrome.runtime.lastError.",
+            "description": "Called when the item has been created in the browser. If an error occurs during creation, details will be available in <code>chrome.runtime.lastError</code>.",
             "parameters": []
           }
         ]
@@ -146,7 +146,7 @@
           {
             "type": "object",
             "name": "updateProperties",
-            "description": "The properties to update. Accepts the same values as the create function.",
+            "description": "The properties to update. Accepts the same values as the $(ref:contextMenus.create) function.",
             // We need to preserve null because we use it as an indication to clear the callback.
             "preserveNull": true,
             "properties": {
@@ -186,7 +186,7 @@
                   {
                     "name": "tab",
                     "$ref": "tabs.Tab",
-                    "description": "The details of the tab where the click took place. Note: this parameter only present for extensions."
+                    "description": "The details of the tab where the click took place. This parameter is not present for platform apps."
                   }
                 ]
               },
@@ -196,7 +196,7 @@
                   { "type": "string" }
                 ],
                 "optional": true,
-                "description": "Note: You cannot change an item to be a child of one of its own descendants."
+                "description": "The ID of the item to be made this item's parent. Note: You cannot set an item to become a child of its own descendant."
               },
               "documentUrlPatterns": {
                 "type": "array",

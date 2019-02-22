@@ -4,11 +4,14 @@
   ],
   "tests": [
     {
-      "app": "ios_chrome_adaptive_toolbar_egtests",
+      "app": "ios_chrome_bookmarks_egtests",
       "xctest": true
     },
     {
-      "app": "ios_chrome_bookmarks_egtests",
+      "app": "ios_chrome_manual_fill_egtests",
+      "test args": [
+        "--enable-features=AutofillManualFallback"
+      ],
       "xctest": true
     },
     {

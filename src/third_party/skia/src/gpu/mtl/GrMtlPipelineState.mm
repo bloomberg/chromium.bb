@@ -11,6 +11,7 @@
 #include "GrContextPriv.h"
 #include "GrPipeline.h"
 #include "GrRenderTarget.h"
+#include "GrRenderTargetPriv.h"
 #include "GrTexturePriv.h"
 #include "GrMtlBuffer.h"
 #include "GrMtlGpu.h"
@@ -22,10 +23,8 @@
 
 GrMtlPipelineState::SamplerBindings::SamplerBindings(const GrSamplerState& state,
                                                      GrTexture* texture,
-                                                     GrShaderFlags flags,
                                                      GrMtlGpu* gpu)
-        : fTexture(static_cast<GrMtlTexture*>(texture)->mtlTexture())
-        , fVisibility(flags) {
+        : fTexture(static_cast<GrMtlTexture*>(texture)->mtlTexture()) {
     // TODO: use resource provider to get sampler.
     std::unique_ptr<GrMtlSampler> sampler(
             GrMtlSampler::Create(gpu, state, texture->texturePriv().maxMipMapLevel()));
@@ -73,7 +72,7 @@ void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
     for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
         const auto& sampler = primProc.textureSampler(i);
         auto texture = static_cast<GrMtlTexture*>(primProcTextures[i]->peekTexture());
-        fSamplerBindings.emplace_back(sampler.samplerState(), texture, sampler.visibility(), fGpu);
+        fSamplerBindings.emplace_back(sampler.samplerState(), texture, fGpu);
     }
 
     GrFragmentProcessor::Iter iter(pipeline);
@@ -81,11 +80,10 @@ void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
     const GrFragmentProcessor* fp = iter.next();
     GrGLSLFragmentProcessor* glslFP = glslIter.next();
     while (fp && glslFP) {
-       glslFP->setData(fDataManager, *fp);
+        glslFP->setData(fDataManager, *fp);
         for (int i = 0; i < fp->numTextureSamplers(); ++i) {
             const auto& sampler = fp->textureSampler(i);
-            fSamplerBindings.emplace_back(sampler.samplerState(), sampler.peekTexture(),
-                                          kFragment_GrShaderFlag, fGpu);
+            fSamplerBindings.emplace_back(sampler.samplerState(), sampler.peekTexture(), fGpu);
         }
         fp = iter.next();
         glslFP = glslIter.next();
@@ -102,7 +100,6 @@ void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
     if (GrTextureProxy* dstTextureProxy = pipeline.dstTextureProxy()) {
         fSamplerBindings.emplace_back(GrSamplerState::ClampNearest(),
                                       dstTextureProxy->peekTexture(),
-                                      kFragment_GrShaderFlag,
                                       fGpu);
     }
 
@@ -110,6 +107,13 @@ void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
     if (fGeometryUniformBuffer || fFragmentUniformBuffer) {
         fDataManager.uploadUniformBuffers(fGpu, fGeometryUniformBuffer.get(),
                                           fFragmentUniformBuffer.get());
+    }
+
+    if (pipeline.isStencilEnabled()) {
+        GrRenderTarget* rt = pipeline.renderTarget();
+        SkASSERT(rt->renderTargetPriv().getStencilAttachment());
+        fStencil.reset(*pipeline.getUserStencil(), pipeline.hasStencilClip(),
+                       rt->renderTargetPriv().numStencilBits());
     }
 }
 
@@ -126,18 +130,10 @@ void GrMtlPipelineState::bind(id<MTLRenderCommandEncoder> renderCmdEncoder) {
     }
     SkASSERT(fNumSamplers == fSamplerBindings.count());
     for (int index = 0; index < fNumSamplers; ++index) {
-        if (fSamplerBindings[index].fVisibility & kVertex_GrShaderFlag) {
-            [renderCmdEncoder setVertexTexture: fSamplerBindings[index].fTexture
-                                       atIndex: index];
-            [renderCmdEncoder setVertexSamplerState: fSamplerBindings[index].fSampler
-                                            atIndex: index];
-        }
-        if (fSamplerBindings[index].fVisibility & kFragment_GrShaderFlag) {
-            [renderCmdEncoder setFragmentTexture: fSamplerBindings[index].fTexture
-                                         atIndex: index];
-            [renderCmdEncoder setFragmentSamplerState: fSamplerBindings[index].fSampler
-                                              atIndex: index];
-        }
+        [renderCmdEncoder setFragmentTexture: fSamplerBindings[index].fTexture
+                                     atIndex: index];
+        [renderCmdEncoder setFragmentSamplerState: fSamplerBindings[index].fSampler
+                                          atIndex: index];
     }
 }
 
@@ -199,5 +195,84 @@ void GrMtlPipelineState::setBlendConstants(id<MTLRenderCommandEncoder> renderCmd
                                      green: floatColors[1]
                                       blue: floatColors[2]
                                      alpha: floatColors[3]];
+    }
+}
+
+MTLStencilOperation skia_stencil_op_to_mtl(GrStencilOp op) {
+    switch (op) {
+        case GrStencilOp::kKeep:
+            return MTLStencilOperationKeep;
+        case GrStencilOp::kZero:
+            return MTLStencilOperationZero;
+        case GrStencilOp::kReplace:
+            return MTLStencilOperationReplace;
+        case GrStencilOp::kInvert:
+            return MTLStencilOperationInvert;
+        case GrStencilOp::kIncWrap:
+            return MTLStencilOperationIncrementWrap;
+        case GrStencilOp::kDecWrap:
+            return MTLStencilOperationDecrementWrap;
+        case GrStencilOp::kIncClamp:
+            return MTLStencilOperationIncrementClamp;
+        case GrStencilOp::kDecClamp:
+            return MTLStencilOperationDecrementClamp;
+    }
+}
+
+MTLStencilDescriptor* skia_stencil_to_mtl(GrStencilSettings::Face face) {
+    MTLStencilDescriptor* result = [[MTLStencilDescriptor alloc] init];
+    switch (face.fTest) {
+        case GrStencilTest::kAlways:
+            result.stencilCompareFunction = MTLCompareFunctionAlways;
+            break;
+        case GrStencilTest::kNever:
+            result.stencilCompareFunction = MTLCompareFunctionNever;
+            break;
+        case GrStencilTest::kGreater:
+            result.stencilCompareFunction = MTLCompareFunctionGreater;
+            break;
+        case GrStencilTest::kGEqual:
+            result.stencilCompareFunction = MTLCompareFunctionGreaterEqual;
+            break;
+        case GrStencilTest::kLess:
+            result.stencilCompareFunction = MTLCompareFunctionLess;
+            break;
+        case GrStencilTest::kLEqual:
+            result.stencilCompareFunction = MTLCompareFunctionLessEqual;
+            break;
+        case GrStencilTest::kEqual:
+            result.stencilCompareFunction = MTLCompareFunctionEqual;
+            break;
+        case GrStencilTest::kNotEqual:
+            result.stencilCompareFunction = MTLCompareFunctionNotEqual;
+            break;
+    }
+    result.readMask = face.fTestMask;
+    result.writeMask = face.fWriteMask;
+    result.depthStencilPassOperation = skia_stencil_op_to_mtl(face.fPassOp);
+    result.stencilFailureOperation = skia_stencil_op_to_mtl(face.fFailOp);
+    return result;
+}
+
+void GrMtlPipelineState::setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder) {
+    if (fStencil.isDisabled()) {
+        MTLDepthStencilDescriptor* desc = [[MTLDepthStencilDescriptor alloc] init];
+        id<MTLDepthStencilState> state = [fGpu->device() newDepthStencilStateWithDescriptor:desc];
+        [renderCmdEncoder setDepthStencilState:state];
+    }
+    else {
+        MTLDepthStencilDescriptor* desc = [[MTLDepthStencilDescriptor alloc] init];
+        desc.frontFaceStencil = skia_stencil_to_mtl(fStencil.front());
+        if (fStencil.isTwoSided()) {
+            desc.backFaceStencil = skia_stencil_to_mtl(fStencil.back());
+            [renderCmdEncoder setStencilFrontReferenceValue:fStencil.front().fRef
+                              backReferenceValue:fStencil.back().fRef];
+        }
+        else {
+            desc.backFaceStencil = desc.frontFaceStencil;
+            [renderCmdEncoder setStencilReferenceValue:fStencil.front().fRef];
+        }
+        id<MTLDepthStencilState> state = [fGpu->device() newDepthStencilStateWithDescriptor:desc];
+        [renderCmdEncoder setDepthStencilState:state];
     }
 }

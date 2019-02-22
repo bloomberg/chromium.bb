@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/channel_layout.h"
 
@@ -37,20 +36,29 @@ class CastAudioDecoder {
   // The callback that is called when the decoder initialization is complete.
   // |success| is true if initialization was successful; if |success| is false
   // then the CastAudioDecoder instance is unusable and should be destroyed.
-  typedef base::Callback<void(bool success)> InitializedCallback;
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(bool success)> InitializedCallback;
+
+  // Callback called when a buffer has been decoded. |config| is the actual
+  // config of the buffer, which may differ from the config indicated the the
+  // wrapper format.
+  typedef base::OnceCallback<void(
       Status status,
-      const scoped_refptr<media::DecoderBufferBase>& decoded)> DecodeCallback;
+      const AudioConfig& config,
+      scoped_refptr<media::DecoderBufferBase> decoded)>
+      DecodeCallback;
 
   // Creates a CastAudioDecoder instance for the given |config|. Decoding must
   // occur on the same thread as |task_runner|. Returns an empty unique_ptr if
-  // the decoder could not be created.
+  // the decoder could not be created. |initialized_callback| will be called
+  // once initialization completes (either successfully, or if it failed).
+  // The callback will not be called after the CastAudioDecoder instance is
+  // destroyed.
   static std::unique_ptr<CastAudioDecoder> Create(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const media::AudioConfig& config,
       OutputFormat output_format,
       ::media::ChannelLayout output_channel_layout,
-      const InitializedCallback& initialized_callback);
+      InitializedCallback initialized_callback);
 
   // Given a CastAudioDecoder::OutputFormat, return the size of each sample in
   // that OutputFormat in bytes.
@@ -60,22 +68,18 @@ class CastAudioDecoder {
   static ::media::ChannelLayout OutputChannelLayoutFromConfig(
       const AudioConfig& config);
 
-  CastAudioDecoder() {}
-  virtual ~CastAudioDecoder() {}
+  virtual ~CastAudioDecoder() = default;
 
   // Converts encoded data to the |output_format|. Must be called on the same
   // thread as |task_runner|. Decoded data will be passed to |decode_callback|.
   // It is OK to call Decode before the |initialized_callback| has been called;
   // those buffers will be queued until initialization completes, at which point
   // they will be decoded in order (if initialization was successful), or
-  // ignored if initialization failed.
+  // ignored if initialization failed. The |decode_callback| will not be called
+  // after the CastAudioDecoder instance is destroyed.
   // It is OK to pass an end-of-stream DecoderBuffer as |data|.
-  // Returns |false| if the decoder is not ready yet.
-  virtual bool Decode(const scoped_refptr<media::DecoderBufferBase>& data,
-                      const DecodeCallback& decode_callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastAudioDecoder);
+  virtual void Decode(scoped_refptr<media::DecoderBufferBase> data,
+                      DecodeCallback decode_callback) = 0;
 };
 
 }  // namespace media

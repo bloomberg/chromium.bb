@@ -255,8 +255,14 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
     if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
                               StyleRef().BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
-                               StyleRef().BackgroundLayers())))
+                               StyleRef().BackgroundLayers()))) {
       SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
+      // In case that the background will be painted on the scrolling contents
+      // layer, we need this to invalidate the background.
+      // TODO(wangxianzhu): Clean up and fix other such cases about invalidation
+      // of background painted on the scrolling contents layer.
+      SetBackgroundChangedSinceLastPaintInvalidation();
+    }
   }
 }
 
@@ -668,7 +674,7 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
   Document& document = GetDocument();
   if (Node* body = document.body()) {
     // Framesets can't scroll.
-    if (IsHTMLFrameSetElement(body) && body->GetLayoutObject())
+    if (body->GetLayoutObject() && body->GetLayoutObject()->IsFrameSet())
       RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
   }
 
@@ -735,9 +741,10 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 #undef RETURN_SCROLLBAR_MODE
 }
 
-void LayoutView::DispatchFakeMouseMoveEventSoon(EventHandler& event_handler) {
-  event_handler.DispatchFakeMouseMoveEventSoon(
-      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
+void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
+    EventHandler& event_handler) {
+  event_handler.MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 }
 
 IntRect LayoutView::DocumentRect() const {
@@ -873,10 +880,10 @@ void LayoutView::UpdateFromStyle() {
     SetHasBoxDecorationBackground(true);
 }
 
-bool LayoutView::RecalcOverflowAfterStyleChange() {
-  if (!NeedsOverflowRecalcAfterStyleChange())
+bool LayoutView::RecalcOverflow() {
+  if (!NeedsOverflowRecalc())
     return false;
-  bool result = LayoutBlockFlow::RecalcOverflowAfterStyleChange();
+  bool result = LayoutBlockFlow::RecalcOverflow();
   if (result) {
     // Changing overflow should notify scrolling coordinator to ensures that it
     // updates non-fast scroll rects even if there is no layout.
@@ -905,12 +912,6 @@ LayoutRect LayoutView::DebugRect() const {
   rect.SetHeight(LayoutUnit(ViewHeight(kIncludeScrollbars)));
 
   return rect;
-}
-
-IntSize LayoutView::ScrolledContentOffset() const {
-  DCHECK(HasOverflowClip());
-  // FIXME: Return DoubleSize here. crbug.com/414283.
-  return GetScrollableArea()->ScrollOffsetInt();
 }
 
 bool LayoutView::UpdateLogicalWidthAndColumnWidth() {

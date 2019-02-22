@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+import zlib
 
 import apkanalyzer
 import ar
@@ -39,6 +40,7 @@ from grit.format import data_pack
 _OWNERS_FILENAME = 'OWNERS'
 _COMPONENT_REGEX = re.compile(r'\s*#\s*COMPONENT\s*:\s*(\S+)')
 _FILE_PATH_REGEX = re.compile(r'\s*file://(\S+)')
+_UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD = 0.9
 
 # Holds computation state that is live only when an output directory exists.
 _OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
@@ -886,7 +888,7 @@ def _ComputePakFileSymbols(
   else:
     section_name = models.SECTION_PAK_NONTRANSLATED
   overhead = (12 + 6) * compression_ratio  # Header size plus extra offset
-  symbols_by_id[-1] = models.Symbol(
+  symbols_by_id[hash(file_name)] = models.Symbol(
       section_name, overhead, full_name='Overhead: {}'.format(file_name))
   for resource_id in sorted(contents.resources):
     if resource_id in alias_map:
@@ -894,15 +896,32 @@ def _ComputePakFileSymbols(
       size = 4
       resource_id = alias_map[resource_id]
     else:
+      resource_data = contents.resources[resource_id]
       # 6 extra bytes of metadata (1 32-bit int, 1 16-bit int)
-      size = len(contents.resources[resource_id]) + 6
+      size = len(resource_data) + 6
       name, source_path = res_info[resource_id]
       if resource_id not in symbols_by_id:
         full_name = '{}: {}'.format(source_path, name)
-        symbols_by_id[resource_id] = models.Symbol(
+        new_symbol = models.Symbol(
             section_name, 0, address=resource_id, full_name=full_name)
+        if (section_name == models.SECTION_PAK_NONTRANSLATED and
+            _IsPakContentUncompressed(resource_data)):
+          new_symbol.flags |= models.FLAG_UNCOMPRESSED
+        symbols_by_id[resource_id] = new_symbol
+
     size *= compression_ratio
     symbols_by_id[resource_id].size += size
+
+
+def _IsPakContentUncompressed(content):
+  raw_size = len(content)
+  # Assume anything less than 100 bytes cannot be compressed.
+  if raw_size < 100:
+    return False
+
+  compressed_size = len(zlib.compress(content, 1))
+  compression_ratio = compressed_size / float(raw_size)
+  return compression_ratio < _UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD
 
 
 class _ResourceSourceMapper(object):
@@ -1086,7 +1105,6 @@ def _CreatePakObjectMap(object_paths_by_name):
   for name in object_paths_by_name:
     if name.startswith(PREFIX):
       pak_id = int(name[id_start_idx:id_end_idx])
-      logging.info('PAK ID: %d', pak_id)
       object_paths_by_pak_id[pak_id] = object_paths_by_name[name]
   return object_paths_by_pak_id
 

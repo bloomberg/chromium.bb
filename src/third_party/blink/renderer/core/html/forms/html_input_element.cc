@@ -142,6 +142,12 @@ void HTMLInputElement::Trace(blink::Visitor* visitor) {
   TextControlElement::Trace(visitor);
 }
 
+const HashSet<AtomicString>& HTMLInputElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 bool HTMLInputElement::HasPendingActivity() const {
   return ImageLoader() && ImageLoader()->HasPendingActivity();
 }
@@ -158,8 +164,7 @@ const AtomicString& HTMLInputElement::GetName() const {
   return name_.IsNull() ? g_empty_atom : name_;
 }
 
-Vector<FileChooserFileInfo>
-HTMLInputElement::FilesFromFileInputFormControlState(
+FileChooserFileInfoList HTMLInputElement::FilesFromFileInputFormControlState(
     const FormControlState& state) {
   return FileInputType::FilesFromFormControlState(state);
 }
@@ -797,9 +802,8 @@ void HTMLInputElement::ParseAttribute(
   } else if (name == onsearchAttr) {
     // Search field and slider attributes all just cause updateFromElement to be
     // called through style recalcing.
-    SetAttributeEventListener(
-        EventTypeNames::search,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::search,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == incrementalAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kIncrementalAttribute);
   } else if (name == minAttr) {
@@ -1395,7 +1399,7 @@ static bool IsValidMIMEType(const String& type) {
   if (slash_position == kNotFound || !slash_position ||
       slash_position == type.length() - 1)
     return false;
-  for (size_t i = 0; i < type.length(); ++i) {
+  for (wtf_size_t i = 0; i < type.length(); ++i) {
     if (!IsRFC2616TokenCharacter(type[i]) && i != slash_position)
       return false;
   }

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -34,7 +35,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
                               nullptr /* parent_execution_context*/,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
-        WebThreadCreationParams(WebThreadType::kTestThread));
+        ThreadCreationParams(WebThreadType::kTestThread));
   }
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
@@ -129,7 +130,7 @@ class DedicatedWorkerMessagingProxyForTest
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
-        ToDocument(GetExecutionContext())->GetSettings());
+        To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             script_url, ScriptType::kClassic, "fake user agent", headers,
@@ -143,9 +144,9 @@ class DedicatedWorkerMessagingProxyForTest
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));
-    GetWorkerThread()->EvaluateClassicScript(script_url, source,
-                                             nullptr /* cached_meta_data */,
-                                             v8_inspector::V8StackTraceId());
+    GetWorkerThread()->EvaluateClassicScript(
+        script_url, kOpaqueResource, source, nullptr /* cached_meta_data */,
+        v8_inspector::V8StackTraceId());
   }
 
   DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {

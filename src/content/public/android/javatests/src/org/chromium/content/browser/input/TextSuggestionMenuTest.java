@@ -21,13 +21,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content.R;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.concurrent.TimeoutException;
 
@@ -282,7 +282,7 @@ public class TextSuggestionMenuTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TextSuggestionHost.fromWebContents(webContents)
+                getTextSuggestionHost(webContents)
                         .getTextSuggestionsPopupWindowForTesting()
                         .dismiss();
             }
@@ -313,12 +313,11 @@ public class TextSuggestionMenuTest {
             @Override
             public boolean isSatisfied() {
                 SuggestionsPopupWindow suggestionsPopupWindow =
-                        TextSuggestionHost.fromWebContents(webContents)
+                        getTextSuggestionHost(webContents)
                                 .getTextSuggestionsPopupWindowForTesting();
 
                 SuggestionsPopupWindow spellCheckPopupWindow =
-                        TextSuggestionHost.fromWebContents(webContents)
-                                .getSpellCheckPopupWindowForTesting();
+                        getTextSuggestionHost(webContents).getSpellCheckPopupWindowForTesting();
 
                 return suggestionsPopupWindow == null && spellCheckPopupWindow == null;
             }
@@ -327,22 +326,25 @@ public class TextSuggestionMenuTest {
 
     private View getContentView(WebContents webContents) {
         SuggestionsPopupWindow suggestionsPopupWindow =
-                TextSuggestionHost.fromWebContents(webContents)
-                        .getTextSuggestionsPopupWindowForTesting();
+                getTextSuggestionHost(webContents).getTextSuggestionsPopupWindowForTesting();
 
         if (suggestionsPopupWindow != null) {
             return suggestionsPopupWindow.getContentViewForTesting();
         }
 
         SuggestionsPopupWindow spellCheckPopupWindow =
-                TextSuggestionHost.fromWebContents(webContents)
-                        .getSpellCheckPopupWindowForTesting();
+                getTextSuggestionHost(webContents).getSpellCheckPopupWindowForTesting();
 
         if (spellCheckPopupWindow != null) {
             return spellCheckPopupWindow.getContentViewForTesting();
         }
 
         return null;
+    }
+
+    private TextSuggestionHost getTextSuggestionHost(WebContents webContents) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> TextSuggestionHost.fromWebContents(webContents));
     }
 
     private ListView getSuggestionList(WebContents webContents) {

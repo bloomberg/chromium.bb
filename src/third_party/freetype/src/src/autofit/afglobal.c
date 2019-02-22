@@ -29,7 +29,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afglobal
+#define FT_COMPONENT  afglobal
 
 
   /* get writing system specific header files */
@@ -489,9 +489,9 @@
                             FT_UInt         gindex )
   {
     if ( gindex < (FT_ULong)globals->glyph_count )
-      return (FT_Bool)( globals->glyph_styles[gindex] & AF_DIGIT );
+      return FT_BOOL( globals->glyph_styles[gindex] & AF_DIGIT );
 
-    return (FT_Bool)0;
+    return FT_BOOL( 0 );
   }
 
 

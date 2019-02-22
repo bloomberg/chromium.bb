@@ -12,12 +12,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/feed/core/feed_content_mutation.h"
-#include "components/feed/core/feed_content_operation.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace feed {
 
+class ContentMutation;
+class ContentOperation;
 class ContentStorageProto;
 
 // FeedContentDatabase is leveldb backend store for Feed's content storage data.
@@ -34,10 +34,12 @@ class FeedContentDatabase {
 
   // Returns the storage data as a vector of key-value pairs when calling
   // loading data.
-  using ContentLoadCallback = base::OnceCallback<void(std::vector<KeyAndData>)>;
+  using ContentLoadCallback =
+      base::OnceCallback<void(bool, std::vector<KeyAndData>)>;
 
   // Returns the content keys as a vector when calling loading all content keys.
-  using ContentKeyCallback = base::OnceCallback<void(std::vector<std::string>)>;
+  using ContentKeyCallback =
+      base::OnceCallback<void(bool, std::vector<std::string>)>;
 
   // Returns whether the commit operation succeeded when calling for database
   // operations, or return whether the entry exists when calling for checking
@@ -101,10 +103,12 @@ class FeedContentDatabase {
   // Callback methods given to |storage_database_| for async responses.
   void OnDatabaseInitialized(bool success);
   void OnLoadEntriesForLoadContent(
+      base::TimeTicks start_time,
       ContentLoadCallback callback,
       bool success,
       std::unique_ptr<std::vector<ContentStorageProto>> content);
   void OnLoadKeysForLoadAllContentKeys(
+      base::TimeTicks start_time,
       ContentKeyCallback callback,
       bool success,
       std::unique_ptr<std::vector<std::string>> keys);

@@ -7,10 +7,23 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+namespace {
+
+String GetConsoleLogStringForBlockedLoad(const KURL& url) {
+  return "[Intervention] Non-critical resource " + url.GetString() +
+         " is blocked due to page load being slow. Learn more at "
+         "https://www.chromestatus.com/feature/4510564810227712.";
+}
+
+}  // namespace
 
 // static
 PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
@@ -51,6 +64,7 @@ bool PreviewsResourceLoadingHints::AllowLoad(
   UMA_HISTOGRAM_BOOLEAN("ResourceLoadingHints.ResourceLoadingBlocked",
                         !allow_load);
   if (!allow_load) {
+    ReportBlockedLoading(resource_url);
     UMA_HISTOGRAM_ENUMERATION(
         "ResourceLoadingHints.ResourceLoadingBlocked.ResourceLoadPriority."
         "Blocked",
@@ -64,6 +78,13 @@ bool PreviewsResourceLoadingHints::AllowLoad(
         static_cast<int>(ResourceLoadPriority::kHighest) + 1);
   }
   return allow_load;
+}
+
+void PreviewsResourceLoadingHints::ReportBlockedLoading(
+    const KURL& resource_url) const {
+  execution_context_->AddConsoleMessage(
+      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
+                             GetConsoleLogStringForBlockedLoad(resource_url)));
 }
 
 void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {

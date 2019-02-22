@@ -5,52 +5,19 @@
 #ifndef CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_
 
-#include <memory>
-
-#include "base/android/jni_android.h"
-#include "base/android/jni_weak_ref.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/explore_sites/ntp_json_fetcher.h"
-
 namespace explore_sites {
 
-/**
- * Bridge between C++ and Java for fetching and decoding URLs and images.
- */
-static void JNI_ExploreSitesBridge_GetNtpCategories(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    const base::android::JavaParamRef<jobject>& j_result_obj,
-    const base::android::JavaParamRef<jobject>& j_callback_obj);
+// Methods for interacting with the Java side via JNI.
+class ExploreSitesBridge {
+ public:
+  // Causes the Android JobScheduler to execute the catalog update daily.
+  // The catalog update task checks that the feature is enabled and if not,
+  // unschedules itself.
+  static void ScheduleDailyTask();
 
-static void JNI_ExploreSitesBridge_GetIcon(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    const base::android::JavaParamRef<jstring>& j_url,
-    const base::android::JavaParamRef<jobject>& j_callback_obj);
-
-static base::android::ScopedJavaLocalRef<jstring>
-JNI_ExploreSitesBridge_GetCatalogUrl(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller);
-
-static void JNI_ExploreSitesBridge_GetNtpCatalog(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    const base::android::JavaParamRef<jobject>& j_result_obj,
-    const base::android::JavaParamRef<jobject>& j_callback_obj);
-
-static void JNI_ExploreSitesBridge_GetEspCatalog(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    const base::android::JavaParamRef<jobject>& j_result_obj,
-    const base::android::JavaParamRef<jobject>& j_callback_obj);
+  // Gets the device screen scale factor from Android.
+  static float GetScaleFactorFromDevice();
+};
 
 }  // namespace explore_sites
 

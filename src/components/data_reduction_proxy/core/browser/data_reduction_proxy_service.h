@@ -21,9 +21,9 @@
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "net/http/http_request_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PrefService;
 
@@ -35,6 +35,7 @@ class Value;
 }
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequestContextGetter;
 }
 
@@ -64,6 +65,7 @@ class DataReductionProxyService
       DataReductionProxySettings* settings,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
@@ -143,20 +145,20 @@ class DataReductionProxyService
   // cleared.
   void OnCacheCleared(const base::Time start, const base::Time end);
 
+  // When triggering previews, prevent long term black list rules.
+  void SetIgnoreLongTermBlackListRules(bool ignore_long_term_black_list_rules);
+
   // Returns the current network quality estimates.
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
-  // Sets |proxy_request_headers_| with a forwarded value from the IO thread.
-  void SetProxyRequestHeaders(net::HttpRequestHeaders headers) {
-    proxy_request_headers_ = headers;
-  }
+  // Sends the given |headers| to |DataReductionProxySettings|.
+  void SetProxyRequestHeadersOnUI(const net::HttpRequestHeaders& headers);
 
-  // Returns |proxy_request_headers_|. Note: The chrome-proxy header does not
-  // include the page id.
-  const net::HttpRequestHeaders GetProxyRequestHeaders() const {
-    return proxy_request_headers_;
-  }
+  // Sets a config client that can be used to update Data Reduction Proxy
+  // settings when the network service is enabled.
+  void SetCustomProxyConfigClient(
+      network::mojom::CustomProxyConfigClientPtrInfo config_client_info);
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
@@ -169,6 +171,11 @@ class DataReductionProxyService
 
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_;
+  }
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
+      const {
+    return url_loader_factory_->Clone();
   }
 
   DataReductionProxyPingbackClient* pingback_client() const {
@@ -193,6 +200,7 @@ class DataReductionProxyService
   void ReadPersistedClientConfig();
 
   net::URLRequestContextGetter* url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Tracks compression statistics to be displayed to the user.
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
@@ -220,10 +228,6 @@ class DataReductionProxyService
 
   base::ObserverList<DataReductionProxyServiceObserver>::Unchecked
       observer_list_;
-
-  // Authentication headers for the Data Reduction Proxy, if any. This is
-  // forwarded from the IO thread in PostTask.
-  net::HttpRequestHeaders proxy_request_headers_;
 
   bool initialized_;
 

@@ -6,4 +6,3 @@ TEST COMPLETE
 PASS internals.counterValue(document.getElementById('c2')) is '2'
 
 TEST COMPLETE
-

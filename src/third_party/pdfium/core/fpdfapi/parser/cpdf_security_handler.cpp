@@ -19,6 +19,7 @@
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/fx_extension.h"
+#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -157,6 +158,9 @@ static bool LoadCryptInfo(const CPDF_Dictionary* pEncryptDict,
       } else {
         nKeyBits = pEncryptDict->GetIntegerFor("Length", 256);
       }
+      if (nKeyBits < 0)
+        return false;
+
       if (nKeyBits < 40) {
         nKeyBits *= 8;
       }
@@ -275,7 +279,7 @@ void Revision6_Hash(const ByteString& password,
         content.insert(std::end(content), vector, vector + 48);
       }
     }
-    CRYPT_AESSetKey(&aes, 16, key, 16, true);
+    CRYPT_AESSetKey(&aes, key, 16, true);
     CRYPT_AESSetIV(&aes, iv);
     CRYPT_AESEncrypt(&aes, E, content.data(), iBufLen);
     int iHash = 0;
@@ -362,12 +366,12 @@ bool CPDF_SecurityHandler::AES256_CheckPassword(const ByteString& password,
 
   CRYPT_aes_context aes;
   memset(&aes, 0, sizeof(aes));
-  CRYPT_AESSetKey(&aes, 16, digest, 32, false);
+  CRYPT_AESSetKey(&aes, digest, 32, false);
   uint8_t iv[16];
   memset(iv, 0, 16);
   CRYPT_AESSetIV(&aes, iv);
   CRYPT_AESDecrypt(&aes, key, ekey.raw_str(), 32);
-  CRYPT_AESSetKey(&aes, 16, key, 32, false);
+  CRYPT_AESSetKey(&aes, key, 32, false);
   CRYPT_AESSetIV(&aes, iv);
   ByteString perms = m_pEncryptDict->GetStringFor("Perms");
   if (perms.IsEmpty())
@@ -673,7 +677,7 @@ void CPDF_SecurityHandler::AES256_SetPassword(CPDF_Dictionary* pEncryptDict,
   }
   CRYPT_aes_context aes;
   memset(&aes, 0, sizeof(aes));
-  CRYPT_AESSetKey(&aes, 16, digest1, 32, true);
+  CRYPT_AESSetKey(&aes, digest1, 32, true);
   uint8_t iv[16];
   memset(iv, 0, 16);
   CRYPT_AESSetIV(&aes, iv);
@@ -702,7 +706,7 @@ void CPDF_SecurityHandler::AES256_SetPerms(CPDF_Dictionary* pEncryptDict,
 
   CRYPT_aes_context aes;
   memset(&aes, 0, sizeof(aes));
-  CRYPT_AESSetKey(&aes, 16, key, 32, true);
+  CRYPT_AESSetKey(&aes, key, 32, true);
 
   uint8_t iv[16];
   memset(iv, 0, 16);

@@ -4,6 +4,8 @@
 
 #include "google_apis/drive/request_sender.h"
 
+#include <utility>
+
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/drive/base_requests.h"
@@ -59,7 +61,7 @@ class RequestSenderTest : public testing::Test {
  protected:
   RequestSenderTest()
       : auth_service_(new TestAuthService),
-        request_sender_(auth_service_,
+        request_sender_(base::WrapUnique(auth_service_),
                         NULL,
                         NULL,
                         "dummy-user-agent",

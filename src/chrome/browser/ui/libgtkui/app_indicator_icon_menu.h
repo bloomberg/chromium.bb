@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
+#include "ui/base/glib/glib_signal.h"
 
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkWidget GtkWidget;
@@ -37,12 +37,16 @@ class AppIndicatorIconMenu {
 
  private:
   // Callback for when the "click action replacement" menu item is activated.
-  CHROMEGTK_CALLBACK_0(AppIndicatorIconMenu,
-                       void,
-                       OnClickActionReplacementMenuItemActivated);
+  CHROMEG_CALLBACK_0(AppIndicatorIconMenu,
+                     void,
+                     OnClickActionReplacementMenuItemActivated,
+                     GtkWidget*);
 
   // Callback for when a menu item is activated.
-  CHROMEGTK_CALLBACK_0(AppIndicatorIconMenu, void, OnMenuItemActivated);
+  CHROMEG_CALLBACK_0(AppIndicatorIconMenu,
+                     void,
+                     OnMenuItemActivated,
+                     GtkWidget*);
 
   // Not owned.
   ui::MenuModel* menu_model_;

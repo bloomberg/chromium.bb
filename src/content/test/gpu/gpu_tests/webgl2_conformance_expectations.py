@@ -41,6 +41,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android'], bug=808744)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['linux', 'intel'], bug=867675)
+    self.Skip('WebglExtension_KHR_parallel_shader_compile',
+        ['no_passthrough'], bug=849576)
 
     # ========================
     # Conformance expectations
@@ -231,7 +233,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
         ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
-
+    self.Flaky('deqp/data/gles3/shaders/conversions.html',
+        ['win', 'nvidia', 'opengl', 'passthrough'], bug=887578)
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
 
@@ -321,8 +324,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
-    self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
-        ['win', 'intel'], bug=843369)
 
     # Seems to cause the harness to fail immediately afterward
     self.Skip('conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html',
@@ -400,6 +401,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
     # Passthrough command decoder / Windows / OpenGL / Intel
+    # This case causes no-over-optimization-on-uniform-array fail.
+    self.Skip('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=854100)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
@@ -407,9 +411,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
-    self.Fail('conformance/uniforms/' +
-        'no-over-optimization-on-uniform-array-16.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/textures/misc/texture-npot.html',
@@ -421,6 +422,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html', # ANGLE bug
+        ['win', 'passthrough', 'opengl', 'intel'], bug=2880)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
@@ -462,23 +465,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_05.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('conformance2/glsl3/array-assign.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/fborender/resize_03.html',
         ['highsierra', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_00.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_02.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_cube_00.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
 
     # Fails on multiple GPU types.
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
@@ -989,10 +992,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # Linux Intel
-    # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
-    self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
-        ['linux', 'intel'], bug=540543)  # GPU timeout
-
     self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
        ['linux', 'intel'], bug=662644) # WebGL 2.0.1
 
@@ -1055,10 +1054,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/' +
         'vector-dynamic-indexing-swizzled-lvalue.html',
         ['linux', 'intel'], bug=709874)
-
-    # Linux Intel HD 630
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
-        ['linux', ('intel', 0x5912)], bug=745888)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.

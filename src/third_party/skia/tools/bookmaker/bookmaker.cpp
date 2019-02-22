@@ -34,18 +34,7 @@ DEFINE_bool2(skip, z, false, "Skip degenerate missed in legacy preprocessor.");
 
 /* todos:
 
-add new markup to associate enum SaveLayerFlagsSet with typedef SaveLayerFlags, if needed.
-
-should Return be on same line as 'Return Value'?
-#Member lost all formatting
 #List needs '# content ##', formatting
-consts like enum members need fully qualfied refs to make a valid link
-enum comments should be disallowed unless after #Enum and before first #Const
-    ... or, should look for enum comments in other places
-trouble with aliases, plurals
-    need to keep first letter of includeWriter @param / @return lowercase
-    Quad -> quad, Quads -> quads
-deprecated methods should be sorted down in md out, and show include "Deprecated." text body.
 rewrap text to fit in some number of columns
 #Literal is inflexible, making the entire #Code block link-less (see $Literal in SkImageInfo)
      would rather keep links for body above #Literal, and/or make it a block and not a one-liner
@@ -54,30 +43,10 @@ add check to require #Const to contain #Code block if defining const or constexp
 subclasses (e.g. Iter in SkPath) need to check for #Line and generate overview
      subclass methods should also disallow #In
 
-There are a number of formatting bugs with ad hoc patches where a substitution doesn't keep
-the space before or after, or the linefeeds before or after. The rules are not very good either.
-Linefeeds in the bmh file are intended to be respected, but #Formula tends to start on a new line
-even if the contents is intended to be inlined. Probably need to require it to be, e.g.:
-
-    array length must be #Formula # (fXCount + 1) * (fYCount + 1) ##.
-
-where there is always a space between prior words and formula (i.e., between "be" and "(fXCount";
-and, an absense of a space after ## denotes no space between "+ 1)" and ".". These rules preserve
-that # commands are always preceded by a whitespace character. Similarly, #PhraseDef/Ref
-need to be inline or create new paragraphs. #phrase_ref# is sufficiently flexible that it can be
-treated as a word without trailing whitespace, adapting the whitespace of its context. It also must
-always have leading whitespace.
-
 It's awkward that phrase param is a child of the phrase def. Since phrase refs may also be children,
 there is special case code to skip phrase def when looking for additional substitutions in the
 phrase def. Could put it in the token list instead I guess, or make a definition subclass used
 by phrase def with an additional slot...
-
-#Deprecated soon
-##
-should emit the text "To be deprecated soon." (right now you get just "soon")
-
-SkCanvas_ColorBehavior_kLegacy missing </table> in md out
 
 rearrange const out for md so that const / value / short description comes first in a table,
 followed by more elaborate descriptions, examples, seealso. In md.cpp, look to see if #Subtopic
@@ -85,8 +54,12 @@ has #Const children. If so, generate a summary table first.
 Or, only allow #Line and moderate text description in #Const. Put more verbose text, example,
 seealso, in subsequent #SubTopic. Alpha_Type does this and it looks good.
 
-picture reference subclass AbortCallback has empty subtopics, and fails to show the full
-prototype for ~AbortCallback in the md out generation.
+IPoint is awkward. SkPoint and SkIPoint are named things; Point is a topic, which
+refers to float points or integer points. There needn't be an IPoint topic.
+One way to resolve this would be to combine SkPoint_Reference and SkIPoint_Reference into
+Point_Reference that then contains both structs (or just move SKIPoint into SkPoint_Reference).
+Most Point references would be replaced with SkPoint / SkIPoint (if that's what they mean),
+or remain Point if the text indicates the concept rather one of the C structs.
 
 see head of selfCheck.cpp for additional todos
 see head of spellCheck.cpp for additional todos
@@ -115,6 +88,7 @@ see head of spellCheck.cpp for additional todos
 #define R_Y Resolvable::kYes
 #define R_N Resolvable::kNo
 #define R_O Resolvable::kOut
+#define R_K Resolvable::kCode
 #define R_F Resolvable::kFormula
 #define R_C Resolvable::kClone
 
@@ -131,7 +105,7 @@ BmhParser::MarkProps BmhParser::kMarkProps[] = {
 , { "Bug",          MarkType::kBug,          R_N, E_N, M_CSST | M_MDCM | M_E
                                                      | M(Example) | M(NoExample) }
 , { "Class",        MarkType::kClass,        R_Y, E_O, M_CSST }
-, { "Code",         MarkType::kCode,         R_F, E_N, M_CSST | M_E | M_MD | M(Typedef) }
+, { "Code",         MarkType::kCode,         R_K, E_N, M_CSST | M_E | M_MD | M(Typedef) }
 , { "",             MarkType::kColumn,       R_Y, E_N, M(Row) }
 , { "",             MarkType::kComment,      R_N, E_N, 0 }
 , { "Const",        MarkType::kConst,        R_Y, E_O, M_E | M_CSST  }
@@ -159,7 +133,7 @@ BmhParser::MarkProps BmhParser::kMarkProps[] = {
 , { "List",         MarkType::kList,         R_Y, E_N, M(Method) | M_CSST | M_E | M_D }
 , { "Literal",      MarkType::kLiteral,      R_N, E_N, M(Code) }
 , { "",             MarkType::kMarkChar,     R_N, E_N, 0 }
-, { "Member",       MarkType::kMember,       R_Y, E_N, M_CSST }
+, { "Member",       MarkType::kMember,       R_Y, E_O, M_CSST }
 , { "Method",       MarkType::kMethod,       R_Y, E_Y, M_CSST }
 , { "NoExample",    MarkType::kNoExample,    R_N, E_N, M_CSST | M_E | M_MD }
 , { "NoJustify",    MarkType::kNoJustify,    R_N, E_N, M(Const) | M(Member) }
@@ -169,7 +143,7 @@ BmhParser::MarkProps BmhParser::kMarkProps[] = {
 , { "",             MarkType::kPhraseParam,  R_Y, E_N, 0 }
 , { "",             MarkType::kPhraseRef,    R_N, E_N, 0 }
 , { "Platform",     MarkType::kPlatform,     R_N, E_N, M(Example) | M(NoExample) }
-, { "Populate",     MarkType::kPopulate,     R_N, E_N, M(Subtopic) }
+, { "Populate",     MarkType::kPopulate,     R_N, E_N, M_CS | M(Code) }
 , { "Private",      MarkType::kPrivate,      R_N, E_N, M_CSST | M_MDCM | M_E }
 , { "Return",       MarkType::kReturn,       R_Y, E_N, M(Method) }
 , { "",             MarkType::kRow,          R_Y, E_N, M(Table) | M(List) }
@@ -178,14 +152,15 @@ BmhParser::MarkProps BmhParser::kMarkProps[] = {
 , { "StdOut",       MarkType::kStdOut,       R_N, E_N, M(Example) | M(NoExample) }
 , { "Struct",       MarkType::kStruct,       R_Y, E_O, M(Class) | M_ST }
 , { "Substitute",   MarkType::kSubstitute,   R_N, E_N, M(Alias) | M_ST }
-, { "Subtopic",     MarkType::kSubtopic,     R_Y, E_Y, M_CSST }
+, { "Subtopic",     MarkType::kSubtopic,     R_Y, E_Y, M_CSST | M_E }
 , { "Table",        MarkType::kTable,        R_Y, E_N, M(Method) | M_CSST | M_E }
 , { "Template",     MarkType::kTemplate,     R_Y, E_N, M_CSST }
 , { "",             MarkType::kText,         R_N, E_N, 0 }
 , { "ToDo",         MarkType::kToDo,         R_N, E_N, 0 }
 , { "Topic",        MarkType::kTopic,        R_Y, E_Y, 0 }
-, { "Typedef",      MarkType::kTypedef,      R_Y, E_N, M_CSST | M_E }
+, { "Typedef",      MarkType::kTypedef,      R_Y, E_O, M_CSST | M_E }
 , { "Union",        MarkType::kUnion,        R_Y, E_N, M_CSST }
+, { "Using",        MarkType::kUsing,        R_Y, E_O, M_CSST }
 , { "Volatile",     MarkType::kVolatile,     R_N, E_N, M(StdOut) }
 , { "Width",        MarkType::kWidth,        R_N, E_N, M(Example) | M(NoExample) }
 };
@@ -193,6 +168,7 @@ BmhParser::MarkProps BmhParser::kMarkProps[] = {
 #undef R_O
 #undef R_N
 #undef R_Y
+#undef R_K
 #undef R_F
 #undef R_C
 
@@ -252,7 +228,8 @@ bool BmhParser::addDefinition(const char* defStart, bool hasEnd, MarkType markTy
                     if (!hasEnd && fRoot->find(name, RootDefinition::AllowParens::kNo)) {
                         return this->reportError<bool>("duplicate symbol");
                     }
-                    if (MarkType::kStruct == markType || MarkType::kClass == markType) {
+                    if (MarkType::kStruct == markType || MarkType::kClass == markType
+                            || MarkType::kEnumClass == markType) {
                         // if class or struct, build fRoot hierarchy
                         // and change isDefined to search all parents of fRoot
                         SkASSERT(!hasEnd);
@@ -401,6 +378,29 @@ bool BmhParser::addDefinition(const char* defStart, bool hasEnd, MarkType markTy
                 }
             }
             break;
+        case MarkType::kFormula:
+            // hasEnd : single line / multiple line
+            if (!fParent || MarkType::kFormula != fParent->fMarkType) {
+                SkASSERT(!definition || MarkType::kFormula == definition->fMarkType);
+                fMarkup.emplace_front(markType, defStart, fLineCount, fParent, fMC);
+                definition = &fMarkup.front();
+                definition->fContentStart = fChar;
+                definition->fName = typeNameBuilder[0];
+                definition->fFiddle = fParent->fFiddle;
+                fParent = definition;
+            } else {
+                SkASSERT(fParent && MarkType::kFormula == fParent->fMarkType);
+                SkASSERT(fMC == defStart[0]);
+                SkASSERT(fMC == defStart[-1]);
+                definition = fParent;
+                definition->fTerminator = fChar;
+                if (!this->popParentStack(definition)) {
+                    return false;
+                }
+                this->parseHashFormula(definition);
+                fParent->fChildren.push_back(definition);
+            }
+            break;
         // these types are children of parents, but are not in named maps
         case MarkType::kDescription:
         case MarkType::kStdOut:
@@ -503,7 +503,6 @@ bool BmhParser::addDefinition(const char* defStart, bool hasEnd, MarkType markTy
         case MarkType::kCode:
         case MarkType::kExample:
         case MarkType::kFile:
-        case MarkType::kFormula:
         case MarkType::kFunction:
         case MarkType::kLegend:
         case MarkType::kList:
@@ -593,52 +592,9 @@ bool BmhParser::addDefinition(const char* defStart, bool hasEnd, MarkType markTy
             definition->fTerminator = this->lineEnd() - 1;
             fParent->fChildren.push_back(definition);
             if (MarkType::kAnchor == markType) {
-                this->skipToEndBracket(fMC);
-                fMarkup.emplace_front(MarkType::kLink, fChar, fLineCount, definition, fMC);
-                SkAssertResult(fMC == this->next());
-                this->skipWhiteSpace();
-                Definition* link = &fMarkup.front();
-                link->fContentStart = fChar;
-                link->fContentEnd = this->trimmedBracketEnd(fMC);
-                this->skipToEndBracket(fMC);
-                SkAssertResult(fMC == this->next());
-                SkAssertResult(fMC == this->next());
-                link->fTerminator = fChar;
-                definition->fContentEnd = link->fContentEnd;
-                definition->fTerminator = fChar;
-                definition->fChildren.emplace_back(link);
+                this->parseHashAnchor(definition);
 			} else if (MarkType::kLine == markType) {
-				const char* nextLF = this->strnchr('\n', this->fEnd);
-				const char* start = fChar;
-				const char* end = this->trimmedBracketEnd(fMC);
-				this->skipToEndBracket(fMC, nextLF);
-				if (fMC != this->next() || fMC != this->next()) {
-					return this->reportError<bool>("expected ## to delineate line");
-				}
-				fMarkup.emplace_front(MarkType::kText, start, fLineCount, definition, fMC);
-				Definition* text = &fMarkup.front();
-                if (!islower(start[0]) && (!isdigit(start[0])
-                        || MarkType::kConst != definition->fParent->fMarkType)) {
-                    return this->reportError<bool>("expect lower case start");
-                }
-                string contents = string(start, end - start);
-                if (string::npos != contents.find('.')) {
-                    return this->reportError<bool>("expect phrase, not sentence");
-                }
-                size_t firstSpace = contents.find(' ');
-                if (string::npos == firstSpace || 0 == firstSpace || 's' != start[firstSpace - 1]) {
-                    if (MarkType::kMethod == fParent->fMarkType && "experimental" != contents
-                             && "incomplete" != contents) {
-                        return this->reportError<bool>( "expect phrase in third person present"
-                                " tense (1st word should end in 's'");
-                    }
-                }
-				text->fContentStart = start;
-				text->fContentEnd = end;
-				text->fTerminator = fChar;
-				definition->fContentEnd = text->fContentEnd;
-				definition->fTerminator = fChar;
-				definition->fChildren.emplace_back(text);
+                this->parseHashLine(definition);
 			} else if (IncompleteAllowed(markType)) {
                  this->skipSpace();
                  fParent->fDeprecated = true;
@@ -997,6 +953,8 @@ bool BmhParser::dumpExamples(const char* fiddleJsonFileName) const {
     if (ParserCommon::WrittenFileDiffers(oldFiddle, newFiddle)) {
         ParserCommon::CopyToFile(oldFiddle, newFiddle);
         SkDebugf("wrote %s\n", fiddleJsonFileName);
+    } else {
+        remove(newFiddle.c_str());
     }
     return true;
 }
@@ -1064,6 +1022,10 @@ static void add_code(string text, int pos, int end,
             ++pos;
         }
     } while (pos < end);
+}
+
+bool BmhParser::IsExemplary(const Definition* def) {
+    return kMarkProps[(int) def->fMarkType].fExemplary != Exemplary::kNo;
 }
 
 bool BmhParser::exampleToScript(Definition* def, ExampleOptions exampleOptions,
@@ -1301,7 +1263,9 @@ bool BmhParser::findDefinitions() {
             if (this->peek() == fMC) {
                 this->next();
                 if (!lineStart && ' ' < this->peek()) {
-                    return this->reportError<bool>("expected definition");
+                    if (!fParent || MarkType::kFormula != fParent->fMarkType) {
+                        return this->reportError<bool>("expected definition");
+                    }
                 }
                 if (this->peek() != fMC) {
                     if (MarkType::kColumn == fParent->fMarkType) {
@@ -1374,10 +1338,11 @@ bool BmhParser::findDefinitions() {
                 }
                 continue;
             } else if (this->peek() == ' ') {
-                if (!fParent || (MarkType::kTable != fParent->fMarkType
+                if (!fParent || (MarkType::kFormula != fParent->fMarkType
                         && MarkType::kLegend != fParent->fMarkType
                         && MarkType::kList != fParent->fMarkType
-						&& MarkType::kLine != fParent->fMarkType)) {
+						&& MarkType::kLine != fParent->fMarkType
+                        && MarkType::kTable != fParent->fMarkType)) {
                     int endHashes = this->endHashCount();
                     if (endHashes <= 1) {
                         if (fParent) {
@@ -1753,13 +1718,18 @@ void HackParser::addOneLiner(const Definition* defTable, const Definition* child
 }
 
 bool BmhParser::hasEndToken() const {
-    const char* last = fLine + this->lineLength();
-    while (last > fLine && ' ' >= *--last)
-        ;
-    if (--last < fLine) {
-        return false;
-    }
-    return last[0] == fMC && last[1] == fMC;
+    const char* ptr = fLine;
+    char test;
+    do {
+        if (ptr >= fEnd) {
+            return false;
+        }
+        test = *ptr++;
+        if ('\n' == test) {
+            return false;
+        }
+    } while (fMC != test || fMC != *ptr);
+    return true;
 }
 
 string BmhParser::memberName() {
@@ -1960,6 +1930,69 @@ const char* BmhParser::checkForFullTerminal(const char* end, const Definition* d
     return start;
 }
 
+void BmhParser::parseHashAnchor(Definition* definition) {
+    this->skipToEndBracket(fMC);
+    fMarkup.emplace_front(MarkType::kLink, fChar, fLineCount, definition, fMC);
+    SkAssertResult(fMC == this->next());
+    this->skipWhiteSpace();
+    Definition* link = &fMarkup.front();
+    link->fContentStart = fChar;
+    link->fContentEnd = this->trimmedBracketEnd(fMC);
+    this->skipToEndBracket(fMC);
+    SkAssertResult(fMC == this->next());
+    SkAssertResult(fMC == this->next());
+    link->fTerminator = fChar;
+    definition->fContentEnd = link->fContentEnd;
+    definition->fTerminator = fChar;
+    definition->fChildren.emplace_back(link);
+}
+
+void BmhParser::parseHashFormula(Definition* definition) {
+    const char* start = definition->fContentStart;
+    definition->trimEnd();
+	const char* end = definition->fContentEnd;
+	fMarkup.emplace_front(MarkType::kText, start, fLineCount, definition, fMC);
+	Definition* text = &fMarkup.front();
+	text->fContentStart = start;
+	text->fContentEnd = end;
+	text->fTerminator = definition->fTerminator;
+	definition->fChildren.emplace_back(text);
+}
+
+void BmhParser::parseHashLine(Definition* definition) {
+	const char* nextLF = this->strnchr('\n', this->fEnd);
+	const char* start = fChar;
+	const char* end = this->trimmedBracketEnd(fMC);
+	this->skipToEndBracket(fMC, nextLF);
+	if (fMC != this->next() || fMC != this->next()) {
+		return this->reportError<void>("expected ## to delineate line");
+	}
+	fMarkup.emplace_front(MarkType::kText, start, fLineCount, definition, fMC);
+	Definition* text = &fMarkup.front();
+    if (!islower(start[0]) && (!isdigit(start[0])
+            || MarkType::kConst != definition->fParent->fMarkType)) {
+        return this->reportError<void>("expect lower case start");
+    }
+    string contents = string(start, end - start);
+    if (string::npos != contents.find('.')) {
+        return this->reportError<void>("expect phrase, not sentence");
+    }
+    size_t firstSpace = contents.find(' ');
+    if (string::npos == firstSpace || 0 == firstSpace || 's' != start[firstSpace - 1]) {
+        if (MarkType::kMethod == fParent->fMarkType && "experimental" != contents
+                    && "incomplete" != contents) {
+            return this->reportError<void>( "expect phrase in third person present"
+                    " tense (1st word should end in 's'");
+        }
+    }
+	text->fContentStart = start;
+	text->fContentEnd = end;
+	text->fTerminator = fChar;
+	definition->fContentEnd = text->fContentEnd;
+	definition->fTerminator = fChar;
+	definition->fChildren.emplace_back(text);
+}
+
 bool BmhParser::popParentStack(Definition* definition) {
     if (!fParent) {
         return this->reportError<bool>("missing parent");
@@ -2019,10 +2052,14 @@ void TextParser::reportError(const char* errorStr) const {
 }
 
 void TextParser::reportWarning(const char* errorStr) const {
-    SkASSERT(fLine < fEnd);
-    TextParser err(fFileName, fLine, fEnd, fLineCount);
+    const char* lineStart = fLine;
+    if (lineStart >= fEnd) {
+        lineStart = fChar;
+    }
+    SkASSERT(lineStart < fEnd);
+    TextParser err(fFileName, lineStart, fEnd, fLineCount);
     size_t lineLen = this->lineLength();
-    ptrdiff_t spaces = fChar - fLine;
+    ptrdiff_t spaces = fChar - lineStart;
     while (spaces > 0 && (size_t) spaces > lineLen) {
         ++err.fLineCount;
         err.fLine += lineLen;
@@ -2136,11 +2173,11 @@ bool BmhParser::skipNoName() {
     }
     this->skipWhiteSpace();
     if (fMC != this->peek()) {
-        return this->reportError<bool>("expected end mark");
+        return this->reportError<bool>("expected end mark 1");
     }
     this->next();
     if (fMC != this->peek()) {
-        return this->reportError<bool>("expected end mark");
+        return this->reportError<bool>("expected end mark 2");
     }
     this->next();
     return true;
@@ -2193,7 +2230,7 @@ bool BmhParser::skipToDefinitionEnd(MarkType markType) {
 bool BmhParser::skipToString() {
 	this->skipSpace();
 	if (fMC != this->peek()) {
-		return this->reportError<bool>("expected end mark");
+		return this->reportError<bool>("expected end mark 3");
 	}
 	this->next();
 	this->skipSpace();
@@ -2256,7 +2293,6 @@ vector<string> BmhParser::typeName(MarkType markType, bool* checkEnd) {
         case MarkType::kCode:
         case MarkType::kDescription:
         case MarkType::kExternal:
-        case MarkType::kFormula:
         case MarkType::kFunction:
         case MarkType::kLegend:
         case MarkType::kList:
@@ -2264,6 +2300,7 @@ vector<string> BmhParser::typeName(MarkType markType, bool* checkEnd) {
         case MarkType::kPrivate:
             this->skipNoName();
             break;
+        case MarkType::kFormula:
 		case MarkType::kLine:
 			this->skipToString();
 			break;
@@ -2722,15 +2759,19 @@ int main(int argc, char** const argv) {
     if (!done && !FLAGS_ref.isEmpty() && FLAGS_examples.isEmpty()) {
         IncludeParser includeParser;
         includeParser.validate();
+        if (!FLAGS_status.isEmpty() && !includeParser.parseStatus(FLAGS_status[0], ".h",
+                StatusFilter::kCompleted)) {
+            return -1;
+        }
         if (!FLAGS_include.isEmpty() && !includeParser.parseFile(FLAGS_include[0], ".h",
                 ParserCommon::OneFile::kYes)) {
             return -1;
         }
-        MdOut mdOut(bmhParser);
+        includeParser.writeCodeBlock(bmhParser);
+        MdOut mdOut(bmhParser, includeParser);
         mdOut.fDebugOut = FLAGS_stdout;
         mdOut.fValidate = FLAGS_validate;
-        if (!FLAGS_bmh.isEmpty() && mdOut.buildReferences(includeParser,
-                FLAGS_bmh[0], FLAGS_ref[0])) {
+        if (!FLAGS_bmh.isEmpty() && mdOut.buildReferences(FLAGS_bmh[0], FLAGS_ref[0])) {
             bmhParser.fWroteOut = true;
         }
         if (!FLAGS_status.isEmpty() && mdOut.buildStatus(FLAGS_status[0], FLAGS_ref[0])) {

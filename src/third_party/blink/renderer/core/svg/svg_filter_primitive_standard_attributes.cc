@@ -35,31 +35,27 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(
     const QualifiedName& tag_name,
     Document& document)
     : SVGElement(tag_name, document),
+      // Spec: If the x/y attribute is not specified, the effect is as if a
+      // value of "0%" were specified.
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth))),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kPercent0)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight))),
-      width_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kPercent0)),
+      // Spec: If the width/height attribute is not specified, the effect is as
+      // if a value of "100%" were specified.
+      width_(SVGAnimatedLength::Create(this,
+                                       SVGNames::widthAttr,
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kPercent100)),
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kPercent100)),
       result_(SVGAnimatedString::Create(this, SVGNames::resultAttr)) {
-  // Spec: If the x/y attribute is not specified, the effect is as if a value of
-  // "0%" were specified.
-  x_->SetDefaultValueAsString("0%");
-  y_->SetDefaultValueAsString("0%");
-
-  // Spec: If the width/height attribute is not specified, the effect is as if a
-  // value of "100%" were specified.
-  width_->SetDefaultValueAsString("100%");
-  height_->SetDefaultValueAsString("100%");
-
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);

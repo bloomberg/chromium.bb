@@ -11,6 +11,9 @@ function $(id)
 
 function testPanScroll(param)
 {
+    // Make sure animations run. This requires compositor-controls.js.
+    setAnimationRequiresRaster();
+
     function finishTest()
     {
         if ($('container'))
@@ -36,23 +39,19 @@ function testPanScroll(param)
         }
     }
 
-    var noModeScroll = false;
-    var scrolled = false;
+    var scrollStarted = false;
+    var scrollEnded = false;
 
     scrolledObject.onscroll = function() {
-        if (noModeScroll) {
-            testFailed('still autoscroll');
-            finishTest();
+        if (scrollStarted)
             return;
-        }
-
-        if (scrolled)
-            return;
-        scrolled = true;
+        scrollStarted = true;
+        scrollEnded = false;
         testPassed('autoscroll started');
         var cursorInfo = internals.getCurrentCursorInfo();
         debug("Mouse cursor shape: " + cursorInfo);
 
+        // Stop scrolling now
         if (window.eventSender) {
             if (param.clickOrDrag == 'click')
                 eventSender.mouseDown(middleButton);
@@ -61,18 +60,28 @@ function testPanScroll(param)
     };
 
     scrollable.ownerDocument.onmouseup = function(e) {
-        if (!scrolled || e.button != middleButton)
+        // If we haven't started scrolling yet, do nothing.
+        if (!scrollStarted || e.button != middleButton)
             return;
-        noMoreScroll = true;
+        // Wait a while, then set scrollEnded to true
         window.setTimeout(function() {
-            testPassed('autoscroll stopped');
-            var cursorInfo = internals.getCurrentCursorInfo();
-            if (cursorInfo == "type=Pointer hotSpot=0,0" || cursorInfo == "type=IBeam hotSpot=0,0")
-                 testPassed('Mouse cursor cleared');
-            else
-                 testFailed('Mouse cursor shape: ' + cursorInfo);
+            scrollEnded = true;
+            // Wait a bit more and make sure it's still true (we didn't keep
+            // scrolling).
+            window.setTimeout(function() {
+                if (scrollEnded) {
+                    testPassed('autoscroll stopped');
+                } else {
+                    testFailed('autoscroll still scrolling');
+                }
+                var cursorInfo = internals.getCurrentCursorInfo();
+                if (cursorInfo == "type=Pointer hotSpot=0,0" || cursorInfo == "type=IBeam hotSpot=0,0")
+                     testPassed('Mouse cursor cleared');
+                else
+                     testFailed('Mouse cursor shape: ' + cursorInfo);
 
-            finishTest();
+                finishTest();
+            }, autoscrollInterval * 2);
         }, autoscrollInterval * 2);
     };
 

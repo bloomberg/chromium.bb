@@ -106,6 +106,7 @@ source_set("unit_tests") {
   deps = [
     ":toolbar",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//url",
   ]

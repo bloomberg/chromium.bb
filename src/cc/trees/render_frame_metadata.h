@@ -66,12 +66,12 @@ class CC_EXPORT RenderFrameMetadata {
 
   float page_scale_factor = 1.f;
 
-#if defined(OS_ANDROID)
-  // Used to position the Android location top bar and page content, whose
-  // precise position is computed by the renderer compositor.
+  // Used to position the location top bar and page content, whose precise
+  // position is computed by the renderer compositor.
   float top_controls_height = 0.f;
   float top_controls_shown_ratio = 0.f;
 
+#if defined(OS_ANDROID)
   // Used to position Android bottom bar, whose position is computed by the
   // renderer compositor.
   float bottom_controls_height = 0.f;

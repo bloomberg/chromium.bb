@@ -32,7 +32,7 @@ namespace blink {
 class RTCIceCandidate;
 class RTCPeerConnectionIceEventInit;
 
-class RTCPeerConnectionIceEvent final : public Event {
+class MODULES_EXPORT RTCPeerConnectionIceEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

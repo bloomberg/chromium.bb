@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.13'
+__version__ = '0.14'
 
 import collections
 import datetime
@@ -37,6 +37,7 @@ from utils import tools
 import auth
 import cipd
 import isolateserver
+import isolate_storage
 import isolated_format
 import local_caching
 import run_isolated
@@ -174,15 +175,12 @@ def task_request_to_raw_request(task_request):
   # use it at all.
   if not out['service_account']:
     out.pop('service_account')
-  out['task_slices'][0]['properties']['dimensions'] = [
-    {'key': k, 'value': v}
-    for k, v in out['task_slices'][0]['properties']['dimensions']
-  ]
-  out['task_slices'][0]['properties']['env'] = [
-    {'key': k, 'value': v}
-    for k, v in out['task_slices'][0]['properties']['env'].iteritems()
-  ]
-  out['task_slices'][0]['properties']['env'].sort(key=lambda x: x['key'])
+  for task_slice in out['task_slices']:
+    task_slice['properties']['env'] = [
+      {'key': k, 'value': v}
+      for k, v in task_slice['properties']['env'].iteritems()
+    ]
+    task_slice['properties']['env'].sort(key=lambda x: x['key'])
   return out
 
 
@@ -245,8 +243,9 @@ def trigger_task_shards(swarming, task_request, shards):
   def convert(index):
     req = task_request_to_raw_request(task_request)
     if shards > 1:
-      req['task_slices'][0]['properties']['env'] = setup_googletest(
-          req['task_slices'][0]['properties']['env'], shards, index)
+      for task_slice in req['task_slices']:
+        task_slice['properties']['env'] = setup_googletest(
+            task_slice['properties']['env'], shards, index)
       req['name'] += ':%s:%s' % (index, shards)
     return req
 
@@ -285,7 +284,7 @@ def trigger_task_shards(swarming, task_request, shards):
 
 
 # How often to print status updates to stdout in 'collect'.
-STATUS_UPDATE_INTERVAL = 15 * 60.
+STATUS_UPDATE_INTERVAL = 5 * 60.
 
 
 class TaskState(object):
@@ -339,7 +338,8 @@ class TaskOutputCollector(object):
   function, in particular they call 'process_shard_result' method in parallel.
   """
 
-  def __init__(self, task_output_dir, task_output_stdout, shard_count):
+  def __init__(self, task_output_dir, task_output_stdout, shard_count,
+               filter_cb):
     """Initializes TaskOutputCollector, ensures |task_output_dir| exists.
 
     Args:
@@ -351,6 +351,7 @@ class TaskOutputCollector(object):
         if task_output_dir else task_output_dir)
     self.task_output_stdout = task_output_stdout
     self.shard_count = shard_count
+    self.filter_cb = filter_cb
 
     self._lock = threading.Lock()
     self._per_shard_results = {}
@@ -392,9 +393,10 @@ class TaskOutputCollector(object):
 
     # Fetch output files if necessary.
     if self.task_output_dir and result.get('outputs_ref'):
-      storage = self._get_storage(
-          result['outputs_ref']['isolatedserver'],
-          result['outputs_ref']['namespace'])
+      server_ref = isolate_storage.ServerRef(
+            result['outputs_ref']['isolatedserver'],
+            result['outputs_ref']['namespace'])
+      storage = self._get_storage(server_ref)
       if storage:
         # Output files are supposed to be small and they are not reused across
         # tasks. So use MemoryContentAddressedCache for them instead of on-disk
@@ -404,7 +406,7 @@ class TaskOutputCollector(object):
             storage,
             local_caching.MemoryContentAddressedCache(file_mode_mask=0700),
             os.path.join(self.task_output_dir, str(shard_index)),
-            False)
+            False, self.filter_cb)
 
   def finalize(self):
     """Assembles and returns task summary JSON, shutdowns underlying Storage."""
@@ -437,23 +439,23 @@ class TaskOutputCollector(object):
         self._storage = None
       return summary
 
-  def _get_storage(self, isolate_server, namespace):
+  def _get_storage(self, server_ref):
     """Returns isolateserver.Storage to use to fetch files."""
     assert self.task_output_dir
     with self._lock:
       if not self._storage:
-        self._storage = isolateserver.get_storage(isolate_server, namespace)
+        self._storage = isolateserver.get_storage(server_ref)
       else:
         # Shards must all use exact same isolate server and namespace.
-        if self._storage.location != isolate_server:
+        if self._storage.server_ref.url != server_ref.url:
           logging.error(
               'Task shards are using multiple isolate servers: %s and %s',
-              self._storage.location, isolate_server)
+              self._storage.server_ref.url, server_ref.url)
           return None
-        if self._storage.namespace != namespace:
+        if self._storage.server_ref.namespace != server_ref.namespace:
           logging.error(
               'Task shards are using multiple namespaces: %s and %s',
-              self._storage.namespace, namespace)
+              self._storage.server_ref.namespace, server_ref.namespace)
           return None
       return self._storage
 
@@ -558,51 +560,6 @@ def retrieve_results(
       return result
 
 
-def convert_to_old_format(result):
-  """Converts the task result data from Endpoints API format to old API format
-  for compatibility.
-
-  This goes into the file generated as --task-summary-json.
-  """
-  # Sets default.
-  result.setdefault('abandoned_ts', None)
-  result.setdefault('bot_id', None)
-  result.setdefault('bot_version', None)
-  result.setdefault('children_task_ids', [])
-  result.setdefault('completed_ts', None)
-  result.setdefault('cost_saved_usd', None)
-  result.setdefault('costs_usd', None)
-  result.setdefault('deduped_from', None)
-  result.setdefault('name', None)
-  result.setdefault('outputs_ref', None)
-  result.setdefault('server_versions', None)
-  result.setdefault('started_ts', None)
-  result.setdefault('tags', None)
-  result.setdefault('user', None)
-
-  # Convertion back to old API.
-  duration = result.pop('duration', None)
-  result['durations'] = [duration] if duration else []
-  exit_code = result.pop('exit_code', None)
-  result['exit_codes'] = [int(exit_code)] if exit_code else []
-  result['id'] = result.pop('task_id')
-  result['isolated_out'] = result.get('outputs_ref', None)
-  output = result.pop('output', None)
-  result['outputs'] = [output] if output else []
-  # server_version
-  # Endpoints result 'state' as string. For compatibility with old code, convert
-  # to int.
-  result['state'] = TaskState.from_enum(result['state'])
-  result['try_number'] = (
-      int(result['try_number']) if result.get('try_number') else None)
-  if 'bot_dimensions' in result:
-    result['bot_dimensions'] = {
-      i['key']: i.get('value', []) for i in result['bot_dimensions']
-    }
-  else:
-    result['bot_dimensions'] = None
-
-
 def yield_results(
     swarm_base_url, task_ids, timeout, max_threads, print_status_updates,
     output_collector, include_perf, fetch_stdout):
@@ -650,13 +607,17 @@ def yield_results(
       while active_task_count:
         shard_index, result = None, None
         try:
-          shard_index, result = results_channel.pull(
+          shard_index, result = results_channel.next(
               timeout=STATUS_UPDATE_INTERVAL)
         except threading_utils.TaskChannel.Timeout:
           if print_status_updates:
+            time_now = str(datetime.datetime.now())
+            _, time_now = time_now.split(' ')
             print(
+                '%s '
                 'Waiting for results from the following shards: %s' %
-                ', '.join(map(str, shards_remaining)))
+                (time_now, ', '.join(map(str, shards_remaining)))
+            )
             sys.stdout.flush()
           continue
         except Exception:
@@ -749,15 +710,20 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
 def collect(
     swarming, task_ids, timeout, decorate, print_status_updates,
     task_summary_json, task_output_dir, task_output_stdout,
-    include_perf):
+    include_perf, filepath_filter):
   """Retrieves results of a Swarming task.
 
   Returns:
     process exit code that should be returned to the user.
   """
+
+  filter_cb = None
+  if filepath_filter:
+    filter_cb = re.compile(filepath_filter).match
+
   # Collect summary JSON and output files (if task_output_dir is not None).
   output_collector = TaskOutputCollector(
-      task_output_dir, task_output_stdout, len(task_ids))
+      task_output_dir, task_output_stdout, len(task_ids), filter_cb)
 
   seen_shards = set()
   exit_code = None
@@ -799,10 +765,6 @@ def collect(
   finally:
     summary = output_collector.finalize()
     if task_summary_json:
-      # TODO(maruel): Make this optional.
-      for i in summary['shards']:
-        if i:
-          convert_to_old_format(i)
       tools.write_json(task_summary_json, summary, False)
 
   if decorate and total_duration:
@@ -904,22 +866,42 @@ def add_filter_options(parser):
       '-d', '--dimension', default=[], action='append', nargs=2,
       dest='dimensions', metavar='FOO bar',
       help='dimension to filter on')
+  parser.filter_group.add_option(
+      '--optional-dimension', default=[], action='append', nargs=3,
+      dest='optional_dimensions', metavar='key value expiration',
+      help='optional dimensions which will result in additional task slices ')
   parser.add_option_group(parser.filter_group)
+
+
+def _validate_filter_option(parser, key, value, expiration, argname):
+  if ':' in key:
+    parser.error('%s key cannot contain ":"' % argname)
+  if key.strip() != key:
+    parser.error('%s key has whitespace' % argname)
+  if not key:
+    parser.error('%s key is empty' % argname)
+
+  if value.strip() != value:
+    parser.error('%s value has whitespace' % argname)
+  if not value:
+    parser.error('%s value is empty' % argname)
+
+  if expiration is not None:
+    try:
+      expiration = int(expiration)
+    except ValueError:
+      parser.error('%s expiration is not an integer' % argname)
+    if expiration <= 0:
+      parser.error('%s expiration should be positive' % argname)
+    if expiration % 60 != 0:
+      parser.error('%s expiration is not divisible by 60' % argname)
 
 
 def process_filter_options(parser, options):
   for key, value in options.dimensions:
-    if ':' in key:
-      parser.error('--dimension key cannot contain ":"')
-    if key.strip() != key:
-      parser.error('--dimension key has whitespace')
-    if not key:
-      parser.error('--dimension key is empty')
-
-    if value.strip() != value:
-      parser.error('--dimension value has whitespace')
-    if not value:
-      parser.error('--dimension value is empty')
+    _validate_filter_option(parser, key, value, None, 'dimension')
+  for key, value, exp in options.optional_dimensions:
+    _validate_filter_option(parser, key, value, exp, 'optional-dimension')
   options.dimensions.sort()
 
 
@@ -1045,6 +1027,8 @@ def process_trigger_options(parser, options, args):
 
   if not options.dimensions:
     parser.error('Please at least specify one --dimension')
+  if not any(k == 'pool' for k, _v in options.dimensions):
+    parser.error('You must specify --dimension pool <value>')
   if not all(len(t.split(':', 1)) == 2 for t in options.tags):
     parser.error('--tags must be in the format key:value')
   if options.raw_cmd and not args:
@@ -1118,12 +1102,19 @@ def process_trigger_options(parser, options, args):
   for k, v in options.env_prefix:
     env_prefixes.setdefault(k, []).append(v)
 
+  # Get dimensions into the key/value format we can manipulate later.
+  orig_dims = [
+      {'key': key, 'value': value} for key, value in options.dimensions]
+  orig_dims.sort(key=lambda x: (x['key'], x['value']))
+
+  # Construct base properties that we will use for all the slices, adding in
+  # optional dimensions for the fallback slices.
   properties = TaskProperties(
       caches=caches,
       cipd_input=cipd_input,
       command=command,
       relative_cwd=options.relative_cwd,
-      dimensions=options.dimensions,
+      dimensions=orig_dims,
       env=options.env,
       env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.iteritems()],
       execution_timeout_secs=options.hard_timeout,
@@ -1134,15 +1125,66 @@ def process_trigger_options(parser, options, args):
       io_timeout_secs=options.io_timeout,
       outputs=options.output,
       secret_bytes=secret_bytes)
-  task_slice = TaskSlice(
-      expiration_secs=options.expiration,
+
+  slices = []
+
+  # Group the optional dimensions by expiration.
+  dims_by_exp = {}
+  for key, value, exp_secs in options.optional_dimensions:
+    dims_by_exp.setdefault(int(exp_secs), []).append(
+        {'key': key, 'value': value})
+
+  # Create the optional slices with expiration deltas, we fix up the properties
+  # below.
+  last_exp = 0
+  for expiration_secs in sorted(dims_by_exp):
+    t = TaskSlice(
+        expiration_secs=expiration_secs - last_exp,
+        properties=properties,
+        wait_for_capacity=False)
+    slices.append(t)
+    last_exp = expiration_secs
+
+  # Add back in the default slice (the last one).
+  exp = max(int(options.expiration) - last_exp, 60)
+  base_task_slice = TaskSlice(
+      expiration_secs=exp,
       properties=properties,
       wait_for_capacity=options.wait_for_capacity)
+  slices.append(base_task_slice)
+
+  # Add optional dimensions to the task slices, replacing a dimension that
+  # has the same key if it is a dimension where repeating isn't valid (otherwise
+  # we append it).  Currently the only dimension we can repeat is "caches"; the
+  # rest (os, cpu, etc) shouldn't be repeated.
+  extra_dims = []
+  for i, (_, kvs) in enumerate(sorted(dims_by_exp.iteritems(), reverse=True)):
+    dims = list(orig_dims)
+    # Replace or append the key/value pairs for this expiration in extra_dims;
+    # we keep extra_dims around because we are iterating backwards and filling
+    # in slices with shorter expirations.  Dimensions expire as time goes on so
+    # the slices that expire earlier will generally have more dimensions.
+    for kv in kvs:
+      if kv['key'] == 'caches':
+        extra_dims.append(kv)
+      else:
+        extra_dims = [x for x in extra_dims if x['key'] != kv['key']] + [kv]
+    # Then, add all the optional dimensions to the original dimension set, again
+    # replacing if needed.
+    for kv in extra_dims:
+      if kv['key'] == 'caches':
+        dims.append(kv)
+      else:
+        dims = [x for x in dims if x['key'] != kv['key']] + [kv]
+    dims.sort(key=lambda x: (x['key'], x['value']))
+    slice_properties = properties._replace(dimensions=dims)
+    slices[-2 - i] = slices[-2 - i]._replace(properties=slice_properties)
+
   return NewTaskRequest(
       name=default_task_name(options),
       parent_task_id=os.environ.get('SWARMING_TASK_ID', ''),
       priority=options.priority,
-      task_slices=[task_slice],
+      task_slices=slices,
       service_account=options.service_account,
       tags=options.tags,
       user=options.user,
@@ -1207,6 +1249,10 @@ def add_collect_options(parser):
            'by shards: <task-output-dir>/<zero-based-shard-index>/.')
   parser.task_output_group.add_option(TaskOutputStdoutOption(
       '--task-output-stdout'))
+  parser.task_output_group.add_option(
+    '--filepath-filter',
+    help='This is regexp filter used to specify downloaded filepath when '
+         'collecting isolated output.')
   parser.task_output_group.add_option(
       '--perf', action='store_true', default=False,
       help='Includes performance statistics')
@@ -1400,7 +1446,8 @@ def CMDcollect(parser, args):
         options.task_summary_json,
         options.task_output_dir,
         options.task_output_stdout,
-        options.perf)
+        options.perf,
+        options.filepath_filter)
   except Failure:
     on_error.report(None)
     return 1
@@ -1596,7 +1643,8 @@ def CMDrun(parser, args):
         options.task_summary_json,
         options.task_output_dir,
         options.task_output_stdout,
-        options.perf)
+        options.perf,
+        options.filepath_filter)
   except Failure:
     on_error.report(None)
     return 1
@@ -1677,17 +1725,17 @@ def CMDreproduce(parser, args):
   command = []
   if (properties.get('inputs_ref') or {}).get('isolated'):
     # Create the tree.
-    with isolateserver.get_storage(
+    server_ref = isolate_storage.ServerRef(
           properties['inputs_ref']['isolatedserver'],
-          properties['inputs_ref']['namespace']) as storage:
+          properties['inputs_ref']['namespace'])
+    with isolateserver.get_storage(server_ref) as storage:
       # Do not use MemoryContentAddressedCache here, as on 32-bits python,
       # inputs larger than ~1GiB will not fit in memory. This is effectively a
       # leak.
       policies = local_caching.CachePolicies(0, 0, 0, 0)
-      algo = isolated_format.get_hash_algo(
-          properties['inputs_ref']['namespace'])
       cache = local_caching.DiskContentAddressedCache(
-          unicode(os.path.abspath(options.cache)), policies, algo, False)
+          unicode(os.path.abspath(options.cache)), policies,
+          server_ref.hash_algo, False)
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command
@@ -1769,7 +1817,8 @@ def CMDterminate(parser, args):
         None,
         None,
         [],
-        False)
+        False,
+        None)
   else:
     print request['task_id']
   return 0
@@ -1805,11 +1854,11 @@ def CMDtrigger(parser, args):
         }
         tools.write_json(unicode(options.dump_json), data, True)
         print('To collect results, use:')
-        print('  swarming.py collect -S %s --json %s' %
+        print('  tools/swarming_client/swarming.py collect -S %s --json %s' %
             (options.swarming, options.dump_json))
       else:
         print('To collect results, use:')
-        print('  swarming.py collect -S %s %s' %
+        print('  tools/swarming_client/swarming.py collect -S %s %s' %
             (options.swarming, ' '.join(t['task_id'] for t in tasks_sorted)))
       print('Or visit:')
       for t in tasks_sorted:

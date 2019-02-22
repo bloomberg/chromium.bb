@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
@@ -46,20 +47,20 @@ TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
   const Study::Channel channels[] = {
       Study::CANARY, Study::DEV, Study::BETA, Study::STABLE,
   };
-  bool channel_added[arraysize(channels)] = { 0 };
+  bool channel_added[base::size(channels)] = {0};
 
   Study::Filter filter;
 
-  // Check in the forwarded order. The loop cond is <= arraysize(channels)
+  // Check in the forwarded order. The loop cond is <= base::size(channels)
   // instead of < so that the result of adding the last channel gets checked.
-  for (size_t i = 0; i <= arraysize(channels); ++i) {
-    for (size_t j = 0; j < arraysize(channels); ++j) {
+  for (size_t i = 0; i <= base::size(channels); ++i) {
+    for (size_t j = 0; j < base::size(channels); ++j) {
       const bool expected = channel_added[j] || filter.channel_size() == 0;
       const bool result = internal::CheckStudyChannel(filter, channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(channels)) {
+    if (i < base::size(channels)) {
       filter.add_channel(channels[i]);
       channel_added[i] = true;
     }
@@ -68,15 +69,15 @@ TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
   // Do the same check in the reverse order.
   filter.clear_channel();
   memset(&channel_added, 0, sizeof(channel_added));
-  for (size_t i = 0; i <= arraysize(channels); ++i) {
-    for (size_t j = 0; j < arraysize(channels); ++j) {
+  for (size_t i = 0; i <= base::size(channels); ++i) {
+    for (size_t j = 0; j < base::size(channels); ++j) {
       const bool expected = channel_added[j] || filter.channel_size() == 0;
       const bool result = internal::CheckStudyChannel(filter, channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(channels)) {
-      const int index = arraysize(channels) - i - 1;
+    if (i < base::size(channels)) {
+      const int index = base::size(channels) - i - 1;
       filter.add_channel(channels[index]);
       channel_added[index] = true;
     }
@@ -89,13 +90,13 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
   };
 
   ASSERT_EQ(Study::FormFactor_ARRAYSIZE,
-            static_cast<int>(arraysize(form_factors)));
+            static_cast<int>(base::size(form_factors)));
 
-  bool form_factor_added[arraysize(form_factors)] = { 0 };
+  bool form_factor_added[base::size(form_factors)] = {0};
   Study::Filter filter;
 
-  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
-    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+  for (size_t i = 0; i <= base::size(form_factors); ++i) {
+    for (size_t j = 0; j < base::size(form_factors); ++j) {
       const bool expected = form_factor_added[j] ||
                             filter.form_factor_size() == 0;
       const bool result = internal::CheckStudyFormFactor(filter,
@@ -104,7 +105,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                                   << " failed!";
     }
 
-    if (i < arraysize(form_factors)) {
+    if (i < base::size(form_factors)) {
       filter.add_form_factor(form_factors[i]);
       form_factor_added[i] = true;
     }
@@ -113,8 +114,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
   // Do the same check in the reverse order.
   filter.clear_form_factor();
   memset(&form_factor_added, 0, sizeof(form_factor_added));
-  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
-    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+  for (size_t i = 0; i <= base::size(form_factors); ++i) {
+    for (size_t j = 0; j < base::size(form_factors); ++j) {
       const bool expected = form_factor_added[j] ||
                             filter.form_factor_size() == 0;
       const bool result = internal::CheckStudyFormFactor(filter,
@@ -123,8 +124,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                                   << " failed!";
     }
 
-    if (i < arraysize(form_factors)) {
-      const int index = arraysize(form_factors) - i - 1;
+    if (i < base::size(form_factors)) {
+      const int index = base::size(form_factors) - i - 1;
       filter.add_form_factor(form_factors[index]);
       form_factor_added[index] = true;
     }
@@ -132,9 +133,9 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
 
   // Test exclude_form_factors, forward order.
   filter.clear_form_factor();
-  bool form_factor_excluded[arraysize(form_factors)] = { 0 };
-  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
-    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+  bool form_factor_excluded[base::size(form_factors)] = {0};
+  for (size_t i = 0; i <= base::size(form_factors); ++i) {
+    for (size_t j = 0; j < base::size(form_factors); ++j) {
       const bool expected = filter.exclude_form_factor_size() == 0 ||
                             !form_factor_excluded[j];
       const bool result = internal::CheckStudyFormFactor(filter,
@@ -143,7 +144,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                                   << j << " failed!";
     }
 
-    if (i < arraysize(form_factors)) {
+    if (i < base::size(form_factors)) {
       filter.add_exclude_form_factor(form_factors[i]);
       form_factor_excluded[i] = true;
     }
@@ -152,8 +153,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
   // Test exclude_form_factors, reverse order.
   filter.clear_exclude_form_factor();
   memset(&form_factor_excluded, 0, sizeof(form_factor_excluded));
-  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
-    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+  for (size_t i = 0; i <= base::size(form_factors); ++i) {
+    for (size_t j = 0; j < base::size(form_factors); ++j) {
       const bool expected = filter.exclude_form_factor_size() == 0 ||
                             !form_factor_excluded[j];
       const bool result = internal::CheckStudyFormFactor(filter,
@@ -162,8 +163,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                                   << j << " failed!";
     }
 
-    if (i < arraysize(form_factors)) {
-      const int index = arraysize(form_factors) - i - 1;
+    if (i < base::size(form_factors)) {
+      const int index = base::size(form_factors) - i - 1;
       filter.add_exclude_form_factor(form_factors[index]);
       form_factor_excluded[index] = true;
     }
@@ -215,21 +216,21 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
       Study::PLATFORM_LINUX,           Study::PLATFORM_CHROMEOS,
       Study::PLATFORM_ANDROID,         Study::PLATFORM_IOS,
       Study::PLATFORM_ANDROID_WEBVIEW, Study::PLATFORM_FUCHSIA};
-  ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(arraysize(platforms)));
-  bool platform_added[arraysize(platforms)] = { 0 };
+  ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(base::size(platforms)));
+  bool platform_added[base::size(platforms)] = {0};
 
   Study::Filter filter;
 
-  // Check in the forwarded order. The loop cond is <= arraysize(platforms)
+  // Check in the forwarded order. The loop cond is <= base::size(platforms)
   // instead of < so that the result of adding the last channel gets checked.
-  for (size_t i = 0; i <= arraysize(platforms); ++i) {
-    for (size_t j = 0; j < arraysize(platforms); ++j) {
+  for (size_t i = 0; i <= base::size(platforms); ++i) {
+    for (size_t j = 0; j < base::size(platforms); ++j) {
       const bool expected = platform_added[j] || filter.platform_size() == 0;
       const bool result = internal::CheckStudyPlatform(filter, platforms[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(platforms)) {
+    if (i < base::size(platforms)) {
       filter.add_platform(platforms[i]);
       platform_added[i] = true;
     }
@@ -238,15 +239,15 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
   // Do the same check in the reverse order.
   filter.clear_platform();
   memset(&platform_added, 0, sizeof(platform_added));
-  for (size_t i = 0; i <= arraysize(platforms); ++i) {
-    for (size_t j = 0; j < arraysize(platforms); ++j) {
+  for (size_t i = 0; i <= base::size(platforms); ++i) {
+    for (size_t j = 0; j < base::size(platforms); ++j) {
       const bool expected = platform_added[j] || filter.platform_size() == 0;
       const bool result = internal::CheckStudyPlatform(filter, platforms[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(platforms)) {
-      const int index = arraysize(platforms) - i - 1;
+    if (i < base::size(platforms)) {
+      const int index = base::size(platforms) - i - 1;
       filter.add_platform(platforms[index]);
       platform_added[index] = true;
     }
@@ -288,7 +289,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
   // Start date not set should result in true.
   EXPECT_TRUE(internal::CheckStudyStartDate(filter, now));
 
-  for (size_t i = 0; i < arraysize(start_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(start_test_cases); ++i) {
     filter.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
     const bool result = internal::CheckStudyStartDate(filter, now);
     EXPECT_EQ(start_test_cases[i].expected_result, result)
@@ -311,7 +312,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyEndDate) {
   // End date not set should result in true.
   EXPECT_TRUE(internal::CheckStudyEndDate(filter, now));
 
-  for (size_t i = 0; i < arraysize(start_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(start_test_cases); ++i) {
     filter.set_end_date(TimeToProtoTime(start_test_cases[i].end_date));
     const bool result = internal::CheckStudyEndDate(filter, now);
     EXPECT_EQ(start_test_cases[i].expected_result, result) << "Case " << i
@@ -366,7 +367,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   // Min/max version not set should result in true.
   EXPECT_TRUE(internal::CheckStudyVersion(filter, base::Version("1.2.3")));
 
-  for (size_t i = 0; i < arraysize(min_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(min_test_cases); ++i) {
     filter.set_min_version(min_test_cases[i].min_version);
     const bool result = internal::CheckStudyVersion(
         filter, base::Version(min_test_cases[i].version));
@@ -375,7 +376,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   }
   filter.clear_min_version();
 
-  for (size_t i = 0; i < arraysize(max_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(max_test_cases); ++i) {
     filter.set_max_version(max_test_cases[i].max_version);
     const bool result = internal::CheckStudyVersion(
         filter, base::Version(max_test_cases[i].version));
@@ -384,8 +385,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   }
 
   // Check intersection semantics.
-  for (size_t i = 0; i < arraysize(min_test_cases); ++i) {
-    for (size_t j = 0; j < arraysize(max_test_cases); ++j) {
+  for (size_t i = 0; i < base::size(min_test_cases); ++i) {
+    for (size_t j = 0; j < base::size(max_test_cases); ++j) {
       filter.set_min_version(min_test_cases[i].min_version);
       filter.set_max_version(max_test_cases[j].max_version);
 
@@ -635,7 +636,7 @@ TEST(VariationsStudyFilteringTest, IsStudyExpired) {
   // Expiry date not set should result in false.
   EXPECT_FALSE(internal::IsStudyExpired(study, now));
 
-  for (size_t i = 0; i < arraysize(expiry_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(expiry_test_cases); ++i) {
     study.set_expiry_date(TimeToProtoTime(expiry_test_cases[i].expiry_date));
     const bool result = internal::IsStudyExpired(study, now);
     EXPECT_EQ(expiry_test_cases[i].expected_result, result)

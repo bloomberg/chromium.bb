@@ -36,13 +36,16 @@ cast_source_set("test_support") {
     "//base",
     "//chromecast/common/mojom",
     "//chromecast/media/cma/backend",
-    "//chromecast/media/cma/backend:null_video",
     "//chromecast/media/cma/base",
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]
+
+  if (!enable_video_with_mixed_audio) {
+    deps += [ "//chromecast/media/cma/backend:null_video" ]
+  }
 }
 
 cast_source_set("unittests") {
@@ -74,6 +77,7 @@ cast_source_set("unittests") {
 
   if (enable_video_with_mixed_audio) {
     defines = [ "ENABLE_VIDEO_WITH_MIXED_AUDIO" ]
+    libs = ["videodecoderformixer"]
   }
 
   data = [

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 

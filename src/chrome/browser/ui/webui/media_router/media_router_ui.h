@@ -27,8 +27,8 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
   explicit MediaRouterUI(content::WebUI* web_ui);
   ~MediaRouterUI() override;
 
-  // MediaRouterUIBase:
-  void Close() override;
+  // Closes the media router UI.
+  void Close();
 
   // Notifies this instance that the UI has been initialized.
   virtual void OnUIInitialized();
@@ -159,6 +159,9 @@ class MediaRouterUI : public MediaRouterUIBase, public ConstrainedWebDialogUI {
       MediaCastMode cast_mode,
       const base::string16& presentation_request_source_name,
       const RouteRequestResult& result) override;
+
+  void HandleCreateSessionRequestRouteResponse(
+      const RouteRequestResult&) override;
 
   // Callback passed to MediaRouter to receive the sink ID of the sink found by
   // SearchSinksAndCreateRoute().

@@ -19,8 +19,11 @@ class Profile;
 
 namespace content {
 struct NotificationDatabaseData;
-struct PlatformNotificationData;
 class WebContents;
+}
+
+namespace blink {
+struct PlatformNotificationData;
 }
 
 // Developers may be required to display a Web Notification in response to an
@@ -82,14 +85,14 @@ class PushMessagingNotificationManager {
   static void DidWriteNotificationDataIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
       const GURL& origin,
-      const content::PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       const base::Closure& message_handled_closure,
       bool success,
       const std::string& notification_id);
 
   void DidWriteNotificationData(
       const GURL& origin,
-      const content::PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       const base::Closure& message_handled_closure,
       bool success,
       const std::string& notification_id);

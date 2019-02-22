@@ -8,7 +8,7 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-// This file contains unit tests for gles2 commmands
+// This file contains unit tests for gles2 commands
 // It is included by gles2_cmd_format_test.cc
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
@@ -4286,19 +4286,6 @@ TEST_F(GLES2FormatTest, CopySubTextureCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, CompressedCopyTextureCHROMIUM) {
-  cmds::CompressedCopyTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::CompressedCopyTextureCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedCopyTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.dest_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, DrawArraysInstancedANGLE) {
   cmds::DrawArraysInstancedANGLE& cmd =
       *GetBufferAs<cmds::DrawArraysInstancedANGLE>();
@@ -5519,6 +5506,17 @@ TEST_F(GLES2FormatTest, FramebufferTextureMultiviewLayeredANGLE) {
   EXPECT_EQ(static_cast<GLint>(14), cmd.level);
   EXPECT_EQ(static_cast<GLint>(15), cmd.baseViewIndex);
   EXPECT_EQ(static_cast<GLsizei>(16), cmd.numViews);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MaxShaderCompilerThreadsKHR) {
+  cmds::MaxShaderCompilerThreadsKHR& cmd =
+      *GetBufferAs<cmds::MaxShaderCompilerThreadsKHR>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MaxShaderCompilerThreadsKHR::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

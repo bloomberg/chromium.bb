@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
-#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
@@ -24,43 +24,30 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     Vector<NGLink>& children,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
-    const NGPhysicalOffsetRect& contents_ink_overflow,
     Vector<NGBaseline>& baselines,
     NGBoxType box_type,
+    bool is_fieldset_container,
+    bool is_rendered_legend,
     bool is_old_layout_root,
     unsigned border_edges,  // NGBorderEdges::Physical
     scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalContainerFragment(layout_object,
-                                  style,
-                                  style_variant,
-                                  size,
-                                  kFragmentBox,
-                                  box_type,
-                                  children,
-                                  contents_ink_overflow,
-                                  std::move(break_token)),
+    : NGPhysicalContainerFragment(
+          layout_object,
+          style,
+          style_variant,
+          size,
+          is_rendered_legend ? kFragmentRenderedLegend : kFragmentBox,
+          box_type,
+          children,
+          std::move(break_token)),
       baselines_(std::move(baselines)),
       borders_(borders),
       padding_(padding) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
+  is_fieldset_container_ = is_fieldset_container;
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
   children_inline_ = layout_object && layout_object->ChildrenInline();
-
-  // Compute visual contribution from descendant outlines.
-  NGOutlineUtils::FragmentMap anchor_fragment_map;
-  NGOutlineUtils::OutlineRectMap outline_rect_map;
-  NGOutlineUtils::CollectDescendantOutlines(
-      *this, NGPhysicalOffset(), &anchor_fragment_map, &outline_rect_map);
-  for (auto& anchor_iter : anchor_fragment_map) {
-    const NGPhysicalFragment* fragment = anchor_iter.value;
-    Vector<LayoutRect>* outline_rects =
-        &outline_rect_map.find(anchor_iter.key)->value;
-    descendant_outlines_.Unite(NGOutlineUtils::ComputeEnclosingOutline(
-        fragment->Style(), *outline_rects));
-  }
-  GetLayoutObject()->SetOutlineMayBeAffectedByDescendants(
-      !descendant_outlines_.IsEmpty());
 }
 
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
@@ -90,6 +77,12 @@ bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
   DCHECK(layout_object);
   return layout_object->IsBox() &&
          ToLayoutBox(layout_object)->ShouldClipOverflow();
+}
+
+bool NGPhysicalBoxFragment::HasControlClip() const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
+  return layout_object->IsBox() && ToLayoutBox(layout_object)->HasControlClip();
 }
 
 LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
@@ -143,20 +136,18 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
 
   DCHECK(GetLayoutObject());
   if (style.HasVisualOverflowingEffect()) {
-    if (GetLayoutObject()->IsBox()) {
-      ink_overflow.Expand(style.BoxDecorationOutsets());
-      if (style.HasOutline()) {
-        Vector<LayoutRect> outline_rects;
-        // The result rects are in coordinates of this object's border box.
-        AddSelfOutlineRects(&outline_rects, LayoutPoint());
-        LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-        rect.Inflate(style.OutlineOutsetExtent());
-        ink_overflow.Unite(rect);
-      }
-    } else {
-      // TODO(kojii): Implement for inline boxes.
-      DCHECK(GetLayoutObject()->IsLayoutInline());
-      ink_overflow.Expand(style.BoxDecorationOutsets());
+    ink_overflow.Expand(style.BoxDecorationOutsets());
+    if (NGOutlineUtils::HasPaintedOutline(style,
+                                          GetLayoutObject()->GetNode()) &&
+        !NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this)) {
+      Vector<LayoutRect> outline_rects;
+      // The result rects are in coordinates of this object's border box.
+      AddSelfOutlineRects(
+          &outline_rects, LayoutPoint(),
+          GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow());
+      LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
+      rect.Inflate(style.OutlineOutsetExtent());
+      ink_overflow.Unite(rect);
     }
   }
   ink_overflow.Unite(descendant_outlines_.ToLayoutRect());
@@ -165,53 +156,58 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(
     Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset) const {
-  DCHECK(outline_rects);
+    const LayoutPoint& additional_offset,
+    NGOutlineType outline_type) const {
+  // TODO(kojii): Needs inline_element_continuation logic from
+  // LayoutBlockFlow::AddOutlineRects?
 
-  LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
-  outline_rects->push_back(outline_rect);
-
-  DCHECK(GetLayoutObject());
-  if (!GetLayoutObject()->IsBox())
-    return;
-  if (!Style().OutlineStyleIsAuto() || GetLayoutObject()->HasOverflowClip() ||
-      ToLayoutBox(GetLayoutObject())->HasControlClip())
-    return;
-
-  // Focus outline includes chidlren
-  for (const auto& child : Children()) {
-    // List markers have no outline
-    if (child->IsListMarker())
-      continue;
-
-    if (child->IsLineBox()) {
-      // Traverse children of the linebox
-      Vector<NGPhysicalFragmentWithOffset> line_children =
-          NGInlineFragmentTraversal::DescendantsOf(
-              ToNGPhysicalLineBoxFragment(*child));
-      for (const auto& line_child : line_children) {
-        Vector<LayoutRect> line_child_rects;
-        line_child_rects.push_back(
-            line_child.RectInContainerBox().ToLayoutRect());
-        DCHECK(line_child.fragment->GetLayoutObject());
-        line_child.fragment->GetLayoutObject()->LocalToAncestorRects(
-            line_child_rects, ToLayoutBoxModelObject(GetLayoutObject()),
-            child.Offset().ToLayoutPoint(), additional_offset);
-        if (!line_child_rects.IsEmpty())
-          outline_rects->push_back(line_child_rects[0]);
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
+  if (layout_object->IsLayoutInline()) {
+    Vector<LayoutRect> blockflow_outline_rects;
+    ToLayoutInline(layout_object)
+        ->AddOutlineRects(blockflow_outline_rects, LayoutPoint(), outline_type);
+    // The rectangles returned are offset from the containing block. We need the
+    // offset from this fragment. Additionally, the rectangles are offset
+    // relatively to the block-start of the container (this matters when
+    // writing-mode is vertical-rl). We want them to be purely physical. Apply
+    // correction.
+    if (blockflow_outline_rects.size() > 0) {
+      const LayoutBlock* block_for_flipping = nullptr;
+      LayoutPoint first_fragment_offset = blockflow_outline_rects[0].Location();
+      if (UNLIKELY(layout_object->HasFlippedBlocksWritingMode())) {
+        block_for_flipping = layout_object->ContainingBlock();
+        first_fragment_offset.SetX(block_for_flipping->FlipForWritingMode(
+            blockflow_outline_rects[0].MaxX()));
       }
-    } else {
-      DCHECK(child->GetLayoutObject());
-      LayoutObject* child_layout = child->GetLayoutObject();
-      Vector<LayoutRect> child_rects;
-      child_rects.push_back(child->InkOverflow().ToLayoutRect());
-      child_layout->LocalToAncestorRects(
-          child_rects, ToLayoutBoxModelObject(GetLayoutObject()), LayoutPoint(),
-          additional_offset);
-      if (!child_rects.IsEmpty())
-        outline_rects->push_back(child_rects[0]);
+      LayoutSize corrected_offset = additional_offset - first_fragment_offset;
+      for (auto& outline : blockflow_outline_rects) {
+        if (UNLIKELY(block_for_flipping))
+          block_for_flipping->FlipForWritingMode(outline);
+        outline.Move(corrected_offset);
+        outline_rects->push_back(outline);
+      }
     }
+    return;
   }
+  DCHECK(layout_object->IsBox());
+
+  // For anonymous blocks, the children add outline rects.
+  if (!layout_object->IsAnonymous()) {
+    outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
+  }
+
+  if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
+      !HasOverflowClip() && !HasControlClip()) {
+    AddOutlineRectsForNormalChildren(outline_rects, additional_offset,
+                                     outline_type);
+
+    // TODO(kojii): LayoutBlock::AddOutlineRects handles positioned objects
+    // here. Do we need it?
+  }
+
+  // TODO(kojii): Needs inline_element_continuation logic from
+  // LayoutBlockFlow::AddOutlineRects?
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::InkOverflow(bool apply_clip) const {
@@ -221,6 +217,21 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::InkOverflow(bool apply_clip) const {
   NGPhysicalOffsetRect ink_overflow = SelfInkOverflow();
   ink_overflow.Unite(ContentsInkOverflow());
   return ink_overflow;
+}
+
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ContentsInkOverflow() const {
+  if (LayoutBox* layout_box = ToLayoutBoxOrNull(GetLayoutObject())) {
+    return NGPhysicalOffsetRect(layout_box->ContentsVisualOverflowRect());
+  }
+  return ComputeContentsInkOverflow();
+}
+
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeContentsInkOverflow() const {
+  NGPhysicalOffsetRect overflow({}, Size());
+  for (const auto& child : Children()) {
+    child->PropagateContentsInkOverflow(&overflow, child.Offset());
+  }
+  return overflow;
 }
 
 UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {

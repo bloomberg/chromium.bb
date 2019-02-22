@@ -31,6 +31,9 @@ AXAuraObjCache* AXAuraObjCache::GetInstance() {
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {
+  // Avoid problems with transient focus events. https://crbug.com/729449
+  if (!view->GetWidget())
+    return nullptr;
   return CreateInternal<AXViewObjWrapper>(view, view_to_id_map_);
 }
 
@@ -122,24 +125,28 @@ AXAuraObjCache::~AXAuraObjCache() {
 }
 
 View* AXAuraObjCache::GetFocusedView() {
-  if (root_windows_.empty())
-    return nullptr;
-  aura::client::FocusClient* focus_client =
-      GetFocusClient(*root_windows_.begin());
-  if (!focus_client)
-    return nullptr;
+  Widget* focused_widget = focused_widget_for_testing_;
+  aura::Window* focused_window = nullptr;
+  if (!focused_widget) {
+    if (root_windows_.empty())
+      return nullptr;
+    aura::client::FocusClient* focus_client =
+        GetFocusClient(*root_windows_.begin());
+    if (!focus_client)
+      return nullptr;
 
-  aura::Window* focused_window = focus_client->GetFocusedWindow();
-  if (!focused_window)
-    return nullptr;
-
-  Widget* focused_widget = Widget::GetWidgetForNativeView(focused_window);
-  while (!focused_widget) {
-    focused_window = focused_window->parent();
+    focused_window = focus_client->GetFocusedWindow();
     if (!focused_window)
-      break;
+      return nullptr;
 
     focused_widget = Widget::GetWidgetForNativeView(focused_window);
+    while (!focused_widget) {
+      focused_window = focused_window->parent();
+      if (!focused_window)
+        break;
+
+      focused_widget = Widget::GetWidgetForNativeView(focused_window);
+    }
   }
 
   if (!focused_widget)
@@ -153,7 +160,8 @@ View* AXAuraObjCache::GetFocusedView() {
   if (focused_view)
     return focused_view;
 
-  if (focused_window->GetProperty(
+  if (focused_window &&
+      focused_window->GetProperty(
           aura::client::kAccessibilityFocusFallsbackToWidgetKey)) {
     // If focused widget has non client view, falls back to first child view of
     // its client view. We don't expect that non client view gets keyboard

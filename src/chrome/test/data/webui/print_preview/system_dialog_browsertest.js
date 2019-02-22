@@ -77,32 +77,34 @@ cr.define('system_dialog_browsertest', function() {
       assertFalse(linkContainer.disabled);
       assertFalse(link.hidden);
 
-      const pageSettings = page.$$('print-preview-pages-settings');
-      assertFalse(pageSettings.hidden);
+      const moreSettingsElement = page.$$('print-preview-more-settings');
+      moreSettingsElement.$.label.click();
+      const scalingSettings = page.$$('print-preview-scaling-settings');
+      assertFalse(scalingSettings.hidden);
       nativeLayer.resetResolver('getPreview');
 
-      // Set page settings to a bad value
-      pageSettings.$$('#custom-radio-button').checked = true;
-      pageSettings.$$('#all-radio-button')
-          .dispatchEvent(new CustomEvent('change'));
-      const pageSettingsInput = pageSettings.$$('.user-value');
-      pageSettingsInput.value = 'abc';
-      pageSettingsInput.dispatchEvent(new CustomEvent('input'));
+      // Set scaling settings to a bad value
+      const scalingSettingsInput =
+          scalingSettings.$$('print-preview-number-settings-section')
+              .$.userValue.inputElement;
+      scalingSettingsInput.value = '0';
+      scalingSettingsInput.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
 
       // No new preview
       nativeLayer.whenCalled('getPreview').then(function() {
         assertTrue(false);
       });
 
-      return test_util.eventToPromise('input-change', pageSettings)
+      return test_util.eventToPromise('input-change', scalingSettings)
           .then(function() {
-            // Expect disabled print button and Pdf in preview link
+            // Expect disabled print button
             const header = page.$$('print-preview-header');
-            const printButton = header.$$('.print');
+            const printButton = header.$$('.action-button');
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
-            assertTrue(link.disabled);
+            assertTrue(link.querySelector('button').disabled);
           });
     });
   });

@@ -156,7 +156,8 @@ class WebViewDelegateFactory {
         @Override
         public void callDrawGlFunction(
                 Canvas canvas, long nativeDrawGLFunctor, Runnable releasedRunnable) {
-            mDelegate.callDrawGlFunction(canvas, nativeDrawGLFunctor, releasedRunnable);
+            GlueApiHelperForN.callDrawGlFunction(
+                    mDelegate, canvas, nativeDrawGLFunctor, releasedRunnable);
         }
 
         @Override
@@ -205,12 +206,12 @@ class WebViewDelegateFactory {
 
         @Override
         public boolean isMultiProcessEnabled() {
-            return mDelegate.isMultiProcessEnabled();
+            return GlueApiHelperForO.isMultiProcessEnabled(mDelegate);
         }
 
         @Override
         public String getDataDirectorySuffix() {
-            return mDelegate.getDataDirectorySuffix();
+            return GlueApiHelperForP.getDataDirectorySuffix(mDelegate);
         }
     }
 

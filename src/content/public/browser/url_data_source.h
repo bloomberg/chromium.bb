@@ -31,9 +31,6 @@ class ResourceContext;
 // notify.
 class CONTENT_EXPORT URLDataSource {
  public:
-  // Adds a URL data source to |browser_context|. Deprecated.
-  static void Add(BrowserContext* browser_context, URLDataSource* source);
-
   // Adds a URL data source to |browser_context|.
   static void Add(BrowserContext* browser_context,
                   std::unique_ptr<URLDataSource> source);

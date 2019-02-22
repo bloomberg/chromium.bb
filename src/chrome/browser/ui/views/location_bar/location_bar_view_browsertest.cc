@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model_impl.h"
@@ -34,7 +33,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -54,7 +53,6 @@ class LocationBarViewBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewBrowserTest);
 };
 
@@ -128,15 +126,11 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
 class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
  public:
-  TouchLocationBarViewBrowserTest() = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
-    LocationBarViewBrowserTest::SetUpCommandLine(command_line);
-  }
+  TouchLocationBarViewBrowserTest()
+      : md_mode_(ui::MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH) {}
 
  private:
+  ui::test::MaterialDesignControllerTestAPI md_mode_;
   DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
 };
 
@@ -243,7 +237,6 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
 
  private:
   scoped_refptr<net::X509Certificate> cert_;
-  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 

@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_features.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
@@ -107,8 +106,8 @@ AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
   // audio thread. Unretained is safe since we join the audio thread before
   // destructing |this|.
   GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&AudioManagerWin::InitializeOnAudioThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&AudioManagerWin::InitializeOnAudioThread,
+                                base::Unretained(this)));
 }
 
 AudioManagerWin::~AudioManagerWin() = default;
@@ -187,9 +186,6 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
   if (user_buffer_size)
     parameters.set_frames_per_buffer(user_buffer_size);
 
-  parameters.set_effects(parameters.effects() |
-                         AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
-
   return parameters;
 }
 
@@ -260,14 +256,7 @@ AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
     const LogCallback& log_callback) {
   // Used for both AUDIO_PCM_LOW_LATENCY and AUDIO_PCM_LINEAR.
   DVLOG(1) << "MakeLowLatencyInputStream: " << device_id;
-
-  VoiceProcessingMode voice_processing_mode =
-      params.effects() & AudioParameters::ECHO_CANCELLER
-          ? VoiceProcessingMode::kEnabled
-          : VoiceProcessingMode::kDisabled;
-
-  return new WASAPIAudioInputStream(this, params, device_id, log_callback,
-                                    voice_processing_mode);
+  return new WASAPIAudioInputStream(this, params, device_id, log_callback);
 }
 
 std::string AudioManagerWin::GetDefaultInputDeviceID() {

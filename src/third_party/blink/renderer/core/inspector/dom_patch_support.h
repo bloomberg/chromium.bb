@@ -66,7 +66,7 @@ class DOMPatchSupport final {
     HeapVector<Member<Digest>> children_;
   };
 
-  typedef HeapVector<std::pair<Member<Digest>, size_t>> ResultMap;
+  typedef HeapVector<std::pair<Member<Digest>, wtf_size_t>> ResultMap;
   typedef HeapHashMap<String, Member<Digest>> UnusedNodesMap;
 
   bool InnerPatchNode(Digest* old_node, Digest* new_node, ExceptionState&);

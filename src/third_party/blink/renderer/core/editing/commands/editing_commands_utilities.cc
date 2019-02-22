@@ -138,7 +138,7 @@ bool AreIdenticalElements(const Node& first, const Node& second) {
   if (!first_element.HasTagName(second_element.TagQName()))
     return false;
 
-  if (!first_element.HasEquivalentAttributes(&second_element))
+  if (!first_element.HasEquivalentAttributes(second_element))
     return false;
 
   return HasEditableStyle(first_element) && HasEditableStyle(second_element);
@@ -595,7 +595,7 @@ static void DispatchInputEvent(Element* target,
                                InputEvent::EventIsComposing is_composing) {
   if (!target)
     return;
-  // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+  // TODO(editing-dev): Pass appreciate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* const input_event =
       InputEvent::CreateInput(input_type, data, is_composing, nullptr);

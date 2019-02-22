@@ -66,7 +66,6 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
-      public ui::CompositorLockManagerClient,
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor,
       public viz::HostFrameSinkClient,
@@ -112,12 +111,9 @@ class CONTENT_EXPORT CompositorImpl
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
-  void UpdateLayerTreeHost(VisualStateUpdate requested_update) override;
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
+  void UpdateLayerTreeHost() override;
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
+  }
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
   void RequestNewLayerTreeFrameSink() override;
@@ -131,6 +127,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -158,9 +155,6 @@ class CONTENT_EXPORT CompositorImpl
   // display::DisplayObserver implementation.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
-
-  // ui::CompositorLockManagerClient implementation.
-  void OnCompositorLockStateChanged(bool locked) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
@@ -196,6 +190,10 @@ class CONTENT_EXPORT CompositorImpl
 
   // Registers the root frame sink ID.
   void RegisterRootFrameSink();
+
+  // Called when we fail to create the context for the root frame sink.
+  void OnFatalOrSurfaceContextCreationFailure(
+      gpu::ContextResult context_result);
 
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(

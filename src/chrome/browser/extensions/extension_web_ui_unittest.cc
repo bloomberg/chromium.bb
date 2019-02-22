@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_web_ui.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -11,12 +12,16 @@
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
@@ -46,7 +51,7 @@ class ExtensionWebUITest : public testing::Test {
     extension_service_ = system->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->SetTestingFactory(
-        profile_.get(), &BuildOverrideRegistrar);
+        profile_.get(), base::BindRepeating(&BuildOverrideRegistrar));
     ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->Get(profile_.get());
   }
 
@@ -76,7 +81,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
       .Set(manifest_keys::kManifestVersion, 2)
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            DictionaryBuilder().Set("bookmarks", kOverrideResource).Build());
-  scoped_refptr<Extension> ext_unpacked(
+  scoped_refptr<const Extension> ext_unpacked(
       ExtensionBuilder()
           .SetManifest(manifest.Build())
           .SetLocation(Manifest::UNPACKED)
@@ -112,7 +117,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
       .Set(manifest_keys::kManifestVersion, 2)
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            DictionaryBuilder().Set("bookmarks", kOverrideResource2).Build());
-  scoped_refptr<Extension> ext_component(
+  scoped_refptr<const Extension> ext_component(
       ExtensionBuilder()
           .SetManifest(manifest2.Build())
           .SetLocation(Manifest::COMPONENT)
@@ -208,6 +213,47 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
   const base::Value& override_dict = newtab_overrides->GetList()[0];
   EXPECT_EQ(newtab_url.spec(), override_dict.FindKey("entry")->GetString());
   EXPECT_TRUE(override_dict.FindKey("active")->GetBool());
+}
+
+TEST_F(ExtensionWebUITest, TestFaviconAlwaysAvailable) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").Build();
+  extension_service_->AddExtension(extension.get());
+  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()))
+      ->SetReady();
+
+  const GURL kExtensionManifestURL = extension->GetResourceURL("manifest.json");
+
+  std::vector<favicon_base::FaviconRawBitmapResult> favicon_results;
+  auto set_favicon_results =
+      [](std::vector<favicon_base::FaviconRawBitmapResult>* favicons_out,
+         base::RepeatingClosure quit_closure,
+         const std::vector<favicon_base::FaviconRawBitmapResult>& favicons) {
+        *favicons_out = favicons;
+        std::move(quit_closure).Run();
+      };
+
+  base::RunLoop run_loop;
+  ExtensionWebUI::GetFaviconForURL(
+      profile_.get(), kExtensionManifestURL,
+      base::BindRepeating(set_favicon_results, &favicon_results,
+                          run_loop.QuitClosure()));
+
+  run_loop.Run();
+  EXPECT_FALSE(favicon_results.empty());
+
+  // Verify that the favicon bitmaps are not empty and are valid.
+  for (const auto& favicon : favicon_results) {
+    EXPECT_TRUE(favicon.is_valid());
+
+    SkBitmap bitmap;
+    bool result =
+        gfx::PNGCodec::Decode(favicon.bitmap_data.get()->front(),
+                              favicon.bitmap_data.get()->size(), &bitmap);
+    EXPECT_TRUE(result);
+    EXPECT_FALSE(bitmap.isNull());
+    EXPECT_FALSE(bitmap.drawsNothing());
+  }
 }
 
 }  // namespace extensions

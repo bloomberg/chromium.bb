@@ -13,7 +13,6 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -460,12 +459,6 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
-  // TODO: fix. This test verifies that when a window is added the bounds are
-  // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
-  // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
   // Normal window bounds shouldn't be changed.
   gfx::Rect window_bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> window(CreateTestWindow(window_bounds));
@@ -653,6 +646,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   const gfx::Rect new_work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   EXPECT_NE(work_area, new_work_area);
+
   const gfx::Rect new_expected_left_snapped_bounds =
       gfx::Rect(new_work_area.x(), new_work_area.y(), new_work_area.width() / 2,
                 new_work_area.height());
@@ -1489,82 +1483,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
 }
 
-TEST_F(WorkspaceLayoutManagerBackdropTest,
-       DualDisplayShowAppListWithBackdropState) {
-  // Create two displays.
-  UpdateDisplay("0+0-200x200,+200+0-100x100");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ(root_windows.size(), 2u);
-
-  // Create a window in each display and show them in maximized state.
-  aura::Window* window_1 = CreateTestWindowInParent(root_windows[0]);
-  window_1->SetBounds(gfx::Rect(0, 0, 100, 100));
-  window_1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  window_1->Show();
-  aura::Window* window_2 = CreateTestWindowInParent(root_windows[1]);
-  window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
-  window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  window_2->Show();
-
-  RootWindowController* primary_controller =
-      Shell::GetPrimaryRootWindowController();
-  WorkspaceController* primary_wc = primary_controller->workspace_controller();
-  Shell::RootWindowControllerList controllers =
-      Shell::GetAllRootWindowControllers();
-  WorkspaceController* secondary_wc = nullptr;
-  RootWindowController* secondary_controller = nullptr;
-  EXPECT_EQ(controllers.size(), 2u);
-  for (size_t i = 0; i < controllers.size(); ++i) {
-    if (controllers[i] != primary_controller) {
-      secondary_controller = controllers[i];
-      secondary_wc = secondary_controller->workspace_controller();
-    }
-  }
-
-  // Turn on top window backdrop for two displays.
-  WorkspaceControllerTestApi primary_test_helper(primary_wc);
-  WorkspaceControllerTestApi secondary_test_helper(secondary_wc);
-  ShowTopWindowBackdropForContainer(default_container(), true);
-  EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
-  ShowTopWindowBackdropForContainer(
-      secondary_controller->GetContainer(kShellWindowId_DefaultContainer),
-      true);
-  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
-
-  // Showing the app list on the primary display should not hide the backdrop on
-  // the secondary display.
-  EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
-  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
-  EXPECT_FALSE(primary_test_helper.GetBackdropWindow());
-  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
-}
-
-// Fullscreen app list changes to visible should hide the backdrop, otherwise,
-// should show the backdrop.
-TEST_F(WorkspaceLayoutManagerBackdropTest,
-       BackdropUpdatesOnFullscreenAppListVisibilityNotification) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
-  WorkspaceControllerTestApi test_helper(wc);
-
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-
-  // Turn the top window backdrop on.
-  ShowTopWindowBackdropForContainer(default_container(), true);
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-  // Showing the fullscreen app list should hide the backdrop.
-  GetAppListTestHelper()->Show(GetPrimaryDisplay().id());
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-  // Dismissing the app list should cause the backdrop to be shown again.
-  GetAppListTestHelper()->Dismiss();
-}
-
 // TODO(crbug.com/803286): The npot texture check failed on asan tests bot.
 // TODO(crbug.com/838756): Very flaky on mash_ash_unittests.
 TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
@@ -1810,7 +1728,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
-  kb_controller->ui()->GetKeyboardWindow()->SetBounds(
+  kb_controller->GetKeyboardWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 

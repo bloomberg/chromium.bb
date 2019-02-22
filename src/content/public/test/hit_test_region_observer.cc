@@ -171,7 +171,7 @@ HitTestRegionObserver::~HitTestRegionObserver() {
 
 void HitTestRegionObserver::WaitForHitTestData() {
   for (auto& it : GetHostFrameSinkManager()->display_hit_test_query()) {
-    if (it.second->ContainsFrameSinkId(frame_sink_id_)) {
+    if (it.second->ContainsActiveFrameSinkId(frame_sink_id_)) {
       return;
     }
   }
@@ -189,7 +189,8 @@ void HitTestRegionObserver::OnAggregatedHitTestRegionListUpdated(
     return;
 
   for (auto& it : hit_test_data) {
-    if (it.frame_sink_id == frame_sink_id_) {
+    if (it.frame_sink_id == frame_sink_id_ &&
+        !(it.flags & viz::HitTestRegionFlags::kHitTestNotActive)) {
       run_loop_->Quit();
       return;
     }

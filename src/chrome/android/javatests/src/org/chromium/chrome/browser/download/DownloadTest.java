@@ -36,10 +36,10 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -322,7 +322,7 @@ public class DownloadTest implements CustomMainActivityStart {
         final int count = model.getCount();
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                (Runnable) () -> TabModelUtils.setIndex(model, count - 1));
+                () -> TabModelUtils.setIndex(model, count - 1));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -353,7 +353,7 @@ public class DownloadTest implements CustomMainActivityStart {
             @Override
             public boolean isSatisfied() {
                 CompositorViewHolder compositorViewHolder =
-                        (CompositorViewHolder) mDownloadTestRule.getActivity().findViewById(
+                        mDownloadTestRule.getActivity().findViewById(
                                 R.id.compositor_view_holder);
                 LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
 
@@ -464,8 +464,7 @@ public class DownloadTest implements CustomMainActivityStart {
      * @param size The size of info bars to poll for.
      */
     private void assertPollForInfoBarSize(final int size) {
-        final InfoBarContainer container =
-                mDownloadTestRule.getActivity().getActivityTab().getInfoBarContainer();
+        final InfoBarContainer container = mDownloadTestRule.getInfoBarContainer();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

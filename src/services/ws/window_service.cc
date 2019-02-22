@@ -12,7 +12,7 @@
 #include "services/ws/common/switches.h"
 #include "services/ws/embedding.h"
 #include "services/ws/event_injector.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/remoting_event_injector.h"
 #include "services/ws/screen_provider.h"

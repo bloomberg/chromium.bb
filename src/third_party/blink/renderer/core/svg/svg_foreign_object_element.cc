@@ -32,21 +32,24 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document),
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyX)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyY)),
       width_(SVGAnimatedLength::Create(this,
                                        SVGNames::widthAttr,
-                                       SVGLength::Create(SVGLengthMode::kWidth),
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kUnitlessZero,
                                        CSSPropertyWidth)),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight),
-                                    CSSPropertyHeight)) {
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kUnitlessZero,
+                                        CSSPropertyHeight)) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);

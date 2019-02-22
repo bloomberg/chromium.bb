@@ -135,7 +135,10 @@ class MEDIA_EXPORT VideoDecoder {
  private:
   friend struct std::default_delete<VideoDecoder>;
 
-  // Fires any pending callbacks, stops and destroys the decoder.
+  // Fires any pending callbacks, stops and destroys the decoder. After this
+  // call, external resources (e.g. raw pointers) |this| holds might be
+  // invalidated immediately. So if the decoder is destroyed asynchronously
+  // (e.g. DeleteSoon), external resources must be released in this call.
   virtual void Destroy();
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);

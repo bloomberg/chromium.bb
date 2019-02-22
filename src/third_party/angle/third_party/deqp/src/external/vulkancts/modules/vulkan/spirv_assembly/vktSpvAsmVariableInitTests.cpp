@@ -235,7 +235,7 @@ void addGraphicsVariableInitPrivateTest (tcu::TestCaseGroup* group)
 	for (deUint32 numIdx = 0; numIdx < numFloats; ++numIdx)
 		expectedOutput.push_back(1.0f);
 
-	resources.outputs.push_back(std::make_pair(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, BufferSp(new Float32Buffer(expectedOutput))));
+	resources.outputs.push_back(Resource(BufferSp(new Float32Buffer(expectedOutput)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 	extensions.push_back("VK_KHR_storage_buffer_storage_class");
 
 	for (int paramIdx = 0; paramIdx < DE_LENGTH_OF_ARRAY(params); paramIdx++)
@@ -394,8 +394,9 @@ void addShaderCodeOutput(vk::SourceCollections& dst, InstanceContext& context, s
 
 	spec["type"] = type;
 
-	dst.spirvAsmSources.add("vert", DE_NULL) << vertexShader.specialize(spec) << SpirVAsmBuildOptions(targetSpirvVersion);
-	dst.spirvAsmSources.add("frag", DE_NULL) << fragmentShader.specialize(spec) << SpirVAsmBuildOptions(targetSpirvVersion);
+	const deUint32 vulkanVersion = dst.usedVulkanVersion;
+	dst.spirvAsmSources.add("vert", DE_NULL) << vertexShader.specialize(spec) << SpirVAsmBuildOptions(vulkanVersion, targetSpirvVersion);
+	dst.spirvAsmSources.add("frag", DE_NULL) << fragmentShader.specialize(spec) << SpirVAsmBuildOptions(vulkanVersion, targetSpirvVersion);
 }
 
 void addShaderCodeOutputFloat (vk::SourceCollections& dst, InstanceContext context)
@@ -540,8 +541,9 @@ void addShaderCodeOutputStruct (vk::SourceCollections& dst, InstanceContext cont
 		"                            OpReturn\n"
 		"                            OpFunctionEnd\n";
 
-	dst.spirvAsmSources.add("vert", DE_NULL) << vertexShader << SpirVAsmBuildOptions(targetSpirvVersion);
-	dst.spirvAsmSources.add("frag", DE_NULL) << fragmentShader << SpirVAsmBuildOptions(targetSpirvVersion);
+	const deUint32 vulkanVersion = dst.usedVulkanVersion;
+	dst.spirvAsmSources.add("vert", DE_NULL) << vertexShader << SpirVAsmBuildOptions(vulkanVersion, targetSpirvVersion);
+	dst.spirvAsmSources.add("frag", DE_NULL) << fragmentShader << SpirVAsmBuildOptions(vulkanVersion, targetSpirvVersion);
 }
 
 void addGraphicsVariableInitOutputTest (tcu::TestCaseGroup* group)
@@ -550,7 +552,7 @@ void addGraphicsVariableInitOutputTest (tcu::TestCaseGroup* group)
 	map<string, string>		fragments;
 	RGBA					defaultColors[4];
 	tcu::TestCaseGroup*		outputGroup			= new tcu::TestCaseGroup(testCtx, "output", "Tests OpVariable initialization in output storage class.");
-	vector<deInt32>			noSpecConstants;
+	SpecConstants			noSpecConstants;
 	PushConstants			noPushConstants;
 	GraphicsInterfaces		noInterfaces;
 	vector<string>			extensions;
@@ -584,7 +586,7 @@ void addGraphicsVariableInitOutputTest (tcu::TestCaseGroup* group)
 		for (deUint32 numIdx = 0; numIdx < numComponents; ++numIdx)
 			expectedOutput.push_back(1.0f);
 
-		resources.outputs.push_back(std::make_pair(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, BufferSp(new Float32Buffer(expectedOutput))));
+		resources.outputs.push_back(Resource(BufferSp(new Float32Buffer(expectedOutput)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 
 		{
 			const InstanceContext& instanceContext = createInstanceContext(pipelineStages,

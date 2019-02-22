@@ -12,14 +12,12 @@
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_button.h"
-#include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -76,7 +74,6 @@ constexpr int kNonEmptyHeight = 1;
 
 constexpr char kMonitoringWarningClassName[] = "MonitoringWarning";
 constexpr int kSpacingBetweenMonitoringWarningIconAndLabelDp = 8;
-constexpr int kMonitoringWarningIconSizeDp = 20;
 
 views::Label* CreateLabel(const base::string16& text, SkColor color) {
   auto* label = new views::Label(text);
@@ -182,21 +179,13 @@ class SelectionButtonView : public LoginButton {
   DISALLOW_COPY_AND_ASSIGN(SelectionButtonView);
 };
 
-// Container for the device monitoring warning.  Contains the warning icon on
-// the left side, and text on the right side.
+// Container for the device monitoring warning.
 class MonitoringWarningView : public NonAccessibleView {
  public:
   MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
-
-    views::ImageView* image = new views::ImageView();
-    image->SetImage(gfx::CreateVectorIcon(
-        vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp, SK_ColorRED));
-    image->SetPreferredSize(
-        gfx::Size(kMonitoringWarningIconSizeDp, kMonitoringWarningIconSizeDp));
-    AddChildView(image);
 
     const base::string16 label_text = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
@@ -558,6 +547,34 @@ LoginExpandedPublicAccountView::TestApi::warning_dialog() {
 views::StyledLabel*
 LoginExpandedPublicAccountView::TestApi::learn_more_label() {
   return view_->right_pane_->learn_more_label_;
+}
+
+views::View*
+LoginExpandedPublicAccountView::TestApi::language_selection_button() {
+  return view_->right_pane_->language_selection_;
+}
+
+views::View*
+LoginExpandedPublicAccountView::TestApi::keyboard_selection_button() {
+  return view_->right_pane_->keyboard_selection_;
+}
+
+LoginBubble* LoginExpandedPublicAccountView::TestApi::language_menu() {
+  return view_->right_pane_->language_menu_.get();
+}
+
+LoginBubble* LoginExpandedPublicAccountView::TestApi::keyboard_menu() {
+  return view_->right_pane_->keyboard_menu_.get();
+}
+
+LoginMenuView::Item
+LoginExpandedPublicAccountView::TestApi::selected_language_item() {
+  return view_->right_pane_->selected_language_item_;
+}
+
+LoginMenuView::Item
+LoginExpandedPublicAccountView::TestApi::selected_keyboard_item() {
+  return view_->right_pane_->selected_keyboard_item_;
 }
 
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(

@@ -10,7 +10,7 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/public/cpp/config.h"
+#include "ash/drag_drop/drag_drop_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -560,13 +560,13 @@ TEST_F(ShellTest, KeyboardCreation) {
 
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
-  SessionObserver* shell = Shell::Get();
-  EXPECT_FALSE(keyboard::KeyboardController::Get()->enabled());
+  EXPECT_FALSE(keyboard::KeyboardController::Get()->IsEnabled());
 
-  shell->OnSessionStateChanged(
-      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::LOGGED_IN_NOT_ACTIVE;
+  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
 
-  EXPECT_TRUE(keyboard::KeyboardController::Get()->enabled());
+  EXPECT_TRUE(keyboard::KeyboardController::Get()->IsEnabled());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after
@@ -675,6 +675,18 @@ TEST_F(ShellLocalStateTest, LocalState) {
   EXPECT_EQ(local_state_ptr, ash_test_helper()->GetLocalStatePrefService());
 
   Shell::Get()->RemoveShellObserver(&observer);
+}
+
+using ShellLoginTest = NoSessionAshTestBase;
+
+TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
+  DragDropController* drag_drop_controller =
+      ShellTestApi(Shell::Get()).drag_drop_controller();
+  DragDropControllerTestApi drag_drop_controller_test_api(drag_drop_controller);
+  EXPECT_FALSE(drag_drop_controller_test_api.enabled());
+
+  SimulateUserLogin("user1@test.com");
+  EXPECT_TRUE(drag_drop_controller_test_api.enabled());
 }
 
 }  // namespace ash

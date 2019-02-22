@@ -86,7 +86,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
-  QuicSimpleServerStream* CreateOutgoingDynamicStream() override;
+  QuicSimpleServerStream* CreateOutgoingBidirectionalStream() override;
+  QuicSimpleServerStream* CreateOutgoingUnidirectionalStream() override;
   // Closing an outgoing stream can reduce open outgoing stream count, try
   // to handle queued promised streams right now.
   void CloseStreamInner(QuicStreamId stream_id, bool locally_reset) override;

@@ -49,6 +49,7 @@ class ChromeConfig;
 class InodeFileConfig;
 class InodeFileConfig_MountPointMappingEntry;
 class ProcessStatsConfig;
+class SysStatsConfig;
 class TestConfig;
 class TraceConfig_ProducerConfig;
 class TraceConfig_StatsdMetadata;
@@ -300,6 +301,9 @@ class PERFETTO_EXPORT TraceConfig {
     return &guardrail_overrides_;
   }
 
+  bool deferred_start() const { return deferred_start_; }
+  void set_deferred_start(bool value) { deferred_start_ = value; }
+
  private:
   std::vector<BufferConfig> buffers_;
   std::vector<DataSource> data_sources_;
@@ -312,6 +316,7 @@ class PERFETTO_EXPORT TraceConfig {
   uint32_t file_write_period_ms_ = {};
   uint64_t max_file_size_bytes_ = {};
   GuardrailOverrides guardrail_overrides_ = {};
+  bool deferred_start_ = {};
 
   // Allows to preserve unknown protobuf fields for compatibility
   // with future versions of .proto files.
@@ -319,4 +324,5 @@ class PERFETTO_EXPORT TraceConfig {
 };
 
 }  // namespace perfetto
+
 #endif  // INCLUDE_PERFETTO_TRACING_CORE_TRACE_CONFIG_H_

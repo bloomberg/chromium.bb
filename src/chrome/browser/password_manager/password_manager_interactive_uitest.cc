@@ -26,41 +26,20 @@ namespace password_manager {
 // Test params:
 //  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
 //        is enabled for testing.
-class PasswordManagerBrowserTestWithConditionalPopupViews
-    : public PasswordManagerInteractiveTestBase,
-      public ::testing::WithParamInterface<bool> {
+class PasswordManagerInteractiveTest
+    : public PasswordManagerInteractiveTestBase {
  public:
-  PasswordManagerBrowserTestWithConditionalPopupViews() {
+  PasswordManagerInteractiveTest() {
     // Turn off waiting for server predictions before filing. It makes filling
     // behaviour more deterministic. Filling with server predictions is tested
     // in NewPasswordFormManager unit tests.
     password_manager::NewPasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
   }
-  ~PasswordManagerBrowserTestWithConditionalPopupViews() override = default;
-
-  void SetUp() override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-    const bool popup_views_enabled = GetParam();
-    if (popup_views_enabled) {
-      enabled_features.push_back(
-          autofill::features::kAutofillExpandedPopupViews);
-    } else {
-      disabled_features.push_back(
-          autofill::features::kAutofillExpandedPopupViews);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-
-    PasswordManagerInteractiveTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ~PasswordManagerInteractiveTest() override = default;
 };
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       UsernameChanged) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest, UsernameChanged) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -120,7 +99,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
             (stored_passwords.begin()->second)[1].username_value);
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        ManualFallbackForSaving) {
   NavigateToFile("/password/password_form.html");
 
@@ -146,7 +125,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   CheckThatCredentialsStored("", "123");
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        ManualFallbackForSaving_HideAfterTimeout) {
   NavigateToFile("/password/password_form.html");
   ManagePasswordsUIController::set_save_fallback_timeout_in_seconds(0);
@@ -161,7 +140,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   EXPECT_FALSE(prompt_observer.IsSavePromptAvailable());
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        ManualFallbackForSaving_HideIcon) {
   NavigateToFile("/password/password_form.html");
 
@@ -174,7 +153,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   prompt_observer.WaitForInactiveState();
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        ManualFallbackForSaving_GoToManagedState) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -200,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   prompt_observer.WaitForManagementState();
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        PromptForXHRWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
@@ -214,7 +193,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        PromptForXHRWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
@@ -231,8 +210,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       PromptForFetchWithoutOnSubmit) {
+// Disabled for flakiness crbug.com/849582.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
+                       DISABLED_PromptForFetchWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
@@ -246,7 +226,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        PromptForFetchWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
@@ -263,8 +243,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       AutofillPasswordFormWithoutUsernameField) {
+// Disabled for flakiness crbug.com/849582.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
+                       DISABLED_AutofillPasswordFormWithoutUsernameField) {
   std::string submit = "document.getElementById('submit-button').click();";
   VerifyPasswordIsSavedAndFilled("/password/form_with_only_password_field.html",
                                  std::string(), "password", submit);
@@ -273,7 +254,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Disabled for flakiness crbug.com/849582.
 // Tests that if a site embeds the login and signup forms into one <form>, the
 // login form still gets autofilled.
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        DISABLED_AutofillLoginSignupForm) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html", "username",
@@ -283,7 +264,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Disabled for flakiness crbug.com/849582.
 // Tests that password suggestions still work if the fields have the
 // "autocomplete" attribute set to off.
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        DISABLED_AutofillPasswordFormWithAutocompleteOff) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled(
@@ -292,7 +273,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 }
 
 // Disabled for flakiness crbug.com/849582.
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        DISABLED_AutofillPasswordNoFormElement) {
   VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
                                  "username_field", "password_field",
@@ -302,15 +283,11 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Disabled for flakiness crbug.com/849582.
 // Check that we can fill in cases where <base href> is set and the action of
 // the form is not set. Regression test for https://crbug.com/360230.
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        DISABLED_AutofillBaseTagWithNoActionTest) {
   std::string submit = "document.getElementById('submit_button').click();";
   VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
                                  "username_field", "password_field", submit);
 }
-
-INSTANTIATE_TEST_CASE_P(All,
-                        PasswordManagerBrowserTestWithConditionalPopupViews,
-                        /*popup_views_enabled=*/::testing::Bool());
 
 }  // namespace password_manager

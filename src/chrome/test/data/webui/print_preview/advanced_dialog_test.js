@@ -115,7 +115,7 @@ cr.define('advanced_dialog_test', function() {
           .then(() => {
             setItemValues();
 
-            const buttons = dialog.shadowRoot.querySelectorAll('button');
+            const buttons = dialog.shadowRoot.querySelectorAll('paper-button');
             assertEquals(2, buttons.length);
             const whenDialogClose = test_util.eventToPromise('close', dialog);
 
@@ -139,7 +139,7 @@ cr.define('advanced_dialog_test', function() {
           .then(() => {
             setItemValues();
 
-            const buttons = dialog.shadowRoot.querySelectorAll('button');
+            const buttons = dialog.shadowRoot.querySelectorAll('paper-button');
             assertEquals(2, buttons.length);
             const whenDialogClose = test_util.eventToPromise('close', dialog);
 

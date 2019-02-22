@@ -7,14 +7,15 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/common/content_export.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace content {
 
 class CONTENT_EXPORT BackgroundSyncNetworkObserver
-    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Creates a BackgroundSyncNetworkObserver. |network_changed_callback| is
   // called when the network connection changes asynchronously via PostMessage.
@@ -23,37 +24,50 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
 
   ~BackgroundSyncNetworkObserver() override;
 
-  // Enable or disable notifications coming from the NetworkChangeNotifier. (For
-  // preventing flakes in tests)
-  static void SetIgnoreNetworkChangeNotifierForTests(bool ignore);
+  // Enable or disable notifications coming from the NetworkConnectionTracker.
+  // (For preventing flakes in tests)
+  static void SetIgnoreNetworkChangesForTests(bool ignore);
 
   // Returns true if the state of the network meets the needs of
   // |network_state|.
   bool NetworkSufficient(SyncNetworkState network_state);
 
-  // NetworkChangeObserver overrides
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType connection_type) override;
+  // NetworkConnectionObserver overrides
+  void OnConnectionChanged(
+      network::mojom::ConnectionType connection_type) override;
 
-  // Allow tests to call NotifyManagerIfNetworkChanged.
-  void NotifyManagerIfNetworkChangedForTesting(
-      net::NetworkChangeNotifier::ConnectionType connection_type);
+  // Allow tests to call NotifyManagerIfConnectionChanged.
+  void NotifyManagerIfConnectionChangedForTesting(
+      network::mojom::ConnectionType connection_type);
 
  private:
-  // Calls NotifyNetworkChanged if the connection type has changed.
-  void NotifyManagerIfNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType connection_type);
+  // Finishes setup once we get the NetworkConnectionTracker from the UI thread.
+  virtual void RegisterWithNetworkConnectionTracker(
+      network::NetworkConnectionTracker* network_connection_tracker);
 
-  void NotifyNetworkChanged();
+  // Update the current connection type from the NetworkConnectionTracker.
+  void UpdateConnectionType();
 
-  net::NetworkChangeNotifier::ConnectionType connection_type_;
+  // Calls NotifyConnectionChanged if the connection type has changed.
+  void NotifyManagerIfConnectionChanged(
+      network::mojom::ConnectionType connection_type);
 
-  // The callback to run when the network changes.
-  base::RepeatingClosure network_changed_callback_;
+  void NotifyConnectionChanged();
 
-  // Set true to ignore notifications coming from the NetworkChangeNotifier
+  // NetworkConnectionTracker is a global singleton which will outlive this
+  // object.
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
+  network::mojom::ConnectionType connection_type_;
+
+  // The callback to run when the connection changes.
+  base::RepeatingClosure connection_changed_callback_;
+
+  // Set true to ignore notifications coming from the NetworkConnectionTracker
   // (to prevent flakes in tests).
-  static bool ignore_network_change_notifier_;
+  static bool ignore_network_changes_;
+
+  base::WeakPtrFactory<BackgroundSyncNetworkObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncNetworkObserver);
 };

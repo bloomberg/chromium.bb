@@ -46,8 +46,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationManagerTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImporterCommonTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("common/js/importer_common_unittest.html")));
+  RunGeneratedTest("/common/js/importer_common_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportHistoryTest) {
@@ -76,8 +75,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("common/js/lru_cache_unittest.html")));
+  RunGeneratedTest("/common/js/lru_cache_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
@@ -101,8 +99,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("common/js/async_util_unittest.html")));
+  RunGeneratedTest("/common/js/async_util_unittest.html");
 }
 
 // TODO(sashab): Re-enable when https://crbug.com/842880 is fixed.
@@ -121,8 +118,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/thumbnail_loader_unittest.html")));
+  RunGeneratedTest("/foreground/js/thumbnail_loader_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
@@ -211,10 +207,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("common/js/files_app_entry_types_unittest.html")));
+  RunGeneratedTest("/common/js/files_app_entry_types_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("common/js/util_unittest.html")));
+  RunGeneratedTest("/common/js/util_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("foreground/js/crostini_unittest.html")));
 }

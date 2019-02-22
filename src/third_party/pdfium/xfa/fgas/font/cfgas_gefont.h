@@ -12,13 +12,15 @@
 #include <utility>
 #include <vector>
 
-#include "core/fxcrt/fx_memory.h"
+#include "core/fxcrt/fx_coordinates.h"
+#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxcrt/unowned_ptr.h"
+#include "third_party/base/optional.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
-#include "xfa/fgas/font/cfgas_pdffontmgr.h"
 
-class CFX_UnicodeEncoding;
+class CFX_Font;
+class CFX_UnicodeEncodingEx;
 
 class CFGAS_GEFont final : public Retainable {
  public:
@@ -45,10 +47,9 @@ class CFGAS_GEFont final : public Retainable {
   bool GetBBox(FX_RECT* bbox);
 
   RetainPtr<CFGAS_GEFont> GetSubstFont(int32_t iGlyphIndex);
-  CFX_Font* GetDevFont() const { return m_pFont; }
+  CFX_Font* GetDevFont() const { return m_pFont.Get(); }
 
   void SetLogicalFontStyle(uint32_t dwLogFontStyle) {
-    m_bUseLogFontStyle = true;
     m_dwLogFontStyle = dwLogFontStyle;
   }
 
@@ -70,14 +71,10 @@ class CFGAS_GEFont final : public Retainable {
       bool bRecursive);
   WideString GetFamilyName() const;
 
-  bool m_bUseLogFontStyle;
-  uint32_t m_dwLogFontStyle;
-  CFX_Font* m_pFont;
-  bool m_bExternalFont;
-  RetainPtr<CFGAS_GEFont> m_pSrcFont;  // Only set by ctor, so no cycles.
-  CFGAS_FontMgr::ObservedPtr m_pFontMgr;
-  RetainPtr<IFX_SeekableReadStream> m_pFileRead;
-  std::unique_ptr<CFX_UnicodeEncoding> m_pFontEncoding;
+  Optional<uint32_t> m_dwLogFontStyle;
+  MaybeOwned<CFX_Font> m_pFont;  // Must come before |m_pFontEncoding|.
+  CFGAS_FontMgr::ObservedPtr const m_pFontMgr;
+  std::unique_ptr<CFX_UnicodeEncodingEx> m_pFontEncoding;
   std::map<wchar_t, int32_t> m_CharWidthMap;
   std::map<wchar_t, FX_RECT> m_BBoxMap;
   std::vector<RetainPtr<CFGAS_GEFont>> m_SubstFonts;

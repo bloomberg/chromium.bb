@@ -25,6 +25,7 @@
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
@@ -176,21 +177,24 @@ scoped_refptr<net::HttpResponseHeaders> HeadersFromString(const char* string) {
 // Test callback for script commands.
 // Sets |is_called| to true if it is called, and checks that the parameters
 // match their expected values.
-// |user_is_interacting| is not checked because Bind() has a maximum of 7
-// parameters.
 bool HandleScriptCommand(bool* is_called,
                          bool should_handle,
                          base::DictionaryValue* expected_value,
                          const GURL& expected_url,
+                         bool expected_user_is_interacting,
                          bool expected_is_main_frame,
+                         web::WebFrame* expected_sender_frame,
                          const base::DictionaryValue& value,
                          const GURL& url,
                          bool user_is_interacting,
-                         bool is_main_frame) {
+                         bool is_main_frame,
+                         web::WebFrame* sender_frame) {
   *is_called = true;
   EXPECT_TRUE(expected_value->Equals(&value));
   EXPECT_EQ(expected_url, url);
+  EXPECT_EQ(expected_user_is_interacting, user_is_interacting);
   EXPECT_EQ(expected_is_main_frame, is_main_frame);
+  EXPECT_EQ(expected_sender_frame, sender_frame);
   return should_handle;
 }
 
@@ -404,6 +408,22 @@ TEST_P(WebStateImplTest, ObserverTest) {
             actual_favicon_url.icon_sizes[0].width());
   EXPECT_EQ(favicon_url.icon_sizes[0].height(),
             actual_favicon_url.icon_sizes[0].height());
+
+  // Test that WebFrameDidBecomeAvailable() is called.
+  ASSERT_FALSE(observer->web_frame_available_info());
+  web::FakeWebFrame main_frame("main", true, GURL());
+  web_state_->OnWebFrameAvailable(&main_frame);
+  ASSERT_TRUE(observer->web_frame_available_info());
+  EXPECT_EQ(web_state_.get(), observer->web_frame_available_info()->web_state);
+  EXPECT_EQ(&main_frame, observer->web_frame_available_info()->web_frame);
+
+  // Test that WebFrameWillBecomeUnavailable() is called.
+  ASSERT_FALSE(observer->web_frame_unavailable_info());
+  web_state_->OnWebFrameUnavailable(&main_frame);
+  ASSERT_TRUE(observer->web_frame_unavailable_info());
+  EXPECT_EQ(web_state_.get(),
+            observer->web_frame_unavailable_info()->web_state);
+  EXPECT_EQ(&main_frame, observer->web_frame_unavailable_info()->web_frame);
 
   // Test that RenderProcessGone() is called.
   SetIgnoreRenderProcessCrashesDuringTesting(true);
@@ -699,7 +719,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
 MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
   return ui::PageTransitionTypeIncludingQualifiersIs(
              arg.transition_type, expected_request_info.transition_type) &&
-         arg.source_url == expected_request_info.source_url &&
          arg.target_frame_is_main ==
              expected_request_info.target_frame_is_main &&
          arg.has_user_gesture == expected_request_info.has_user_gesture;
@@ -721,7 +740,7 @@ TEST_P(WebStateImplTest, PolicyDeciderTest) {
   // Test that ShouldAllowRequest() is called for the same parameters.
   WebStatePolicyDecider::RequestInfo request_info_main_frame(
       ui::PageTransition::PAGE_TRANSITION_LINK,
-      /*source_url=*/GURL::EmptyGURL(), /*target_main_frame=*/true,
+      /*target_main_frame=*/true,
       /*has_user_gesture=*/false);
   EXPECT_CALL(decider, ShouldAllowRequest(
                            request, RequestInfoMatch(request_info_main_frame)))
@@ -736,7 +755,7 @@ TEST_P(WebStateImplTest, PolicyDeciderTest) {
 
   WebStatePolicyDecider::RequestInfo request_info_iframe(
       ui::PageTransition::PAGE_TRANSITION_LINK,
-      /*source_url=*/GURL::EmptyGURL(), /*target_main_frame=*/false,
+      /*target_main_frame=*/false,
       /*has_user_gesture=*/false);
 
   EXPECT_CALL(decider, ShouldAllowRequest(
@@ -812,10 +831,12 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   value_1.SetString("a", "b");
   const GURL kUrl1("http://foo");
   bool is_called_1 = false;
+  web::FakeWebFrame main_frame("main", true, GURL());
   web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_1,
                           /*should_handle*/ true, &value_1, kUrl1,
-                          /*expected_is_main_frame*/ true),
+                          /*expected_user_is_interacting*/ false,
+                          /*expected_is_main_frame*/ true, &main_frame),
       kPrefix1);
 
   const std::string kPrefix2("prefix2");
@@ -827,7 +848,8 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_2,
                           /*should_handle*/ false, &value_2, kUrl2,
-                          /*expected_is_main_frame*/ true),
+                          /*expected_user_is_interacting*/ false,
+                          /*expected_is_main_frame*/ true, &main_frame),
       kPrefix2);
 
   const std::string kPrefix3("prefix3");
@@ -836,41 +858,46 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   value_3.SetString("e", "f");
   const GURL kUrl3("http://iframe");
   bool is_called_3 = false;
+  web::FakeWebFrame subframe("subframe", false, GURL());
   web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_3,
                           /*should_handle*/ true, &value_3, kUrl3,
-                          /*expected_is_main_frame*/ false),
+                          /*expected_user_is_interacting*/ false,
+                          /*expected_is_main_frame*/ false, &subframe),
       kPrefix3);
 
   // Check that a irrelevant or invalid command does not trigger the callbacks.
   EXPECT_FALSE(web_state_->OnScriptCommandReceived(
       "wohoo.blah", value_1, kUrl1,
-      /*user_is_interacting*/ false, /*is_main_frame*/ true));
+      /*user_is_interacting*/ false, /*is_main_frame*/ true,
+      /*sender_frame*/ &main_frame));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
   EXPECT_FALSE(is_called_3);
 
   EXPECT_FALSE(web_state_->OnScriptCommandReceived(
       "prefix1ButMissingDot", value_1, kUrl1, /*user_is_interacting*/ false,
-      /*is_main_frame*/ true));
+      /*is_main_frame*/ true, /*sender_frame*/ &main_frame));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
   EXPECT_FALSE(is_called_3);
 
   // Check that only the callback matching the prefix is called, with the
   // expected parameters and return value;
-  EXPECT_TRUE(web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1,
-                                                  /*user_is_interacting*/ false,
-                                                  /*is_main_frame*/ true));
+  EXPECT_TRUE(
+      web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1,
+                                          /*user_is_interacting*/ false,
+                                          /*is_main_frame*/ true,
+                                          /*sender_frame*/ &main_frame));
   EXPECT_TRUE(is_called_1);
   EXPECT_FALSE(is_called_2);
   EXPECT_FALSE(is_called_3);
   is_called_1 = false;
-
   // Check that sending message from iframe sets |is_main_frame| to false.
   EXPECT_TRUE(web_state_->OnScriptCommandReceived(kCommand3, value_3, kUrl3,
                                                   /*user_is_interacting*/ false,
-                                                  /*is_main_frame*/ false));
+                                                  /*is_main_frame*/ false,
+                                                  /*sender_frame*/ &subframe));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
   EXPECT_TRUE(is_called_3);
@@ -880,7 +907,8 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   web_state_->RemoveScriptCommandCallback(kPrefix1);
   EXPECT_FALSE(web_state_->OnScriptCommandReceived(
       kCommand1, value_1, kUrl1,
-      /*user_is_interacting*/ false, /*is_main_frame*/ true));
+      /*user_is_interacting*/ false, /*is_main_frame*/ true,
+      /*sender_frame*/ &main_frame));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
   EXPECT_FALSE(is_called_3);
@@ -888,7 +916,8 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   // Check that a false return value is forwarded correctly.
   EXPECT_FALSE(web_state_->OnScriptCommandReceived(
       kCommand2, value_2, kUrl2,
-      /*user_is_interacting*/ false, /*is_main_frame*/ true));
+      /*user_is_interacting*/ false, /*is_main_frame*/ true,
+      /*sender_frame*/ &main_frame));
   EXPECT_FALSE(is_called_1);
   EXPECT_TRUE(is_called_2);
   EXPECT_FALSE(is_called_3);

@@ -129,7 +129,7 @@ static bool RemoveListenerFromVector(
     EventListenerVector* listener_vector,
     const EventListener* listener,
     const EventListenerOptions& options,
-    size_t* index_of_removed_listener,
+    wtf_size_t* index_of_removed_listener,
     RegisteredEventListener* registered_listener) {
   auto* const begin = listener_vector->data();
   auto* const end = begin + listener_vector->size();
@@ -147,7 +147,7 @@ static bool RemoveListenerFromVector(
     return false;
   }
   *registered_listener = *it;
-  *index_of_removed_listener = it - begin;
+  *index_of_removed_listener = static_cast<wtf_size_t>(it - begin);
   listener_vector->EraseAt(*index_of_removed_listener);
   return true;
 }
@@ -155,7 +155,7 @@ static bool RemoveListenerFromVector(
 bool EventListenerMap::Remove(const AtomicString& event_type,
                               const EventListener* listener,
                               const EventListenerOptions& options,
-                              size_t* index_of_removed_listener,
+                              wtf_size_t* index_of_removed_listener,
                               RegisteredEventListener* registered_listener) {
   CheckNoActiveIterators();
 
@@ -189,7 +189,7 @@ static void CopyListenersNotCreatedFromMarkupToTarget(
     EventListenerVector* listener_vector,
     EventTarget* target) {
   for (auto& event_listener : *listener_vector) {
-    if (event_listener.Callback()->WasCreatedFromMarkup())
+    if (event_listener.Callback()->IsEventHandlerForContentAttribute())
       continue;
     AddEventListenerOptionsResolved options = event_listener.Options();
     target->addEventListener(event_type, event_listener.Callback(), options);

@@ -118,6 +118,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
+  content::TestBrowserThreadBundle* thread_bundle() { return &thread_bundle_; }
+
   BrowserWindow* release_browser_window() WARN_UNUSED_RESULT {
     return window_.release();
   }

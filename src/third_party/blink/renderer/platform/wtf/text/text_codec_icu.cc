@@ -342,7 +342,7 @@ int TextCodecICU::DecodeToBuffer(UChar* target,
   err = U_ZERO_ERROR;
   ucnv_toUnicode(converter_icu_, &target, target_limit, &source, source_limit,
                  offsets, flush, &err);
-  return target - target_start;
+  return static_cast<int>(target - target_start);
 }
 
 class ErrorCallbackSetter final {
@@ -379,7 +379,7 @@ class ErrorCallbackSetter final {
 };
 
 String TextCodecICU::Decode(const char* bytes,
-                            size_t length,
+                            wtf_size_t length,
                             FlushBehavior flush,
                             bool stop_on_error,
                             bool& saw_error) {
@@ -616,20 +616,30 @@ static void GbkCallbackSubstitute(const void* context,
 }
 #endif  // USING_SYSTEM_ICU
 
+static void NotReachedEntityCallback(const void* context,
+                                     UConverterFromUnicodeArgs* from_u_args,
+                                     const UChar* code_units,
+                                     int32_t length,
+                                     UChar32 code_point,
+                                     UConverterCallbackReason reason,
+                                     UErrorCode* err) {
+  NOTREACHED();
+}
+
 class TextCodecInput final {
   STACK_ALLOCATED();
 
  public:
   TextCodecInput(const TextEncoding& encoding,
                  const UChar* characters,
-                 size_t length)
+                 wtf_size_t length)
       : begin_(characters), end_(characters + length) {}
 
   TextCodecInput(const TextEncoding& encoding,
                  const LChar* characters,
-                 size_t length) {
+                 wtf_size_t length) {
     buffer_.ReserveInitialCapacity(length);
-    for (size_t i = 0; i < length; ++i)
+    for (wtf_size_t i = 0; i < length; ++i)
       buffer_.push_back(characters[i]);
     begin_ = buffer_.data();
     end_ = begin_ + buffer_.size();
@@ -685,6 +695,13 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                             0, 0, 0, &err);
 #endif
       break;
+    case kNoUnencodables:
+      DCHECK(encoding_ == UTF16BigEndianEncoding() ||
+             encoding_ == UTF16LittleEndianEncoding() ||
+             encoding_ == UTF8Encoding());
+      ucnv_setFromUCallBack(converter_icu_, NotReachedEntityCallback, nullptr,
+                            nullptr, nullptr, &err);
+      break;
   }
 
   DCHECK(U_SUCCESS(err));
@@ -692,7 +709,7 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
     return CString();
 
   Vector<char> result;
-  size_t size = 0;
+  wtf_size_t size = 0;
   do {
     char buffer[kConversionBufferSize];
     char* target = buffer;
@@ -700,7 +717,7 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
     err = U_ZERO_ERROR;
     ucnv_fromUnicode(converter_icu_, &target, target_limit, &source, end,
                      nullptr, true, &err);
-    size_t count = target - buffer;
+    wtf_size_t count = static_cast<wtf_size_t>(target - buffer);
     result.Grow(size + count);
     memcpy(result.data() + size, buffer, count);
     size += count;
@@ -711,7 +728,7 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
 
 template <typename CharType>
 CString TextCodecICU::EncodeCommon(const CharType* characters,
-                                   size_t length,
+                                   wtf_size_t length,
                                    UnencodableHandling handling) {
   if (!length)
     return "";
@@ -726,13 +743,13 @@ CString TextCodecICU::EncodeCommon(const CharType* characters,
 }
 
 CString TextCodecICU::Encode(const UChar* characters,
-                             size_t length,
+                             wtf_size_t length,
                              UnencodableHandling handling) {
   return EncodeCommon(characters, length, handling);
 }
 
 CString TextCodecICU::Encode(const LChar* characters,
-                             size_t length,
+                             wtf_size_t length,
                              UnencodableHandling handling) {
   return EncodeCommon(characters, length, handling);
 }

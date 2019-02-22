@@ -8,18 +8,11 @@
 #define XFA_FXFA_CXFA_FONTMGR_H_
 
 #include <map>
-#include <memory>
-#include <vector>
 
-#include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/fx_system.h"
-#include "core/fxcrt/retain_ptr.h"
-#include "xfa/fgas/font/cfgas_defaultfontmanager.h"
-#include "xfa/fgas/font/cfgas_fontmgr.h"
-#include "xfa/fgas/font/cfgas_pdffontmgr.h"
-#include "xfa/fxfa/fxfa.h"
+#include "core/fxcrt/fx_string.h"
 
-class CPDF_Font;
+class CFGAS_GEFont;
+class CXFA_FFDoc;
 
 class CXFA_FontMgr {
  public:
@@ -31,7 +24,6 @@ class CXFA_FontMgr {
                                   uint32_t dwFontStyles);
 
  private:
-  CFGAS_DefaultFontManager m_pDefFontMgr;
   std::map<ByteString, RetainPtr<CFGAS_GEFont>> m_FontMap;
 };
 

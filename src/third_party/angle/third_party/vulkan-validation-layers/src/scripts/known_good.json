@@ -6,9 +6,12 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit" : "cd57b4ba0f500b1fa304c80c730284c6a2249d1e",
+      "commit" : "91ac4290bcf2cb930b4fb0981f09c00c0b6797e1",
       "prebuild" : [
         "python update_glslang_sources.py"
+      ],
+      "cmake_options" : [
+        "-DUSE_CCACHE=ON"
       ]
     },
     {
@@ -17,7 +20,7 @@
       "sub_dir" : "Vulkan-Headers",
       "build_dir" : "Vulkan-Headers/build",
       "install_dir" : "Vulkan-Headers/build/install",
-      "commit" : "1ebb2c0f7d5911a027a7fcbfe15164caac77e2f8"
+      "commit" : "2fd5a24ec4a6df303b2155b3f85b6b8c1d56f6c0"
     },
     {
       "name" : "Vulkan-Loader",
@@ -25,7 +28,7 @@
       "sub_dir" : "Vulkan-Loader",
       "build_dir" : "Vulkan-Loader/build",
       "install_dir" : "Vulkan-Loader/build/install",
-      "commit" : "95b2c65af6333642361cc7b6fa4fa54b41857f94",
+      "commit" : "dcf2a3acbdb73ada39ebae7a2a268e05abf693a9",
       "deps" : [
         {
           "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
@@ -37,20 +40,40 @@
       ]
     },
     {
+      "name" : "MoltenVK",
+      "url" : "https://github.com/KhronosGroup/MoltenVK.git",
+      "sub_dir" : "MoltenVK",
+      "build_dir" : "MoltenVK",
+      "install_dir" : "MoltenVK",
+      "commit" : "4c8c14a7ad756e73b172edc16dceaca4e8dbe90c",
+      "custom_build" : [
+        "./fetchDependencies --v-headers-root {0[Vulkan-Headers][repo_dir]} --glslang-root {0[glslang][repo_dir]}",
+        "xcodebuild -project MoltenVKPackaging.xcodeproj -scheme \"MoltenVK ({2})\" build"
+      ],
+      "build_step" : "custom",
+      "build_platforms" : [
+        "darwin"
+      ]
+    },
+    {
       "name" : "VulkanTools",
       "url" : "https://github.com/LunarG/VulkanTools.git",
       "sub_dir" : "VulkanTools",
       "build_dir" : "VulkanTools/build",
       "install_dir" : "VulkanTools/build/install",
-      "commit" : "origin/sdk-1.1.77",
+      "commit" : "825f7597c5ed0a65c31c4dd8bea741f85274df20",
       "deps" : [
         {
           "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
           "repo_name" : "Vulkan-Headers"
         },
         {
-          "var_name" : "GLSLANG_INSTALL_DIR",
-          "repo_name" : "glslang"
+          "var_name" : "VULKAN_LOADER_INSTALL_DIR",
+          "repo_name" : "Vulkan-Loader"
+        },
+        {
+          "var_name" : "VULKAN_VALIDATIONLAYERS_INSTALL_DIR",
+          "repo_name" : "Vulkan-ValidationLayers"
         }
       ],
       "prebuild_linux" : [
@@ -67,7 +90,8 @@
       ],
       "ci_only" : [
         "TRAVIS"
-      ]
+      ],
+      "build_step" : "skip"
     },
     {
       "name" : "Vulkan-Tools",
@@ -75,7 +99,7 @@
       "sub_dir" : "Vulkan-Tools",
       "build_dir" : "Vulkan-Tools/build",
       "install_dir" : "Vulkan-Tools/build/install",
-      "commit" : "origin/sdk-1.1.77",
+      "commit" : "267a7288e96e097b7ee538d13f24fd6acc29047a",
       "deps" : [
         {
           "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
@@ -84,6 +108,14 @@
         {
           "var_name" : "VULKAN_LOADER_INSTALL_DIR",
           "repo_name" : "Vulkan-Loader"
+        },
+        {
+          "var_name" : "GLSLANG_INSTALL_DIR",
+          "repo_name" : "glslang"
+        },
+        {
+          "var_name" : "MOLTENVK_REPO_ROOT",
+          "repo_name" : "MoltenVK"
         }
       ],
       "ci_only" : [
@@ -94,6 +126,7 @@
   "install_names" : {
       "glslang" : "GLSLANG_INSTALL_DIR",
       "Vulkan-Headers" : "VULKAN_HEADERS_INSTALL_DIR",
-      "Vulkan-Loader" : "VULKAN_LOADER_INSTALL_DIR"
+      "Vulkan-Loader" : "VULKAN_LOADER_INSTALL_DIR",
+      "MoltenVK" : "MOLTENVK_REPO_ROOT"
     }
 }

@@ -20,10 +20,13 @@ class LRUDict(object):
 
   Can also store its state as *.json file on disk.
   """
+  @staticmethod
+  def time_fn():
+    """Called to determine current timestamp when adding an entry.
 
-  # Used to determine current timestamp.
-  # Can be substituted in individual LRUDict instances.
-  time_fn = time.time
+    Can be substituted in individual LRUDict instances, especially for tests.
+    """
+    return round(time.time())
 
   def __init__(self):
     # Ordered key -> (value, timestamp) mapping,

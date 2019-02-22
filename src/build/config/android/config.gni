@@ -120,7 +120,7 @@ if (is_android || is_chromeos) {
     if (is_chromecast && chromecast_branding != "public") {
       google_play_services_package = "//chromecast/internal/android/prebuilt/google-play-services-first-party"
     } else {
-      google_play_services_package = "//third_party/android_tools"
+      google_play_services_package = "//third_party/android_deps"
     }
   }
 
@@ -354,10 +354,4 @@ if (is_android || is_chromeos) {
   if (android_libcpp_lib_dir == "") {
     android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
   }
-}
-
-declare_args() {
-  # Enables used resource whitelist generation. Set for official builds only
-  # as a large amount of build output is generated.
-  enable_resource_whitelist_generation = is_android && is_official_build
 }

@@ -10,8 +10,8 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/cdm_proxy_context.h"
 #include "media/base/decryptor.h"
+#include "media/cdm/cdm_proxy_context.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_create_device_cb.h"
 
@@ -62,6 +62,9 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
 
   template <class T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  // After a successful InitializeDecryptionBuffer() call, these are set for the
+  // current Decrypt() call.
   ComPtr<ID3D11Device> device_;
   ComPtr<ID3D11DeviceContext> device_context_;
   ComPtr<ID3D11VideoContext> video_context_;

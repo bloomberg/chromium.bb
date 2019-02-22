@@ -8,7 +8,7 @@ import android.content.DialogInterface;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Utility class for interacting with permission prompts outside of the VR Browser. For interaction

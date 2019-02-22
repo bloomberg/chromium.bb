@@ -47,7 +47,7 @@ class LayoutSVGInline : public LayoutInline {
   FloatRect StrokeBoundingBox() const final;
   FloatRect VisualRectInLocalSVGCoordinates() const final;
 
-  LayoutRect AbsoluteVisualRect() const final;
+  LayoutRect VisualRectInDocument() const final;
   void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
       TransformState&,

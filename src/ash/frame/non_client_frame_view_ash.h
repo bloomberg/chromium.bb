@@ -8,9 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/header_view.h"
-#include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
@@ -49,12 +47,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // ImmersiveFullscreenController is created.
   // If ImmersiveFullscreenControllerDelegate is not supplied, HeaderView is
   // used as the ImmersiveFullscreenControllerDelegate.
-  explicit NonClientFrameViewAsh(
-      views::Widget* frame,
-      ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
-      bool control_immersive = true,
-      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
-      std::unique_ptr<CaptionButtonModel> model = nullptr);
+  explicit NonClientFrameViewAsh(views::Widget* frame);
   ~NonClientFrameViewAsh() override;
 
   // Sets the caption button modeland updates the caption buttons.
@@ -151,11 +144,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   views::Widget* frame_;
 
   // View which contains the title and window controls.
-  HeaderView* header_view_;
+  HeaderView* header_view_ = nullptr;
 
-  OverlayView* overlay_view_;
-
-  ImmersiveFullscreenControllerDelegate* immersive_delegate_;
+  OverlayView* overlay_view_ = nullptr;
 
   static bool use_empty_minimum_size_for_test_;
 

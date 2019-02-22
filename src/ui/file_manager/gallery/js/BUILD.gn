@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//ui/file_manager/js_unit_tests.gni")
+import("//third_party/closure_compiler/js_unit_tests.gni")
 
 js_type_check("closure_compile_module") {
   deps = [
@@ -52,12 +52,9 @@ js_library("dimmable_ui_controller_unittest") {
 
 js_library("entry_list_watcher") {
   deps = [
+    "../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:array_data_model",
-  ]
-  externs_list = [
-    "$externs_path/file_system_provider.js",
-    "$externs_path/file_manager_private.js",
   ]
 }
 
@@ -81,11 +78,10 @@ js_library("gallery") {
     ":gallery_constants",
     ":gallery_item",
     ":thumbnail_mode",
-    "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
-    "../../file_manager/foreground/js/ui:files_confirm_dialog",
-    "../../file_manager/foreground/js/ui:share_dialog",
-    "../../gallery/js:slide_mode",
+    "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/foreground/js/ui:files_confirm_dialog",
+    "//ui/file_manager/gallery/js:slide_mode",
     "//ui/webui/resources/js:i18n_template_no_process",
   ]
 }
@@ -117,7 +113,6 @@ js_library("gallery_item") {
     ":gallery_util",
     "../../file_manager/common/js:metrics",
     "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
     "../../file_manager/foreground/js/metadata:metadata_model",
     "../../file_manager/foreground/js/metadata:thumbnail_model",
     "image_editor:image_encoder",
@@ -140,7 +135,7 @@ js_library("gallery_util") {
     "../../file_manager/common/js:file_type",
     "../../file_manager/common/js:util",
     "../../file_manager/common/js:volume_manager_common",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
+    "//ui/file_manager/externs:volume_manager",
   ]
 }
 
@@ -240,6 +235,6 @@ js_unit_tests("unit_tests") {
 group("closure_compile") {
   deps = [
     ":closure_compile_module",
-    ":unit_tests",
+    ":unit_tests_type_check",
   ]
 }

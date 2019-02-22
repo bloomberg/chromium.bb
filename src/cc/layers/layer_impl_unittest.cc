@@ -4,6 +4,7 @@
 
 #include "cc/layers/layer_impl.h"
 
+#include "base/stl_util.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/paint/filter_operation.h"
@@ -24,67 +25,34 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)             \
-  root->layer_tree_impl()->ResetAllChangeTracking();                        \
-  code_to_test;                                                             \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));  \
-  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
-      grand_child));                                                        \
-  EXPECT_FALSE(root->LayerPropertyChanged());                               \
-  EXPECT_FALSE(child->LayerPropertyChanged());                              \
+#define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)           \
+  root->layer_tree_impl()->ResetAllChangeTracking();                      \
+  code_to_test;                                                           \
+  EXPECT_FALSE(root->LayerPropertyChanged());                             \
+  EXPECT_FALSE(child->LayerPropertyChanged());                            \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
-#define EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE( \
-    code_to_test)                                                            \
-  root->layer_tree_impl()->ResetAllChangeTracking();                         \
-  code_to_test;                                                              \
-  EXPECT_TRUE(                                                               \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));    \
-  EXPECT_FALSE(                                                              \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));   \
-  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(  \
-      grand_child));                                                         \
-  EXPECT_FALSE(root->LayerPropertyChanged());                                \
-  EXPECT_FALSE(child->LayerPropertyChanged());                               \
-  EXPECT_FALSE(grand_child->LayerPropertyChanged());
-
-#define EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(  \
-    code_to_test)                                                           \
-  root->layer_tree_impl()->ResetAllChangeTracking();                        \
-  code_to_test;                                                             \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));  \
-  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
-      grand_child));                                                        \
-  EXPECT_TRUE(root->LayerPropertyChanged());                                \
-  EXPECT_TRUE(root->LayerPropertyChangedFromPropertyTrees());               \
-  EXPECT_FALSE(root->LayerPropertyChangedNotFromPropertyTrees());           \
-  EXPECT_TRUE(child->LayerPropertyChanged());                               \
-  EXPECT_TRUE(child->LayerPropertyChangedFromPropertyTrees());              \
-  EXPECT_FALSE(child->LayerPropertyChangedNotFromPropertyTrees());          \
-  EXPECT_TRUE(grand_child->LayerPropertyChanged());                         \
-  EXPECT_TRUE(grand_child->LayerPropertyChangedFromPropertyTrees());        \
+#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)             \
+  root->layer_tree_impl()->ResetAllChangeTracking();                 \
+  code_to_test;                                                      \
+  EXPECT_TRUE(root->LayerPropertyChanged());                         \
+  EXPECT_TRUE(root->LayerPropertyChangedFromPropertyTrees());        \
+  EXPECT_FALSE(root->LayerPropertyChangedNotFromPropertyTrees());    \
+  EXPECT_TRUE(child->LayerPropertyChanged());                        \
+  EXPECT_TRUE(child->LayerPropertyChangedFromPropertyTrees());       \
+  EXPECT_FALSE(child->LayerPropertyChangedNotFromPropertyTrees());   \
+  EXPECT_TRUE(grand_child->LayerPropertyChanged());                  \
+  EXPECT_TRUE(grand_child->LayerPropertyChangedFromPropertyTrees()); \
   EXPECT_FALSE(grand_child->LayerPropertyChangedNotFromPropertyTrees());
 
-#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                 \
-  root->layer_tree_impl()->ResetAllChangeTracking();                        \
-  root->layer_tree_impl()->property_trees()->full_tree_damaged = false;     \
-  code_to_test;                                                             \
-  EXPECT_TRUE(                                                              \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));  \
-  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
-      grand_child));                                                        \
-  EXPECT_TRUE(root->LayerPropertyChanged());                                \
-  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());              \
-  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());            \
-  EXPECT_FALSE(child->LayerPropertyChanged());                              \
+#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)               \
+  root->layer_tree_impl()->ResetAllChangeTracking();                      \
+  root->layer_tree_impl()->property_trees()->full_tree_damaged = false;   \
+  code_to_test;                                                           \
+  EXPECT_TRUE(root->LayerPropertyChanged());                              \
+  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());            \
+  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());          \
+  EXPECT_FALSE(child->LayerPropertyChanged());                            \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                \
@@ -161,23 +129,21 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
 
   // These properties are internal, and should not be considered "change" when
   // they are used.
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetUpdateRect(arbitrary_rect));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
   host_impl.pending_tree()->property_trees()->needs_rebuild = true;
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Changing these properties affects the entire subtree of layers.
-  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.pending_tree()->SetFilterMutated(root->element_id(),
-                                                 arbitrary_filters));
-  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.pending_tree()->SetFilterMutated(root->element_id(),
-                                                 FilterOperations()));
-  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(host_impl.pending_tree()->SetFilterMutated(
+      root->element_id(), arbitrary_filters));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(host_impl.pending_tree()->SetFilterMutated(
+      root->element_id(), FilterOperations()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       host_impl.pending_tree()->SetOpacityMutated(root->element_id(),
                                                   arbitrary_number));
-  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       host_impl.pending_tree()->SetTransformMutated(root->element_id(),
                                                     arbitrary_transform));
 
@@ -188,8 +154,7 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
 
   // Changing these properties does not cause the layer to be marked as changed
   // but does cause the layer to need to push properties.
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetElementId(ElementId(2)));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetElementId(ElementId(2)));
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.

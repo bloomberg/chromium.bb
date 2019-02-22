@@ -36,7 +36,7 @@ class Image11;
 struct Renderer11DeviceCaps;
 
 template <typename T>
-using CubeFaceArray = std::array<T, gl::CUBE_FACE_COUNT>;
+using CubeFaceArray = std::array<T, gl::kCubeFaceCount>;
 
 class TextureStorage11 : public TextureStorage
 {
@@ -382,7 +382,36 @@ class TextureStorage11_External : public TextureStorage11
     Image11 *mAssociatedImage;
 };
 
-class TextureStorage11_EGLImage final : public TextureStorage11
+// A base class for texture storage classes where the associated images are not changed, nor are
+// they accessible as images in GLES3.1+ shaders.
+class TextureStorage11ImmutableBase : public TextureStorage11
+{
+  public:
+    TextureStorage11ImmutableBase(Renderer11 *renderer,
+                                  UINT bindFlags,
+                                  UINT miscFlags,
+                                  GLenum internalFormat);
+
+    void associateImage(Image11 *image, const gl::ImageIndex &index) override;
+    void disassociateImage(const gl::ImageIndex &index, Image11 *expectedImage) override;
+    void verifyAssociatedImageValid(const gl::ImageIndex &index, Image11 *expectedImage) override;
+    angle::Result releaseAssociatedImage(const gl::Context *context,
+                                         const gl::ImageIndex &index,
+                                         Image11 *incomingImage) override;
+
+    angle::Result createSRVForImage(const gl::Context *context,
+                                    int level,
+                                    DXGI_FORMAT format,
+                                    const TextureHelper11 &texture,
+                                    d3d11::SharedSRV *outSRV) override;
+    angle::Result createUAVForImage(const gl::Context *context,
+                                    int level,
+                                    DXGI_FORMAT format,
+                                    const TextureHelper11 &texture,
+                                    d3d11::SharedUAV *outUAV) override;
+};
+
+class TextureStorage11_EGLImage final : public TextureStorage11ImmutableBase
 {
   public:
     TextureStorage11_EGLImage(Renderer11 *renderer,
@@ -403,13 +432,6 @@ class TextureStorage11_EGLImage final : public TextureStorage11
                                   RenderTargetD3D **outRT) override;
 
     angle::Result copyToStorage(const gl::Context *context, TextureStorage *destStorage) override;
-
-    void associateImage(Image11 *image, const gl::ImageIndex &index) override;
-    void disassociateImage(const gl::ImageIndex &index, Image11 *expectedImage) override;
-    void verifyAssociatedImageValid(const gl::ImageIndex &index, Image11 *expectedImage) override;
-    angle::Result releaseAssociatedImage(const gl::Context *context,
-                                         const gl::ImageIndex &index,
-                                         Image11 *incomingImage) override;
 
     angle::Result useLevelZeroWorkaroundTexture(const gl::Context *context,
                                                 bool useLevelZeroTexture) override;
@@ -432,16 +454,6 @@ class TextureStorage11_EGLImage final : public TextureStorage11
                                       DXGI_FORMAT format,
                                       const TextureHelper11 &texture,
                                       d3d11::SharedSRV *outSRV) override;
-    angle::Result createSRVForImage(const gl::Context *context,
-                                    int level,
-                                    DXGI_FORMAT format,
-                                    const TextureHelper11 &texture,
-                                    d3d11::SharedSRV *outSRV) override;
-    angle::Result createUAVForImage(const gl::Context *context,
-                                    int level,
-                                    DXGI_FORMAT format,
-                                    const TextureHelper11 &texture,
-                                    d3d11::SharedUAV *outUAV) override;
 
     angle::Result getImageRenderTarget(const gl::Context *context, RenderTarget11 **outRT) const;
 
@@ -631,17 +643,6 @@ class TextureStorage11_2DArray : public TextureStorage11
                                          const gl::ImageIndex &index,
                                          Image11 *incomingImage) override;
 
-  protected:
-    angle::Result getSwizzleTexture(const gl::Context *context,
-                                    const TextureHelper11 **outTexture) override;
-    angle::Result getSwizzleRenderTarget(const gl::Context *context,
-                                         int mipLevel,
-                                         const d3d11::RenderTargetView **outRTV) override;
-
-    angle::Result ensureDropStencilTexture(const gl::Context *context,
-                                           DropStencil *dropStencilOut) override;
-
-  private:
     struct LevelLayerRangeKey
     {
         LevelLayerRangeKey(int mipLevelIn, int layerIn, int numLayersIn)
@@ -664,6 +665,16 @@ class TextureStorage11_2DArray : public TextureStorage11
         int layer;
         int numLayers;
     };
+
+  protected:
+    angle::Result getSwizzleTexture(const gl::Context *context,
+                                    const TextureHelper11 **outTexture) override;
+    angle::Result getSwizzleRenderTarget(const gl::Context *context,
+                                         int mipLevel,
+                                         const d3d11::RenderTargetView **outRTV) override;
+
+    angle::Result ensureDropStencilTexture(const gl::Context *context,
+                                           DropStencil *dropStencilOut) override;
 
   private:
     angle::Result createSRVForSampler(const gl::Context *context,
@@ -699,7 +710,7 @@ class TextureStorage11_2DArray : public TextureStorage11
     ImageMap mAssociatedImages;
 };
 
-class TextureStorage11_2DMultisample : public TextureStorage11
+class TextureStorage11_2DMultisample final : public TextureStorage11ImmutableBase
 {
   public:
     TextureStorage11_2DMultisample(Renderer11 *renderer,
@@ -721,13 +732,6 @@ class TextureStorage11_2DMultisample : public TextureStorage11
 
     angle::Result copyToStorage(const gl::Context *context, TextureStorage *destStorage) override;
 
-    void associateImage(Image11 *image, const gl::ImageIndex &index) override;
-    void disassociateImage(const gl::ImageIndex &index, Image11 *expectedImage) override;
-    void verifyAssociatedImageValid(const gl::ImageIndex &index, Image11 *expectedImage) override;
-    angle::Result releaseAssociatedImage(const gl::Context *context,
-                                         const gl::ImageIndex &index,
-                                         Image11 *incomingImage) override;
-
   protected:
     angle::Result getSwizzleTexture(const gl::Context *context,
                                     const TextureHelper11 **outTexture) override;
@@ -747,19 +751,66 @@ class TextureStorage11_2DMultisample : public TextureStorage11
                                       DXGI_FORMAT format,
                                       const TextureHelper11 &texture,
                                       d3d11::SharedSRV *outSRV) override;
-    angle::Result createSRVForImage(const gl::Context *context,
-                                    int level,
-                                    DXGI_FORMAT format,
-                                    const TextureHelper11 &texture,
-                                    d3d11::SharedSRV *outSRV) override;
-    angle::Result createUAVForImage(const gl::Context *context,
-                                    int level,
-                                    DXGI_FORMAT format,
-                                    const TextureHelper11 &texture,
-                                    d3d11::SharedUAV *outUAV) override;
 
     TextureHelper11 mTexture;
     std::unique_ptr<RenderTarget11> mRenderTarget;
+
+    unsigned int mSamples;
+    GLboolean mFixedSampleLocations;
+};
+
+class TextureStorage11_2DMultisampleArray final : public TextureStorage11ImmutableBase
+{
+  public:
+    TextureStorage11_2DMultisampleArray(Renderer11 *renderer,
+                                        GLenum internalformat,
+                                        GLsizei width,
+                                        GLsizei height,
+                                        GLsizei depth,
+                                        int levels,
+                                        int samples,
+                                        bool fixedSampleLocations);
+    ~TextureStorage11_2DMultisampleArray() override;
+
+    angle::Result onDestroy(const gl::Context *context) override;
+
+    angle::Result getResource(const gl::Context *context,
+                              const TextureHelper11 **outResource) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
+
+    angle::Result copyToStorage(const gl::Context *context, TextureStorage *destStorage) override;
+
+  protected:
+    angle::Result getSwizzleTexture(const gl::Context *context,
+                                    const TextureHelper11 **outTexture) override;
+    angle::Result getSwizzleRenderTarget(const gl::Context *context,
+                                         int mipLevel,
+                                         const d3d11::RenderTargetView **outRTV) override;
+
+    angle::Result ensureDropStencilTexture(const gl::Context *context,
+                                           DropStencil *dropStencilOut) override;
+
+    angle::Result ensureTextureExists(const gl::Context *context, int mipLevels);
+
+  private:
+    angle::Result createRenderTargetSRV(const gl::Context *context,
+                                        const TextureHelper11 &texture,
+                                        const gl::ImageIndex &index,
+                                        DXGI_FORMAT resourceFormat,
+                                        d3d11::SharedSRV *srv) const;
+
+    angle::Result createSRVForSampler(const gl::Context *context,
+                                      int baseLevel,
+                                      int mipLevels,
+                                      DXGI_FORMAT format,
+                                      const TextureHelper11 &texture,
+                                      d3d11::SharedSRV *outSRV) override;
+
+    TextureHelper11 mTexture;
+    std::map<TextureStorage11_2DArray::LevelLayerRangeKey, std::unique_ptr<RenderTarget11>>
+        mRenderTargets;
 
     unsigned int mSamples;
     GLboolean mFixedSampleLocations;

@@ -42,7 +42,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 /**
  * Test suite for sign in tests.
@@ -264,7 +264,7 @@ public class SigninTest {
             mSigninManager.removeSignInStateObserver(mTestSignInObserver);
 
             if (ChromeSigninController.get().isSignedIn()) {
-                mSigninManager.signOut(null, null);
+                mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
             }
 
             mBookmarks.destroy();

@@ -341,7 +341,8 @@ TEST_F(DocumentTest, CreateRangeAdjustedToTreeScopeWithPositionInShadowTree) {
       "<div><select><option>012</option></div>");
   Element* const select_element = GetDocument().QuerySelector("select");
   const Position& position =
-      Position::AfterNode(*select_element->UserAgentShadowRoot());
+      Position(*select_element->UserAgentShadowRoot(),
+               select_element->UserAgentShadowRoot()->CountChildren());
   Range* const range =
       Document::CreateRangeAdjustedToTreeScope(GetDocument(), position);
   EXPECT_EQ(range->startContainer(), select_element->parentNode());
@@ -589,6 +590,8 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 
   // A unique origin does not bypass secure context checks unless it
   // is also potentially trustworthy.
+  url::AddStandardScheme("very-special-scheme",
+                         url::SchemeType::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
   origin =
@@ -874,6 +877,7 @@ TEST_F(DocumentTest,
       <div id='nonSticky'></div>
     </div>
   )HTML");
+  GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_EQ(DocumentLifecycle::kStyleClean,
             GetDocument().Lifecycle().GetState());
 

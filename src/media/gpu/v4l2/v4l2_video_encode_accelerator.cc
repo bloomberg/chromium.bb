@@ -25,6 +25,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
@@ -135,6 +136,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       input_memory_type_(V4L2_MEMORY_USERPTR),
       output_streamon_(false),
       output_buffer_queued_count_(0),
+      is_flush_supported_(false),
       encoder_thread_("V4L2EncoderThread"),
       device_poll_thread_("V4L2EncoderDevicePollThread"),
       weak_this_ptr_factory_(this) {
@@ -172,10 +174,17 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
 
   if (!device_->Open(V4L2Device::Type::kEncoder, output_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile="
-             << GetProfileName(config.output_profile) << ", fourcc=0x"
-             << std::hex << output_format_fourcc_;
+             << GetProfileName(config.output_profile)
+             << ", fourcc=" << FourccToString(output_format_fourcc_);
     return false;
   }
+
+  // Ask if V4L2_ENC_CMD_STOP (Flush) is supported.
+  struct v4l2_encoder_cmd cmd = {};
+  cmd.cmd = V4L2_ENC_CMD_STOP;
+  is_flush_supported_ = (device_->Ioctl(VIDIOC_TRY_ENCODER_CMD, &cmd) == 0);
+  if (!is_flush_supported_)
+    VLOGF(2) << "V4L2_ENC_CMD_STOP is not supported.";
 
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
@@ -237,10 +246,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       free_image_processor_output_buffers_.push_back(i);
   }
 
-  // TODO(johnylin): pass |config.h264_output_level| to InitControl() for
-  //                 updating the correlative V4L2_CID_MPEG_VIDEO_H264_LEVEL
-  //                 ctrl value. https://crbug.com/863327
-  if (!InitControls())
+  if (!InitControls(config))
     return false;
 
   if (!CreateOutputBuffers())
@@ -252,8 +258,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   }
 
   RequestEncodingParametersChange(
-      config.initial_bitrate,
-      config.initial_framerate.value_or(kDefaultFramerate));
+      config.initial_bitrate, config.initial_framerate.value_or(
+                                  VideoEncodeAccelerator::kDefaultFramerate));
 
   encoder_state_ = kInitialized;
 
@@ -295,8 +301,9 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
     }
   } else {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                              base::Unretained(this), frame, force_keyframe));
+        FROM_HERE,
+        base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                       base::Unretained(this), frame, force_keyframe));
   }
 }
 
@@ -351,8 +358,8 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   // If the encoder thread is running, destroy using posted task.
   if (encoder_thread_.IsRunning()) {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DestroyTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DestroyTask,
+                                  base::Unretained(this)));
     // DestroyTask() will put the encoder into kError state and cause all tasks
     // to no-op.
     encoder_thread_.Stop();
@@ -376,8 +383,9 @@ void V4L2VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::FlushTask,
-                            base::Unretained(this), base::Passed(&flush_callback)));
+      FROM_HERE,
+      base::BindOnce(&V4L2VideoEncodeAccelerator::FlushTask,
+                     base::Unretained(this), base::Passed(&flush_callback)));
 }
 
 void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
@@ -394,6 +402,10 @@ void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
   flush_callback_ = std::move(flush_callback);
   // Push a null frame to indicate Flush.
   EncodeTask(nullptr, false);
+}
+
+bool V4L2VideoEncodeAccelerator::IsFlushSupported() {
+  return is_flush_supported_;
 }
 
 VideoEncodeAccelerator::SupportedProfiles
@@ -420,8 +432,8 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(
                  weak_this_, output_buffer_index)));
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                            base::Unretained(this), frame, force_keyframe));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                                base::Unretained(this), frame, force_keyframe));
 }
 
 void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
@@ -584,8 +596,8 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                            base::Unretained(this), poll_device));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
+                                base::Unretained(this), poll_device));
 
   DVLOGF(3) << encoder_input_queue_.size() << "] => DEVICE["
             << free_input_buffers_.size() << "+"
@@ -894,8 +906,8 @@ bool V4L2VideoEncodeAccelerator::StartDevicePoll() {
   // Enqueue a poll task with no devices to poll on -- it will wait only on the
   // interrupt fd.
   device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                            base::Unretained(this), false));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
+                                base::Unretained(this), false));
 
   return true;
 }
@@ -963,8 +975,8 @@ void V4L2VideoEncodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch encoder state from this thread.
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
+                                base::Unretained(this)));
 }
 
 void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
@@ -972,8 +984,8 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
 
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::NotifyError,
-                              weak_this_, error));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::NotifyError,
+                                  weak_this_, error));
     return;
   }
 
@@ -1096,7 +1108,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     input_format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
     if (input_format == PIXEL_FORMAT_UNKNOWN) {
-      VLOGF(1) << "Unsupported input format" << input_format_fourcc;
+      VLOGF(1) << "Unsupported input format: "
+               << FourccToString(input_format_fourcc);
       return false;
     }
 
@@ -1194,7 +1207,7 @@ bool V4L2VideoEncodeAccelerator::SetExtCtrls(
   return device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
 }
 
-bool V4L2VideoEncodeAccelerator::InitControls() {
+bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
   std::vector<struct v4l2_ext_control> ctrls;
   struct v4l2_ext_control ctrl;
 
@@ -1246,10 +1259,29 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
     ctrl.value = 51;
     ctrls.push_back(ctrl);
 
-    // Use H.264 level 4.0 to match the supported max resolution.
+    // Set H.264 profile.
+    int32_t profile_value =
+        V4L2Device::VideoCodecProfileToV4L2H264Profile(config.output_profile);
+    if (profile_value < 0) {
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
+    memset(&ctrl, 0, sizeof(ctrl));
+    ctrl.id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+    ctrl.value = profile_value;
+    ctrls.push_back(ctrl);
+
+    // Set H.264 output level from config. Use Level 4.0 as fallback default.
+    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(
+        config.h264_output_level.value_or(
+            VideoEncodeAccelerator::kDefaultH264Level));
+    if (level_value < 0) {
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
-    ctrl.value = V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
+    ctrl.value = level_value;
     ctrls.push_back(ctrl);
 
     // Ask not to put SPS and PPS into separate bitstream buffers.

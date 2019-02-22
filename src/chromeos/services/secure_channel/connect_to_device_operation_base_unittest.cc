@@ -49,7 +49,7 @@ class TestConnectToDeviceOperation
   bool has_canceled_connection() const { return has_canceled_connection_; }
 
   // ConnectToDeviceOperationBase<std::string>:
-  void AttemptConnectionToDevice(
+  void PerformAttemptConnectionToDevice(
       ConnectionPriority connection_priority) override {
     has_attempted_connection_ = true;
   }

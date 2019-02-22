@@ -4657,3 +4657,35 @@ TEST_F(DiskCacheBackendTest, InMemorySparseDoom) {
   // the parent and its children
   DoomAllEntries();
 }
+
+TEST_F(DiskCacheBackendTest, BlockFileMaxSizeLimit) {
+  InitCache();
+
+  int64_t size = std::numeric_limits<int32_t>::max();
+  SetMaxSize(size, true /* should_succeed */);
+
+  size += 1;
+  SetMaxSize(size, false /* should_succeed */);
+}
+
+TEST_F(DiskCacheBackendTest, InMemoryMaxSizeLimit) {
+  SetMemoryOnlyMode();
+  InitCache();
+
+  int64_t size = std::numeric_limits<int32_t>::max();
+  SetMaxSize(size, true /* should_succeed */);
+
+  size += 1;
+  SetMaxSize(size, false /* should_succeed */);
+}
+
+TEST_F(DiskCacheBackendTest, SimpleMaxSizeLimit) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  int64_t size = std::numeric_limits<int32_t>::max();
+  SetMaxSize(size, true /* should_succeed */);
+
+  size += 1;
+  SetMaxSize(size, true /* should_succeed */);
+}

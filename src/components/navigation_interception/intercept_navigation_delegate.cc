@@ -18,7 +18,6 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InterceptNavigationDelegate_jni.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -50,24 +49,6 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,
   return intercept_navigation_delegate->ShouldIgnoreNavigation(params);
 }
 
-void UpdateUserGestureCarryoverInfoOnUIThread(int render_process_id,
-                                              int render_frame_id) {
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host)
-    return;
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-
-  InterceptNavigationDelegate* intercept_navigation_delegate =
-      InterceptNavigationDelegate::Get(web_contents);
-
-  if (intercept_navigation_delegate) {
-    intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
-  }
-}
-
 }  // namespace
 
 // static
@@ -91,23 +72,6 @@ InterceptNavigationDelegate::CreateThrottleFor(
     content::NavigationHandle* handle) {
   return std::make_unique<InterceptNavigationThrottle>(
       handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread));
-}
-
-// static
-void InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(
-    net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info || !info->HasUserGesture())
-    return;
-
-  int render_process_id, render_frame_id;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
-    return;
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&UpdateUserGestureCarryoverInfoOnUIThread,
-                                     render_process_id, render_frame_id));
 }
 
 InterceptNavigationDelegate::InterceptNavigationDelegate(

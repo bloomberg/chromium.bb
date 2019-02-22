@@ -102,7 +102,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3171922709365450819">Dispozitivul nu este acceptat de acest client deoarece necesită autentificarea printr-o terță parte.</translation>
 <translation id="3194245623920924351">Desktop la distanță Chrome</translation>
 <translation id="3197730452537982411">Desktop la distanță</translation>
-<translation id="3212472844831225214">• Aplicația este acum compatibilă cu Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Trimite aceste instrucțiuni prin e-mail</translation>
 <translation id="3258789396564295715">Puteți accesa acest computer în siguranță utilizând Desktop la distanță Chrome.</translation>
 <translation id="3286521253923406898">Controler gazdă Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Ecran complet</translation>
 <translation id="8548209692293300397">Anterior te-ai conectat ca <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Pentru a accesa computerele în contul respectiv, <ph name="LINK_BEGIN" />conectează-te la Google Chrome<ph name="LINK_END" /> folosind contul respectiv și reinstalează Desktop la distanță Chrome.</translation>
 <translation id="8642984861538780905">Acceptabilă</translation>
+<translation id="8705151241155781642">• Aplicația este acum compatibilă cu Android 9.0 Pie.
+• Acum poți redimensiona rezoluția desktopului la distanță în funcție de ecranul dispozitivului Android.</translation>
 <translation id="8712909229180978490">Nu pot vedea fișierele salvate online în Google Drive.</translation>
 <translation id="8743328882720071828">Dorești să-i permiți utilizatorului <ph name="CLIENT_USERNAME" /> să vadă și să îți controleze computerul?</translation>
 <translation id="8747048596626351634">Sesiunea s-a blocat sau nu a pornit. Dacă pe computerul la distanță există ~/.chrome-remote-desktop-session, asigură-te că inițiază un proces în prim-plan de lungă durată, cum ar fi un mediu de desktop sau un manager de ferestre.</translation>

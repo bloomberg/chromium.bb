@@ -32,10 +32,9 @@ ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
                            prefs::kNetworkPredictionOptions, pref_service_);
   ObserveServicePrefChange(Service::kSafeBrowsing, prefs::kSafeBrowsingEnabled,
                            pref_service_);
-  ObserveServicePrefChange(
-      Service::kSafeBrowsingExtendedReporting,
-      safe_browsing::GetExtendedReportingPrefName(*pref_service_),
-      pref_service_);
+  ObserveServicePrefChange(Service::kSafeBrowsingExtendedReporting,
+                           prefs::kSafeBrowsingScoutReportingEnabled,
+                           pref_service_);
   ObserveServicePrefChange(Service::kSearchSuggest,
                            prefs::kSearchSuggestEnabled, pref_service_);
   ObserveServicePrefChange(Service::kSpellCheck,
@@ -53,6 +52,8 @@ ChromeUnifiedConsentServiceClient::GetServiceState(Service service) {
       enabled = pref_service_->GetBoolean(prefs::kAlternateErrorPagesEnabled);
       break;
     case Service::kMetricsReporting:
+      if (!g_browser_process->metrics_service())
+        return ServiceState::kNotSupported;
       // Uploads are disabled for non-official builds, but UnifiedConsentService
       // only cares whether the user has manually disabled metrics reporting.
       enabled = g_browser_process->local_state()->GetBoolean(

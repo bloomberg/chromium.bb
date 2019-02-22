@@ -16,6 +16,7 @@
 
 namespace gl
 {
+ERRMSG(ANGLECopyTexture3DUnavailable, "GL_ANGLE_copy_texture_3d extension not available.");
 ERRMSG(BlitDimensionsOutOfRange, "BlitFramebuffer dimensions out of 32-bit integer range.");
 ERRMSG(BlitExtensionDepthStencilWholeBufferBlit,
        "Only whole-buffer depth and stencil blits are supported by this extension.");
@@ -72,6 +73,10 @@ ERRMSG(BlitSameImageDepthOrStencil,
 ERRMSG(BufferBoundForTransformFeedback, "Buffer is bound for transform feedback.");
 ERRMSG(BufferNotBound, "A buffer must be bound.");
 ERRMSG(BufferMapped, "An active buffer is mapped");
+ERRMSG(ColorNumberGreaterThanMaxDualSourceDrawBuffers,
+       "Color number for secondary color greater than or equal to MAX_DUAL_SOURCE_DRAW_BUFFERS");
+ERRMSG(ColorNumberGreaterThanMaxDrawBuffers,
+       "Color number for primary color greater than or equal to MAX_DRAW_BUFFERS");
 ERRMSG(CompressedTextureDimensionsMustMatchData,
        "Compressed texture dimensions must exactly match the dimensions of the data passed in.");
 ERRMSG(CompressedTexturesNotAttachable, "Compressed textures cannot be attached to a framebuffer.");
@@ -81,6 +86,10 @@ ERRMSG(CubemapIncomplete,
 ERRMSG(DefaultFramebufferInvalidAttachment,
        "Invalid attachment when the default framebuffer is bound.");
 ERRMSG(DefaultFramebufferTarget, "It is invalid to change default FBO's attachments");
+ERRMSG(DestinationImmutable, "Destination texture cannot be immutable.");
+ERRMSG(DestinationLevelNotDefined,
+       "The destination level of the destination texture must be defined.");
+ERRMSG(DestinationTextureTooSmall, "Destination texture too small.");
 ERRMSG(DispatchIndirectBufferNotBound, "Dispatch indirect buffer must be bound.");
 ERRMSG(DrawBufferTypeMismatch,
        "Fragment shader output type does not match the bound framebuffer attachment type.");
@@ -97,8 +106,13 @@ ERRMSG(ExpectedProgramName, "Expected a program name, but found a shader name.")
 ERRMSG(ExpectedShaderName, "Expected a shader name, but found a program name.");
 ERRMSG(ExtensionNotEnabled, "Extension is not enabled.");
 ERRMSG(FeedbackLoop, "Feedback loop formed between Framebuffer and active Texture.");
+ERRMSG(FragDataBindingIndexOutOfRange, "Fragment output color index must be zero or one.");
 ERRMSG(FramebufferIncompleteAttachment,
        "Attachment type must be compatible with attachment object.");
+ERRMSG(FramebufferTextureInvalidLayer, "Layer invalid for framebuffer texture attachment.");
+ERRMSG(FramebufferTextureInvalidMipLevel, "Mip level invalid for framebuffer texture attachment.");
+ERRMSG(FramebufferTextureLayerIncorrectTextureType,
+       "Texture is not a three-dimensional or two-dimensionsal array texture.");
 ERRMSG(GenerateMipmapNotAllowed, "Texture format does not support mipmap generation.");
 ERRMSG(GeometryShaderExtensionNotEnabled, "GL_EXT_geometry_shader extension not enabled.");
 ERRMSG(GLES1Only, "GLES1-only function.");
@@ -136,6 +150,8 @@ ERRMSG(InvalidDebugSeverity, "Invalid debug severity.");
 ERRMSG(InvalidDebugSource, "Invalid debug source.");
 ERRMSG(InvalidDebugType, "Invalid debug type.");
 ERRMSG(InvalidDepthRange, "Near value cannot be greater than far.");
+ERRMSG(InvalidDestinationTexture, "Destination texture is not a valid texture object.");
+ERRMSG(InvalidDestinationTextureType, "Invalid destination texture type.");
 ERRMSG(InvalidDrawMode, "Invalid draw mode.");
 ERRMSG(InvalidDrawModeTransformFeedback,
        "Draw mode must match current transform feedback object's draw mode.");
@@ -194,6 +210,9 @@ ERRMSG(InvalidSampler, "Sampler is not valid");
 ERRMSG(InvalidShaderName, "Shader object expected.");
 ERRMSG(InvalidShaderType, "Invalid shader type.");
 ERRMSG(InvalidShadingModel, "Invalid shading model.");
+ERRMSG(InvalidSourceTexture, "Source texture is not a valid texture object.");
+ERRMSG(InvalidSourceTextureLevel, "Invalid source texture level.");
+ERRMSG(InvalidSourceTextureSize, "Invalid source texture height or width.");
 ERRMSG(InvalidStencil, "Invalid stencil.");
 ERRMSG(InvalidStencilBitMask, "Invalid stencil bit mask.");
 ERRMSG(InvalidTarget, "Invalid target.");
@@ -246,6 +265,7 @@ ERRMSG(NameBeginsWithGL, "Attributes that begin with 'gl_' are not allowed.");
 ERRMSG(NegativeAttachments, "Negative number of attachments.");
 ERRMSG(NegativeBufferSize, "Negative buffer size.");
 ERRMSG(NegativeCount, "Negative count.");
+ERRMSG(NegativeHeightWidthDepth, "Cannot have negative height, width, or depth.");
 ERRMSG(NegativeLength, "Negative length.");
 ERRMSG(NegativeMaxCount, "Negative maxcount.");
 ERRMSG(NegativeOffset, "Negative offset.");
@@ -253,6 +273,7 @@ ERRMSG(NegativePrimcount, "Primcount must be greater than or equal to zero.");
 ERRMSG(NegativeSize, "Cannot have negative height or width.");
 ERRMSG(NegativeStart, "Cannot have negative start.");
 ERRMSG(NegativeStride, "Cannot have negative stride.");
+ERRMSG(NegativeXYZ, "x, y, or z cannot be negative.");
 ERRMSG(NoActiveComputeShaderStage, "No active compute shader stage in this program.");
 ERRMSG(NoActiveGeometryShaderStage, "No active geometry shader stage in this program.");
 ERRMSG(
@@ -281,6 +302,7 @@ ERRMSG(
     "It is undefined behavior to use a pixel unpack buffer that is bound for transform feedback.");
 ERRMSG(PointSizeArrayExtensionNotEnabled, "GL_OES_point_size_array not enabled.");
 ERRMSG(ProgramDoesNotExist, "Program doesn't exist.");
+ERRMSG(ProgramInterfaceMustBeProgramOutput, "programInterface must be set to GL_PROGRAM_OUTPUT.");
 ERRMSG(ProgramNotBound, "A program must be bound.");
 ERRMSG(ProgramNotLinked, "Program not linked.");
 ERRMSG(QueryActive, "Query is active.");
@@ -297,13 +319,14 @@ ERRMSG(ShaderAttachmentHasShader, "Shader attachment already has a shader.");
 ERRMSG(ShaderSourceInvalidCharacters, "Shader source contains invalid characters.");
 ERRMSG(ShaderToDetachMustBeAttached,
        "Shader to be detached must be currently attached to the program.");
+ERRMSG(SourceLevelNotDefined, "The source level of the source texture must be defined.");
 ERRMSG(SourceTextureTooSmall, "The specified dimensions are outside of the bounds of the texture.");
 ERRMSG(StencilReferenceMaskOrMismatch,
        "Stencil reference and mask values must be the same for front facing and back facing "
        "triangles.");
 ERRMSG(StrideMustBeMultipleOfType, "Stride must be a multiple of the passed in datatype.");
-ERRMSG(TargetMustBeTexture2DMultisampleArrayANGLE,
-       "Target must be TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE.");
+ERRMSG(TargetMustBeTexture2DMultisampleArrayOES,
+       "Target must be TEXTURE_2D_MULTISAMPLE_ARRAY_OES.");
 ERRMSG(TextureNotBound, "A texture must be bound.");
 ERRMSG(TextureNotPow2, "The texture is a non-power-of-two texture.");
 ERRMSG(TextureTargetRequiresES31, "Texture target requires at least OpenGL ES 3.1.");

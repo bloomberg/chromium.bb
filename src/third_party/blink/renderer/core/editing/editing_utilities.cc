@@ -119,7 +119,7 @@ InputEvent::EventCancelable InputTypeIsCancelable(
 UChar WhitespaceRebalancingCharToAppend(const String& string,
                                         bool start_is_start_of_paragraph,
                                         bool should_emit_nbsp_before_end,
-                                        size_t index,
+                                        wtf_size_t index,
                                         UChar previous) {
   DCHECK_LT(index, string.length());
 
@@ -1066,7 +1066,7 @@ String StringWithRebalancedWhitespace(const String& string,
   rebalanced_string.ReserveCapacity(length);
 
   UChar char_to_append = 0;
-  for (size_t index = 0; index < length; index++) {
+  for (wtf_size_t index = 0; index < length; index++) {
     char_to_append = WhitespaceRebalancingCharToAppend(
         string, start_is_start_of_paragraph, should_emit_nbs_pbefore_end, index,
         char_to_append);
@@ -1551,28 +1551,30 @@ bool IsInPasswordField(const Position& position) {
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest left grapheme boundary.
-size_t ComputeDistanceToLeftGraphemeBoundary(const Position& position) {
+wtf_size_t ComputeDistanceToLeftGraphemeBoundary(const Position& position) {
   const Position& adjusted_position = PreviousPositionOf(
       NextPositionOf(position, PositionMoveType::kGraphemeCluster),
       PositionMoveType::kGraphemeCluster);
   DCHECK_EQ(position.AnchorNode(), adjusted_position.AnchorNode());
   DCHECK_GE(position.ComputeOffsetInContainerNode(),
             adjusted_position.ComputeOffsetInContainerNode());
-  return static_cast<size_t>(position.ComputeOffsetInContainerNode() -
-                             adjusted_position.ComputeOffsetInContainerNode());
+  return static_cast<wtf_size_t>(
+      position.ComputeOffsetInContainerNode() -
+      adjusted_position.ComputeOffsetInContainerNode());
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest right grapheme boundary.
-size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
+wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
   const Position& adjusted_position = NextPositionOf(
       PreviousPositionOf(position, PositionMoveType::kGraphemeCluster),
       PositionMoveType::kGraphemeCluster);
   DCHECK_EQ(position.AnchorNode(), adjusted_position.AnchorNode());
   DCHECK_GE(adjusted_position.ComputeOffsetInContainerNode(),
             position.ComputeOffsetInContainerNode());
-  return static_cast<size_t>(adjusted_position.ComputeOffsetInContainerNode() -
-                             position.ComputeOffsetInContainerNode());
+  return static_cast<wtf_size_t>(
+      adjusted_position.ComputeOffsetInContainerNode() -
+      position.ComputeOffsetInContainerNode());
 }
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
@@ -1603,7 +1605,7 @@ DispatchEventResult DispatchBeforeInputInsertText(
     const StaticRangeVector* ranges) {
   if (!target)
     return DispatchEventResult::kNotCanceled;
-  // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
+  // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
       input_type, data, InputTypeIsCancelable(input_type),
@@ -1646,7 +1648,7 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
         TargetRangesForInputEvent(*target));
   } else {
     const String& data = data_transfer->getData(kMimeTypeTextPlain);
-    // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
+    // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
     // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
     before_input_event = InputEvent::CreateBeforeInput(
         input_type, data, InputTypeIsCancelable(input_type),

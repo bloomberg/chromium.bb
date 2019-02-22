@@ -117,6 +117,7 @@ class DisconnectWindowWin : public HostWindow {
   std::string username_;
 
   bool was_auto_hidden_ = false;
+  bool local_input_seen_ = false;
   base::OneShotTimer auto_hide_timer_;
 
   HWND hwnd_ = nullptr;
@@ -351,7 +352,8 @@ void DisconnectWindowWin::ShowDialog() {
     return;
 
   // Make sure the dialog is fully visible when it is reshown.
-  SetDialogPosition();
+  if (!local_input_seen_)
+    SetDialogPosition();
 
   if (!AnimateWindow(hwnd_, kAnimationDurationMs, AW_BLEND)) {
     PLOG(ERROR) << "AnimateWindow() failed to show dialog: ";
@@ -389,14 +391,22 @@ void DisconnectWindowWin::OnLocalMouseEvent(
   // vibrations in the environment around the remote host.
   if (std::abs(position.x() - mouse_position_.x()) > 1 ||
       std::abs(position.y() - mouse_position_.y()) > 1) {
+    // Show the dialog before setting |local_input_seen_|.  That way the dialog
+    // will be shown in the center position and subsequent reshows will honor
+    // the new position (if any) the dialog is moved to.
     ShowDialog();
+    local_input_seen_ = true;
   }
 
   mouse_position_ = position;
 }
 
 void DisconnectWindowWin::OnLocalKeyboardEvent() {
+  // Show the dialog before setting |local_input_seen_|.  That way the dialog
+  // will be shown in the center position and subsequent reshows will honor
+  // the new position (if any) the dialog is moved to.
   ShowDialog();
+  local_input_seen_ = true;
 }
 
 void DisconnectWindowWin::DrawBorder(HWND hwnd, HDC hdc) {
@@ -444,10 +454,10 @@ void DisconnectWindowWin::SetDialogPosition() {
   int left =
       (monitor_info.rcWork.right + monitor_info.rcWork.left - window_width) / 2;
 
-  // Adjust the top value if the window is in auto-hide mode.  We adjust the
-  // position to make the dialog a bit more obtrusive so that a local user will
-  // notice it before it auto-hides.
-  if (local_input_monitor_)
+  // Adjust the top value if the window is in auto-hide mode and we have not
+  // seen local input yet.  We adjust the position to make the dialog a bit more
+  // obtrusive so that a local user will notice it before it auto-hides.
+  if (local_input_monitor_ && !local_input_seen_)
     top = top * 0.7;
 
   SetWindowPos(hwnd_, nullptr, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);

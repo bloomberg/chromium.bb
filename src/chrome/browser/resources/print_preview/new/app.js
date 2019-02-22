@@ -14,7 +14,7 @@ const MAX_SECTIONS_TO_SHOW = 6;
 Polymer({
   is: 'print-preview-app',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, CrContainerShadowBehavior],
 
   properties: {
     /**
@@ -234,8 +234,6 @@ Polymer({
     // itself is closed.
     if (e.code == 'Escape' && !hasKeyModifiers(e)) {
       // Don't close the Print Preview dialog if there is a child dialog open.
-      const destinations = this.$.destinationSettings;
-      const advanced = this.$.advancedSettings;
       if (this.openDialogs_.length != 0) {
         // Manually cancel the dialog, since we call preventDefault() to prevent
         // views from closing the Print Preview dialog.
@@ -254,8 +252,8 @@ Polymer({
       return;
     }
 
-    // On Mac, Cmd-. should close the print dialog.
-    if (cr.isMac && e.code == 'Minus' && e.metaKey) {
+    // On Mac, Cmd+Period should close the print dialog.
+    if (cr.isMac && e.code == 'Period' && e.metaKey) {
       this.close_();
       e.preventDefault();
       return;
@@ -268,17 +266,20 @@ Polymer({
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.
-        if (!cr.isWin || this.state == print_preview_new.State.READY)
+        if (!cr.isWindows || this.state == print_preview_new.State.READY)
           this.onPrintWithSystemDialog_();
         e.preventDefault();
         return;
       }
     }
 
-    if (e.code == 'Enter' && this.state == print_preview_new.State.READY) {
+    if (e.code == 'Enter' && this.state == print_preview_new.State.READY &&
+        this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
-      if (['BUTTON', 'SELECT', 'A'].includes(activeElementTag))
+      if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
+              activeElementTag)) {
         return;
+      }
 
       this.onPrintRequested_();
       e.preventDefault();
@@ -305,7 +306,7 @@ Polymer({
   onCrDialogClose_: function(e) {
     // Note: due to event re-firing in cr_dialog.js, this event will always
     // appear to be coming from the outermost child dialog.
-    // TODO (rbpotter): Fix event re-firing so that the event comes from the
+    // TODO(rbpotter): Fix event re-firing so that the event comes from the
     // dialog that has been closed, and add an assertion that the removed
     // dialog matches e.composedPath()[0].
     if (e.composedPath()[0].nodeName == 'CR-DIALOG')
@@ -596,7 +597,8 @@ Polymer({
    * Updates printing options according to source document presets.
    * @param {boolean} disableScaling Whether the document disables scaling.
    * @param {number} copies The default number of copies from the document.
-   * @param {number} duplex The default duplex setting from the document.
+   * @param {!print_preview_new.DuplexMode} duplex The default duplex setting
+   *     from the document.
    * @private
    */
   onPrintPresetOptions_: function(disableScaling, copies, duplex) {
@@ -606,8 +608,11 @@ Polymer({
     if (copies > 0 && this.getSetting('copies').available)
       this.setSetting('copies', copies);
 
-    if (duplex >= 0 && this.getSetting('duplex').available)
-      this.setSetting('duplex', duplex);
+    if (duplex !== print_preview_new.DuplexMode.UNKNOWN_DUPLEX_MODE &&
+        this.getSetting('duplex').available) {
+      this.setSetting(
+          'duplex', duplex === print_preview_new.DuplexMode.LONG_EDGE);
+    }
   },
 
   /**

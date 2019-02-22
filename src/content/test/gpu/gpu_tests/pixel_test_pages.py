@@ -91,12 +91,20 @@ SCALE_FACTOR_OVERRIDES = {
 
 
 def DefaultPages(base_name):
+  sw_compositing_args = ['--disable-gpu-compositing']
+
   return [
+    PixelTestPage(
+      'pixel_background_image.html',
+      base_name + '_BackgroundImage',
+      test_rect=[20, 20, 370, 370],
+      revision=1),
+
     PixelTestPage(
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=9),
+      revision=10),
 
     PixelTestPage(
       'pixel_canvas2d_untagged.html',
@@ -108,37 +116,37 @@ def DefaultPages(base_name):
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
-      revision=20),
+      revision=23),
 
     PixelTestPage(
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=6),
+      revision=7),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=3),
+      revision=4),
 
     PixelTestPage(
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=7),
+      revision=8),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=3),
+      revision=4),
 
     PixelTestPage(
       'pixel_webgl_noalpha_implicit_clear.html',
       base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
       test_rect=[0, 0, 300, 300],
-      revision=3),
+      revision=4),
 
     PixelTestPage(
       'pixel_webgl_sad_canvas.html',
@@ -180,7 +188,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=9),
+      revision=10),
 
     PixelTestPage(
       'pixel_background.html',
@@ -247,6 +255,41 @@ def DefaultPages(base_name):
           'comment': 'green',
           'location': [1, 1],
           'size': [180, 180],
+          'color': [0, 255, 0],
+          'tolerance': 3
+        },
+      ]),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D',
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
+          'color': [0, 255, 0],
+          'tolerance': 3,
+        },
+      ]),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      browser_args=sw_compositing_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
           'color': [0, 255, 0],
           'tolerance': 3
         },
@@ -395,32 +438,21 @@ def ExperimentalCanvasFeaturesPages(base_name):
   unaccelerated_args = [
     '--disable-accelerated-2d-canvas',
     '--disable-gpu-compositing']
-  browser_args_oopd = [
-    '--enable-viz-display-compositor',
-    '--enable-experimental-web-platform-features']
 
   return [
     PixelTestPage(
       'pixel_offscreenCanvas_transfer_after_style_resize.html',
       base_name + '_OffscreenCanvasTransferAfterStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=8,
+      revision=9,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transfer_before_style_resize.html',
       base_name + '_OffscreenCanvasTransferBeforeStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=8,
+      revision=9,
       browser_args=browser_args),
-
-    PixelTestPage(
-      'pixel_worker_requestAnimationFrame.html',
-      base_name + '_WorkerRAF_OOPD',
-      test_rect=[0, 0, 1, 1],
-      revision=1,
-      optional_action='CrashGpuProcess',
-      browser_args=browser_args_oopd),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_paint_after_resize.html',
@@ -450,28 +482,28 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_transferToImageBitmap_main.html',
       base_name + '_OffscreenCanvasTransferToImageBitmap',
       test_rect=[0, 0, 300, 300],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transferToImageBitmap_worker.html',
       base_name + '_OffscreenCanvasTransferToImageBitmapWorker',
       test_rect=[0, 0, 300, 300],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_main.html',
       base_name + '_OffscreenCanvasWebGLDefault',
       test_rect=[0, 0, 360, 200],
-      revision=10,
+      revision=11,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
       base_name + '_OffscreenCanvasWebGLDefaultWorker',
       test_rect=[0, 0, 360, 200],
-      revision=10,
+      revision=11,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -534,21 +566,21 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_resize_on_worker.html',
       base_name + '_OffscreenCanvas2DResizeOnWorker',
       test_rect=[0, 0, 200, 200],
-      revision=6,
+      revision=7,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_resize_on_worker.html',
       base_name + '_OffscreenCanvasWebglResizeOnWorker',
       test_rect=[0, 0, 200, 200],
-      revision=8,
+      revision=9,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=3,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -562,7 +594,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 140, 140],
-      revision=3,
+      revision=5,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
@@ -623,6 +655,24 @@ def SwiftShaderPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=2,
       browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D' + suffix,
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
+          'color': [0, 255, 0],
+          'tolerance': 3
+        },
+      ]),
   ]
 
 # Test rendering where GPU process is blocked.

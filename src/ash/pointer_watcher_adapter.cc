@@ -5,7 +5,6 @@
 #include "ash/pointer_watcher_adapter.h"
 
 #include "ash/shell.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -72,16 +71,9 @@ void PointerWatcherAdapter::OnTouchEvent(ui::TouchEvent* event) {
 
 gfx::Point PointerWatcherAdapter::GetLocationInScreen(
     const ui::LocatedEvent& event) const {
-  gfx::Point location_in_screen;
-  if (event.type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
-    location_in_screen = display::Screen::GetScreen()->GetCursorScreenPoint();
-  } else {
-    aura::Window* target = static_cast<aura::Window*>(event.target());
-    location_in_screen = event.location();
-    aura::client::GetScreenPositionClient(target->GetRootWindow())
-        ->ConvertPointToScreen(target, &location_in_screen);
-  }
-  return location_in_screen;
+  if (event.type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return display::Screen::GetScreen()->GetCursorScreenPoint();
+  return event.target()->GetScreenLocation(event);
 }
 
 void PointerWatcherAdapter::NotifyWatchers(

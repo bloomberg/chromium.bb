@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,9 +35,15 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Buffers for the frame are allocated but not initialized. The caller must
   // not make assumptions about the actual underlying sizes, but check the
   // returned VideoFrame instead.
-  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultI420(
+  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultI420ForTesting(
       const gfx::Size& dimensions,
       base::TimeDelta timestamp);
+
+  // Creates a YUV frame backed by shared memory from in-memory YUV frame.
+  // Internally the data from in-memory YUV frame will be copied to a
+  // consecutive block in shared memory. Will return null on failure.
+  static scoped_refptr<MojoSharedBufferVideoFrame> CreateFromYUVFrame(
+      const VideoFrame& frame);
 
   // Creates a MojoSharedBufferVideoFrame that uses the memory in |handle|.
   // This will take ownership of |handle|, so the caller can no longer use it.
@@ -76,8 +83,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
  private:
   friend class MojoDecryptorService;
 
-  MojoSharedBufferVideoFrame(VideoPixelFormat format,
-                             const gfx::Size& coded_size,
+  MojoSharedBufferVideoFrame(const VideoFrameLayout& layout,
                              const gfx::Rect& visible_rect,
                              const gfx::Size& natural_size,
                              mojo::ScopedSharedBufferHandle handle,
@@ -86,13 +92,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   ~MojoSharedBufferVideoFrame() override;
 
   // Initializes the MojoSharedBufferVideoFrame by creating a mapping onto
-  // the shared memory, and then setting the strides and offsets as specified.
-  bool Init(int32_t y_stride,
-            int32_t u_stride,
-            int32_t v_stride,
-            size_t y_offset,
-            size_t u_offset,
-            size_t v_offset);
+  // the shared memory, and then setting offsets as specified.
+  bool Init(size_t y_offset, size_t u_offset, size_t v_offset);
 
   uint8_t* shared_buffer_data() {
     return reinterpret_cast<uint8_t*>(shared_buffer_mapping_.get());

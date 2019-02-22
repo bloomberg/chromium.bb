@@ -18,6 +18,7 @@ import optparse
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,7 @@ import unittest
 import urllib
 import urllib2
 import uuid
+
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 _PARENT_DIR = os.path.join(_THIS_DIR, os.pardir)
@@ -96,32 +98,45 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
+_VERSION_SPECIFIC_FILTER['70'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
+]
+
 _VERSION_SPECIFIC_FILTER['69'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
     'HeadlessInvalidCertificateTest.*',
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
 ]
 
-_VERSION_SPECIFIC_FILTER['68'] = []
+_VERSION_SPECIFIC_FILTER['68'] = [
+    # Feature not yet supported in this version
+    'ChromeDriverTest.testGenerateTestReport',
+]
 
-_VERSION_SPECIFIC_FILTER['67'] = []
 
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
-    'ChromeDriverTest.testWindowFullScreen',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     'MobileEmulationCapabilityTest.testTapElement',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
-    'ChromeDriverTest.testWindowFullScreen',
     # crbug.com/827171
     'ChromeDriverTest.testWindowMinimize',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
+]
+
+_OS_VERSION_SPECIFIC_FILTER = {}
+_OS_VERSION_SPECIFIC_FILTER['mac', '68'] = [
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -173,6 +188,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
 def _GetDesktopNegativeFilter(version_name):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
   os = util.GetPlatformName()
+  if (os, version_name) in _OS_VERSION_SPECIFIC_FILTER:
+    filter += _OS_VERSION_SPECIFIC_FILTER[os, version_name]
   if os in _OS_SPECIFIC_FILTER:
     filter += _OS_SPECIFIC_FILTER[os]
   if version_name in _VERSION_SPECIFIC_FILTER:
@@ -195,6 +212,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowFullScreen',
         'ChromeDriverTest.testWindowPosition',
         'ChromeDriverTest.testWindowSize',
+        'ChromeDriverTest.testWindowRect',
         'ChromeDriverTest.testWindowMaximize',
         'ChromeDriverTest.testWindowMinimize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
@@ -218,6 +236,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'HeadlessInvalidCertificateTest.*',
         # Tests of the desktop Chrome launch process.
         'LaunchDesktopTest.*',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
+        'ChromeDriverTest.testTakeElementScreenshot',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -744,6 +764,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     elem = self._driver.FindElement("name", "phones")
     self.assertEquals('3', elem.GetAttribute('size'))
 
+  def testGetElementProperty(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/two_inputs.html'))
+    elem = self._driver.FindElement("id", "first")
+    self.assertEquals('text', elem.GetProperty('type'))
+    self.assertEquals('first', elem.GetProperty('id'))
+
   def testGetElementSpecialCharAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
@@ -990,26 +1017,37 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SetWindowSize(640, 400)
     self.assertEquals([640, 400], self._driver.GetWindowSize())
 
-  def testWindowMaximize(self):
-    self._driver.SetWindowPosition(100, 200)
-    self._driver.SetWindowSize(500, 300)
-    self._driver.MaximizeWindow()
+  def testWindowRect(self):
+    old_window_rect = self._driver.GetWindowRect()
+    self._driver.SetWindowRect(*old_window_rect)
+    self.assertEquals(self._driver.GetWindowRect(), old_window_rect)
 
-    self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
-    self.assertNotEqual([500, 300], self._driver.GetWindowSize())
-    # Set size first so that the window isn't moved offscreen.
-    # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
-    self._driver.SetWindowSize(640, 400)
-    self._driver.SetWindowPosition(100, 200)
-    self.assertEquals([100, 200], self._driver.GetWindowPosition())
-    self.assertEquals([640, 400], self._driver.GetWindowSize())
+    target_window_rect = [640, 400, 100, 200]
+    target_window_rect_dict = {'width': 640, 'height': 400, 'x': 100, 'y': 200}
+    returned_window_rect = self._driver.SetWindowRect(*target_window_rect)
+    self.assertEquals(self._driver.GetWindowRect(), target_window_rect)
+    self.assertEquals(returned_window_rect, target_window_rect_dict)
+
+  def testWindowMaximize(self):
+    old_rect_list = [640, 400, 100, 200]
+    self._driver.SetWindowRect(*old_rect_list)
+    new_rect = self._driver.MaximizeWindow()
+    new_rect_list = [
+        new_rect['width'],
+        new_rect['height'],
+        new_rect['x'],
+        new_rect['y']
+    ]
+    self.assertNotEqual(old_rect_list, new_rect_list)
+
+    self._driver.SetWindowRect(*old_rect_list)
+    self.assertEquals(old_rect_list, self._driver.GetWindowRect())
 
   def testWindowMinimize(self):
     handle_prefix = "CDwindow-"
     handle = self._driver.GetCurrentWindowHandle()
     target = handle[len(handle_prefix):]
-    self._driver.SetWindowSize(640, 400)
-    self._driver.SetWindowPosition(100, 200)
+    self._driver.SetWindowRect(640, 400, 100, 200)
     rect = self._driver.MinimizeWindow()
     expected_rect = {u'y': 200, u'width': 640, u'height': 400, u'x': 100}
 
@@ -1018,22 +1056,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self.assertEquals(expected_rect[key], rect[key])
 
     # check its minimized
-    res = self._driver.SendCommandAndGetResult('Browser.getWindowForTarget', {'targetId': target})
+    res = self._driver.SendCommandAndGetResult('Browser.getWindowForTarget',
+                                               {'targetId': target})
     self.assertEquals('minimized', res['bounds']['windowState'])
 
   def testWindowFullScreen(self):
-    self._driver.SetWindowPosition(100, 200)
-    self._driver.SetWindowSize(500, 300)
-    self._driver.FullScreenWindow()
+    old_rect_list = [640, 400, 100, 200]
+    self._driver.SetWindowRect(*old_rect_list)
+    self.assertEquals(self._driver.GetWindowRect(), old_rect_list)
+    new_rect = self._driver.FullScreenWindow()
+    new_rect_list = [
+        new_rect['width'],
+        new_rect['height'],
+        new_rect['x'],
+        new_rect['y']
+    ]
+    self.assertNotEqual(old_rect_list, new_rect_list)
 
-    self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
-    self.assertNotEqual([500, 300], self._driver.GetWindowSize())
-    # Set size first so that the window isn't moved offscreen.
-    # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
-    self._driver.SetWindowSize(600, 400)
-    self._driver.SetWindowPosition(100, 200)
-    self.assertEquals([100, 200], self._driver.GetWindowPosition())
-    self.assertEquals([600, 400], self._driver.GetWindowSize())
+    self._driver.SetWindowRect(*old_rect_list)
+    self.assertEquals(old_rect_list, self._driver.GetWindowRect())
 
   def testConsoleLogSources(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
@@ -1675,6 +1716,65 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self._driver.FindElement('id', 'top')
     thread.join()
 
+  def testTakeElementScreenshot(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/page_with_redbox.html'))
+    elementScreenshot = self._driver.FindElement(
+        'id', 'box').TakeElementScreenshot()
+    self.assertIsNotNone(elementScreenshot)
+    dataActualScreenshot = base64.b64decode(elementScreenshot)
+    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
+                                              'chromedriver/goldenScreenshots',
+                                              'redboxScreenshot.png')
+    imageGoldenScreenshot = open(filenameOfGoldenScreenshot, 'rb').read()
+    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+
+  def testTakeElementScreenshotInIframe(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/page_with_iframe_redbox.html'))
+    frame = self._driver.FindElement('id', 'frm')
+    self._driver.SwitchToFrame(frame)
+    elementScreenshot = self._driver.FindElement(
+        'id', 'box').TakeElementScreenshot()
+    self.assertIsNotNone(elementScreenshot)
+    dataActualScreenshot = base64.b64decode(elementScreenshot)
+    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
+                                            'chromedriver/goldenScreenshots',
+                                            'redboxScreenshot.png')
+    imageGoldenScreenshot= open(filenameOfGoldenScreenshot, 'rb').read()
+    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+
+  def testGenerateTestReport(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/reporting_observer.html'))
+    self._driver.GenerateTestReport('test report message');
+    report = self._driver.ExecuteScript('return window.result;')
+
+    self.assertEquals('test', report['type']);
+    self.assertEquals('test report message', report['body']['message']);
+
+# Tests in the following class are expected to be moved to ChromeDriverTest
+# class when we no longer support the legacy mode.
+class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
+  """W3C mode specific tests."""
+
+  def setUp(self):
+    self._driver = self.CreateDriver(
+        send_w3c_capability=True, send_w3c_request=True)
+
+  def testSendKeysToElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    text = self._driver.ExecuteScript(
+        'document.body.innerHTML = \'<input type="text">\';'
+        'var input = document.getElementsByTagName("input")[0];'
+        'input.addEventListener("change", function() {'
+        '  document.body.appendChild(document.createElement("br"));'
+        '});'
+        'return input;')
+    text.SendKeysW3c('0123456789+-*/ Hi')
+    text.SendKeysW3c(', there!')
+    value = self._driver.ExecuteScript('return arguments[0].value;', text)
+    self.assertEquals('0123456789+-*/ Hi, there!', value)
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
@@ -2084,6 +2184,25 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes desired capabilities."""
 
+  def testDefaultTimeouts(self):
+    driver = self.CreateDriver()
+    timeouts = driver.GetTimeouts()
+    # Compare against defaults in W3C spec
+    self.assertEquals(timeouts['implicit'], 0)
+    self.assertEquals(timeouts['pageLoad'], 300000)
+    self.assertEquals(timeouts['script'], 30000)
+
+  def testTimeouts(self):
+    driver = self.CreateDriver(timeouts = {
+        'implicit': 123,
+        'pageLoad': 456,
+        'script':   789
+    })
+    timeouts = driver.GetTimeouts()
+    self.assertEquals(timeouts['implicit'], 123)
+    self.assertEquals(timeouts['pageLoad'], 456)
+    self.assertEquals(timeouts['script'], 789)
+
   def testUnexpectedAlertBehaviour(self):
     driver = self.CreateDriver(unexpected_alert_behaviour="accept")
     self.assertEquals("accept",
@@ -2373,7 +2492,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue('hello' in driver.GetPageSource())
 
   def testUnsupportedPageLoadStrategyRaisesException(self):
-    self.assertRaises(chromedriver.UnknownError,
+    self.assertRaises(chromedriver.InvalidArgument,
                       self.CreateDriver, page_load_strategy="unsupported")
 
   def testNetworkConnectionDisabledByDefault(self):
@@ -2516,10 +2635,6 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     with self.assertRaises(chromedriver.SessionNotCreated):
       self.CreateDriver(send_w3c_request=True)
 
-    # OK (though unusual) to enable W3C capability in a legacy format request.
-    driver = self.CreateDriver(send_w3c_capability=True)
-    self.assertTrue(driver.w3c_compliant)
-
     # Can disable W3C capability in a legacy format request.
     driver = self.CreateDriver(send_w3c_capability=False)
     self.assertFalse(driver.w3c_compliant)
@@ -2605,8 +2720,8 @@ class ChromeLoggingCapabilityTest(ChromeDriverBaseTest):
       self.assertTrue('params' in devtools_message)
       self.assertTrue(isinstance(devtools_message['params'], dict))
       cat = devtools_message['params'].get('cat', '')
-      if cat == 'blink.console':
-        self.assertTrue(devtools_message['params']['name'] == 'foobar')
+      if (cat == 'blink.console' and
+          devtools_message['params']['name'] == 'foobar'):
         marked_timeline_events.append(devtools_message)
     self.assertEquals(2, len(marked_timeline_events))
     self.assertEquals({'Network', 'Page', 'Tracing'},
@@ -2874,6 +2989,30 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
     self._driver.FindElement('id', 'link')
 
 
+class SupportIPv4AndIPv6(ChromeDriverBaseTest):
+  def testSupportIPv4AndIPv6(self):
+    has_ipv4 = False
+    has_ipv6 = False
+    for info in socket.getaddrinfo('localhost', 0):
+      if info[0] == socket.AF_INET:
+        has_ipv4 = True
+      if info[0] == socket.AF_INET6:
+        has_ipv6 = True
+    if has_ipv4:
+      self.CreateDriver("http://127.0.0.1:" +
+                                 str(chromedriver_server.GetPort()))
+    if has_ipv6:
+      self.CreateDriver('http://[::1]:' +
+                                 str(chromedriver_server.GetPort()))
+
+
+# 'Z' in the beginning is to make test executed in the end of suite.
+class ZChromeStartRetryCountTest(unittest.TestCase):
+
+  def testChromeStartRetryCount(self):
+    self.assertEquals(0, chromedriver.ChromeDriver.retry_count,
+                      "Chrome was retried to start during suite execution")
+
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
@@ -2934,6 +3073,7 @@ if __name__ == '__main__':
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
     parser.error('Invalid --android-package')
 
+  global chromedriver_server
   chromedriver_server = server.Server(_CHROMEDRIVER_BINARY, options.log_path,
                                       replayable=options.replayable)
   global _CHROMEDRIVER_SERVER_URL

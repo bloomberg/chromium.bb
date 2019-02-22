@@ -19,11 +19,7 @@ const CGFloat kMostVisitedBottomMarginIPhone = 60;
 const CGFloat kSuggestionPeekingHeight = 60;
 
 UIColor* kNTPBackgroundColor() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return [UIColor colorWithWhite:0.98 alpha:1.0];
-  } else {
-    return [UIColor whiteColor];
-  }
+  return [UIColor colorWithWhite:0.98 alpha:1.0];
 }
 
 }  // namespace ntp_home

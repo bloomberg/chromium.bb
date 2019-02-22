@@ -60,7 +60,7 @@ TEST_F(StaticCookiePolicyTest, BlockAllThirdPartyCookiesTest) {
   EXPECT_THAT(CanAccessCookies(url_google_, url_google_secure_), IsOk());
   EXPECT_THAT(CanAccessCookies(url_google_, url_google_mail_), IsOk());
   EXPECT_NE(OK, CanAccessCookies(url_google_, url_google_analytics_));
-  EXPECT_THAT(CanAccessCookies(url_google_, GURL()), IsOk());
+  EXPECT_NE(OK, CanAccessCookies(url_google_, GURL()));
 }
 
 TEST_F(StaticCookiePolicyTest, BlockAllCookiesTest) {

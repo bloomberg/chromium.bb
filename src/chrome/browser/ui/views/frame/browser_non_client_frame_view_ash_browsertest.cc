@@ -6,21 +6,21 @@
 
 #include <string>
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_frame_header.h"
-#include "ash/frame/frame_header.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/default_frame_header.h"
+#include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -39,6 +39,7 @@
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   aura::Window* window = browser()->window()->GetNativeWindow();
 
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
+  EXPECT_FALSE(frame_view->profile_indicator_icon_);
 
   const AccountId account_id1 =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
@@ -320,63 +320,12 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
   manager->ShowWindowForUser(window, account_id2);
   EXPECT_TRUE(MultiUserWindowManager::ShouldShowAvatar(window));
-
-  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
-    // An icon should show on the top left corner of the teleported browser
-    // window.
-    EXPECT_TRUE(frame_view->profile_indicator_icon());
-  }
+  EXPECT_TRUE(frame_view->profile_indicator_icon_);
 
   // Teleport the window back to owner desktop.
   manager->ShowWindowForUser(window, account_id1);
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
-}
-
-// Hit Test for Avatar Menu Button on ChromeOS.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       AvatarMenuButtonHitTestOnChromeOS) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  gfx::Point avatar_center(profiles::kAvatarIconWidth / 2,
-                           profiles::kAvatarIconHeight / 2);
-  // The increased header height in the touch-optimized UI affects the expected
-  // result.
-  int expected_value =
-      GetParam() == switches::kTopChromeMDMaterialTouchOptimized ? HTCAPTION
-                                                                 : HTCLIENT;
-  EXPECT_EQ(expected_value, frame_view->NonClientHitTest(avatar_center));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
-
-  const AccountId current_user =
-      multi_user_util::GetAccountIdFromProfile(browser()->profile());
-  TestMultiUserWindowManager* manager =
-      new TestMultiUserWindowManager(browser(), current_user);
-
-  // Teleport the window to another desktop.
-  const AccountId account_id2(AccountId::FromUserEmail("user2"));
-  manager->ShowWindowForUser(browser()->window()->GetNativeWindow(),
-                             account_id2);
-  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
-    // Clicking on the avatar icon should have same behaviour like clicking on
-    // the caption area, i.e., allow the user to drag the browser window around.
-    EXPECT_EQ(HTCAPTION, frame_view->NonClientHitTest(avatar_center));
-    EXPECT_TRUE(frame_view->profile_indicator_icon());
-  }
-}
-
-// Tests that for an incognito browser, there is an avatar icon view, unless in
-// touch-optimized mode.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, IncognitoAvatar) {
-  Browser* incognito_browser = CreateIncognitoBrowser();
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForBrowser(incognito_browser);
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  const bool should_have_avatar = GetParam() == switches::kTopChromeMDMaterial;
-  const bool has_avatar = !!frame_view->profile_indicator_icon();
-  EXPECT_EQ(should_have_avatar, has_avatar);
+  EXPECT_FALSE(frame_view->profile_indicator_icon_);
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
@@ -390,27 +339,18 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 // tablet mode being toggled.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ToggleTabletModeRelayout) {
-  // For mash, this test is covered by
-  // CustomFrameViewAshTest.ToggleTabletModeRelayout.
-  if (features::IsUsingWindowService())
-    return;
-
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::TabletModeController* tablet_mode_controller =
-      ash::Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   ash::FrameCaptionButtonContainerView::TestApi test(
       frame_view->caption_button_container_);
   test.EndAnimations();
   const gfx::Rect during_maximize =
       frame_view->caption_button_container_->bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   test.EndAnimations();
   const gfx::Rect after_restore =
       frame_view->caption_button_container_->bounds();
@@ -481,14 +421,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
 
-  if (!features::IsUsingWindowService()) {
-    ash::FrameCaptionButtonContainerView::TestApi test(
-        frame_view->caption_button_container_);
-    EXPECT_TRUE(test.size_button()->icon_definition_for_test());
-  } else {
-    EXPECT_NE(
-        0, widget->GetNativeWindow()->GetProperty(ash::kFrameImageYInsetKey));
-  }
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      frame_view->caption_button_container_);
+  EXPECT_TRUE(test.size_button()->icon_definition_for_test());
 }
 
 namespace {
@@ -747,7 +682,11 @@ class HostedAppNonClientFrameViewAshTest
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
     ASSERT_TRUE(https_server_.Start());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
 
+  // |SetUpHostedApp()| must be called after |SetUpOnMainThread()| to make sure
+  // the Network Service process has been setup properly.
+  void SetUpHostedApp() {
     WebApplicationInfo web_app_info;
     web_app_info.app_url = GetAppURL();
     web_app_info.scope = GetAppURL().GetWithoutFilename();
@@ -840,6 +779,7 @@ class HostedAppNonClientFrameViewAshTest
 // bubble anchor adjustment (see |BubbleDialogDelegateView::CreateBubble()|).
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        PageInfoBubblePosition) {
+  SetUpHostedApp();
   // Resize app window to only take up the left half of the screen.
   views::Widget* widget = browser_view_->GetWidget();
   gfx::Size screen_size =
@@ -862,6 +802,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
+  SetUpHostedApp();
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
   browser_view_->GetFocusManager()->AdvanceFocus(false);
   EXPECT_TRUE(app_menu_button_->HasFocus());
@@ -871,6 +812,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
 
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
+  SetUpHostedApp();
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
@@ -880,6 +822,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
 // Make sure that for hosted apps, the height of the frame doesn't exceed the
 // height of the caption buttons.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
+  SetUpHostedApp();
   const int inset = GetFrameViewAsh(browser_view_)->GetTopInset(false);
   EXPECT_EQ(inset,
             GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption).height());
@@ -891,12 +834,14 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
 // provider in this window configuration.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ToolbarButtonProvider) {
+  SetUpHostedApp();
   EXPECT_EQ(browser_view_->toolbar_button_provider(),
             hosted_app_button_container_);
 }
 
 // Test that the zoom icon appears in the title bar for hosted app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
+  SetUpHostedApp();
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
   zoom::ZoomController* zoom_controller =
@@ -916,6 +861,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
 
 // Test that the find icon appears in the title bar for hosted app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
+  SetUpHostedApp();
   PageActionIconView* find_icon = GetPageActionIcon(PageActionIconType::kFind);
 
   EXPECT_TRUE(find_icon);
@@ -930,6 +876,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
 // windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandFocusToolbarAppMenu) {
+  SetUpHostedApp();
   EXPECT_FALSE(app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_TOOLBAR);
   EXPECT_TRUE(app_menu_button_->HasFocus());
@@ -939,6 +886,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // the app menu button when present in web app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandFocusToolbarGeolocation) {
+  SetUpHostedApp();
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
   EXPECT_FALSE(app_menu_button_->HasFocus());
@@ -953,6 +901,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // Tests that the show app menu command opens the app menu for web app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandShowAppMenu) {
+  SetUpHostedApp();
   EXPECT_EQ(nullptr, GetAppMenu());
   chrome::ExecuteCommand(app_browser_, IDC_SHOW_APP_MENU);
   EXPECT_NE(nullptr, GetAppMenu());
@@ -962,6 +911,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandFocusNextPane) {
+  SetUpHostedApp();
   EXPECT_FALSE(app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
   EXPECT_TRUE(app_menu_button_->HasFocus());
@@ -971,6 +921,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandFocusPreviousPane) {
+  SetUpHostedApp();
   EXPECT_FALSE(app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_PREVIOUS_PANE);
   EXPECT_TRUE(app_menu_button_->HasFocus());
@@ -979,6 +930,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // Tests that a web app's content settings icons can be interacted with.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ContentSettingIcons) {
+  SetUpHostedApp();
   for (auto* view : *content_setting_views_)
     EXPECT_FALSE(view->visible());
 
@@ -1006,6 +958,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 
 // Tests that a web app's browser action icons can be interacted with.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
+  SetUpHostedApp();
   // Even though 2 are visible in the browser, no extension actions should show.
   ToolbarActionsBar* toolbar_actions_bar =
       browser_actions_container_->toolbar_actions_bar();
@@ -1031,21 +984,14 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
 // Regression test for https://crbug.com/839955
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ActiveStateOfButtonMatchesWidget) {
-  // The caption button part of this test is covered for mash by
-  // NonClientFrameViewAshTest::ActiveStateOfButtonMatchesWidget.
-  if (!features::IsUsingWindowService()) {
-    ash::FrameCaptionButtonContainerView::TestApi test(
-        GetFrameViewAsh(browser_view_)->caption_button_container_);
-    EXPECT_TRUE(test.size_button()->paint_as_active());
-  }
+  SetUpHostedApp();
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      GetFrameViewAsh(browser_view_)->caption_button_container_);
+  EXPECT_TRUE(test.size_button()->paint_as_active());
   EXPECT_TRUE(GetPaintingAsActive());
 
   browser_view_->GetWidget()->Deactivate();
-  if (!features::IsUsingWindowService()) {
-    ash::FrameCaptionButtonContainerView::TestApi test(
-        GetFrameViewAsh(browser_view_)->caption_button_container_);
-    EXPECT_FALSE(test.size_button()->paint_as_active());
-  }
+  EXPECT_FALSE(test.size_button()->paint_as_active());
   EXPECT_FALSE(GetPaintingAsActive());
 }
 
@@ -1071,17 +1017,9 @@ class BrowserNonClientFrameViewAshBackButtonTest
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
                        V1BackButton) {
   // Normal browser windows don't have a frame back button.
-  if (!features::IsUsingWindowService()) {
-    BrowserNonClientFrameViewAsh* frame_view =
-        GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(browser()));
-    EXPECT_FALSE(frame_view->back_button_);
-  } else {
-    EXPECT_EQ(ash::FrameBackButtonState::kNone,
-              BrowserView::GetBrowserViewForBrowser(browser())
-                  ->GetWidget()
-                  ->GetNativeWindow()
-                  ->GetProperty(ash::kFrameBackButtonStateKey));
-  }
+  BrowserNonClientFrameViewAsh* frame_view =
+      GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(browser()));
+  EXPECT_FALSE(frame_view->back_button_);
 
   browser()->window()->Close();
 
@@ -1090,43 +1028,26 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
       "test_browser_app", true /* trusted_source */, gfx::Rect(),
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
-  Browser* browser = new Browser(params);
-  AddBlankTabAndShow(browser);
+  Browser* app_browser = new Browser(params);
+  AddBlankTabAndShow(app_browser);
 
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-  aura::Window* app_window = frame_view->GetWidget()->GetNativeWindow();
-
-  if (!features::IsUsingWindowService()) {
-    ASSERT_TRUE(frame_view->back_button_);
-    EXPECT_TRUE(frame_view->back_button_->visible());
-    // The back button should be disabled initially.
-    EXPECT_FALSE(frame_view->back_button_->enabled());
-  } else {
-    EXPECT_EQ(ash::FrameBackButtonState::kDisabled,
-              app_window->GetProperty(ash::kFrameBackButtonStateKey));
-  }
+  BrowserNonClientFrameViewAsh* app_frame_view =
+      GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(app_browser));
+  ASSERT_TRUE(app_frame_view->back_button_);
+  EXPECT_TRUE(app_frame_view->back_button_->visible());
+  // The back button should be disabled initially.
+  EXPECT_FALSE(app_frame_view->back_button_->enabled());
 
   // Nagivate to a page. The back button should now be enabled.
   const GURL kAppStartURL("http://example.org/");
-  NavigateParams nav_params(browser, kAppStartURL, ui::PAGE_TRANSITION_LINK);
+  NavigateParams nav_params(app_browser, kAppStartURL,
+                            ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&nav_params);
-
-  if (!features::IsUsingWindowService()) {
-    EXPECT_TRUE(frame_view->back_button_->enabled());
-  } else {
-    EXPECT_EQ(ash::FrameBackButtonState::kEnabled,
-              app_window->GetProperty(ash::kFrameBackButtonStateKey));
-  }
+  EXPECT_TRUE(app_frame_view->back_button_->enabled());
 
   // Go back to the blank. The back button should be disabled again.
-  chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
-  if (!features::IsUsingWindowService()) {
-    EXPECT_FALSE(frame_view->back_button_->enabled());
-  } else {
-    EXPECT_EQ(ash::FrameBackButtonState::kDisabled,
-              app_window->GetProperty(ash::kFrameBackButtonStateKey));
-  }
+  chrome::GoBack(app_browser, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(app_frame_view->back_button_->enabled());
 }
 
 // Test the normal type browser's kTopViewInset is always 0.
@@ -1172,10 +1093,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // Test that the header is invisible for the browser window in overview mode
   // and visible when not in overview mode.
-  ash::Shell* shell = ash::Shell::Get();
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   // Create another browser window.
@@ -1198,7 +1119,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Test that when one browser window is snapped, the header is visible for the
   // snapped browser window, but invisible for the browser window still in
   // overview mode.
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
+  ash::Shell* shell = ash::Shell::Get();
   ash::SplitViewController* split_view_controller =
       shell->split_view_controller();
   split_view_controller->BindRequest(
@@ -1212,7 +1134,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   frame_view->split_view_controller_.FlushForTesting();
   frame_view2->split_view_controller_.FlushForTesting();
 
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
+  frame_view2->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                             true);
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
   frame_view->split_view_controller_.FlushForTesting();
@@ -1231,7 +1155,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Toggle overview mode while splitview mode is active. Test that the header
   // is visible for the snapped browser window but not for the other browser
   // window in overview mode.
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
+  frame_view2->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                             true);
   frame_view->split_view_controller_.FlushForTesting();
   frame_view2->split_view_controller_.FlushForTesting();
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
@@ -1269,6 +1196,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
   aura::Window* window = browser->window()->GetNativeWindow();
@@ -1298,8 +1226,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // The kTopViewInset is the same as in overview mode.
   const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
-  EXPECT_TRUE(
-      ash::Shell::Get()->window_selector_controller()->ToggleOverview());
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   const int inset_in_overview_mode =
       window->GetProperty(aura::client::kTopViewInset);
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
@@ -1322,7 +1249,7 @@ class HomeLauncherBrowserNonClientFrameViewAshTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
   }
 
@@ -1347,7 +1274,7 @@ class NonHomeLauncherBrowserNonClientFrameViewAshTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndDisableFeature(
-        app_list::features::kEnableHomeLauncher);
+        app_list_features::kEnableHomeLauncher);
     TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
   }
 
@@ -1361,37 +1288,25 @@ class NonHomeLauncherBrowserNonClientFrameViewAshTest
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeBrowserCaptionButtonVisibility) {
-  // For mash, this is tested by an ash unit test of the same name.
-  if (features::IsUsingWindowService())
-    return;
-
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  ash::Shell* shell = ash::Shell::Get();
-  ash::TabletModeController* tablet_mode_controller =
-      shell->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
 
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
 
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeAppCaptionButtonVisibility) {
-  // For mash, this is tested by an ash unit test of the same name.
-  if (features::IsUsingWindowService())
-    return;
-
   browser()->window()->Close();
 
   // Open a new app window.
@@ -1407,21 +1322,17 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   // Tablet mode doesn't affect app's caption button's visibility.
-  ash::Shell* shell = ash::Shell::Get();
-  ash::TabletModeController* tablet_mode_controller =
-      shell->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
   // However, overview mode does.
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  shell->window_selector_controller()->ToggleOverview();
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey,
+                                            false);
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
-  tablet_mode_controller->FlushForTesting();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
@@ -1454,8 +1365,8 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
       frame_view->CreateInterfacePtrForTesting());
   frame_view->split_view_controller_.FlushForTesting();
 
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  shell->window_selector_controller()->ToggleOverview();
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
+  frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
   frame_view->split_view_controller_.FlushForTesting();
@@ -1463,12 +1374,11 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 }
 
-#define INSTANTIATE_TEST_CASE(name)                                   \
-  INSTANTIATE_TEST_CASE_P(                                            \
-      , name,                                                         \
-      ::testing::Values(switches::kTopChromeMDMaterial,               \
-                        switches::kTopChromeMDMaterialTouchOptimized, \
-                        switches::kTopChromeMDMaterialRefresh),       \
+#define INSTANTIATE_TEST_CASE(name)                                           \
+  INSTANTIATE_TEST_CASE_P(                                                    \
+      , name,                                                                 \
+      ::testing::Values(switches::kTopChromeMDMaterialRefresh,                \
+                        switches::kTopChromeMDMaterialRefreshTouchOptimized), \
       &TopChromeMdParamToString)
 
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);

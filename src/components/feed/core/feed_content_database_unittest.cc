@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/feed/core/feed_content_mutation.h"
 #include "components/feed/core/proto/content_storage.pb.h"
@@ -13,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::HistogramTester;
 using leveldb_proto::test::FakeDB;
 using testing::_;
 
@@ -26,6 +28,25 @@ const char kContentKey2[] = "ContentKey2";
 const char kContentKey3[] = "ContentKey3";
 const char kContentData1[] = "Content Data1";
 const char kContentData2[] = "Content Data2";
+
+const char kUmaCommitMutationSizeHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.CommitMutationCount";
+const char kUmaInitialSuccessHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.InitialSuccess";
+const char kUmaLoadKeysSuccessHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.LoadKeysSuccess";
+const char kUmaLoadKeysTimeHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.LoadKeysTime";
+const char kUmaLoadSuccessHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.LoadSuccess";
+const char kUmaLoadTimeHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.LoadTime";
+const char kUmaOperationCommitSuccessHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.OperationCommitSuccess";
+const char kUmaOperationCommitTimeHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.OperationCommitTime";
+const char kUmaSizeHistogramName[] =
+    "ContentSuggestions.Feed.ContentStorage.Count";
 
 }  // namespace
 
@@ -49,6 +70,8 @@ class FeedContentDatabaseTest : public testing::Test {
     if (init_database) {
       content_db_->InitCallback(true);
       ASSERT_TRUE(db()->IsInitialized());
+      histogram().ExpectBucketCount(kUmaInitialSuccessHistogramName,
+                                    /*success=*/true, 1);
     }
   }
 
@@ -66,9 +89,11 @@ class FeedContentDatabaseTest : public testing::Test {
 
   FeedContentDatabase* db() { return feed_db_.get(); }
 
-  MOCK_METHOD1(OnContentEntriesReceived,
-               void(std::vector<std::pair<std::string, std::string>>));
-  MOCK_METHOD1(OnContentKeyReceived, void(std::vector<std::string>));
+  HistogramTester& histogram() { return histogram_; }
+
+  MOCK_METHOD2(OnContentEntriesReceived,
+               void(bool, std::vector<std::pair<std::string, std::string>>));
+  MOCK_METHOD2(OnContentKeyReceived, void(bool, std::vector<std::string>));
   MOCK_METHOD1(OnStorageCommitted, void(bool));
 
  private:
@@ -80,6 +105,8 @@ class FeedContentDatabaseTest : public testing::Test {
   FakeDB<ContentStorageProto>* content_db_;
 
   std::unique_ptr<FeedContentDatabase> feed_db_;
+
+  HistogramTester histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedContentDatabaseTest);
 };
@@ -96,12 +123,16 @@ TEST_F(FeedContentDatabaseTest, Init) {
 TEST_F(FeedContentDatabaseTest, LoadContentAfterInitSuccess) {
   CreateDatabase(/*init_database=*/true);
 
-  EXPECT_CALL(*this, OnContentEntriesReceived(_));
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _));
   db()->LoadContent(
       {kContentKey1},
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaLoadSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaLoadTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, LoadContentsEntries) {
@@ -113,8 +144,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntries) {
 
   // Try to Load |kContentKey2| and |kContentKey3|, only |kContentKey2| should
   // return.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey2);
         EXPECT_EQ(results[0].second, kContentData2);
@@ -124,6 +157,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntries) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaLoadSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaLoadTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, LoadContentsEntriesByPrefix) {
@@ -135,8 +172,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntriesByPrefix) {
 
   // Try to Load "ContentKey", both |kContentKey1| and |kContentKey2| should
   // return.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -148,6 +187,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntriesByPrefix) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaLoadSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaLoadTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, LoadAllContentKeys) {
@@ -157,8 +200,9 @@ TEST_F(FeedContentDatabaseTest, LoadAllContentKeys) {
   InjectContentStorageProto(kContentKey1, kContentData1);
   InjectContentStorageProto(kContentKey2, kContentData2);
 
-  EXPECT_CALL(*this, OnContentKeyReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnContentKeyReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0], kContentKey1);
         EXPECT_EQ(results[1], kContentKey2);
@@ -166,6 +210,12 @@ TEST_F(FeedContentDatabaseTest, LoadAllContentKeys) {
   db()->LoadAllContentKeys(base::BindOnce(
       &FeedContentDatabaseTest::OnContentKeyReceived, base::Unretained(this)));
   storage_db()->LoadKeysCallback(true);
+
+  histogram().ExpectBucketCount(kUmaSizeHistogramName,
+                                /*size=*/2, 1);
+  histogram().ExpectBucketCount(kUmaLoadKeysSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaLoadKeysTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, SaveContent) {
@@ -185,8 +235,10 @@ TEST_F(FeedContentDatabaseTest, SaveContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure they're there.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -198,6 +250,12 @@ TEST_F(FeedContentDatabaseTest, SaveContent) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaCommitMutationSizeHistogramName,
+                                /*operations=*/2, 1);
+  histogram().ExpectBucketCount(kUmaOperationCommitSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaOperationCommitTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, DeleteContent) {
@@ -221,8 +279,10 @@ TEST_F(FeedContentDatabaseTest, DeleteContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure only |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -232,6 +292,12 @@ TEST_F(FeedContentDatabaseTest, DeleteContent) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaCommitMutationSizeHistogramName,
+                                /*operations=*/2, 1);
+  histogram().ExpectBucketCount(kUmaOperationCommitSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaOperationCommitTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, DeleteContentByPrefix) {
@@ -253,8 +319,10 @@ TEST_F(FeedContentDatabaseTest, DeleteContentByPrefix) {
   storage_db()->UpdateCallback(true);
 
   // Make sure |kContentKey1| and |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 0U);
       });
   db()->LoadContent(
@@ -262,6 +330,12 @@ TEST_F(FeedContentDatabaseTest, DeleteContentByPrefix) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaCommitMutationSizeHistogramName,
+                                /*operations=*/1, 1);
+  histogram().ExpectBucketCount(kUmaOperationCommitSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaOperationCommitTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, DeleteAllContent) {
@@ -284,8 +358,10 @@ TEST_F(FeedContentDatabaseTest, DeleteAllContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure |kContentKey1| and |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 0U);
       });
   db()->LoadContent(
@@ -293,6 +369,12 @@ TEST_F(FeedContentDatabaseTest, DeleteAllContent) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaCommitMutationSizeHistogramName,
+                                /*operations=*/1, 1);
+  histogram().ExpectBucketCount(kUmaOperationCommitSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaOperationCommitTimeHistogramName, 1);
 }
 
 TEST_F(FeedContentDatabaseTest, SaveAndDeleteContent) {
@@ -316,8 +398,10 @@ TEST_F(FeedContentDatabaseTest, SaveAndDeleteContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure only |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -327,6 +411,57 @@ TEST_F(FeedContentDatabaseTest, SaveAndDeleteContent) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+
+  histogram().ExpectBucketCount(kUmaCommitMutationSizeHistogramName,
+                                /*operations=*/4, 1);
+  histogram().ExpectBucketCount(kUmaOperationCommitSuccessHistogramName,
+                                /*success=*/true, 1);
+  histogram().ExpectTotalCount(kUmaOperationCommitTimeHistogramName, 1);
+}
+
+TEST_F(FeedContentDatabaseTest, LoadContentsFail) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1| and |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  // Try to Load |kContentKey2| and |kContentKey3|,.
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadContent(
+      {kContentKey2, kContentKey3},
+      base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadCallback(false);
+
+  histogram().ExpectBucketCount(kUmaLoadSuccessHistogramName,
+                                /*success=*/false, 1);
+  histogram().ExpectTotalCount(kUmaLoadTimeHistogramName, 1);
+}
+
+TEST_F(FeedContentDatabaseTest, LoadAllContentKeysFail) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1|, |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  EXPECT_CALL(*this, OnContentKeyReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadAllContentKeys(base::BindOnce(
+      &FeedContentDatabaseTest::OnContentKeyReceived, base::Unretained(this)));
+  storage_db()->LoadKeysCallback(false);
+
+  histogram().ExpectTotalCount(kUmaSizeHistogramName, 0);
+  histogram().ExpectBucketCount(kUmaLoadKeysSuccessHistogramName,
+                                /*success=*/false, 1);
+  histogram().ExpectTotalCount(kUmaLoadKeysTimeHistogramName, 1);
 }
 
 }  // namespace feed

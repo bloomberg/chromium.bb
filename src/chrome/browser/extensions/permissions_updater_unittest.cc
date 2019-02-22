@@ -443,8 +443,8 @@ TEST_F(PermissionsUpdaterTest, Delegate) {
           std::make_unique<base::ListValue>(), required_permissions.Build(),
           "My Extension");
 
-  auto test_delegate = std::make_unique<PermissionsUpdaterTestDelegate>();
-  PermissionsUpdater::SetPlatformDelegate(test_delegate.get());
+  PermissionsUpdater::SetPlatformDelegate(
+      std::make_unique<PermissionsUpdaterTestDelegate>());
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
 
@@ -520,7 +520,8 @@ TEST_F(PermissionsUpdaterTest,
 TEST_F(PermissionsUpdaterTest,
        UpdatingRuntimeGrantedPermissionsWithRuntimePermissions) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   InitializeEmptyExtensionService();
 
@@ -572,7 +573,8 @@ TEST_F(PermissionsUpdaterTest,
 
 TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   InitializeEmptyExtensionService();
 
@@ -640,7 +642,8 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
 
 TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
 
   InitializeEmptyExtensionService();
 
@@ -736,7 +739,8 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
 // the extension.
 TEST_F(PermissionsUpdaterTest, GrantingBroadRuntimePermissions) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =

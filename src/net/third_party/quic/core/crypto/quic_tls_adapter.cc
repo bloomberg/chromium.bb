@@ -85,7 +85,7 @@ const QuicString& QuicTlsAdapter::error_detail() const {
 }
 
 bool QuicTlsAdapter::ProcessInput(QuicStringPiece input,
-                                  Perspective perspective) {
+                                  EncryptionLevel level) {
   read_buffer_.append(input.data(), input.length());
   visitor_->OnDataAvailableForBIO();
   return true;

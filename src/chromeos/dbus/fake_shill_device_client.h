@@ -78,11 +78,10 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
                             const std::string& peer,
                             const StringCallback& callback,
                             const ErrorCallback& error_callback) override;
-  void AddWakeOnPacketConnection(
-      const dbus::ObjectPath& device_path,
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+  void AddWakeOnPacketConnection(const dbus::ObjectPath& device_path,
+                                 const net::IPEndPoint& ip_endpoint,
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback) override;
   void RemoveWakeOnPacketConnection(
       const dbus::ObjectPath& device_path,
       const net::IPEndPoint& ip_endpoint,
@@ -165,7 +164,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   std::string tdls_state_;
 
   // Wake on packet connections for each device.
-  std::map<dbus::ObjectPath, std::set<net::IPEndPoint> >
+  std::map<dbus::ObjectPath, std::set<net::IPEndPoint>>
       wake_on_packet_connections_;
 
   // Current SIM PIN per device path.

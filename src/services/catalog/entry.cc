@@ -184,20 +184,22 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
                    << instance_sharing;
     }
 
-    if (const base::Value* allow_other_user_ids_value =
-            options->FindKey("allow_other_user_ids"))
-      options_struct.allow_other_user_ids =
-          allow_other_user_ids_value->GetBool();
+    if (const base::Value* can_connect_to_other_services_as_any_user_value =
+            options->FindKey("can_connect_to_other_services_as_any_user"))
+      options_struct.can_connect_to_other_services_as_any_user =
+          can_connect_to_other_services_as_any_user_value->GetBool();
 
-    if (const base::Value* allow_other_instance_names_value =
-            options->FindKey("allow_other_instance_names"))
-      options_struct.allow_other_instance_names =
-          allow_other_instance_names_value->GetBool();
+    if (const base::Value*
+            can_connect_to_other_services_with_any_instance_name_value =
+                options->FindKey(
+                    "can_connect_to_other_services_with_any_instance_name"))
+      options_struct.can_connect_to_other_services_with_any_instance_name =
+          can_connect_to_other_services_with_any_instance_name_value->GetBool();
 
-    if (const base::Value* instance_for_client_process_value =
-            options->FindKey("instance_for_client_process"))
-      options_struct.instance_for_client_process =
-          instance_for_client_process_value->GetBool();
+    if (const base::Value* can_create_other_service_instances_value =
+            options->FindKey("can_create_other_service_instances"))
+      options_struct.can_create_other_service_instances =
+          can_create_other_service_instances_value->GetBool();
 
     entry->AddOptions(std::move(options_struct));
   }

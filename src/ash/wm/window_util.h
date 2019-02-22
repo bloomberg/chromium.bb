@@ -20,12 +20,9 @@ class Point;
 
 namespace ui {
 class Event;
-class EventHandler;
 }
 
 namespace ash {
-
-class ImmersiveFullscreenController;
 
 namespace wm {
 
@@ -97,24 +94,10 @@ ASH_EXPORT void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window);
 // forward to an associated widget.
 ASH_EXPORT void CloseWidgetForWindow(aura::Window* window);
 
-// Adds or removes a handler to receive events targeted at this window, before
-// this window handles the events itself; the handler does not receive events
-// from embedded windows. This only supports windows with internal widgets;
-// see ash::GetInternalWidgetForWindow(). Ownership of the handler is not
-// transferred.
-//
-// Also note that the target of these events is always an aura::Window.
-ASH_EXPORT void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
-                                                    aura::Window* window);
-ASH_EXPORT void RemoveLimitedPreTargetHandlerForWindow(
-    ui::EventHandler* handler,
-    aura::Window* window);
-
 // Installs a resize handler on the window that makes it easier to resize
-// the window. See ResizeHandleWindowTargeter for the specifics.
+// the window.
 ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
-    aura::Window* window,
-    ImmersiveFullscreenController* immersive_fullscreen_controller);
+    aura::Window* window);
 
 // Returns true if |window| is currently in tab-dragging process.
 ASH_EXPORT bool IsDraggingTabs(const aura::Window* window);

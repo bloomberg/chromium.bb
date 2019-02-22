@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "components/arc/arc_supervision_transition.h"
 
 // Most utility should be put in components/arc/arc_util.{h,cc}, rather than
@@ -38,7 +39,10 @@ enum FileSystemCompatibilityState : int32_t {
   // Migration has happened. New filesystem is in use.
   kFileSystemCompatible = 1,
   // Migration has happened, and a notification about it was already shown.
-  kFileSystemCompatibleAndNotified = 2,
+  // This pref value will not be written anymore since we stopped showing the
+  // notification, but existing profiles which had shown the notification can
+  // have this value in their pref.
+  kFileSystemCompatibleAndNotifiedDeprecated = 2,
 
   // Existing code assumes that kFileSystemIncompatible is the only state
   // representing incompatibility and other values are all variants of
@@ -51,6 +55,10 @@ enum FileSystemCompatibilityState : int32_t {
 // account creation.
 // nullptr can be safely passed to this function. In that case, returns false.
 bool IsArcAllowedForProfile(const Profile* profile);
+
+// Returns whether ARC was successfully provisioned and the Primary/Device
+// Account has been signed into ARC.
+bool IsArcProvisioned(const Profile* profile);
 
 // Returns true if the profile is unmanaged or if the policy
 // EcryptfsMigrationStrategy for the user doesn't disable the migration.
@@ -159,6 +167,10 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
 // Returns the supervision transition status as stored in profile prefs.
 ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);
+
+// Returns true if Play Store package is present and can be launched in this
+// session.
+bool IsPlayStoreAvailable();
 
 }  // namespace arc
 

@@ -211,10 +211,7 @@ class ServerConnectionManager {
                                 const std::string& path,
                                 const std::string& auth_token);
 
-  // An internal helper to clear our auth_token_ and cache the old version
-  // in |previously_invalidated_token_| to shelter us from retrying with a
-  // known bad token.
-  void InvalidateAndClearAuthToken();
+  void ClearAuthToken();
 
   // Helper to check terminated flags and build a Connection object. If this
   // ServerConnectionManager has been terminated, this will return null.
@@ -240,9 +237,6 @@ class ServerConnectionManager {
 
   // The auth token to use in authenticated requests.
   std::string auth_token_;
-
-  // The previous auth token that is invalid now.
-  std::string previously_invalidated_token;
 
   base::ObserverList<ServerConnectionEventListener>::Unchecked listeners_;
 

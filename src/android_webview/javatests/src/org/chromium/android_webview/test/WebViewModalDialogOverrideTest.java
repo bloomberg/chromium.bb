@@ -20,6 +20,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -194,8 +195,10 @@ public class WebViewModalDialogOverrideTest {
     private void tapViewAndWait(AwTestContainerView view) throws Throwable {
         final TapGestureStateListener tapGestureStateListener = new TapGestureStateListener();
         int callCount = tapGestureStateListener.getCallCount();
-        GestureListenerManager.fromWebContents(view.getWebContents())
-                .addListener(tapGestureStateListener);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            GestureListenerManager.fromWebContents(view.getWebContents())
+                    .addListener(tapGestureStateListener);
+        });
 
         AwTestTouchUtils.simulateTouchCenterOfView(view);
         tapGestureStateListener.waitForTap(callCount);

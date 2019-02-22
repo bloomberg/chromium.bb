@@ -20,9 +20,6 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();
 
-  void PrepareForCalculateDrawProperties(
-      const gfx::Size& device_viewport, float device_scale_factor);
-
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   // Layer overrides.

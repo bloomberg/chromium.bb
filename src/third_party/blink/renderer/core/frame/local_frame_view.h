@@ -35,55 +35,67 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
-#include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
-#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
-#include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class AXObjectCache;
+class ChromeClient;
+class CompositorAnimationHost;
+class CompositorAnimationTimeline;
 class Cursor;
+class DisplayItemClient;
 class Document;
 class DocumentLifecycle;
 class Element;
 class ElementVisibilityObserver;
-class Frame;
+class FloatRect;
 class FloatSize;
+class Frame;
 class FrameViewAutoSizeInfo;
-class IntRect;
 class JSONObject;
-class LayoutEmbeddedContent;
-class LocalFrame;
+class JankTracker;
 class KURL;
-class Node;
 class LayoutAnalyzer;
 class LayoutBox;
+class LayoutEmbeddedContent;
 class LayoutEmbeddedObject;
 class LayoutObject;
+class LayoutRect;
 class LayoutSVGRoot;
 class LayoutView;
+class LocalFrame;
+class Node;
+class Page;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
-class Page;
+class PaintTracker;
 class PrintContext;
 class RootFrameViewport;
+class ScrollableArea;
+class Scrollbar;
 class ScrollingCoordinator;
 class ScrollingCoordinatorContext;
 class TracedValue;
 class TransformState;
-class UkmTimeAggregator;
+class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
 struct WebScrollIntoViewParams;
 
 typedef unsigned long long DOMTimeStamp;
+using LayerTreeFlags = unsigned;
+using MainThreadScrollingReasons = uint32_t;
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
@@ -145,6 +157,10 @@ class CORE_EXPORT LocalFrameView final
   bool LayoutPending() const;
   bool IsInPerformLayout() const;
 
+  // Methods to capture forced layout metrics.
+  void WillStartForcedLayout();
+  void DidFinishForcedLayout();
+
   void ClearLayoutSubtreeRoot(const LayoutObject&);
   void AddOrthogonalWritingModeRoot(LayoutBox&);
   void RemoveOrthogonalWritingModeRoot(LayoutBox&);
@@ -184,7 +200,11 @@ class CORE_EXPORT LocalFrameView final
 
   // Sets the internal IntersectionObservationState to the max of the
   // current value and the provided one.
-  void SetNeedsIntersectionObservation(IntersectionObservationState);
+  void SetIntersectionObservationState(IntersectionObservationState);
+
+  // Get the InstersectionObservation::ComputeFlags for target elements in this
+  // view.
+  unsigned GetIntersectionObservationFlags() const;
 
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
@@ -276,8 +296,6 @@ class CORE_EXPORT LocalFrameView final
 
   void DidAttachDocument();
 
-  void PostLayoutTimerFired(TimerBase*);
-
   bool SafeToPropagateScrollToParent() const {
     return safe_to_propagate_scroll_to_parent_;
   }
@@ -333,6 +351,9 @@ class CORE_EXPORT LocalFrameView final
   // Returns whether the lifecycle was successfully updated to the
   // desired state.
   bool UpdateLifecycleToLayoutClean();
+
+  // Record any UMA and UKM metrics that depend on the end of a main frame.
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -564,7 +585,6 @@ class CORE_EXPORT LocalFrameView final
 
   // Shorthands of LayoutView's corresponding methods.
   void SetNeedsPaintPropertyUpdate();
-  void SetSubtreeNeedsPaintPropertyUpdate();
 
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
   // May include the size of browser controls. See implementation for further
@@ -658,7 +678,8 @@ class CORE_EXPORT LocalFrameView final
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
   void ScrollAndFocusFragmentAnchor();
-  JankTracker& GetJankTracker() { return jank_tracker_; }
+  JankTracker& GetJankTracker() { return *jank_tracker_; }
+  PaintTracker& GetPaintTracker() { return *paint_tracker_; }
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();
@@ -735,14 +756,10 @@ class CORE_EXPORT LocalFrameView final
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
 
-  void Reset();
-  void Init();
-
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
 
   void PerformPreLayoutTasks();
   void PerformLayout(bool in_subtree_layout);
-  void ScheduleOrPerformPostLayoutTasks();
   void PerformPostLayoutTasks();
 
   void RecordDeferredLoadingStats();
@@ -811,7 +828,7 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
-  UkmTimeAggregator& EnsureUkmTimeAggregator();
+  LocalFrameUkmAggregator& EnsureUkmAggregator();
 
   LayoutSize size_;
 
@@ -837,11 +854,9 @@ class CORE_EXPORT LocalFrameView final
   DepthOrderedLayoutObjectList orthogonal_writing_mode_root_list_;
 
   bool layout_scheduling_enabled_;
-  bool in_synchronous_post_layout_;
   unsigned layout_count_for_testing_;
   unsigned lifecycle_update_count_for_testing_;
   unsigned nested_layout_count_;
-  TaskRunnerTimer<LocalFrameView> post_layout_tasks_timer_;
   TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
@@ -946,7 +961,9 @@ class CORE_EXPORT LocalFrameView final
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
-  std::unique_ptr<UkmTimeAggregator> ukm_time_aggregator_;
+  std::unique_ptr<LocalFrameUkmAggregator> ukm_aggregator_;
+  unsigned forced_layout_stack_depth_;
+  TimeTicks forced_layout_start_time_;
 
   Member<PrintContext> print_context_;
 
@@ -954,7 +971,8 @@ class CORE_EXPORT LocalFrameView final
   size_t paint_frame_count_;
 
   UniqueObjectId unique_id_;
-  JankTracker jank_tracker_;
+  std::unique_ptr<JankTracker> jank_tracker_;
+  Member<PaintTracker> paint_tracker_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };

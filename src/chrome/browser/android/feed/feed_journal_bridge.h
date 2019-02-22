@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_FEED_FEED_JOURNAL_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_FEED_FEED_JOURNAL_BRIDGE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 namespace feed {
 
 class FeedJournalDatabase;
+class JournalMutation;
 
 // Native counterpart of FeedJournalBridge.java. Holds non-owning pointers
 // to native implementation to which operations are delegated. Results are
@@ -28,25 +30,33 @@ class FeedJournalBridge {
 
   void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
 
+  // Database related methods, they add/delete/update database.
   void LoadJournal(JNIEnv* j_env,
                    const base::android::JavaRef<jobject>& j_this,
                    const base::android::JavaRef<jstring>& j_journal_name,
-                   const base::android::JavaRef<jobject>& j_callback);
+                   const base::android::JavaRef<jobject>& j_success_callback,
+                   const base::android::JavaRef<jobject>& j_failure_callback);
   void CommitJournalMutation(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this,
                              const base::android::JavaRef<jobject>& j_callback);
-  void DoesJournalExist(JNIEnv* j_env,
-                        const base::android::JavaRef<jobject>& j_this,
-                        const base::android::JavaRef<jstring>& j_journal_name,
-                        const base::android::JavaRef<jobject>& j_callback);
-  void LoadAllJournalKeys(JNIEnv* j_env,
-                          const base::android::JavaRef<jobject>& j_this,
-                          const base::android::JavaRef<jobject>& j_callback);
+  void DoesJournalExist(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jstring>& j_journal_name,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
+  void LoadAllJournalKeys(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
   void DeleteAllJournals(JNIEnv* j_env,
                          const base::android::JavaRef<jobject>& j_this,
                          const base::android::JavaRef<jobject>& j_callback);
 
-  void CreateJournalMutation(
+  // The following  methods create/delete mutation, and add operations into
+  // mutation.
+  void StartJournalMutation(
       JNIEnv* j_env,
       const base::android::JavaRef<jobject>& j_this,
       const base::android::JavaRef<jstring>& j_journal_name);
@@ -54,7 +64,7 @@ class FeedJournalBridge {
                              const base::android::JavaRef<jobject>& j_this);
   void AddAppendOperation(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
-                          const base::android::JavaRef<jstring>& j_value);
+                          const base::android::JavaRef<jbyteArray>& j_value);
   void AddCopyOperation(
       JNIEnv* j_env,
       const base::android::JavaRef<jobject>& j_this,
@@ -63,8 +73,10 @@ class FeedJournalBridge {
                           const base::android::JavaRef<jobject>& j_this);
 
  private:
-  void OnLoadJournalDone(base::android::ScopedJavaGlobalRef<jobject> callback,
-                         std::vector<std::string> entries);
+  // This unique_ptr will hold a list of JournalOperations which are not
+  // committed yet. After send |journal_mutation_| to database, this unique_ptr
+  // will be reset.
+  std::unique_ptr<JournalMutation> journal_mutation_;
 
   FeedJournalDatabase* feed_journal_database_;
 

@@ -8,11 +8,14 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -22,7 +25,7 @@
 namespace file_manager {
 namespace {
 
-typedef base::Callback<void(int64_t)> GetNecessaryFreeSpaceCallback;
+typedef base::OnceCallback<void(int64_t)> GetNecessaryFreeSpaceCallback;
 
 // Part of ComputeSpaceNeedToBeFreed.
 int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataAsync(
@@ -41,31 +44,32 @@ int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataAsync(
 // Part of ComputeSpaceNeedToBeFreed.
 void ComputeSpaceNeedToBeFreedAfterGetMetadata(
     const base::FilePath& path,
-    const GetNecessaryFreeSpaceCallback& callback,
+    GetNecessaryFreeSpaceCallback callback,
     base::File::Error result,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (result != base::File::FILE_OK) {
-    callback.Run(-1);
+    std::move(callback).Run(-1);
     return;
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
-                 file_info.size),
-      callback);
+      base::BindOnce(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
+                     file_info.size),
+      std::move(callback));
 }
 
 // Part of ComputeSpaceNeedToBeFreed.
 void GetMetadataOnIOThread(const base::FilePath& path,
                            scoped_refptr<storage::FileSystemContext> context,
                            const storage::FileSystemURL& url,
-                           const GetNecessaryFreeSpaceCallback& callback) {
+                           GetNecessaryFreeSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   context->operation_runner()->GetMetadata(
       url, storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadata, path, callback));
+      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadata, path,
+                 base::Passed(std::move(callback))));
 }
 
 // Computes the size of space that need to be __additionally__ made available
@@ -75,61 +79,119 @@ void ComputeSpaceNeedToBeFreed(
     Profile* profile,
     scoped_refptr<storage::FileSystemContext> context,
     const storage::FileSystemURL& url,
-    const GetNecessaryFreeSpaceCallback& callback) {
+    GetNecessaryFreeSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&GetMetadataOnIOThread, profile->GetPath(), context, url,
-                     google_apis::CreateRelayCallback(callback)));
-}
-
-// Part of CreateManagedSnapshot. Runs CreateSnapshotFile method of fileapi.
-void CreateSnapshotFileOnIOThread(
-    scoped_refptr<storage::FileSystemContext> context,
-    const storage::FileSystemURL& url,
-    storage::FileSystemOperation::SnapshotFileCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  context->operation_runner()->CreateSnapshotFile(url, std::move(callback));
-}
-
-// Utility for destructing the bound |file_refs| on IO thread. This is meant
-// to be used together with base::Bind. After this function finishes, the
-// Bind callback should destruct the bound argument.
-void FreeReferenceOnIOThread(
-    const base::circular_deque<SnapshotManager::FileReferenceWithSizeInfo>&
-        file_refs) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 }  // namespace
 
-SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
-    scoped_refptr<storage::ShareableFileReference> ref,
-    int64_t size)
-    : file_ref(ref), file_size(size) {}
+class SnapshotManager::FileRefsHolder
+    : public base::RefCountedThreadSafe<
+          SnapshotManager::FileRefsHolder,
+          content::BrowserThread::DeleteOnIOThread> {
+ public:
+  FileRefsHolder() = default;
 
-SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
-    const FileReferenceWithSizeInfo& other) = default;
+  void FreeSpaceAndCreateSnapshotFile(
+      scoped_refptr<storage::FileSystemContext> context,
+      const storage::FileSystemURL& url,
+      int64_t needed_space,
+      LocalPathCallback callback);
 
-SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() =
-    default;
+  void OnCreateSnapshotFile(
+      LocalPathCallback callback,
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      scoped_refptr<storage::ShareableFileReference> file_ref);
+
+ private:
+  // Struct for keeping the snapshot file reference with its file size used for
+  // computing the necessity of clean up.
+  struct FileReferenceWithSizeInfo {
+    FileReferenceWithSizeInfo(
+        scoped_refptr<storage::ShareableFileReference> ref,
+        int64_t size)
+        : file_ref(ref), file_size(size) {}
+    FileReferenceWithSizeInfo(const FileReferenceWithSizeInfo& other) = default;
+    ~FileReferenceWithSizeInfo() = default;
+
+    scoped_refptr<storage::ShareableFileReference> file_ref;
+    int64_t file_size;
+  };
+
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<FileRefsHolder>;
+
+  ~FileRefsHolder() = default;
+
+  base::circular_deque<FileReferenceWithSizeInfo> file_refs_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileRefsHolder);
+};
+
+void SnapshotManager::FileRefsHolder::FreeSpaceAndCreateSnapshotFile(
+    scoped_refptr<storage::FileSystemContext> context,
+    const storage::FileSystemURL& url,
+    int64_t needed_space,
+    LocalPathCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (needed_space < 0) {
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  // Free up to the required size.
+  while (needed_space > 0 && !file_refs_.empty()) {
+    needed_space -= file_refs_.front().file_size;
+    file_refs_.pop_front();
+  }
+
+  // If we still could not achieve the space requirement, abort with failure.
+  if (needed_space > 0) {
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  context->operation_runner()->CreateSnapshotFile(
+      url, base::BindOnce(&FileRefsHolder::OnCreateSnapshotFile, this,
+                          std::move(callback)));
+}
+
+void SnapshotManager::FileRefsHolder::OnCreateSnapshotFile(
+    LocalPathCallback callback,
+    base::File::Error result,
+    const base::File::Info& file_info,
+    const base::FilePath& platform_path,
+    scoped_refptr<storage::ShareableFileReference> file_ref) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (result != base::File::FILE_OK) {
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  file_refs_.push_back(
+      FileReferenceWithSizeInfo(std::move(file_ref), file_info.size));
+  std::move(callback).Run(platform_path);
+}
 
 SnapshotManager::SnapshotManager(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
-}
+    : profile_(profile),
+      holder_(base::MakeRefCounted<FileRefsHolder>()),
+      weak_ptr_factory_(this) {}
 
-SnapshotManager::~SnapshotManager() {
-  if (!file_refs_.empty()) {
-    bool posted = content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&FreeReferenceOnIOThread, file_refs_));
-    DCHECK(posted);
-  }
-}
+SnapshotManager::~SnapshotManager() = default;
 
 void SnapshotManager::CreateManagedSnapshot(
     const base::FilePath& absolute_file_path,
-    const LocalPathCallback& callback) {
+    LocalPathCallback callback) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context.get());
@@ -137,76 +199,34 @@ void SnapshotManager::CreateManagedSnapshot(
   GURL url;
   if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
           profile_, absolute_file_path, kFileManagerAppId, &url)) {
-    callback.Run(base::FilePath());
+    std::move(callback).Run(base::FilePath());
     return;
   }
   storage::FileSystemURL filesystem_url = context->CrackURL(url);
 
-  ComputeSpaceNeedToBeFreed(profile_, context, filesystem_url,
-      base::Bind(&SnapshotManager::CreateManagedSnapshotAfterSpaceComputed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 filesystem_url,
-                 callback));
+  ComputeSpaceNeedToBeFreed(
+      profile_, context, filesystem_url,
+      base::BindOnce(&SnapshotManager::CreateManagedSnapshotAfterSpaceComputed,
+                     weak_ptr_factory_.GetWeakPtr(), filesystem_url,
+                     std::move(callback)));
 }
 
 void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
     const storage::FileSystemURL& filesystem_url,
-    const LocalPathCallback& callback,
+    LocalPathCallback callback,
     int64_t needed_space) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context.get());
 
-  if (needed_space < 0) {
-    callback.Run(base::FilePath());
-    return;
-  }
-
-  // Free up to the required size.
-  base::circular_deque<FileReferenceWithSizeInfo> to_free;
-  while (needed_space > 0 && !file_refs_.empty()) {
-    needed_space -= file_refs_.front().file_size;
-    to_free.push_back(file_refs_.front());
-    file_refs_.pop_front();
-  }
-  if (!to_free.empty()) {
-    bool posted = content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&FreeReferenceOnIOThread, to_free));
-    DCHECK(posted);
-  }
-
-  // If we still could not achieve the space requirement, abort with failure.
-  if (needed_space > 0) {
-    callback.Run(base::FilePath());
-    return;
-  }
-
-  // Start creating the snapshot.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CreateSnapshotFileOnIOThread, context, filesystem_url,
-                     google_apis::CreateRelayCallback(base::Bind(
-                         &SnapshotManager::OnCreateSnapshotFile,
-                         weak_ptr_factory_.GetWeakPtr(), callback))));
-}
-
-void SnapshotManager::OnCreateSnapshotFile(
-    const LocalPathCallback& callback,
-    base::File::Error result,
-    const base::File::Info& file_info,
-    const base::FilePath& platform_path,
-    scoped_refptr<storage::ShareableFileReference> file_ref) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (result != base::File::FILE_OK) {
-    callback.Run(base::FilePath());
-    return;
-  }
-
-  file_refs_.push_back(
-      FileReferenceWithSizeInfo(std::move(file_ref), file_info.size));
-  callback.Run(platform_path);
+  // Free up space if needed and start creating the snapshot.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&FileRefsHolder::FreeSpaceAndCreateSnapshotFile, holder_,
+                     context, filesystem_url, needed_space,
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 }  // namespace file_manager

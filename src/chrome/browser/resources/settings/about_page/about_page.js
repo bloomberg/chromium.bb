@@ -557,8 +557,24 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  shouldShowSafetyInfo_: function() {
+    return loadTimeData.getBoolean('shouldShowSafetyInfo');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   shouldShowRegulatoryInfo_: function() {
     return this.regulatoryInfo_ !== null;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowRegulatoryOrSafetyInfo_: function() {
+    return this.shouldShowSafetyInfo_() || this.shouldShowRegulatoryInfo_();
   },
 
   /** @private */

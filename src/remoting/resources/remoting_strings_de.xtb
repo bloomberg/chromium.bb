@@ -102,7 +102,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3171922709365450819">Dieses Gerät wird von diesem Client nicht unterstützt, da es eine Authentifizierung durch Dritte erfordert.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3212472844831225214">• Jetzt auch Support für Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Anleitung per E-Mail senden</translation>
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="3286521253923406898">Chromoting Host-Controller</translation>
@@ -331,6 +330,8 @@ pc</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="8548209692293300397">Sie haben sich zuvor als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) angemeldet. Damit Sie auf Ihre Computer in diesem Konto zugreifen können, <ph name="LINK_BEGIN" />melden Sie sich mit diesem Konto in Google Chrome an<ph name="LINK_END" /> und installieren Sie Chrome Remote Desktop erneut.</translation>
 <translation id="8642984861538780905">Ausreichend</translation>
+<translation id="8705151241155781642">• Jetzt auch Unterstützung für Android 9.0 Pie.
+• Die Remote Desktop-Auflösung kann jetzt an Ihr Android-Gerät angepasst werden.</translation>
 <translation id="8712909229180978490">Meine online gespeicherten Dateien werden nicht im Google Drive angezeigt.</translation>
 <translation id="8743328882720071828">Möchten Sie zulassen, dass <ph name="CLIENT_USERNAME" /> auf Ihren Computer zugreifen und diesen steuern kann?</translation>
 <translation id="8747048596626351634">Die Sitzung ist abgestürzt oder konnte nicht gestartet werden. Wenn die Datei "~/.chrome-remote-desktop-session" auf dem Remote-Computer vorhanden ist, vergewissern Sie sich, dass ein längerer Vordergrundprozess wie eine Desktopumgebung oder ein Fenstermanager auf dem Computer gestartet wird.</translation>

@@ -34,20 +34,13 @@
 
 namespace blink {
 
-void SVGAnimatedLength::SetDefaultValueAsString(const String& value) {
-  BaseValue()->SetValueAsString(value);
-}
-
 SVGParsingError SVGAnimatedLength::AttributeChanged(const String& value) {
   SVGParsingError parse_status =
       SVGAnimatedProperty<SVGLength>::AttributeChanged(value);
 
-  if (parse_status != SVGParseStatus::kNoError)
-    BaseValue()->NewValueSpecifiedUnits(CSSPrimitiveValue::UnitType::kUserUnits,
-                                        0);
-  else if (SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
-               AttributeName()) &&
-           BaseValue()->ValueInSpecifiedUnits() < 0)
+  if (SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
+          AttributeName()) &&
+      BaseValue()->ValueInSpecifiedUnits() < 0)
     parse_status = SVGParseStatus::kNegativeValue;
 
   return parse_status;

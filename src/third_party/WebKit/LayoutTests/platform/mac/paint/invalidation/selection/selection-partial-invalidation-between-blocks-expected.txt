@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Second cell'",
           "rect": [11, 33, 75, 18],
           "reason": "selection"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'First cell'",
           "rect": [11, 11, 61, 18],
           "reason": "geometry"
         }

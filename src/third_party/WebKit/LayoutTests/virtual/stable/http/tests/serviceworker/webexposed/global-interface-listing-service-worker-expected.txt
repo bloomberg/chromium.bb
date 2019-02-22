@@ -1043,11 +1043,25 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDecoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter fatal
+    getter ignoreBOM
+    getter readable
+    getter writable
+    method constructor
 interface TextEncoder
     attribute @@toStringTag
     getter encoding
     method constructor
     method encode
+interface TextEncoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter readable
+    getter writable
+    method constructor
 interface TransformStream
     getter readable
     getter writable
@@ -1067,6 +1081,7 @@ interface URL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
@@ -2424,6 +2439,7 @@ interface WorkerGlobalScope : EventTarget
     method createImageBitmap
     method fetch
     method importScripts
+    method queueMicrotask
     method requestAnimationFrame
     method setInterval
     method setTimeout
@@ -2468,6 +2484,7 @@ interface WritableStream
     method getWriter
 [GLOBAL OBJECT]
     attribute console
+    attribute globalThis
     attribute internals
     getter clients
     getter onabortpayment

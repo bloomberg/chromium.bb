@@ -25,7 +25,7 @@ class CFFL_InteractiveFormFiller;
 class CFX_SystemHandler;
 class CPDFSDK_ActionHandler;
 class CPDFSDK_AnnotHandlerMgr;
-class CPDFSDK_InterForm;
+class CPDFSDK_InteractiveForm;
 class CPDFSDK_PageView;
 class IJS_Runtime;
 
@@ -206,10 +206,7 @@ class CPDFSDK_FormFillEnvironment final
   CPDFSDK_AnnotHandlerMgr* GetAnnotHandlerMgr();  // Creates if not present.
   IJS_Runtime* GetIJSRuntime();                   // Creates if not present.
   CPDFSDK_ActionHandler* GetActionHandler();      // Creates if not present.
-  CPDFSDK_InterForm* GetInterForm();              // Creates if not present.
-
-  void SetSaveCalled(FORM_SAVECALLED callback) { m_SaveCalled = callback; }
-  void SaveCalled();
+  CPDFSDK_InteractiveForm* GetInteractiveForm();  // Creates if not present.
 
  private:
   IPDF_Page* GetPage(int nIndex);
@@ -219,14 +216,13 @@ class CPDFSDK_FormFillEnvironment final
   std::unique_ptr<CPDFSDK_ActionHandler> m_pActionHandler;
   std::unique_ptr<IJS_Runtime> m_pIJSRuntime;
   std::map<IPDF_Page*, std::unique_ptr<CPDFSDK_PageView>> m_PageMap;
-  std::unique_ptr<CPDFSDK_InterForm> m_pInterForm;
+  std::unique_ptr<CPDFSDK_InteractiveForm> m_pInteractiveForm;
   CPDFSDK_Annot::ObservedPtr m_pFocusAnnot;
   UnownedPtr<CPDF_Document> const m_pCPDFDoc;
   std::unique_ptr<CFFL_InteractiveFormFiller> m_pFormFiller;
   std::unique_ptr<CFX_SystemHandler> m_pSysHandler;
   bool m_bChangeMask = false;
   bool m_bBeingDestroyed = false;
-  FORM_SAVECALLED m_SaveCalled = nullptr;
 };
 
 #endif  // FPDFSDK_CPDFSDK_FORMFILLENVIRONMENT_H_

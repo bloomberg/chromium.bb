@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_mode_observer.h"
-#include "ui/accessibility/ax_modes.h"
 
 namespace content {
 
@@ -84,6 +84,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   // Leaky singleton, destructor generally won't be called.
   ~BrowserAccessibilityStateImpl() override;
 
+  void PlatformInitialize();
   void UpdatePlatformSpecificHistograms();
 
   ui::AXMode accessibility_mode_;

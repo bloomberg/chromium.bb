@@ -61,6 +61,10 @@ const char* GetLoFiFlagFieldTrialName();
 // server experiments for the data reduction proxy.
 bool IsIncludedInServerExperimentsFieldTrial();
 
+// Returns true if Chrome should use on-device safe browsing checks, and
+// disable safe browsing checks provided by data saver proxy.
+bool IsIncludedInOnDeviceSafeBrowsingFieldTrial();
+
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();
@@ -80,9 +84,6 @@ const char* GetQuicFieldTrialName();
 
 // Returns true if Brotli should be added to the accept-encoding header.
 bool IsBrotliAcceptEncodingEnabled();
-
-// Returns true if the Data Reduction Proxy config client should be used.
-bool IsConfigClientEnabled();
 
 // If the Data Reduction Proxy is used for a page load, the URL for the
 // Data Reduction Proxy Pageload Metrics service.
@@ -135,6 +136,9 @@ bool FetchWarmupProbeURLEnabled();
 // Returns the warmup URL.
 GURL GetWarmupURL();
 
+// Returns true if |url| is the warmup url.
+bool IsWarmupURL(const GURL& url);
+
 // Returns true if the |http_response_code| is in the whitelist of HTTP response
 // codes that are considered as successful for fetching the warmup probe URL.
 // If this method returns false, then the probe should be considered as
@@ -151,6 +155,10 @@ const char* GetMissingViaBypassParamName();
 // metrics harness.
 bool IsDataSaverSiteBreakdownUsingPLMEnabled();
 
+// Returns whether network service is enabled and data reduction proxy should be
+// used.
+bool IsEnabledWithNetworkService();
+
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
@@ -158,6 +166,12 @@ const char* GetDiscardCanaryCheckResultParam();
 // Returns true if canary check result should not be cached or reused across
 // network changes.
 bool ShouldDiscardCanaryCheckResult();
+
+// Helper function to locate |proxy_server| in |proxies| if it exists. This
+// function is exposed publicly so that DataReductionProxyParams can use it.
+base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
+    const std::vector<DataReductionProxyServer>& proxies,
+    const net::ProxyServer& proxy_server);
 
 }  // namespace params
 
@@ -185,12 +199,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // if any exist.
   base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
       const net::ProxyServer& proxy_server) const override;
-
-  // Helper function to locate |proxy_server| in |proxies| if it exists. This
-  // function is exposed publicly so that DataReductionProxyParams can use it.
-  static base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
-      const std::vector<DataReductionProxyServer>& proxies,
-      const net::ProxyServer& proxy_server);
 
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;

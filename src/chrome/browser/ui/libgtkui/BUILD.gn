@@ -22,7 +22,6 @@ component("libgtkui") {
     "gtk_event_loop.h",
     "gtk_key_bindings_handler.cc",
     "gtk_key_bindings_handler.h",
-    "gtk_signal.h",
     "gtk_ui.cc",
     "gtk_ui.h",
     "gtk_util.cc",

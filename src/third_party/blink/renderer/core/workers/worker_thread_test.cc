@@ -65,6 +65,7 @@ void WaitForSignalTask(WorkerThread* worker_thread,
       *worker_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
       FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
+  WorkerThread::ScopedDebuggerTask debugger_task(worker_thread);
   waitable_event->Wait();
 }
 
@@ -389,9 +390,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           KURL("http://fake.url/"), ScriptType::kClassic, "fake user agent",
           headers, kReferrerPolicyDefault, security_origin_.get(),
           false /* starter_secure_context */,
-          CalculateHttpsState(security_origin_.get()),
-          nullptr /* workerClients */, mojom::IPAddressSpace::kLocal,
-          nullptr /* originTrialToken */, base::UnguessableToken::Create(),
+          CalculateHttpsState(security_origin_.get()), WorkerClients::Create(),
+          mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
+          base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(Settings::Create().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
@@ -405,13 +406,18 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.
   WaitableEvent waitable_event;
-  worker_thread_->AppendDebuggerTask(CrossThreadBind(
-      &WaitForSignalTask, CrossThreadUnretained(worker_thread_.get()),
-      CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
+      CrossThreadBind(&WaitForSignalTask,
+                      CrossThreadUnretained(worker_thread_.get()),
+                      CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
   test::EnterRunLoop();
-  EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
+  {
+    MutexLocker lock(worker_thread_->mutex_);
+    EXPECT_EQ(1, worker_thread_->debugger_task_counter_);
+  }
 
   // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
@@ -447,13 +453,18 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.
   WaitableEvent waitable_event;
-  worker_thread_->AppendDebuggerTask(CrossThreadBind(
-      &WaitForSignalTask, CrossThreadUnretained(worker_thread_.get()),
-      CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
+      CrossThreadBind(&WaitForSignalTask,
+                      CrossThreadUnretained(worker_thread_.get()),
+                      CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
   test::EnterRunLoop();
-  EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
+  {
+    MutexLocker lock(worker_thread_->mutex_);
+    EXPECT_EQ(1, worker_thread_->debugger_task_counter_);
+  }
 
   // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();

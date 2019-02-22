@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_database_data.h"
-#include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
@@ -283,10 +283,10 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
 
   GURL origin("https://example.com");
 
-  PlatformNotificationData notification_data;
+  blink::PlatformNotificationData notification_data;
   notification_data.title = base::UTF8ToUTF16("My Notification");
   notification_data.direction =
-      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
   notification_data.lang = "nl-NL";
   notification_data.body = base::UTF8ToUTF16("Hello, world!");
   notification_data.tag = "replace id";
@@ -318,7 +318,7 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
   EXPECT_EQ(database_data.service_worker_registration_id,
             read_database_data.service_worker_registration_id);
 
-  const PlatformNotificationData& read_notification_data =
+  const blink::PlatformNotificationData& read_notification_data =
       read_database_data.notification_data;
 
   EXPECT_EQ(notification_data.title, read_notification_data.title);

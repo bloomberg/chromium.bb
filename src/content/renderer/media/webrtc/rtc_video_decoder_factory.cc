@@ -6,7 +6,10 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "content/renderer/media/webrtc/rtc_video_decoder.h"
+#include "content/renderer/media/webrtc/rtc_video_decoder_adapter.h"
+#include "media/base/media_switches.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 
 namespace content {
@@ -24,13 +27,18 @@ RTCVideoDecoderFactory::~RTCVideoDecoderFactory() {
 webrtc::VideoDecoder* RTCVideoDecoderFactory::CreateVideoDecoder(
     webrtc::VideoCodecType type) {
   DVLOG(2) << __func__;
-  return RTCVideoDecoder::Create(type, gpu_factories_).release();
+
+  if (base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter)) {
+    return RTCVideoDecoderAdapter::Create(gpu_factories_, type).release();
+  } else {
+    return RTCVideoDecoder::Create(type, gpu_factories_).release();
+  }
 }
 
 void RTCVideoDecoderFactory::DestroyVideoDecoder(
     webrtc::VideoDecoder* decoder) {
   DVLOG(2) << __func__;
-  RTCVideoDecoder::Destroy(decoder, gpu_factories_);
+  gpu_factories_->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder);
 }
 
 }  // namespace content

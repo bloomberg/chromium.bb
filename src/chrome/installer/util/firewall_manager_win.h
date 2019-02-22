@@ -9,8 +9,6 @@
 
 #include "base/macros.h"
 
-class BrowserDistribution;
-
 namespace base {
 class FilePath;
 }
@@ -25,7 +23,6 @@ class FirewallManager {
   // Creates instance of |FirewallManager|. Implementation chooses best version
   // available for current version of Windows.
   static std::unique_ptr<FirewallManager> Create(
-      BrowserDistribution* dist,
       const base::FilePath& chrome_path);
 
   // Returns true if application can one ports for incoming connections without

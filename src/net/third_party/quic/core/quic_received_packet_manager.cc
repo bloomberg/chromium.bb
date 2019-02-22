@@ -93,7 +93,7 @@ const QuicFrame QuicReceivedPacketManager::GetUpdatedAckFrame(
   }
   // Clear all packet times if any are too far from largest observed.
   // It's expected this is extremely rare.
-  for (PacketTimeVector::iterator it = ack_frame_.received_packet_times.begin();
+  for (auto it = ack_frame_.received_packet_times.begin();
        it != ack_frame_.received_packet_times.end();) {
     if (LargestAcked(ack_frame_) - it->first >=
         std::numeric_limits<uint8_t>::max()) {

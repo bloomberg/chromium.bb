@@ -42,8 +42,7 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     jfloat y_offset,
     jfloat view_height,
     bool visible,
-    bool show_shadow,
-    bool modern_design_enabled) {
+    bool show_shadow) {
   // If the toolbar layer has not been created yet, create it.
   if (!toolbar_layer_) {
     ui::ResourceManager* resource_manager =
@@ -58,7 +57,7 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
                                  false, url_bar_color, url_bar_resource_id,
                                  url_bar_alpha, view_height, y_offset, false,
-                                 !show_shadow, modern_design_enabled);
+                                 !show_shadow);
   }
 }
 

@@ -86,6 +86,10 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
             base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
               handle.reset();
             }));
+
+    // Necessary for focus changes to work correctly and dispatch blur events
+    // when a field was previously focused.
+    GetWebWidget()->SetFocus(true);
   }
 
   void TearDown() override {
@@ -456,6 +460,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
                                     edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
   EXPECT_EQ(edited_password, second_password_element.Value().Utf16());
+  EXPECT_TRUE(first_password_element.IsAutofilled());
+  EXPECT_TRUE(second_password_element.IsAutofilled());
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
@@ -463,6 +469,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   SimulateUserInputChangeForElement(&first_password_element, std::string());
   EXPECT_EQ(base::string16(), first_password_element.Value().Utf16());
   EXPECT_EQ(base::string16(), second_password_element.Value().Utf16());
+  EXPECT_FALSE(first_password_element.IsAutofilled());
+  EXPECT_FALSE(second_password_element.IsAutofilled());
 
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.
@@ -1082,6 +1090,107 @@ TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateForm) {
             .GetAttribute(blink::WebString::FromUTF8("pm_parser_annotation"))
             .Ascii());
   }
+}
+
+TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+
+  constexpr char kGenerationElementId[] = "first_password";
+
+  // Generate a new password.
+  FocusField(kGenerationElementId);
+  base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+  fake_pw_client_.Flush();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+
+  // Delete characters of the generated password until only
+  // |kMinimumLengthForEditedPassword| - 1 chars remain.
+  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+  FocusField(kGenerationElementId);
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
+  size_t max_chars_to_delete =
+      password.length() -
+      PasswordGenerationAgent::kMinimumLengthForEditedPassword + 1;
+  for (size_t i = 0; i < max_chars_to_delete; ++i)
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
+  base::RunLoop().RunUntilIdle();
+  // The remaining characters no longer count as a generated password, so
+  // generation should be offered again.
+  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+
+  // Check that the characters remain unmasked.
+  WebDocument document = GetMainFrame()->GetDocument();
+  blink::WebElement element =
+      document.GetElementById(blink::WebString::FromUTF8(kGenerationElementId));
+  ASSERT_FALSE(element.IsNull());
+  blink::WebInputElement input = element.To<WebInputElement>();
+  EXPECT_TRUE(input.ShouldRevealPassword());
+
+  // Delete the rest of the characters. The field should now mask new
+  // characters.
+  for (size_t i = 0;
+       i < PasswordGenerationAgent::kMinimumLengthForEditedPassword; ++i)
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(input.ShouldRevealPassword());
+}
+
+TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
+  LoadHTMLWithUserGesture(kPasswordFormAndSpanHTML);
+  SetNotBlacklistedMessage(password_generation_, kPasswordFormAndSpanHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+
+  constexpr char kGenerationElementId[] = "password";
+
+  // Generate a new password.
+  FocusField(kGenerationElementId);
+  base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+  fake_pw_client_.Flush();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+
+  // Delete characters of the generated password until only
+  // |kMinimumLengthForEditedPassword| - 1 chars remain.
+  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+  FocusField(kGenerationElementId);
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
+  size_t max_chars_to_delete =
+      password.length() -
+      PasswordGenerationAgent::kMinimumLengthForEditedPassword + 1;
+  for (size_t i = 0; i < max_chars_to_delete; ++i)
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
+  // The remaining characters no longer count as a generated password, so
+  // generation should be offered again.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+
+  // Check that the characters remain unmasked.
+  WebDocument document = GetMainFrame()->GetDocument();
+  blink::WebElement element =
+      document.GetElementById(blink::WebString::FromUTF8(kGenerationElementId));
+  ASSERT_FALSE(element.IsNull());
+  blink::WebInputElement input = element.To<WebInputElement>();
+  EXPECT_TRUE(input.ShouldRevealPassword());
+
+  // Focus another element on the page. The password should be masked.
+  ASSERT_TRUE(SimulateElementClick("span"));
+  EXPECT_FALSE(input.ShouldRevealPassword());
+
+  // Focus the password field again. As the remaining characters are not
+  // a generated password, they should remain masked.
+  FocusField(kGenerationElementId);
+  EXPECT_FALSE(input.ShouldRevealPassword());
 }
 
 }  // namespace autofill

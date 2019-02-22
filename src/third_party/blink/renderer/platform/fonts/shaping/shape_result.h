@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
+#include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -62,7 +63,7 @@ enum class AdjustMidCluster {
 };
 
 struct ShapeResultCharacterData {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   float x_position;
   // Set for the logical first character of a cluster.
   unsigned is_cluster_base : 1;
@@ -84,6 +85,24 @@ enum BreakGlyphsOption {
   DontBreakGlyphs,
   BreakGlyphs,
 };
+
+// std::function is forbidden in Chromium and base::Callback is way too
+// expensive so we resort to a good old function pointer instead.
+typedef void (*GlyphCallback)(void* context,
+                              unsigned character_index,
+                              Glyph,
+                              FloatSize glyph_offset,
+                              float total_advance,
+                              bool is_horizontal,
+                              CanvasRotationInVertical,
+                              const SimpleFontData*);
+
+typedef void (*GraphemeClusterCallback)(void* context,
+                                        unsigned character_index,
+                                        float total_advance,
+                                        unsigned graphemes_in_cluster,
+                                        float cluster_advance,
+                                        CanvasRotationInVertical);
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
@@ -117,6 +136,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   CharacterRange GetCharacterRange(const StringView& text,
                                    unsigned from,
                                    unsigned to) const;
+  // TODO(eae): Remove start_x and return value once ShapeResultBuffer has been
+  // removed.
+  float IndividualCharacterRanges(Vector<CharacterRange>* ranges,
+                                  float start_x = 0) const;
+
   // The character start/end index of a range shape result.
   unsigned StartIndexForResult() const { return start_index_; }
   unsigned EndIndexForResult() const { return start_index_ + num_characters_; }
@@ -224,9 +248,42 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Computes the list of fonts along with the number of glyphs for each font.
   struct RunFontData {
     SimpleFontData* font_data_;
-    size_t glyph_count_;
+    wtf_size_t glyph_count_;
   };
   void GetRunFontData(Vector<RunFontData>* font_data) const;
+
+  // Iterates over, and calls the specified callback function, for all the
+  // glyphs. Also tracks (and returns) a seeded total advance.
+  // The second version of the method only invokes the callback for glyphs in
+  // the specified range and stops after the range.
+  // The context parameter will be given as the first parameter for the callback
+  // function.
+  //
+  // TODO(eae): Remove the initial_advance and index_offset parameters once
+  // ShapeResultBuffer has been removed as they're only used in cases where
+  // multiple ShapeResult are combined in a ShapeResultBuffer.
+  float ForEachGlyph(float initial_advance, GlyphCallback, void* context) const;
+  float ForEachGlyph(float initial_advance,
+                     unsigned from,
+                     unsigned to,
+                     unsigned index_offset,
+                     GlyphCallback,
+                     void* context) const;
+
+  // Iterates over, and calls the specified callback function, for all the
+  // grapheme clusters. As ShapeResuls do not contain the original text content
+  // a StringView with the text must be supplied and must match the text that
+  // was used generate the ShapeResult.
+  // Also tracks (and returns) a seeded total advance.
+  // The context parameter will be given as the first parameter for the callback
+  // function.
+  float ForEachGraphemeClusters(const StringView& text,
+                                float initial_advance,
+                                unsigned from,
+                                unsigned to,
+                                unsigned index_offset,
+                                GraphemeClusterCallback,
+                                void* context) const;
 
   String ToString() const;
   void ToString(StringBuilder*) const;
@@ -286,6 +343,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // mapping from character index to x-position and O(log n) time, using binary
   // search, from x-position to character index.
   class CharacterPositionData {
+    USING_FAST_MALLOC(CharacterPositionData);
+
    public:
     CharacterPositionData(unsigned num_characters, float width)
         : data_(num_characters), width_(width) {}

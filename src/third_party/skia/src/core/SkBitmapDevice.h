@@ -12,7 +12,7 @@
 #include "SkCanvas.h"
 #include "SkColor.h"
 #include "SkDevice.h"
-#include "SkGlyphRun.h"
+#include "SkGlyphRunPainter.h"
 #include "SkImageInfo.h"
 #include "SkPixelRef.h"
 #include "SkRasterClip.h"
@@ -113,6 +113,7 @@ protected:
     sk_sp<SkSpecialImage> makeSpecial(const SkBitmap&) override;
     sk_sp<SkSpecialImage> makeSpecial(const SkImage*) override;
     sk_sp<SkSpecialImage> snapSpecial() override;
+    void setImmutable() override { fBitmap.setImmutable(); }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -142,17 +143,9 @@ private:
     friend class SkDraw;
     friend class SkDrawIter;
     friend class SkDrawTiler;
-    friend class SkDeviceFilteredPaint;
     friend class SkSurface_Raster;
 
     class BDDraw;
-
-    /**
-     *  Does not handle text decoration.
-     *  Decorations (underline and stike-thru) will be handled by SkCanvas.
-     */
-    void drawPosText(const void* text, size_t len, const SkScalar pos[],
-                     int scalarsPerPos, const SkPoint& offset, const SkPaint& paint) override;
 
     // used to change the backend's pixels (and possibly config/rowbytes)
     // but cannot change the width/height, so there should be no change to

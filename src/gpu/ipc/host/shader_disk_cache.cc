@@ -122,7 +122,7 @@ class ShaderClearHelper : public base::ThreadChecker {
                     const base::FilePath& path,
                     const base::Time& delete_begin,
                     const base::Time& delete_end,
-                    const base::Closure& callback);
+                    base::OnceClosure callback);
   ~ShaderClearHelper();
 
   void Clear();
@@ -138,7 +138,7 @@ class ShaderClearHelper : public base::ThreadChecker {
   base::FilePath path_;
   base::Time delete_begin_;
   base::Time delete_end_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   base::WeakPtrFactory<ShaderClearHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderClearHelper);
@@ -260,7 +260,7 @@ int ShaderDiskCacheEntry::WriteCallback(int rv) {
   }
 
   op_type_ = WRITE_DATA;
-  scoped_refptr<net::StringIOBuffer> io_buf = new net::StringIOBuffer(shader_);
+  auto io_buf = base::MakeRefCounted<net::StringIOBuffer>(shader_);
   return entry_->WriteData(1, 0, io_buf.get(), shader_.length(),
                            base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
                                       weak_ptr_factory_.GetWeakPtr()),
@@ -354,7 +354,7 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
     return rv;
 
   op_type_ = READ_COMPLETE;
-  buf_ = new net::IOBufferWithSize(entry_->GetDataSize(1));
+  buf_ = base::MakeRefCounted<net::IOBufferWithSize>(entry_->GetDataSize(1));
   return entry_->ReadData(1, 0, buf_.get(), buf_->size(),
                           base::Bind(&ShaderDiskReadHelper::OnOpComplete,
                                      weak_ptr_factory_.GetWeakPtr()));
@@ -390,14 +390,14 @@ ShaderClearHelper::ShaderClearHelper(ShaderCacheFactory* factory,
                                      const base::FilePath& path,
                                      const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     const base::Closure& callback)
+                                     base::OnceClosure callback)
     : factory_(factory),
       cache_(std::move(cache)),
       op_type_(VERIFY_CACHE_SETUP),
       path_(path),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {}
 
 ShaderClearHelper::~ShaderClearHelper() {
@@ -426,7 +426,7 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
         op_type_ = TERMINATE;
         break;
       case TERMINATE:
-        callback_.Run();
+        std::move(callback_).Run();
         // Calling CacheCleared() destroys |this|.
         factory_->CacheCleared(path_);
         rv = net::ERR_IO_PENDING;  // Break the loop.
@@ -487,12 +487,13 @@ void ShaderCacheFactory::RemoveFromCache(const base::FilePath& key) {
 void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
                                      const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     const base::Closure& callback) {
+                                     base::OnceClosure callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  auto helper = std::make_unique<ShaderClearHelper>(
-      this, GetByPath(path), path, delete_begin, delete_end, callback);
+  auto helper = std::make_unique<ShaderClearHelper>(this, GetByPath(path), path,
+                                                    delete_begin, delete_end,
+                                                    std::move(callback));
 
   // We could receive requests to clear the same path with different
   // begin/end times. So, we keep a list of requests. If we haven't seen this
@@ -517,12 +518,13 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
 void ShaderCacheFactory::ClearByClientId(int32_t client_id,
                                          const base::Time& delete_begin,
                                          const base::Time& delete_end,
-                                         const base::Closure& callback) {
+                                         base::OnceClosure callback) {
   DCHECK(CalledOnValidThread());
   ClientIdToPathMap::iterator iter = client_id_to_path_map_.find(client_id);
   if (iter == client_id_to_path_map_.end())
     return;
-  return ClearByPath(iter->second, delete_begin, delete_end, callback);
+  return ClearByPath(iter->second, delete_begin, delete_end,
+                     std::move(callback));
 }
 
 void ShaderCacheFactory::CacheCleared(const base::FilePath& path) {

@@ -63,6 +63,7 @@ class StyleFetchedImage final : public StyleImage,
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
+  bool GetImageAnimationPolicy(ImageAnimationPolicy&) override;
   String DebugName() const override { return "StyleFetchedImage"; }
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
@@ -80,6 +81,7 @@ class StyleFetchedImage final : public StyleImage,
                     FetchParameters&,
                     bool is_lazyload_deferred);
 
+  bool IsEqual(const StyleImage&) const override;
   void Dispose();
 
   Member<ImageResourceContent> image_;

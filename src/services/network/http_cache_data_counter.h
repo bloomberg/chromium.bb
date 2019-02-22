@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HttpCacheDataCounter {
 
   void GotBackend(std::unique_ptr<disk_cache::Backend*> backend,
                   int error_code);
-  void PostResult(bool is_upper_limit, int result_or_error);
+  void PostResult(bool is_upper_limit, int64_t result_or_error);
 
   base::WeakPtr<HttpCacheDataCounter> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

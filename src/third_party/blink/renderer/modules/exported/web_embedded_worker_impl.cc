@@ -32,8 +32,10 @@
 
 #include <memory>
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -55,7 +57,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
@@ -66,22 +67,25 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+// static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     std::unique_ptr<WebServiceWorkerContextClient> client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
     mojo::ScopedMessagePipeHandle interface_provider) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
-      std::move(client), std::move(installed_scripts_manager),
+      std::move(client), std::move(installed_scripts_manager_params),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           // TODO(falken): Is that comment about versioning correct?
@@ -94,10 +98,25 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
           service_manager::mojom::blink::InterfaceProvider::Version_));
 }
 
+// static
+std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
+    std::unique_ptr<WebServiceWorkerContextClient> client,
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager) {
+  auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
+      std::move(client), nullptr /* installed_scripts_manager_params */,
+      std::make_unique<ServiceWorkerContentSettingsProxy>(
+          nullptr /* host_info */),
+      nullptr /* cache_storage_info */, nullptr /* interface_provider_info */);
+  worker_impl->installed_scripts_manager_ =
+      std::move(installed_scripts_manager);
+  return worker_impl;
+}
+
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -109,10 +128,22 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       waiting_for_debugger_state_(kNotWaitingForDebugger),
       cache_storage_info_(std::move(cache_storage_info)),
       interface_provider_info_(std::move(interface_provider_info)) {
-  if (installed_scripts_manager) {
-    installed_scripts_manager_ =
-        std::make_unique<ServiceWorkerInstalledScriptsManager>(
-            std::move(installed_scripts_manager));
+  if (installed_scripts_manager_params) {
+    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
+    Vector<KURL> installed_scripts_urls;
+    installed_scripts_urls.AppendRange(
+        installed_scripts_manager_params->installed_scripts_urls.begin(),
+        installed_scripts_manager_params->installed_scripts_urls.end());
+    installed_scripts_manager_ = std::make_unique<
+        ServiceWorkerInstalledScriptsManager>(
+        installed_scripts_urls,
+        mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
+            std::move(installed_scripts_manager_params->manager_request)),
+        mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
+            std::move(installed_scripts_manager_params->manager_host_ptr),
+            mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_),
+        Platform::Current()->GetIOTaskRunner());
   }
 }
 
@@ -239,9 +270,14 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
 }
 
 void WebEmbeddedWorkerImpl::BindDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
-      std::move(devtools_agent_request)));
+  shadow_page_->DevToolsAgent()->BindRequest(
+      mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
+          std::move(devtools_agent_host_ptr_info),
+          mojom::blink::DevToolsAgentHost::Version_),
+      mojom::blink::DevToolsAgentAssociatedRequest(
+          std::move(devtools_agent_request)));
 }
 
 void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
@@ -280,7 +316,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   main_script_loader_ = WorkerClassicScriptLoader::Create();
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
-      WebURLRequest::kRequestContextServiceWorker,
+      mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       worker_start_data_.address_space, base::OnceClosure(),
@@ -340,8 +376,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideServiceWorkerGlobalScopeClientToWorker(
       worker_clients,
       new ServiceWorkerGlobalScopeClient(*worker_context_client_));
-  ProvideServiceWorkerContainerClientToWorker(
-      worker_clients, worker_context_client_->CreateServiceWorkerProvider());
 
   std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
       worker_context_client_->CreateServiceWorkerFetchContext(
@@ -359,9 +393,13 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
 
-  // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
-  // (https://crbug.com/824647)
-  ScriptType script_type = ScriptType::kClassic;
+  // TODO(https://crbug.com/824647): Use blink::mojom::ScriptType everywhere
+  // and deprecate blink::ScriptType.
+  // Remove this line after removed all blink::ScriptType.
+  ScriptType script_type =
+      (worker_start_data_.script_type == mojom::ScriptType::kModule)
+          ? ScriptType::kModule
+          : ScriptType::kClassic;
 
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
@@ -426,13 +464,34 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);
 
-  // TODO(nhiroki): Support module workers (https://crbug.com/680046).
-  // Note that this doesn't really start the script evaluation until
-  // ReadyToEvaluateScript() is called on the WebServiceWorkerContextProxy
-  // on the worker thread.
-  worker_thread_->EvaluateClassicScript(
-      worker_start_data_.script_url, source_code, std::move(cached_meta_data),
-      v8_inspector::V8StackTraceId());
+  // > Switching on job’s worker type, run these substeps with the following
+  // > options:
+  // https://w3c.github.io/ServiceWorker/#update-algorithm
+  if (script_type == ScriptType::kClassic) {
+    // > "classic": Fetch a classic worker script given job’s serialized script
+    // > url, job’s client, "serviceworker", and the to-be-created environment
+    // > settings object for this service worker.
+    // Service worker is origin-bound, so use kSharableCrossOrigin.
+    worker_thread_->EvaluateClassicScript(
+        worker_start_data_.script_url, kSharableCrossOrigin, source_code,
+        std::move(cached_meta_data), v8_inspector::V8StackTraceId());
+  } else {
+    // > "module": Fetch a module worker script graph given job’s serialized
+    // > script url, job’s client, "serviceworker", "omit", and the
+    // > to-be-created environment settings object for this service worker.
+
+    // TODO(asamidoi): Currently, we use the shadow page's Document as an
+    // outside_settings_object as a workaround. This should be the Document that
+    // called navigator.ServiceWorker.register(). To do it, we need to make a
+    // way to pass the settings object over mojo IPCs.
+    auto* outside_settings_object =
+        document->CreateFetchClientSettingsObjectSnapshot();
+    network::mojom::FetchCredentialsMode credentials_mode =
+        network::mojom::FetchCredentialsMode::kOmit;
+    worker_thread_->ImportModuleScript(worker_start_data_.script_url,
+                                       outside_settings_object,
+                                       credentials_mode);
+  }
 }
 
 }  // namespace blink

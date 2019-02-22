@@ -41,9 +41,9 @@ ComponentControllerImpl::ComponentControllerImpl(WebContentRunner* runner)
 }
 
 ComponentControllerImpl::~ComponentControllerImpl() {
-  for (WaitCallback& next_callback : termination_wait_callbacks_) {
-    next_callback(did_terminate_abnormally_ ? 1 : 0);
-  }
+  // Send process termination details to the client.
+  controller_binding_.events().OnTerminated(termination_exit_code_,
+                                            termination_reason_);
 }
 
 bool ComponentControllerImpl::BindToRequest(
@@ -62,8 +62,10 @@ bool ComponentControllerImpl::BindToRequest(
 
   if (controller_request.is_valid()) {
     controller_binding_.Bind(std::move(controller_request));
-    controller_binding_.set_error_handler(
-        fit::bind_member(this, &ComponentControllerImpl::Kill));
+    controller_binding_.set_error_handler([this] {
+      // Signal graceful process termination.
+      RequestTermination(0, fuchsia::sys::TerminationReason::EXITED);
+    });
   }
 
   runner_->context()->CreateFrame(frame_.NewRequest());
@@ -85,16 +87,12 @@ bool ComponentControllerImpl::BindToRequest(
 }
 
 void ComponentControllerImpl::Kill() {
-  did_terminate_abnormally_ = true;
-  runner_->DestroyComponent(this);
+  // Signal abnormal process termination.
+  RequestTermination(1, fuchsia::sys::TerminationReason::RUNNER_TERMINATED);
 }
 
 void ComponentControllerImpl::Detach() {
   controller_binding_.set_error_handler(nullptr);
-}
-
-void ComponentControllerImpl::Wait(WaitCallback callback) {
-  termination_wait_callbacks_.push_back(std::move(callback));
 }
 
 void ComponentControllerImpl::CreateView(
@@ -105,6 +103,14 @@ void ComponentControllerImpl::CreateView(
 
   frame_->CreateView(std::move(view_owner), std::move(services));
   view_is_bound_ = true;
+}
+
+void ComponentControllerImpl::RequestTermination(
+    int termination_exit_code,
+    fuchsia::sys::TerminationReason reason) {
+  termination_reason_ = reason;
+  termination_exit_code_ = termination_exit_code;
+  runner_->DestroyComponent(this);
 }
 
 }  // namespace webrunner

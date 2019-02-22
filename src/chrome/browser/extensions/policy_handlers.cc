@@ -96,7 +96,7 @@ bool ExtensionInstallListPolicyHandler::ParseList(
     return false;
   }
 
-  for (base::ListValue::const_iterator entry(policy_list_value->begin());
+  for (auto entry(policy_list_value->begin());
        entry != policy_list_value->end(); ++entry) {
     std::string entry_string;
     if (!entry->GetAsString(&entry_string)) {
@@ -183,8 +183,7 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
   }
 
   // Check that the list contains valid URLPattern strings only.
-  for (base::ListValue::const_iterator entry(list_value->begin());
-       entry != list_value->end(); ++entry) {
+  for (auto entry(list_value->begin()); entry != list_value->end(); ++entry) {
     std::string url_pattern_string;
     if (!entry->GetAsString(&url_pattern_string)) {
       errors->AddError(policy_name(), entry - list_value->begin(),
@@ -194,7 +193,8 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
     }
 
     URLPattern pattern(URLPattern::SCHEME_ALL);
-    if (pattern.Parse(url_pattern_string) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(url_pattern_string) !=
+        URLPattern::ParseResult::kSuccess) {
       errors->AddError(policy_name(),
                        entry - list_value->begin(),
                        IDS_POLICY_VALUE_FORMAT_ERROR);
@@ -305,16 +305,16 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
           unparsed_urls->GetString(i, &unparsed_url);
           URLPattern pattern(extension_scheme_mask);
           URLPattern::ParseResult parse_result = pattern.Parse(
-              unparsed_url, URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
+              unparsed_url, URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
           // These keys don't support paths due to how we track the initiator
           // of a webRequest and cookie security policy. We expect a valid
           // pattern to return a PARSE_ERROR_EMPTY_PATH.
-          if (parse_result == URLPattern::PARSE_ERROR_EMPTY_PATH) {
+          if (parse_result == URLPattern::ParseResult::kEmptyPath) {
             // Add a wildcard path to the URL as it should match any path.
             parse_result =
                 pattern.Parse(unparsed_url + "/*",
-                              URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
-          } else if (parse_result == URLPattern::PARSE_SUCCESS) {
+                              URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+          } else if (parse_result == URLPattern::ParseResult::kSuccess) {
             // The user supplied a path, notify them that this is not supported.
             if (!pattern.match_all_urls()) {
               errors->AddError(
@@ -326,7 +326,7 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
               return false;
             }
           }
-          if (parse_result != URLPattern::PARSE_SUCCESS) {
+          if (parse_result != URLPattern::ParseResult::kSuccess) {
             errors->AddError(policy_name(), it.key(),
                              "Invalid URL pattern '" + unparsed_url +
                                  "' for attribute " + key);

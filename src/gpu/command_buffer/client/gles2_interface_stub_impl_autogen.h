@@ -952,8 +952,6 @@ void GLES2InterfaceStub::CopySubTextureCHROMIUM(
     GLboolean /* unpack_flip_y */,
     GLboolean /* unpack_premultiply_alpha */,
     GLboolean /* unpack_unmultiply_alpha */) {}
-void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLuint /* source_id */,
-                                                       GLuint /* dest_id */) {}
 void GLES2InterfaceStub::DrawArraysInstancedANGLE(GLenum /* mode */,
                                                   GLint /* first */,
                                                   GLsizei /* count */,
@@ -1245,4 +1243,5 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
     GLint /* level */,
     GLint /* baseViewIndex */,
     GLsizei /* numViews */) {}
+void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

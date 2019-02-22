@@ -4707,18 +4707,6 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleCompressedCopyTextureCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::CompressedCopyTextureCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::CompressedCopyTextureCHROMIUM*>(
-          cmd_data);
-  GLuint source_id = static_cast<GLuint>(c.source_id);
-  GLuint dest_id = static_cast<GLuint>(c.dest_id);
-  DoCompressedCopyTextureCHROMIUM(source_id, dest_id);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleProduceTextureDirectCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5367,6 +5355,21 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
   }
   DoFramebufferTextureMultiviewLayeredANGLE(target, attachment, texture, level,
                                             baseViewIndex, numViews);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMaxShaderCompilerThreadsKHR(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MaxShaderCompilerThreadsKHR& c =
+      *static_cast<const volatile gles2::cmds::MaxShaderCompilerThreadsKHR*>(
+          cmd_data);
+  if (!features().khr_parallel_shader_compile) {
+    return error::kUnknownCommand;
+  }
+
+  GLuint count = static_cast<GLuint>(c.count);
+  api()->glMaxShaderCompilerThreadsKHRFn(count);
   return error::kNoError;
 }
 

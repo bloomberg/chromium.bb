@@ -34,6 +34,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -55,7 +56,7 @@ class SQLTransactionCoordinator
  private:
   typedef Deque<CrossThreadPersistent<SQLTransactionBackend>> TransactionsQueue;
   struct CoordinationInfo {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     TransactionsQueue pending_transactions;

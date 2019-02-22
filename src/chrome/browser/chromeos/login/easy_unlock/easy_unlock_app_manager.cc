@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/common/apps/platform_apps/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/switches.h"

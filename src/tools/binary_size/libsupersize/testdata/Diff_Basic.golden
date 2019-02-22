@@ -10,6 +10,7 @@ Section Sizes (Total=0 bytes (0 bytes)):
     .bss: 0 bytes (0 bytes) (not included in totals)
     .data: 0 bytes (0 bytes) (0.0%)
     .data.rel.ro: 0 bytes (0 bytes) (0.0%)
+    .pak.nontranslated: 0 bytes (0 bytes) (0.0%)
     .pak.translations: 0 bytes (0 bytes) (0.0%)
     .rel.dyn: 0 bytes (0 bytes) (0.0%)
     .rodata: 0 bytes (0 bytes) (0.0%)
@@ -39,9 +40,10 @@ Other section sizes:
     .strtab: 0 bytes (0 bytes)
     .symtab: 0 bytes (0 bytes)
 
-2 symbols added (+), 2 changed (~), 3 removed (-), 241 unchanged (not shown)
+2 symbols added (+), 2 changed (~), 3 removed (-), 244 unchanged (not shown)
+Added/Removed by section: .data: +2 .pak.translations: -3
 Of changed symbols, 3 grew, 4 shrank
-Number of unique symbols 251 -> 250 (-1)
+Number of unique symbols 254 -> 253 (-1)
 0 paths added, 0 removed, 2 changed
 Changed files:
   
@@ -50,10 +52,11 @@ Changed files:
 Showing 7 symbols (5 -> 4 unique) with total pss: -112 bytes
 Histogram of symbols based on PSS:
     (-128,-64]: 1   (-32,-16]: 2   (-16,-8]: 1   [4,8): 2   [8,16): 1
-.text=0 bytes    .rodata=10 bytes   .data.rel.ro=0 bytes    .data=8 bytes    .bss=0 bytes    .pak.translations=-130 bytes total=-112 bytes
+Sizes: .text=0 bytes    .rodata=10 bytes   .data.rel.ro=0 bytes    .data=8 bytes    .bss=0 bytes    .pak.translations=-112 bytes .pak.nontranslated=-18 bytes  total=-112 bytes
+Counts: .text=0 .rodata=1 .data.rel.ro=0 .data=2 .bss=0 .pak.translations=3 .pak.nontranslated=1
 Number of unique paths: 3
 
-Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, p=.pak.translations
+Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, p=.pak.translations, P=.pak.nontranslated
 Index | Running Total | Section@Address | ...
 ------------------------------------------------------------
 - 0)        -80 (71.4%) p@0x0        -80 (80->0)  num_aliases=1
@@ -64,14 +67,14 @@ Index | Running Total | Section@Address | ...
                source_path= 	object_path=
                flags={}  name=IDS_WEB_FONT_FAMILY
                     full_name=../../ui/strings/app_locale_settings.grd: IDS_WEB_FONT_FAMILY
-~ 2)       -121 (108.0%) p@0x0        -18 (0->0)  num_aliases=1
-               source_path= 	object_path=
-               flags={}  name=../../../mock_apk/assets/en-US.pak
-                    full_name=foo: ../../../mock_apk/assets/en-US.pak
-- 3)       -130 (116.1%) p@0x0        -9 (9->0)  num_aliases=1
+- 2)       -112 (100.0%) p@0x0        -9 (9->0)  num_aliases=1
                source_path= 	object_path=
                flags={}  name=IDS_WEB_FONT_SIZE
                     full_name=../../ui/strings/app_locale_settings.grd: IDS_WEB_FONT_SIZE
+~ 3)       -130 (116.1%) P@0x0        -18 (0->0)  num_aliases=1
+               source_path= 	object_path=
+               flags={}  name=../../../mock_apk/assets/resources.pak
+                    full_name=foo: ../../../mock_apk/assets/resources.pak
 ~ 4)       -120 (107.1%) r@0x284e398  +10 (22->32)  num_aliases=1
                source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
                flags={}  name=chrome::mojom::FilePatcher::Name_

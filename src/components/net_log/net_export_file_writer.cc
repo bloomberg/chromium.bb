@@ -174,14 +174,13 @@ void NetExportFileWriter::StartNetLogAfterCreateFile(
     return;
   }
 
-  network::mojom::NetLogExporter_CaptureMode rpc_capture_mode =
-      network::mojom::NetLogExporter::CaptureMode::DEFAULT;
+  network::mojom::NetLogCaptureMode rpc_capture_mode =
+      network::mojom::NetLogCaptureMode::DEFAULT;
   if (capture_mode.include_socket_bytes()) {
-    rpc_capture_mode =
-        network::mojom::NetLogExporter::CaptureMode::INCLUDE_SOCKET_BYTES;
+    rpc_capture_mode = network::mojom::NetLogCaptureMode::INCLUDE_SOCKET_BYTES;
   } else if (capture_mode.include_cookies_and_credentials()) {
-    rpc_capture_mode = network::mojom::NetLogExporter::CaptureMode::
-        INCLUDE_COOKIES_AND_CREDENTIALS;
+    rpc_capture_mode =
+        network::mojom::NetLogCaptureMode::INCLUDE_COOKIES_AND_CREDENTIALS;
   }
 
   // base::Unretained(this) is safe here since |net_log_exporter_| is owned by

@@ -408,14 +408,11 @@ const char kContextualSearchDisabledValue[] = "false";
 const char kContextualSearchEnabledValue[] = "true";
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-// Boolean that indicates whether the browser should put up a confirmation
-// window when the user is attempting to quit. Only on Mac, Windows, and Linux.
-const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
-#endif
-
 #if defined(OS_MACOSX)
+// Boolean that indicates whether the browser should put up a confirmation
+// window when the user is attempting to quit. Only on Mac.
+const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
+
 // Boolean that indicates whether the browser should show the toolbar when it's
 // in fullscreen. Mac only.
 const char kShowFullscreenToolbar[] = "browser.show_fullscreen_toolbar";
@@ -433,17 +430,6 @@ const char kPromptForDownload[] = "download.prompt_for_download";
 
 // A boolean pref set to true if we're using Link Doctor error pages.
 const char kAlternateErrorPagesEnabled[] = "alternate_error_pages.enabled";
-
-// An adaptively identified list of domain names to be pre-fetched during the
-// next startup, based on what was actually needed during this startup.
-const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
-
-// A list of host names used to fetch web pages, and their commonly used
-// sub-resource hostnames (and expected latency benefits from pre-resolving, or
-// preconnecting to, such sub-resource hostnames).
-// This list is adaptively grown and pruned.
-const char kDnsPrefetchingHostReferralList[] =
-    "dns_prefetching.host_referral_list";
 
 // Controls if the QUIC protocol is allowed.
 const char kQuicAllowed[] = "net.quic_allowed";
@@ -843,19 +829,6 @@ const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
 // system volume, and higher than 1.0 is louder.
 const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
 
-// This is a timestamp to keep track of the screen start time when a unichrome
-// user starts using the device for the first time of the day. Used to calculate
-// the screen time limit and this will be refreshed daily.
-const char kFirstScreenStartTime[] = "screen_time.first_screen.start_time";
-
-// This is a timestamp to keep track of the screen start time for the current
-// active screen. The pref is used to restore the screen start time after
-// browser crashes and device reboots.
-const char kCurrentScreenStartTime[] = "screen_time.current_screen.start_time";
-
-// How much screen time in minutes has been used.
-const char kScreenTimeMinutesUsed[] = "screen_time.time_usage";
-
 // A dictionary preference holding the usage time limit definitions for a user.
 const char kUsageTimeLimit[] = "screen_time.limit";
 
@@ -878,7 +851,7 @@ const char kManagedSessionEnabled[] = "managed_session.enabled";
 // Boolean pref indicating whether the user has previously dismissed the
 // one-time notification indicating the need for a cleanup powerwash after TPM
 // firmware update that didn't flush the TPM SRK.
-extern const char kTPMFirmwareUpdateCleanupDismissed[] =
+const char kTPMFirmwareUpdateCleanupDismissed[] =
     "tpm_firmware_update.cleanup_dismissed";
 
 // Boolean pref indicating whether the NetBios Name Query Request Protocol is
@@ -895,6 +868,16 @@ const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
 
 // Last time that the kChildScreenTime pref was reset.
 const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
+
+// Boolean pref indicating whether the NTLM authentication protocol should be
+// enabled when mounting an SMB share with a user credential by the Network File
+// Shares for Chrome OS feature.
+const char kNTLMShareAuthenticationEnabled[] =
+    "network_file_shares.ntlm_share_authentication.enabled";
+
+// List of preconfigured network file shares.
+const char kNetworkFileSharesPreconfiguredShares[] =
+    "network_file_shares.preconfigured_shares";
 
 #endif  // defined(OS_CHROMEOS)
 
@@ -1104,7 +1087,6 @@ const char kImportDialogSearchEngine[] = "import_dialog_search_engine";
 
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";
-const char kProfileLocalAvatarIndex[] = "profile.local_avatar_index";
 const char kProfileName[] = "profile.name";
 // Whether a profile is using a default avatar name (eg. Pickles or Person 1)
 // because it was randomly assigned at profile creation time.
@@ -1208,10 +1190,6 @@ const char kPrintingSizeDefault[] = "printing.size_default";
 const char kDefaultSupervisedUserFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
-// Whether this user is permitted to create supervised users.
-const char kSupervisedUserCreationAllowed[] =
-    "profile.managed_user_creation_allowed";
-
 // List pref containing the users supervised by this user.
 const char kSupervisedUsers[] = "profile.managed_users";
 
@@ -1219,11 +1197,6 @@ const char kSupervisedUsers[] = "profile.managed_users";
 // notifications to the message center.
 const char kMessageCenterDisabledExtensionIds[] =
     "message_center.disabled_extension_ids";
-
-// List pref containing the system component ids which are not allowed to send
-// notifications to the message center.
-const char kMessageCenterDisabledSystemComponentIds[] =
-    "message_center.disabled_system_component_ids";
 
 // Boolean pref that determines whether the user can enter fullscreen mode.
 // Disabling fullscreen mode also makes kiosk mode unavailable on desktop
@@ -1436,9 +1409,6 @@ const char kSaveFileDefaultDirectory[] = "savefile.default_directory";
 // the chrome/browser/download/save_package.h for the possible values.
 const char kSaveFileType[] = "savefile.type";
 
-// A list of download sources that can be trusted, e.g., enterprise intranet.
-const char kTrustedDownloadSources[] = "trusted_download_sources";
-
 // String which specifies the last directory that was chosen for uploading
 // or opening a file.
 const char kSelectFileLastDirectory[] = "selectfile.last_directory";
@@ -1460,10 +1430,6 @@ const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 // Dictionary of schemes used by the external protocol handler.
 // The value is true if the scheme must be ignored.
 const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
-
-// Integer that specifies the index of the tab the user was on when they
-// last visited the options window.
-const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
 
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
@@ -1539,6 +1505,8 @@ const char kContentSuggestionsNotificationsSentCount[] =
 #else
 // Holds info for New Tab Page custom background
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
+const char kNtpCustomBackgroundLocalToDevice[] =
+    "ntp.custom_background_local_to_device";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
@@ -1584,10 +1552,6 @@ const char kDevToolsTCPDiscoveryConfig[] = "devtools.tcp_discovery_config";
 // A dictionary with generic DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";
 
-// Local hash of authentication password, used for off-line authentication
-// when on-line authentication is not available.
-const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
-
 #if !defined(OS_ANDROID)
 // Tracks the number of times the dice signin promo has been shown in the user
 // menu.
@@ -1624,10 +1588,6 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
-// Dictionary that maps Geolocation network provider server URLs to
-// corresponding access token.
-const char kGeolocationAccessToken[] = "geolocation.access_token";
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -1651,9 +1611,6 @@ const char kPrintPreviewStickySettings[] =
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
 #if defined(OS_WIN)
-// The "major.minor" OS version for which the welcome page was last shown.
-const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
-
 // Boolean that specifies whether or not showing the welcome page following an
 // OS upgrade is enabled. True by default. May be set by master_preferences or
 // overridden by the WelcomePageOnOSUpgradeEnabled policy setting.
@@ -1728,8 +1685,8 @@ const char kSSLVersionMin[] = "ssl.version_min";
 const char kSSLVersionMax[] = "ssl.version_max";
 
 // String specifying the TLS 1.3 variant to negotiate when negotiating TLS 1.3.
-// Supported values are "disabled", which disables TLS 1.3, "draft23",
-// "draft28", and "final".
+// Supported values are "disabled", which disables TLS 1.3, "draft23", and
+// "final".
 const char kTLS13Variant[] = "ssl.tls13_variant";
 
 // String specifying the TLS ciphersuites to disable. Ciphersuites are
@@ -1955,6 +1912,9 @@ const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
 
 // Whether camera-produced media files have been consolidated to one place.
 const char kCameraMediaConsolidated[] = "camera_media_consolidated";
+
+// Whether the user is allowed to disconnect and configure VPN connections.
+const char kVpnConfigAllowed[] = "vpn_config_allowed";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
@@ -2189,23 +2149,9 @@ const char kRLZDisabled[] = "rlz.disabled";
 const char kAppListLocalState[] = "app_list.local_state";
 #endif
 
-#if defined(OS_WIN)
-// If set, the user requested to launch the app with this extension id while
-// in Metro mode, and then relaunched to Desktop mode to start it.
-const char kAppLaunchForMetroRestart[] = "apps.app_launch_for_metro_restart";
-
-// Set with |kAppLaunchForMetroRestart|, the profile whose loading triggers
-// launch of the specified app when restarting Chrome in desktop mode.
-const char kAppLaunchForMetroRestartProfile[] =
-    "apps.app_launch_for_metro_restart_profile";
-#endif
-
 // An integer that is incremented whenever changes are made to app shortcuts.
 // Increasing this causes all app shortcuts to be recreated.
 const char kAppShortcutsVersion[] = "apps.shortcuts_version";
-
-// How often the bubble has been shown.
-const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
 
 // A string pref for storing the salt used to compute the pepper device ID.
 const char kDRMSalt[] = "settings.privacy.drm_salt";
@@ -2552,8 +2498,6 @@ const char kClipboardLastModifiedTime[] = "ui.clipboard.last_modified_time";
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-const char kOfflinePrefetchEnabled[] = "offline_prefetch.enabled";
-const char kOfflinePrefetchBackoff[] = "offline_prefetch.backoff";
 
 // The following set of Prefs is used by OfflineMetricsCollectorImpl to
 // backup the current Chrome usage tracking state and accumulated counters
@@ -2649,5 +2593,10 @@ const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
 // Preference for controlling whether tab lifecycles
 // (throttling/freezing/discarding) are enabled.
 const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
+
+// Boolean that enables the Enterprise Hardware Platform Extension API for
+// extensions installed by enterprise policy.
+const char kEnterpriseHardwarePlatformAPIEnabled[] =
+    "enterprise_hardware_platform_api.enabled";
 
 }  // namespace prefs

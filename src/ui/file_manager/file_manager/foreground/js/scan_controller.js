@@ -120,9 +120,6 @@ ScanController.prototype.onScanCompleted_ = function() {
     return;
   }
 
-  if (this.commandHandler_)
-    this.commandHandler_.updateAvailability();
-
   this.hideSpinner_();
 
   if (this.scanUpdatedTimer_) {
@@ -132,6 +129,9 @@ ScanController.prototype.onScanCompleted_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
+
+  if (this.commandHandler_)
+    this.commandHandler_.updateAvailability();
 };
 
 /**
@@ -169,9 +169,6 @@ ScanController.prototype.onScanCancelled_ = function() {
     return;
   }
 
-  if (this.commandHandler_)
-    this.commandHandler_.updateAvailability();
-
   this.hideSpinner_();
 
   if (this.scanUpdatedTimer_) {
@@ -181,6 +178,9 @@ ScanController.prototype.onScanCancelled_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
+
+  if (this.commandHandler_)
+    this.commandHandler_.updateAvailability();
 };
 
 /**

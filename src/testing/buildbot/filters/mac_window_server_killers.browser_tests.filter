@@ -2,6 +2,7 @@
 
 # Suites implicated in window_server deaths.
 -ConstrainedWebDialogBrowserTest.*
+-SSLClientCertificateSelectorCocoaTest.*
 
 # Investigation, round 2.
 -All/PasswordManagerBrowserTestWithViewsFeature.*
@@ -132,7 +133,7 @@
 -NaClBrowserTestNewlib.*
 -NaClBrowserTestPnacl.*
 -Native/ExtensionBindingsApiTest.*
--NativeAppWindowCocoaBrowserTestInstance/NativeAppWindowCocoaBrowserTest.*
+-NativeAppWindowCocoaBrowserTest.*
 -NativeBindings/ExternallyConnectableMessagingTest.*
 -NavigationEntryRemoverTest.*
 -NetInternalsTest.*
@@ -170,7 +171,6 @@
 -PluginPowerSaverBrowserTest.*
 -PolicyTest.*
 -PolicyToolUITest.*
--PredictorBrowserTest.*
 -PrefsFunctionalTest.*
 -PrefsTabHelperBrowserTest.*
 -PrerenderBrowserTest.*
@@ -232,6 +232,5 @@
 -WebUIResourceBrowserTest.*
 -WebViewTest.*
 -WebrtcLoggingPrivateApiTest.*
--WebstoreInlineInstallerTest.*
 -WindowAppleScriptTest.*
 -WindowOpenApiTest.*

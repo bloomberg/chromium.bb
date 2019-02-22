@@ -41,13 +41,13 @@ void SyntheticMouseDriver::Press(float x,
 
 void SyntheticMouseDriver::Move(float x, float y, int index) {
   DCHECK_EQ(index, 0);
-  blink::WebMouseEvent::Button button = mouse_event_.button;
-  int click_count = mouse_event_.click_count;
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::kMouseMove, x, y, last_modifiers_,
       mouse_event_.pointer_type);
-  mouse_event_.button = button;
-  mouse_event_.click_count = click_count;
+  mouse_event_.button =
+      SyntheticPointerActionParams::GetWebMouseEventButtonFromModifier(
+          last_modifiers_);
+  mouse_event_.click_count = 0;
 }
 
 void SyntheticMouseDriver::Release(
@@ -72,9 +72,6 @@ void SyntheticMouseDriver::Leave(int index) {
 
 bool SyntheticMouseDriver::UserInputCheck(
     const SyntheticPointerActionParams& params) const {
-  if (params.index() != 0)
-    return false;
-
   if (params.pointer_action_type() ==
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED) {
     return false;
@@ -90,9 +87,6 @@ bool SyntheticMouseDriver::UserInputCheck(
 
   if (params.pointer_action_type() ==
       SyntheticPointerActionParams::PointerActionType::RELEASE) {
-    if (mouse_event_.click_count <= 0)
-      return false;
-
     int modifiers =
         SyntheticPointerActionParams::GetWebMouseEventModifier(params.button());
     if (!(last_modifiers_ & modifiers))

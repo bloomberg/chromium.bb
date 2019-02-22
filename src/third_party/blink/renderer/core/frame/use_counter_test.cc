@@ -321,6 +321,46 @@ TEST_F(UseCounterTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
+TEST_F(UseCounterTest, CSSFlexibleBox) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSFlexibleBox;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='display: flex;'>flexbox</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSFlexibleBoxInline) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSFlexibleBox;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='display: inline-flex;'>flexbox</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSFlexibleBoxButton) {
+  // LayoutButton is a subclass of LayoutFlexibleBox, however we don't want it
+  // to be counted as usage of flexboxes as it's an implementation detail.
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSFlexibleBox;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString("<button>button</button>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+}
+
 class DeprecationTest : public testing::Test {
  public:
   DeprecationTest()

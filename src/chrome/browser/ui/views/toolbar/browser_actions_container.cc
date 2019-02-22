@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,7 +33,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -88,8 +88,6 @@ BrowserActionsContainer::BrowserActionsContainer(
 
     if (GetSeparatorAreaWidth() > 0) {
       separator_ = new views::Separator();
-      separator_->SetSize(gfx::Size(views::Separator::kThickness,
-                                    GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
       AddChildView(separator_);
     }
   }
@@ -168,7 +166,7 @@ void BrowserActionsContainer::AddViewForAction(
 void BrowserActionsContainer::RemoveViewForAction(
     ToolbarActionViewController* action) {
   std::unique_ptr<ToolbarActionView> view;
-  for (ToolbarActionViews::iterator iter = toolbar_action_views_.begin();
+  for (auto iter = toolbar_action_views_.begin();
        iter != toolbar_action_views_.end(); ++iter) {
     if ((*iter)->view_controller() == action) {
       std::swap(view, *iter);
@@ -307,15 +305,18 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   bubble->Show();
 }
 
-void BrowserActionsContainer::CloseOverflowMenuIfOpen() {
+bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {
   // TODO(mgiuca): Use toolbar_button_provider() instead of toolbar(), so this
   // also works for hosted app windows.
   BrowserAppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()
           ->app_menu_button();
-  if (app_menu_button && app_menu_button->IsMenuShowing())
-    app_menu_button->CloseMenu();
+  if (!app_menu_button || !app_menu_button->IsMenuShowing())
+    return false;
+
+  app_menu_button->CloseMenu();
+  return true;
 }
 
 void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
@@ -419,17 +420,35 @@ void BrowserActionsContainer::Layout() {
       // separate resize area.
       // TODO(pbos): Remove this workaround when the files merge.
       bounds.set_x(bounds.x() + GetResizeAreaWidth());
+      // Vertically center the icons if the available height is not enough.
+      // TODO(https://889745): Remove the possibility of there not being enough
+      // available height.
+      if (bounds.height() > height())
+        bounds.set_y((height() - bounds.height()) / 2);
       view->SetBoundsRect(bounds);
       view->SetVisible(true);
-      if (!ShownInsideMenu()) {
-        view->AnimateInkDrop(toolbar_actions_bar()->is_highlighting()
-                                 ? views::InkDropState::ACTIVATED
-                                 : views::InkDropState::HIDDEN,
-                             nullptr);
+      // TODO(corising): Move setting background to
+      // ToolbarActionsBar::OnToolbarHighlightModeChanged when the files merge.
+      if (!ShownInsideMenu() && (toolbar_actions_bar()->is_highlighting() !=
+                                 (view->background() != nullptr))) {
+        // Sets background to reflect whether the item is being highlighted.
+        const gfx::Insets bg_insets(
+            (height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2);
+        const int corner_radius = height() / 2;
+        const SkColor bg_color = SkColorSetA(view->GetInkDropBaseColor(),
+                                             kToolbarButtonBackgroundAlpha);
+        view->SetBackground(
+            toolbar_actions_bar()->is_highlighting()
+                ? views::CreateBackgroundFromPainter(
+                      views::Painter::CreateSolidRoundRectPainter(
+                          bg_color, corner_radius, bg_insets))
+                : nullptr);
       }
     }
   }
   if (separator_) {
+    separator_->SetSize(gfx::Size(views::Separator::kThickness,
+                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
     if (width() < GetResizeAreaWidth() + GetSeparatorAreaWidth()) {
       separator_->SetVisible(false);
     } else {
@@ -758,11 +777,9 @@ int BrowserActionsContainer::GetResizeAreaWidth() const {
 }
 
 int BrowserActionsContainer::GetSeparatorAreaWidth() const {
-  // The separator is not applicable to the app menu, and is only available in
-  // Material refresh.
-  if (ShownInsideMenu() || !ui::MaterialDesignController::IsRefreshUi()) {
+  // The separator is not applicable to the app menu.
+  if (ShownInsideMenu())
     return 0;
-  }
   return 2 * GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
          views::Separator::kThickness;
 }

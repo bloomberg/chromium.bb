@@ -23,6 +23,7 @@
 namespace egl
 {
 class AttributeMap;
+class BlobCache;
 class Display;
 struct DisplayState;
 struct Config;
@@ -75,7 +76,12 @@ class DisplayImpl : public EGLImplFactory
     virtual gl::Version getMaxSupportedESVersion() const           = 0;
     const egl::Caps &getCaps() const;
 
+    virtual void setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get) {}
+
     const egl::DisplayExtensions &getExtensions() const;
+
+    void setBlobCache(egl::BlobCache *blobCache) { mBlobCache = blobCache; }
+    egl::BlobCache *getBlobCache() const { return mBlobCache; }
 
   protected:
     const egl::DisplayState &mState;
@@ -89,6 +95,8 @@ class DisplayImpl : public EGLImplFactory
 
     mutable bool mCapsInitialized;
     mutable egl::Caps mCaps;
+
+    egl::BlobCache *mBlobCache;
 };
 
 }

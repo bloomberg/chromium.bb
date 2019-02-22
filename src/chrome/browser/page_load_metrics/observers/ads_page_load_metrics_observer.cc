@@ -15,6 +15,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/mime_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -30,6 +34,13 @@ namespace {
     case AdsPageLoadMetricsObserver::AD_TYPE_ALL:                          \
       hist_macro("PageLoad.Clients.Ads.All." suffix, value);               \
       break;                                                               \
+  }
+
+#define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
+  if (was_cached) {                                                        \
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Cache." suffix, value);   \
+  } else {                                                                 \
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Network." suffix, value); \
   }
 
 // Finds the RenderFrameHost for the handle, possibly using the FrameTreeNode
@@ -74,12 +85,7 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
                           base::CompareCase::SENSITIVE);
 }
 
-void RecordParentExistsForSubFrame(
-    bool parent_exists,
-    const AdsPageLoadMetricsObserver::AdTypes& ad_types) {
-  ADS_HISTOGRAM("ParentExistsForSubFrame", UMA_HISTOGRAM_BOOLEAN,
-                AdsPageLoadMetricsObserver::AD_TYPE_ALL, parent_exists);
-}
+using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 }  // namespace
 
@@ -168,7 +174,6 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
           ? ad_frames_data_.find(parent_frame_host->GetFrameTreeNodeId())
           : ad_frames_data_.end();
   bool parent_exists = parent_id_and_data != ad_frames_data_.end();
-  RecordParentExistsForSubFrame(parent_exists, ad_types);
   if (!parent_exists)
     return;
 
@@ -227,8 +232,11 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
-  if (extra_info.did_commit)
-    RecordHistograms();
+  if (extra_info.did_commit) {
+    if (timing.response_start)
+      time_commit_ = timing.navigation_start + *timing.response_start;
+    RecordHistograms(extra_info.source_id);
+  }
 
   return STOP_OBSERVING;
 }
@@ -241,7 +249,16 @@ void AdsPageLoadMetricsObserver::OnLoadedResource(
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordHistograms();
+  if (info.did_commit && timing.response_start)
+    time_commit_ = timing.navigation_start + *timing.response_start;
+  RecordHistograms(info.source_id);
+}
+
+void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources)
+    UpdateResource(resource);
 }
 
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
@@ -255,6 +272,15 @@ void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
       load_policy != subresource_filter::LoadPolicy::DISALLOW) {
     unfinished_subresource_ad_frames_.insert(
         navigation_handle->GetFrameTreeNodeId());
+  }
+}
+
+void AdsPageLoadMetricsObserver::OnPageInteractive(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (timing.interactive_timing->interactive) {
+    time_interactive_ =
+        timing.navigation_start + *timing.interactive_timing->interactive;
   }
 }
 
@@ -319,12 +345,6 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
       // 2. possibly a resource from a document.written frame whose frame
       //    failure message has yet to arrive. (uncertain of this)
     }
-    if (committed_) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound",
-          extra_request_info.resource_type, content::RESOURCE_TYPE_LAST_TYPE);
-    }
-
     return;
   }
 
@@ -344,10 +364,184 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
   }
 }
 
-void AdsPageLoadMetricsObserver::RecordHistograms() {
+AdsPageLoadMetricsObserver::ResourceMimeType
+AdsPageLoadMetricsObserver::GetResourceMimeType(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  if (blink::IsSupportedImageMimeType(resource->mime_type))
+    return ResourceMimeType::kImage;
+  if (blink::IsSupportedJavascriptMimeType(resource->mime_type))
+    return ResourceMimeType::kJavascript;
+
+  std::string top_level_type;
+  std::string subtype;
+  // Categorize invalid mime types as "Other".
+  if (!net::ParseMimeTypeWithoutParameter(resource->mime_type, &top_level_type,
+                                          &subtype)) {
+    return ResourceMimeType::kOther;
+  }
+  if (top_level_type.compare("video") == 0)
+    return ResourceMimeType::kVideo;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("css") == 0)
+    return ResourceMimeType::kCss;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("html") == 0)
+    return ResourceMimeType::kHtml;
+  else
+    return ResourceMimeType::kOther;
+}
+
+void AdsPageLoadMetricsObserver::UpdateResource(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  auto it = page_resources_.find(resource->request_id);
+  // A new resource has been observed.
+  if (it == page_resources_.end())
+    total_number_page_resources_++;
+
+  page_resource_bytes_ += resource->delta_bytes;
+  if (resource->reported_as_ad_resource) {
+    // If the resource had already started loading, and is now labeled as an ad,
+    // but was not before, we need to account for all the previously received
+    // bytes.
+    bool is_new_ad =
+        (it != page_resources_.end()) && !it->second->reported_as_ad_resource;
+    int unaccounted_ad_bytes =
+        is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
+    page_ad_resource_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (resource->is_main_frame_resource) {
+      page_main_frame_ad_resource_bytes_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+    if (!time_interactive_.is_null()) {
+      page_ad_resource_bytes_since_interactive_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+    ResourceMimeType mime_type = GetResourceMimeType(resource);
+    if (mime_type == ResourceMimeType::kVideo)
+      page_ad_video_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (mime_type == ResourceMimeType::kJavascript)
+      page_ad_javascript_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+  }
+
+  // Update resource map.
+  if (resource->is_complete) {
+    RecordResourceHistograms(resource);
+    if (it != page_resources_.end())
+      page_resources_.erase(it);
+  } else {
+    // Must clone resource so it will be accessible when the observer is
+    // destroyed.
+    if (it != page_resources_.end()) {
+      it->second = resource->Clone();
+    } else {
+      page_resources_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(resource->request_id),
+                              std::forward_as_tuple(resource->Clone()));
+    }
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordResourceMimeHistograms(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  int64_t data_length = resource->was_fetched_via_cache
+                            ? resource->encoded_body_length
+                            : resource->received_data_length;
+  ResourceMimeType mime_type = GetResourceMimeType(resource);
+  if (mime_type == ResourceMimeType::kImage) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.Image", resource->was_fetched_via_cache,
+                             data_length);
+  } else if (mime_type == ResourceMimeType::kJavascript) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.JS", resource->was_fetched_via_cache,
+                             data_length);
+  } else if (mime_type == ResourceMimeType::kVideo) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.Video", resource->was_fetched_via_cache,
+                             data_length);
+  } else if (mime_type == ResourceMimeType::kCss) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.CSS", resource->was_fetched_via_cache,
+                             data_length);
+  } else if (mime_type == ResourceMimeType::kHtml) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.HTML", resource->was_fetched_via_cache,
+                             data_length);
+  } else if (mime_type == ResourceMimeType::kOther) {
+    RESOURCE_BYTES_HISTOGRAM("Mime.Other", resource->was_fetched_via_cache,
+                             data_length);
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordResourceHistograms(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  int64_t data_length = resource->was_fetched_via_cache
+                            ? resource->encoded_body_length
+                            : resource->received_data_length;
+  if (resource->is_main_frame_resource && resource->reported_as_ad_resource) {
+    RESOURCE_BYTES_HISTOGRAM("Mainframe.AdResource",
+                             resource->was_fetched_via_cache, data_length);
+  } else if (resource->is_main_frame_resource) {
+    RESOURCE_BYTES_HISTOGRAM("Mainframe.VanillaResource",
+                             resource->was_fetched_via_cache, data_length);
+  } else if (resource->reported_as_ad_resource) {
+    RESOURCE_BYTES_HISTOGRAM("Subframe.AdResource",
+                             resource->was_fetched_via_cache, data_length);
+  } else {
+    RESOURCE_BYTES_HISTOGRAM("Subframe.VanillaResource",
+                             resource->was_fetched_via_cache, data_length);
+  }
+
+  // Only report sizes by mime type for ad resources.
+  if (resource->reported_as_ad_resource)
+    RecordResourceMimeHistograms(resource);
+}
+
+void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
+    ukm::SourceId source_id) {
+  // Only records histograms on pages that have some ad bytes.
+  if (page_ad_resource_bytes_ == 0)
+    return;
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Total",
+                       page_resource_bytes_);
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
+                       page_ad_resource_bytes_);
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds",
+                       page_main_frame_ad_resource_bytes_);
+  size_t unfinished_bytes = 0;
+  for (auto const& kv : page_resources_)
+    unfinished_bytes += kv.second->received_data_length;
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Unfinished",
+                       unfinished_bytes);
+
+  auto* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm::builders::AdPageLoad builder(source_id);
+  builder.SetTotalBytes(page_resource_bytes_ >> 10)
+      .SetAdBytes(page_ad_resource_bytes_ >> 10)
+      .SetAdJavascriptBytes(page_ad_javascript_bytes_ >> 10)
+      .SetAdVideoBytes(page_ad_video_bytes_ >> 10);
+  base::Time current_time = base::Time::Now();
+  if (!time_commit_.is_null()) {
+    int time_since_commit = (current_time - time_commit_).InMicroseconds();
+    if (time_since_commit > 0) {
+      int ad_kbps_from_commit =
+          (page_ad_resource_bytes_ >> 10) * 1000 * 1000 / time_since_commit;
+      builder.SetAdBytesPerSecond(ad_kbps_from_commit);
+    }
+  }
+  if (!time_interactive_.is_null()) {
+    int time_since_interactive =
+        (current_time - time_interactive_).InMicroseconds();
+    if (time_since_interactive > 0) {
+      int ad_kbps_since_interactive =
+          (page_ad_resource_bytes_since_interactive_ >> 10) * 1000 * 1000 /
+          time_since_interactive;
+      builder.SetAdBytesPerSecondAfterInteractive(ad_kbps_since_interactive);
+    }
+  }
+  builder.Record(ukm_recorder->Get());
+}
+
+void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordHistogramsForType(AD_TYPE_GOOGLE);
   RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
   RecordHistogramsForType(AD_TYPE_ALL);
+  RecordPageResourceTotalHistograms(source_id);
+  for (auto const& kv : page_resources_)
+    RecordResourceHistograms(kv.second);
 }
 
 void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {

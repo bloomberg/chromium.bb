@@ -20,7 +20,7 @@ namespace rx
 {
 
 DisplayVk::DisplayVk(const egl::DisplayState &state)
-    : DisplayImpl(state), vk::Context(new RendererVk())
+    : DisplayImpl(state), vk::Context(new RendererVk()), mScratchBuffer(1000u)
 {
 }
 
@@ -52,14 +52,14 @@ egl::Error DisplayVk::makeCurrent(egl::Surface * /*drawSurface*/,
 
 bool DisplayVk::testDeviceLost()
 {
-    // TODO(jmadill): Figure out how to do device lost in Vulkan.
-    return false;
+    return mRenderer->isDeviceLost();
 }
 
 egl::Error DisplayVk::restoreLostDevice(const egl::Display *display)
 {
-    UNIMPLEMENTED();
-    return egl::EglBadAccess();
+    // A vulkan device cannot be restored, the entire renderer would have to be re-created along
+    // with any other EGL objects that reference it.
+    return egl::EglBadDisplay();
 }
 
 std::string DisplayVk::getVendorString() const
@@ -165,17 +165,27 @@ gl::Version DisplayVk::getMaxSupportedESVersion() const
 
 void DisplayVk::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
+    outExtensions->createContextRobustness  = true;
     outExtensions->surfaceOrientation       = true;
     outExtensions->displayTextureShareGroup = true;
 
     // TODO(geofflang): Extension is exposed but not implemented so that other aspects of the Vulkan
     // backend can be tested in Chrome. http://anglebug.com/2722
     outExtensions->robustResourceInitialization = true;
+
+    // Vulkan implementation will use regular swap for swapBuffersWithDamage.
+    outExtensions->swapBuffersWithDamage = true;
 }
 
 void DisplayVk::generateCaps(egl::Caps *outCaps) const
 {
     outCaps->textureNPOT = true;
+}
+
+bool DisplayVk::getScratchBuffer(size_t requstedSizeBytes,
+                                 angle::MemoryBuffer **scratchBufferOut) const
+{
+    return mScratchBuffer.get(requstedSizeBytes, scratchBufferOut);
 }
 
 void DisplayVk::handleError(VkResult result, const char *file, unsigned int line)
@@ -184,6 +194,11 @@ void DisplayVk::handleError(VkResult result, const char *file, unsigned int line
     errorStream << "Internal Vulkan error: " << VulkanResultString(result) << ", in " << file
                 << ", line " << line << ".";
     mStoredErrorString = errorStream.str();
+
+    if (result == VK_ERROR_DEVICE_LOST)
+    {
+        mRenderer->markDeviceLost();
+    }
 }
 
 // TODO(jmadill): Remove this. http://anglebug.com/2491

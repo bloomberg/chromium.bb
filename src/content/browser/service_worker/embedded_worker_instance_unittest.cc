@@ -125,8 +125,8 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
         options, context()->storage()->NewRegistrationId(),
         context()->AsWeakPtr());
     pair.second = base::MakeRefCounted<ServiceWorkerVersion>(
-        pair.first.get(), script_url, context()->storage()->NewVersionId(),
-        context()->AsWeakPtr());
+        pair.first.get(), script_url, blink::mojom::ScriptType::kClassic,
+        context()->storage()->NewVersionId(), context()->AsWeakPtr());
     return pair;
   }
 

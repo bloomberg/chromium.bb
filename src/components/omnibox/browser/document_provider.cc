@@ -11,12 +11,15 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -31,9 +34,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -50,6 +55,12 @@ void LogOmniboxDocumentRequest(DocumentRequestsHistogramValue request_value) {
   UMA_HISTOGRAM_ENUMERATION("Omnibox.DocumentSuggest.Requests", request_value,
                             DOCUMENT_MAX_REQUEST_HISTOGRAM_VALUE);
 }
+
+// MIME types sent by the server for different document types.
+const char kDocumentMimetype[] = "application/vnd.google-apps.document";
+const char kFormMimetype[] = "application/vnd.google-apps.form";
+const char kSpreadsheetMimetype[] = "application/vnd.google-apps.spreadsheet";
+const char kPresentationMimetype[] = "application/vnd.google-apps.presentation";
 
 const char kErrorMessageAdminDisabled[] =
     "Not eligible to query due to admin disabled Chrome search settings.";
@@ -288,6 +299,50 @@ void DocumentProvider::OnDocumentSuggestionsLoaderAvailable(
   LogOmniboxDocumentRequest(DOCUMENT_REQUEST_SENT);
 }
 
+// static
+base::string16 DocumentProvider::GenerateLastModifiedString(
+    const std::string& modified_timestamp_string,
+    base::Time now) {
+  if (modified_timestamp_string.empty())
+    return base::string16();
+  base::Time modified_time;
+  if (!base::Time::FromString(modified_timestamp_string.c_str(),
+                              &modified_time))
+    return base::string16();
+
+  // Use shorthand if the times fall on the same day or in the same year.
+  base::Time::Exploded exploded_modified_time;
+  base::Time::Exploded exploded_now;
+  modified_time.LocalExplode(&exploded_modified_time);
+  now.LocalExplode(&exploded_now);
+  if (exploded_modified_time.year == exploded_now.year) {
+    if (exploded_modified_time.month == exploded_now.month &&
+        exploded_modified_time.day_of_month == exploded_now.day_of_month) {
+      // Same local calendar day - use localized time.
+      return base::TimeFormatTimeOfDay(modified_time);
+    }
+    // Same year but not the same day: use abbreviated month/day ("Jan 1").
+    return base::TimeFormatWithPattern(modified_time, "MMMd");
+  }
+
+  // No shorthand; display full MM/DD/YYYY.
+  return base::TimeFormatShortDateNumeric(modified_time);
+}
+
+// static
+base::string16 GetProductDescriptionString(const std::string& mimetype) {
+  if (mimetype == kDocumentMimetype)
+    return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_DOCUMENT);
+  if (mimetype == kFormMimetype)
+    return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_FORM);
+  if (mimetype == kSpreadsheetMimetype)
+    return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_SPREADSHEET);
+  if (mimetype == kPresentationMimetype)
+    return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_PRESENTATION);
+  // Fallback to "Drive" for other filetypes.
+  return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_GENERAL);
+}
+
 bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
                                                   ACMatches* matches) {
   const base::DictionaryValue* root_dict = nullptr;
@@ -309,7 +364,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     return false;
   }
   size_t num_results = results_list->GetSize();
-  UMA_HISTOGRAM_COUNTS("Omnibox.DocumentSuggest.ResultCount", num_results);
+  UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
 
   // Create a synthetic score, for when there's no signal from the API.
   // For now, allow setting of each of three scores from Finch.
@@ -362,6 +417,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     match.fill_into_edit = url;
     match.destination_url = GURL(url);
     base::string16 original_url;
+    std::string mimetype;
     if (result->GetString("originalUrl", &original_url)) {
       match.stripped_destination_url = GURL(original_url);
     }
@@ -370,18 +426,31 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
         &match.contents_class, 0, ACMatchClassification::NONE);
     const base::DictionaryValue* metadata = nullptr;
     if (result->GetDictionary("metadata", &metadata)) {
-      std::string mimetype;
       if (metadata->GetString("mimeType", &mimetype)) {
-        if (mimetype == "application/vnd.google-apps.document") {
+        if (mimetype == kDocumentMimetype) {
           match.document_type = AutocompleteMatch::DocumentType::DRIVE_DOCS;
-        } else if (mimetype == "application/vnd.google-apps.spreadsheet") {
+        } else if (mimetype == kFormMimetype) {
+          match.document_type = AutocompleteMatch::DocumentType::DRIVE_FORMS;
+        } else if (mimetype == kSpreadsheetMimetype) {
           match.document_type = AutocompleteMatch::DocumentType::DRIVE_SHEETS;
-        } else if (mimetype == "application/vnd.google-apps.presentation") {
+        } else if (mimetype == kPresentationMimetype) {
           match.document_type = AutocompleteMatch::DocumentType::DRIVE_SLIDES;
         } else {
           match.document_type = AutocompleteMatch::DocumentType::DRIVE_OTHER;
         }
       }
+      std::string update_time;
+      metadata->GetString("updateTime", &update_time);
+      if (!update_time.empty()) {
+        match.description = l10n_util::GetStringFUTF16(
+            IDS_DRIVE_SUGGESTION_DESCRIPTION_TEMPLATE,
+            GenerateLastModifiedString(update_time, base::Time::Now()),
+            GetProductDescriptionString(mimetype));
+      } else {
+        match.description = GetProductDescriptionString(mimetype);
+      }
+      AutocompleteMatch::AddLastClassificationIfNecessary(
+          &match.description_class, 0, ACMatchClassification::NONE);
     }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     matches->push_back(match);

@@ -29,7 +29,7 @@ class CastDialogSinkButtonTest : public ChromeViewsTestBase {
 TEST_F(CastDialogSinkButtonTest, SetTitleLabel) {
   UIMediaSink sink;
   sink.friendly_name = base::UTF8ToUTF16("sink name");
-  CastDialogSinkButton button(nullptr, sink);
+  CastDialogSinkButton button(nullptr, sink, 0);
   EXPECT_EQ(sink.friendly_name, button.title()->text());
 }
 
@@ -37,22 +37,22 @@ TEST_F(CastDialogSinkButtonTest, SetStatusLabel) {
   UIMediaSink sink;
 
   sink.state = UIMediaSinkState::AVAILABLE;
-  CastDialogSinkButton button1(nullptr, sink);
+  CastDialogSinkButton button1(nullptr, sink, 0);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_AVAILABLE),
             button1.subtitle()->text());
 
   sink.state = UIMediaSinkState::CONNECTING;
-  CastDialogSinkButton button2(nullptr, sink);
+  CastDialogSinkButton button2(nullptr, sink, 1);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_CONNECTING),
             button2.subtitle()->text());
 
   sink.status_text = base::UTF8ToUTF16("status text");
-  CastDialogSinkButton button3(nullptr, sink);
+  CastDialogSinkButton button3(nullptr, sink, 2);
   EXPECT_EQ(sink.status_text, button3.subtitle()->text());
 
   sink.issue = Issue(IssueInfo("issue", IssueInfo::Action::DISMISS,
                                IssueInfo::Severity::WARNING));
-  CastDialogSinkButton button4(nullptr, sink);
+  CastDialogSinkButton button4(nullptr, sink, 3);
   EXPECT_EQ(base::UTF8ToUTF16(sink.issue->info().title),
             button4.subtitle()->text());
 }

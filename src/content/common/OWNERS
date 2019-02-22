@@ -16,9 +16,6 @@ per-file sandbox_mac*=file://sandbox/mac/OWNERS
 per-file *.sb=set noparent
 per-file *.sb=file://sandbox/mac/OWNERS
 
-per-file pepper*=bauerb@chromium.org
-per-file plugin*=bauerb@chromium.org
-
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 

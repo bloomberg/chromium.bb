@@ -1,21 +1,21 @@
-Tests if typing an arrow key dispatches |Focus| and |ActiveDescendantChanged| a11y events.
+Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 Focused: Month
 Focused: Month
-PASS Received ActiveDescendantChanged
-PASS Received ActiveDescendantChanged
+PASS Received MarkDirty
+PASS Received MarkDirty
 Focused: Show next month
 Focused: <<CalendarToday>>
 Focused: Show previous month
 Focused: Show month selection panel
-Open the month popup. This should notify the third ActiveDescendantChanged.
+Open the month popup. This should notify the third MarkDirty.
 Focused: 
-PASS Received ActiveDescendantChanged
-PASS Received ActiveDescendantChanged
-PASS Received ActiveDescendantChanged
+PASS Received MarkDirty
+PASS Received MarkDirty
+PASS Received MarkDirty
 PASS successfullyParsed is true
 
 TEST COMPLETE

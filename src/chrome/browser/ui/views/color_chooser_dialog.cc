@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
@@ -37,7 +39,7 @@ ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
   HWND owning_hwnd = views::HWNDForNativeWindow(owning_window);
   ExecuteOpenParams execute_params(initial_color, BeginRun(owning_hwnd),
                                    owning_hwnd);
-  execute_params.run_state.dialog_thread->task_runner()->PostTask(
+  execute_params.run_state.dialog_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&ColorChooserDialog::ExecuteOpen, this, execute_params));
 }
@@ -65,7 +67,8 @@ void ColorChooserDialog::ExecuteOpen(const ExecuteOpenParams& params) {
   cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
   bool success = !!ChooseColor(&cc);
   DisableOwner(cc.hwndOwner);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(&ColorChooserDialog::DidCloseDialog, this, success,
                  skia::COLORREFToSkColor(cc.rgbResult), params.run_state));
 }

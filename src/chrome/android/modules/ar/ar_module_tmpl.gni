@@ -6,10 +6,12 @@ import("//build/config/android/rules.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 assert(enable_arcore)
+assert(modularize_ar)
 
 template("ar_module_tmpl") {
   assert(defined(invoker.manifest_package))
   assert(defined(invoker.module_name))
+  assert(defined(invoker.base_module_target))
 
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
@@ -25,6 +27,7 @@ template("ar_module_tmpl") {
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
                            [
+                             "base_module_target",
                              "module_name",
                              "version_code",
                            ])

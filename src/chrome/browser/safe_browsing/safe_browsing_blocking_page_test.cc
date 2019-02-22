@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -56,6 +58,8 @@
 #include "components/security_interstitials/core/urls.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/unified_consent_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -113,27 +117,30 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   bool CheckBrowseUrl(const GURL& gurl,
                       const SBThreatTypeSet& threat_types,
                       Client* client) override {
-    if (badurls.find(gurl.spec()) == badurls.end() ||
-        badurls.at(gurl.spec()) == SB_THREAT_TYPE_SAFE)
+    if (badurls_.find(gurl.spec()) == badurls_.end() ||
+        badurls_[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                        this, gurl, client));
     return false;
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    client->OnCheckBrowseUrlResult(gurl, badurls.at(gurl.spec()),
-                                   ThreatMetadata());
+    if (badurls_.find(gurl.spec()) != badurls_.end())
+      client->OnCheckBrowseUrlResult(gurl, badurls_[gurl.spec()],
+                                     ThreatMetadata());
+    else
+      NOTREACHED();
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
-    badurls[url.spec()] = threat_type;
+    badurls_[url.spec()] = threat_type;
   }
 
-  void ClearBadURL(const GURL& url) { badurls.erase(url.spec()); }
+  void ClearBadURL(const GURL& url) { badurls_.erase(url.spec()); }
 
   // These are called when checking URLs, so we implement them.
   bool IsSupported() const override { return true; }
@@ -156,7 +163,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  private:
   ~FakeSafeBrowsingDatabaseManager() override {}
 
-  std::map<std::string, SBThreatType> badurls;
+  std::map<std::string, SBThreatType> badurls_;
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
 };
 
@@ -175,8 +182,8 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
   // Overrides SafeBrowsingUIManager
   void SendSerializedThreatDetails(const std::string& serialized) override {
     // Notify the UI thread that we got a report.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&FakeSafeBrowsingUIManager::OnThreatDetailsDone, this,
                        serialized));
   }
@@ -315,18 +322,24 @@ class TestSafeBrowsingBlockingPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    PrefService* prefs =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext())
-            ->GetPrefs();
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    PrefService* prefs = profile->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile);
+    bool is_unified_consent_given =
+        consent_service && consent_service->IsUnifiedConsentGiven();
+
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
-        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
+        is_unified_consent_given, IsExtendedReportingEnabled(*prefs),
+        true,  // is_scout_reporting_enabled
         IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
         true,   // should_open_links_in_new_tab
         false,  // check_can_go_back_to_safety
@@ -358,15 +371,15 @@ class SafeBrowsingBlockingPageBrowserTest
 
   ~SafeBrowsingBlockingPageBrowserTest() override {}
 
-  void SetUp() override {
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
-    // InProcessBrowserTest::SetUp().
+    // the browser is started but after threads are created.
     factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager());
     SafeBrowsingService::RegisterFactory(&factory_);
     SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     ThreatDetails::RegisterFactory(&details_factory_);
-    InProcessBrowserTest::SetUp();
   }
 
   void TearDown() override {
@@ -385,8 +398,8 @@ class SafeBrowsingBlockingPageBrowserTest
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -1645,8 +1658,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 // enterprise safe browsing whitelist domains.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        VerifyEnterpriseWhitelist) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   GURL url = embedded_test_server()->GetURL(kEmptyPage);
   // Add test server domain into the enterprise whitelist.
   base::ListValue whitelist;

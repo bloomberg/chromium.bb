@@ -4,6 +4,16 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+proto_library("uwe_matcher_proto") {
+  sources = [
+    "uwe_matcher.proto",
+  ]
+
+  deps = [
+    ":uws_spec_by_version_proto",
+  ]
+}
+
 proto_library("file_digest_proto") {
   sources = [
     "file_digest.proto",

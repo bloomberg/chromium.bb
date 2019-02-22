@@ -16,6 +16,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +34,11 @@ const char kTestGaiaId2[] = "dummyId2";
 const char kTestEmail[] = "me@gmail.com";
 const char kTestEmail2[] = "me2@gmail.com";
 
+// Used just to check that the id_token is passed along.
+const char kIdTokenEmptyServices[] =
+    "dummy-header."
+    "eyAic2VydmljZXMiOiBbXSB9"  // payload: { "services": [] }
+    ".dummy-signature";
 }  // namespace
 
 class AccessTokenFetcherTest : public testing::Test,
@@ -45,7 +51,8 @@ class AccessTokenFetcherTest : public testing::Test,
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
         access_token_info_("access token",
-                           base::Time::Now() + base::TimeDelta::FromHours(1)) {
+                           base::Time::Now() + base::TimeDelta::FromHours(1),
+                           std::string(kIdTokenEmptyServices)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
 
     account_tracker_ = std::make_unique<AccountTrackerService>();
@@ -126,8 +133,10 @@ TEST_F(AccessTokenFetcherTest, OneShotShouldCallBackOnFulfilledRequest) {
                             access_token_info()));
 
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest,
@@ -154,8 +163,10 @@ TEST_F(AccessTokenFetcherTest,
                             access_token_info()));
 
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest,
@@ -176,8 +187,10 @@ TEST_F(AccessTokenFetcherTest,
   // Before the refresh token is available, the callback shouldn't get called.
   EXPECT_CALL(callback, Run(_, _)).Times(0);
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 
   // Once the refresh token becomes available, we should get an access token
   // request.
@@ -191,8 +204,10 @@ TEST_F(AccessTokenFetcherTest,
                             access_token_info()));
 
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest,
@@ -239,8 +254,10 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
 
   // Now fulfilling the access token request should have no effect.
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountIsUnknown) {
@@ -391,8 +408,10 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForSameAccountFulfilled) {
   EXPECT_CALL(callback2, Run(GoogleServiceAuthError::AuthErrorNone(),
                              access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
@@ -425,16 +444,20 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
   EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
                             access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 
   // Once the second access token request is fulfilled, it should get
   // called back with the access token.
   EXPECT_CALL(callback2, Run(GoogleServiceAuthError::AuthErrorNone(),
                              access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id2, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id2,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 }
 
 TEST_F(AccessTokenFetcherTest,
@@ -486,8 +509,10 @@ TEST_F(AccessTokenFetcherTest,
               Run(GoogleServiceAuthError::AuthErrorNone(), access_token_info()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop4, &base::RunLoop::Quit));
   token_service()->IssueAllTokensForAccount(
-      account_id2, access_token_info().token,
-      access_token_info().expiration_time);
+      account_id2,
+      OAuth2AccessTokenConsumer::TokenResponse(
+          access_token_info().token, access_token_info().expiration_time,
+          access_token_info().id_token));
 
   run_loop4.Run();
 }

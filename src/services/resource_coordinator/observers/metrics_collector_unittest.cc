@@ -67,7 +67,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_cu->SetVisibility(true);
@@ -119,7 +120,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   page_cu->AddFrame(frame_cu->id());
 
   page_cu->SetVisibility(false);
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   frame_cu->SetAudibility(true);
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
@@ -135,7 +137,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_cu->SetVisibility(true);
@@ -167,7 +170,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   page_cu->SetVisibility(false);
   page_cu->OnTitleUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -185,7 +189,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_cu->SetVisibility(true);
@@ -219,7 +224,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   page_cu->SetVisibility(false);
   frame_cu->OnAlertFired();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -238,7 +244,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_cu->SetVisibility(true);
@@ -273,7 +280,8 @@ TEST_F(
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   page_cu->SetVisibility(false);
   frame_cu->OnNonPersistentNotificationCreated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -289,7 +297,8 @@ TEST_F(
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_cu->SetVisibility(true);
@@ -321,7 +330,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
 
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
   page_cu->SetVisibility(false);
   page_cu->OnFaviconUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -350,7 +360,8 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   GURL url = GURL("https://google.com/foobar");
   ukm_recorder.UpdateSourceURL(id, url);
   page_cu->SetUKMSourceId(id);
-  page_cu->OnMainFrameNavigationCommitted(kDummyID, kDummyUrl);
+  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
+                                          kDummyID, kDummyUrl);
 
   for (int count = 1; count < kDefaultFrequencyUkmEQTReported; ++count) {
     process_cu->SetExpectedTaskQueueingDuration(

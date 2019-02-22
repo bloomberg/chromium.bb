@@ -45,6 +45,7 @@ class LocalNtpSource : public content::URLDataSource,
                        public OneGoogleBarServiceObserver {
  public:
   explicit LocalNtpSource(Profile* profile);
+  ~LocalNtpSource() override;
 
  private:
   class SearchConfigurationProvider;
@@ -71,8 +72,6 @@ class LocalNtpSource : public content::URLDataSource,
     base::TimeTicks start_time;
     content::URLDataSource::GotDataCallback callback;
   };
-
-  ~LocalNtpSource() override;
 
   // Overridden from content::URLDataSource:
   std::string GetSource() const override;

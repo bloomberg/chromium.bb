@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -34,19 +35,17 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_switches.h"
-#include "components/previews/core/previews_user_data.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -105,13 +104,14 @@ class TestPreviewsBlackList : public PreviewsBlackList {
       PreviewsType type,
       bool ignore_long_term_black_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const override {
-    PreviewsEligibilityReason ordered_reasons[] = {
+    std::vector<PreviewsEligibilityReason> ordered_reasons = {
         PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-        PreviewsEligibilityReason::USER_BLACKLISTED,
-        PreviewsEligibilityReason::HOST_BLACKLISTED,
-        PreviewsEligibilityReason::ALLOWED,
-    };
+        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT};
+
+    if (!ignore_long_term_black_list_rules) {
+      ordered_reasons.push_back(PreviewsEligibilityReason::USER_BLACKLISTED);
+      ordered_reasons.push_back(PreviewsEligibilityReason::HOST_BLACKLISTED);
+    }
 
     for (auto reason : ordered_reasons) {
       if (status_ == reason) {
@@ -119,16 +119,16 @@ class TestPreviewsBlackList : public PreviewsBlackList {
       }
       passed_reasons->push_back(reason);
     }
-    NOTREACHED();
-    return status_;
+
+    return PreviewsEligibilityReason::ALLOWED;
   }
 
  private:
   PreviewsEligibilityReason status_;
 };
 
-// Stub class of PreviewsOptimizationGuide to control IsWhitelisted outcome
-// when testing PreviewsDeciderImpl.
+// Stub class of PreviewsOptimizationGuide to control IsWhitelisted and
+// IsBlacklisted outcomes when testing PreviewsDeciderImpl.
 class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
   TestPreviewsOptimizationGuide(
@@ -138,17 +138,27 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
-  bool IsWhitelisted(const net::URLRequest& request,
+  bool IsWhitelisted(PreviewsUserData* previews_user_data,
+                     const GURL& url,
+
                      PreviewsType type) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS);
     if (type == PreviewsType::NOSCRIPT) {
-      return request.url().host().compare("whitelisted.example.com") == 0 ||
-             request.url().host().compare(
-                 "noscript_only_whitelisted.example.com") == 0;
+      return url.host().compare("whitelisted.example.com") == 0 ||
+             url.host().compare("noscript_only_whitelisted.example.com") == 0;
     }
     if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
-      return request.url().host().compare("whitelisted.example.com") == 0;
+      return url.host().compare("whitelisted.example.com") == 0;
+    }
+    return false;
+  }
+
+  // PreviewsOptimizationGuide:
+  bool IsBlacklisted(const GURL& url, PreviewsType type) const override {
+    EXPECT_TRUE(type == PreviewsType::LITE_PAGE_REDIRECT);
+    if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+      return url.host().compare("blacklisted.example.com") == 0;
     }
     return false;
   }
@@ -165,14 +175,16 @@ class TestPreviewsUIService : public PreviewsUIService {
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types,
+      network::NetworkQualityTracker* network_quality_tracker)
       : PreviewsUIService(previews_decider_impl,
                           io_task_runner,
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
                           is_enabled_callback,
                           std::move(logger),
-                          std::move(allowed_types)),
+                          std::move(allowed_types),
+                          network_quality_tracker),
         user_blacklisted_(false),
         blacklist_ignored_(false) {}
 
@@ -356,13 +368,10 @@ class PreviewsDeciderImplTest : public testing::Test {
             scoped_task_environment_.GetMainThreadTaskRunner(),
             &clock_)),
         optimization_guide_service_(
-            scoped_task_environment_.GetMainThreadTaskRunner()),
-        context_(true) {
-    context_.set_network_quality_estimator(&network_quality_estimator_);
-    context_.Init();
+            scoped_task_environment_.GetMainThreadTaskRunner()) {
     clock_.SetNow(base::Time::Now());
 
-    network_quality_estimator_.set_effective_connection_type(
+    network_quality_tracker_.ReportEffectiveConnectionTypeForTesting(
         net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
 
@@ -378,11 +387,14 @@ class PreviewsDeciderImplTest : public testing::Test {
         scoped_task_environment_.GetMainThreadTaskRunner(), &clock_);
   }
 
+  void TearDown() override { ui_service_.reset(); }
+
   void InitializeUIServiceWithoutWaitingForBlackList() {
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LOFI)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
@@ -393,7 +405,8 @@ class PreviewsDeciderImplTest : public testing::Test {
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner()),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
-        std::make_unique<PreviewsLogger>(), std::move(allowed_types)));
+        std::make_unique<PreviewsLogger>(), std::move(allowed_types),
+        &network_quality_tracker_));
   }
 
   void InitializeUIService() {
@@ -402,32 +415,16 @@ class PreviewsDeciderImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<net::URLRequest> CreateRequest() const {
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequestWithURL(GURL("http://example.com"));
-    return request;
-  }
-
-  std::unique_ptr<net::URLRequest> CreateHttpsRequest() const {
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequestWithURL(GURL("https://secure.example.com"));
-    return request;
-  }
-
-  std::unique_ptr<net::URLRequest> CreateRequestWithURL(const GURL& url) const {
-    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
-    PreviewsUserData::Create(request.get(), kDefaultPageId);
-    return request;
-  }
-
   TestPreviewsDeciderImpl* previews_decider_impl() {
     return previews_decider_impl_.get();
   }
   TestPreviewsUIService* ui_service() { return ui_service_.get(); }
-  net::TestURLRequestContext* context() { return &context_; }
-  net::TestNetworkQualityEstimator* network_quality_estimator() {
-    return &network_quality_estimator_;
+
+  void ReportEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type) {
+    network_quality_tracker_.ReportEffectiveConnectionTypeForTesting(
+        effective_connection_type);
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -439,8 +436,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
-  net::TestNetworkQualityEstimator network_quality_estimator_;
-  net::TestURLRequestContext context_;
+  network::TestNetworkQualityTracker network_quality_tracker_;
 };
 
 TEST_F(PreviewsDeciderImplTest, TestInitialization) {
@@ -457,16 +453,19 @@ TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {
       {features::kPreviews} /* disable_features */);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>(), false));
+
+  PreviewsUserData user_data2(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+      &user_data2, GURL("https://www.google.com"), false,
+      PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>(), false));
@@ -478,12 +477,13 @@ TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {
 TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
-  std::unique_ptr<net::URLRequest> request = CreateRequest();
   base::HistogramTester histogram_tester;
 
+  PreviewsUserData user_data(kDefaultPageId);
   // The blacklist is not created yet.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *request, PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 1);
@@ -492,7 +492,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
 
   // The blacklist is not created yet.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *request, PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 2);
@@ -507,7 +508,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
   previews_decider_impl()->ClearBlackList(now, now);
 
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *request, PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
@@ -520,20 +522,20 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
 TEST_F(PreviewsDeciderImplTest, TestSetBlacklistBoolDueToBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
-  std::unique_ptr<net::URLRequest> request = CreateRequest();
+
+  PreviewsUserData user_data(kDefaultPageId);
+
   base::HistogramTester histogram_tester;
   InitializeUIServiceWithoutWaitingForBlackList();
   base::RunLoop().RunUntilIdle();
-  previews_decider_impl()->AddPreviewNavigation(GURL(request->url()), true,
-                                                PreviewsType::LITE_PAGE, 1);
+  previews_decider_impl()->AddPreviewNavigation(
+      GURL("https://www.google.com"), true, PreviewsType::LITE_PAGE, 1);
 
-  auto* data =
-      PreviewsUserData::Create(request.get(), 54321 /* page_id, not used */);
-  EXPECT_FALSE(data->black_listed_for_lite_page());
+  EXPECT_FALSE(user_data.black_listed_for_lite_page());
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *request, PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_2G, {},
-      false));
-  EXPECT_TRUE(data->black_listed_for_lite_page());
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_2G, {}, false));
+  EXPECT_TRUE(user_data.black_listed_for_lite_page());
 }
 
 TEST_F(PreviewsDeciderImplTest,
@@ -542,12 +544,14 @@ TEST_F(PreviewsDeciderImplTest,
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  PreviewsUserData user_data(kDefaultPageId);
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *CreateRequest(), PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
@@ -559,14 +563,15 @@ TEST_F(PreviewsDeciderImplTest, TestAllowLitePageWhenNetworkQualityFast) {
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
+  PreviewsUserData user_data(kDefaultPageId);
   // LoFi and LitePage check NQE on their own.
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_3G);
 
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LITE_PAGE,
-      net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(), false));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_4G,
+      std::vector<std::string>(), false));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LitePage",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
@@ -577,11 +582,13 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkQualityFast) {
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  PreviewsUserData user_data(kDefaultPageId);
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_3G);
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *CreateRequest(), PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
@@ -592,15 +599,13 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReload) {
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
-  std::unique_ptr<net::URLRequest> request = CreateRequest();
-  request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+  PreviewsUserData user_data(kDefaultPageId);
 
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
-      *request, PreviewsType::OFFLINE));
+      &user_data, GURL("https://www.google.com"), true, PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
@@ -622,13 +627,14 @@ TEST_F(PreviewsDeciderImplTest, TestAllowOffline) {
       {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
   };
   for (const auto& test : tests) {
-    network_quality_estimator()->set_effective_connection_type(
-        test.effective_connection_type);
+    ReportEffectiveConnectionType(test.effective_connection_type);
 
+    PreviewsUserData user_data(kDefaultPageId);
     base::HistogramTester histogram_tester;
     EXPECT_EQ(test.expected_offline_allowed,
               previews_decider_impl()->ShouldAllowPreview(
-                  *CreateRequest(), PreviewsType::OFFLINE))
+                  &user_data, GURL("https://www.google.com"), false,
+                  PreviewsType::OFFLINE))
         << " effective_connection_type=" << test.effective_connection_type;
     if (test.expected_offline_allowed) {
       histogram_tester.ExpectUniqueSample(
@@ -650,12 +656,12 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiDisallowedWhenFeatureDisabled) {
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
+  PreviewsUserData user_data(kDefaultPageId);
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.LoFi", 0);
@@ -668,12 +674,12 @@ TEST_F(PreviewsDeciderImplTest,
       {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 
+  PreviewsUserData user_data(kDefaultPageId);
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
@@ -690,12 +696,12 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiDisallowedWhenNetworkFast) {
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_3G);
 
   base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
@@ -724,13 +730,14 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowed) {
   };
 
   for (const auto& test : tests) {
-    network_quality_estimator()->set_effective_connection_type(
-        test.effective_connection_type);
+    ReportEffectiveConnectionType(test.effective_connection_type);
 
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_EQ(test.expected_client_lofi_allowed,
               previews_decider_impl()->ShouldAllowPreviewAtECT(
-                  *CreateRequest(), PreviewsType::LOFI,
+                  &user_data, GURL("https://www.google.com"), false,
+                  PreviewsType::LOFI,
                   params::EffectiveConnectionTypeThresholdForClientLoFi(),
                   params::GetBlackListedHostsForClientLoFiFieldTrial(), false))
         << " effective_connection_type=" << test.effective_connection_type;
@@ -754,11 +761,11 @@ TEST_F(PreviewsDeciderImplTest, MissingHostDisallowed) {
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(GURL("file:///sdcard")), PreviewsType::LOFI,
+      &user_data, GURL("file:///sdcard"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 }
@@ -771,15 +778,13 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowedOnReload) {
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
-  std::unique_ptr<net::URLRequest> request = CreateRequest();
-  request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+  PreviewsUserData user_data(kDefaultPageId);
 
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *request, PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), true, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
@@ -799,8 +804,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiObeysHostBlackListFromServer) {
 
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   const struct {
     const char* url;
@@ -816,14 +820,11 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiObeysHostBlackListFromServer) {
   for (const auto& test : tests) {
     base::HistogramTester histogram_tester;
 
-    std::unique_ptr<net::URLRequest> request =
-        context()->CreateRequest(GURL(test.url), net::DEFAULT_PRIORITY, nullptr,
-                                 TRAFFIC_ANNOTATION_FOR_TESTS);
-    PreviewsUserData::Create(request.get(), 54321 /* page_id, not used */);
+    PreviewsUserData user_data(kDefaultPageId);
 
     EXPECT_EQ(test.expected_client_lofi_allowed,
               previews_decider_impl()->ShouldAllowPreviewAtECT(
-                  *request, PreviewsType::LOFI,
+                  &user_data, GURL(test.url), false, PreviewsType::LOFI,
                   params::EffectiveConnectionTypeThresholdForClientLoFi(),
                   params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
@@ -842,12 +843,12 @@ TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::NOSCRIPT,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>(), false));
@@ -884,13 +885,14 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeature) {
   };
 
   for (const auto& test : tests) {
-    network_quality_estimator()->set_effective_connection_type(
-        test.effective_connection_type);
+    ReportEffectiveConnectionType(test.effective_connection_type);
 
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_EQ(test.expected_noscript_allowed,
               previews_decider_impl()->ShouldAllowPreviewAtECT(
-                  *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+                  &user_data, GURL("https://www.google.com"), false,
+                  PreviewsType::NOSCRIPT,
                   previews::params::GetECTThresholdForPreview(
                       previews::PreviewsType::NOSCRIPT),
                   std::vector<std::string>(), false))
@@ -919,14 +921,14 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
       {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
 
+  PreviewsUserData user_data(kDefaultPageId);
   // First verify no preview for non-whitelisted url.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>(), false));
@@ -939,7 +941,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
 
   // Now verify preview for whitelisted url.
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+      &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
@@ -958,14 +960,14 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
       {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   // First verify not allowed for non-whitelisted url.
   {
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_FALSE(previews_decider_impl()->IsURLAllowedForPreview(
-        *CreateHttpsRequest(), PreviewsType::NOSCRIPT));
+        &user_data, GURL("https://www.google.com"), PreviewsType::NOSCRIPT));
 
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
@@ -977,13 +979,79 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
   // Now verify preview for whitelisted url.
   {
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_TRUE(previews_decider_impl()->IsURLAllowedForPreview(
-        *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+        &user_data, GURL("https://whitelisted.example.com"),
         PreviewsType::NOSCRIPT));
 
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
   }
+}
+
+TEST_F(PreviewsDeciderImplTest,
+       LitePageRedirectAllowedWithoutOptimizationHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews},
+      {features::kOptimizationHints});
+  InitializeUIService();
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(
+          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+      1);
+}
+
+TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+
+  PreviewsUserData user_data(kDefaultPageId);
+  // First verify preview allowed for non-whitelisted url.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+
+  // Now verify no preview for blacklisted url.
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      &user_data, GURL("https://blacklisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
+      1);
 }
 
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
@@ -992,12 +1060,13 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
       {features::kPreviews, features::kOptimizationHints}, {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS),
       std::vector<std::string>(), false));
@@ -1011,12 +1080,12 @@ TEST_F(PreviewsDeciderImplTest,
       {features::kOptimizationHints});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+      &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::RESOURCE_LOADING_HINTS,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS),
@@ -1048,20 +1117,19 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByFeature) {
   };
 
   for (const auto& test : tests) {
-    network_quality_estimator()->set_effective_connection_type(
-        test.effective_connection_type);
+    ReportEffectiveConnectionType(test.effective_connection_type);
 
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
 
     // Check whitelisted URL.
-    EXPECT_EQ(
-        test.expected_resource_loading_hints_allowed,
-        previews_decider_impl()->ShouldAllowPreviewAtECT(
-            *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
-            PreviewsType::RESOURCE_LOADING_HINTS,
-            previews::params::GetECTThresholdForPreview(
-                previews::PreviewsType::RESOURCE_LOADING_HINTS),
-            std::vector<std::string>(), false))
+    EXPECT_EQ(test.expected_resource_loading_hints_allowed,
+              previews_decider_impl()->ShouldAllowPreviewAtECT(
+                  &user_data, GURL("https://whitelisted.example.com"), false,
+                  PreviewsType::RESOURCE_LOADING_HINTS,
+                  previews::params::GetECTThresholdForPreview(
+                      previews::PreviewsType::RESOURCE_LOADING_HINTS),
+                  std::vector<std::string>(), false))
         << " effective_connection_type=" << test.effective_connection_type;
     if (test.expected_resource_loading_hints_allowed) {
       histogram_tester.ExpectUniqueSample(
@@ -1091,14 +1159,15 @@ TEST_F(PreviewsDeciderImplTest,
       {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
 
+  PreviewsUserData user_data(kDefaultPageId);
   // First verify preview allowed for url without known hints.
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS),
       std::vector<std::string>(), false));
@@ -1116,14 +1185,15 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
       {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   // First verify not allowed for non-whitelisted url.
   {
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_FALSE(previews_decider_impl()->IsURLAllowedForPreview(
-        *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS));
+        &user_data, GURL("https://www.google.com"),
+        PreviewsType::RESOURCE_LOADING_HINTS));
 
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
@@ -1135,8 +1205,9 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
   // Now verify preview for whitelisted url.
   {
     base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_TRUE(previews_decider_impl()->IsURLAllowedForPreview(
-        *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+        &user_data, GURL("https://whitelisted.example.com"),
         PreviewsType::RESOURCE_LOADING_HINTS));
 
     // Expect no eligibility logging.
@@ -1214,9 +1285,10 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistNotAvailable) {
   auto expected_type = PreviewsType::LOFI;
 
   previews_decider_impl()->InjectTestBlacklist(nullptr /* blacklist */);
+  PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), expected_type, net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-      {}, false);
+      &user_data, GURL("http://www.google.com"), false, expected_type,
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, {}, false);
   base::RunLoop().RunUntilIdle();
   // Testing correct log method is called.
   EXPECT_THAT(ui_service()->decision_reasons(),
@@ -1249,9 +1321,10 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesDefault) {
                                                 previews_decider_impl());
     previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
 
+    PreviewsUserData user_data(kDefaultPageId);
     previews_decider_impl()->ShouldAllowPreviewAtECT(
-        *CreateRequest(), expected_type, net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-        {}, false);
+        &user_data, GURL("http://www.google.com"), false, expected_type,
+        net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, {}, false);
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
     // Check for all decision upto current decision is logged.
@@ -1271,10 +1344,10 @@ TEST_F(PreviewsDeciderImplTest, IsURLAllowedForPreviewBlacklistStatuses) {
       {features::kOptimizationHints});
   InitializeUIService();
   auto expected_type = PreviewsType::NOSCRIPT;
-
+  PreviewsUserData user_data(kDefaultPageId);
   // First verify URL is allowed for no blacklist status.
-  EXPECT_TRUE(previews_decider_impl()->IsURLAllowedForPreview(*CreateRequest(),
-                                                              expected_type));
+  EXPECT_TRUE(previews_decider_impl()->IsURLAllowedForPreview(
+      &user_data, GURL("http://www.google.com"), expected_type));
 
   PreviewsEligibilityReason expected_reasons[] = {
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
@@ -1292,9 +1365,9 @@ TEST_F(PreviewsDeciderImplTest, IsURLAllowedForPreviewBlacklistStatuses) {
         std::make_unique<TestPreviewsBlackList>(expected_reason,
                                                 previews_decider_impl());
     previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
-
+    PreviewsUserData user_data(kDefaultPageId);
     EXPECT_FALSE(previews_decider_impl()->IsURLAllowedForPreview(
-        *CreateRequest(), expected_type));
+        &user_data, GURL("http://www.google.com"), expected_type));
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
     // Check for all decision upto current decision is logged.
@@ -1312,8 +1385,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
   auto expected_reason = PreviewsEligibilityReason::ALLOWED;
   auto expected_type = PreviewsType::LOFI;
 
@@ -1332,9 +1404,9 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
         std::make_unique<TestPreviewsBlackList>(blacklist_decision,
                                                 previews_decider_impl());
     previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
-
+    PreviewsUserData user_data(kDefaultPageId);
     previews_decider_impl()->ShouldAllowPreviewAtECT(
-        *CreateRequest(), expected_type,
+        &user_data, GURL("http://www.google.com"), false, expected_type,
         params::EffectiveConnectionTypeThresholdForClientLoFi(),
         params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
 
@@ -1352,14 +1424,13 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   previews_decider_impl()->SetIgnorePreviewsBlacklistDecision(
       true /* ignored */);
-
+  PreviewsUserData user_data(kDefaultPageId);
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
@@ -1367,14 +1438,14 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
       GURL("http://wwww.somedomain.com"), true, PreviewsType::LOFI, 1);
 
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
   clock_.Advance(base::TimeDelta::FromSeconds(6));
 
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 }
@@ -1400,11 +1471,10 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkQualityNotAvailable) {
       PreviewsEligibilityReason::HOST_BLACKLISTED,
   };
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
-
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), expected_type,
+      &user_data, GURL("http://www.google.com"), false, expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
 
@@ -1434,8 +1504,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
           PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
   previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   auto expected_reason = PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   auto expected_type = PreviewsType::LOFI;
@@ -1448,9 +1517,9 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
       PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
   };
-
+  PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), expected_type,
+      &user_data, GURL("http://www.google.com"), false, expected_type,
       net::EFFECTIVE_CONNECTION_TYPE_2G /* threshold */, {}, false);
   base::RunLoop().RunUntilIdle();
   // Testing correct log method is called.
@@ -1483,8 +1552,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeHostBlacklisted) {
           PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
   previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   auto expected_reason = PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
   auto expected_type = PreviewsType::LOFI;
@@ -1499,9 +1567,9 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeHostBlacklisted) {
       PreviewsEligibilityReason::NETWORK_NOT_SLOW,
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
   };
-
+  PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), expected_type,
+      &user_data, GURL("http://example.com"), false, expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
@@ -1530,10 +1598,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
           PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
   previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
-  std::unique_ptr<net::URLRequest> request = CreateRequest();
-  request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+  PreviewsUserData user_data(kDefaultPageId);
 
   auto expected_reason = PreviewsEligibilityReason::RELOAD_DISALLOWED;
   auto expected_type = PreviewsType::OFFLINE;
@@ -1549,7 +1615,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
   };
 
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *request, expected_type,
+      &user_data, GURL("http://www.google.com"), true, expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
@@ -1586,12 +1652,11 @@ TEST_F(PreviewsDeciderImplTest, IgnoreBlacklistEnabledViaFlag) {
       std::make_unique<TestPreviewsBlackList>(
           PreviewsEligibilityReason::HOST_BLACKLISTED, previews_decider_impl());
   previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
-
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+  PreviewsUserData user_data(kDefaultPageId);
   auto expected_reason = PreviewsEligibilityReason::ALLOWED;
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
@@ -1612,8 +1677,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowPreviewsOnECT) {
 
   previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   auto expected_reason = PreviewsEligibilityReason::ALLOWED;
   auto expected_type = PreviewsType::LOFI;
@@ -1629,9 +1693,9 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowPreviewsOnECT) {
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
       PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER,
   };
-
+  PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), expected_type,
+      &user_data, GURL("http://www.google.com"), false, expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
       params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
@@ -1709,6 +1773,34 @@ TEST_F(PreviewsDeciderImplTest, GeneratePageIdMakesUniqueNonZero) {
   }
   EXPECT_EQ(number_of_generated_ids, page_id_set.size());
   EXPECT_EQ(page_id_set.end(), page_id_set.find(0u));
+}
+
+TEST_F(PreviewsDeciderImplTest, TestIgnoreLongTermRule) {
+  // Verify that when long term rules can be ignored, and the caller is fine
+  // with ignoring long term rules, they are not checked.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  InitializeUIService();
+
+  previews_decider_impl()->SetIgnoreLongTermBlackListForServerPreviews(true);
+
+  std::unique_ptr<TestPreviewsBlackList> blacklist =
+      std::make_unique<TestPreviewsBlackList>(
+          PreviewsEligibilityReason::HOST_BLACKLISTED, previews_decider_impl());
+  previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
+
+  // LoFi and LitePage check NQE on their own.
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_3G);
+  PreviewsUserData user_data(kDefaultPageId);
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_4G,
+      std::vector<std::string>(), false));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_4G,
+      std::vector<std::string>(), true));
 }
 
 }  // namespace

@@ -85,7 +85,7 @@ rtc_static_library("rtc_pc_base") {
     "../rtc_base:stringutils",
     "../rtc_base/third_party/base64",
     "../rtc_base/third_party/sigslot",
-    "../system_wrappers:metrics_api",
+    "../system_wrappers:metrics",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -207,8 +207,8 @@ rtc_static_library("peerconnection") {
     "../rtc_base/third_party/sigslot",
     "../stats",
     "../system_wrappers",
-    "../system_wrappers:field_trial_api",
-    "../system_wrappers:metrics_api",
+    "../system_wrappers:field_trial",
+    "../system_wrappers:metrics",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -316,6 +316,7 @@ if (rtc_include_tests) {
       ":rtc_pc",
       ":rtc_pc_base",
       "../api:array_view",
+      "../api:fake_media_transport",
       "../api:libjingle_peerconnection_api",
       "../call:rtp_interfaces",
       "../logging:rtc_event_log_api",
@@ -330,8 +331,7 @@ if (rtc_include_tests) {
       "../rtc_base:rtc_base_tests_main",
       "../rtc_base:rtc_base_tests_utils",
       "../rtc_base/third_party/sigslot",
-      "../system_wrappers:metrics_default",
-      "../system_wrappers:runtime_enabled_features_default",
+      "../system_wrappers:metrics",
       "../test:test_support",
       "//third_party/abseil-cpp/absl/memory",
     ]
@@ -493,6 +493,7 @@ if (rtc_include_tests) {
     deps = [
       ":peerconnection",
       ":rtc_pc_base",
+      "../api:fake_frame_crypto",
       "../api:libjingle_peerconnection_api",
       "../api:mock_rtp",
       "../api/units:time_delta",
@@ -500,6 +501,7 @@ if (rtc_include_tests) {
       "../rtc_base:checks",
       "../rtc_base:stringutils",
       "../rtc_base/third_party/base64",
+      "../system_wrappers:metrics",
       "../test:fileutils",
       "//third_party/abseil-cpp/absl/memory",
     ]
@@ -541,8 +543,6 @@ if (rtc_include_tests) {
       "../rtc_base:rtc_base_tests_utils",
       "../rtc_base:rtc_task_queue",
       "../rtc_base:safe_conversions",
-      "../system_wrappers:metrics_default",
-      "../system_wrappers:runtime_enabled_features_default",
       "../test:audio_codec_mocks",
       "../test:test_support",
       "//third_party/abseil-cpp/absl/types:optional",

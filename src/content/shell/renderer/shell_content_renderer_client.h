@@ -49,12 +49,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) override;
 
-  bool ShouldFork(blink::WebLocalFrame* frame,
-                  const GURL& url,
-                  const std::string& http_method,
-                  bool is_initial_navigation,
-                  bool is_server_redirect) override;
-
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)

@@ -39,6 +39,18 @@
 
 namespace viz {
 
+namespace {
+
+// Assign each Display instance a starting value for the the display-trace id,
+// so that multiple Displays all don't start at 0, because that makes it
+// difficult to associate the trace-events with the particular displays.
+int64_t GetStartingTraceId() {
+  static int64_t client = 0;
+  return ((++client & 0xffffffff) << 32);
+}
+
+}  // namespace
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -53,7 +65,9 @@ Display::Display(
       skia_output_surface_(skia_output_surface),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
-      current_task_runner_(std::move(current_task_runner)) {
+      current_task_runner_(std::move(current_task_runner)),
+      swapped_trace_id_(GetStartingTraceId()),
+      last_acked_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
   if (scheduler_)
@@ -216,12 +230,19 @@ void Display::InitializeRenderer() {
       mode, output_surface_->context_provider(), bitmap_manager_);
 
   if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
-    // Check the compositing mode, because SkiaRenderer only works with GPU
-    // compositing.
-    DCHECK(output_surface_);
-    renderer_ = std::make_unique<SkiaRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        skia_output_surface_);
+    // Default to use DDL if skia_output_surface is not null.
+    if (skia_output_surface_) {
+      renderer_ = std::make_unique<SkiaRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          skia_output_surface_, SkiaRenderer::DrawMode::DDL);
+    } else {
+      // GPU compositing with GL.
+      DCHECK(output_surface_);
+      DCHECK(output_surface_->context_provider());
+      renderer_ = std::make_unique<SkiaRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::GL);
+    }
   } else if (output_surface_->context_provider()) {
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
                                              resource_provider_.get(),
@@ -230,7 +251,7 @@ void Display::InitializeRenderer() {
   } else if (output_surface_->vulkan_context_provider()) {
     renderer_ = std::make_unique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get(),
-        nullptr /* skia_output_surface */);
+        nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::VULKAN);
 #endif
   } else {
     auto renderer = std::make_unique<SoftwareRenderer>(
@@ -280,6 +301,18 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
+  // During aggregation, SurfaceAggregator marks all resources used for a draw
+  // in the resource provider.  This has the side effect of deleting unused
+  // resources and their textures, generating sync tokens, and returning the
+  // resources to the client.  This involves GL work which is issued before
+  // drawing commands, and gets prioritized by GPU scheduler because sync token
+  // dependencies aren't issued until the draw.
+  //
+  // Batch and defer returning resources in resource provider.  This defers the
+  // GL commands for deleting resources to after the draw, and prevents context
+  // switching because the scheduler knows sync token dependencies at that time.
+  DisplayResourceProvider::ScopedBatchReturnResources returner(
+      resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
   CompositorFrame frame = aggregator_->Aggregate(
       current_surface_id_,
@@ -399,14 +432,13 @@ bool Display::DrawAndSwap() {
         callbacks.emplace_back(std::move(callback));
       }
     }
-    bool need_presentation_feedback = !callbacks.empty();
-    if (need_presentation_feedback)
-      pending_presented_callbacks_.emplace_back(std::move(callbacks));
+    pending_presented_callbacks_.emplace_back(std::move(callbacks));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
+    const bool need_presentation_feedback = true;
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info),
                            need_presentation_feedback);
     if (scheduler_)
@@ -435,9 +467,9 @@ bool Display::DrawAndSwap() {
       }
     }
 
-    ++last_acked_trace_id_;
-    TRACE_EVENT_ASYNC_END0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-                           last_acked_trace_id_);
+    TRACE_EVENT_ASYNC_END1("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
+                           swapped_trace_id_, "status", "canceled");
+    --swapped_trace_id_;
     if (scheduler_) {
       scheduler_->DidSwapBuffers();
       scheduler_->DidReceiveSwapBuffersAck();

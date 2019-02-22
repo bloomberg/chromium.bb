@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -153,5 +154,38 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   TestIfMouseWarpsAt(gfx::Point(400, 200));
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
 }
+
+// Verifies that pressing the key repeatedly will not hide the cursor.
+// Otherwise, in one edge case, user may press one key repeatedly while moving
+// the cursor and then the user interface looks weird.
+// (http://crbug.com/855163).
+#if defined(OS_CHROMEOS)
+TEST_F(MouseCursorEventFilterTest, CursorVisibilityWontFlip) {
+  aura::test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 1234, gfx::Rect(5, 5, 100, 100)));
+  window->Show();
+  window->SetCapture();
+
+  wm::CursorManager* manager = Shell::Get()->cursor_manager();
+
+  // Cursor is visible at start
+  EXPECT_TRUE(manager->IsCursorVisible());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Pressing key will hide the cursor
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(manager->IsCursorVisible());
+
+  // Moving the mouse will show the cursor
+  generator->MoveMouseTo(gfx::Point(10, 10));
+  EXPECT_TRUE(manager->IsCursorVisible());
+
+  // Pressing key repeatedly will not hide the cursor
+  generator->PressKey(ui::VKEY_A, ui::EF_NONE | ui::EF_IS_REPEAT);
+  EXPECT_TRUE(manager->IsCursorVisible());
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

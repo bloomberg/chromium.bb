@@ -189,7 +189,7 @@ KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
       GetDefaultKeyDerivationMethodForCustomPassphrase();
   switch (method) {
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+      return KeyDerivationParams::CreateForPbkdf2();
     case KeyDerivationMethod::SCRYPT_8192_8_11:
       return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
     case KeyDerivationMethod::UNSUPPORTED:
@@ -222,9 +222,8 @@ KeyDerivationMethod GetKeyDerivationMethodFromNigori(
 }
 
 std::string GetScryptSaltFromNigori(const sync_pb::NigoriSpecifics& nigori) {
-  DCHECK(nigori.custom_passphrase_key_derivation_method() ==
-         sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
-  DCHECK(nigori.has_custom_passphrase_key_derivation_salt());
+  DCHECK_EQ(nigori.custom_passphrase_key_derivation_method(),
+            sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
   std::string decoded_salt;
   bool result = base::Base64Decode(
       nigori.custom_passphrase_key_derivation_salt(), &decoded_salt);
@@ -237,9 +236,8 @@ KeyDerivationParams GetKeyDerivationParamsFromNigori(
   KeyDerivationMethod method = GetKeyDerivationMethodFromNigori(nigori);
   switch (method) {
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+      return KeyDerivationParams::CreateForPbkdf2();
     case KeyDerivationMethod::SCRYPT_8192_8_11:
-      DCHECK(nigori.has_custom_passphrase_key_derivation_salt());
       return KeyDerivationParams::CreateForScrypt(
           GetScryptSaltFromNigori(nigori));
     case KeyDerivationMethod::UNSUPPORTED:
@@ -503,9 +501,8 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
   // passphrase (that was able to decrypt the data).
   if (!IsExplicitPassphrase(*passphrase_type)) {
     if (!cryptographer->has_pending_keys()) {
-      KeyParams key_params = {
-          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-          passphrase};
+      KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                              passphrase};
       if (cryptographer->AddKey(key_params)) {
         // Case 1 and 2. We set a new GAIA passphrase when there are no pending
         // keys (1), or overwriting an implicit passphrase with a new explicit
@@ -544,9 +541,8 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
         DVLOG(1) << "Failing because an implicit passphrase is already set.";
         success = false;
       } else {  // is_explicit == false
-        KeyParams key_params = {
-            KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-            passphrase};
+        KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                passphrase};
         if (cryptographer->DecryptPendingKeys(key_params)) {
           // Case 4. We successfully decrypted with the implicit GAIA passphrase
           // passed in.
@@ -678,8 +674,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
   //    encrypted account (after changing passwords).
   // 9. The user is providing a previously set explicit passphrase to decrypt
   //    the pending keys.
-  KeyParams key_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), passphrase};
+  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), passphrase};
   if (!IsExplicitPassphrase(GetPassphraseType(trans.GetWrappedTrans()))) {
     if (cryptographer->is_initialized()) {
       // We only want to change the default encryption key to the pending
@@ -1141,7 +1136,7 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   // If the method is not CUSTOM_PASSPHRASE, we will fall back to PBKDF2 to be
   // backwards compatible.
   KeyDerivationParams key_derivation_params =
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+      KeyDerivationParams::CreateForPbkdf2();
   if (*passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     key_derivation_params = GetKeyDerivationParamsFromNigori(nigori);
     custom_passphrase_key_derivation_params_ = key_derivation_params;
@@ -1229,8 +1224,8 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
         // a possible looping of two clients constantly overwriting each other,
         // we limit the absolute number of overwrites per client instantiation.
         nigori_overwrite_count_++;
-        UMA_HISTOGRAM_COUNTS("Sync.AutoNigoriOverwrites",
-                             nigori_overwrite_count_);
+        UMA_HISTOGRAM_COUNTS_1M("Sync.AutoNigoriOverwrites",
+                                nigori_overwrite_count_);
       }
 
       // Note: we don't try to set keybag_is_frozen here since if that
@@ -1319,7 +1314,7 @@ void SyncEncryptionHandlerImpl::ReplaceImplicitKeyDerivationMethodInNigori(
   // PBKDF2.
   sync_pb::NigoriSpecifics specifics = nigori_node.GetNigoriSpecifics();
   UpdateNigoriSpecificsKeyDerivationParams(
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), &specifics);
+      KeyDerivationParams::CreateForPbkdf2(), &specifics);
   nigori_node.SetNigoriSpecifics(specifics);
 }
 
@@ -1409,7 +1404,7 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
   // If the method is not CUSTOM_PASSPHRASE, we will fall back to PBKDF2 to be
   // backwards compatible.
   KeyDerivationParams key_derivation_params =
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+      KeyDerivationParams::CreateForPbkdf2();
   if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     DCHECK(custom_passphrase_key_derivation_params_.has_value());
     key_derivation_params = custom_passphrase_key_derivation_params_.value();
@@ -1450,9 +1445,8 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
     // Should already be part of the encryption keybag, but we add it just
     // in case. Note that, since this is a keystore key, we always use PBKDF2
     // for key derivation.
-    KeyParams key_params = {
-        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-        keystore_key_};
+    KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                            keystore_key_};
     cryptographer->AddNonDefaultKey(key_params);
   }
   FinishSetPassphrase(success, bootstrap_token, trans, nigori_node);
@@ -1486,7 +1480,7 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     // If we have not set an explicit method, fall back to PBKDF2 to ensure
     // backwards compatibility.
     KeyDerivationParams key_derivation_params =
-        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+        KeyDerivationParams::CreateForPbkdf2();
     if (custom_passphrase_key_derivation_params_.has_value()) {
       DCHECK_EQ(GetPassphraseType(trans->GetWrappedTrans()),
                 PassphraseType::CUSTOM_PASSPHRASE);
@@ -1632,9 +1626,8 @@ bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
       // preserve backwards compatibility, and the keybag will therefore be
       // encrypted with the current keystore key.
       Cryptographer temp_cryptographer(cryptographer.encryptor());
-      KeyParams keystore_params = {
-          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-          keystore_key_};
+      KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                   keystore_key_};
       temp_cryptographer.AddKey(keystore_params);
       if (!temp_cryptographer.CanDecryptUsingDefaultKey(
               nigori.encryption_keybag())) {
@@ -1699,7 +1692,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       // CUSTOM_PASSPHRASE because the keybag was frozen. In these cases, we
       // will fall back to PBKDF2 to ensure backwards compatibility.
       custom_passphrase_key_derivation_params_ =
-          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy");
+          KeyDerivationParams::CreateForPbkdf2();
     }
     UpdateNigoriSpecificsKeyDerivationParams(
         custom_passphrase_key_derivation_params_.value(), &migrated_nigori);
@@ -1707,9 +1700,8 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   migrated_nigori.set_keybag_is_frozen(true);
 
   if (!keystore_key_.empty()) {
-    KeyParams key_params = {
-        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-        keystore_key_};
+    KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                            keystore_key_};
     if ((old_keystore_keys_.size() > 0 &&
          new_passphrase_type == PassphraseType::KEYSTORE_PASSPHRASE) ||
         !cryptographer->is_initialized()) {
@@ -1754,8 +1746,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     for (std::vector<std::string>::const_iterator iter =
              old_keystore_keys_.begin();
          iter != old_keystore_keys_.end(); ++iter) {
-      KeyParams key_params = {
-          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), *iter};
+      KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), *iter};
       cryptographer->AddNonDefaultKey(key_params);
     }
   }
@@ -1857,8 +1848,7 @@ bool SyncEncryptionHandlerImpl::GetKeystoreDecryptor(
     return false;
   }
   Cryptographer temp_cryptographer(cryptographer.encryptor());
-  KeyParams key_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), keystore_key};
+  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), keystore_key};
   if (!temp_cryptographer.AddKey(key_params))
     return false;
   if (!temp_cryptographer.EncryptString(serialized_nigori, encrypted_blob))
@@ -1903,17 +1893,15 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
   // First, go through and all all the old keystore keys to the temporary
   // cryptographer.
   for (size_t i = 0; i < old_keystore_keys_.size(); ++i) {
-    KeyParams old_key_params = {
-        KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-        old_keystore_keys_[i]};
+    KeyParams old_key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                old_keystore_keys_[i]};
     temp_cryptographer.AddKey(old_key_params);
   }
 
   // Then add the current keystore key as the default key and see if we can
   // decrypt.
-  KeyParams keystore_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-      keystore_key_};
+  KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
+                               keystore_key_};
   if (temp_cryptographer.AddKey(keystore_params) &&
       temp_cryptographer.CanDecrypt(keystore_decryptor_token)) {
     // Someone else migrated the nigori for us! How generous! Go ahead and

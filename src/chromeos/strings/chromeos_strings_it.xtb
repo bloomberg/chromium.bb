@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1510238584712386396">Avvio applicazioni</translation>
+<translation id="1734367976349034509">Questo dispositivo è gestito dall'azienda</translation>
+<translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Non è stato trovato niente sullo schermo</translation>
+<translation id="2338501278241028356">Attiva il Bluetooth per trovare dispositivi nelle vicinanze</translation>
+<translation id="2805756323405976993">App</translation>
+<translation id="2872961005593481000">Spegni</translation>
+<translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="5212543919916444558">Non riesco a trovare nulla sullo schermo per cui poterti essere utile.
 Prova a toccare il microfono per chiedermi qualcosa.</translation>
-<translation id="6674412557034343536">interrompi timer</translation>
-<translation id="8626219642120025691">Timer creato</translation>
+<translation id="5222676887888702881">Esci</translation>
+<translation id="5457599981699367932">Esplora come ospite</translation>
+<translation id="54609108002486618">Gestita</translation>
+<translation id="5832805196449965646">Aggiungi persona</translation>
+<translation id="5895138241574237353">Riavvia</translation>
+<translation id="7222902781030499995">Interrompi timer</translation>
+<translation id="7658239707568436148">Annulla</translation>
+<translation id="7837740436429729974">Tempo scaduto</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Sblocca</translation>
 </translationbundle>

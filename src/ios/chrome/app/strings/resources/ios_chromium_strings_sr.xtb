@@ -18,6 +18,7 @@
 <translation id="2687023731466035790">Набавите паметне Google функције у Chromium-у</translation>
 <translation id="2730884209570016437">Chromium не може да користи камеру зато што је већ користи друга апликација</translation>
 <translation id="2797210818057553964">Ово увек можете да прилагодите у подешавањима Chromium-а</translation>
+<translation id="2915596697727466327">Chromium користи Face ID да би лозинкама могле да приступају само овлашћене особе.</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3413120535237193088">Да би вам обележивачи били доступни на свим уређајима, пријавите се у Chromium.</translation>
 <translation id="3473048256428424907">Укључите Chromium QR скенер</translation>
@@ -52,7 +53,6 @@
 <translation id="786327964234957808">Мењате налог за синхронизацију из <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Постојећим Chromium подацима управља <ph name="DOMAIN" />. На овај начин бришете податке са овог уређаја, али подаци остају на <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Савет: <ph name="BEGIN_LINK" />Преместите Chromium на док<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Побољшајте Google доживљај у Chromium-у на основу локације.</translation>
-<translation id="8353224596138547809">Да ли желите да Chromium сачува лозинку за овај сајт?</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />Подешавања<ph name="END_LINK" /> увек можете да прилагодите. Google може да користи садржај на сајтовима које посећујете, интеракције са прегледачима и активности у њима да би персонализовао Chromium и Google услуге као што су Преводилац, Претрага и огласи.</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="8809780021347235332">Да бисте сачували слике, додирните Подешавања како бисте омогућили Chromium-у да користи слике</translation>

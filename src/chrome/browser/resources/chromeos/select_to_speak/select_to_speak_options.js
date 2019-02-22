@@ -132,6 +132,13 @@ SelectToSpeakOptionsPage.prototype = {
       });
     }
 
+    checkbox.addEventListener('keypress', function(e) {
+      if (e.code === 'Enter') {
+        e.stopPropagation();
+        checkbox.click();
+      }
+    });
+
     checkbox.addEventListener('change', function() {
       let setParams = {};
       setParams[pref] = checkbox.checked;
@@ -197,6 +204,15 @@ SelectToSpeakOptionsPage.prototype = {
 
     this.syncSelectControlToPref_(
         'highlightColor', 'highlightColor', 'value', onChange);
+
+    document.getElementById('wordHighlightOption')
+        .addEventListener('click', function(e) {
+          e.stopPropagation();
+          let checkbox = document.getElementById('wordHighlight');
+          // Make sure it isn't the auto-generated click itself.
+          if (e.srcElement !== checkbox)
+            checkbox.click();
+        });
   },
 
   /**

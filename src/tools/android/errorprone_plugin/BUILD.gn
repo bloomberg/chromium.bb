@@ -9,6 +9,7 @@ java_library("errorprone_plugin_java") {
     # Turned off because of existing code which fails the check
     # "src/org/chromium/tools/errorprone/plugin/NoContextGetApplicationContext.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
+    "src/org/chromium/tools/errorprone/plugin/NoRedundantFieldInitCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoAndroidAsyncTaskCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedThisCheck.java",
   ]

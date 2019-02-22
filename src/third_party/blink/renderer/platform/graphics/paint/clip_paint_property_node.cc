@@ -10,11 +10,12 @@
 namespace blink {
 
 const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
-  DEFINE_STATIC_REF(
-      ClipPaintPropertyNode, root,
-      base::AdoptRef(new ClipPaintPropertyNode(
-          nullptr, State{&TransformPaintPropertyNode::Root(),
-                         FloatRoundedRect(LayoutRect::InfiniteIntRect())})));
+  DEFINE_STATIC_REF(ClipPaintPropertyNode, root,
+                    base::AdoptRef(new ClipPaintPropertyNode(
+                        nullptr,
+                        State{&TransformPaintPropertyNode::Root(),
+                              FloatRoundedRect(LayoutRect::InfiniteIntRect())},
+                        true /* is_parent_alias */)));
   return *root;
 }
 
@@ -59,8 +60,8 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
 
 size_t ClipPaintPropertyNode::CacheMemoryUsageInBytes() const {
   size_t total_bytes = sizeof(*this);
-  if (geometry_mapper_clip_cache_)
-    total_bytes += sizeof(*geometry_mapper_clip_cache_);
+  if (clip_cache_)
+    total_bytes += sizeof(*clip_cache_);
   if (Parent())
     total_bytes += Parent()->CacheMemoryUsageInBytes();
   return total_bytes;

@@ -36,5 +36,5 @@ PreviewsServiceFactory::~PreviewsServiceFactory() {}
 
 KeyedService* PreviewsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new PreviewsService();
+  return new PreviewsService(context);
 }

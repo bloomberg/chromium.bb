@@ -6,7 +6,7 @@
  * @param {!FileSystemMetadataProvider} fileSystemMetadataProvider
  * @param {!ExternalMetadataProvider} externalMetadataProvider
  * @param {!ContentMetadataProvider} contentMetadataProvider
- * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @constructor
  * @extends {MetadataProvider}
  * @struct
@@ -41,7 +41,7 @@ function MultiMetadataProvider(
   this.contentMetadataProvider_ = contentMetadataProvider;
 
   /**
-   * @private {!VolumeManagerCommon.VolumeInfoProvider}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;

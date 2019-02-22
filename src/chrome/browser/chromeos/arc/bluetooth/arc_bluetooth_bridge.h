@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -98,6 +98,11 @@ class ArcBluetoothBridge
   void DeviceMTUChanged(device::BluetoothAdapter* adapter,
                         device::BluetoothDevice* device,
                         uint16_t mtu) override;
+
+  void DeviceAdvertisementReceived(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   int16_t rssi,
+                                   const std::vector<uint8_t>& eir) override;
 
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
@@ -331,13 +336,6 @@ class ArcBluetoothBridge
       ReleaseAdvertisementHandleCallback callback) override;
 
  private:
-  template <typename... Args>
-  void AddAdvertisementTask(
-      base::OnceCallback<void(base::OnceCallback<void(Args...)>)> task,
-      base::OnceCallback<void(Args...)> callback);
-  template <typename... Args>
-  void CompleteAdvertisementTask(base::OnceCallback<void(Args...)> callback,
-                                 Args... args);
   void ReserveAdvertisementHandleImpl(
       ReserveAdvertisementHandleCallback callback);
   void EnableAdvertisementImpl(
@@ -349,6 +347,9 @@ class ArcBluetoothBridge
   void ReleaseAdvertisementHandleImpl(
       int32_t adv_handle,
       ReleaseAdvertisementHandleCallback callback);
+
+  void StartDiscoveryImpl(bool le_scan);
+  void CancelDiscoveryImpl();
 
   template <typename InstanceType, typename HostType>
   class ConnectionObserverImpl;
@@ -362,7 +363,6 @@ class ArcBluetoothBridge
   void OnPoweredError(AdapterStateCallback callback) const;
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);
-  void OnDiscoveryStopped();
   void OnDiscoveryError();
   void OnPairing(mojom::BluetoothAddressPtr addr) const;
   void OnPairedDone(mojom::BluetoothAddressPtr addr) const;
@@ -424,8 +424,6 @@ class ArcBluetoothBridge
       mojom::BluetoothPropertyType type) const;
   std::vector<mojom::BluetoothAdvertisingDataPtr> GetAdvertisingData(
       const device::BluetoothDevice* device) const;
-
-  void SendCachedDevicesFound() const;
 
   device::BluetoothRemoteGattCharacteristic* FindGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,
@@ -530,9 +528,6 @@ class ArcBluetoothBridge
   // or return false if the advertisement map is full.
   bool GetAdvertisementHandle(int32_t* adv_handle);
 
-  void SendDevice(const device::BluetoothDevice* device,
-                  bool include_cached_device) const;
-
   void OnGattServerPrepareWrite(mojom::BluetoothAddressPtr addr,
                                 bool has_subsequent_write,
                                 const base::Closure& success_callback,
@@ -619,7 +614,8 @@ class ArcBluetoothBridge
   enum { kMaxAdvertisements = 1 };
   std::map<int32_t, scoped_refptr<device::BluetoothAdvertisement>>
       advertisements_;
-  base::queue<base::OnceClosure> advertisement_task_queue_;
+  ArcBluetoothTaskQueue advertisement_queue_;
+  ArcBluetoothTaskQueue discovery_queue_;
 
   THREAD_CHECKER(thread_checker_);
 

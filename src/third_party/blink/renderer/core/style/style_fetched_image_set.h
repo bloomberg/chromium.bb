@@ -88,6 +88,7 @@ class StyleFetchedImageSet final : public StyleImage,
                        CSSImageSetValue*,
                        const KURL&);
 
+  bool IsEqual(const StyleImage& other) const override;
   void Dispose();
 
   String DebugName() const override { return "StyleFetchedImageSet"; }

@@ -7,12 +7,11 @@
 #include <jni.h>
 
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/android/callback_android.h"
-#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -22,7 +21,6 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
-using base::android::JavaIntArrayToIntVector;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
@@ -57,21 +55,22 @@ void FeedImageLoaderBridge::Destroy(JNIEnv* env,
 
 void FeedImageLoaderBridge::FetchImage(JNIEnv* j_env,
                                        const JavaRef<jobject>& j_this,
-                                       const JavaRef<jobjectArray>& j_urls,
+                                       const JavaRef<jstring>& j_url,
+                                       const jint width_px,
+                                       const jint height_px,
                                        const JavaRef<jobject>& j_callback) {
-  std::vector<std::string> urls;
-  base::android::AppendJavaStringArrayToStringVector(j_env, j_urls.obj(),
-                                                     &urls);
-
   ScopedJavaGlobalRef<jobject> callback(j_callback);
+  std::string url = base::android::ConvertJavaStringToUTF8(j_url);
   feed_image_manager_->FetchImage(
-      urls, base::BindOnce(&FeedImageLoaderBridge::OnImageFetched,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
+      {std::move(url)}, width_px, height_px,
+      base::BindOnce(&FeedImageLoaderBridge::OnImageFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void FeedImageLoaderBridge::OnImageFetched(
     ScopedJavaGlobalRef<jobject> callback,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    size_t ignored) {
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());

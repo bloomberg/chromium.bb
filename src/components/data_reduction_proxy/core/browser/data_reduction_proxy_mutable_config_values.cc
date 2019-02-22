@@ -43,15 +43,13 @@ DataReductionProxyMutableConfigValues::FindConfiguredDataReductionProxy(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::Optional<DataReductionProxyTypeInfo> info =
-      DataReductionProxyParams::FindConfiguredProxyInVector(proxies_for_http(),
-                                                            proxy_server);
+      params::FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
   if (info)
     return info;
 
   for (const auto& recent_proxies : recently_configured_proxy_lists_) {
     base::Optional<DataReductionProxyTypeInfo> recent_info =
-        DataReductionProxyParams::FindConfiguredProxyInVector(recent_proxies,
-                                                              proxy_server);
+        params::FindConfiguredProxyInVector(recent_proxies, proxy_server);
     if (recent_info)
       return recent_info;
   }

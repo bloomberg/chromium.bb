@@ -114,11 +114,16 @@
     },
     {
       name: "BackgroundFetch",
+      origin_trial_feature_name: "BackgroundFetch",
       status: "experimental",
     },
     {
       name: "BackgroundVideoTrackOptimization",
       status: "stable",
+    },
+    {
+      name: "Badging",
+      status: "test",
     },
     {
       name: "BlinkGenPropertyTrees",
@@ -156,6 +161,10 @@
     {
       name: "CacheStyleSheetWithMediaQueries",
       status: "experimental",
+    },
+    {
+      name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
+      status: "stable",
     },
     {
       name: "Canvas2dContextLostRestored",
@@ -369,6 +378,9 @@
       settable_from_internals: true,
     },
     {
+      name: "DisplayLocking",
+    },
+    {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
       status: "stable",
     },
@@ -384,6 +396,15 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
+    },
+    {
+      // https://crbug.com/879270
+      name: "ElementTiming",
+      status: "test",
+    },
+    {
+      name: "EncodingStreams",
+      status: "stable",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
@@ -446,7 +467,6 @@
     },
     {
       name: "ExtraWebGLVideoTextureMetadata",
-      status: "experimental",
     },
     {
       name: "FastMobileScrolling",
@@ -473,7 +493,8 @@
     },
     {
       name: "FontSrcLocalMatching",
-      status: "test",
+      // No status, as the web platform runtime enabled feature is controlled by
+      // a Chromium level feature.
     },
     // For simulating Android's overlay fullscreen video in layout tests on Linux.
     {
@@ -507,12 +528,12 @@
     },
     {
       name: "FullscreenOptions",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "GamepadButtonAxisEvents",
@@ -578,10 +599,6 @@
       settable_from_internals: true,
     },
     {
-      name: "IncrementalShadowDOM",
-      status: "stable",
-    },
-    {
       name: "InertAttribute",
       status: "experimental",
     },
@@ -596,7 +613,6 @@
     },
     {
       name: "IntersectionObserverV2",
-      settable_from_internals: true,
     },
     {
       name: "InterventionReporting",
@@ -614,6 +630,7 @@
       // Tracks "jank" from layout objects changing their visual location
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",
+      implied_by: ["LayoutJankAPI"],
       status: "experimental",
     },
     {
@@ -628,11 +645,20 @@
       implied_by: ["ExperimentalProductivityFeatures"],
     },
     {
+      // Exposes layout jank fractions to Javascript. See explainer:
+      // http://bit.ly/lsm-explainer.
+      name: "LayoutJankAPI",
+      status: "test",
+    },
+    {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFlexBox", "EditingNG"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "EditingNG"],
     },
     {
       name: "LayoutNGBlockFragmentation",
+    },
+    {
+      name: "LayoutNGFieldset",
     },
     {
       name: "LayoutNGFlexBox",
@@ -658,10 +684,6 @@
       // This is enabled by features::kLazyInitializeMediaControls.
     },
     {
-      name: "LazyParseCSS",
-      status: "experimental",
-    },
-    {
       name: "LongTaskV2",
     },
     {
@@ -671,7 +693,7 @@
     },
     {
       name:"ManualSlotting",
-      status:"test",
+      status:"experimental",
     },
     {
       name: "MediaCapabilities",
@@ -754,10 +776,8 @@
       status: "stable",
     },
     {
-      name: "ModuleScriptsDynamicImport",
-    },
-    {
-      name: "ModuleScriptsImportMetaUrl",
+      name: "ModuleServiceWorker",
+      status: "test",
     },
     {
       name: "MojoJS",
@@ -768,10 +788,6 @@
     {
       name: "MojoJSTest",
       status: "test",
-    },
-    {
-      name: "MultipleColorStopPositions",
-      status: "experimental",
     },
     {
       name: "NavigatorContentUtils",
@@ -808,6 +824,14 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NoHoverAfterLayoutChange",
+      settable_from_internals: true,
+    },
+    {
+      name: "NoHoverDuringScroll",
+      settable_from_internals: true,
+    },
+    {
       name: "NoIdleEncodingForLayoutTests",
       status: "test",
     },
@@ -831,6 +855,9 @@
     {
       name: "NullableDocumentDomain",
       status: "experimental",
+    },
+    {
+      name: "OffMainThreadCSSPaint",
     },
     {
       name: "OffMainThreadWebSocket",
@@ -897,6 +924,12 @@
     {
       name: "PaintTouchActionRects",
     },
+    // PaintTracking enables the Largest Text Paint metric, Last Text Paint
+    // metric, Largest Image Paint metric and Last Image Paint metric.
+    // See also: https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
+    {
+      name: "PaintTracking",
+    },
     {
       name: "PaintUnderInvalidationChecking",
       settable_from_internals: true,
@@ -913,6 +946,10 @@
     },
     {
       name: "PaymentApp",
+      status: "experimental",
+    },
+    {
+      name: "PaymentMethodChangeEvent",
       status: "experimental",
     },
     // PaymentRequest is enabled by default on Android
@@ -1049,11 +1086,6 @@
       origin_trial_feature_name: "RtcPeerConnectionId",
       status: "experimental",
     },
-    // Enables the use of the RTCQuicStream object.
-    {
-      name: "RTCQuicStream",
-      status: "test",
-    },
     // Enables the use of the RTCQuicTransport object.
     {
       name: "RTCQuicTransport",
@@ -1084,6 +1116,7 @@
     // Serialize and restore scroll anchors.
     {
       name: "ScrollAnchorSerialization",
+      status: "test",
     },
     {
       name: "ScrollCustomization",
@@ -1116,11 +1149,11 @@
       status: "experimental",
     },
     {
-      name: "ServiceWorkerScriptFullCodeCache",
+      name: "Serial",
+      status: "experimental",
     },
     {
-      name: "ServiceWorkerUpdateViaCache",
-      status: "stable",
+      name: "ServiceWorkerScriptFullCodeCache",
     },
     {
       name: "SetRootScroller",
@@ -1185,12 +1218,8 @@
       status: "experimental",
     },
     {
-      name: "TestReporting",
-      status: "test",
-    },
-    {
       name: "TextUnderlinePositionLeftRight",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
@@ -1262,7 +1291,6 @@
     },
     {
       name: "VisibilityCollapseColumn",
-      status: "experimental",
     },
     {
       name: "WakeLock",
@@ -1275,13 +1303,10 @@
     {
       name: "WebAnimationsAPI",
       status: "experimental",
+      implied_by: ['AnimationWorklet']
     },
     {
       name: "WebAnimationsSVG",
-      status: "experimental",
-    },
-    {
-      name: "WebAssemblyStreaming",
       status: "experimental",
     },
     {
@@ -1291,6 +1316,10 @@
     },
     {
       name: "WebAuth",
+      status: "experimental",
+    },
+    {
+      name: "WebAuthGetTransports",
       status: "experimental",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
@@ -1373,7 +1402,7 @@
     },
     {
       name: "WorkerNosniffBlock",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WorkerNosniffWarn",
@@ -1381,11 +1410,16 @@
       implied_by: ["WorkerNosniffBlock"],
     },
     {
+      name: "WorkerTaskQueue",
+      status: "experimental"
+    },
+    {
       name: "WorkStealingInScriptRunner",
       status: "experimental",
     },
     {
       name: "WritableFiles",
+      status: "experimental",
     },
     {
       name: "XSLT",

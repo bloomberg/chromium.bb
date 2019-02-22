@@ -3,10 +3,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # TODO(mash): Fix. https://crbug.com/855096
+  # These are only used in non-Mash configs.
   "chrome_native_app_window_views_aura_ash\.*": [
     "+ash/frame/non_client_frame_view_ash.h",
-    "+ash/wm/window_properties.h",
     "+ash/wm/window_state.h",
     "+ash/wm/window_state_observer.h",
   ],

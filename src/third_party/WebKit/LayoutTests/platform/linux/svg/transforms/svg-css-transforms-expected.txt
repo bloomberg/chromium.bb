@@ -35,7 +35,7 @@ layer at (29,353) size 60x60
   LayoutBlockFlow (positioned) {div} at (1,1) size 60x60 [border: (1px dotted #000000)]
 layer at (105,379) size 60x60
   LayoutBlockFlow (positioned) {div} at (1,1) size 60x60 [border: (1px dotted #000000)]
-layer at (31,355) size 60x60
+layer at (107,381) size 120x120
   LayoutBlockFlow (positioned) {div} at (1,1) size 60x60 [border: (1px solid #0000FF)]
 layer at (272,85) size 200x200
   LayoutBlockFlow (relative positioned) {div} at (10,66.81) size 200x200 [bgcolor=#C0C0C0] [border: (1px solid #000000)]

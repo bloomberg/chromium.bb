@@ -82,21 +82,6 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetChild(
   return nullptr;
 }
 
-void BrowserAccessibilityMac::RecreateNativeObject() {
-  if (!browser_accessibility_cocoa_)
-    return;
-
-  // Preserve the children so that recreating the native object doesn't
-  // end up recreating the whole subtree.
-  base::scoped_nsobject<NSMutableArray> children;
-  [browser_accessibility_cocoa_ swapChildren:&children];
-  [browser_accessibility_cocoa_ detach];
-  [browser_accessibility_cocoa_ release];
-  browser_accessibility_cocoa_ = [[BrowserAccessibilityCocoa alloc]
-      initWithObject:this];
-  [browser_accessibility_cocoa_ swapChildren:&children];
-}
-
 const BrowserAccessibilityCocoa*
 ToBrowserAccessibilityCocoa(const BrowserAccessibility* obj) {
   DCHECK(obj);

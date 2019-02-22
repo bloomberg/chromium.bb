@@ -30,7 +30,7 @@
         android:src="@drawable/btn_toolbar_home"
         android:contentDescription="@string/accessibility_toolbar_btn_home"
         android:visibility="gone"
-        app:chrometint="@color/dark_mode_tint" />
+        app:tint="@color/dark_mode_tint" />
 
     <org.chromium.chrome.browser.omnibox.LocationBarPhone
         android:id="@+id/location_bar"
@@ -52,23 +52,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|end" >
 
-        <Space
-            android:layout_width="4dp"
-            android:layout_height="match_parent" />
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top" >
-
-            <ViewStub
-                android:id="@+id/experimental_button_stub"
-                android:inflatedId="@+id/experimental_toolbar_button"
-                android:layout="@layout/experimental_toolbar_button"
-                style="@style/ToolbarButton"
-                android:paddingStart="8dp"
-                android:visibility="gone" />
-        </FrameLayout>
+        <ViewStub
+            android:id="@+id/experimental_button_stub"
+            android:inflatedId="@+id/experimental_toolbar_button"
+            android:layout="@layout/experimental_toolbar_button"
+            style="@style/ToolbarButton"
+            android:paddingStart="8dp"
+            android:visibility="gone" />
 
         <ImageButton android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"

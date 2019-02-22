@@ -32,7 +32,7 @@ const ActionTypeEnum = {
   REJECT_SAVE_PASSWORD: 'rejectSavePassword',
   UPDATE_PASSWORD: 'updatePassword',
   REJECT_UPDATE_PASSWORD: 'rejectUpdatePassword'
-}
+};
 
 const RecorderUiMsgEnum = {
   CREATE_UI: 'add-ui',
@@ -53,14 +53,16 @@ const RecorderMsgEnum = {
   CANCEL: 'cancel-recording',
   GET_IFRAME_NAME: 'get-iframe-name',
   ADD_ACTION: 'record-action',
-  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params'
+  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params',
+  SET_AUTOFILL_PROFILE_ENTRY: 'set-autofill-profile-entry',
+  SET_PASSWORD_MANAGER_PROFILE_ENTRY: 'set-password-manager-profile-entry'
 };
 
 const Local_Storage_Vars = {
   RECORDING_STATE: 'state',
   RECORDING_TAB_ID: 'target_tab_id',
   RECORDING_UI_FRAME_ID: 'ui_frame_id'
-}
+};
 
 const Indexed_DB_Vars = {
   RECIPE_DB: 'Action_Recorder_Extension_Recipe',
@@ -74,4 +76,8 @@ const Indexed_DB_Vars = {
   // actions.
   SAVED_ACTION_PARAMS: 'Saved_Action_Params',
   PASSWORD_MANAGER_PARAMS: 'password_manager_params',
+  // The 'Profile' tables stores the user's Chrome autofill profile and Chrome
+  // password manager profile.
+  AUTOFILL_PROFILE: 'autofill_profile',
+  PASSWORD_MANAGER_PROFILE: 'password_manager_profile'
 };

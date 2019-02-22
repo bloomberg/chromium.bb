@@ -7,10 +7,12 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -73,8 +75,8 @@ void StoragePartitionHttpCacheDataRemover::Remove(
   DCHECK(!done_callback.is_null());
   done_callback_ = std::move(done_callback);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &StoragePartitionHttpCacheDataRemover::ClearHttpCacheOnIOThread,
           base::Unretained(this)));
@@ -97,8 +99,8 @@ void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
 
 // The expected state sequence is CacheState::NONE --> CacheState::CREATE_MAIN
 // --> CacheState::DELETE_MAIN --> CacheState::CREATE_MEDIA -->
-// CacheState::DELETE_MEDIA --> CacheState::DELETE_CODE --> CacheState::DONE,
-// and any errors are ignored.
+// CacheState::DELETE_MEDIA --> CacheState::DELETE_CODE_JS --> DELETE_CODE_WASM
+// -> CacheState::DONE, and any errors are ignored.
 void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
   DCHECK_NE(CacheState::NONE, next_cache_state_);
 
@@ -116,7 +118,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         if (!getter) {
           next_cache_state_ = (next_cache_state_ == CacheState::CREATE_MAIN)
                                   ? CacheState::CREATE_MEDIA
-                                  : CacheState::DELETE_CODE;
+                                  : CacheState::DELETE_CODE_JS;
           break;
         }
 
@@ -143,7 +145,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
       case CacheState::DELETE_MEDIA: {
         next_cache_state_ = (next_cache_state_ == CacheState::DELETE_MAIN)
                                 ? CacheState::CREATE_MEDIA
-                                : CacheState::DELETE_CODE;
+                                : CacheState::DELETE_CODE_JS;
 
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
@@ -170,21 +172,28 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         }
         break;
       }
-      case CacheState::DELETE_CODE: {
+      case CacheState::DELETE_CODE_JS: {
+        next_cache_state_ = CacheState::DELETE_CODE_WASM;
+        // TODO(crbug.com/866419): Currently we just clear entire caches.
+        // Change it to conditionally clear entries based on the filters.
+        // Likewise for DELETE_CODE_WASM.
+        if (generated_code_cache_context_ &&
+            generated_code_cache_context_->generated_js_code_cache()) {
+          rv = generated_code_cache_context_->generated_js_code_cache()
+                   ->ClearCache(base::BindRepeating(
+                       &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                       base::Unretained(this)));
+        }
+        break;
+      }
+      case CacheState::DELETE_CODE_WASM: {
         next_cache_state_ = CacheState::DONE;
-        if (base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
-          DCHECK(generated_code_cache_context_);
-          GeneratedCodeCache* code_cache =
-              generated_code_cache_context_->generated_code_cache();
-          if (code_cache) {
-            auto callback = base::BindRepeating(
-                &StoragePartitionHttpCacheDataRemover::DoClearCache,
-                base::Unretained(this));
-            // TODO(crbug.com/866419): Currently we just clear the entire cache.
-            // Change it to conditionally clear the entries based on the
-            // filters.
-            rv = code_cache->ClearCache(callback);
-          }
+        if (generated_code_cache_context_ &&
+            generated_code_cache_context_->generated_wasm_code_cache()) {
+          rv = generated_code_cache_context_->generated_wasm_code_cache()
+                   ->ClearCache(base::BindRepeating(
+                       &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                       base::Unretained(this)));
         }
         break;
       }
@@ -193,8 +202,8 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         next_cache_state_ = CacheState::NONE;
 
         // Notify the UI thread that we are done.
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
                 &StoragePartitionHttpCacheDataRemover::ClearedHttpCache,
                 base::Unretained(this)));

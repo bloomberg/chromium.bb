@@ -11,15 +11,15 @@ TextBufferBase::TextBufferBase() {
   buffer_.resize(Capacity());
 }
 
-void TextBufferBase::ShiftData(size_t) {}
+void TextBufferBase::ShiftData(wtf_size_t) {}
 
-void TextBufferBase::PushCharacters(UChar ch, size_t length) {
+void TextBufferBase::PushCharacters(UChar ch, wtf_size_t length) {
   if (length == 0)
     return;
   std::fill_n(EnsureDestination(length), length, ch);
 }
 
-UChar* TextBufferBase::EnsureDestination(size_t length) {
+UChar* TextBufferBase::EnsureDestination(wtf_size_t length) {
   if (size_ + length > Capacity())
     Grow(size_ + length);
   UChar* ans = CalcDestination(length);
@@ -27,8 +27,8 @@ UChar* TextBufferBase::EnsureDestination(size_t length) {
   return ans;
 }
 
-void TextBufferBase::Grow(size_t demand) {
-  size_t old_capacity = Capacity();
+void TextBufferBase::Grow(wtf_size_t demand) {
+  wtf_size_t old_capacity = Capacity();
   buffer_.resize(demand);
   buffer_.resize(Capacity());
   ShiftData(old_capacity);

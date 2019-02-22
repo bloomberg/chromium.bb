@@ -231,7 +231,7 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
   sides[kSideBottom] = &box.Bottom();
   sides[kSideLeft] = &box.Left();
 
-  for (size_t i = 0; i < kSideIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const BorderImageLength& side = *sides[i];
     if (side.IsNumber()) {
       list->Set(i, InterpolableNumber::Create(side.Number()));
@@ -307,7 +307,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
   sides[kSideBottom] = quad.Bottom();
   sides[kSideLeft] = quad.Left();
 
-  for (size_t i = 0; i < kSideIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const CSSValue& side = *sides[i];
     if (side.IsPrimitiveValue() && ToCSSPrimitiveValue(side).IsNumber()) {
       list->Set(i, InterpolableNumber::Create(
@@ -390,7 +390,7 @@ void CSSBorderImageLengthBoxInterpolationType::Composite(
       side_non_interpolable_values =
           non_interpolable_value.SideNonInterpolableValues();
 
-  for (size_t i = 0; i < kSideIndexCount; i++) {
+  for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     switch (side_types.type[i]) {
       case SideType::kNumber:
         underlying_list.GetMutable(i)->ScaleAndAdd(underlying_fraction,
@@ -424,7 +424,7 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   const auto& convert_side =
       [&side_types, &list, &state,
-       &non_interpolable_values](size_t index) -> BorderImageLength {
+       &non_interpolable_values](wtf_size_t index) -> BorderImageLength {
     switch (side_types.type[index]) {
       case SideType::kNumber:
         return clampTo<double>(ToInterpolableNumber(list.Get(index))->Value(),

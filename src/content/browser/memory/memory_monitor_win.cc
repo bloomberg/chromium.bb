@@ -15,10 +15,6 @@ namespace {
 
 const int kKBperMB = 1024;
 
-// A global static instance of the default delegate. Used by default by
-// MemoryMonitorWin.
-MemoryMonitorDelegate g_memory_monitor_win_delegate;
-
 }  // namespace
 
 // A system is considered 'large memory' if it has more than 1.5GB of system
@@ -73,7 +69,7 @@ int MemoryMonitorWin::GetTargetFreeMB(MemoryMonitorDelegate* delegate) {
 
 // Implementation of factory function defined in memory_monitor.h.
 std::unique_ptr<MemoryMonitor> CreateMemoryMonitor() {
-  return MemoryMonitorWin::Create(&g_memory_monitor_win_delegate);
+  return MemoryMonitorWin::Create(MemoryMonitorDelegate::GetInstance());
 }
 
 }  // namespace content

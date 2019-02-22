@@ -32,7 +32,6 @@ class GrRenderTargetContext;
 class SkAndroidFrameworkUtils;
 class SkBaseDevice;
 class SkBitmap;
-class SkClipStack;
 class SkData;
 class SkDraw;
 class SkDrawable;
@@ -44,7 +43,6 @@ class SkMetaData;
 class SkPath;
 class SkPicture;
 class SkPixmap;
-class SkRasterClip;
 class SkRegion;
 class SkRRect;
 struct SkRSXform;
@@ -2061,7 +2059,8 @@ public:
         @param matrix   SkMatrix to rotate, scale, translate, and so on; may be nullptr
         @param paint    SkPaint to apply transparency, filtering, and so on; may be nullptr
     */
-    void drawPicture(const sk_sp<SkPicture>& picture, const SkMatrix* matrix, const SkPaint* paint) {
+    void drawPicture(const sk_sp<SkPicture>& picture, const SkMatrix* matrix,
+                     const SkPaint* paint) {
         this->drawPicture(picture.get(), matrix, paint);
     }
 
@@ -2591,21 +2590,15 @@ private:
     friend class AutoDrawLooper;
     friend class SkDebugCanvas;     // needs experimental fAllowSimplifyClip
     friend class SkSurface_Raster;  // needs getDevice()
-    friend class SkNoDrawCanvas;    // InitFlags
-    friend class SkPictureImageFilter;  // SkCanvas(SkBaseDevice*, SkSurfaceProps*, InitFlags)
+    friend class SkNoDrawCanvas;    // needs resetForNextPicture()
     friend class SkPictureRecord;   // predrawNotify (why does it need it? <reed>)
     friend class SkOverdrawCanvas;
     friend class SkRasterHandleAllocator;
 
-    enum InitFlags {
-        kDefault_InitFlags                  = 0,
-        kConservativeRasterClip_InitFlag    = 1 << 0,
-    };
 protected:
     // For use by SkNoDrawCanvas (via SkCanvasVirtualEnforcer, which can't be a friend)
-    SkCanvas(const SkIRect& bounds, InitFlags);
+    SkCanvas(const SkIRect& bounds);
 private:
-    SkCanvas(sk_sp<SkBaseDevice> device, InitFlags);
     SkCanvas(const SkBitmap&, std::unique_ptr<SkRasterHandleAllocator>,
              SkRasterHandleAllocator::Handle);
 
@@ -2624,7 +2617,7 @@ private:
     //  - internalSaveLayer
     void setupDevice(SkBaseDevice*);
 
-    void init(sk_sp<SkBaseDevice>, InitFlags);
+    void init(sk_sp<SkBaseDevice>);
 
     /**
      * Gets the bounds of the top level layer in global canvas coordinates. We don't want this

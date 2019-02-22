@@ -11,4 +11,3 @@ PASS caretRectRightKey.width is caretRectAtEnd.width
 PASS caretRectRightKey.height is caretRectAtEnd.height
 PASS caretRectDownKey.width is caretRectAtEnd.width
 PASS caretRectDownKey.height is caretRectAtEnd.height
-

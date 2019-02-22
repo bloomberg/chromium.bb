@@ -208,8 +208,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
   error_callback_count_ = 0;
 
   // Send data to the socket, expect all of the data to be sent.
-  scoped_refptr<net::StringIOBuffer> write_buffer(
-      new net::StringIOBuffer("test"));
+  auto write_buffer = base::MakeRefCounted<net::StringIOBuffer>("test");
 
   {
     base::RunLoop run_loop;
@@ -281,7 +280,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
 
   // Send data again; since the socket is closed we should get a system error
   // equivalent to the connection reset error.
-  write_buffer = new net::StringIOBuffer("second test");
+  write_buffer = base::MakeRefCounted<net::StringIOBuffer>("second test");
 
   {
     base::RunLoop run_loop;

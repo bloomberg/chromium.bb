@@ -411,4 +411,14 @@ enum EffectiveConnectionType {
     // The number of calls to update the blink lifecycle (see:
     // LocalFrameView::UpdateLifecyclePhasesInternal).
     unsigned long LifecycleUpdateCount();
+
+    // Disable the 'delay' option for IntersectionObserver, so that observations
+    // are recomputed on every frame.  This eliminates the need to add
+    // setTimeout(..., delay_ms) calls to layout tests to wait for notifications
+    // to be generated.
+    void DisableIntersectionObserverThrottleDelay();
+
+    // Declare that the given |name| is in use by the embedder via the custom
+    // element mechanism.
+    [RaisesException] void addEmbedderCustomElementName(DOMString name);
 };

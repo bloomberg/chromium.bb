@@ -153,6 +153,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   out_frame_info->coded_size = dimensions;
   out_frame_info->visible_rect = gfx::Rect(dimensions);
   out_frame_info->metadata = out_frame->metadata()->GetInternalValues().Clone();
+  out_frame_info->color_space = out_frame->ColorSpace();
 
   {
     base::AutoLock lock(lock_);

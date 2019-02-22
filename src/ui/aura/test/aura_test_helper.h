@@ -48,6 +48,7 @@ class TestWindowParentingClient;
 class AuraTestHelper {
  public:
   AuraTestHelper();
+  explicit AuraTestHelper(std::unique_ptr<Env> env);
   ~AuraTestHelper();
 
   // Returns the current AuraTestHelper, or nullptr if it's not alive.
@@ -94,6 +95,8 @@ class AuraTestHelper {
 
   client::FocusClient* focus_client() { return focus_client_.get(); }
   client::CaptureClient* capture_client();
+
+  Env* GetEnv();
 
  private:
   enum class Mode {

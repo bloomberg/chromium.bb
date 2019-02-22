@@ -91,10 +91,12 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -109,13 +111,13 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -321,15 +323,7 @@ public class CustomTabActivityTest {
     }
 
     private void openAppMenuAndAssertMenuShown() {
-        ThreadUtils.runOnUiThread(
-                (Runnable) () -> getActivity().onMenuOrKeyboardAction(R.id.show_menu, false));
-
-        CriteriaHelper.pollUiThread(new Criteria("App menu was not shown") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getAppMenuHandler().isAppMenuShowing();
-            }
-        });
+        CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity());
     }
 
     /**
@@ -558,15 +552,14 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenu() throws InterruptedException {
+    public void testAppMenu() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 1;
         addMenuEntriesToIntent(intent, numMenuEntries);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -591,7 +584,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForMediaViewer() throws InterruptedException {
+    public void testAppMenuForMediaViewer() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.MEDIA_VIEWER);
@@ -599,8 +592,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 0;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -614,7 +606,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForReaderMode() throws InterruptedException {
+    public void testAppMenuForReaderMode() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.READER_MODE);
@@ -622,8 +614,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 2;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -639,7 +630,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForOfflinePage() throws InterruptedException {
+    public void testAppMenuForOfflinePage() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                 CustomTabIntentDataProvider.CustomTabsUiType.OFFLINE_PAGE);
@@ -647,8 +638,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = 3;
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
@@ -675,14 +665,13 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testShareMenuItem() throws InterruptedException {
+    public void testShareMenuItem() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         Assert.assertTrue(menu.findItem(R.id.share_menu_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.share_menu_id).isEnabled());
     }
@@ -694,7 +683,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testMaxMenuItems() throws InterruptedException {
+    public void testMaxMenuItems() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 7;
         Assert.assertTrue(MAX_MENU_CUSTOM_ITEMS < numMenuEntries);
@@ -702,8 +691,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
-        Menu menu =
-                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
         final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
         Assert.assertNotNull("App menu is not initialized: ", menu);
         Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
@@ -821,25 +809,18 @@ public class CustomTabActivityTest {
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
                         mTestServer.getURL(GEOLOCATION_PAGE)));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return currentTab != null
-                        && currentTab.getInfoBarContainer() != null
-                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
-            }
-        });
-        final ChromeActivity newActivity = reparentAndVerifyTab();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab currentTab = newActivity.getActivityTab();
-                return currentTab != null
-                        && currentTab.getInfoBarContainer() != null
-                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> isInfoBarSizeOne(mCustomTabActivityTestRule.getActivity().getActivityTab()));
+
+        ChromeActivity newActivity = reparentAndVerifyTab();
+        CriteriaHelper.pollUiThread(() -> isInfoBarSizeOne(newActivity.getActivityTab()));
+    }
+
+    private static boolean isInfoBarSizeOne(Tab tab) {
+        if (tab == null) return false;
+        InfoBarContainer container = InfoBarContainer.get(tab);
+        if (container == null) return false;
+        return container.getInfoBarsForTesting().size() == 1;
     }
 
     /**
@@ -964,7 +945,7 @@ public class CustomTabActivityTest {
 
         // Mark the intent as trusted so it can show more than one action button.
         IntentHandler.addTrustedIntentExtras(intent);
-        Assert.assertTrue(IntentHandler.isIntentChromeOrFirstParty(intent));
+        Assert.assertTrue(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
 
         ArrayList<Bundle> toolbarItems = new ArrayList<>(2);
         final PendingIntent pi1 = PendingIntent.getBroadcast(
@@ -1037,7 +1018,7 @@ public class CustomTabActivityTest {
         Intent intent = createMinimalCustomTabIntent();
 
         // By default, the intent should not be trusted.
-        Assert.assertFalse(IntentHandler.isIntentChromeOrFirstParty(intent));
+        Assert.assertFalse(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
 
         ArrayList<Bundle> toolbarItems = new ArrayList<>(2);
         final PendingIntent pi = PendingIntent.getBroadcast(
@@ -1121,6 +1102,39 @@ public class CustomTabActivityTest {
             Assert.assertEquals("Bottom Bar button does not have correct content description",
                     Integer.toString(i + 1), button.getContentDescription());
         }
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testSetTopBarContentView() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testSetTopBarContentView_secondCallIsNoOp() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            // Second call will not crash.
+            cctActivity.setTopBarContentView(anyView);
+        });
     }
 
     @Test
@@ -1529,10 +1543,9 @@ public class CustomTabActivityTest {
             }
         };
         ThreadUtils.postOnUiThread(() -> {
-            mCustomTabActivityTestRule.getActivity()
-                    .getActivityTab()
-                    .getWebContents()
-                    .simulateRendererKilledForTesting(false);
+            WebContentsUtils.simulateRendererKilled(
+                    mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                    false);
         });
         renderProcessCallback.waitForCallback(0);
         Assert.assertTrue(connection.postMessage(token, "Message", null)
@@ -2555,7 +2568,7 @@ public class CustomTabActivityTest {
         final CallbackHelper tabHiddenHelper = new CallbackHelper();
         TabObserver observer = new EmptyTabObserver() {
             @Override
-            public void onHidden(Tab tab) {
+            public void onHidden(Tab tab, @TabHidingType int type) {
                 tabHiddenHelper.notifyCalled();
             }
         };

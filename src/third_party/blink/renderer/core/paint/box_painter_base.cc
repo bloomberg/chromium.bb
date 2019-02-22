@@ -70,7 +70,7 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
   GraphicsContextStateSaver state_saver(context, false);
 
   const ShadowList* shadow_list = style.BoxShadow();
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
+  for (wtf_size_t i = shadow_list->Shadows().size(); i--;) {
     const ShadowData& shadow = shadow_list->Shadows()[i];
     if (shadow.Style() != kNormal)
       continue;
@@ -194,7 +194,7 @@ void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
   GraphicsContextStateSaver state_saver(context, false);
 
   const ShadowList* shadow_list = style.BoxShadow();
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
+  for (wtf_size_t i = shadow_list->Shadows().size(); i--;) {
     const ShadowData& shadow = shadow_list->Shadows()[i];
     if (shadow.Style() != kInset)
       continue;
@@ -611,8 +611,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     image = info.image->GetImage(
         geometry.ImageClient(), geometry.ImageDocument(), geometry.ImageStyle(),
         FloatSize(geometry.TileSize()));
-    interpolation_quality_context.emplace(
-        context, geometry.ImageStyle().GetInterpolationQuality());
+    interpolation_quality_context.emplace(context,
+                                          geometry.ImageInterpolationQuality());
 
     if (bg_layer.MaskSourceType() == EMaskSourceType::kLuminance)
       context.SetColorFilter(kColorFilterLuminanceToAlpha);

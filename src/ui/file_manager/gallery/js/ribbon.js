@@ -467,23 +467,17 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
   };
 
   this.thumbnailModel_.get([item.getEntry()]).then(function(metadataList) {
-    var loader = new ThumbnailLoader(
-        item.getEntry(),
-        ThumbnailLoader.LoaderType.IMAGE,
-        metadataList[0]);
+    const loader = new ThumbnailLoader(
+        item.getEntry(), ThumbnailLoader.LoaderType.IMAGE, metadataList[0]);
+    const box =
+        assertInstanceof(thumbnail.querySelector('.image-wrapper'), Element);
     // Pass 0.35 as auto fill threshold. This value allows to fill 4:3 and 3:2
     // photos in 16:9 box (ratio factors for them are ~1.34 and ~1.18
     // respectively).
     loader.load(
-        thumbnail.querySelector('.image-wrapper'),
-        ThumbnailLoader.FillMode.AUTO,
-        ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
-        hideIndicator /* opt_onSuccess */,
-        undefined /* opt_onError */,
-        undefined /* opt_onGeneric */,
-        0.35 /* opt_autoFillThreshold */,
-        Ribbon.THUMBNAIL_WIDTH /* opt_boxWidth */,
-        Ribbon.THUMBNAIL_HEIGHT /* opt_boxHeight */);
+        box, ThumbnailLoader.FillMode.AUTO, hideIndicator /* onSuccess */,
+        0.35 /* autoFillThreshold */, Ribbon.THUMBNAIL_WIDTH /* boxWidth */,
+        Ribbon.THUMBNAIL_HEIGHT /* boxHeight */);
   });
 };
 

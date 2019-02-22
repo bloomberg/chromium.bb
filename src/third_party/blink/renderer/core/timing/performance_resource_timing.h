@@ -93,7 +93,6 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   virtual AtomicString AlpnNegotiatedProtocol() const;
   virtual AtomicString ConnectionInfo() const;
 
- protected:
   TimeTicks TimeOrigin() const { return time_origin_; }
 
  private:

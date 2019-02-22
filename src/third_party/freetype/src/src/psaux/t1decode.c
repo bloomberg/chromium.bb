@@ -38,7 +38,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1decode
+#define FT_COMPONENT  t1decode
 
 
   typedef enum  T1_Operator_
@@ -1957,7 +1957,7 @@
   {
     FT_ZERO( decoder );
 
-    /* retrieve PSNames interface from list of current modules */
+    /* retrieve `psnames' interface from list of current modules */
     {
       FT_Service_PsCMaps  psnames;
 

@@ -39,6 +39,7 @@ public:
     static bool Equals(const GrColorSpaceXform* a, const GrColorSpaceXform* b);
 
     GrColor4f apply(const GrColor4f& srcColor);
+    SkColor4f apply(const SkColor4f& srcColor);
 
 private:
     friend class GrGLSLColorSpaceXformHelper;
@@ -52,7 +53,7 @@ public:
      *  Returns a fragment processor that converts the input's color space from src to dst.
      */
     static std::unique_ptr<GrFragmentProcessor> Make(SkColorSpace* src, SkAlphaType srcAT,
-                                                     SkColorSpace* dst);
+                                                     SkColorSpace* dst, SkAlphaType dstAT);
 
     /**
      *  Returns a fragment processor that calls the passed in fragment processor, and then converts

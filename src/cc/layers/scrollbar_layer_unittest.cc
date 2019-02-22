@@ -62,7 +62,7 @@ class FakeResourceTrackingUIResourceManager : public UIResourceManager {
 
   // Deletes a UI resource.  May safely be called more than once.
   void DeleteUIResource(UIResourceId id) override {
-    UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
+    auto iter = ui_resource_bitmap_map_.find(id);
     if (iter != ui_resource_bitmap_map_.end()) {
       ui_resource_bitmap_map_.erase(iter);
       total_ui_resource_deleted_++;
@@ -74,14 +74,14 @@ class FakeResourceTrackingUIResourceManager : public UIResourceManager {
   int TotalUIResourceCreated() { return total_ui_resource_created_; }
 
   gfx::Size ui_resource_size(UIResourceId id) {
-    UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
+    auto iter = ui_resource_bitmap_map_.find(id);
     if (iter != ui_resource_bitmap_map_.end())
       return iter->second.GetSize();
     return gfx::Size();
   }
 
   UIResourceBitmap* ui_resource_bitmap(UIResourceId id) {
-    UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
+    auto iter = ui_resource_bitmap_map_.find(id);
     if (iter != ui_resource_bitmap_map_.end())
       return &iter->second;
     return nullptr;
@@ -125,8 +125,8 @@ class BaseScrollbarLayerTest : public testing::Test {
             std::make_unique<FakeResourceTrackingUIResourceManager>();
     fake_ui_resource_manager_ = fake_ui_resource_manager.get();
 
-    layer_tree_host_.reset(new FakeLayerTreeHost(
-        &fake_client_, &params, CompositorMode::SINGLE_THREADED));
+    layer_tree_host_ = std::make_unique<FakeLayerTreeHost>(
+        &fake_client_, std::move(params), CompositorMode::SINGLE_THREADED);
     layer_tree_host_->SetUIResourceManagerForTesting(
         std::move(fake_ui_resource_manager));
     layer_tree_host_->InitializeSingleThreaded(

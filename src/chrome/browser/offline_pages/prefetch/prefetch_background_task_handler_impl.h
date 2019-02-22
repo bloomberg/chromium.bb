@@ -11,7 +11,6 @@
 #include "base/time/tick_clock.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -41,8 +40,6 @@ namespace offline_pages {
 // The backoff value is controlled by a persisted BackoffEntry.
 class PrefetchBackgroundTaskHandlerImpl : public PrefetchBackgroundTaskHandler {
  public:
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   explicit PrefetchBackgroundTaskHandlerImpl(PrefService* profile);
   ~PrefetchBackgroundTaskHandlerImpl() override;
 

@@ -11,6 +11,17 @@ import "url/mojom/url.mojom";
 
 const int64 kInvalidServiceWorkerRegistrationId = -1;
 
+// Represents ScriptType enum for ServiceWorkerRegistrationOptions:
+// https://w3c.github.io/ServiceWorker/#dom-registrationoptions-type
+// https://html.spec.whatwg.org/multipage/workers.html#workertype
+// TODO(asamidoi, nhiroki): Move this enum to blink/public/mojom/script or
+// somewhere else, and replace the duplicate enum in
+// third_party/blink/renderer/core/script/script.h.
+enum ScriptType {
+  kClassic,
+  kModule,
+};
+
 // Represents ServiceWorkerUpdateViaCache enum for ServiceWorkerRegistrationOptions:
 // https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache
 enum ServiceWorkerUpdateViaCache {
@@ -19,10 +30,17 @@ enum ServiceWorkerUpdateViaCache {
   kNone,
 };
 
+struct ChangedServiceWorkerObjectsMask {
+  bool installing;
+  bool waiting;
+  bool active;
+};
+
 // Represents options for register():
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 struct ServiceWorkerRegistrationOptions {
   url.mojom.Url scope;
+  ScriptType type = kClassic;
   ServiceWorkerUpdateViaCache update_via_cache = kImports;
 };
 
@@ -94,16 +112,13 @@ interface ServiceWorkerRegistrationObjectHost {
 interface ServiceWorkerRegistrationObject {
   // Sets changed service worker objects for this registration object.
   // |changed_mask| indicates which objects of {|installing|,|waiting|,|active|}
-  // have changed. See ChangedVersionAttributesMask in service_worker_types.h
-  // for details.
+  // have changed.
   // Changed objects may be null to indicate that the object does not exist
   // anymore. Unchanged ones are always null.
-  // TODO(leonhsl): Use mojofied ChangedVersionAttributesMask directly instead
-  // of an int32 for |changed_mask|.
-  SetVersionAttributes(int32 changed_mask,
-                       ServiceWorkerObjectInfo? installing,
-                       ServiceWorkerObjectInfo? waiting,
-                       ServiceWorkerObjectInfo? active);
+  SetServiceWorkerObjects(ChangedServiceWorkerObjectsMask changed_mask,
+                          ServiceWorkerObjectInfo? installing,
+                          ServiceWorkerObjectInfo? waiting,
+                          ServiceWorkerObjectInfo? active);
 
   // Sets ServiceWorkerRegistration#updateViaCache.
   SetUpdateViaCache(ServiceWorkerUpdateViaCache update_via_cache);

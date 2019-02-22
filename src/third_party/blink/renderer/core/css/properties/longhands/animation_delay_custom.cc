@@ -31,10 +31,10 @@ const CSSValue* AnimationDelay::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationDelay::InitialValue() const {
   DEFINE_STATIC_LOCAL(
-      CSSValue, value,
+      Persistent<CSSValue>, value,
       (CSSPrimitiveValue::Create(CSSTimingData::InitialDelay(),
                                  CSSPrimitiveValue::UnitType::kSeconds)));
-  return &value;
+  return value;
 }
 
 }  // namespace CSSLonghand

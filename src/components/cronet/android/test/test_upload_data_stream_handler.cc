@@ -128,7 +128,7 @@ void TestUploadDataStreamHandler::ReadOnNetworkThread() {
   DCHECK(network_thread_->BelongsToCurrentThread());
   read_callback_invoked_ = false;
   if (!read_buffer_.get())
-    read_buffer_ = new net::IOBufferWithSize(kReadBufferSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(kReadBufferSize);
 
   int bytes_read = upload_data_stream_->Read(
       read_buffer_.get(), kReadBufferSize,

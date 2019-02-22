@@ -36,7 +36,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
@@ -94,12 +93,13 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
     : search_box::SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
       app_list_view_(app_list_view),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()),
       is_app_list_search_autocomplete_enabled_(
-          features::IsAppListSearchAutocompleteEnabled()),
+          app_list_features::IsAppListSearchAutocompleteEnabled()),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
-  if (features::IsZeroStateSuggestionsEnabled())
+  if (app_list_features::IsZeroStateSuggestionsEnabled())
     set_show_close_button_when_active(true);
 }
 
@@ -148,9 +148,10 @@ void SearchBoxView::UpdateKeyboardVisibility() {
   if (!keyboard::KeyboardController::HasInstance())
     return;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled() ||
-      is_search_box_active() == keyboard::IsKeyboardVisible())
+  if (!keyboard_controller->IsEnabled() ||
+      is_search_box_active() == keyboard_controller->IsKeyboardVisible()) {
     return;
+  }
 
   if (is_search_box_active()) {
     keyboard_controller->ShowKeyboard(false);
@@ -428,7 +429,7 @@ void SearchBoxView::AcceptAutocompleteText() {
   if (!is_app_list_search_autocomplete_enabled_)
     return;
 
-  if (highlight_range_.start() != search_box()->text().length())
+  if (HasAutocompleteText())
     ContentsChanged(search_box(), search_box()->text());
 }
 
@@ -444,6 +445,15 @@ void SearchBoxView::AcceptOneCharInAutocompleteText() {
   ContentsChanged(search_box(), search_box()->text());
   search_box()->SetText(original_text);
   search_box()->SetSelectionRange(highlight_range_);
+}
+
+bool SearchBoxView::HasAutocompleteText() {
+  // If the selected range is non-empty, it will either be suggested by
+  // autocomplete or selected by the user. If the recorded autocomplete
+  // |highlight_range_| matches the selection range, this text is suggested by
+  // autocomplete.
+  return search_box()->GetSelectedRange() == highlight_range_ &&
+         highlight_range_.length() > 0;
 }
 
 void SearchBoxView::ClearAutocompleteText() {
@@ -498,11 +508,13 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         key_event.key_code() != ui::VKEY_BACK) {
       if (key_event.key_code() == ui::VKEY_TAB) {
         AcceptAutocompleteText();
-      } else if (key_event.key_code() == ui::VKEY_UP ||
-                 key_event.key_code() == ui::VKEY_DOWN ||
-                 key_event.key_code() == ui::VKEY_LEFT ||
-                 key_event.key_code() == ui::VKEY_RIGHT) {
+      } else if ((key_event.key_code() == ui::VKEY_UP ||
+                  key_event.key_code() == ui::VKEY_DOWN ||
+                  key_event.key_code() == ui::VKEY_LEFT ||
+                  key_event.key_code() == ui::VKEY_RIGHT) &&
+                 HasAutocompleteText()) {
         ClearAutocompleteText();
+        return true;
       } else {
         const base::string16 pending_text = search_box()->GetSelectedText();
         // Hitting the next key in the autocompete suggestion continues
@@ -547,7 +559,17 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
     return app_list_view_->HandleScroll(
         (&mouse_event)->AsMouseWheelEvent()->offset().y(), ui::ET_MOUSEWHEEL);
   }
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
+    AcceptAutocompleteText();
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
+}
+
+bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
+                                       const ui::GestureEvent& gesture_event) {
+  if (gesture_event.type() == ui::ET_GESTURE_TAP)
+    AcceptAutocompleteText();
+  return search_box::SearchBoxViewBase::HandleGestureEvent(sender,
+                                                           gesture_event);
 }
 
 void SearchBoxView::ButtonPressed(views::Button* sender,

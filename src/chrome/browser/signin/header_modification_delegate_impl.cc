@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 
 namespace signin {
@@ -43,12 +44,14 @@ bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
 void HeaderModificationDelegateImpl::ProcessRequest(
     ChromeRequestAdapter* request_adapter,
     const GURL& redirect_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   FixAccountConsistencyRequestHeader(request_adapter, redirect_url, io_data_);
 }
 
 void HeaderModificationDelegateImpl::ProcessResponse(
     ResponseAdapter* response_adapter,
     const GURL& redirect_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ProcessAccountConsistencyResponseHeaders(response_adapter, redirect_url,
                                            io_data_->IsOffTheRecord());
 }

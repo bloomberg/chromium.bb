@@ -6,14 +6,14 @@
 
 #include "base/bind.h"
 #import "base/ios/block_types.h"
+#include "base/task/post_task.h"
 #import "ios/net/cookies/cookie_creation_time_manager.h"
 #include "ios/net/cookies/system_cookie_util.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
-
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,7 +27,7 @@ namespace {
 // SystemCookieStore should operate on IO thread.
 void RunBlockOnIOThread(ProceduralBlock block) {
   DCHECK(block != nil);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::BindOnce(block));
 }
 
@@ -46,6 +46,22 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
   net::CookieOptions options;
   options.set_include_httponly();
   return canonical_cookie.IncludeForRequestURL(url, options);
+}
+
+// Prioritizes queued WKHTTPCookieStore completion handlers to run as soon as
+// possible. This function is needed because some of WKHTTPCookieStore methods
+// completion handlers are not called until there is a WKWebView on the view
+// hierarchy.
+void PrioritizeWKHTTPCookieStoreCallbacks() {
+  // TODO(crbug.com/885218): Currently this hack is needed to fix
+  // crbug.com/885218. Remove when the behavior of
+  // [WKHTTPCookieStore getAllCookies:] changes.
+  NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
+  [[WKWebsiteDataStore defaultDataStore]
+      removeDataOfTypes:data_types
+          modifiedSince:[NSDate distantFuture]
+      completionHandler:^{
+      }];
 }
 
 }  // namespace
@@ -71,8 +87,8 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
       creation_time_manager_->GetWeakPtr();
   __weak WKHTTPCookieStore* block_cookie_store = cookie_store_;
   GURL block_url = url;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         WKHTTPCookieStore* strong_cookie_store = block_cookie_store;
         if (strong_cookie_store) {
           [strong_cookie_store
@@ -89,6 +105,7 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
                 RunSystemCookieCallbackForCookies(std::move(shared_callback),
                                                   weak_time_manager, result);
               }];
+          PrioritizeWKHTTPCookieStoreCallbacks();
         } else {
           net::ReportGetCookiesForURLResult(
               net::SystemCookieStoreType::kWKHTTPSystemCookieStore, false);
@@ -106,8 +123,8 @@ void WKHTTPSystemCookieStore::GetAllCookiesAsync(
   __weak WKHTTPCookieStore* block_cookie_store = cookie_store_;
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         WKHTTPCookieStore* strong_cookie_store = block_cookie_store;
         if (strong_cookie_store) {
           [strong_cookie_store
@@ -115,6 +132,7 @@ void WKHTTPSystemCookieStore::GetAllCookiesAsync(
                 RunSystemCookieCallbackForCookies(std::move(shared_callback),
                                                   weak_time_manager, cookies);
               }];
+          PrioritizeWKHTTPCookieStoreCallbacks();
         } else {
           RunSystemCookieCallbackForCookies(std::move(shared_callback),
                                             weak_time_manager, @[]);
@@ -131,8 +149,8 @@ void WKHTTPSystemCookieStore::DeleteCookieAsync(NSHTTPCookie* cookie,
       creation_time_manager_->GetWeakPtr();
   NSHTTPCookie* block_cookie = cookie;
   __weak WKHTTPCookieStore* block_cookie_store = cookie_store_;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [block_cookie_store
                  deleteCookie:block_cookie
             completionHandler:^{
@@ -160,8 +178,8 @@ void WKHTTPSystemCookieStore::SetCookieAsync(
   if (optional_creation_time && !optional_creation_time->is_null())
     cookie_time = *optional_creation_time;
   __weak WKHTTPCookieStore* block_cookie_store = cookie_store_;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [block_cookie_store
                     setCookie:block_cookie
             completionHandler:^{
@@ -183,8 +201,8 @@ void WKHTTPSystemCookieStore::ClearStoreAsync(SystemCookieCallback callback) {
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
   __weak WKHTTPCookieStore* block_cookie_store = cookie_store_;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [block_cookie_store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
           ProceduralBlock completionHandler = ^{
             RunBlockOnIOThread(^{
@@ -250,6 +268,3 @@ void WKHTTPSystemCookieStore::RunSystemCookieCallbackForCookies(
 }
 
 }  // namespace web
-
-#endif  // defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >=
-        //__IPHONE_11_0)

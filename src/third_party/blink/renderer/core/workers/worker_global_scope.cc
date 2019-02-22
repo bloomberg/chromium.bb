@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/font_face_set_worker.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
@@ -39,12 +40,15 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -55,8 +59,10 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -96,6 +102,7 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;
+  paused_calls_.clear();
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
@@ -190,6 +197,14 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
       return;
     }
 
+    // importScripts always uses "no-cors", so simply checking the origin is
+    // enough.
+    // TODO(yhirano): Remove this ad-hoc logic and use the response type.
+    const AccessControlStatus access_control_status =
+        execution_context.GetSecurityOrigin()->CanReadContent(response_url)
+            ? kSharableCrossOrigin
+            : kOpaqueResource;
+
     ErrorEvent* error_event = nullptr;
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
@@ -199,7 +214,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
                          handler, response_url),
-        &error_event, v8_cache_options_);
+        access_control_status, &error_event, v8_cache_options_);
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);
@@ -219,23 +234,15 @@ WorkerGlobalScope::LoadScriptFromInstalledScriptsManager(
           script_url)) {
     return LoadResult::kNotHandled;
   }
-  InstalledScriptsManager::ScriptData script_data;
-  InstalledScriptsManager::ScriptStatus status =
-      GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url,
-                                                               &script_data);
-  switch (status) {
-    case InstalledScriptsManager::ScriptStatus::kFailed:
-      return LoadResult::kFailed;
-    case InstalledScriptsManager::ScriptStatus::kSuccess:
-      *out_response_url = script_url;
-      *out_source_code = script_data.TakeSourceText();
-      *out_cached_meta_data = script_data.TakeMetaData();
-      // TODO(shimazu): Add appropriate probes for inspector.
-      return LoadResult::kSuccess;
-  }
-
-  NOTREACHED();
-  return LoadResult::kFailed;
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+      GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url);
+  if (!script_data)
+    return LoadResult::kFailed;
+  *out_response_url = script_url;
+  *out_source_code = script_data->TakeSourceText();
+  *out_cached_meta_data = script_data->TakeMetaData();
+  // TODO(shimazu): Add appropriate probes for inspector.
+  return LoadResult::kSuccess;
 }
 
 WorkerGlobalScope::LoadResult
@@ -248,7 +255,7 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
   scoped_refptr<WorkerClassicScriptLoader> classic_script_loader(
       WorkerClassicScriptLoader::Create());
   classic_script_loader->LoadSynchronously(
-      *execution_context, script_url, WebURLRequest::kRequestContextScript,
+      *execution_context, script_url, mojom::RequestContextType::SCRIPT,
       execution_context->GetSecurityContext().AddressSpace());
 
   // If the fetching attempt failed, throw a NetworkError exception and
@@ -307,8 +314,77 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
 
+void WorkerGlobalScope::TasksWereUnpaused() {
+  WorkerOrWorkletGlobalScope::TasksWereUnpaused();
+  Vector<base::OnceClosure> calls;
+  paused_calls_.swap(calls);
+  for (auto& call : calls)
+    std::move(call).Run();
+}
+
+void WorkerGlobalScope::EvaluateClassicScriptPausable(
+    const KURL& script_url,
+    AccessControlStatus access_control_status,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  if (IsContextPaused()) {
+    AddPausedCall(WTF::Bind(
+        &WorkerGlobalScope::EvaluateClassicScriptPausable,
+        WrapWeakPersistent(this), script_url, access_control_status,
+        source_code, WTF::Passed(std::move(cached_meta_data)), stack_id));
+    return;
+  }
+  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(stack_id);
+  EvaluateClassicScript(script_url, access_control_status, source_code,
+                        std::move(cached_meta_data));
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(stack_id);
+}
+
+void WorkerGlobalScope::ImportModuleScriptPausable(
+    const KURL& module_url_record,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    network::mojom::FetchCredentialsMode mode) {
+  if (IsContextPaused()) {
+    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ImportModuleScriptPausable,
+                            WrapWeakPersistent(this), module_url_record,
+                            WrapPersistent(outside_settings_object), mode));
+    return;
+  }
+  ImportModuleScript(module_url_record, outside_settings_object, mode);
+}
+
+void WorkerGlobalScope::ReceiveMessagePausable(
+    BlinkTransferableMessage message) {
+  if (IsContextPaused()) {
+    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ReceiveMessagePausable,
+                            WrapWeakPersistent(this), std::move(message)));
+    return;
+  }
+
+  MessagePortArray* ports =
+      MessagePort::EntanglePorts(*this, std::move(message.ports));
+  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
+  UserActivation* user_activation = nullptr;
+  if (message.user_activation) {
+    user_activation =
+        new UserActivation(message.user_activation->has_been_active,
+                           message.user_activation->was_active);
+  }
+  DispatchEvent(*MessageEvent::Create(ports, std::move(message.message),
+                                      user_activation));
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
+}
+
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
+    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
@@ -322,8 +398,12 @@ void WorkerGlobalScope::EvaluateClassicScript(
   bool success = ScriptController()->Evaluate(
       ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
                        script_url),
-      nullptr /* error_event */, v8_cache_options_);
+      access_control_status, nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
+}
+
+void WorkerGlobalScope::AddPausedCall(base::OnceClosure closure) {
+  paused_calls_.push_back(std::move(closure));
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
@@ -413,6 +493,12 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
                           TaskType::kNetworking),
                       FROM_HERE,
                       CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+}
+
+void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
+  Microtask::EnqueueMicrotask(WTF::Bind(
+      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
+      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
 }
 
 int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,

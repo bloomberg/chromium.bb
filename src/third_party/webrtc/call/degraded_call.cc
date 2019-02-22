@@ -17,8 +17,8 @@
 namespace webrtc {
 DegradedCall::DegradedCall(
     std::unique_ptr<Call> call,
-    absl::optional<DefaultNetworkSimulationConfig> send_config,
-    absl::optional<DefaultNetworkSimulationConfig> receive_config)
+    absl::optional<BuiltInNetworkBehaviorConfig> send_config,
+    absl::optional<BuiltInNetworkBehaviorConfig> receive_config)
     : clock_(Clock::GetRealTimeClock()),
       call_(std::move(call)),
       send_config_(send_config),
@@ -157,10 +157,9 @@ void DegradedCall::SignalChannelNetworkState(MediaType media,
   call_->SignalChannelNetworkState(media, state);
 }
 
-void DegradedCall::OnTransportOverheadChanged(
-    MediaType media,
+void DegradedCall::OnAudioTransportOverheadChanged(
     int transport_overhead_per_packet) {
-  call_->OnTransportOverheadChanged(media, transport_overhead_per_packet);
+  call_->OnAudioTransportOverheadChanged(transport_overhead_per_packet);
 }
 
 void DegradedCall::OnSentPacket(const rtc::SentPacket& sent_packet) {
@@ -181,10 +180,14 @@ bool DegradedCall::SendRtp(const uint8_t* packet,
   // been sent, so that the bandwidth estimator sees the delay we add.
   send_pipe_->SendRtp(packet, length, options);
   if (options.packet_id != -1) {
-    rtc::SentPacket packet_info;
-    packet_info.packet_id = options.packet_id;
-    packet_info.send_time_ms = clock_->TimeInMilliseconds();
-    call_->OnSentPacket(packet_info);
+    rtc::SentPacket sent_packet;
+    sent_packet.packet_id = options.packet_id;
+    sent_packet.send_time_ms = clock_->TimeInMilliseconds();
+    sent_packet.info.included_in_feedback = options.included_in_feedback;
+    sent_packet.info.included_in_allocation = options.included_in_allocation;
+    sent_packet.info.packet_size_bytes = length;
+    sent_packet.info.packet_type = rtc::PacketType::kData;
+    call_->OnSentPacket(sent_packet);
   }
   return true;
 }

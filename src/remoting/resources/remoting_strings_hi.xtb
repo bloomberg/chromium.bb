@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">इस क्लाइंट के ज़रिए यह डिवाइस इसलिए काम नहीं करता है क्योंकि इसे तृतीय पक्ष प्रमाणीकरण चाहिए.</translation>
 <translation id="3194245623920924351">Chrome दूरस्थ डेस्कटॉप</translation>
 <translation id="3197730452537982411">दूरस्थ डेस्कटॉप</translation>
-<translation id="3212472844831225214">• Android 9.0 Pie के लिए ज़्यादा सुविधा.</translation>
 <translation id="324272851072175193">ये निर्देश ईमेल करें</translation>
 <translation id="3258789396564295715">आप Chrome दूरस्थ डेस्कटॉप का उपयोग करके सुरक्षित रूप से इस कंप्यूटर को एक्सेस कर सकते हैं.</translation>
 <translation id="3286521253923406898">Chromoting होस्ट नियंत्रक</translation>
@@ -331,6 +330,8 @@
 <translation id="8525306231823319788">पूर्ण स्‍क्रीन</translation>
 <translation id="8548209692293300397">आपने पहले <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) के रूप में साइन इन किया था.  उस खाते में अपने कंप्‍यूटर एक्‍सेस करने के लिए, उस खाते से <ph name="LINK_BEGIN" />Google Chrome में साइन इन करें<ph name="LINK_END" /> और Chrome दूरस्‍थ डेस्‍कटॉप को फिर से इंस्‍टॉल करें.</translation>
 <translation id="8642984861538780905">ठीक</translation>
+<translation id="8705151241155781642">• Android 9.0 Pie के लिए ज़्यादा सुविधा.
+• आपके Android डिवाइस की स्क्रीन से मिलान करने के लिए डेस्कटॉप रिज़ॉल्यूशन को दूर से बदलने की सुविधा.</translation>
 <translation id="8712909229180978490">मैं Google डिस्क में अपनी सहेजी गई फ़ाइलों को ऑनलाइन नहीं देख सकता/सकती.</translation>
 <translation id="8743328882720071828">क्या आप <ph name="CLIENT_USERNAME" /> को अपना कंप्यूटर देखने और नियंत्रित करने देना चाहते हैं?</translation>
 <translation id="8747048596626351634">सत्र बंद हो गया या शुरू नहीं हो पाया. अगर दूरस्थ कंप्यूटर पर ~/.chrome-remote-desktop-session मौजूद है, तो पक्का करें कि यह डेस्कटॉप परिवेश या विंडो प्रबंधक जैसी देर तक चलने वाली फ़ोरग्राउंड प्रक्रिया चालू कर देता है.</translation>

@@ -20,17 +20,20 @@ namespace util {
 // Enumeration of deep link types.
 enum class DeepLinkType {
   kUnsupported,
+  kChromeSettings,
   kFeedback,
   kOnboarding,
   kQuery,
   kReminders,
   kScreenshot,
   kSettings,
+  kTaskManager,
   kWhatsOnMyScreen,
 };
 
 // Enumeration of deep link parameters.
 enum class DeepLinkParam {
+  kPage,
   kQuery,
   kRelaunch,
 };
@@ -68,6 +71,10 @@ ASH_EXPORT bool IsDeepLinkType(const GURL& url, DeepLinkType type);
 
 // Returns true if the specified |url| is a deep link, false otherwise.
 ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
+
+// Returns the URL for the specified Chrome Settings |page|. If page is absent
+// or not allowed, the URL will be for top-level Chrome Settings.
+ASH_EXPORT GURL GetChromeSettingsUrl(const base::Optional<std::string>& page);
 
 // Returns the web URL for the specified |deep_link|. A return value will only
 // be present if |deep_link| is a web deep link as identified by the

@@ -397,7 +397,8 @@ int WebContentsDelegateAndroid::GetBottomControlsHeight() const {
   return Java_WebContentsDelegateAndroid_getBottomControlsHeight(env, obj);
 }
 
-bool WebContentsDelegateAndroid::DoBrowserControlsShrinkBlinkSize() const {
+bool WebContentsDelegateAndroid::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

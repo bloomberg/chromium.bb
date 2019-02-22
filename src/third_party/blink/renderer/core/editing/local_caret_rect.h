@@ -49,7 +49,7 @@ IntRect AbsoluteCaretRectOfPosition(
 CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePosition&);
 CORE_EXPORT IntRect AbsoluteSelectionBoundsOf(const VisiblePositionInFlatTree&);
 
-// Exposed to tests only. Implemented in LocalCaretRectTest.cpp.
+// Exposed to tests only. Implemented in local_caret_rect_test.cc.
 bool operator==(const LocalCaretRect&, const LocalCaretRect&);
 std::ostream& operator<<(std::ostream&, const LocalCaretRect&);
 

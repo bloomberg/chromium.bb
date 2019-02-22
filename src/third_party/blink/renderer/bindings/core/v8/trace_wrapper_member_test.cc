@@ -47,10 +47,10 @@ TEST(TraceWrapperMemberTest, HeapVectorSwap2) {
 }
 
 TEST(TraceWrapperMemberTest, HeapHashSet) {
-  const size_t kContainerSize = 10000;
+  const wtf_size_t kContainerSize = 10000;
   HeapHashSet<Wrapper> set;
   // Loop enough so that underlying HashTable will rehash several times.
-  for (size_t i = 1; i <= kContainerSize; ++i) {
+  for (wtf_size_t i = 1; i <= kContainerSize; ++i) {
     DeathAwareScriptWrappable* entry = DeathAwareScriptWrappable::Create();
     set.insert(entry);
   }
@@ -63,18 +63,18 @@ TEST(TraceWrapperMemberTest, HeapHashSet) {
 }
 
 TEST(TraceWrapperMemberTest, HeapHashMapValue) {
-  const size_t kContainerSize = 10000;
-  HeapHashMap<int, Wrapper> map;
+  const wtf_size_t kContainerSize = 10000;
+  HeapHashMap<uint32_t, Wrapper> map;
   HeapVector<Wrapper> verification_vector;
   // Loop enough so that underlying HashTable will rehash several times.
-  for (size_t i = 1; i <= kContainerSize; ++i) {
+  for (wtf_size_t i = 1; i <= kContainerSize; ++i) {
     DeathAwareScriptWrappable* entry = DeathAwareScriptWrappable::Create();
     map.insert(i, entry);
     verification_vector.push_back(entry);
   }
   EXPECT_EQ(kContainerSize, map.size());
 
-  for (size_t i = 1; i <= kContainerSize; ++i) {
+  for (wtf_size_t i = 1; i <= kContainerSize; ++i) {
     auto wrapper = map.Take(i);
     EXPECT_EQ(verification_vector[i - 1], wrapper.Get());
   }

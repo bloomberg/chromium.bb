@@ -47,7 +47,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/app_controller_mac.h"
@@ -200,7 +199,7 @@ void SessionService::TabClosed(const SessionID& window_id,
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  IdToRange::iterator i = tab_to_available_range_.find(tab_id);
+  auto i = tab_to_available_range_.find(tab_id);
   if (i != tab_to_available_range_.end())
     tab_to_available_range_.erase(i);
 
@@ -318,12 +317,10 @@ void SessionService::TabInserted(WebContents* contents) {
                session_tab_helper->session_id());
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(contents);
-  if (extensions_tab_helper &&
-      extensions_tab_helper->extension_app()) {
-    SetTabExtensionAppID(
-        session_tab_helper->window_id(),
-        session_tab_helper->session_id(),
-        extensions_tab_helper->extension_app()->id());
+  if (extensions_tab_helper && extensions_tab_helper->is_app()) {
+    SetTabExtensionAppID(session_tab_helper->window_id(),
+                         session_tab_helper->session_id(),
+                         extensions_tab_helper->GetAppId());
   }
 
   // Record the association between the SessionStorageNamespace and the
@@ -650,11 +647,10 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(tab);
-  if (extensions_tab_helper->extension_app()) {
+  if (extensions_tab_helper->is_app()) {
     base_session_service_->AppendRebuildCommand(
         sessions::CreateSetTabExtensionAppIDCommand(
-            session_id,
-            extensions_tab_helper->extension_app()->id()));
+            session_id, extensions_tab_helper->GetAppId()));
   }
 
   const std::string& ua_override = tab->GetUserAgentOverride();
@@ -794,13 +790,13 @@ void SessionService::ScheduleCommand(
 }
 
 void SessionService::CommitPendingCloses() {
-  for (PendingTabCloseIDs::iterator i = pending_tab_close_ids_.begin();
+  for (auto i = pending_tab_close_ids_.begin();
        i != pending_tab_close_ids_.end(); ++i) {
     ScheduleCommand(sessions::CreateTabClosedCommand(*i));
   }
   pending_tab_close_ids_.clear();
 
-  for (PendingWindowCloseIDs::iterator i = pending_window_close_ids_.begin();
+  for (auto i = pending_window_close_ids_.begin();
        i != pending_window_close_ids_.end(); ++i) {
     ScheduleCommand(sessions::CreateWindowClosedCommand(*i));
   }

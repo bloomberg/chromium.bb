@@ -38,23 +38,36 @@ class LayoutSelectionTest : public EditingTestBase {
 
   static void PrintLayoutTextInfo(const FrameSelection& selection,
                                   std::ostream& ostream,
-                                  const LayoutText& layout_text) {
-    if (layout_text.IsLayoutNGObject()) {
-      // TODO(yoichio): Print NG LayoutSelectionStatus.
+                                  const LayoutText& layout_text,
+                                  SelectionState state) {
+    const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_text);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (const NGPaintFragment* fragment : fragments) {
+        const LayoutSelectionStatus status =
+            selection.ComputeLayoutSelectionStatus(*fragment);
+        if (state == SelectionState::kNone && status.start == status.end)
+          continue;
+        ostream << "(" << status.start << "," << status.end << ")";
+      }
       return;
     }
+
     const LayoutTextSelectionStatus& status =
         selection.ComputeLayoutSelectionStatus(layout_text);
+    if (state == SelectionState::kNone && status.start == status.end)
+      return;
     ostream << "(" << status.start << "," << status.end << ")";
   }
 
   static void PrintLayoutObjectInfo(const FrameSelection& selection,
                                     std::ostream& ostream,
                                     LayoutObject* layout_object) {
-    const SelectionState& status = layout_object->GetSelectionState();
-    ostream << ", " << status;
-    if (status != SelectionState::kNone && layout_object->IsText())
-      PrintLayoutTextInfo(selection, ostream, ToLayoutText(*layout_object));
+    const SelectionState& state = layout_object->GetSelectionState();
+    ostream << ", " << state;
+    if (layout_object->IsText()) {
+      PrintLayoutTextInfo(selection, ostream, ToLayoutText(*layout_object),
+                          state);
+    }
 
     ostream << (layout_object->ShouldInvalidateSelection()
                     ? ", ShouldInvalidate "
@@ -63,7 +76,7 @@ class LayoutSelectionTest : public EditingTestBase {
   static void PrintSelectionInfo(const FrameSelection& selection,
                                  std::ostream& ostream,
                                  const Node& node,
-                                 size_t depth) {
+                                 wtf_size_t depth) {
     if (const Text* text = ToTextOrNull(node))
       PrintText(ostream, *text);
     else if (const Element* element = ToElementOrNull(node))
@@ -87,7 +100,7 @@ class LayoutSelectionTest : public EditingTestBase {
   static void PrintDOMTreeInternal(const FrameSelection& selection,
                                    std::ostream& ostream,
                                    const Node& node,
-                                   size_t depth) {
+                                   wtf_size_t depth) {
     ostream << RepeatString("  ", depth).Utf8().data();
     if (IsHTMLStyleElement(node)) {
       ostream << "<style> ";
@@ -295,8 +308,8 @@ TEST_F(LayoutSelectionTest, FirstLetter) {
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'foo', End(0,2), ShouldInvalidate \n"
-      "      :first-letter, Start(0,1), ShouldInvalidate ",
+      "    'foo', StartAndEnd(0,2), ShouldInvalidate \n"
+      "      :first-letter, None(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -309,8 +322,8 @@ TEST_F(LayoutSelectionTest, FirstLetterMultiple) {
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    ' [f]oo', End(0,1), ShouldInvalidate \n"
-      "      :first-letter, Start(2,4), ShouldInvalidate ",
+      "    ' [f]oo', StartAndEnd(0,1), ShouldInvalidate \n"
+      "      :first-letter, None(2,4), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -324,7 +337,7 @@ TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
       "  'foo', Start(2,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    'bar', Inside(0,2), ShouldInvalidate \n"
-      "      :first-letter, Inside(0,1), ShouldInvalidate \n"
+      "      :first-letter, None(0,1), ShouldInvalidate \n"
       "  'baz', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
 
@@ -362,9 +375,21 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
       "  'foo', Start(2,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    'bar', Inside(0,2), ShouldInvalidate \n"
-      "      :first-letter, Inside(0,1), ShouldInvalidate \n"
+      "      :first-letter, None(0,1), ShouldInvalidate \n"
       "  'baz', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  <style> \n"
+      "  'foo', Start(2,3), NotInvalidate \n"
+      "  DIV, Contain, NotInvalidate \n"
+      "    'bar', Inside(0,2), NotInvalidate \n"
+      "      :first-letter, None(0,1), NotInvalidate \n"
+      "  'baz', End(0,1), NotInvalidate ",
+      DumpSelectionInfo());
+  UpdateAllLifecyclePhases();
+
   // <div>foo</div><div>bar</div>ba^z|
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
                                            .SetBaseAndExtent({baz, 2}, {baz, 3})
@@ -954,7 +979,7 @@ TEST_F(NGLayoutSelectionTest, SelectOnOneText) {
       "BODY, Contain, NotInvalidate \n"
       "  'foo', None, NotInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', StartAndEnd, ShouldInvalidate ",
+      "    'bar', StartAndEnd(4,5), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -964,8 +989,8 @@ TEST_F(NGLayoutSelectionTest, FirstLetterInAnotherBlockFlow) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
-      "  'foo', End(0,2), ShouldInvalidate \n"
-      "    :first-letter, Start(0,1), ShouldInvalidate ",
+      "  'foo', StartAndEnd(1,2), ShouldInvalidate \n"
+      "    :first-letter, None(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
 }
 
@@ -974,9 +999,9 @@ TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'foo', Start, ShouldInvalidate \n"
+      "    'foo', Start(1,3), ShouldInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
-      "    'bar', End, ShouldInvalidate ",
+      "    'bar', End(0,2), ShouldInvalidate ",
       DumpSelectionInfo());
   LayoutObject* const foo =
       GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();

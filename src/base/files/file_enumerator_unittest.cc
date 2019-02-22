@@ -54,7 +54,7 @@ TEST(FileEnumerator, NotExistingPath) {
 
   for (auto policy : kFolderSearchPolicies) {
     const auto files = RunEnumerator(
-        path, true, FileEnumerator::FILES & FileEnumerator::DIRECTORIES,
+        path, true, FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
         FILE_PATH_LITERAL(""), policy);
     EXPECT_THAT(files, IsEmpty());
   }
@@ -67,7 +67,7 @@ TEST(FileEnumerator, EmptyFolder) {
   for (auto policy : kFolderSearchPolicies) {
     const auto files =
         RunEnumerator(temp_dir.GetPath(), true,
-                      FileEnumerator::FILES & FileEnumerator::DIRECTORIES,
+                      FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
                       kEmptyPattern, policy);
     EXPECT_THAT(files, IsEmpty());
   }

@@ -52,6 +52,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // bubble already exists.
   static views::Widget* ShowBubble(
       views::View* anchor_view,
+      views::Button* highlighted_button,
       const gfx::Rect& anchor_rect,
       gfx::NativeView parent_window,
       bookmarks::BookmarkBubbleObserver* observer,

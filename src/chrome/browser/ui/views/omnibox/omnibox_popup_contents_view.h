@@ -33,8 +33,11 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // Opens a match from the list specified by |index| with the type of tab or
   // window specified by |disposition|.
-  void OpenMatch(WindowOpenDisposition disposition);
-  void OpenMatch(size_t index, WindowOpenDisposition disposition);
+  void OpenMatch(WindowOpenDisposition disposition,
+                 base::TimeTicks match_selection_timestamp);
+  void OpenMatch(size_t index,
+                 WindowOpenDisposition disposition,
+                 base::TimeTicks match_selection_timestamp);
 
   // Returns the icon that should be displayed next to |match|. If the icon is
   // available as a vector icon, it will be |vector_icon_color|.
@@ -80,13 +83,9 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   friend class OmniboxPopupContentsViewTest;
   class AutocompletePopupWidget;
 
-  // Updates |start_margin_| and |end_margin_| and returns the target popup
-  // bounds by querying the bounds of |location_bar_view_| and its parent view
-  // on screen.
-  gfx::Rect UpdateMarginsAndGetTargetBounds();
-
-  // Calculates the height needed to show all the results in the model.
-  int CalculatePopupHeight();
+  // Returns the target popup bounds in screen coordinates based on the bounds
+  // of |location_bar_view_|.
+  gfx::Rect GetTargetBounds();
 
   // Size our children to the available content area.
   void LayoutChildren();
@@ -108,8 +107,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // views::View:
   const char* GetClassName() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const views::PaintInfo& paint_info) override;
 
   std::unique_ptr<OmniboxPopupModel> model_;
 
@@ -123,9 +120,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   OmniboxView* omnibox_view_;
 
   LocationBarView* location_bar_view_;
-
-  int start_margin_;
-  int end_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

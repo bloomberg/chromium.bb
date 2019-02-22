@@ -7,13 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "cwv_export.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillDataManager;
 
-CWV_EXPORT
 // Protocol to receive change notifications from CWVAutofillDataManager.
 @protocol CWVAutofillDataManagerDelegate<NSObject>
 

@@ -102,6 +102,25 @@ bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
   return min_port != 0 && max_port != 0;
 }
 
+// PeerConnectionDependencies wants to own the factory, so we provide a simple
+// object that delegates calls to the IpcPacketSocketFactory.
+// TODO(zstein): Move the creation logic from IpcPacketSocketFactory in to this
+// class.
+class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
+ public:
+  ProxyAsyncResolverFactory(IpcPacketSocketFactory* ipc_psf)
+      : ipc_psf_(ipc_psf) {
+    DCHECK(ipc_psf);
+  }
+
+  rtc::AsyncResolverInterface* Create() override {
+    return ipc_psf_->CreateAsyncResolver();
+  }
+
+ private:
+  IpcPacketSocketFactory* ipc_psf_;
+};
+
 }  // namespace
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
@@ -340,11 +359,12 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   if (!GetPcFactory().get())
     return nullptr;
 
-  std::unique_ptr<P2PPortAllocator> port_allocator =
-      CreatePortAllocator(web_frame);
+  webrtc::PeerConnectionDependencies dependencies(observer);
+  dependencies.allocator = CreatePortAllocator(web_frame);
+  dependencies.async_resolver_factory =
+      std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
   return GetPcFactory()
-      ->CreatePeerConnection(config, std::move(port_allocator), nullptr,
-                             observer)
+      ->CreatePeerConnection(config, std::move(dependencies))
       .get();
 }
 

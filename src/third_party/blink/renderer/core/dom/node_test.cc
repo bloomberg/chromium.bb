@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -37,9 +38,7 @@ class NodeTest : public EditingTestBase {
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-    GetDocument().documentElement()->RecalcStyle(kNoChange);
-    PushSelectorFilterAncestors(
-        GetDocument().EnsureStyleResolver().GetSelectorFilter(), node);
+    GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
     ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
@@ -65,14 +64,6 @@ class NodeTest : public EditingTestBase {
     class_div->setAttribute("class", "test");
     second_shadow.AppendChild(class_div);
     return class_div;
-  }
-
- private:
-  void PushSelectorFilterAncestors(SelectorFilter& filter, Node& node) {
-    if (Element* parent = FlatTreeTraversal::ParentElement(node)) {
-      PushSelectorFilterAncestors(filter, *parent);
-      filter.PushParent(*parent);
-    }
   }
 };
 
@@ -332,6 +323,24 @@ TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
   Comment* comment = Comment::Create(GetDocument(), "comment");
   GetDocument().body()->appendChild(comment, ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+}
+
+TEST_F(NodeTest, LazyReattachCommentAndPI) {
+  SetBodyContent("<!-- -->");
+  HTMLElement* body = GetDocument().body();
+  ProcessingInstruction* pi =
+      ProcessingInstruction::Create(GetDocument(), "A", "B");
+  body->appendChild(pi, ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Node* comment = body->firstChild();
+  EXPECT_EQ(Node::kCommentNode, comment->getNodeType());
+
+  comment->LazyReattachIfAttached();
+  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+
+  pi->LazyReattachIfAttached();
+  EXPECT_FALSE(body->ChildNeedsStyleRecalc());
 }
 
 }  // namespace blink

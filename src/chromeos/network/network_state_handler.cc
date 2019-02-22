@@ -41,7 +41,7 @@ bool ConnectionStateChanged(const NetworkState* network,
   if (network->is_captive_portal() != prev_is_captive_portal)
     return true;
   std::string connection_state = network->connection_state();
-  // Treat 'idle' and 'discoonect' the same.
+  // Treat 'idle' and 'disconnect' the same.
   bool prev_idle = prev_connection_state.empty() ||
                    prev_connection_state == shill::kStateIdle ||
                    prev_connection_state == shill::kStateDisconnect;
@@ -108,7 +108,7 @@ NetworkStateHandler::NetworkStateHandler() {
 NetworkStateHandler::~NetworkStateHandler() {
   // Normally Shutdown() will get called in ~NetworkHandler, however unit
   // tests do not use that class so this needs to call Shutdown when we
-  // destry the class.
+  // destroy the class.
   if (!did_shutdown_)
     Shutdown();
 }
@@ -193,21 +193,28 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
     return tether_technology_state_;
   }
 
-  TechnologyState state;
+  // If a technology is not in Shill's 'AvailableTechnologies' list, it is
+  // always unavailable.
+  if (!shill_property_handler_->IsTechnologyAvailable(technology))
+    return TECHNOLOGY_UNAVAILABLE;
+
+  // Prohibited should take precedence over other states.
+  if (shill_property_handler_->IsTechnologyProhibited(technology))
+    return TECHNOLOGY_PROHIBITED;
+
+  // Enabled and Uninitialized should be mutually exclusive. 'Enabling', which
+  // is a pseudo state used by the UI, takes precedence over 'Uninitialized',
+  // but not 'Enabled'.
   if (shill_property_handler_->IsTechnologyEnabled(technology))
-    state = TECHNOLOGY_ENABLED;
-  else if (shill_property_handler_->IsTechnologyEnabling(technology))
-    state = TECHNOLOGY_ENABLING;
-  else if (shill_property_handler_->IsTechnologyProhibited(technology))
-    state = TECHNOLOGY_PROHIBITED;
-  else if (shill_property_handler_->IsTechnologyUninitialized(technology))
-    state = TECHNOLOGY_UNINITIALIZED;
-  else if (shill_property_handler_->IsTechnologyAvailable(technology))
-    state = TECHNOLOGY_AVAILABLE;
-  else
-    state = TECHNOLOGY_UNAVAILABLE;
-  VLOG(2) << "GetTechnologyState: " << type.ToDebugString() << " = " << state;
-  return state;
+    return TECHNOLOGY_ENABLED;
+  if (shill_property_handler_->IsTechnologyEnabling(technology))
+    return TECHNOLOGY_ENABLING;
+  if (shill_property_handler_->IsTechnologyUninitialized(technology))
+    return TECHNOLOGY_UNINITIALIZED;
+
+  // Default state is 'Available', which is equivalent to 'Initialized but not
+  // enabled'.
+  return TECHNOLOGY_AVAILABLE;
 }
 
 void NetworkStateHandler::SetTechnologyEnabled(
@@ -1204,7 +1211,7 @@ void NetworkStateHandler::ProfileListChanged() {
 void NetworkStateHandler::UpdateManagedStateProperties(
     ManagedState::ManagedType type,
     const std::string& path,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   ManagedStateList* managed_list = GetManagedList(type);
   ManagedState* managed = GetModifiableManagedState(managed_list, path);
   if (!managed) {
@@ -1221,10 +1228,8 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     UpdateNetworkStateProperties(managed->AsNetworkState(), properties);
   } else {
     // Device
-    for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
-         iter.Advance()) {
-      managed->PropertyChanged(iter.key(), iter.value());
-    }
+    for (const auto iter : properties.DictItems())
+      managed->PropertyChanged(iter.first, iter.second);
     managed->InitialPropertiesReceived(properties);
   }
   managed->set_update_requested(false);
@@ -1232,14 +1237,13 @@ void NetworkStateHandler::UpdateManagedStateProperties(
 
 void NetworkStateHandler::UpdateNetworkStateProperties(
     NetworkState* network,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   DCHECK(network);
   bool network_property_updated = false;
   std::string prev_connection_state = network->connection_state();
   bool prev_is_captive_portal = network->is_captive_portal();
-  for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
-       iter.Advance()) {
-    if (network->PropertyChanged(iter.key(), iter.value()))
+  for (const auto iter : properties.DictItems()) {
+    if (network->PropertyChanged(iter.first, iter.second))
       network_property_updated = true;
   }
   if (network->Matches(NetworkTypePattern::WiFi()))
@@ -1374,7 +1378,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     NetworkState* network = GetModifiableNetworkState(path);
     if (!network)
@@ -1677,6 +1681,8 @@ DeviceState* NetworkStateHandler::GetModifiableDeviceState(
 DeviceState* NetworkStateHandler::GetModifiableDeviceStateByType(
     const NetworkTypePattern& type) const {
   for (const auto& device : device_list_) {
+    if (device->type().empty())
+      continue;  // kTypeProperty not set yet, skip.
     if (device->Matches(type))
       return device->AsDeviceState();
   }
@@ -1861,7 +1867,7 @@ std::string NetworkStateHandler::GetTechnologyForType(
   if (type.Equals(NetworkTypePattern::Wimax()))
     return shill::kTypeWimax;
 
-  // Prefer Wimax over Cellular only if it's available.
+  // Prefer WiMAX over Cellular only if it's available.
   if (type.MatchesType(shill::kTypeWimax) &&
       shill_property_handler_->IsTechnologyAvailable(shill::kTypeWimax)) {
     return shill::kTypeWimax;

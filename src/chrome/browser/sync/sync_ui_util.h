@@ -78,6 +78,10 @@ MessageType GetStatus(Profile* profile,
                       const browser_sync::ProfileSyncService* service,
                       const SigninManagerBase& signin);
 
+// Returns whether it makes sense to show a Sync passphrase error UI, i.e.
+// whether a missing passphrase is preventing Sync from fully starting up.
+bool ShouldShowPassphraseError(const browser_sync::ProfileSyncService* service);
+
 }  // namespace sync_ui_util
 
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_

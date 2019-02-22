@@ -7,12 +7,9 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -47,20 +44,14 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        PageActionIconView::Delegate* delegate,
                                        const gfx::FontList& font_list)
     : IconLabelBubbleView(font_list),
-      widget_observer_(this),
       icon_size_(GetLayoutConstant(LOCATION_BAR_ICON_SIZE)),
       command_updater_(command_updater),
       delegate_(delegate),
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {
-  SetBorder(views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Ink drop ripple opacity.
-    set_ink_drop_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
-  }
+  set_ink_drop_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -71,33 +62,20 @@ bool PageActionIconView::IsBubbleShowing() const {
   return GetBubble() != nullptr;
 }
 
-SkColor PageActionIconView::GetTextColor() const {
-  // Returns the color of the label shown during animation.
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-}
-
 bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
   return command_updater_->IsCommandEnabled(command_id_);
 }
 
-void PageActionIconView::SetHighlighted(bool bubble_visible) {
-  AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
-                                : views::InkDropState::DEACTIVATED,
-                 nullptr);
-}
-
-void PageActionIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
-  widget_observer_.SetWidget(bubble_widget);
-
-  if (bubble_widget->IsVisible())
-    SetHighlighted(true);
-}
-
 bool PageActionIconView::Update() {
   return false;
+}
+
+SkColor PageActionIconView::GetTextColor() const {
+  // Returns the color of the label shown during animation.
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor);
 }
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -214,29 +192,19 @@ PageActionIconView::CreateInkDropHighlight() const {
       CreateDefaultInkDropHighlight(
           gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
           size());
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    highlight->set_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
-  }
+  highlight->set_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
   return highlight;
-}
-
-SkColor PageActionIconView::GetInkDropBaseColor() const {
-  const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Opacity of the ink drop is set elsewhere, so just use full opacity here.
-    return ink_color_opaque;
-  }
-  return color_utils::DeriveDefaultIconColor(ink_color_opaque);
 }
 
 std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
     const {
-  if (!LocationBarView::IsRounded())
-    return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        height() / 2.f);
+}
+
+SkColor PageActionIconView::GetInkDropBaseColor() const {
+  return delegate_->GetPageActionInkDropColor();
 }
 
 void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {
@@ -258,6 +226,17 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (bubble)
     bubble->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
+}
+
+void PageActionIconView::OnMdModeChanged() {
+  icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+  UpdateIconImage();
+  IconLabelBubbleView::OnMdModeChanged();
+}
+
+void PageActionIconView::UpdateBorder() {
+  SetBorder(views::CreateEmptyBorder(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {
@@ -283,26 +262,4 @@ void PageActionIconView::SetActiveInternal(bool active) {
 
 content::WebContents* PageActionIconView::GetWebContents() const {
   return delegate_->GetWebContentsForPageActionIconView();
-}
-
-PageActionIconView::WidgetObserver::WidgetObserver(PageActionIconView* parent)
-    : parent_(parent), scoped_observer_(this) {}
-
-PageActionIconView::WidgetObserver::~WidgetObserver() = default;
-
-void PageActionIconView::WidgetObserver::SetWidget(views::Widget* widget) {
-  scoped_observer_.RemoveAll();
-  scoped_observer_.Add(widget);
-}
-
-void PageActionIconView::WidgetObserver::OnWidgetDestroying(
-    views::Widget* widget) {
-  scoped_observer_.Remove(widget);
-}
-
-void PageActionIconView::WidgetObserver::OnWidgetVisibilityChanged(
-    views::Widget* widget,
-    bool visible) {
-  // |widget| is a bubble that has just got shown / hidden.
-  parent_->SetHighlighted(visible);
 }

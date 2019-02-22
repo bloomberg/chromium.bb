@@ -102,7 +102,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3171922709365450819">Klijent ne podržava taj uređaj jer je potrebna autentifikacija treće strane.</translation>
 <translation id="3194245623920924351">Udaljena radna površina Chrome</translation>
 <translation id="3197730452537982411">Udaljena radna površina</translation>
-<translation id="3212472844831225214">• Dodana je podrška za Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Pošalji te upute e-poštom</translation>
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
 <translation id="3286521253923406898">Kontroler hosta usluge Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Cijeli zaslon</translation>
 <translation id="8548209692293300397">Prethodno ste se prijavili kao <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN" />prijavite se na Google Chrome<ph name="LINK_END" /> tim računom i ponovo instalirajte Udaljenu radnu površinu Chrome.</translation>
 <translation id="8642984861538780905">Solidna</translation>
+<translation id="8705151241155781642">• Dodana je podrška za Android 9.0 Pie.
+• Podrška za promjenu razlučivosti udaljene radne površine tako da odgovara zaslonu Android uređaja.</translation>
 <translation id="8712909229180978490">Ne vidim svoje spremljene datoteke na mreži na Google disku.</translation>
 <translation id="8743328882720071828">Želite li dopustiti da <ph name="CLIENT_USERNAME" /> vidi ovo računalo i upravlja njime?</translation>
 <translation id="8747048596626351634">Sesija se srušila ili se nije pokrenula. Ako ~/.chrome-remote-desktop-session postoji na udaljenom računalu, neka pokrene dugotrajan postupak u prednjem planu kao što je okruženje radnje površine ili upravitelj prozora.</translation>

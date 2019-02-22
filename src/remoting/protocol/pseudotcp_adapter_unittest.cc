@@ -209,7 +209,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
         base::MakeRefCounted<net::IOBuffer>(kTestDataSize), kTestDataSize);
     memset(output_buffer_->data(), 123, kTestDataSize);
 
-    input_buffer_ = new net::GrowableIOBuffer();
+    input_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
     // Always keep kMessageSize bytes available at the end of the input buffer.
     input_buffer_->SetCapacity(kMessageSize);
   }

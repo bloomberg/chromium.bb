@@ -14,23 +14,28 @@
 
 namespace viz {
 
-struct HitTestRegionFlags {
+// New flags must be added to GetFlagNames in hit_test_query.cc in order to be
+// displayed in hit-test debug logging.
+enum HitTestRegionFlags : uint32_t {
   // Region maps to this surface (me).
-  enum : uint32_t { kHitTestMine = 0x01 };
+  kHitTestMine = 0x01,
   // Region ignored for hit testing (transparent backgrounds & hover:none).
-  enum : uint32_t { kHitTestIgnore = 0x02 };
+  kHitTestIgnore = 0x02,
   // Region maps to child surface (OOPIF).
-  enum : uint32_t { kHitTestChildSurface = 0x04 };
+  kHitTestChildSurface = 0x04,
   // Irregular boundary - send HitTestRequest to resolve.
-  enum : uint32_t { kHitTestAsk = 0x08 };
+  kHitTestAsk = 0x08,
 
   // TODO(varkha): Add other kHitTest* flags as necessary for other event
   // sources such as mouse-wheel, stylus or perhaps even mouse-move.
 
   // Hit-testing for mouse events.
-  enum : uint32_t { kHitTestMouse = 0x10 };
+  kHitTestMouse = 0x10,
   // Hit-testing for touch events.
-  enum : uint32_t { kHitTestTouch = 0x20 };
+  kHitTestTouch = 0x20,
+
+  // Client hasn't submitted its own hit-test data yet.
+  kHitTestNotActive = 0x40,
 };
 
 struct HitTestRegion {

@@ -21,12 +21,17 @@ class ClientSurfaceEmbedder;
 class Window;
 }  // namespace aura
 
+namespace gfx {
+class Insets;
+}
+
 namespace viz {
 class SurfaceInfo;
 }
 
 namespace ws {
 
+class ServerWindow;
 class WindowTree;
 
 // WindowTree creates a ClientRoot for each window the client is embedded in. A
@@ -42,6 +47,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
   ~ClientRoot() override;
 
+  // Called when the client area of the window changes. If the window is a
+  // top-level window, then this propagates the insets to the
+  // ClientSurfaceEmbedder.
+  void SetClientAreaInsets(const gfx::Insets& client_area_insets);
+
   // Registers the necessary state needed for embedding in viz.
   void RegisterVizEmbeddingSupport();
 
@@ -49,7 +59,22 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   bool is_top_level() const { return is_top_level_; }
 
+  // Called when the LocalSurfaceId of the embedder changes.
+  void OnLocalSurfaceIdChanged();
+
+  // Attaches/unattaches server_window->attached_frame_sink_id() to the
+  // HostFrameSinkManager.
+  void AttachChildFrameSinkId(ServerWindow* server_window);
+  void UnattachChildFrameSinkId(ServerWindow* server_window);
+
+  // Recurses through all descendants with the same WindowTree calling
+  // AttachChildFrameSinkId()/UnattachChildFrameSinkId().
+  void AttachChildFrameSinkIdRecursive(ServerWindow* server_window);
+  void UnattachChildFrameSinkIdRecursive(ServerWindow* server_window);
+
  private:
+  friend class ClientRootTestHelper;
+
   void UpdatePrimarySurfaceId();
 
   // Returns true if the WindowService should assign the LocalSurfaceId. A value

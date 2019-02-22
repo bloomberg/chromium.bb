@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 #include <limits>
 #include <memory>
@@ -192,7 +193,8 @@ void IDBDatabase::OnChanges(
     WebVector<WebIDBObservation> web_observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   HeapVector<Member<IDBObservation>> observations;
-  observations.ReserveInitialCapacity(web_observations.size());
+  observations.ReserveInitialCapacity(
+      SafeCast<wtf_size_t>(web_observations.size()));
   for (WebIDBObservation& web_observation : web_observations) {
     observations.emplace_back(
         IDBObservation::Create(std::move(web_observation), isolate_));

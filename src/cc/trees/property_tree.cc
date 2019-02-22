@@ -1436,7 +1436,7 @@ gfx::Vector2dF ScrollTree::ClampScrollToMaxScrollOffset(
 
 const gfx::ScrollOffset ScrollTree::current_scroll_offset(ElementId id) const {
   if (property_trees()->is_main_thread) {
-    ScrollOffsetMap::const_iterator it = scroll_offset_map_.find(id);
+    auto it = scroll_offset_map_.find(id);
     return it != scroll_offset_map_.end() ? it->second : gfx::ScrollOffset();
   }
   return GetSyncedScrollOffset(id)

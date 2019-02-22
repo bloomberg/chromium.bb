@@ -11,12 +11,9 @@
 #ifndef RTC_BASE_THREAD_H_
 #define RTC_BASE_THREAD_H_
 
-#include <algorithm>
 #include <list>
 #include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #if defined(WEBRTC_POSIX)
 #include <pthread.h>
@@ -189,6 +186,7 @@ class RTC_LOCKABLE Thread : public MessageQueue {
   }
 
   // From MessageQueue
+  bool IsProcessingMessagesForTesting() override;
   void Clear(MessageHandler* phandler,
              uint32_t id = MQID_ANY,
              MessageList* removed = nullptr) override;

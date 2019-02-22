@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
@@ -120,6 +121,7 @@ class WKBasedNavigationManagerTest : public PlatformTest {
   CRWFakeBackForwardList* mock_wk_list_;
   id mock_web_view_;
   MockNavigationManagerDelegate delegate_;
+  base::HistogramTester histogram_tester_;
 
  private:
   TestBrowserState browser_state_;
@@ -623,6 +625,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
 
   // Check that cached visible item is returned.
   EXPECT_EQ("http://www.1.com/", manager_->GetVisibleItem()->GetURL());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 2, 1);
 }
 
 // Tests that restoring session replaces existing history in navigation manager.
@@ -893,6 +898,9 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, Reload) {
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
   EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
 // Tests that GoToIndex from detached mode restores cached history with updated
@@ -908,6 +916,9 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, GoToIndex) {
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
   EXPECT_EQ(url0_, manager_->GetVisibleItem()->GetURL());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
 // Tests that LoadIfNecessary from detached mode restores cached history.
@@ -922,6 +933,9 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadIfNecessary) {
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
   EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
 // Tests that LoadURLWithParams from detached mode restores backward history and
@@ -939,6 +953,9 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
   EXPECT_EQ(url, manager_->GetVisibleItem()->GetURL());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
 }  // namespace web

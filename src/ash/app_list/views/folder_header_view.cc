@@ -201,7 +201,10 @@ void FolderHeaderView::Layout() {
       folder_name_view_->GetInsets().width();
   text_width = std::min(text_width, GetMaxFolderNameWidth());
   text_bounds.set_x(rect.x() + (rect.width() - text_width) / 2);
-  text_bounds.set_width(text_width);
+
+  // The width of the text field should always be maximum length, to prevent the
+  // touch target from resizing with the text.
+  text_bounds.set_width(GetMaxFolderNameWidth());
   text_bounds.ClampToCenteredSize(gfx::Size(
       text_bounds.width(), folder_name_view_->GetPreferredSize().height()));
   folder_name_view_->SetBoundsRect(text_bounds);
@@ -237,11 +240,6 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
   if (!CanProcessLeftRightKeyTraversal(key_event))
     return false;
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
-}
-
-void FolderHeaderView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  delegate_->NavigateBack(folder_item_, event);
 }
 
 void FolderHeaderView::ItemNameChanged() {

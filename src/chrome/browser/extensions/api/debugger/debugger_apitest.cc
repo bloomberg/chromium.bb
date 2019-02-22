@@ -22,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -29,6 +30,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace extensions {
 
@@ -160,10 +162,6 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunctionOnTarget(
         << "expected: " << expected_error << ", found: " << actual_error;
   }
   return testing::AssertionSuccess();
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Debugger) {
-  ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
@@ -324,6 +322,48 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
       detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
       browser(), api_test_utils::NONE));
   EXPECT_EQ(0u, service1->infobar_count());
+}
+
+class DebuggerExtensionApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, Debugger) {
+  ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
+}
+
+class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DebuggerExtensionApiTest::SetUpCommandLine(command_line);
+    content::IsolateAllSitesForTesting(command_line);
+  };
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/extensions/api_test/debugger/oopif.html"));
+  GURL iframe_url(embedded_test_server()->GetURL(
+      "b.com", "/extensions/api_test/debugger/oopif_frame.html"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationManager navigation_manager(tab, url);
+  content::TestNavigationManager navigation_manager_iframe(tab, iframe_url);
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+  navigation_manager.WaitForNavigationFinished();
+  navigation_manager_iframe.WaitForNavigationFinished();
+  content::WaitForLoadStop(tab);
+
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("debugger", "oopif.html;oopif_frame.html"))
+      << message_;
 }
 
 }  // namespace extensions

@@ -7,15 +7,15 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 
 namespace extensions {
 
 // Tracks an extension's event page suspend state.
 class EventPageTracker {
  public:
-  // Returns true if an extension's event page is active,
-  // or false if it is suspended.
+  // Returns true if an extension's event page is suspended,
+  // or false if it is active.
   virtual bool IsEventPageSuspended(const std::string& extension_id) = 0;
 
   // Wakes an extension's event page from a suspended state and calls
@@ -28,7 +28,7 @@ class EventPageTracker {
   // or false if the event page was already awake.
   // Callback will be run asynchronously if true, and never run if false.
   virtual bool WakeEventPage(const std::string& extension_id,
-                             const base::Callback<void(bool)>& callback) = 0;
+                             base::OnceCallback<void(bool)> callback) = 0;
 };
 
 }  // namespace extensions

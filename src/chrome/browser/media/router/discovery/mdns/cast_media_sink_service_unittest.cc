@@ -16,6 +16,7 @@
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -118,7 +119,6 @@ class CastMediaSinkServiceTest : public ::testing::Test {
  public:
   CastMediaSinkServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         mock_cast_socket_service_(
             new cast_channel::MockCastSocketService(task_runner_)),
         media_sink_service_(new TestCastMediaSinkService(
@@ -146,12 +146,12 @@ class CastMediaSinkServiceTest : public ::testing::Test {
     EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
     media_sink_service_.reset();
     task_runner_->RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_ui_cb_;
   TestMediaSinkService dial_media_sink_service_;

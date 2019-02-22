@@ -7,8 +7,8 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#ifndef VPX_VP8CX_H_
-#define VPX_VP8CX_H_
+#ifndef VPX_VPX_VP8CX_H_
+#define VPX_VPX_VP8CX_H_
 
 /*!\defgroup vp8_encoder WebM VP8/VP9 Encoder
  * \ingroup vp8
@@ -810,6 +810,7 @@ typedef struct vpx_svc_ref_frame_config {
   int reference_last[VPX_SS_MAX_LAYERS];    /**< Last as eference. */
   int reference_golden[VPX_SS_MAX_LAYERS];  /**< Golden as reference. */
   int reference_alt_ref[VPX_SS_MAX_LAYERS]; /**< Altref as reference. */
+  int64_t duration[VPX_SS_MAX_LAYERS];      /**< Duration per spatial layer. */
 } vpx_svc_ref_frame_config_t;
 
 /*!\brief VP9 svc frame dropping mode.
@@ -1007,4 +1008,4 @@ VPX_CTRL_USE_TYPE(VP9E_SET_SVC_SPATIAL_LAYER_SYNC,
 }  // extern "C"
 #endif
 
-#endif  // VPX_VP8CX_H_
+#endif  // VPX_VPX_VP8CX_H_

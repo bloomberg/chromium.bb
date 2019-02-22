@@ -28,7 +28,9 @@ class EmbeddedTestServerAndroid {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+  jboolean Start(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& jobj,
+                 jint port);
 
   base::android::ScopedJavaLocalRef<jstring> GetRootCertPemPath(
       JNIEnv* jenv,

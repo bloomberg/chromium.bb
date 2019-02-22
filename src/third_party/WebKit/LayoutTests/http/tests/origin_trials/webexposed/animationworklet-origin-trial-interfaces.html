@@ -10,11 +10,11 @@ generate_token.py http://127.0.0.1:8000 AnimationWorklet --expire-timestamp=2000
 <script>
 test(t => {
   OriginTrialsHelper.check_interfaces(this,
-      ['WorkletAnimation', 'ScrollTimeline']);
+      ['WorkletAnimation', 'ScrollTimeline', 'KeyframeEffect']);
 }, 'AnimationWorklet related interfaces in Origin-Trial enabled document.');
 
 test(t => {
-  assert_exists(CSS, 'animationWorklet');
+  assert_own_property(CSS, 'animationWorklet');
   OriginTrialsHelper.check_properties(this,
       {'WorkletAnimation': ['play', 'cancel', 'playState', 'timeline'],
        'ScrollTimeline': ['scrollSource', 'orientation', 'timeRange'],

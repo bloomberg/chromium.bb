@@ -81,7 +81,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
-          bool needs_sync_tokens);
+          bool needs_sync_tokens,
+          bool block_activation_on_parent);
   ~Surface();
 
   void SetDependencyDeadline(
@@ -104,6 +105,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool has_deadline() const { return deadline_ && deadline_->has_deadline(); }
 
+  base::Optional<base::TimeTicks> deadline_for_testing() const {
+    return deadline_->deadline_for_testing();
+  }
+
   // Inherits the same deadline as the one specified by |surface|. A deadline
   // may be set further out in order to avoid doing unnecessary work while a
   // parent surface is blocked on dependencies. A deadline may be shortened
@@ -121,6 +126,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool needs_sync_tokens() const { return needs_sync_tokens_; }
 
+  bool block_activation_on_parent() const {
+    return block_activation_on_parent_;
+  }
+
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
@@ -135,6 +144,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
   void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
+
+  // Returns whether the Surface is blocked on the provided |surface_id| or a
+  // predecessor.
+  bool IsBlockedOn(const SurfaceId& surface_id) const;
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
@@ -200,6 +213,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return HasActiveFrame() && !active_frame_data_->frame_processed;
   }
 
+  // Returns true if at any point, another Surface's CompositorFrame has
+  // depended on this Surface.
+  bool HasDependentFrame() const { return seen_first_surface_dependency_; }
+
   // SurfaceDeadlineClient implementation:
   void OnDeadline(base::TimeDelta duration) override;
 
@@ -209,6 +226,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.
   void OnChildActivated(const SurfaceId& surface_id);
+
+  // Called when this surface is embedded by another Surface's CompositorFrame.
+  void OnSurfaceDependencyAdded();
 
  private:
   struct SequenceNumbers {
@@ -262,11 +282,15 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void ActivateFrame(FrameData frame_data,
                      base::Optional<base::TimeDelta> duration);
 
+  // Resolve the activation deadline specified by |current_frame| into a wall
+  // time to be used by SurfaceDependencyDeadline.
+  FrameDeadline ResolveFrameDeadline(const CompositorFrame& current_frame);
+
   // Updates the set of unresolved activation dependenices of the
   // |current_frame|. If the deadline requested by the frame is 0 then no
   // dependencies will be added even if they're not yet available.
-  FrameDeadline UpdateActivationDependencies(
-      const CompositorFrame& current_frame);
+  void UpdateActivationDependencies(const CompositorFrame& current_frame);
+
   void ComputeChangeInDependencies(
       const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies);
 
@@ -292,7 +316,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool closed_ = false;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
+  bool seen_first_surface_dependency_ = false;
   const bool needs_sync_tokens_;
+  const bool block_activation_on_parent_;
 
   base::flat_set<SurfaceId> activation_dependencies_;
   base::flat_set<SurfaceId> late_activation_dependencies_;

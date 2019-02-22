@@ -198,9 +198,9 @@ class PromiseObserver {
 
 class MediaDevicesTest : public testing::Test {
  public:
-  using MediaDeviceInfos = PersistentHeapVector<Member<MediaDeviceInfo>>;
+  using MediaDeviceInfos = HeapVector<Member<MediaDeviceInfo>>;
 
-  MediaDevicesTest() {
+  MediaDevicesTest() : device_infos_(new MediaDeviceInfos) {
     dispatcher_host_ = std::make_unique<MockMediaDevicesDispatcherHost>();
   }
 
@@ -224,7 +224,7 @@ class MediaDevicesTest : public testing::Test {
   void DevicesEnumerated(const MediaDeviceInfoVector& device_infos) {
     devices_enumerated_ = true;
     for (size_t i = 0; i < device_infos.size(); i++) {
-      device_infos_.push_back(MediaDeviceInfo::Create(
+      device_infos_->push_back(MediaDeviceInfo::Create(
           device_infos[i]->deviceId(), device_infos[i]->label(),
           device_infos[i]->groupId(), device_infos[i]->DeviceType()));
     }
@@ -247,7 +247,7 @@ class MediaDevicesTest : public testing::Test {
 
   bool listener_connection_error() const { return listener_connection_error_; }
 
-  const MediaDeviceInfos& device_infos() const { return device_infos_; }
+  const MediaDeviceInfos& device_infos() const { return *device_infos_; }
 
   bool devices_enumerated() const { return devices_enumerated_; }
 
@@ -264,7 +264,7 @@ class MediaDevicesTest : public testing::Test {
  private:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   std::unique_ptr<MockMediaDevicesDispatcherHost> dispatcher_host_;
-  MediaDeviceInfos device_infos_;
+  Persistent<MediaDeviceInfos> device_infos_;
   bool devices_enumerated_ = false;
   bool dispatcher_host_connection_error_ = false;
   bool device_changed_ = false;

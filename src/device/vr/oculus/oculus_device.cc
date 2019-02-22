@@ -88,6 +88,7 @@ OculusDevice::OculusDevice()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       exclusive_controller_binding_(this),
       gamepad_provider_factory_binding_(this),
+      compositor_host_binding_(this),
       weak_ptr_factory_(this) {
   StartOvrSession();
   if (!session_) {
@@ -96,14 +97,18 @@ OculusDevice::OculusDevice()
 
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
 
-  render_loop_ = std::make_unique<OculusRenderLoop>(
-      base::BindRepeating(&OculusDevice::OnPresentationEnded,
-                          weak_ptr_factory_.GetWeakPtr()));
+  render_loop_ = std::make_unique<OculusRenderLoop>();
 }
 
 mojom::IsolatedXRGamepadProviderFactoryPtr OculusDevice::BindGamepadFactory() {
   mojom::IsolatedXRGamepadProviderFactoryPtr ret;
   gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
+  return ret;
+}
+
+mojom::XRCompositorHostPtr OculusDevice::BindCompositorHost() {
+  mojom::XRCompositorHostPtr ret;
+  compositor_host_binding_.Bind(mojo::MakeRequest(&ret));
   return ret;
 }
 
@@ -139,9 +144,16 @@ void OculusDevice::RequestSession(
     // loop, post the request over to the render loop to be bound.
     if (provider_request_) {
       render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestGamepadProvider,
-                                    render_loop_->GetWeakPtr(),
+          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                    base::Unretained(render_loop_.get()),
                                     std::move(provider_request_)));
+    }
+
+    if (overlay_request_) {
+      render_loop_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
+                                    base::Unretained(render_loop_.get()),
+                                    std::move(overlay_request_)));
     }
   }
 
@@ -149,10 +161,15 @@ void OculusDevice::RequestSession(
       base::BindOnce(&OculusDevice::OnRequestSessionResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
+  auto on_presentation_ended = base::BindOnce(
+      &OculusDevice::OnPresentationEnded, weak_ptr_factory_.GetWeakPtr());
+
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), std::move(options),
-                                std::move(on_request_present_result)));
+      FROM_HERE,
+      base::BindOnce(&XRCompositorCommon::RequestSession,
+                     base::Unretained(render_loop_.get()),
+                     std::move(on_presentation_ended), std::move(options),
+                     std::move(on_request_present_result)));
 }
 
 void OculusDevice::OnRequestSessionResult(
@@ -191,8 +208,8 @@ void OculusDevice::SetFrameDataRestricted(bool restricted) {
 
 void OculusDevice::OnPresentingControllerMojoConnectionError() {
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::ExitPresent,
-                                render_loop_->GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
+                                base::Unretained(render_loop_.get())));
   OnExitPresent();
   exclusive_controller_binding_.Close();
 }
@@ -247,11 +264,23 @@ void OculusDevice::GetIsolatedXRGamepadProvider(
   // until we do.
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestGamepadProvider,
-                                  render_loop_->GetWeakPtr(),
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                  base::Unretained(render_loop_.get()),
                                   std::move(provider_request)));
   } else {
     provider_request_ = std::move(provider_request);
+  }
+}
+
+void OculusDevice::CreateImmersiveOverlay(
+    mojom::ImmersiveOverlayRequest overlay_request) {
+  if (render_loop_->IsRunning()) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
+                                  base::Unretained(render_loop_.get()),
+                                  std::move(overlay_request)));
+  } else {
+    overlay_request_ = std::move(overlay_request);
   }
 }
 

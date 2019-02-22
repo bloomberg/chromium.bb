@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace url {
 
@@ -36,95 +37,207 @@ void ExpectParsedUrlsEqual(const GURL& a, const GURL& b) {
 }
 
 class OriginTest : public ::testing::Test {
- protected:
-  Origin CreateUniqueOpaque() { return Origin::CreateUniqueOpaque(); }
+ public:
+  void SetUp() override {
+    // Add two schemes which are local but nonstandard.
+    AddLocalScheme("local-but-nonstandard");
+    AddLocalScheme("also-local-but-nonstandard");
 
-  Origin CreateCanonical(const GURL& url) {
-    return Origin::CreateCanonical(url);
+    // Add a scheme that's both local and standard.
+    AddStandardScheme("local-and-standard", SchemeType::SCHEME_WITH_HOST);
+    AddLocalScheme("local-and-standard");
+
+    // Add a scheme that's standard but no-access. We still want these to
+    // form valid SchemeHostPorts, even though they always commit as opaque
+    // origins, so that they can represent the source of the resource even if
+    // it's not committable as a non-opaque origin.
+    AddStandardScheme("standard-but-noaccess", SchemeType::SCHEME_WITH_HOST);
+    AddNoAccessScheme("standard-but-noaccess");
+  }
+  void TearDown() override { url::Shutdown(); }
+
+  ::testing::AssertionResult DoEqualityComparisons(const url::Origin& a,
+                                                   const url::Origin& b,
+                                                   bool should_compare_equal) {
+    ::testing::AssertionResult failure = ::testing::AssertionFailure();
+    failure << "DoEqualityComparisons failure. Expecting "
+            << (should_compare_equal ? "equality" : "inequality")
+            << " between:\n  a\n    Which is: " << a
+            << "\n  b\n    Which is: " << b << "\nThe following check failed: ";
+    if (a.IsSameOriginWith(b) != should_compare_equal)
+      return failure << "a.IsSameOriginWith(b)";
+    if (b.IsSameOriginWith(a) != should_compare_equal)
+      return failure << "b.IsSameOriginWith(a)";
+    if ((a == b) != should_compare_equal)
+      return failure << "(a == b)";
+    if ((b == a) != should_compare_equal)
+      return failure << "(b == a)";
+    if ((b != a) != !should_compare_equal)
+      return failure << "(b != a)";
+    if ((a != b) != !should_compare_equal)
+      return failure << "(a != b)";
+    return ::testing::AssertionSuccess();
+  }
+
+  bool HasNonceTokenBeenInitialized(const url::Origin& origin) {
+    EXPECT_TRUE(origin.opaque());
+    // Avoid calling nonce_.token() here, to not trigger lazy initialization.
+    return !origin.nonce_->token_.is_empty();
+  }
+
+  Origin::Nonce CreateNonce() { return Origin::Nonce(); }
+
+  Origin::Nonce CreateNonce(base::UnguessableToken nonce) {
+    return Origin::Nonce(nonce);
+  }
+
+  base::Optional<base::UnguessableToken> GetNonce(const Origin& origin) {
+    return origin.GetNonceForSerialization();
+  }
+
+  // Wrapper around url::Origin method to expose it to tests.
+  base::Optional<Origin> UnsafelyCreateOpaqueOriginWithoutNormalization(
+      base::StringPiece precursor_scheme,
+      base::StringPiece precursor_host,
+      uint16_t precursor_port,
+      const Origin::Nonce& nonce) {
+    return Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
+        precursor_scheme, precursor_host, precursor_port, nonce);
   }
 };
 
 TEST_F(OriginTest, OpaqueOriginComparison) {
-  // A default constructed Origin should be cross origin to everything,
-  // including itself.
-  Origin unique_origin;
-  EXPECT_EQ("", unique_origin.scheme());
-  EXPECT_EQ("", unique_origin.host());
-  EXPECT_EQ(0, unique_origin.port());
-  EXPECT_TRUE(unique_origin.unique());
-  EXPECT_FALSE(unique_origin.IsSameOriginWith(unique_origin));
+  // A default-constructed Origin should should be cross origin to everything
+  // but itself.
+  url::Origin opaque_a, opaque_b;
+  EXPECT_TRUE(opaque_a.opaque());
+  EXPECT_EQ("", opaque_a.scheme());
+  EXPECT_EQ("", opaque_a.host());
+  EXPECT_EQ(0, opaque_a.port());
+  EXPECT_EQ(SchemeHostPort(), opaque_a.GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_TRUE(opaque_a.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
 
-  // An opaque Origin with a nonce should be same origin to itself though.
-  Origin opaque_origin = CreateUniqueOpaque();
-  EXPECT_EQ("", opaque_origin.scheme());
-  EXPECT_EQ("", opaque_origin.host());
-  EXPECT_EQ(0, opaque_origin.port());
-  EXPECT_TRUE(opaque_origin.unique());
-  EXPECT_TRUE(opaque_origin.IsSameOriginWith(opaque_origin));
+  EXPECT_TRUE(opaque_b.opaque());
+  EXPECT_EQ("", opaque_b.scheme());
+  EXPECT_EQ("", opaque_b.host());
+  EXPECT_EQ(0, opaque_b.port());
+  EXPECT_EQ(SchemeHostPort(), opaque_b.GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_TRUE(opaque_b.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
 
-  // The default constructed Origin and the opaque Origin should always be
-  // cross origin to each other.
-  EXPECT_FALSE(opaque_origin.IsSameOriginWith(unique_origin));
+  // Two default-constructed Origins should always be cross origin to each
+  // other.
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_b, false));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_b, opaque_b, true));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_a, true));
 
-  const char* const urls[] = {"data:text/html,Hello!",
-                              "javascript:alert(1)",
-                              "about:blank",
-                              "file://example.com:443/etc/passwd",
-                              "yay",
-                              "http::///invalid.example.com/"};
+  // The streaming operator should not trigger lazy initialization to the token.
+  std::ostringstream stream;
+  stream << opaque_a;
+  EXPECT_STREQ("null [internally: (nonce TBD) anonymous]",
+               stream.str().c_str());
+  EXPECT_FALSE(HasNonceTokenBeenInitialized(opaque_a));
+
+  // None of the operations thus far should have triggered lazy-generation of
+  // the UnguessableToken. Copying an origin, however, should trigger this.
+  EXPECT_FALSE(HasNonceTokenBeenInitialized(opaque_a));
+  EXPECT_FALSE(HasNonceTokenBeenInitialized(opaque_b));
+  opaque_b = opaque_a;
+
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_a));
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_b));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_b, true));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_b, opaque_b, true));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_a, true));
+
+  // Move-initializing to a fresh Origin should restore the lazy initialization.
+  opaque_a = url::Origin();
+  EXPECT_FALSE(HasNonceTokenBeenInitialized(opaque_a));
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_b));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_b, false));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_b, opaque_b, true));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_a, true));
+
+  // Comparing two opaque Origins with matching SchemeHostPorts should trigger
+  // lazy initialization.
+  EXPECT_FALSE(HasNonceTokenBeenInitialized(opaque_a));
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_b));
+  bool should_swap = opaque_b < opaque_a;
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_a));
+  EXPECT_TRUE(HasNonceTokenBeenInitialized(opaque_b));
+
+  if (should_swap)
+    std::swap(opaque_a, opaque_b);
+  EXPECT_LT(opaque_a, opaque_b);
+  EXPECT_FALSE(opaque_b < opaque_a);
+
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_b, false));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_b, opaque_b, true));
+  EXPECT_TRUE(DoEqualityComparisons(opaque_a, opaque_a, true));
+
+  EXPECT_LT(opaque_a, url::Origin::Create(GURL("http://www.google.com")));
+  EXPECT_LT(opaque_b, url::Origin::Create(GURL("http://www.google.com")));
+
+  EXPECT_EQ(opaque_b, url::Origin::Resolve(GURL("about:blank"), opaque_b));
+  EXPECT_EQ(opaque_b,
+            url::Origin::Resolve(GURL("about:blank?hello#whee"), opaque_b));
+
+  const char* const urls[] = {
+      "data:text/html,Hello!",
+      "javascript:alert(1)",
+      "about:blank",
+      "file://example.com:443/etc/passwd",
+      "unknown-scheme:foo",
+      "unknown-scheme://bar",
+      "http",
+      "http:",
+      "http:/",
+      "http://",
+      "http://:",
+      "http://:1",
+      "yay",
+      "http::///invalid.example.com/",
+      "blob:null/foo",                   // blob:null (actually a valid URL)
+      "blob:data:foo",                   // blob + data (which is nonstandard)
+      "blob:about://blank/",             // blob + about (which is nonstandard)
+      "blob:about:blank/",               // blob + about (which is nonstandard)
+      "filesystem:http://example.com/",  // Invalid (missing /type/)
+      "filesystem:local-but-nonstandard:baz./type/",  // fs requires standard
+      "filesystem:local-but-nonstandard://hostname/type/",
+      "filesystem:unknown-scheme://hostname/type/",
+      "local-but-nonstandar:foo",  // Prefix of registered scheme.
+      "but-nonstandard:foo",       // Suffix of registered scheme.
+      "local-and-standard:",       // Standard scheme needs a hostname.
+      "standard-but-noaccess:",    // Standard scheme needs a hostname.
+      "blob:blob:http://www.example.com/guid-goes-here",  // Double blob.
+  };
 
   for (auto* test_url : urls) {
     SCOPED_TRACE(test_url);
     GURL url(test_url);
+    const url::Origin opaque_origin;
 
-    // no nonce mode of opaque origins
+    // Opaque origins returned by Origin::Create().
     {
       Origin origin = Origin::Create(url);
       EXPECT_EQ("", origin.scheme());
       EXPECT_EQ("", origin.host());
       EXPECT_EQ(0, origin.port());
-      EXPECT_TRUE(origin.unique());
-      // An opaque Origin with no nonce is always cross-origin to itself.
-      EXPECT_FALSE(origin.IsSameOriginWith(origin));
-      // A copy of |origin| should be cross-origin as well.
-      Origin origin_copy = origin;
-      EXPECT_EQ("", origin_copy.scheme());
-      EXPECT_EQ("", origin_copy.host());
-      EXPECT_EQ(0, origin_copy.port());
-      EXPECT_TRUE(origin_copy.unique());
-      EXPECT_FALSE(origin.IsSameOriginWith(origin_copy));
-      // And it should always be cross-origin to another opaque Origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(opaque_origin));
-      // As well as the default constructed Origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(unique_origin));
-      // Re-creating from the URL should also be cross-origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(Origin::Create(url)));
-
-      ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
-    }
-
-    // opaque origins with a nonce
-    {
-      Origin origin = CreateCanonical(url);
-      EXPECT_EQ("", origin.scheme());
-      EXPECT_EQ("", origin.host());
-      EXPECT_EQ(0, origin.port());
-      EXPECT_TRUE(origin.unique());
-      // An opaque Origin with a nonce is always same-origin to itself.
-      EXPECT_TRUE(origin.IsSameOriginWith(origin));
+      EXPECT_TRUE(origin.opaque());
+      // An origin is always same-origin with itself.
+      EXPECT_EQ(origin, origin);
+      EXPECT_NE(origin, url::Origin());
+      EXPECT_EQ(SchemeHostPort(), origin.GetTupleOrPrecursorTupleIfOpaque());
       // A copy of |origin| should be same-origin as well.
       Origin origin_copy = origin;
       EXPECT_EQ("", origin_copy.scheme());
       EXPECT_EQ("", origin_copy.host());
       EXPECT_EQ(0, origin_copy.port());
-      EXPECT_TRUE(origin_copy.unique());
-      EXPECT_TRUE(origin.IsSameOriginWith(origin_copy));
-      // But it should always be cross origin to another opaque Origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(opaque_origin));
-      // As well as the default constructed Origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(unique_origin));
-      // Re-creating from the URL should also be cross origin.
-      EXPECT_FALSE(origin.IsSameOriginWith(CreateCanonical(url)));
+      EXPECT_TRUE(origin_copy.opaque());
+      EXPECT_EQ(origin, origin_copy);
+      // And it should always be cross-origin to another opaque Origin.
+      EXPECT_NE(origin, opaque_origin);
+      // Re-creating from the URL should also be cross-origin.
+      EXPECT_NE(origin, Origin::Create(url));
 
       ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
     }
@@ -169,6 +282,9 @@ TEST_F(OriginTest, ConstructFromGURL) {
       // IP Addresses
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
       {"http://[2001:db8::1]/", "http", "[2001:db8::1]", 80},
+      {"http://1/", "http", "0.0.0.1", 80},
+      {"http://1:1/", "http", "0.0.0.1", 1},
+      {"http://3232237825/", "http", "192.168.9.1", 80},
 
       // Punycode
       {"http://☃.net/", "http", "xn--n3h.net", 80},
@@ -189,6 +305,34 @@ TEST_F(OriginTest, ConstructFromGURL) {
       {"gopher://example.com/", "gopher", "example.com", 70},
       {"ws://example.com/", "ws", "example.com", 80},
       {"wss://example.com/", "wss", "example.com", 443},
+      {"wss://user:pass@example.com/", "wss", "example.com", 443},
+
+      // Scheme (registered in SetUp()) that's both local and standard.
+      // TODO: Is it really appropriate to do network-host canonicalization of
+      // schemes without ports?
+      {"local-and-standard:20", "local-and-standard", "0.0.0.20", 0},
+      {"local-and-standard:20.", "local-and-standard", "0.0.0.20", 0},
+      {"local-and-standard:↑↑↓↓←→←→ba.↑↑↓↓←→←→ba.0.bg", "local-and-standard",
+       "xn--ba-rzuadaibfa.xn--ba-rzuadaibfa.0.bg", 0},
+      {"local-and-standard:foo", "local-and-standard", "foo", 0},
+      {"local-and-standard://bar:20", "local-and-standard", "bar", 0},
+      {"local-and-standard:baz.", "local-and-standard", "baz.", 0},
+      {"local-and-standard:baz..", "local-and-standard", "baz..", 0},
+      {"local-and-standard:baz..bar", "local-and-standard", "baz..bar", 0},
+      {"local-and-standard:baz...", "local-and-standard", "baz...", 0},
+
+      // Scheme (registered in SetUp()) that's local but nonstandard. These
+      // always have empty hostnames, but are allowed to be url::Origins.
+      {"local-but-nonstandard:", "local-but-nonstandard", "", 0},
+      {"local-but-nonstandard:foo", "local-but-nonstandard", "", 0},
+      {"local-but-nonstandard://bar", "local-but-nonstandard", "", 0},
+      {"also-local-but-nonstandard://bar", "also-local-but-nonstandard", "", 0},
+
+      // Scheme (registered in SetUp()) that's standard but marked as noaccess.
+      // url::Origin doesn't currently take the noaccess property into account,
+      // so these aren't expected to result in opaque origins.
+      {"standard-but-noaccess:foo", "standard-but-noaccess", "foo", 0},
+      {"standard-but-noaccess://bar", "standard-but-noaccess", "bar", 0},
 
       // file: URLs
       {"file:///etc/passwd", "file", "", 0},
@@ -199,12 +343,18 @@ TEST_F(OriginTest, ConstructFromGURL) {
       {"filesystem:http://example.com:123/type/", "http", "example.com", 123},
       {"filesystem:https://example.com/type/", "https", "example.com", 443},
       {"filesystem:https://example.com:123/type/", "https", "example.com", 123},
+      {"filesystem:local-and-standard:baz./type/", "local-and-standard", "baz.",
+       0},
 
       // Blob:
       {"blob:http://example.com/guid-goes-here", "http", "example.com", 80},
-      {"blob:http://example.com:123/guid-goes-here", "http", "example.com", 123},
+      {"blob:http://example.com:123/guid-goes-here", "http", "example.com",
+       123},
       {"blob:https://example.com/guid-goes-here", "https", "example.com", 443},
       {"blob:http://u:p@example.com/guid-goes-here", "http", "example.com", 80},
+
+      // Gopher:
+      {"gopher://8u.9.Vx6", "gopher", "8u.9.vx6", 70},
   };
 
   for (const auto& test_case : cases) {
@@ -215,12 +365,37 @@ TEST_F(OriginTest, ConstructFromGURL) {
     EXPECT_EQ(test_case.expected_scheme, origin.scheme());
     EXPECT_EQ(test_case.expected_host, origin.host());
     EXPECT_EQ(test_case.expected_port, origin.port());
-    EXPECT_FALSE(origin.unique());
-    EXPECT_TRUE(origin.IsSameOriginWith(origin));
-    EXPECT_FALSE(different_origin.IsSameOriginWith(origin));
-    EXPECT_FALSE(origin.IsSameOriginWith(different_origin));
+    EXPECT_FALSE(origin.opaque());
+    EXPECT_EQ(origin, origin);
+    EXPECT_NE(different_origin, origin);
+    EXPECT_NE(origin, different_origin);
+    EXPECT_EQ(origin, Origin::Resolve(GURL("about:blank"), origin));
+    EXPECT_EQ(origin, Origin::Resolve(GURL("about:blank?bar#foo"), origin));
 
     ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
+
+    url::Origin derived_opaque =
+        Origin::Resolve(GURL("about:blank?bar#foo"), origin)
+            .DeriveNewOpaqueOrigin();
+    EXPECT_TRUE(derived_opaque.opaque());
+    EXPECT_NE(origin, derived_opaque);
+    EXPECT_FALSE(derived_opaque.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+    EXPECT_EQ(origin.GetTupleOrPrecursorTupleIfOpaque(),
+              derived_opaque.GetTupleOrPrecursorTupleIfOpaque());
+    EXPECT_EQ(derived_opaque, derived_opaque);
+
+    url::Origin derived_opaque_via_data_url =
+        Origin::Resolve(GURL("data:text/html,baz"), origin);
+    EXPECT_TRUE(derived_opaque_via_data_url.opaque());
+    EXPECT_NE(origin, derived_opaque_via_data_url);
+    EXPECT_FALSE(derived_opaque_via_data_url.GetTupleOrPrecursorTupleIfOpaque()
+                     .IsInvalid());
+    EXPECT_EQ(origin.GetTupleOrPrecursorTupleIfOpaque(),
+              derived_opaque_via_data_url.GetTupleOrPrecursorTupleIfOpaque());
+    EXPECT_NE(derived_opaque, derived_opaque_via_data_url);
+    EXPECT_NE(derived_opaque_via_data_url, derived_opaque);
+    EXPECT_NE(derived_opaque.DeriveNewOpaqueOrigin(), derived_opaque);
+    EXPECT_EQ(derived_opaque_via_data_url, derived_opaque_via_data_url);
   }
 }
 
@@ -228,6 +403,7 @@ TEST_F(OriginTest, Serialization) {
   struct TestCases {
     const char* const url;
     const char* const expected;
+    const char* const expected_log;
   } cases[] = {
       {"http://192.168.9.1/", "http://192.168.9.1"},
       {"http://[2001:db8::1]/", "http://[2001:db8::1]"},
@@ -236,8 +412,10 @@ TEST_F(OriginTest, Serialization) {
       {"http://example.com:123/", "http://example.com:123"},
       {"https://example.com/", "https://example.com"},
       {"https://example.com:123/", "https://example.com:123"},
-      {"file:///etc/passwd", "file://"},
-      {"file://example.com/etc/passwd", "file://"},
+      {"file:///etc/passwd", "file://", "file:// [internally: file://]"},
+      {"file://example.com/etc/passwd", "file://",
+       "file:// [internally: file://example.com]"},
+      {"data:,", "null", "null [internally: (nonce TBD) anonymous]"},
   };
 
   for (const auto& test_case : cases) {
@@ -250,44 +428,23 @@ TEST_F(OriginTest, Serialization) {
 
     EXPECT_EQ(test_case.expected, serialized);
 
-    // The '<<' operator should produce the same serialization as Serialize().
+    // The '<<' operator sometimes produces additional information.
     std::stringstream out;
     out << origin;
-    EXPECT_EQ(test_case.expected, out.str());
+    if (test_case.expected_log)
+      EXPECT_EQ(test_case.expected_log, out.str());
+    else
+      EXPECT_EQ(test_case.expected, out.str());
   }
 }
 
 TEST_F(OriginTest, Comparison) {
   // These URLs are arranged in increasing order:
   const char* const urls[] = {
-      "data:uniqueness",
-      "http://a:80",
-      "http://b:80",
-      "https://a:80",
-      "https://b:80",
-      "http://a:81",
-      "http://b:81",
-      "https://a:81",
-      "https://b:81",
+      "data:uniqueness", "http://a:80",  "http://b:80",
+      "https://a:80",    "https://b:80", "http://a:81",
+      "http://b:81",     "https://a:81", "https://b:81",
   };
-
-  {
-    // Unlike below, pre-creation here isn't necessary, since the old creation
-    // path doesn't populate a nonce. It makes for easier copy and paste though.
-    std::vector<Origin> origins;
-    for (const auto* test_url : urls)
-      origins.push_back(CreateCanonical(GURL(test_url)));
-
-    for (size_t i = 0; i < origins.size(); i++) {
-      const Origin& current = origins[i];
-      for (size_t j = i; j < origins.size(); j++) {
-        const Origin& to_compare = origins[j];
-        EXPECT_EQ(i < j, current < to_compare) << i << " < " << j;
-        EXPECT_EQ(j < i, to_compare < current) << j << " < " << i;
-      }
-    }
-  }
-
   // Validate the comparison logic still works when creating a canonical origin,
   // when any created opaque origins contain a nonce.
   {
@@ -295,8 +452,7 @@ TEST_F(OriginTest, Comparison) {
     // with each freshly-constructed Origin (that's not copied).
     std::vector<Origin> origins;
     for (const auto* test_url : urls)
-      origins.push_back(CreateCanonical(GURL(test_url)));
-
+      origins.push_back(Origin::Create(GURL(test_url)));
     for (size_t i = 0; i < origins.size(); i++) {
       const Origin& current = origins[i];
       for (size_t j = i; j < origins.size(); j++) {
@@ -323,26 +479,44 @@ TEST_F(OriginTest, UnsafelyCreate) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
-                                    << test.port);
-    Origin origin = Origin::UnsafelyCreateOriginWithoutNormalization(
-        test.scheme, test.host, test.port);
-    EXPECT_EQ(test.scheme, origin.scheme());
-    EXPECT_EQ(test.host, origin.host());
-    EXPECT_EQ(test.port, origin.port());
-    EXPECT_FALSE(origin.unique());
-    EXPECT_TRUE(origin.IsSameOriginWith(origin));
+    SCOPED_TRACE(testing::Message()
+                 << test.scheme << "://" << test.host << ":" << test.port);
+    base::Optional<url::Origin> origin =
+        url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+            test.scheme, test.host, test.port);
+    ASSERT_TRUE(origin);
+    EXPECT_EQ(test.scheme, origin->scheme());
+    EXPECT_EQ(test.host, origin->host());
+    EXPECT_EQ(test.port, origin->port());
+    EXPECT_FALSE(origin->opaque());
+    EXPECT_TRUE(origin->IsSameOriginWith(*origin));
 
-    ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
+    ExpectParsedUrlsEqual(GURL(origin->Serialize()), origin->GetURL());
+
+    base::UnguessableToken nonce = base::UnguessableToken::Create();
+    base::Optional<url::Origin> opaque_origin =
+        UnsafelyCreateOpaqueOriginWithoutNormalization(
+            test.scheme, test.host, test.port, CreateNonce(nonce));
+    ASSERT_TRUE(opaque_origin);
+    EXPECT_TRUE(opaque_origin->opaque());
+    EXPECT_FALSE(*opaque_origin == origin);
+    EXPECT_EQ(opaque_origin->GetTupleOrPrecursorTupleIfOpaque(),
+              origin->GetTupleOrPrecursorTupleIfOpaque());
+    EXPECT_EQ(opaque_origin,
+              UnsafelyCreateOpaqueOriginWithoutNormalization(
+                  test.scheme, test.host, test.port, CreateNonce(nonce)));
+    EXPECT_FALSE(*opaque_origin == origin->DeriveNewOpaqueOrigin());
   }
 }
 
 TEST_F(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
+  url::AddStandardScheme("host-only", url::SCHEME_WITH_HOST);
+  url::AddStandardScheme("host-port-only", url::SCHEME_WITH_HOST_AND_PORT);
   struct TestCases {
     const char* scheme;
     const char* host;
     uint16_t port = 80;
-  } cases[] = {{"", "", 0},
+  } cases[] = {{"", "", 33},
                {"data", "", 0},
                {"blob", "", 0},
                {"filesystem", "", 0},
@@ -357,50 +531,61 @@ TEST_F(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
                {"http", "example.com\n"},
                {"http", "example.com\r"},
                {"http", "example.com", 0},
+               {"unknown-scheme", "example.com"},
+               {"host-only", "\r", 0},
+               {"host-only", "example.com", 22},
+               {"host-port-only", "example.com", 0},
                {"file", ""}};
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
-                                    << test.port);
-    Origin origin = Origin::UnsafelyCreateOriginWithoutNormalization(
-        test.scheme, test.host, test.port);
-    EXPECT_EQ("", origin.scheme());
-    EXPECT_EQ("", origin.host());
-    EXPECT_EQ(0, origin.port());
-    EXPECT_TRUE(origin.unique());
-    EXPECT_FALSE(origin.IsSameOriginWith(origin));
-
-    ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
+    SCOPED_TRACE(testing::Message()
+                 << test.scheme << "://" << test.host << ":" << test.port);
+    EXPECT_FALSE(UnsafelyCreateOpaqueOriginWithoutNormalization(
+        test.scheme, test.host, test.port, CreateNonce()));
+    EXPECT_FALSE(url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+        test.scheme, test.host, test.port));
   }
+
+  // An empty scheme/host/port tuple is not a valid tuple origin.
+  EXPECT_FALSE(
+      url::Origin::UnsafelyCreateTupleOriginWithoutNormalization("", "", 0));
+
+  // Opaque origins with unknown precursors are allowed.
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  base::Optional<url::Origin> anonymous_opaque =
+      UnsafelyCreateOpaqueOriginWithoutNormalization("", "", 0,
+                                                     CreateNonce(token));
+  ASSERT_TRUE(anonymous_opaque)
+      << "An invalid tuple is a valid input to "
+      << "UnsafelyCreateOpaqueOriginWithoutNormalization, so long as it is "
+      << "the canonical form of the invalid tuple.";
+  EXPECT_TRUE(anonymous_opaque->opaque());
+  EXPECT_EQ(GetNonce(anonymous_opaque.value()), token);
+  EXPECT_EQ(anonymous_opaque->GetTupleOrPrecursorTupleIfOpaque(),
+            url::SchemeHostPort());
 }
 
 TEST_F(OriginTest, UnsafelyCreateUniqueViaEmbeddedNulls) {
   struct TestCases {
-    const char* scheme;
-    size_t scheme_length;
-    const char* host;
-    size_t host_length;
+    base::StringPiece scheme;
+    base::StringPiece host;
     uint16_t port = 80;
-  } cases[] = {{"http\0more", 9, "example.com", 11},
-               {"http\0", 5, "example.com", 11},
-               {"\0http", 5, "example.com", 11},
-               {"http", 4, "example.com\0not-example.com", 27},
-               {"http", 4, "example.com\0", 12},
-               {"http", 4, "\0example.com", 12}};
+  } cases[] = {{{"http\0more", 9}, {"example.com", 11}},
+               {{"http\0", 5}, {"example.com", 11}},
+               {{"\0http", 5}, {"example.com", 11}},
+               {{"http"}, {"example.com\0not-example.com", 27}},
+               {{"http"}, {"example.com\0", 12}},
+               {{"http"}, {"\0example.com", 12}},
+               {{""}, {"\0", 1}, 0},
+               {{"\0", 1}, {""}, 0}};
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
-                                    << test.port);
-    Origin origin = Origin::UnsafelyCreateOriginWithoutNormalization(
-        std::string(test.scheme, test.scheme_length),
-        std::string(test.host, test.host_length), test.port);
-    EXPECT_EQ("", origin.scheme());
-    EXPECT_EQ("", origin.host());
-    EXPECT_EQ(0, origin.port());
-    EXPECT_TRUE(origin.unique());
-    EXPECT_FALSE(origin.IsSameOriginWith(origin));
-
-    ExpectParsedUrlsEqual(GURL(origin.Serialize()), origin.GetURL());
+    SCOPED_TRACE(testing::Message()
+                 << test.scheme << "://" << test.host << ":" << test.port);
+    EXPECT_FALSE(url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+        test.scheme, test.host, test.port));
+    EXPECT_FALSE(UnsafelyCreateOpaqueOriginWithoutNormalization(
+        test.scheme, test.host, test.port, CreateNonce()));
   }
 }
 
@@ -449,6 +634,8 @@ TEST_F(OriginTest, DomainIs) {
 
     EXPECT_EQ(test_case.expected_domain_is,
               origin.DomainIs(test_case.lower_ascii_domain));
+    EXPECT_FALSE(
+        origin.DeriveNewOpaqueOrigin().DomainIs(test_case.lower_ascii_domain));
   }
 
   // If the URL is invalid, DomainIs returns false.
@@ -465,6 +652,20 @@ TEST_F(OriginTest, DebugAlias) {
   Origin origin1 = Origin::Create(GURL("https://foo.com/bar"));
   DEBUG_ALIAS_FOR_ORIGIN(origin1_debug_alias, origin1);
   EXPECT_STREQ("https://foo.com", origin1_debug_alias);
+}
+
+TEST_F(OriginTest, NonStandardScheme) {
+  Origin origin = Origin::Create(GURL("cow://"));
+  EXPECT_TRUE(origin.opaque());
+}
+TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
+  EnableNonStandardSchemesForAndroidWebView();
+  Origin origin = Origin::Create(GURL("cow://"));
+  EXPECT_FALSE(origin.opaque());
+  EXPECT_EQ("cow", origin.scheme());
+  EXPECT_EQ("", origin.host());
+  EXPECT_EQ(0, origin.port());
+  Shutdown();
 }
 
 }  // namespace url

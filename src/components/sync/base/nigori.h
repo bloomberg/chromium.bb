@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/tick_clock.h"
 #include "components/sync/base/passphrase_enums.h"
 
 namespace crypto {
@@ -20,35 +21,26 @@ namespace syncer {
 
 class Nigori;
 
-struct KeyDerivationParams {
+class KeyDerivationParams {
  public:
-  static KeyDerivationParams CreateForPbkdf2(const std::string& hostname,
-                                             const std::string& username);
+  static KeyDerivationParams CreateForPbkdf2();
   static KeyDerivationParams CreateForScrypt(const std::string& salt);
   static KeyDerivationParams CreateWithUnsupportedMethod();
 
   KeyDerivationMethod method() const { return method_; }
-  const std::string& pbkdf2_username() const;
-  const std::string& pbkdf2_hostname() const;
   const std::string& scrypt_salt() const;
 
   KeyDerivationParams(const KeyDerivationParams& other);
   KeyDerivationParams(KeyDerivationParams&& other);
   KeyDerivationParams& operator=(const KeyDerivationParams& other);
   bool operator==(const KeyDerivationParams& other) const;
+  bool operator!=(const KeyDerivationParams& other) const;
 
  private:
   KeyDerivationParams(KeyDerivationMethod method,
-                      const std::string& pbkdf2_hostname,
-                      const std::string& pbkdf2_username,
                       const std::string& scrypt_salt);
 
   KeyDerivationMethod method_;
-
-  // TODO(vitaliii): Delete hostname and username from here and hardcode them
-  // into the old key derivation function instead.
-  std::string pbkdf2_hostname_;
-  std::string pbkdf2_username_;
 
   std::string scrypt_salt_;
 };
@@ -102,6 +94,10 @@ class Nigori {
 
   static std::string GenerateScryptSalt();
 
+  void SetTickClockForTesting(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
   // Exposed for tests.
   static const size_t kIvSize = 16;
 
@@ -118,9 +114,7 @@ class Nigori {
     std::unique_ptr<crypto::SymmetricKey> encryption_key;
     std::unique_ptr<crypto::SymmetricKey> mac_key;
 
-    bool InitByDerivationUsingPbkdf2(const std::string& hostname,
-                                     const std::string& username,
-                                     const std::string& password);
+    bool InitByDerivationUsingPbkdf2(const std::string& password);
     bool InitByDerivationUsingScrypt(const std::string& salt,
                                      const std::string& password);
     bool InitByImport(const std::string& user_key_str,
@@ -129,6 +123,7 @@ class Nigori {
   };
 
   Keys keys_;
+  const base::TickClock* tick_clock_;
 };
 
 }  // namespace syncer

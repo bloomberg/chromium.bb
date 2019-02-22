@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace blink {
@@ -20,6 +21,8 @@ namespace blink {
 class BlobBytesProviderTest : public testing::Test {
  public:
   void SetUp() override {
+    Platform::SetMainThreadTaskRunnerForTesting();
+
     test_bytes1_.resize(128);
     for (size_t i = 0; i < test_bytes1_.size(); ++i)
       test_bytes1_[i] = i % 191;
@@ -39,6 +42,11 @@ class BlobBytesProviderTest : public testing::Test {
     combined_bytes_.AppendVector(test_bytes1_);
     combined_bytes_.AppendVector(test_bytes2_);
     combined_bytes_.AppendVector(test_bytes3_);
+  }
+
+  void TearDown() override {
+    scoped_task_environment_.RunUntilIdle();
+    Platform::UnsetMainThreadTaskRunnerForTesting();
   }
 
   std::unique_ptr<BlobBytesProvider> CreateProvider(

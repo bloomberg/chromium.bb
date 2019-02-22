@@ -35,10 +35,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/notification_resources.h"
-#include "content/public/common/platform_notification_data.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
@@ -126,8 +126,8 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    const content::PlatformNotificationData& notification_data,
-    const content::NotificationResources& notification_resources) {
+    const blink::PlatformNotificationData& notification_data,
+    const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Posted tasks can request notifications to be added, which would cause a
@@ -154,8 +154,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     const std::string& notification_id,
     const GURL& service_worker_scope,
     const GURL& origin,
-    const content::PlatformNotificationData& notification_data,
-    const content::NotificationResources& notification_resources) {
+    const blink::PlatformNotificationData& notification_data,
+    const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Posted tasks can request notifications to be added, which would cause a
@@ -328,8 +328,8 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     Profile* profile,
     const GURL& origin,
     const std::string& notification_id,
-    const content::PlatformNotificationData& notification_data,
-    const content::NotificationResources& notification_resources) const {
+    const blink::PlatformNotificationData& notification_data,
+    const blink::NotificationResources& notification_resources) const {
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources.action_icons.size());
 
@@ -379,14 +379,14 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
   for (size_t i = 0; i < notification_data.actions.size(); ++i) {
-    const content::PlatformNotificationAction& action =
+    const blink::PlatformNotificationAction& action =
         notification_data.actions[i];
     message_center::ButtonInfo button(action.title);
     // TODO(peter): Handle different screen densities instead of always using
     // the 1x bitmap - crbug.com/585815.
     button.icon =
         gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
-    if (action.type == content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT) {
+    if (action.type == blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT) {
       button.placeholder = action.placeholder.as_optional_string16().value_or(
           l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER));
     }

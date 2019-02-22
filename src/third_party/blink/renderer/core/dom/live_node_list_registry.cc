@@ -49,7 +49,7 @@ void LiveNodeListRegistry::ClearWeakMembers(Visitor*) {
   if (it == data_.end())
     return;
 
-  data_.Shrink(it - data_.begin());
+  data_.Shrink(static_cast<wtf_size_t>(it - data_.begin()));
   data_.ShrinkToReasonableCapacity();
   RecomputeMask();
 }

@@ -10,13 +10,19 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace blink {
+namespace mojom {
+class FileChooserParams;
+}
+}  // namespace blink
+
 namespace content {
 class BrowserContext;
 class ColorChooser;
+class FileSelectListener;
 class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
-struct FileChooserParams;
 struct OpenURLParams;
 }
 
@@ -63,8 +69,10 @@ class AppDelegate {
   virtual content::ColorChooser* ShowColorChooser(
       content::WebContents* web_contents,
       SkColor initial_color) = 0;
-  virtual void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                              const content::FileChooserParams& params) = 0;
+  virtual void RunFileChooser(
+      content::RenderFrameHost* render_frame_host,
+      std::unique_ptr<content::FileSelectListener> listener,
+      const blink::mojom::FileChooserParams& params) = 0;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,

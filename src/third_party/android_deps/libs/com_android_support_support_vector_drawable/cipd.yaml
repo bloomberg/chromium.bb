@@ -5,6 +5,6 @@
 # To create CIPD package run the following command.
 # cipd create --pkg-def cipd.yaml -tag version:27.0.0-cr0
 package: chromium/third_party/android_deps/libs/com_android_support_support_vector_drawable
-description: Android Support VectorDrawable
+description: "Android Support VectorDrawable"
 data:
 - file: support-vector-drawable-27.0.0.aar

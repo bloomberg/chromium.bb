@@ -96,6 +96,9 @@ class BrowserPolicyConnectorChromeOS
   // Returns the device asset ID if it is set.
   std::string GetDeviceAssetID() const;
 
+  // Returns the machine name if it is set.
+  std::string GetMachineName() const;
+
   // Returns the device annotated location if it is set.
   std::string GetDeviceAnnotatedLocation() const;
 
@@ -150,6 +153,9 @@ class BrowserPolicyConnectorChromeOS
       const {
     return device_network_configuration_updater_.get();
   }
+
+  // Returns device's market segment.
+  MarketSegment GetEnterpriseMarketSegment() const;
 
   // The browser-global PolicyService is created before Profiles are ready, to
   // provide managed values for the local state PrefService. It includes a

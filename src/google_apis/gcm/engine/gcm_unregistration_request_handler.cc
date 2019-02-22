@@ -63,7 +63,7 @@ void GCMUnregistrationRequestHandler::ReportUMAs(
   if (status != UnregistrationRequest::SUCCESS)
     return;
 
-  UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRetryCount", retry_count);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.UnregistrationRetryCount", retry_count);
   UMA_HISTOGRAM_TIMES("GCM.UnregistrationCompleteTime", complete_time);
 }
 

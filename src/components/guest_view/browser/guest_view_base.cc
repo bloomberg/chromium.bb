@@ -16,6 +16,7 @@
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -667,13 +668,17 @@ void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
   UpdateGuestSize(new_size, auto_size_enabled_);
 }
 
-void GuestViewBase::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                                   const content::FileChooserParams& params) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
+void GuestViewBase::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  if (!attached() || !embedder_web_contents()->GetDelegate()) {
+    listener->FileSelectionCanceled();
     return;
+  }
 
-  embedder_web_contents()->GetDelegate()->RunFileChooser(render_frame_host,
-                                                         params);
+  embedder_web_contents()->GetDelegate()->RunFileChooser(
+      render_frame_host, std::move(listener), params);
 }
 
 bool GuestViewBase::ShouldFocusPageAfterCrash() {

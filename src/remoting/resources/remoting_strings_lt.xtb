@@ -102,7 +102,6 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3171922709365450819">Šis klientas nepalaiko šio įrenginio, nes reikalingas trečiosios šalies autentifikavimas.</translation>
 <translation id="3194245623920924351">Nuotolinis kompiut. valdymas</translation>
 <translation id="3197730452537982411">Nuot. k. vald.</translation>
-<translation id="3212472844831225214">• Pridėtas 9.0 („Pie“) versijos „Android“ palaikymas.</translation>
 <translation id="324272851072175193">Siųsti šias instrukcijas el. paštu</translation>
 <translation id="3258789396564295715">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį kompiuterio valdymą.</translation>
 <translation id="3286521253923406898">„Chrome“ nuotolinio ryšio prieglobos valdymo priemonė</translation>
@@ -331,6 +330,8 @@ AK</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="8548209692293300397">Anksčiau prisijungėte kaip <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Kad pasiektumėte kompiuterius toje paskyroje, <ph name="LINK_BEGIN" />prisijunkite prie „Google Chrome“<ph name="LINK_END" /> naudodami tą paskyrą ir iš naujo įdiekite „Chrome“ nuotolinį kompiuterio valdymą.</translation>
 <translation id="8642984861538780905">Neblogas</translation>
+<translation id="8705151241155781642">• Pridėtas 9.0 („Pie“) versijos „Android“ palaikymas.
+• Nuotolinio kompiuterio skyros dydžio keitimo, kad atitiktų „Android“ įrenginio ekraną, palaikymas.</translation>
 <translation id="8712909229180978490">Prisijungus nerodomi „Google“ diske išsaugoti failai.</translation>
 <translation id="8743328882720071828">Ar norite leisti <ph name="CLIENT_USERNAME" /> matyti kompiuterio informaciją ir jį valdyti?</translation>
 <translation id="8747048596626351634">Sesija užstrigo arba jos nepavyko paleisti. Jei nuotoliniame kompiuteryje yra ~/.chrome-remote-desktop-session, įsitikinkite, kad jis paleidžia ilgai vykdomą priekinio plano procesą, pvz., darbalaukio aplinką ar langų tvarkytuvę.</translation>

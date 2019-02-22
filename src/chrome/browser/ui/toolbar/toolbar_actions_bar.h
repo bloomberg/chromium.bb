@@ -224,6 +224,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble);
 
+  // Closes the overflow menu, if it was open. Returns whether or not the
+  // overflow menu was closed.
+  bool CloseOverflowMenuIfOpen();
+
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
   const ToolbarActions& toolbar_actions_unordered() const {

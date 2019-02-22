@@ -3,6 +3,9 @@
         "intent:coldish:bbc": {
             "DEFAULT": "startup_pages_000.wprgo"
         },
+        "intent:warm:bbc": {
+            "DEFAULT": "startup_pages_000.wprgo"
+        },
         "http://bbc.co.uk": {
             "DEFAULT": "startup_pages_000.wprgo"
         },

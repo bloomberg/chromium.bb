@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
@@ -137,6 +138,8 @@ class DOMDataStore {
     if (updated) {
       ScriptWrappableMarkingVisitor::WriteBarrier(
           isolate, &wrapper_map_.value(), object);
+      UnifiedHeapMarkingVisitor::WriteBarrier(isolate, &wrapper_map_.value(),
+                                              object);
     }
     return updated;
   }

@@ -60,6 +60,15 @@ class ScrollbarsTest : public SimTest {
     GetEventHandler().HandleMousePressEvent(event);
   }
 
+  void HandleContextMenuEvent(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kNoButton, 0,
+        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+    event.SetFrameScale(1);
+    GetEventHandler().SendContextMenuEvent(event);
+  }
+
   void HandleMouseReleaseEvent(int x, int y) {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
@@ -217,9 +226,9 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
 
   VisualViewport& visual_viewport = document->GetPage()->GetVisualViewport();
   int horizontal_scrollbar = clampTo<int>(std::floor(
-      visual_viewport.LayerForHorizontalScrollbar()->Size().Height()));
+      visual_viewport.LayerForHorizontalScrollbar()->Size().height()));
   int vertical_scrollbar = clampTo<int>(
-      std::floor(visual_viewport.LayerForVerticalScrollbar()->Size().Width()));
+      std::floor(visual_viewport.LayerForVerticalScrollbar()->Size().width()));
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
@@ -228,10 +237,10 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   EXPECT_EQ(
       clampTo<int>(std::floor(horizontal_scrollbar * device_scale)),
       clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().Height())));
+          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
   EXPECT_EQ(clampTo<int>(std::floor(vertical_scrollbar * device_scale)),
             clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().Width())));
+                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
 
   client.set_device_scale_factor(1.f);
   web_view_impl->Resize(IntSize(800, 600));
@@ -239,10 +248,10 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   EXPECT_EQ(
       horizontal_scrollbar,
       clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().Height())));
+          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
   EXPECT_EQ(vertical_scrollbar,
             clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().Width())));
+                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
 }
 
 // Ensure that causing a change in scrollbar existence causes a nested layout
@@ -1045,6 +1054,58 @@ TEST_F(ScrollbarsTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   HandleMouseReleaseEvent(1, 1);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
   EXPECT_EQ(scrollbar->HoveredPart(), ScrollbarPart::kNoPart);
+}
+
+TEST_F(ScrollbarsTest, ContextMenuUpdatesScrollbarPressedPart) {
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body { margin: 0px }
+    #scroller { overflow-x: auto; width: 180px; height: 100px }
+    #spacer { height: 300px }
+    ::-webkit-scrollbar { width: 8px }
+    ::-webkit-scrollbar-thumb {
+      background-color: hsla(0, 0%, 56%, 0.6)
+    }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* scrollbar_div = document.getElementById("scroller");
+  EXPECT_TRUE(scrollbar_div);
+
+  ScrollableArea* scrollable_area =
+      ToLayoutBox(scrollbar_div->GetLayoutObject())->GetScrollableArea();
+
+  EXPECT_TRUE(scrollable_area->VerticalScrollbar());
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Mouse moved over the scrollbar.
+  HandleMouseMoveEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Press the scrollbar.
+  HandleMousePressEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // ContextMenu while still pressed.
+  HandleContextMenuEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Mouse moved off the scrollbar.
+  HandleMousePressEvent(50, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
 }
 
 TEST_F(ScrollbarsTest,

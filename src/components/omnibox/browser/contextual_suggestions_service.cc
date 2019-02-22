@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/base/time.h"
@@ -100,6 +101,7 @@ ContextualSuggestionsService::~ContextualSuggestionsService() {}
 void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
     const std::string& current_url,
     const base::Time& visit_time,
+    const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
@@ -110,7 +112,7 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
                               std::move(start_callback),
                               std::move(completion_callback));
   else
-    CreateDefaultRequest(current_url, template_url_service,
+    CreateDefaultRequest(current_url, input, template_url_service,
                          std::move(start_callback),
                          std::move(completion_callback));
 }
@@ -123,6 +125,7 @@ void ContextualSuggestionsService::StopCreatingContextualSuggestionsRequest() {
 // static
 GURL ContextualSuggestionsService::ContextualSuggestionsUrl(
     const std::string& current_url,
+    const AutocompleteInput& input,
     const TemplateURLService* template_url_service) {
   if (template_url_service == nullptr) {
     return GURL();
@@ -143,6 +146,13 @@ GURL ContextualSuggestionsService::ContextualSuggestionsUrl(
   if (!current_url.empty()) {
     search_term_args.current_page_url = current_url;
   }
+
+  search_term_args.page_classification = input.current_page_classification();
+
+  // Append a specific suggest client in ChromeOS app_list launcher contexts.
+  BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
+      search_engine, search_terms_data, input.current_page_classification(),
+      &search_term_args);
   return GURL(suggestion_url_ref.ReplaceSearchTerms(search_term_args,
                                                     search_terms_data));
 }
@@ -188,11 +198,12 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
 
 void ContextualSuggestionsService::CreateDefaultRequest(
     const std::string& current_url,
+    const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
   const GURL suggest_url =
-      ContextualSuggestionsUrl(current_url, template_url_service);
+      ContextualSuggestionsUrl(current_url, input, template_url_service);
   DCHECK(suggest_url.is_valid());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

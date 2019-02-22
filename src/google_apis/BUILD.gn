@@ -164,8 +164,6 @@ template("google_apis_tmpl") {
         "drive/drive_api_url_generator.cc",
         "drive/drive_api_url_generator.h",
         "drive/drive_common_callbacks.h",
-        "drive/drive_switches.cc",
-        "drive/drive_switches.h",
         "drive/files_list_request_runner.cc",
         "drive/files_list_request_runner.h",
         "drive/request_sender.cc",
@@ -218,6 +216,7 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//net:test_support",
+    "//services/network:network_service",
     "//services/network:test_support",
     "//services/network/public/cpp",
   ]

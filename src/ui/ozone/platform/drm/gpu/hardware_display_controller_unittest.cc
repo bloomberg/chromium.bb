@@ -141,7 +141,8 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
         else if (pair.first == kInFormatsPropId)
           value = kInFormatsBlobPropId;
 
-        plane.properties.push_back({.id = pair.first, .value = value});
+        plane.properties.push_back(
+            {/* .id = */ pair.first, /*.value = */ value});
       };
 
       drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(

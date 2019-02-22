@@ -28,7 +28,7 @@ class HttpResponse {
   // @returns true if the content length is retrieved or not specified in the
   //     response.
   virtual bool GetContentLength(bool* has_content_length,
-                                size_t* content_length) = 0;
+                                uint32_t* content_length) = 0;
 
   // Retrieves the specified Content-Type header value, if any.
   // @param has_content_type Is set to true if the content type is
@@ -49,7 +49,7 @@ class HttpResponse {
   // @param count On invocation, the maximum length to read into buffer. Upon
   //     successful return, the number of bytes read.
   // @returns true if successful.
-  virtual bool ReadData(char* buffer, size_t* count) = 0;
+  virtual bool ReadData(char* buffer, uint32_t* count) = 0;
 };
 
 }  // namespace chrome_cleaner

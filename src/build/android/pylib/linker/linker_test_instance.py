@@ -5,6 +5,7 @@
 from pylib.base import test_instance
 from pylib.constants import host_paths
 from pylib.linker import test_case
+from pylib.utils import test_filter
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import unittest_util
@@ -15,7 +16,7 @@ class LinkerTestInstance(test_instance.TestInstance):
   def __init__(self, args):
     super(LinkerTestInstance, self).__init__()
     self._test_apk = args.test_apk
-    self._test_filter = args.test_filter
+    self._test_filter = test_filter.InitializeFilterFromArgs(args)
 
   @property
   def test_apk(self):

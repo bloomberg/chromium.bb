@@ -203,6 +203,12 @@ class NavigationSimulator : public WebContentsObserver {
   // Simulates the commit of a navigation or an error page aborting.
   virtual void AbortCommit();
 
+  // Simulates the navigation failing with the error code |error_code| and
+  // response headers |response_headers|.
+  virtual void FailWithResponseHeaders(
+      int error_code,
+      scoped_refptr<net::HttpResponseHeaders> response_headers);
+
   // Simulates the navigation failing with the error code |error_code|.
   virtual void Fail(int error_code);
 
@@ -250,6 +256,9 @@ class NavigationSimulator : public WebContentsObserver {
   // The following parameters can change at any point until the page fails or
   // commits. They should be specified before calling |Fail| or |Commit|.
   virtual void SetSocketAddress(const net::HostPortPair& socket_address);
+
+  // Pretend the navigation is against an inner response of a signed exchange.
+  void SetIsSignedExchangeInnerResponse(bool is_signed_exchange_inner_response);
 
   // Sets the InterfaceProvider interface request to pass in as an argument to
   // DidCommitProvisionalLoad for cross-document navigations. If not called,
@@ -388,6 +397,7 @@ class NavigationSimulator : public WebContentsObserver {
   // initialized (if needed) in InitializeFromStartedRequest.
   GURL navigation_url_;
   net::HostPortPair socket_address_;
+  bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool browser_initiated_;
   bool same_document_ = false;

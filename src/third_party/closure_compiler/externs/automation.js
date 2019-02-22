@@ -43,6 +43,7 @@ chrome.automation.EventType = {
   LIVE_REGION_CREATED: 'liveRegionCreated',
   LIVE_REGION_CHANGED: 'liveRegionChanged',
   LOAD_COMPLETE: 'loadComplete',
+  LOAD_START: 'loadStart',
   LOCATION_CHANGED: 'locationChanged',
   MEDIA_STARTED_PLAYING: 'mediaStartedPlaying',
   MEDIA_STOPPED_PLAYING: 'mediaStoppedPlaying',
@@ -335,9 +336,11 @@ chrome.automation.NameFromType = {
   UNINITIALIZED: 'uninitialized',
   ATTRIBUTE: 'attribute',
   ATTRIBUTE_EXPLICITLY_EMPTY: 'attributeExplicitlyEmpty',
+  CAPTION: 'caption',
   CONTENTS: 'contents',
   PLACEHOLDER: 'placeholder',
   RELATED_ELEMENT: 'relatedElement',
+  TITLE: 'title',
   VALUE: 'value',
 };
 
@@ -831,6 +834,13 @@ chrome.automation.AutomationNode.prototype.scrollYMin;
 chrome.automation.AutomationNode.prototype.scrollYMax;
 
 /**
+ * Indicates whether this node is scrollable.
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-scrollable
+ */
+chrome.automation.AutomationNode.prototype.scrollable;
+
+/**
  * The character index of the start of the selection within this editable text element; -1 if no selection.
  * @type {(number|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-textSelStart
@@ -850,13 +860,6 @@ chrome.automation.AutomationNode.prototype.textSelEnd;
  * @see https://developer.chrome.com/extensions/automation#type-textInputType
  */
 chrome.automation.AutomationNode.prototype.textInputType;
-
-/**
- * An array of indexes of the break between lines in editable text.
- * @type {!Array<number>}
- * @see https://developer.chrome.com/extensions/automation#type-lineBreaks
- */
-chrome.automation.AutomationNode.prototype.lineBreaks;
 
 /**
  * An array of indexes of the start position of each text marker.

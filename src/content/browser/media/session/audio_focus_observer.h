@@ -6,10 +6,8 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_OBSERVER_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -23,11 +21,11 @@ class CONTENT_EXPORT AudioFocusObserver
   ~AudioFocusObserver() override;
 
   // The given media session gained audio focus with the specified type.
-  void OnFocusGained(::media_session::mojom::MediaSessionPtr,
+  void OnFocusGained(::media_session::mojom::MediaSessionInfoPtr,
                      media_session::mojom::AudioFocusType) override {}
 
   // The given media session lost audio focus.
-  void OnFocusLost(::media_session::mojom::MediaSessionPtr) override {}
+  void OnFocusLost(::media_session::mojom::MediaSessionInfoPtr) override {}
 
  protected:
   // Called by subclasses to (un-)register the observer with AudioFocusManager.
@@ -35,7 +33,8 @@ class CONTENT_EXPORT AudioFocusObserver
   void UnregisterAudioFocusObserver();
 
  private:
-  base::Optional<mojo::InterfacePtrSetElementId> observer_id_;
+  void ConnectToService();
+  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 
   mojo::Binding<media_session::mojom::AudioFocusObserver> binding_;
 

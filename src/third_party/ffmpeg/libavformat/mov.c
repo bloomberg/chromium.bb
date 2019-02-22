@@ -1326,6 +1326,10 @@ static int update_frag_index(MOVContext *c, int64_t offset)
         return -1;
 
     for (i = 0; i < c->fc->nb_streams; i++) {
+        // Avoid building frag index if streams lack track id.
+        if (c->fc->streams[i]->id < 0)
+            return AVERROR_INVALIDDATA;
+
         frag_stream_info[i].id = c->fc->streams[i]->id;
         frag_stream_info[i].sidx_pts = AV_NOPTS_VALUE;
         frag_stream_info[i].tfdt_dts = AV_NOPTS_VALUE;
@@ -1911,6 +1915,8 @@ static int mov_read_glbl(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     ret = ff_get_extradata(c->fc, st->codecpar, pb, atom.size);
     if (ret < 0)
         return ret;
+    if (atom.type == MKTAG('h','v','c','C') && st->codecpar->codec_tag == MKTAG('d','v','h','1'))
+        st->codecpar->codec_id = AV_CODEC_ID_HEVC;
 
     return 0;
 }
@@ -2041,6 +2047,8 @@ static int mov_codec_id(AVStream *st, uint32_t format)
             id = ff_codec_get_id(ff_codec_movsubtitle_tags, format);
             if (id > 0)
                 st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
+            else
+                id = ff_codec_get_id(ff_codec_movdata_tags, format);
         }
     }
 
@@ -2127,8 +2135,8 @@ static void mov_parse_stsd_audio(MOVContext *c, AVIOContext *pb,
     // Read QT version 1 fields. In version 0 these do not exist.
     av_log(c->fc, AV_LOG_TRACE, "version =%d, isom =%d\n", version, c->isom);
     if (!c->isom ||
-        (compatible_brands && strstr(compatible_brands->value, "qt  "))) {
-
+        (compatible_brands && strstr(compatible_brands->value, "qt  ")) ||
+        (sc->stsd_version == 0 && version > 0)) {
         if (version == 1) {
             sc->samples_per_frame = avio_rb32(pb);
             avio_rb32(pb); /* bytes per packet */
@@ -2508,18 +2516,16 @@ int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries)
                "size=%"PRId64" 4CC=%s codec_type=%d\n", size,
                av_fourcc2str(format), st->codecpar->codec_type);
 
+        st->codecpar->codec_id = id;
         if (st->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
-            st->codecpar->codec_id = id;
             mov_parse_stsd_video(c, pb, st, sc);
         } else if (st->codecpar->codec_type==AVMEDIA_TYPE_AUDIO) {
-            st->codecpar->codec_id = id;
             mov_parse_stsd_audio(c, pb, st, sc);
             if (st->codecpar->sample_rate < 0) {
                 av_log(c->fc, AV_LOG_ERROR, "Invalid sample rate %d\n", st->codecpar->sample_rate);
                 return AVERROR_INVALIDDATA;
             }
         } else if (st->codecpar->codec_type==AVMEDIA_TYPE_SUBTITLE){
-            st->codecpar->codec_id = id;
             mov_parse_stsd_subtitle(c, pb, st, sc,
                                     size - (avio_tell(pb) - start_pos));
         } else {
@@ -2570,11 +2576,12 @@ static int mov_read_stsd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     st = c->fc->streams[c->fc->nb_streams - 1];
     sc = st->priv_data;
 
-    avio_r8(pb); /* version */
+    sc->stsd_version = avio_r8(pb);
     avio_rb24(pb); /* flags */
     entries = avio_rb32(pb);
 
-    if (entries <= 0) {
+    /* Each entry contains a size (4 bytes) and format (4 bytes). */
+    if (entries <= 0 || entries > atom.size / 8) {
         av_log(c->fc, AV_LOG_ERROR, "invalid STSD entries %d\n", entries);
         return AVERROR_INVALIDDATA;
     }
@@ -3710,9 +3717,9 @@ static void mov_fix_index(MOVContext *mov, AVStream *st)
                 st->index_entries[i].timestamp -= msc->min_corrected_pts;
             }
         }
-        // Start time should be equal to zero or the duration of any empty edits.
-        st->start_time = empty_edits_sum_duration;
     }
+    // Start time should be equal to zero or the duration of any empty edits.
+    st->start_time = empty_edits_sum_duration;
 
     // Update av stream length, if it ends up shorter than the track's media duration
     st->duration = FFMIN(st->duration, edit_list_dts_entry_end - start_dts);
@@ -4177,7 +4184,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     st = avformat_new_stream(c->fc, NULL);
     if (!st) return AVERROR(ENOMEM);
-    st->id = c->fc->nb_streams;
+    st->id = -1;
     sc = av_mallocz(sizeof(MOVStreamContext));
     if (!sc) return AVERROR(ENOMEM);
 
@@ -4461,6 +4468,11 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     st = c->fc->streams[c->fc->nb_streams-1];
     sc = st->priv_data;
 
+    // Each stream (trak) should have exactly 1 tkhd. This catches bad files and
+    // avoids corrupting AVStreams mapped to an earlier tkhd.
+    if (st->id != -1)
+        return AVERROR_INVALIDDATA;
+
     version = avio_r8(pb);
     flags = avio_rb24(pb);
     st->disposition |= (flags & MOV_TKHD_FLAG_ENABLED) ? AV_DISPOSITION_DEFAULT : 0;
@@ -4727,6 +4739,7 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
             break;
         }
     }
+    av_assert0(index_entry_pos <= st->nb_index_entries);
 
     avio_r8(pb); /* version */
     flags = avio_rb24(pb);
@@ -5218,27 +5231,25 @@ static int mov_read_tmcd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 static int mov_read_av1c(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
     AVStream *st;
-    int ret, version;
+    int ret;
 
     if (c->fc->nb_streams < 1)
         return 0;
     st = c->fc->streams[c->fc->nb_streams - 1];
 
-    if (atom.size < 5) {
+    if (atom.size < 4) {
         av_log(c->fc, AV_LOG_ERROR, "Empty AV1 Codec Configuration Box\n");
         return AVERROR_INVALIDDATA;
     }
 
-    version = avio_r8(pb);
-    if (version != 0) {
-        av_log(c->fc, AV_LOG_WARNING, "Unknown AV1 Codec Configuration Box version %d\n", version);
+    /* For now, propagate only the OBUs, if any. Once libavcodec is
+       updated to handle isobmff style extradata this can be removed. */
+    avio_skip(pb, 4);
+
+    if (atom.size == 4)
         return 0;
-    }
-    avio_skip(pb, 3); /* flags */
 
-    avio_skip(pb, 1); /* reserved, initial_presentation_delay_present, initial_presentation_delay_minus_one */
-
-    ret = ff_get_extradata(c->fc, st->codecpar, pb, atom.size - 5);
+    ret = ff_get_extradata(c->fc, st->codecpar, pb, atom.size - 4);
     if (ret < 0)
         return ret;
 
@@ -5911,6 +5922,11 @@ static int mov_read_sample_encryption_info(MOVContext *c, AVIOContext *pb, MOVSt
     int i;
     unsigned int subsample_count;
     AVSubsampleEncryptionInfo *subsamples;
+
+    if (!sc->cenc.default_encrypted_sample) {
+        av_log(c->fc, AV_LOG_ERROR, "Missing schm or tenc\n");
+        return AVERROR_INVALIDDATA;
+    }
 
     *sample = av_encryption_info_clone(sc->cenc.default_encrypted_sample);
     if (!*sample)

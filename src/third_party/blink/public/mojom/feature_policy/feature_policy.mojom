@@ -38,64 +38,70 @@ enum WebSandboxFlags {
 enum FeaturePolicyFeature {
   kNotFound = 0,
   // Controls access to media autoplay.
-  kAutoplay,
+  kAutoplay = 1,
   // Controls access to video input devices.
-  kCamera,
+  kCamera = 2,
   // Controls whether navigator.requestMediaKeySystemAccess is allowed.
-  kEncryptedMedia,
+  kEncryptedMedia = 3,
   // Controls whether Element.requestFullscreen is allowed.
-  kFullscreen,
+  kFullscreen = 4,
   // Controls access to Geolocation interface.
-  kGeolocation,
+  kGeolocation = 5,
   // Controls access to audio input devices.
-  kMicrophone,
+  kMicrophone = 6,
   // Controls access to requestMIDIAccess method.
-  kMidiFeature,
+  kMidiFeature = 7,
   // Controls access to PaymentRequest interface.
-  kPayment,
+  kPayment = 8,
   // Controls access to audio output devices.
-  kSpeaker,
+  kSpeaker = 9,
   // Controls access to document.cookie attribute.
-  kDocumentCookie,
+  kDocumentCookie = 10,
   // Contols access to document.domain attribute.
-  kDocumentDomain,
+  kDocumentDomain = 11,
   // Controls whether synchronous script elements will run.
-  kSyncScript,
+  kSyncScript = 12,
   // Controls use of synchronous XMLHTTPRequest API.
-  kSyncXHR,
+  kSyncXHR = 13,
   // Controls access to the WebUSB API.
-  kUsb,
+  kUsb = 14,
   // Controls access to AOM event listeners.
-  kAccessibilityEvents,
+  kAccessibilityEvents = 15,
   // Controls use of WebVR API.
-  kWebVr,
+  kWebVr = 16,
   // The following features control access to the corresponding sensor classes.
   // Fusion sensor APIs (e.g. LinearAcceleration, OrientationSensor-based
   // classes)require all of the features that are inputs into that API to be
   // enabled for the feature to be allowed.
-  kAccelerometer,
-  kAmbientLightSensor,
-  kGyroscope,
-  kMagnetometer,
+  kAccelerometer = 17,
+  kAmbientLightSensor = 18,
+  kGyroscope = 19,
+  kMagnetometer = 20,
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
-  kUnsizedMedia,
+  kUnsizedMedia = 21,
   // Controls which image formats are allowed to be used in the document.
-  kLegacyImageFormats,
+  kLegacyImageFormats = 22,
   // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
-  kImageCompression,
-  kAnimations,
+  kImageCompression = 23,
+  kAnimations = 24,
   // When disallowed, restricts source image size to be no more 2x larger than
   // the image's containing block.
-  kMaxDownscalingImage,
+  kMaxDownscalingImage = 25,
   // Controls access to Picture-in-Picture.
-  kPictureInPicture,
+  kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.
-  kVerticalScroll,
+  kVerticalScroll = 27,
   // Controls the ability of the document to use several dynamic markup API
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
-  kDocumentWrite,
+  kDocumentWrite = 28,
+  // Used to enforce lazyloading for a frame and any nested <iframe> or image.
+  kLazyLoad = 29,
+
+  // Don't change assigned numbers of any item, and don't reuse removed slots.
+  // Also, run update_feature_policy_enum.py in
+  // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
 };
 
 // This struct holds feature policy allowlist data that needs to be replicated

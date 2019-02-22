@@ -66,22 +66,24 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
-  void OnFetchEventFinished(base::Time request_dispatch_time,
+  void OnFetchEventFinished(base::TimeTicks request_dispatch_time,
                             blink::mojom::ServiceWorkerEventStatus status,
-                            base::Time dispatch_event_time);
+                            base::TimeTicks dispatch_event_time);
   // Called when this loader no longer needs to restart dispatching the fetch
   // event on failure. Null |status| means the event dispatch was not attempted.
   void SettleFetchEventDispatch(
       base::Optional<blink::ServiceWorkerStatusCode> status);
 
   // blink::mojom::ServiceWorkerFetchResponseCallback overrides:
-  void OnResponse(blink::mojom::FetchAPIResponsePtr response,
-                  base::Time dispatch_event_time) override;
+  void OnResponse(
+      blink::mojom::FetchAPIResponsePtr response,
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override;
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      base::Time dispatch_event_time) override;
-  void OnFallback(base::Time dispatch_event_time) override;
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override;
+  void OnFallback(
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override;
 
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
@@ -97,7 +99,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
+  int StartBlobReading(mojo::ScopedDataPipeConsumerHandle* body_pipe);
   void OnBlobSideDataReadingComplete(
+      mojo::ScopedDataPipeConsumerHandle data_pipe,
       const base::Optional<std::vector<uint8_t>>& metadata);
   void OnBlobReadingComplete(int net_error);
 
@@ -119,6 +123,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       response_callback_binding_;
   // The blob needs to be held while it's read to keep it alive.
   blink::mojom::BlobPtr body_as_blob_;
+  uint64_t body_as_blob_size_;
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
@@ -129,6 +134,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                  ServiceWorkerSubresourceLoader>
       controller_connector_observer_;
   bool fetch_request_restarted_;
+  bool blob_reading_complete_;
+  bool side_data_reading_complete_;
 
   // These are given by the constructor (as the params for
   // URLLoaderFactory::CreateLoaderAndStart).
@@ -175,9 +182,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // default URLLoaderFactory for network fallback. This should be the
   // URLLoaderFactory that directly goes to network without going through
   // any custom URLLoader factories.
-  // |task_runner| is the runner where this loader runs. (We need to pass
-  // this around because calling base::SequencedTaskRunnerHandle is
-  // prohibited in the renderer :()
+  // |task_runner| is the runner where this loader runs. In production it runs,
+  // on a background thread.
   static void Create(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,

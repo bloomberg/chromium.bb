@@ -14,6 +14,7 @@
 
 class AutocompleteResult;
 class GURL;
+class QueryInOmnibox;
 class SessionID;
 class TemplateURL;
 class TemplateURLService;
@@ -93,6 +94,7 @@ class OmniboxClient {
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
+  virtual QueryInOmnibox* GetQueryInOmnibox();
 
   // Returns the icon corresponding to |match| if match is an extension match
   // and an empty icon otherwise.
@@ -167,6 +169,9 @@ class OmniboxClient {
 
   // Discards the state for all pending and transient navigations.
   virtual void DiscardNonCommittedNavigations() {}
+
+  // Presents translation prompt for current tab web contents.
+  virtual void PromptPageTranslation() {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

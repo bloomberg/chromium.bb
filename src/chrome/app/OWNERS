@@ -12,6 +12,7 @@ rockot@chromium.org
 per-file bookmarks_strings.grdp=*
 per-file chromeos_strings.grdp=*
 per-file chromium_strings.grd=*
+per-file file_manager_strings.grdp=*
 per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
 per-file md_extensions_strings.grdp=*
@@ -26,6 +27,7 @@ per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
 per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
 per-file vr_strings.grdp=file://chrome/browser/vr/OWNERS
+per-file nux_strings.grdp=file://chrome/browser/ui/webui/welcome/nux/OWNERS
 
 # Non-GRD rules.
 

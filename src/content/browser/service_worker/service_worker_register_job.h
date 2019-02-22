@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_update_checker.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -105,6 +106,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void ContinueWithUpdate(
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
+
+  // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
+  // enabled.
+  void OnUpdateCheckFinished(bool script_changed);
+
   void RegisterAndContinue();
   void ContinueWithUninstallingRegistration(
       scoped_refptr<ServiceWorkerRegistration> existing_registration,
@@ -117,11 +123,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void OnStoreRegistrationComplete(blink::ServiceWorkerStatusCode status);
   void InstallAndContinue();
   void DispatchInstallEvent(blink::ServiceWorkerStatusCode start_worker_status);
-  void OnInstallFinished(
-      int request_id,
-      blink::mojom::ServiceWorkerEventStatus event_status,
-      bool has_fetch_handler,
-      base::Time dispatch_event_time);
+  void OnInstallFinished(int request_id,
+                         blink::mojom::ServiceWorkerEventStatus event_status,
+                         bool has_fetch_handler,
+                         base::TimeTicks dispatch_event_time);
   void OnInstallFailed(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status,
@@ -142,9 +147,15 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
+  std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
+
   RegistrationJobType job_type_;
   const GURL pattern_;
   GURL script_url_;
+  // "A job has a worker type ("classic" or "module")."
+  // https://w3c.github.io/ServiceWorker/#dfn-job-worker-type
+  blink::mojom::ScriptType worker_script_type_ =
+      blink::mojom::ScriptType::kClassic;
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;

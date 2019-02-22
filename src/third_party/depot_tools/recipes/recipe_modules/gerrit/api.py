@@ -77,7 +77,7 @@ class GerritApi(recipe_api.RecipeApi):
     Result is cached.
 
     Args:
-      host: Gerrit host to query.
+      host: URL of Gerrit host to query.
       change: The change number.
 
     Returns:
@@ -108,7 +108,7 @@ class GerritApi(recipe_api.RecipeApi):
     Get the description for a given CL and patchset.
 
     Args:
-      host: Gerrit host to query.
+      host: URL of Gerrit host to query.
       change: The change number.
       patchset: The patchset number.
 
@@ -154,7 +154,7 @@ class GerritApi(recipe_api.RecipeApi):
     Query changes for the given host.
 
     Args:
-      host: Gerrit host to query.
+      host: URL of Gerrit host to query.
       query_params: Query parameters as list of (key, value) tuples to form a
           query as documented here:
           https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators

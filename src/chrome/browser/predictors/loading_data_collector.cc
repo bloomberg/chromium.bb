@@ -160,6 +160,7 @@ void LoadingDataCollector::RecordFinishNavigation(
     inflight_navigations_.erase(old_navigation_id);
     return;
   }
+
   // All subsequent events corresponding to this navigation will have
   // |new_navigation_id|. Find the |old_navigation_id| entry in
   // |inflight_navigations_| and change its key to the |new_navigation_id|.
@@ -190,9 +191,7 @@ void LoadingDataCollector::RecordResourceLoadComplete(
     return;
 
   auto& page_request_summary = *nav_it->second;
-
-  if (config_.is_origin_learning_enabled)
-    page_request_summary.UpdateOrAddToOrigins(resource_load_info);
+  page_request_summary.UpdateOrAddToOrigins(resource_load_info);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(
@@ -205,7 +204,7 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
   if (predictor_)
     predictor_->StartInitialization();
 
-  NavigationMap::iterator nav_it = inflight_navigations_.find(navigation_id);
+  auto nav_it = inflight_navigations_.find(navigation_id);
   if (nav_it == inflight_navigations_.end())
     return;
 
@@ -225,7 +224,7 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
     const base::TimeTicks& first_contentful_paint) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  NavigationMap::iterator nav_it = inflight_navigations_.find(navigation_id);
+  auto nav_it = inflight_navigations_.find(navigation_id);
   if (nav_it != inflight_navigations_.end())
     nav_it->second->first_contentful_paint = first_contentful_paint;
 }
@@ -267,7 +266,7 @@ void LoadingDataCollector::CleanupAbandonedNavigations(
       base::TimeDelta::FromSeconds(config_.max_navigation_lifetime_seconds);
 
   base::TimeTicks time_now = base::TimeTicks::Now();
-  for (NavigationMap::iterator it = inflight_navigations_.begin();
+  for (auto it = inflight_navigations_.begin();
        it != inflight_navigations_.end();) {
     if ((it->first.tab_id == navigation_id.tab_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {

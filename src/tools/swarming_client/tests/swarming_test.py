@@ -75,7 +75,8 @@ def collect(url, task_ids, task_stdout=('console', 'json')):
     task_summary_json=None,
     task_output_dir=None,
     task_output_stdout=task_stdout,
-    include_perf=False)
+    include_perf=False,
+    filepath_filter='.*')
 
 
 def main(args):
@@ -94,8 +95,8 @@ def gen_properties(**kwargs):
     'command': None,
     'relative_cwd': None,
     'dimensions': [
-      {'key': 'foo', 'value': 'bar'},
       {'key': 'os', 'value': 'Mac'},
+      {'key': 'pool', 'value': 'default'},
     ],
     'env': [],
     'env_prefixes': [],
@@ -294,9 +295,16 @@ class TestIsolated(auto_stub.TestCase, Common):
         # 'out' is the default value for --output-dir.
         outdir = os.path.join(self.tempdir, 'out')
         self.assertTrue(os.path.isdir(outdir))
-        self.assertEqual(
-            [sys.executable, u'main.py', u'foo', os.path.realpath(outdir),
-             '--bar'], cmd)
+        if sys.platform == 'darwin':
+          # On macOS, python executable's path is a symlink and it's hard to
+          # assess what will be passed to the command line. :/
+          self.assertEqual(
+              [u'main.py', u'foo', os.path.realpath(outdir), '--bar'], cmd[1:])
+        else:
+          self.assertEqual(
+              [sys.executable, u'main.py', u'foo', os.path.realpath(outdir),
+                '--bar'],
+              cmd)
         expected = os.environ.copy()
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
@@ -357,7 +365,7 @@ class TestSwarmingTrigger(NetTestCase):
                   cipd_input=None,
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -439,7 +447,7 @@ class TestSwarmingTrigger(NetTestCase):
                   cipd_input=None,
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -513,7 +521,7 @@ class TestSwarmingTrigger(NetTestCase):
                       server=None),
                   command=['a', 'b'],
                   relative_cwd=None,
-                  dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
                   env={},
                   env_prefixes=[],
                   execution_timeout_secs=60,
@@ -812,18 +820,20 @@ class TestSwarmingCollection(NetTestCase):
 
   def test_collect_multi(self):
     actual_calls = []
-    def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
+    def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
+                       filepath_filter):
       self.assertIs(storage.__class__, isolateserver.Storage)
       self.assertIs(cache.__class__, local_caching.MemoryContentAddressedCache)
       # Ensure storage is pointing to required location.
-      self.assertEqual('https://localhost:2', storage.location)
-      self.assertEqual('default', storage.namespace)
+      self.assertEqual('https://localhost:2', storage.server_ref.url)
+      self.assertEqual('default', storage.server_ref.namespace)
       self.assertEqual(False, use_symlinks)
+      self.assertEqual('.*', filepath_filter)
       actual_calls.append((isolated_hash, outdir))
     self.mock(isolateserver, 'fetch_isolated', fetch_isolated)
 
     collector = swarming.TaskOutputCollector(
-        self.tempdir, ['json', 'console'], 2)
+        self.tempdir, ['json', 'console'], 2, '.*')
     for index in xrange(2):
       collector.process_shard_result(
           index,
@@ -892,18 +902,18 @@ class TestSwarmingCollection(NetTestCase):
 
     # Feed them to collector.
     collector = swarming.TaskOutputCollector(
-        self.tempdir, ['json', 'console'], 2)
+        self.tempdir, ['json', 'console'], 2, None)
     for index, result in enumerate(data):
       collector.process_shard_result(index, result)
     collector.finalize()
 
     # Only first fetch is made, second one is ignored.
     self.assertEqual(1, len(actual_calls))
-    isolated_hash, storage, _, outdir, _ = actual_calls[0]
+    isolated_hash, storage, _, outdir, _, _ = actual_calls[0]
     self.assertEqual(
         ('hash1', os.path.join(self.tempdir, '0')),
         (isolated_hash, outdir))
-    self.assertEqual('https://server1', storage.location)
+    self.assertEqual('https://server1', storage.server_ref.url)
 
 
 class TestMain(NetTestCase):
@@ -925,7 +935,7 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -934,7 +944,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -958,7 +968,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -969,9 +979,286 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar\n'
+        'Triggered task: None/pool=default\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+  def test_trigger_raw_cmd_with_optional(self):
+    request = {
+      'name': u'None/caches=c1_foo=bar_foo1=bar1_pool=default',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'caches', 'value': 'c1'},
+                  {'key': 'caches', 'value': 'c2'},
+                  {'key': 'foo', 'value': 'baz'},
+                  {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'opt', 'value': 'tional'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 120,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'caches', 'value': 'c1'},
+                  {'key': 'caches', 'value': 'c2'},
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21420,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'caches', 'value': 'c1'},
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'pool', 'default',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'foo1', 'bar1',
+        '--dimension', 'caches', 'c1',
+        '--optional-dimension', 'foo', 'baz', 60,
+        '--optional-dimension', 'opt', 'tional', 60,
+        '--optional-dimension', 'foo1', 'baz1', 180,
+        '--optional-dimension', 'caches', 'c2', 180,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/caches=c1_foo=bar_foo1=bar1_pool=default\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+  def test_trigger_raw_cmd_with_optional_unsorted(self):
+    request = {
+      'name': u'None/foo1=bar1_os=Mac-10.12.6_pool=default',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'os', 'value': 'Mac-10.13'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'os', 'value': 'Mac-10.12.6'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21480,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'os', 'value': 'Mac-10.12.6'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'os', 'Mac-10.12.6',
+        '--dimension', 'pool', 'default',
+        '--dimension', 'foo1', 'bar1',
+        '--optional-dimension', 'foo1', 'baz1', 120,
+        '--optional-dimension', 'os', 'Mac-10.13', 60,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo1=bar1_os=Mac-10.12.6_pool=default\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+  def test_trigger_raw_cmd_with_optional_sameexp(self):
+    request = {
+      'name': u'None/foo=bar_foo1=bar1_pool=default',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'baz'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo2', 'value': 'baz2'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21540, # 21600 - 60
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'pool', 'value': 'default'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'pool', 'default',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'foo1', 'bar1',
+        '--optional-dimension', 'foo', 'baz', 60,
+        '--optional-dimension', 'foo2', 'baz2', 60,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo=bar_foo1=bar1_pool=default\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -979,7 +1266,7 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar/' + FILE_HASH,
+      'name': u'None/pool=default/' + FILE_HASH,
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -988,7 +1275,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref={
@@ -1015,7 +1302,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--isolate-server', 'https://localhost:2',
         '--isolated', FILE_HASH,
@@ -1027,9 +1314,10 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        u'Triggered task: None/foo=bar/' + FILE_HASH + u'\n'
+        u'Triggered task: None/pool=default/' + FILE_HASH + u'\n'
         u'To collect results, use:\n'
-        u'  swarming.py collect -S https://localhost:1 12300\n'
+        u'  tools/swarming_client/swarming.py collect '
+        u'-S https://localhost:1 12300\n'
         u'Or visit:\n'
         u'  https://localhost:1/user/task/12300\n',
         u'')
@@ -1037,7 +1325,7 @@ class TestMain(NetTestCase):
   def test_trigger_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1046,7 +1334,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -1070,7 +1358,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--service-account', 'bot',
         '--raw-cmd',
         '--',
@@ -1081,9 +1369,10 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar\n'
+        'Triggered task: None/pool=default\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1120,8 +1409,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1139,7 +1428,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1187,8 +1477,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1209,7 +1499,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 --json foo.json\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 --json foo.json\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1294,8 +1585,8 @@ class TestMain(NetTestCase):
         '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
-        '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--dimension', 'pool', 'default',
         '--expiration', '3600',
         '--user', 'joe@localhost',
         '--tags', 'tag:a',
@@ -1314,7 +1605,8 @@ class TestMain(NetTestCase):
     self._check_output(
         'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://localhost:1 12300\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
         'Or visit:\n'
         '  https://localhost:1/user/task/12300\n',
         '')
@@ -1324,7 +1616,7 @@ class TestMain(NetTestCase):
       main([
             'trigger', '--swarming', 'https://host',
             '--isolate-server', 'https://host', '-T', 'foo',
-            '-d', 'os', 'amgia',
+            '-d', 'pool', 'default',
           ])
     self._check_output(
         '',
@@ -1360,7 +1652,7 @@ class TestMain(NetTestCase):
   def test_trigger_no_isolate_server(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
-        main(['trigger', 'foo.isolated', '-d', 'os', 'amiga'])
+        main(['trigger', 'foo.isolated', '-d', 'pool', 'default'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated) '
@@ -1413,7 +1705,8 @@ class TestMain(NetTestCase):
       json.dump(data, f)
     def stub_collect(
         swarming_server, task_ids, timeout, decorate, print_status_updates,
-        task_summary_json, task_output_dir, task_output_stdout, include_perf):
+        task_summary_json, task_output_dir, task_output_stdout, include_perf,
+        filepath_filter):
       self.assertEqual('https://host', swarming_server)
       self.assertEqual([u'12300'], task_ids)
       # It is automatically calculated from hard timeout + expiration + 10.
@@ -1424,12 +1717,14 @@ class TestMain(NetTestCase):
       self.assertEqual('/b', task_output_dir)
       self.assertSetEqual(set(['console', 'json']), set(task_output_stdout))
       self.assertEqual(False, include_perf)
+      self.assertEqual('output.json', filepath_filter)
       print('Fake output')
     self.mock(swarming, 'collect', stub_collect)
     self.main_safe(
         ['collect', '--swarming', 'https://host', '--json', j, '--decorate',
-          '--print-status-updates', '--task-summary-json', '/a',
-          '--task-output-dir', '/b', '--task-output-stdout', 'all'])
+         '--print-status-updates', '--task-summary-json', '/a',
+         '--task-output-dir', '/b', '--task-output-stdout', 'all',
+         '--filepath-filter', 'output.json'])
     self._check_output('Fake output\n', '')
 
   def test_post(self):
@@ -1572,7 +1867,7 @@ class TestMain(NetTestCase):
 
   def test_run(self):
     request = {
-      'name': u'None/foo=bar',
+      'name': u'None/pool=default',
       'parent_task_id': '',
       'priority': 200,
       'pool_task_template': 'AUTO',
@@ -1581,7 +1876,7 @@ class TestMain(NetTestCase):
           'expiration_secs': 21600,
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
-              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              dimensions=[{'key': 'pool', 'value': 'default'}],
               execution_timeout_secs=3600,
               extra_args=None,
               inputs_ref=None,
@@ -1597,7 +1892,8 @@ class TestMain(NetTestCase):
 
     def stub_collect(
         swarming_server, task_ids, timeout, decorate, print_status_updates,
-        task_summary_json, task_output_dir, task_output_stdout, include_perf):
+        task_summary_json, task_output_dir, task_output_stdout, include_perf,
+        filepath_filter):
       self.assertEqual('https://localhost:1', swarming_server)
       self.assertEqual([u'12300'], task_ids)
       # It is automatically calculated from hard timeout + expiration + 10.
@@ -1608,6 +1904,7 @@ class TestMain(NetTestCase):
       self.assertEqual(None, task_output_dir)
       self.assertSetEqual(set(['console', 'json']), set(task_output_stdout))
       self.assertEqual(False, include_perf)
+      self.assertEqual(None, filepath_filter)
       print('Fake output')
       return 0
     self.mock(swarming, 'collect', stub_collect)
@@ -1622,7 +1919,7 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'run',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'pool', 'default',
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -1633,7 +1930,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (ret, actual, sys.stderr.getvalue()))
     self._check_output(
-        u'Triggered task: None/foo=bar\nFake output\n', '')
+        u'Triggered task: None/pool=default\nFake output\n', '')
 
   def test_cancel(self):
     self.expected_requests(

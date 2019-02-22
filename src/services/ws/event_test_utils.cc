@@ -6,6 +6,7 @@
 
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ws {
@@ -44,7 +45,7 @@ std::string EventToEventType(const ui::Event* event) {
     default:
       break;
   }
-  return "<unexpected-type>";
+  return std::string(EventTypeName(event->type()));
 }
 
 std::string LocatedEventToEventTypeAndLocation(const ui::Event* event) {

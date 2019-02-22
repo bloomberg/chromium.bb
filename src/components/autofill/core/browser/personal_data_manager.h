@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/account_info_getter.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_validator.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
@@ -27,12 +28,15 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class Browser;
 class PrefService;
@@ -60,16 +64,13 @@ class SyncService;
 
 namespace autofill {
 
-extern const char kFrecencyFieldTrialName[];
-extern const char kFrecencyFieldTrialStateEnabled[];
-extern const char kFrecencyFieldTrialLimitParam[];
-
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUISequence,
+                            public history::HistoryServiceObserver,
                             public syncer::SyncServiceObserver,
                             public AccountInfoGetter {
  public:
@@ -89,6 +90,8 @@ class PersonalDataManager : public KeyedService,
             scoped_refptr<AutofillWebDataService> account_database,
             PrefService* pref_service,
             identity::IdentityManager* identity_manager,
+            AutofillProfileValidator* client_profile_validator,
+            history::HistoryService* history_service,
             bool is_off_the_record);
 
   // KeyedService:
@@ -97,6 +100,10 @@ class PersonalDataManager : public KeyedService,
   // Called once the sync service is known to be instantiated. Note that it may
   // not be started, but it's preferences can be queried.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
+
+  // history::HistoryServiceObserver
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
@@ -152,7 +159,7 @@ class PersonalDataManager : public KeyedService,
   // Returns the profile with the specified |guid|, or nullptr if there is no
   // profile with the specified |guid|. Both web and auxiliary profiles may
   // be returned.
-  AutofillProfile* GetProfileByGUID(const std::string& guid);
+  virtual AutofillProfile* GetProfileByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid| from the given |profiles|, or
   // nullptr if there is no profile with the specified |guid|.
@@ -162,6 +169,9 @@ class PersonalDataManager : public KeyedService,
 
   // Adds |credit_card| to the web database as a local card.
   virtual void AddCreditCard(const CreditCard& credit_card);
+
+  // Delete list of provided credit cards.
+  virtual void DeleteLocalCreditCards(const std::vector<CreditCard>& cards);
 
   // Updates |credit_card| which already exists in the web database. This
   // can only be used on local credit cards.
@@ -195,6 +205,10 @@ class PersonalDataManager : public KeyedService,
   // Sets a server credit card for test.
   void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
 
+  // Returns whether server credit cards are stored in account (i.e. ephemeral)
+  // storage.
+  bool IsUsingAccountStorageForServerCardsForTest() const;
+
   // Sets which SyncService to use and observe in a test. |sync_service| is not
   // owned by this class and must outlive |this|.
   void SetSyncServiceForTest(syncer::SyncService* sync_service);
@@ -209,9 +223,6 @@ class PersonalDataManager : public KeyedService,
 
   // Gets the field types availabe in the stored address and credit card data.
   void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types);
-
-  // Returns true if the credit card information is stored with a password.
-  bool HasPassword();
 
   // Returns whether the personal data has been loaded from the web database.
   virtual bool IsDataLoaded() const;
@@ -231,6 +242,14 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
+
+  // Updates the validity states of |profiles| according to server validity map.
+  void UpdateProfilesValidityMapsIfNeeded(
+      std::vector<AutofillProfile*>& profiles);
+
+  // Updates the validity states of |profiles| according to client side
+  // validation API: |client_profile_validator_|.
+  void UpdateClientValidityStates(std::vector<AutofillProfile*>& profiles);
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -426,6 +445,8 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            MoveJapanCityToStreetAddress);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, RequestProfileValidity);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           GetProfileSuggestions_InvalidDataBasedOnServer);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -524,7 +545,7 @@ class PersonalDataManager : public KeyedService,
   void MoveJapanCityToStreetAddress();
 
   // Get the profiles fields validity map by |guid|.
-  const ProfileValidityMap& GetProfileValidityByGUID(std::string& guid);
+  const ProfileValidityMap& GetProfileValidityByGUID(const std::string& guid);
 
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;
@@ -562,6 +583,9 @@ class PersonalDataManager : public KeyedService,
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
+
+  // |profile_valditiies_need_update| whenever the profile validities are out of
+  bool profile_validities_need_update = true;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
@@ -687,7 +711,13 @@ class PersonalDataManager : public KeyedService,
   void ApplyCardFixesAndCleanups();
 
   // Resets |synced_profile_validity_|.
-  void ResetProfileValidity() { synced_profile_validity_.reset(); };
+  void ResetProfileValidity() {
+    synced_profile_validity_.reset();
+    profile_validities_need_update = true;
+  };
+
+  // Called when the |profile| is validated by the AutofillProfileValidator.
+  void OnValidated(AutofillProfile* profile);
 
   const std::string app_locale_;
 
@@ -697,12 +727,20 @@ class PersonalDataManager : public KeyedService,
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_ = nullptr;
 
+  // The HistoryService to observed by the personal data manager. Must
+  // outlive this instance. This unowned pointer is retained so the PDM can
+  // remove itself from the history service's observer list on shutdown.
+  history::HistoryService* history_service_ = nullptr;
+
   // Pref registrar for managing the change observers.
   PrefChangeRegistrar pref_registrar_;
 
   // Profiles validity read from the prefs. They are kept updated by
-  // observing changes in pref_services.
+  // observing changes in pref_services. We need to set the
+  // |profile_validities_need_update| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
+
+  AutofillProfileValidator* client_profile_validator_;
 
   // The identity manager that this instance uses. Must outlive this instance.
   identity::IdentityManager* identity_manager_ = nullptr;

@@ -360,11 +360,8 @@ const Vector<double>& BaseRenderingContext2D::getLineDash() const {
 }
 
 static bool LineDashSequenceIsValid(const Vector<double>& dash) {
-  for (size_t i = 0; i < dash.size(); i++) {
-    if (!std::isfinite(dash[i]) || dash[i] < 0)
-      return false;
-  }
-  return true;
+  return std::all_of(dash.begin(), dash.end(),
+                     [](double d) { return std::isfinite(d) && d >= 0; });
 }
 
 void BaseRenderingContext2D::setLineDash(const Vector<double>& dash) {
@@ -1794,7 +1791,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
 
   // Color / format convert ImageData to context 2D settings if needed. Color /
   // format conversion is not needed only if context 2D and ImageData are both
-  // in sRGB color space and use 8-8-8-8 pixel storage format. We use RGBA pixel
+  // in sRGB color space and use uint8 pixel storage format. We use RGBA pixel
   // order for both ImageData and CanvasResourceProvider, therefore no
   // additional swizzling is needed.
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
@@ -1802,7 +1799,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
       CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == kF16CanvasPixelFormat) {
-    unsigned data_length =
+    size_t data_length =
         data->Size().Area() * context_color_params.BytesPerPixel();
     std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
     if (data->ImageDataInCanvasColorSettings(
@@ -1975,9 +1972,8 @@ void BaseRenderingContext2D::CheckOverdraw(
 }
 
 float BaseRenderingContext2D::GetFontBaseline(
-    const FontMetrics& font_metrics) const {
-  return TextMetrics::GetFontBaseline(GetState().GetTextBaseline(),
-                                      font_metrics);
+    const SimpleFontData& font_data) const {
+  return TextMetrics::GetFontBaseline(GetState().GetTextBaseline(), font_data);
 }
 
 String BaseRenderingContext2D::textAlign() const {

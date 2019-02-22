@@ -63,15 +63,15 @@ class ScriptState;
 class ServiceWorker;
 
 struct FiringEventIterator {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   FiringEventIterator(const AtomicString& event_type,
-                      size_t& iterator,
-                      size_t& end)
+                      wtf_size_t& iterator,
+                      wtf_size_t& end)
       : event_type(event_type), iterator(iterator), end(end) {}
 
   const AtomicString& event_type;
-  size_t& iterator;
-  size_t& end;
+  wtf_size_t& iterator;
+  wtf_size_t& end;
 };
 using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
 
@@ -179,6 +179,8 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   static DispatchEventResult GetDispatchEventResult(const Event&);
 
   virtual bool KeepEventInNode(const Event&) const { return false; }
+
+  virtual bool IsWindowOrWorkerGlobalScope() const { return false; }
 
   // Returns true if the target is window, window.document, or
   // window.document.body.

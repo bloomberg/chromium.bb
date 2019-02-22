@@ -23,23 +23,22 @@ namespace blink {
 
 SimCompositor::SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
-
-  // SimCompositor overrides the LayerTreeViewDelegate to respond to
-  // BeginMainFrame(), which will update and paint the WebViewImpl given to
-  // SetWebView().
-  layer_tree_view_ = layer_tree_view_factory_.Initialize(this);
-  // SimCompositor starts with defer commits enabled, but uses synchronous
-  // compositing which does not use defer commits anyhow, it only uses it for
-  // reading defered state in tests.
-  layer_tree_view_->SetDeferCommits(true);
 }
 
 SimCompositor::~SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(false);
 }
 
-void SimCompositor::SetWebView(WebViewImpl& web_view) {
+void SimCompositor::SetWebView(WebViewImpl& web_view,
+                               content::LayerTreeView& layer_tree_view) {
   web_view_ = &web_view;
+  layer_tree_view_ = &layer_tree_view;
+  DCHECK_EQ(&layer_tree_view, web_view_->LayerTreeView());
+
+  // SimCompositor starts with defer commits enabled, but uses synchronous
+  // compositing which does not use defer commits anyhow, it only uses it for
+  // reading deferred state in tests.
+  web_view_->DeferCommitsForTesting();
 }
 
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {

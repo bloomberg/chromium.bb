@@ -33,6 +33,7 @@ class CreateMetadataTask : public DatabaseTask {
                      const std::vector<ServiceWorkerFetchRequest>& requests,
                      const BackgroundFetchOptions& options,
                      const SkBitmap& icon,
+                     bool start_paused,
                      CreateMetadataCallback callback);
 
   ~CreateMetadataTask() override;
@@ -40,6 +41,8 @@ class CreateMetadataTask : public DatabaseTask {
   void Start() override;
 
  private:
+  void DidGetCanCreateRegistration(blink::mojom::BackgroundFetchError error,
+                                   bool can_create);
   void DidGetIsQuotaAvailable(bool is_available);
 
   void GetRegistrationUniqueId();
@@ -64,6 +67,7 @@ class CreateMetadataTask : public DatabaseTask {
   std::vector<ServiceWorkerFetchRequest> requests_;
   BackgroundFetchOptions options_;
   SkBitmap icon_;
+  bool start_paused_;
   CreateMetadataCallback callback_;
 
   std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto_;

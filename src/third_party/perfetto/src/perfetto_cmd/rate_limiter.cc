@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "perfetto/base/file_utils.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/base/scoped_file.h"
 #include "perfetto/base/utils.h"
@@ -157,8 +158,7 @@ bool RateLimiter::ClearState() {
 }
 
 bool RateLimiter::LoadState(PerfettoCmdState* state) {
-  base::ScopedFile in_fd;
-  in_fd.reset(open(GetStateFilePath().c_str(), O_RDONLY));
+  base::ScopedFile in_fd(base::OpenFile(GetStateFilePath(), O_RDONLY));
 
   if (!in_fd)
     return false;
@@ -170,15 +170,14 @@ bool RateLimiter::LoadState(PerfettoCmdState* state) {
 }
 
 bool RateLimiter::SaveState(const PerfettoCmdState& state) {
-  base::ScopedFile out_fd;
   // Rationale for 0666: the cmdline client can be executed under two
   // different Unix UIDs: shell and statsd. If we run one after the
   // other and the file has 0600 permissions, then the 2nd run won't
   // be able to read the file and will clear it, aborting the trace.
   // SELinux still prevents that anything other than the perfetto
   // executable can change the guardrail file.
-  out_fd.reset(
-      open(GetStateFilePath().c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666));
+  base::ScopedFile out_fd(
+      base::OpenFile(GetStateFilePath(), O_WRONLY | O_CREAT | O_TRUNC, 0666));
   if (!out_fd)
     return false;
   char buf[1024];
@@ -186,7 +185,7 @@ bool RateLimiter::SaveState(const PerfettoCmdState& state) {
   PERFETTO_CHECK(size < sizeof(buf));
   if (!state.SerializeToArray(&buf, static_cast<int>(size)))
     return false;
-  ssize_t written = PERFETTO_EINTR(write(out_fd.get(), &buf, size));
+  ssize_t written = base::WriteAll(out_fd.get(), &buf, size);
   return written >= 0 && static_cast<size_t>(written) == size;
 }
 

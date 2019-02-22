@@ -2,6 +2,7 @@ DEPS = [
   'depot_tools',
   'gclient',
   'gerrit',
+  'gitiles',
   'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/json',
@@ -21,20 +22,8 @@ from recipe_engine.config import ConfigGroup, Single
 
 PROPERTIES = {
   # Gerrit patches will have all properties about them prefixed with patch_.
-  'patch_issue': Property(default=None),  # TODO(tandrii): add kind=int.
-  'patch_set': Property(default=None),  # TODO(tandrii): add kind=int.
-  'patch_gerrit_url': Property(default=None),
-  'patch_repository_url': Property(default=None),
-  'patch_ref': Property(default=None),
-
-  # Rietveld-only (?) fields.
-  'repository': Property(default=None),
-
-  # Common fields for both systems.
   'deps_revision_overrides': Property(default={}),
   'fail_patch': Property(default=None, kind=str),
-  'parent_got_revision': Property(default=None),
-  'revision': Property(default=None),
 
   '$depot_tools/bot_update': Property(
       help='Properties specific to bot_update module.',

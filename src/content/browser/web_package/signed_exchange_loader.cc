@@ -8,15 +8,18 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
+#include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
@@ -28,6 +31,8 @@
 namespace content {
 
 namespace {
+
+constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
 
 net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
                                      const GURL& outer_request_url) {
@@ -102,7 +107,8 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
     : outer_request_url_(outer_request_url),
       outer_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(outer_response)),
@@ -118,6 +124,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
+      metric_recorder_(std::move(metric_recorder)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_url_.is_valid());
@@ -129,6 +136,8 @@ SignedExchangeLoader::SignedExchangeLoader(
   // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
   // without TLS. [spec text]
   if (!IsOriginSecure(outer_request_url)) {
+    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram,
+                              SignedExchangeLoadResult::kSXGServedFromNonHTTPS);
     devtools_proxy_->ReportError(
         "Signed exchange response from non secure origin is not supported.",
         base::nullopt /* error_field */);
@@ -266,11 +275,18 @@ void SignedExchangeLoader::ConnectToClient(
 }
 
 void SignedExchangeLoader::OnHTTPExchangeFound(
+    SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
     const std::string& request_method,
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+
+  if (load_flags_ & net::LOAD_PREFETCH) {
+    metric_recorder_->OnSignedExchangePrefetchFinished(request_url, error);
+  }
+
   if (error) {
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
         !should_redirect_on_failure_ || !request_url.is_valid()) {
@@ -305,15 +321,15 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
       !net::IsCertStatusMinorError(ssl_info->cert_status)) {
     ssl_info_ = ssl_info;
   }
+
+  network::ResourceResponseHead inner_response_head_shown_to_client =
+      resource_response;
   if (ssl_info.has_value() &&
       !(url_loader_options_ &
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    network::ResourceResponseHead response_info = resource_response;
-    response_info.ssl_info = base::nullopt;
-    client_->OnReceiveResponse(response_info);
-  } else {
-    client_->OnReceiveResponse(resource_response);
+    inner_response_head_shown_to_client.ssl_info = base::nullopt;
   }
+  client_->OnReceiveResponse(inner_response_head_shown_to_client);
 
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out

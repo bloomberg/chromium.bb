@@ -7,18 +7,20 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "extensions/common/permissions/permissions_provider.h"
+#include "base/containers/span.h"
+#include "extensions/common/alias.h"
+#include "extensions/common/permissions/api_permission.h"
 
-namespace extensions {
+namespace cast_api_permissions {
 
-// Registers the permissions used in Cast with the PermissionsInfo global.
-class CastAPIPermissions : public PermissionsProvider {
- public:
-  std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
-      const override;
-};
+// Returns the information necessary to construct the APIPermissions usable in
+// chromecast.
+base::span<const extensions::APIPermissionInfo::InitInfo> GetPermissionInfos();
 
-}  // namespace extensions
+// Returns the list of aliases for extension APIPermissions usable in
+// chromecast.
+std::vector<extensions::Alias> GetPermissionAliases();
+
+}  // namespace cast_api_permissions
 
 #endif  // CHROMECAST_COMMON_EXTENSIONS_API_CAST_API_PERMISSIONS_H_

@@ -21,7 +21,13 @@ class VULKAN_EXPORT VulkanInstance {
 
   ~VulkanInstance();
 
-  bool Initialize(const std::vector<const char*>& required_extensions);
+  // Creates the vulkan instance.
+  //
+  // The extensions in |required_extensions| and the layers in |required_layers|
+  // will be enabled in the created instance. See the "Extended Functionality"
+  // section of vulkan specification for more information.
+  bool Initialize(const std::vector<const char*>& required_extensions,
+                  const std::vector<const char*>& required_layers);
 
   void Destroy();
 

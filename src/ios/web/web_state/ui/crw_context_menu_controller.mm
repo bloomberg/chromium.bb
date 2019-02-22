@@ -365,12 +365,6 @@ struct ContextMenuInfo {
       CancelTouches(recognizer);
     }
   }
-
-  // Just disabling/enabling the gesture recognizers is not enough to suppress
-  // the click handlers on the JS side. This JS performs the function of
-  // suppressing these handlers on the JS side.
-  NSString* suppressNextClick = @"__gCrWeb.suppressNextClick()";
-  [self executeJavaScript:suppressNextClick completionHandler:nil];
 }
 
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {

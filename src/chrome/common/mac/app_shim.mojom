@@ -4,7 +4,9 @@
 
 module chrome.mojom;
 
+import "content/public/common/ns_view_bridge_factory.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "ui/views_bridge_mac/mojo/bridge_factory.mojom";
 
 [Native]
 enum AppShimLaunchType;
@@ -20,6 +22,18 @@ enum AppShimAttentionType;
 
 // Interface through which the browser communicates to a shim process.
 interface AppShim {
+  // Create the interface through which BridgedNativeWidget instances may be
+  // created (for views::Widgets whose NSWindows exist in the app shim process).
+  CreateViewsBridgeFactory(
+      associated views_bridge_mac.mojom.BridgeFactory& views_bridge_factory);
+
+  // Create the interface through which a content structure
+  // (RenderWidgetHostView or WebContentsView) may create an NSView that exists
+  // in the app shim process.
+  CreateContentNSViewBridgeFactory(
+      associated content.mojom.NSViewBridgeFactory&
+          content_ns_views_bridge_factory);
+
   // Signals that a previous LaunchApp message has been processed, and lets the
   // app shim process know whether it was registered successfully.
   LaunchAppDone(AppShimLaunchResult launch_result);

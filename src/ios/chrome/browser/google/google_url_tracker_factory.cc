@@ -10,6 +10,7 @@
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/google/google_url_tracker_client_impl.h"
@@ -49,7 +50,8 @@ std::unique_ptr<KeyedService> GoogleURLTrackerFactory::BuildServiceInstanceFor(
 
   return std::make_unique<GoogleURLTracker>(
       base::WrapUnique(new GoogleURLTrackerClientImpl(browser_state)),
-      GoogleURLTracker::NORMAL_MODE, context->GetNetworkConnectionTracker());
+      GoogleURLTracker::NORMAL_MODE,
+      GetApplicationContext()->GetNetworkConnectionTracker());
 }
 
 web::BrowserState* GoogleURLTrackerFactory::GetBrowserStateToUse(

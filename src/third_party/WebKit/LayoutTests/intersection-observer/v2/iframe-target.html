@@ -25,20 +25,20 @@ iframe {
 var entries = [];
 var target;
 
-if (window.internals && internals.runtimeFlags) {
-  internals.runtimeFlags.intersectionObserverV2Enabled = true;
+if (window.internals) {
+  internals.DisableIntersectionObserverThrottleDelay();
 }
 
-runTestCycleV2(function() {
+runTestCycle(function() {
   target = document.querySelector("iframe");
   assert_true(!!target, "target exists");
   var observer = new IntersectionObserver(function(changes) {
     entries = entries.concat(changes)
-  }, {trackVisibility: true});
+  }, {trackVisibility: true, delay: 100});
   observer.observe(target);
   entries = entries.concat(observer.takeRecords());
   assert_equals(entries.length, 0, "No initial notifications.");
-  runTestCycleV2(step0, "First rAF.");
+  runTestCycle(step0, "First rAF.");
 }, "IntersectionObserverV2 observing an iframe element.");
 
 function step0() {

@@ -15,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
-#include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
+#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
@@ -102,9 +102,9 @@ InputEventList CreateScrollGestureEventList(InputEvent::Type type,
 
 }  // namespace
 
-VrTestContext::VrTestContext(CompositorDelegate* compositor_delegate)
+VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
     : view_scale_factor_(kDefaultViewScaleFactor),
-      compositor_delegate_(compositor_delegate) {
+      graphics_delegate_(graphics_delegate) {
   base::FilePath pak_path;
   base::PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
@@ -133,9 +133,10 @@ VrTestContext::VrTestContext(CompositorDelegate* compositor_delegate)
   model_ = ui_instance_->model_for_test();
 
   CycleOrigin();
-  ui_->SetHistoryButtonsEnabled(true, true);
-  ui_->SetLoading(true);
-  ui_->SetLoadProgress(0.4);
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
+  browser_ui->SetHistoryButtonsEnabled(true, true);
+  browser_ui->SetLoading(true);
+  browser_ui->SetLoadProgress(0.4);
   CapturingStateModel active_capturing;
   CapturingStateModel background_capturing;
   CapturingStateModel potential_capturing;
@@ -143,18 +144,20 @@ VrTestContext::VrTestContext(CompositorDelegate* compositor_delegate)
   background_capturing.screen_capture_enabled = true;
   active_capturing.bluetooth_connected = true;
   active_capturing.location_access_enabled = true;
-  ui_->SetCapturingState(active_capturing, background_capturing,
-                         potential_capturing);
+  browser_ui->SetCapturingState(active_capturing, background_capturing,
+                                potential_capturing);
   ui_instance_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
   for (size_t i = 0; i < 5; i++) {
-    ui_->AddOrUpdateTab(tab_id_++, false,
-                        base::UTF8ToUTF16("Wikipedia, the free encyclopedia"));
-    ui_->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16("New tab"));
-    ui_->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16(""));
-    ui_->AddOrUpdateTab(tab_id_++, true, base::UTF8ToUTF16("Home - YouTube"));
-    ui_->AddOrUpdateTab(tab_id_++, true,
-                        base::UTF8ToUTF16("VR - Google Search"));
+    browser_ui->AddOrUpdateTab(
+        tab_id_++, false,
+        base::UTF8ToUTF16("Wikipedia, the free encyclopedia"));
+    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16("New tab"));
+    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16(""));
+    browser_ui->AddOrUpdateTab(tab_id_++, true,
+                               base::UTF8ToUTF16("Home - YouTube"));
+    browser_ui->AddOrUpdateTab(tab_id_++, true,
+                               base::UTF8ToUTF16("VR - Google Search"));
   }
 
   InitializeGl();
@@ -165,9 +168,8 @@ VrTestContext::~VrTestContext() = default;
 void VrTestContext::InitializeGl() {
   unsigned int content_texture_id = CreateTexture(0xFF000080);
   unsigned int ui_texture_id = CreateTexture(0xFF008000);
-  ui_->OnGlInitialized(content_texture_id, kGlTextureLocationLocal,
-                       content_texture_id, kGlTextureLocationLocal,
-                       ui_texture_id);
+  ui_->OnGlInitialized(kGlTextureLocationLocal, content_texture_id,
+                       content_texture_id, ui_texture_id);
   keyboard_delegate_->Initialize(
       ui_instance_->scene()->SurfaceProviderForTesting(),
       ui_instance_->ui_element_renderer());
@@ -184,13 +186,14 @@ void VrTestContext::DrawFrame() {
 
   UpdateController(render_info, current_time);
 
-  compositor_delegate_->RunInSkiaContext(
+  graphics_delegate_->RunInSkiaContext(
       base::BindOnce(&UiInterface::UpdateSceneTextures, base::Unretained(ui_)));
 
   auto load_progress = (current_time - page_load_start_).InMilliseconds() /
                        kPageLoadTimeMilliseconds;
-  ui_->SetLoading(load_progress < 1.0f);
-  ui_->SetLoadProgress(std::min(load_progress, 1.0f));
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
+  browser_ui->SetLoading(load_progress < 1.0f);
+  browser_ui->SetLoadProgress(std::min(load_progress, 1.0f));
 
   if (web_vr_mode_ && model_->web_vr.state == kWebVrPresenting &&
       webvr_frames_received_) {
@@ -201,6 +204,7 @@ void VrTestContext::DrawFrame() {
 }
 
 void VrTestContext::HandleInput(ui::Event* event) {
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
   if (event->IsKeyEvent()) {
     if (event->type() != ui::ET_KEY_PRESSED) {
       return;
@@ -220,13 +224,13 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_F:
         fullscreen_ = !fullscreen_;
-        ui_->SetFullscreen(fullscreen_);
+        browser_ui->SetFullscreen(fullscreen_);
         break;
       case ui::DomCode::US_A:
         if (model_->platform_toast) {
-          ui_->CancelPlatformToast();
+          browser_ui->CancelPlatformToast();
         } else {
-          ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+          browser_ui->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
         }
         break;
       case ui::DomCode::US_H:
@@ -236,7 +240,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_I:
         incognito_ = !incognito_;
-        ui_->SetIncognito(incognito_);
+        browser_ui->SetIncognito(incognito_);
         break;
       case ui::DomCode::US_C:
         CycleIndicators();
@@ -263,9 +267,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         CapturingStateModel potential_capturing;
         active_capturing.bluetooth_connected = true;
         active_capturing.location_access_enabled = true;
-        ui_->SetCapturingState(active_capturing, background_capturing,
-                               potential_capturing);
-        ui_->OnWebXrFrameAvailable();
+        browser_ui->SetCapturingState(active_capturing, background_capturing,
+                                      potential_capturing);
+        ui_->GetSchedulerUiPtr()->OnWebXrFrameAvailable();
         break;
       }
       case ui::DomCode::US_O:
@@ -491,31 +495,33 @@ unsigned int VrTestContext::CreateTexture(SkColor color) {
 void VrTestContext::CreateFakeVoiceSearchResult() {
   if (!model_->voice_search_enabled())
     return;
-  ui_->SetRecognitionResult(
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
+  browser_ui->SetRecognitionResult(
       base::UTF8ToUTF16("I would like to see cat videos, please."));
-  ui_->SetSpeechRecognitionEnabled(false);
+  browser_ui->SetSpeechRecognitionEnabled(false);
 }
 
 void VrTestContext::CycleWebVrModes() {
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
   switch (model_->web_vr.state) {
     case kWebVrNoTimeoutPending: {
       web_vr_mode_ = true;
       webvr_frames_received_ = false;
-      ui_->SetWebVrMode(true);
+      browser_ui->SetWebVrMode(true);
       break;
     }
     case kWebVrAwaitingFirstFrame:
-      ui_->OnWebXrTimeoutImminent();
+      ui_->GetSchedulerUiPtr()->OnWebXrTimeoutImminent();
       break;
     case kWebVrTimeoutImminent:
-      ui_->OnWebXrTimedOut();
+      ui_->GetSchedulerUiPtr()->OnWebXrTimedOut();
       break;
     case kWebVrTimedOut:
-      ui_->SetWebVrMode(false);
+      browser_ui->SetWebVrMode(false);
       web_vr_mode_ = false;
       break;
     case kWebVrPresenting:
-      ui_->SetWebVrMode(false);
+      browser_ui->SetWebVrMode(false);
       web_vr_mode_ = false;
       break;
     default:
@@ -557,25 +563,26 @@ void VrTestContext::SetVoiceSearchActive(bool active) {
         UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
     return;
   }
-  ui_->SetSpeechRecognitionEnabled(active);
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
+  browser_ui->SetSpeechRecognitionEnabled(active);
   if (active)
-    ui_->OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING);
+    browser_ui->OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING);
 }
 
 void VrTestContext::ExitPresent() {
   web_vr_mode_ = false;
-  ui_->SetWebVrMode(false);
+  ui_->GetBrowserUiWeakPtr()->SetWebVrMode(false);
 }
 
 void VrTestContext::ExitFullscreen() {
   fullscreen_ = false;
-  ui_->SetFullscreen(false);
+  ui_->GetBrowserUiWeakPtr()->SetFullscreen(false);
 }
 
 void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
   ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
                      &toolbar::kHttpIcon, true, false);
-  ui_->SetToolbarState(state);
+  ui_->GetBrowserUiWeakPtr()->SetToolbarState(state);
   page_load_start_ = base::TimeTicks::Now();
 }
 
@@ -597,8 +604,9 @@ void VrTestContext::ReloadTab() {
 
 void VrTestContext::OpenNewTab(bool incognito) {
   incognito_ = incognito;
-  ui_->SetIncognito(incognito);
-  ui_->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
+  browser_ui->SetIncognito(incognito);
+  browser_ui->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
 }
 
 void VrTestContext::SelectTab(int id, bool incognito) {}
@@ -611,19 +619,19 @@ void VrTestContext::OpenShare() {}
 void VrTestContext::OpenSettings() {}
 
 void VrTestContext::CloseTab(int id, bool incognito) {
-  ui_->RemoveTab(id, incognito);
+  ui_->GetBrowserUiWeakPtr()->RemoveTab(id, incognito);
 }
 
 void VrTestContext::CloseAllTabs() {
   incognito_ = false;
-  ui_->SetIncognito(false);
+  ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
   model_->incognito_tabs.clear();
   model_->regular_tabs.clear();
 }
 
 void VrTestContext::CloseAllIncognitoTabs() {
   incognito_ = false;
-  ui_->SetIncognito(false);
+  ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
   model_->incognito_tabs.clear();
 }
 
@@ -631,7 +639,7 @@ void VrTestContext::OpenFeedback() {}
 
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   if (mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
-    ui_->ShowExitVrPrompt(mode);
+    ui_->GetBrowserUiWeakPtr()->ShowExitVrPrompt(mode);
   }
 }
 
@@ -653,9 +661,10 @@ void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
   auto result = std::make_unique<OmniboxSuggestions>();
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
 
   if (request.text.empty()) {
-    ui_->SetOmniboxSuggestions(std::move(result));
+    browser_ui->SetOmniboxSuggestions(std::move(result));
     return;
   }
 
@@ -701,15 +710,17 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
         base::string16(), base::string16()));
   }
 
-  ui_->SetOmniboxSuggestions(std::move(result));
+  browser_ui->SetOmniboxSuggestions(std::move(result));
 }
 
 void VrTestContext::StopAutocomplete() {
-  ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
+  ui_->GetBrowserUiWeakPtr()->SetOmniboxSuggestions(
+      std::make_unique<OmniboxSuggestions>());
 }
 
 void VrTestContext::ShowPageInfo() {
-  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
+  ui_->GetBrowserUiWeakPtr()->ShowExitVrPrompt(
+      UiUnsupportedMode::kUnhandledPageInfo);
 }
 
 void VrTestContext::CycleIndicators() {
@@ -781,7 +792,7 @@ void VrTestContext::CycleOrigin() {
   };
 
   static int state = 0;
-  ui_->SetToolbarState(states[state]);
+  ui_->GetBrowserUiWeakPtr()->SetToolbarState(states[state]);
   state = (state + 1) % states.size();
 }
 
@@ -812,12 +823,12 @@ void VrTestContext::LoadAssets() {
         LoadPng(IDR_VR_INCOGNITO_GRADIENT_IMAGE, &assets->incognito_gradient) &&
         LoadPng(IDR_VR_FULLSCREEN_GRADIENT_IMAGE,
                 &assets->fullscreen_gradient))) {
-    ui_->OnAssetsLoaded(AssetsLoadStatus::kInvalidContent, nullptr,
-                        assets_component_version);
+    ui_->GetBrowserUiWeakPtr()->OnAssetsLoaded(
+        AssetsLoadStatus::kInvalidContent, nullptr, assets_component_version);
     return;
   }
-  ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
-                      assets_component_version);
+  ui_->GetBrowserUiWeakPtr()->OnAssetsLoaded(
+      AssetsLoadStatus::kSuccess, std::move(assets), assets_component_version);
 }
 
 }  // namespace vr

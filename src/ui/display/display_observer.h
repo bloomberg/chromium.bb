@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/observer_list_types.h"
 #include "ui/display/display_export.h"
 
 namespace display {
@@ -15,7 +16,7 @@ class Display;
 // Observers for display configuration changes.
 // TODO(oshima): consolidate |WorkAreaWatcherObserver| and
 // |DisplaySettingsProvier|. crbug.com/122863.
-class DISPLAY_EXPORT DisplayObserver {
+class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
  public:
   enum DisplayMetric {
     DISPLAY_METRIC_NONE = 0,
@@ -48,7 +49,7 @@ class DISPLAY_EXPORT DisplayObserver {
                                        uint32_t changed_metrics);
 
  protected:
-  virtual ~DisplayObserver();
+  ~DisplayObserver() override;
 };
 
 }  // namespace display

@@ -14,6 +14,7 @@
 // <include src="video_player_metrics.js">
 
 // <include src="../../file_manager/common/js/lru_cache.js">
+// <include src="../../image_loader/load_image_request.js">
 // <include src="../../image_loader/image_loader_client.js">
 
 // <include src="../../../webui/resources/js/cr.js">
@@ -42,7 +43,7 @@
 // <include src="../../file_manager/common/js/file_type.js">
 // <include src="../../file_manager/common/js/util.js">
 // <include src="../../file_manager/common/js/volume_manager_common.js">
-// <include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
+// <include src="../../base/js/filtered_volume_manager.js">
 
 // <include src="cast/cast_extension_discoverer.js">
 // <include src="cast/cast_video_element.js">

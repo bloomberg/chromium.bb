@@ -140,7 +140,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   // Required by ExistingUserController:
   ScopedStubInstallAttributes test_install_attributes_;
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
-  ScopedTestCrosSettings test_cros_settings_;
+  ScopedTestCrosSettings test_cros_settings_{local_state_.Get()};
   MockUserManager* mock_user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;

@@ -100,6 +100,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
       base::TimeDelta::FromMilliseconds(300);
   timing.document_timing->load_event_start =
       base::TimeDelta::FromMilliseconds(500);
+  timing.input_to_navigation_start = base::TimeDelta::FromMilliseconds(50);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -116,8 +117,14 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kExperimental_InputToNavigationStartName,
+        50);
+    test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kNavigation_PageTransitionName,
         ui::PAGE_TRANSITION_LINK);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kNavigation_PageEndReasonName,
+        page_load_metrics::END_CLOSE);
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kParseTiming_NavigationToParseStartName,
         100);
@@ -173,6 +180,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kNavigation_PageTransitionName,
         ui::PAGE_TRANSITION_LINK);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kNavigation_PageEndReasonName,
+        page_load_metrics::END_PROVISIONAL_LOAD_FAILED);
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
         PageLoad::kNet_EffectiveConnectionType2_OnNavigationStartName,
@@ -382,6 +392,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   ASSERT_NE(entry2, nullptr);
 
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry1, GURL(kTestUrl1));
+  test_ukm_recorder().ExpectEntryMetric(entry1,
+                                        PageLoad::kNavigation_PageEndReasonName,
+                                        page_load_metrics::END_NEW_NAVIGATION);
   test_ukm_recorder().ExpectEntryMetric(
       entry1, PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName, 200);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -392,6 +405,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
       entry1, PageLoad::kPageTiming_ForegroundDurationName));
 
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry2, GURL(kTestUrl2));
+  test_ukm_recorder().ExpectEntryMetric(entry2,
+                                        PageLoad::kNavigation_PageEndReasonName,
+                                        page_load_metrics::END_CLOSE);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entry2, PageLoad::kParseTiming_NavigationToParseStartName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(

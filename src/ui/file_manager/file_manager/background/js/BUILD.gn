@@ -4,6 +4,22 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+# TODO(tapted): This folder should be restricted to file_manager, but related
+# apps currently depend on background_base, which depends on
+# volume_manager_factory, and that pulls in nearly everything else. For now,
+# document externally-exposed targets visible with this helper, and hide
+# transitive dependencies (but note those transitive dependencies should move
+# elsewhere too).
+related_apps = [
+  "//ui/file_manager/audio_player/*",
+  "//ui/file_manager/file_manager/*",
+  "//ui/file_manager/gallery/*",
+  "//ui/file_manager/video_player/*",
+]
+
+# Default to private.
+visibility = [ ":*" ]
+
 js_type_check("closure_compile") {
   deps = [
     ":app_window_wrapper",
@@ -39,9 +55,6 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
     "../../../externs/background/file_browser_background.js",
     "../../../externs/background/file_browser_background_full.js",
@@ -62,6 +75,7 @@ js_library("closure_compile_externs") {
 }
 
 js_library("app_window_wrapper") {
+  visibility += related_apps
   deps = [
     ":app_windows",
     "../../common/js:async_util",
@@ -94,6 +108,7 @@ js_library("background") {
 }
 
 js_library("background_base") {
+  visibility += related_apps
   deps = [
     ":app_windows",
     ":volume_manager_factory",
@@ -211,10 +226,12 @@ js_library("media_scanner") {
 }
 
 js_library("mock_volume_manager") {
+  visibility += related_apps
   deps = [
     ":volume_info_impl",
     ":volume_info_list_impl",
     ":volume_manager_factory",
+    ":volume_manager_impl",
     "../../common/js:mock_entry",
   ]
 }
@@ -236,20 +253,16 @@ js_library("task_queue") {
 }
 
 js_library("test_util_base") {
+  # TODO(tapted): Move this target to //ui/file_manager/base. It is used in the
+  # background page of all |related_apps|, but accessed via extension messaging.
+  # So it doesn't need to be visible as a closure dependency, except for the
+  # "unpacked" test framework.
+  visibility += [ "//ui/file_manager/file_manager/test/js:test_util" ]
+
   deps = [
     ":app_windows",
+    "../../../externs:webview_tag",
     "../../common/js:error_util",
-  ]
-
-  # The callback test_util_base.js passes to chrome.runtime.onMessageExternal()
-  # requires chrome_extensions.js, which has a dependency on chrome.js. Ensure
-  # the externs are introduced at the same time (in this order). Note we are
-  # lucky the list below also sorts in this order, or we'd need some other fix.
-  # A compile error results if the dependency walker encounters a target
-  # that puts chrome_extensions.js into the argument list before chrome.js.
-  externs_list = [
-    "$externs_path/chrome.js",
-    "$externs_path/chrome_extensions.js",
   ]
 }
 

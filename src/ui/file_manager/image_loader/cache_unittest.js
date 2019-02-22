@@ -5,14 +5,14 @@
 'use strict';
 
 function testCreateCacheKey() {
-  var key = ImageCache.createKey({url: 'http://example.com/image.jpg'});
+  let key = LoadImageRequest.cacheKey({url: 'http://example.com/image.jpg'});
   assertTrue(!!key);
 }
 
 function testNotCreateCacheKey() {
-  var key = ImageCache.createKey({url: 'data:xxx'});
+  let key = LoadImageRequest.cacheKey({url: 'data:xxx'});
   assertFalse(!!key);
 
-  var key = ImageCache.createKey({url: 'DaTa:xxx'});
+  key = LoadImageRequest.cacheKey({url: 'DaTa:xxx'});
   assertFalse(!!key);
 }

@@ -47,6 +47,9 @@ class CORE_EXPORT HTMLIFrameElement final
   // Support JS introspection of frame policy (e.g. feature policy)
   Policy* policy();
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */) const override;
 

@@ -150,6 +150,24 @@ void TestWebStateObserver::FaviconUrlUpdated(
   update_favicon_url_candidates_info_->candidates = candidates;
 }
 
+void TestWebStateObserver::WebFrameDidBecomeAvailable(WebState* web_state,
+                                                      WebFrame* web_frame) {
+  ASSERT_EQ(web_state_, web_state);
+  web_frame_available_info_ =
+      std::make_unique<web::TestWebFrameAvailabilityInfo>();
+  web_frame_available_info_->web_state = web_state;
+  web_frame_available_info_->web_frame = web_frame;
+}
+
+void TestWebStateObserver::WebFrameWillBecomeUnavailable(WebState* web_state,
+                                                         WebFrame* web_frame) {
+  ASSERT_EQ(web_state_, web_state);
+  web_frame_unavailable_info_ =
+      std::make_unique<web::TestWebFrameAvailabilityInfo>();
+  web_frame_unavailable_info_->web_state = web_state;
+  web_frame_unavailable_info_->web_frame = web_frame;
+}
+
 void TestWebStateObserver::RenderProcessGone(WebState* web_state) {
   ASSERT_EQ(web_state_, web_state);
   render_process_gone_info_ =

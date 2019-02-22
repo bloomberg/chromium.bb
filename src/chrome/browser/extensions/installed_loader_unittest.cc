@@ -62,7 +62,7 @@ TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_FeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   AddExtension();
 
@@ -79,7 +79,7 @@ TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_HasWithheldHosts_False) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   AddExtension();
 
@@ -99,7 +99,7 @@ TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_HasWithheldHosts_True) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   const Extension* extension = AddExtension();
   ScriptingPermissionsModifier(profile(), extension)
@@ -123,7 +123,7 @@ TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_GrantedHostCount) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   const Extension* extension = AddExtension();
   ScriptingPermissionsModifier modifier(profile(), extension);

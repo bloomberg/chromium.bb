@@ -25,6 +25,13 @@ class WorkletPendingTasks;
 class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
 
+// This is an implementation of the web-exposed WorkletGlobalScope interface
+// defined in the Worklets spec:
+// https://drafts.css-houdini.org/worklets/#workletglobalscope
+//
+// This instance lives either on the main thread (main thread worklet) or a
+// worker thread (threaded worklet). It's determined by constructors. See
+// comments on the constructors.
 class CORE_EXPORT WorkletGlobalScope
     : public WorkerOrWorkletGlobalScope,
       public ActiveScriptWrappable<WorkletGlobalScope> {
@@ -34,6 +41,8 @@ class CORE_EXPORT WorkletGlobalScope
  public:
   ~WorkletGlobalScope() override;
 
+  bool IsMainThreadWorkletGlobalScope() const final;
+  bool IsThreadedWorkletGlobalScope() const final;
   bool IsWorkletGlobalScope() const final { return true; }
 
   // Always returns false here as PaintWorkletGlobalScope and
@@ -50,6 +59,18 @@ class CORE_EXPORT WorkletGlobalScope
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   bool IsSecureContext(String& error_message) const final;
+  bool IsContextThread() const final;
+  void AddConsoleMessage(ConsoleMessage*) final;
+  void ExceptionThrown(ErrorEvent*) final;
+  CoreProbeSink* GetProbeSink() final;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
+
+  // WorkerOrWorkletGlobalScope
+  void Dispose() override;
+  WorkerThread* GetThread() const final;
+
+  virtual LocalFrame* GetFrame() const;
+
   const base::UnguessableToken& GetAgentClusterID() const final {
     // Currently, worklet agents have no clearly defined owner. See
     // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
@@ -101,21 +122,39 @@ class CORE_EXPORT WorkletGlobalScope
 
   HttpsState GetHttpsState() const override { return https_state_; }
 
- protected:
-  // Partial implementation of the "set up a worklet environment settings
-  // object" algorithm:
-  // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  WorkletGlobalScope(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      v8::Isolate*,
-      WorkerReportingProxy&,
-      scoped_refptr<base::SingleThreadTaskRunner> document_loading_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worklet_loading_task_runner);
-
-  void BindContentSecurityPolicyToExecutionContext() override;
+  // Constructs an instance as a main thread worklet. Must be called on the main
+  // thread.
+  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                     WorkerReportingProxy&,
+                     LocalFrame*);
+  // Constructs an instance as a threaded worklet. Must be called on a worker
+  // thread.
+  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                     WorkerReportingProxy&,
+                     WorkerThread*);
 
  private:
+  enum class ThreadType {
+    // Indicates this global scope lives on the main thread.
+    kMainThread,
+    // Indicates this global scope lives on a worker thread.
+    kOffMainThread
+  };
+
+  // The base constructor delegated from other public constructors. This
+  // partially implements the "set up a worklet environment settings object"
+  // algorithm defined in the Worklets spec:
+  // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                     WorkerReportingProxy&,
+                     v8::Isolate*,
+                     ThreadType,
+                     LocalFrame*,
+                     WorkerThread*);
+
   EventTarget* ErrorEventTarget() final { return nullptr; }
+
+  void BindContentSecurityPolicyToExecutionContext() override;
 
   // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;
@@ -133,6 +172,12 @@ class CORE_EXPORT WorkletGlobalScope
   const HttpsState https_state_;
 
   const base::UnguessableToken agent_cluster_id_;
+
+  const ThreadType thread_type_;
+  // |frame_| is available only when |thread_type_| is kMainThread.
+  Member<LocalFrame> frame_;
+  // |worker_thread_| is available only when |thread_type_| is kOffMainThread.
+  WorkerThread* worker_thread_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

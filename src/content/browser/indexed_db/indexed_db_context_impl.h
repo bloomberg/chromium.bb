@@ -123,7 +123,8 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
   void ForceClose(const url::Origin origin, ForceCloseReason reason);
-  void ForceSchemaDowngrade(const url::Origin& origin);
+  bool ForceSchemaDowngrade(const url::Origin& origin);
+  V2SchemaCorruptionStatus HasV2SchemaCorruption(const url::Origin& origin);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
   std::vector<base::FilePath> GetStoragePaths(const url::Origin& origin) const;
@@ -176,16 +177,16 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   void QueryDiskAndUpdateQuotaUsage(const url::Origin& origin);
   base::Time GetOriginLastModified(const url::Origin& origin);
 
+  // Returns |origin_set_| (this context's in-memory cache of origins with
+  // backing stores); the cache will be primed as needed by checking disk.
   std::set<url::Origin>* GetOriginSet();
-  bool AddToOriginSet(const url::Origin& origin) {
-    return GetOriginSet()->insert(origin).second;
-  }
-  void RemoveFromOriginSet(const url::Origin& origin) {
-    GetOriginSet()->erase(origin);
-  }
 
   scoped_refptr<IndexedDBFactory> factory_;
+
+  // If |data_path_| is empty then this is an incognito session and the backing
+  // store will be held in-memory rather than on-disk.
   base::FilePath data_path_;
+
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

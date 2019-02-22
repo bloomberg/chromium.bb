@@ -726,8 +726,6 @@ virtual void CopySubTextureCHROMIUM(GLuint source_id,
                                     GLboolean unpack_flip_y,
                                     GLboolean unpack_premultiply_alpha,
                                     GLboolean unpack_unmultiply_alpha) = 0;
-virtual void CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                           GLuint dest_id) = 0;
 virtual void DrawArraysInstancedANGLE(GLenum mode,
                                       GLint first,
                                       GLsizei count,
@@ -958,4 +956,5 @@ virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                      GLint level,
                                                      GLint baseViewIndex,
                                                      GLsizei numViews) = 0;
+virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

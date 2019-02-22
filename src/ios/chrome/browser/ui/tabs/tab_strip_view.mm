@@ -10,7 +10,7 @@
 
 @implementation TabStripView
 
-@synthesize layoutDelegate = layoutDelegate_;
+@synthesize layoutDelegate = _layoutDelegate;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
@@ -27,12 +27,14 @@
 }
 
 - (void)layoutSubviews {
-  [layoutDelegate_ layoutTabStripSubviews];
+  [super layoutSubviews];
+  [self.layoutDelegate layoutTabStripSubviews];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  [layoutDelegate_ traitCollectionDidChange:previousTraitCollection];
+  [self.layoutDelegate traitCollectionDidChange:previousTraitCollection];
+  [self.layoutDelegate layoutTabStripSubviews];
 }
 
 @end

@@ -132,7 +132,7 @@ base::Value CreateGetMoreData(bool email_optin_needed,
   context_data.SetKey(
       "iconUri",
       base::Value("https://www.gstatic.com/images/icons/material/system/"
-                  "2x/laptop_chromebook_grey600_24dp.png"));
+                  "2x/screen_search_desktop_grey600_24dp.png"));
   get_more_data.GetList().push_back(std::move(context_data));
 
   // Process email optin data.
@@ -158,7 +158,7 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
   base::Value dictionary(base::Value::Type::DICTIONARY);
 
-  // Add activity controll string constants.
+  // Add activity control string constants.
   if (activity_control_needed) {
     scoped_refptr<base::RefCountedMemory> image =
         chromeos::UserImageSource::GetUserImage(

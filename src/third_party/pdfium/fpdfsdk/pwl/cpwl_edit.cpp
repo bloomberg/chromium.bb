@@ -33,10 +33,6 @@ CPWL_Edit::~CPWL_Edit() {
   ASSERT(!m_bFocus);
 }
 
-ByteString CPWL_Edit::GetClassName() const {
-  return PWL_CLASSNAME_EDIT;
-}
-
 void CPWL_Edit::SetText(const WideString& csText) {
   m_pEdit->SetText(csText);
 }
@@ -201,12 +197,10 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
       }
       case BorderStyle::DASH: {
         CFX_GraphStateData gsd;
-        gsd.m_LineWidth = (float)GetBorderWidth();
-
-        gsd.SetDashCount(2);
-        gsd.m_DashArray[0] = (float)GetBorderDash().nDash;
-        gsd.m_DashArray[1] = (float)GetBorderDash().nGap;
-        gsd.m_DashPhase = (float)GetBorderDash().nPhase;
+        gsd.m_LineWidth = static_cast<float>(GetBorderWidth());
+        gsd.m_DashArray = {static_cast<float>(GetBorderDash().nDash),
+                           static_cast<float>(GetBorderDash().nGap)};
+        gsd.m_DashPhase = static_cast<float>(GetBorderDash().nPhase);
 
         CFX_PathData path;
         for (int32_t i = 0; i < nCharArray - 1; i++) {
@@ -637,8 +631,6 @@ CPVT_WordRange CPWL_Edit::GetLatinWordsRange(
 CPVT_WordRange CPWL_Edit::GetSameWordsRange(const CPVT_WordPlace& place,
                                             bool bLatin,
                                             bool bArabic) const {
-  CPVT_WordRange range;
-
   CPWL_EditImpl_Iterator* pIterator = m_pEdit->GetIterator();
   CPVT_Word wordinfo;
   CPVT_WordPlace wpStart(place), wpEnd(place);
@@ -682,6 +674,5 @@ CPVT_WordRange CPWL_Edit::GetSameWordsRange(const CPVT_WordPlace& place,
     } while (pIterator->PrevWord());
   }
 
-  range.Set(wpStart, wpEnd);
-  return range;
+  return CPVT_WordRange(wpStart, wpEnd);
 }

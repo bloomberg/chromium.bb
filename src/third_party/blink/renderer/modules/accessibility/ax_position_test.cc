@@ -90,7 +90,7 @@ TEST_F(AccessibilityTest, PositionInText) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
@@ -113,7 +113,7 @@ TEST_F(AccessibilityTest, PositionBeforeText) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionBeforeObject(*ax_static_text);
@@ -136,7 +136,7 @@ TEST_F(AccessibilityTest, PositionBeforeTextWithFirstLetterCSSRule) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionBeforeObject(*ax_static_text);
@@ -160,7 +160,7 @@ TEST_F(AccessibilityTest, PositionAfterText) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionAfterObject(*ax_static_text);
@@ -177,10 +177,10 @@ TEST_F(AccessibilityTest, PositionBeforeLineBreak) {
   SetBodyInnerHTML(R"HTML(Hello<br id="br">there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
-  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
   const AXObject* ax_div = ax_br->ParentObjectUnignored();
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionBeforeObject(*ax_br);
   EXPECT_FALSE(ax_position.IsTextPosition());
@@ -200,13 +200,13 @@ TEST_F(AccessibilityTest, PositionAfterLineBreak) {
   SetBodyInnerHTML(R"HTML(Hello<br id="br">there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
-  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
   const AXObject* ax_div = ax_br->ParentObjectUnignored();
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
   EXPECT_FALSE(ax_position.IsTextPosition());
@@ -228,10 +228,10 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainer) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
@@ -250,7 +250,7 @@ TEST_F(AccessibilityTest, LastPositionInDivContainer) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
 
   const auto ax_position = AXPosition::CreateLastPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
@@ -269,7 +269,7 @@ TEST_F(AccessibilityTest, FirstPositionInTextContainer) {
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreateFirstPositionInObject(*ax_static_text);
@@ -289,7 +289,7 @@ TEST_F(AccessibilityTest, LastPositionInTextContainer) {
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreateLastPositionInObject(*ax_static_text);
@@ -385,7 +385,7 @@ TEST_F(AccessibilityTest, PositionInTextWithWhiteSpace) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
@@ -406,7 +406,7 @@ TEST_F(AccessibilityTest, PositionBeforeTextWithWhiteSpace) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionBeforeObject(*ax_static_text);
@@ -427,7 +427,7 @@ TEST_F(AccessibilityTest, PositionAfterTextWithWhiteSpace) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->LastChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreatePositionAfterObject(*ax_static_text);
@@ -444,10 +444,10 @@ TEST_F(AccessibilityTest, PositionBeforeLineBreakWithWhiteSpace) {
   SetBodyInnerHTML(R"HTML(Hello     <br id="br">     there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
-  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
   const AXObject* ax_div = ax_br->ParentObjectUnignored();
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionBeforeObject(*ax_br);
   EXPECT_FALSE(ax_position.IsTextPosition());
@@ -467,13 +467,13 @@ TEST_F(AccessibilityTest, PositionAfterLineBreakWithWhiteSpace) {
   SetBodyInnerHTML(R"HTML(Hello     <br id="br">     there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
-  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
   const AXObject* ax_div = ax_br->ParentObjectUnignored();
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
   EXPECT_FALSE(ax_position.IsTextPosition());
@@ -495,10 +495,10 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainerWithWhiteSpace) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
@@ -517,7 +517,7 @@ TEST_F(AccessibilityTest, LastPositionInDivContainerWithWhiteSpace) {
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
 
   const auto ax_position = AXPosition::CreateLastPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
@@ -536,7 +536,7 @@ TEST_F(AccessibilityTest, FirstPositionInTextContainerWithWhiteSpace) {
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreateFirstPositionInObject(*ax_static_text);
@@ -556,7 +556,7 @@ TEST_F(AccessibilityTest, LastPositionInTextContainerWithWhiteSpace) {
   ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position =
       AXPosition::CreateLastPositionInObject(*ax_static_text);
@@ -579,7 +579,7 @@ TEST_F(AccessibilityTest, AXPositionFromDOMPositionWithWhiteSpace) {
   ASSERT_EQ(15U, text->textContent().length());
   const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const Position position_at_start(*text, 0);
   const auto ax_position_at_start = AXPosition::FromPosition(position_at_start);
@@ -626,7 +626,7 @@ TEST_F(AccessibilityTest, PositionInTextWithAffinity) {
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   // Converting from AX to DOM positions should maintain affinity.
   const auto ax_position = AXPosition::CreatePositionInTextObject(
@@ -664,14 +664,14 @@ TEST_F(AccessibilityTest, PositionInHTMLLabel) {
 
   const AXObject* ax_root = GetAXRootObject();
   ASSERT_NE(nullptr, ax_root);
-  ASSERT_EQ(AccessibilityRole::kWebAreaRole, ax_root->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea, ax_root->RoleValue());
   // The HTML label element should be ignored.
   const AXObject* ax_label = GetAXObjectByElementId("label");
   ASSERT_NE(nullptr, ax_label);
   ASSERT_TRUE(ax_label->AccessibilityIsIgnored());
   const AXObject* ax_paragraph = GetAXObjectByElementId("paragraph");
   ASSERT_NE(nullptr, ax_paragraph);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_paragraph->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_paragraph->RoleValue());
 
   // All of the following DOM positions should be ignored in the accessibility
   // tree.
@@ -715,11 +715,11 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
 
   const AXObject* ax_root = GetAXRootObject();
   ASSERT_NE(nullptr, ax_root);
-  ASSERT_EQ(AccessibilityRole::kWebAreaRole, ax_root->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea, ax_root->RoleValue());
   ASSERT_EQ(1, ax_root->ChildCount());
   const AXObject* ax_visible = ax_root->FirstChild();
   ASSERT_NE(nullptr, ax_visible);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_visible->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_visible->RoleValue());
 
   // The fact that there is a hidden object before |visible| should not affect
   // setting a position before it.
@@ -795,10 +795,10 @@ TEST_F(AccessibilityTest, BeforePositionInARIAHiddenShouldSkipARIAHidden) {
 
   const AXObject* ax_before = GetAXObjectByElementId("before");
   ASSERT_NE(nullptr, ax_before);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_before->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
   ASSERT_NE(nullptr, GetAXObjectByElementId("ariaHidden"));
   ASSERT_TRUE(GetAXObjectByElementId("ariaHidden")->AccessibilityIsIgnored());
 
@@ -829,7 +829,7 @@ TEST_F(AccessibilityTest, PreviousPositionAfterARIAHiddenShouldSkipARIAHidden) {
 
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
   ASSERT_NE(nullptr, GetAXObjectByElementId("ariaHidden"));
   ASSERT_TRUE(GetAXObjectByElementId("ariaHidden")->AccessibilityIsIgnored());
 
@@ -870,11 +870,11 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
 
   const AXObject* ax_container = GetAXObjectByElementId("container");
   ASSERT_NE(nullptr, ax_container);
-  ASSERT_EQ(AccessibilityRole::kMainRole, ax_container->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kMain, ax_container->RoleValue());
   ASSERT_EQ(2, ax_container->ChildCount());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
   ASSERT_NE(nullptr, GetAXObjectByElementId("ariaHidden"));
   ASSERT_TRUE(GetAXObjectByElementId("ariaHidden")->AccessibilityIsIgnored());
 
@@ -929,16 +929,16 @@ TEST_F(AccessibilityTest, PositionInCanvas) {
 
   const AXObject* ax_canvas_1 = GetAXObjectByElementId("canvas1");
   ASSERT_NE(nullptr, ax_canvas_1);
-  ASSERT_EQ(AccessibilityRole::kCanvasRole, ax_canvas_1->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kCanvas, ax_canvas_1->RoleValue());
   const AXObject* ax_text = ax_canvas_1->FirstChild();
   ASSERT_NE(nullptr, ax_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
   const AXObject* ax_canvas_2 = GetAXObjectByElementId("canvas2");
   ASSERT_NE(nullptr, ax_canvas_2);
-  ASSERT_EQ(AccessibilityRole::kCanvasRole, ax_canvas_2->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kCanvas, ax_canvas_2->RoleValue());
   const AXObject* ax_button = GetAXObjectByElementId("button");
   ASSERT_NE(nullptr, ax_button);
-  ASSERT_EQ(AccessibilityRole::kButtonRole, ax_button->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kButton, ax_button->RoleValue());
 
   const auto ax_position_1 =
       AXPosition::CreateFirstPositionInObject(*ax_canvas_1);
@@ -1020,11 +1020,11 @@ TEST_F(AccessibilityTest, PositionBeforeListMarker) {
 
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
-  ASSERT_EQ(AccessibilityRole::kListItemRole, ax_item->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kListItem, ax_item->RoleValue());
   ASSERT_EQ(2, ax_item->ChildCount());
   const AXObject* ax_marker = ax_item->FirstChild();
   ASSERT_NE(nullptr, ax_marker);
-  ASSERT_EQ(AccessibilityRole::kListMarkerRole, ax_marker->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kListMarker, ax_marker->RoleValue());
 
   //
   // Test adjusting invalid DOM positions to the left.
@@ -1100,14 +1100,14 @@ TEST_F(AccessibilityTest, PositionAfterListMarker) {
 
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
-  ASSERT_EQ(AccessibilityRole::kListItemRole, ax_item->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kListItem, ax_item->RoleValue());
   ASSERT_EQ(2, ax_item->ChildCount());
   const AXObject* ax_marker = ax_item->FirstChild();
   ASSERT_NE(nullptr, ax_marker);
-  ASSERT_EQ(AccessibilityRole::kListMarkerRole, ax_marker->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kListMarker, ax_marker->RoleValue());
   const AXObject* ax_text = ax_item->LastChild();
   ASSERT_NE(nullptr, ax_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_marker);
   const auto position = ax_position.ToPositionWithAffinity();
@@ -1133,17 +1133,17 @@ TEST_F(AccessibilityTest, PositionInCSSContent) {
 
   const AXObject* ax_quote = GetAXObjectByElementId("quote");
   ASSERT_NE(nullptr, ax_quote);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_quote->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_quote->RoleValue());
   ASSERT_EQ(3, ax_quote->ChildCount());
   const AXObject* ax_css_before = ax_quote->FirstChild();
   ASSERT_NE(nullptr, ax_css_before);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_css_before->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_css_before->RoleValue());
   const AXObject* ax_text = *(ax_quote->Children().begin() + 1);
   ASSERT_NE(nullptr, ax_text);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_text->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_text->RoleValue());
   const AXObject* ax_css_after = ax_quote->LastChild();
   ASSERT_NE(nullptr, ax_css_after);
-  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_css_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_css_after->RoleValue());
 
   const auto ax_position_before =
       AXPosition::CreateFirstPositionInObject(*ax_css_before);
@@ -1178,10 +1178,10 @@ TEST_F(AccessibilityTest, PositionBeforeAndAfterTable) {
   ASSERT_NE(nullptr, after);
   const AXObject* ax_table = GetAXObjectByElementId("table");
   ASSERT_NE(nullptr, ax_table);
-  ASSERT_EQ(AccessibilityRole::kTableRole, ax_table->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kTable, ax_table->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
 
   const auto ax_position_before =
       AXPosition::CreatePositionBeforeObject(*ax_table);
@@ -1227,10 +1227,10 @@ TEST_F(AccessibilityTest, PositionAtStartAndEndOfTable) {
 
   const AXObject* ax_table = GetAXObjectByElementId("table");
   ASSERT_NE(nullptr, ax_table);
-  ASSERT_EQ(AccessibilityRole::kTableRole, ax_table->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kTable, ax_table->RoleValue());
   const AXObject* ax_header_row = GetAXObjectByElementId("headerRow");
   ASSERT_NE(nullptr, ax_header_row);
-  ASSERT_EQ(AccessibilityRole::kRowRole, ax_header_row->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kRow, ax_header_row->RoleValue());
 
   const auto ax_position_at_start =
       AXPosition::CreateFirstPositionInObject(*ax_table);
@@ -1270,13 +1270,11 @@ TEST_F(AccessibilityTest, PositionInTableHeader) {
   const AXObject* ax_first_header_cell =
       GetAXObjectByElementId("firstHeaderCell");
   ASSERT_NE(nullptr, ax_first_header_cell);
-  ASSERT_EQ(AccessibilityRole::kColumnHeaderRole,
-            ax_first_header_cell->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kColumnHeader, ax_first_header_cell->RoleValue());
   const AXObject* ax_last_header_cell =
       GetAXObjectByElementId("lastHeaderCell");
   ASSERT_NE(nullptr, ax_last_header_cell);
-  ASSERT_EQ(AccessibilityRole::kColumnHeaderRole,
-            ax_last_header_cell->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kColumnHeader, ax_last_header_cell->RoleValue());
 
   const auto ax_position_before =
       AXPosition::CreatePositionBeforeObject(*ax_first_header_cell);
@@ -1317,10 +1315,10 @@ TEST_F(AccessibilityTest, PositionInTableRow) {
 
   const AXObject* ax_first_cell = GetAXObjectByElementId("firstCell");
   ASSERT_NE(nullptr, ax_first_cell);
-  ASSERT_EQ(AccessibilityRole::kRowHeaderRole, ax_first_cell->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kRowHeader, ax_first_cell->RoleValue());
   const AXObject* ax_last_cell = GetAXObjectByElementId("lastCell");
   ASSERT_NE(nullptr, ax_last_cell);
-  ASSERT_EQ(AccessibilityRole::kCellRole, ax_last_cell->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kCell, ax_last_cell->RoleValue());
 
   const auto ax_position_before =
       AXPosition::CreatePositionBeforeObject(*ax_first_cell);
@@ -1361,14 +1359,14 @@ TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
 
   const AXObject* ax_parent = GetAXObjectByElementId("aomParent");
   ASSERT_NE(nullptr, ax_parent);
-  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_parent->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_parent->RoleValue());
   ASSERT_EQ(1, ax_parent->ChildCount());
   const AXObject* ax_button = ax_parent->FirstChild();
   ASSERT_NE(nullptr, ax_button);
-  ASSERT_EQ(AccessibilityRole::kButtonRole, ax_button->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kButton, ax_button->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
-  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
 
   const auto ax_position_before =
       AXPosition::CreatePositionBeforeObject(*ax_button);

@@ -23,11 +23,10 @@ import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.browser.test.util.TestWebContentsObserver;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_public.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -66,8 +65,7 @@ public class DistillabilityServiceTest {
 
         final CallbackHelper readerShownCallbackHelper = new CallbackHelper();
 
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        tab.getInfoBarContainer().addObserver(new InfoBarContainerObserver() {
+        mActivityTestRule.getInfoBarContainer().addObserver(new InfoBarContainerObserver() {
             @Override
             public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
                 if (infoBar instanceof ReaderModeInfoBar) readerShownCallbackHelper.notifyCalled();

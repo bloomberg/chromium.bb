@@ -5,6 +5,7 @@
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
 #include "base/format_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -147,7 +148,7 @@ void SignedExchangeCertFetcher::Abort() {
   handle_watcher_ = nullptr;
   body_string_.clear();
   devtools_proxy_ = nullptr;
-  std::move(callback_).Run(nullptr);
+  std::move(callback_).Run(SignedExchangeLoadResult::kCertFetchError, nullptr);
 }
 
 void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
@@ -191,10 +192,12 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, "Failed to get certificate chain from message.");
-    std::move(callback_).Run(nullptr);
+    std::move(callback_).Run(SignedExchangeLoadResult::kCertParseError,
+                             nullptr);
     return;
   }
-  std::move(callback_).Run(std::move(cert_chain));
+  std::move(callback_).Run(SignedExchangeLoadResult::kSuccess,
+                           std::move(cert_chain));
 }
 
 // network::mojom::URLLoaderClient
@@ -243,6 +246,9 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
     }
     body_string_.reserve(head.content_length);
   }
+
+  UMA_HISTOGRAM_BOOLEAN("SignedExchange.CertificateFetch.CacheHit",
+                        head.was_fetched_via_cache);
 }
 
 void SignedExchangeCertFetcher::OnReceiveRedirect(

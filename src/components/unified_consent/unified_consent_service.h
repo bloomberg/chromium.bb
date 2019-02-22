@@ -12,6 +12,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -38,46 +39,6 @@ enum class MigrationState : int {
   kCompleted = 10,
 };
 
-// Used in histograms. Do not change existing values, append new values at the
-// end.
-enum class ConsentBumpSuppressReason {
-  // There is no suppress reason. The consent bump was shown.
-  kNone,
-  // The user wasn't signed in during the migration.
-  kNotSignedIn,
-  // The user wasn't syncing everything during the migration.
-  kSyncEverythingOff,
-  // The user didn't have all on-by-default privacy settings enabled during
-  // migration.
-  kPrivacySettingOff,
-  kSettingsOptIn,
-  // The user was eligible for seeing the consent bump, but then signed out.
-  kUserSignedOut,
-  kSyncPaused,
-  // The user was eligible for seeing the consent bump, but turned an individual
-  // sync data type off.
-  kUserTurnedSyncDatatypeOff,
-  // The user was eligible for seeing the consent bump, but turned an
-  // on-by-default privacy setting off.
-  kUserTurnedPrivacySettingOff,
-
-  kMaxValue = kUserTurnedPrivacySettingOff
-};
-
-// Google services that can be toggled in user settings.
-// Used in histograms. Do not change existing values, append new values at the
-// end.
-enum class SettingsHistogramValue {
-  kNone = 0,
-  kUnifiedConsentGiven = 1,
-  kUserEvents = 2,
-  kUrlKeyedAnonymizedDataCollection = 3,
-  kSafeBrowsingExtendedReporting = 4,
-  kSpellCheck = 5,
-
-  kMaxValue = kSpellCheck
-};
-
 // A browser-context keyed service that is used to manage the user consent
 // when UnifiedConsent feature is enabled.
 class UnifiedConsentService : public KeyedService,
@@ -98,7 +59,8 @@ class UnifiedConsentService : public KeyedService,
   // Rolls back changes made during migration. This method does nothing if the
   // user hasn't migrated to unified consent yet.
   static void RollbackIfNeeded(PrefService* user_pref_service,
-                               syncer::SyncService* sync_service);
+                               syncer::SyncService* sync_service,
+                               UnifiedConsentServiceClient* service_client);
 
   // This updates the consent pref and if |unified_consent_given| is true, all
   // unified consent services are enabled.
@@ -114,7 +76,7 @@ class UnifiedConsentService : public KeyedService,
   // consent bump should be shown. Note: In some cases, e.g. sync paused,
   // |ShouldShowConsentBump| will still return true.
   void RecordConsentBumpSuppressReason(
-      ConsentBumpSuppressReason suppress_reason);
+      metrics::ConsentBumpSuppressReason suppress_reason);
 
   // KeyedService:
   void Shutdown() override;

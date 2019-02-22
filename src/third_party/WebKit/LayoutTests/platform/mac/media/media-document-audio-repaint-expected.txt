@@ -47,3 +47,15 @@ layer at (8,42) size 384x334
       LayoutBlockFlow (positioned) {DIV} at (0,0) size 56x4 [bgcolor=#000000DE]
     layer at (225,211) size 56x4
       LayoutBlockFlow (positioned) {DIV} at (56,0) size 56x4 [bgcolor=#0000008A]
+    layer at (298,189) size 0x48 transparent
+      LayoutSlider {INPUT} at (258,3) size 0x48 [color=#909090]
+        LayoutFlexibleBox {DIV} at (0,22) size 0x4
+    layer at (298,211) size 12x4
+      LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 12x4 [bgcolor=#00000033]
+        LayoutBlockFlow {DIV} at (0,-4) size 12x12 [bgcolor=#000000DE]
+    layer at (298,211) size 12x4
+      LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4
+    layer at (298,211) size 0x4
+      LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
+    layer at (298,211) size 12x4
+      LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4 [bgcolor=#0000008A]

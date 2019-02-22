@@ -32,7 +32,7 @@ namespace content {
 namespace {
 
 EvalJsResult GetOriginFromRenderer(FrameTreeNode* node) {
-  return EvalJs(node, "document.origin");
+  return EvalJs(node, "self.origin");
 }
 
 }  // namespace
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
   // Navigating to a data URL should set a unique origin.  This is represented
   // as "null" per RFC 6454.
   EXPECT_EQ("null", root->current_origin().Serialize());
-  EXPECT_TRUE(contents->GetMainFrame()->GetLastCommittedOrigin().unique());
+  EXPECT_TRUE(contents->GetMainFrame()->GetLastCommittedOrigin().opaque());
   EXPECT_EQ("null", GetOriginFromRenderer(root));
 
   // Re-navigating to a normal URL should update the origin.
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
   EXPECT_EQ(
       main_url.GetOrigin().spec(),
       contents->GetMainFrame()->GetLastCommittedOrigin().Serialize() + '/');
-  EXPECT_FALSE(contents->GetMainFrame()->GetLastCommittedOrigin().unique());
+  EXPECT_FALSE(contents->GetMainFrame()->GetLastCommittedOrigin().opaque());
   EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
 }
 
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
   std::string html =
       "<html><body><div>This is blob content.</div>"
       "<script>"
-      "window.parent.parent.postMessage('HI', document.origin);"
+      "window.parent.parent.postMessage('HI', self.origin);"
       "</script></body></html>";
   std::string script = JsReplace(
       "new Promise((resolve) => {"
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
     deleted_observer.WaitUntilDeleted();
   EXPECT_EQ(GURL(blob_url_string), target->current_url());
   EXPECT_EQ(url::kBlobScheme, target->current_url().scheme());
-  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_FALSE(target->current_origin().opaque());
   EXPECT_EQ("a.com", target->current_origin().host());
   EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
   EXPECT_EQ("This is blob content.",
@@ -373,13 +373,13 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateChildToAboutBlank) {
       "      frames[0].document.write('Hi from ' + document.domain);"
       "    } catch (e) { return; }"
       "    clearInterval(intervalID);"
-      "    resolve(frames[0].document.origin);"
+      "    resolve(frames[0].self.origin);"
       "  }, 16);"
       "});");
   EXPECT_EQ(target->current_origin(), about_blank_origin);
   EXPECT_EQ(GURL(url::kAboutBlankURL), target->current_url());
   EXPECT_EQ(url::kAboutScheme, target->current_url().scheme());
-  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_FALSE(target->current_origin().opaque());
   EXPECT_EQ("b.com", target->current_origin().host());
   EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
 
@@ -421,13 +421,13 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
              "      frames[0][0].document.write('Hi from ' + document.domain);"
              "    } catch (e) { return; }"
              "    clearInterval(intervalID);"
-             "    resolve(frames[0][0].document.origin);"
+             "    resolve(frames[0][0].self.origin);"
              "  }, 16);"
              "});");
   EXPECT_EQ(target->current_origin(), about_blank_origin);
   EXPECT_EQ(GURL(url::kAboutBlankURL), target->current_url());
   EXPECT_EQ(url::kAboutScheme, target->current_url().scheme());
-  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_FALSE(target->current_origin().opaque());
   EXPECT_EQ("a.com", target->current_origin().host());
   EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
 
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
   EXPECT_EQ(1U, root->child_count());
 
   FrameTreeNode* child = root->child_at(0);
-  std::string frame_origin = EvalJs(child, "document.origin;").ExtractString();
+  std::string frame_origin = EvalJs(child, "self.origin;").ExtractString();
   EXPECT_TRUE(
       child->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
           url::Origin::Create(GURL(frame_origin))));
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     observer.Wait();
 
     EXPECT_EQ(GURL(kAboutSrcDocURL), root->child_at(1)->current_url());
-    EvalJsResult frame_origin = EvalJs(root->child_at(1), "document.origin");
+    EvalJsResult frame_origin = EvalJs(root->child_at(1), "self.origin");
     EXPECT_EQ(root->current_frame_host()->GetLastCommittedURL().GetOrigin(),
               GURL(frame_origin.ExtractString()));
     EXPECT_NE(child->current_frame_host()->GetLastCommittedURL().GetOrigin(),
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_EQ(
         url::Origin::Create(root->current_frame_host()->GetLastCommittedURL())
             .Serialize(),
-        EvalJs(child, "document.origin"));
+        EvalJs(child, "self.origin"));
   }
 }
 

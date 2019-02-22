@@ -398,7 +398,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // allowed outside a user gesture so that the presented content may be
   // updated.
   if (first_present) {
-    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+    if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                    : nullptr)) {
       DOMException* exception =
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                "API can only be initiated by a user gesture.");
@@ -683,10 +684,11 @@ void VRDisplay::BeginPresent() {
   // For GVR, we shut down normal vsync processing during VR presentation.
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
-  if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
+  if (doc && !pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
     TimeTicks timestamp = WTF::CurrentTimeTicks();
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
+    doc->GetTaskRunner(blink::TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
                              WrapWeakPersistent(this), timestamp));
   }
 }
@@ -933,7 +935,7 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
-    gesture_indicator = Frame::NotifyUserActivation(doc->GetFrame());
+    gesture_indicator = LocalFrame::NotifyUserActivation(doc->GetFrame());
 
   base::AutoReset<bool> in_activate(&in_display_activate_, true);
 
@@ -1051,6 +1053,10 @@ void VRDisplay::OnPresentingVSync(
     NOTIMPLEMENTED();
   }
 
+  Document* doc = GetDocument();
+  if (!doc)
+    return;
+
   // Post a task to handle scheduled animations after the current
   // execution context finishes, so that we yield to non-mojo tasks in
   // between frames. Executing mojo tasks back to back within the same
@@ -1059,10 +1065,13 @@ void VRDisplay::OnPresentingVSync(
   // this is due to WaitForIncomingMethodCall receiving the OnVSync
   // but queueing it for immediate execution since it doesn't match
   // the interface being waited on.
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                           WrapWeakPersistent(this),
-                           TimeTicks() + frame_data->time_delta));
+  //
+  // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
+  // related then tasks should not be throttled or frozen in background tabs.
+  doc->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                                      WrapWeakPersistent(this),
+                                      TimeTicks() + frame_data->time_delta));
 }
 
 void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {

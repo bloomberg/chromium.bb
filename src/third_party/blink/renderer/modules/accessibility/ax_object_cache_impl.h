@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "ui/accessibility/ax_enums.mojom-blink.h"
 
 namespace blink {
 
@@ -55,40 +56,6 @@ class MODULES_EXPORT AXObjectCacheImpl
       public mojom::blink::PermissionObserver {
  public:
   static AXObjectCache* Create(Document&);
-
-  enum AXNotification {
-    kAXActiveDescendantChanged,
-    kAXAriaAttributeChanged,
-    kAXAutocorrectionOccured,
-    kAXBlur,
-    kAXCheckedStateChanged,
-    kAXChildrenChanged,
-    kAXClicked,
-    kAXDocumentSelectionChanged,
-    kAXDocumentTitleChanged,
-    kAXExpandedChanged,
-    kAXFocusedUIElementChanged,
-    kAXHide,
-    kAXHover,
-    kAXInvalidStatusChanged,
-    kAXLayoutComplete,
-    kAXLiveRegionChanged,
-    kAXLoadComplete,
-    kAXLocationChanged,
-    kAXMenuListItemSelected,
-    kAXMenuListItemUnselected,
-    kAXMenuListValueChanged,
-    kAXRowCollapsed,
-    kAXRowCountChanged,
-    kAXRowExpanded,
-    kAXScrollPositionChanged,
-    kAXScrolledToAnchor,
-    kAXSelectedChildrenChanged,
-    kAXSelectedTextChanged,
-    kAXShow,
-    kAXTextChanged,
-    kAXValueChanged
-  };
 
   explicit AXObjectCacheImpl(Document&);
   ~AXObjectCacheImpl() override;
@@ -161,6 +128,7 @@ class MODULES_EXPORT AXObjectCacheImpl
                              const LayoutRect&) override;
 
   void InlineTextBoxesUpdated(LineLayoutItem) override;
+  void ProcessUpdatesAfterLayout(Document&) override;
 
   // Called when the scroll offset changes.
   void HandleScrollPositionChanged(LocalFrameView*) override;
@@ -179,7 +147,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* Root();
 
   // used for objects without backing elements
-  AXObject* GetOrCreate(AccessibilityRole);
+  AXObject* GetOrCreate(ax::mojom::Role);
   AXObject* GetOrCreate(AccessibleNode*);
   AXObject* GetOrCreate(LayoutObject*) override;
   AXObject* GetOrCreate(const Node*);
@@ -219,9 +187,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   // values are cached as long as the modification count hasn't changed.
   int ModificationCount() const { return modification_count_; }
 
-  void PostNotification(LayoutObject*, AXNotification);
-  void PostNotification(Node*, AXNotification);
-  void PostNotification(AXObject*, AXNotification);
+  void PostNotification(LayoutObject*, ax::mojom::Event);
+  void PostNotification(Node*, ax::mojom::Event);
+  void PostNotification(AXObject*, ax::mojom::Event);
+  void MarkAXObjectDirty(AXObject*, bool subtree);
 
   //
   // Aria-owns support.
@@ -258,7 +227,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void RequestAOMEventListenerPermission();
 
  protected:
-  void PostPlatformNotification(AXObject*, AXNotification);
+  void PostPlatformNotification(AXObject*, ax::mojom::Event);
   void LabelChanged(Element*);
 
   AXObject* CreateFromRenderer(LayoutObject*);
@@ -286,7 +255,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 #endif
 
   TaskRunnerTimer<AXObjectCacheImpl> notification_post_timer_;
-  HeapVector<std::pair<Member<AXObject>, AXNotification>>
+  HeapVector<std::pair<Member<AXObject>, ax::mojom::Event>>
       notifications_to_post_;
   void NotificationPostTimerFired(TimerBase*);
 
@@ -325,6 +294,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   // permission.
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
+
+  HeapVector<Member<Node>> nodes_changed_during_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

@@ -79,8 +79,7 @@ class FakePasswordAutofillAgent
   }
 
   // autofill::mojom::PasswordAutofillAgent:
-  MOCK_METHOD2(FillPasswordForm,
-               void(int, const autofill::PasswordFormFillData&));
+  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD3(FillIntoFocusedField,
                void(bool, const base::string16&, FillIntoFocusedFieldCallback));
 
@@ -94,9 +93,6 @@ class FakePasswordAutofillAgent
 
   void AutofillUsernameAndPasswordDataReceived(
       const autofill::FormsPredictionsMap& predictions) override {}
-
-  void FindFocusedPasswordForm(
-      FindFocusedPasswordFormCallback callback) override {}
 
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;
@@ -231,7 +227,7 @@ TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
 
   PasswordFormFillData fill_data = GetTestPasswordFormFillData();
   fill_data.wait_for_username = true;
-  EXPECT_CALL(fake_agent_, FillPasswordForm(_, WerePasswordsCleared()));
+  EXPECT_CALL(fake_agent_, FillPasswordForm(WerePasswordsCleared()));
   driver->FillPasswordForm(fill_data);
   base::RunLoop().RunUntilIdle();
 }

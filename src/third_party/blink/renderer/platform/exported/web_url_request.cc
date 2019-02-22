@@ -45,8 +45,9 @@
 namespace blink {
 
 // The purpose of this struct is to permit allocating a ResourceRequest on the
-// heap, which is otherwise disallowed by DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
-// annotation on ResourceRequest.
+// heap, which is otherwise disallowed by DISALLOW_NEW annotation on
+// ResourceRequest.
+// TODO(keishi): Replace with GCWrapper<ResourceRequest>
 struct WebURLRequest::ResourceRequestContainer {
   ResourceRequestContainer() = default;
   explicit ResourceRequestContainer(const ResourceRequest& r)
@@ -199,7 +200,7 @@ bool WebURLRequest::ReportRawHeaders() const {
   return resource_request_->ReportRawHeaders();
 }
 
-WebURLRequest::RequestContext WebURLRequest::GetRequestContext() const {
+mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
@@ -223,7 +224,8 @@ void WebURLRequest::SetHasUserGesture(bool has_user_gesture) {
   resource_request_->SetHasUserGesture(has_user_gesture);
 }
 
-void WebURLRequest::SetRequestContext(RequestContext request_context) {
+void WebURLRequest::SetRequestContext(
+    mojom::RequestContextType request_context) {
   resource_request_->SetRequestContext(request_context);
 }
 
@@ -389,7 +391,7 @@ bool WebURLRequest::IsAdResource() const {
   return resource_request_->IsAdResource();
 }
 
-const WebContentSecurityPolicyList& WebURLRequest::GetNavigationCSP() const {
+const WebContentSecurityPolicyList& WebURLRequest::GetInitiatorCSP() const {
   return resource_request_->GetInitiatorCSP();
 }
 
@@ -405,17 +407,36 @@ bool WebURLRequest::SupportsAsyncRevalidation() const {
   return resource_request_->AllowsStaleResponse();
 }
 
+bool WebURLRequest::IsRevalidating() const {
+  return resource_request_->IsRevalidating();
+}
+
 const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
     const {
   return resource_request_->GetDevToolsToken();
+}
+
+const WebString WebURLRequest::GetOriginPolicy() const {
+  return resource_request_->GetOriginPolicy();
 }
 
 void WebURLRequest::SetOriginPolicy(const WebString& policy) {
   resource_request_->SetOriginPolicy(policy);
 }
 
-const WebString WebURLRequest::GetOriginPolicy() const {
-  return resource_request_->GetOriginPolicy();
+const WebString WebURLRequest::GetRequestedWith() const {
+  return resource_request_->GetRequestedWith();
+}
+
+void WebURLRequest::SetRequestedWith(const WebString& value) {
+  resource_request_->SetRequestedWith(value);
+}
+
+const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {
+  return resource_request_->GetFetchWindowId();
+}
+void WebURLRequest::SetFetchWindowId(const base::UnguessableToken& id) {
+  resource_request_->SetFetchWindowId(id);
 }
 
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {

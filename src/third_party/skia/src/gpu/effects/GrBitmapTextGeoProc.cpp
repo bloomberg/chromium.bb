@@ -8,6 +8,8 @@
 #include "GrBitmapTextGeoProc.h"
 
 #include "GrAtlasedShaderHelpers.h"
+#include "GrCaps.h"
+#include "GrShaderCaps.h"
 #include "GrTexture.h"
 #include "glsl/GrGLSLFragmentShaderBuilder.h"
 #include "glsl/GrGLSLGeometryProcessor.h"
@@ -119,7 +121,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GrBitmapTextGeoProc::GrBitmapTextGeoProc(GrColor color,
+GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
+                                         GrColor color,
                                          const sk_sp<GrTextureProxy>* proxies,
                                          int numActiveProxies,
                                          const GrSamplerState& params, GrMaskFormat format,
@@ -132,17 +135,19 @@ GrBitmapTextGeoProc::GrBitmapTextGeoProc(GrColor color,
     SkASSERT(numActiveProxies <= kMaxTextures);
 
     if (usesW) {
-        fInPosition = {"inPosition", kFloat3_GrVertexAttribType};
+        fInPosition = {"inPosition", kFloat3_GrVertexAttribType, kFloat3_GrSLType};
     } else {
-        fInPosition = {"inPosition", kFloat2_GrVertexAttribType};
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
     }
-    fInTextureCoords = {"inTextureCoords", kUShort2_GrVertexAttribType};
+
+    fInTextureCoords = {"inTextureCoords", kUShort2_GrVertexAttribType,
+                        caps.integerSupport() ? kUShort2_GrSLType : kFloat2_GrSLType };
     int cnt = 2;
 
     bool hasVertexColor = kA8_GrMaskFormat == fMaskFormat ||
                           kA565_GrMaskFormat == fMaskFormat;
     if (hasVertexColor) {
-        fInColor = {"inColor", kUByte4_norm_GrVertexAttribType};
+        fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
         ++cnt;
     }
 
@@ -227,8 +232,8 @@ sk_sp<GrGeometryProcessor> GrBitmapTextGeoProc::TestCreate(GrProcessorTestData* 
             break;
     }
 
-    return GrBitmapTextGeoProc::Make(GrRandomColor(d->fRandom), proxies, 1, samplerState,
-                                     format, GrTest::TestMatrix(d->fRandom),
+    return GrBitmapTextGeoProc::Make(*d->caps()->shaderCaps(), GrRandomColor(d->fRandom), proxies,
+                                     1, samplerState, format, GrTest::TestMatrix(d->fRandom),
                                      d->fRandom->nextBool());
 }
 #endif

@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/iovec.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
@@ -23,6 +22,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -255,8 +255,11 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnDecryptedPacket, void(EncryptionLevel level));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
+  MOCK_METHOD1(OnCryptoFrame, bool(const QuicCryptoFrame& frame));
   MOCK_METHOD2(OnAckFrameStart, bool(QuicPacketNumber, QuicTime::Delta));
-  MOCK_METHOD3(OnAckRange, bool(QuicPacketNumber, QuicPacketNumber, bool));
+  MOCK_METHOD2(OnAckRange, bool(QuicPacketNumber, QuicPacketNumber));
+  MOCK_METHOD2(OnAckTimestamp, bool(QuicPacketNumber, QuicTime));
+  MOCK_METHOD1(OnAckFrameEnd, bool(QuicPacketNumber));
   MOCK_METHOD1(OnStopWaitingFrame, bool(const QuicStopWaitingFrame& frame));
   MOCK_METHOD1(OnPaddingFrame, bool(const QuicPaddingFrame& frame));
   MOCK_METHOD1(OnPingFrame, bool(const QuicPingFrame& frame));
@@ -267,6 +270,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
                bool(const QuicApplicationCloseFrame& frame));
   MOCK_METHOD1(OnNewConnectionIdFrame,
                bool(const QuicNewConnectionIdFrame& frame));
+  MOCK_METHOD1(OnNewTokenFrame, bool(const QuicNewTokenFrame& frame));
   MOCK_METHOD1(OnStopSendingFrame, bool(const QuicStopSendingFrame& frame));
   MOCK_METHOD1(OnPathChallengeFrame, bool(const QuicPathChallengeFrame& frame));
   MOCK_METHOD1(OnPathResponseFrame, bool(const QuicPathResponseFrame& frame));
@@ -276,6 +280,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
                bool(const QuicStreamIdBlockedFrame& frame));
   MOCK_METHOD1(OnWindowUpdateFrame, bool(const QuicWindowUpdateFrame& frame));
   MOCK_METHOD1(OnBlockedFrame, bool(const QuicBlockedFrame& frame));
+  MOCK_METHOD1(OnMessageFrame, bool(const QuicMessageFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
   MOCK_CONST_METHOD1(IsValidStatelessResetToken, bool(QuicUint128));
   MOCK_METHOD1(OnAuthenticatedIetfStatelessResetPacket,
@@ -299,11 +304,13 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   void OnDecryptedPacket(EncryptionLevel level) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range) override;
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
+  bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
@@ -311,6 +318,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
   bool OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override;
   bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
   bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
@@ -319,6 +327,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override {}
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -338,6 +347,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnBlockedFrame, void(const QuicBlockedFrame& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
+  MOCK_METHOD1(OnMessageReceived, void(QuicStringPiece message));
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,
                     const QuicString& error_details,
@@ -481,6 +491,7 @@ class MockQuicConnection : public QuicConnection {
 
   MOCK_METHOD2(OnStreamReset, void(QuicStreamId, QuicRstStreamErrorCode));
   MOCK_METHOD1(SendControlFrame, bool(const QuicFrame& frame));
+  MOCK_METHOD2(SendMessage, MessageStatus(QuicMessageId, QuicStringPiece));
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   void QuicConnection_OnError(QuicFramer* framer) {
@@ -547,7 +558,8 @@ class MockQuicSession : public QuicSession {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream2, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream2, bool());
   MOCK_METHOD5(WritevData,
@@ -624,7 +636,8 @@ class MockQuicSpdySession : public QuicSpdySession {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
   MOCK_METHOD5(WritevData,
@@ -706,7 +719,8 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   ~TestQuicSpdyServerSession() override;
 
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
@@ -768,7 +782,8 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
 
   // TestQuicSpdyClientSession
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
 
@@ -802,7 +817,9 @@ class MockPacketWriter : public QuicPacketWriter {
                      QuicByteCount(const QuicSocketAddress& peer_address));
   MOCK_CONST_METHOD0(SupportsReleaseTime, bool());
   MOCK_CONST_METHOD0(IsBatchMode, bool());
-  MOCK_CONST_METHOD0(GetNextWriteLocation, char*());
+  MOCK_METHOD2(GetNextWriteLocation,
+               char*(const QuicIpAddress& self_address,
+                     const QuicSocketAddress& peer_address));
   MOCK_METHOD0(Flush, WriteResult());
 };
 
@@ -1007,7 +1024,7 @@ class MockSessionNotifier : public SessionNotifierInterface {
   MOCK_METHOD2(RetransmitFrames,
                void(const QuicFrames&, TransmissionType type));
   MOCK_CONST_METHOD1(IsFrameOutstanding, bool(const QuicFrame&));
-  MOCK_CONST_METHOD0(HasPendingCryptoData, bool());
+  MOCK_CONST_METHOD0(HasUnackedCryptoData, bool());
 };
 
 // Creates a client session for testing.

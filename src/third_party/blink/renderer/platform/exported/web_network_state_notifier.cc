@@ -51,6 +51,11 @@ void WebNetworkStateNotifier::SetNetworkQuality(WebEffectiveConnectionType type,
                                               downlink_throughput_kbps);
 }
 
+void WebNetworkStateNotifier::SetNetworkQualityWebHoldback(
+    WebEffectiveConnectionType type) {
+  GetNetworkStateNotifier().SetNetworkQualityWebHoldback(type);
+}
+
 void WebNetworkStateNotifier::SetSaveDataEnabled(bool enabled) {
   GetNetworkStateNotifier().SetSaveDataEnabled(enabled);
 }

@@ -51,14 +51,15 @@ namespace es2
 	GLenum ValidateSubImageParams(bool compressed, bool copy, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
 	                              GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, Texture *texture);
 	bool ValidateCopyFormats(GLenum textureFormat, GLenum colorbufferFormat);
-	bool IsValidReadPixelsFormatType(const Framebuffer *framebuffer, GLenum format, GLenum type);
-	bool IsDepthTexture(GLenum format);
-	bool IsStencilTexture(GLenum format);
+	bool ValidateReadPixelsFormatType(const Framebuffer *framebuffer, GLenum format, GLenum type);
+	bool IsDepthTexture(GLint format);
+	bool IsStencilTexture(GLint format);
 	bool IsCubemapTextureTarget(GLenum target);
 	int CubeFaceIndex(GLenum cubeTarget);
 	bool IsTextureTarget(GLenum target);
 	GLenum ValidateTextureFormatType(GLenum format, GLenum type, GLint internalformat, GLenum target);
 	size_t GetTypeSize(GLenum type);
+	sw::Format ConvertReadFormatType(GLenum format, GLenum type);
 
 	bool IsColorRenderable(GLint internalformat);
 	bool IsDepthRenderable(GLint internalformat);

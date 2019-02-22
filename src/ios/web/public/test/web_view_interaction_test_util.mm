@@ -127,7 +127,14 @@ CGRect GetBoundingRectOfElement(web::WebState* web_state,
 
   CGFloat scale = [[web_state->GetWebViewProxy() scrollViewProxy] zoomScale];
 
-  return CGRectMake(left * scale, top * scale, width * scale, height * scale);
+  CGRect elementFrame =
+      CGRectMake(left * scale, top * scale, width * scale, height * scale);
+  UIEdgeInsets contentInset =
+      web_state->GetWebViewProxy().scrollViewProxy.contentInset;
+  elementFrame =
+      CGRectOffset(elementFrame, contentInset.left, contentInset.top);
+
+  return elementFrame;
 }
 
 // Returns whether the Javascript action specified by |action| ran on the

@@ -71,7 +71,7 @@ function testMultiMetadataProviderBasic(callback) {
           ]);
         }
       },
-      // Mocking VolumeManagerWrapper.
+      // Mocking VolumeManager.
       volumeManager);
   reportPromise(model.get([
     new MetadataRequest(
@@ -130,7 +130,7 @@ function testMultiMetadataProviderExternalAndContentProperty(callback) {
           'filesystem://C': {imageWidth: 300}
         }
       },
-      // Mocking VolumeManagerWrapper.
+      // Mocking VolumeManager.
       volumeManager);
   reportPromise(model.get([
     new MetadataRequest(entryA, ['imageWidth']),

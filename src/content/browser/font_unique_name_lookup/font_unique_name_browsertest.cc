@@ -16,6 +16,7 @@
 namespace content {
 namespace {
 
+#if defined(OS_ANDROID)
 const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto",
                                           "Droid Sans Mono",
@@ -59,6 +60,45 @@ const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto Condensed",
                                           "Roboto Condensed",
                                           "Roboto"};
+#elif defined(OS_LINUX)
+const char* kExpectedFontFamilyNames[] = {"Ahem",
+                                          "Arimo",
+                                          "Arimo",
+                                          "Arimo",
+                                          "Arimo",
+                                          "Cousine",
+                                          "Cousine",
+                                          "Cousine",
+                                          "Cousine",
+                                          "DejaVu Sans",
+                                          "DejaVu Sans",
+                                          "Garuda",
+                                          "Gelasio",
+                                          "Gelasio",
+                                          "Gelasio",
+                                          "Gelasio",
+                                          "Lohit Devanagari",
+                                          "Lohit Gurmukhi",
+                                          "Lohit Tamil",
+                                          "Noto Sans Khmer",
+                                          "Tinos",
+                                          "Tinos",
+                                          "Tinos",
+                                          "Tinos",
+                                          "Mukti Narrow",
+                                          "Tinos"};
+#elif defined(OS_MACOSX)
+const char* kExpectedFontFamilyNames[] = {"American Typewriter",
+                                          "Arial Narrow",
+                                          "Baskerville",
+                                          "Devanagari MT",
+                                          "DIN Alternate",
+                                          "Gill Sans",
+                                          "Iowan Old Style",
+                                          "Malayalam Sangam MN",
+                                          "Hiragino Maru Gothic Pro",
+                                          "Hiragino Kaku Gothic StdN"};
+#endif
 
 }  // namespace
 
@@ -80,13 +120,9 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-#if defined(OS_ANDROID)
-#define MAYBE_ContentLocalFontsMatching ContentLocalFontsMatching
-#else
-#define MAYBE_ContentLocalFontsMatching DISABLED_ContentLocalFontsMatching
-#endif
-IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
-                       MAYBE_ContentLocalFontsMatching) {
+// TODO(drott): Enable this on all platforms.
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
   LoadAndWait("/font_src_local_matching.html");
   Attach();
 
@@ -125,16 +161,22 @@ IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
     params->SetInteger("nodeId", nodeId.GetInt());
     base::Value* font_info =
         SendCommand("CSS.getPlatformFontsForNode", std::move(params));
+    ASSERT_TRUE(font_info);
     ASSERT_TRUE(font_info->is_dict());
     base::Value* font_list = font_info->FindKey("fonts");
+    ASSERT_TRUE(font_list);
     ASSERT_TRUE(font_list->is_list());
-    base::Value& first_font_info = font_list->GetList()[0];
+    std::vector<base::Value>& font_info_list = font_list->GetList();
+    ASSERT_TRUE(font_info_list.size());
+    base::Value& first_font_info = font_info_list[0];
     ASSERT_TRUE(first_font_info.is_dict());
     base::Value* first_font_name = first_font_info.FindKey("familyName");
+    ASSERT_TRUE(first_font_name);
     ASSERT_TRUE(first_font_name->is_string());
     ASSERT_GT(first_font_name->GetString().size(), 0u);
     ASSERT_EQ(first_font_name->GetString(), kExpectedFontFamilyNames[i]);
   }
 }
+#endif
 
 }  // namespace content

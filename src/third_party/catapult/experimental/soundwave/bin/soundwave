@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import argparse
-import logging
 import oauth2client.tools
 import os
 import sys
@@ -17,36 +16,19 @@ PY_UTILS_PATH = os.path.normpath(os.path.join(
 sys.path.append(SOUNDWAVE_ROOT_PATH)
 sys.path.append(PY_UTILS_PATH)
 
+from common import utils
 from soundwave import commands
 
 # For help creating service account credentials see:
 # https://developers.google.com/api-client-library/python/auth/service-accounts#creatinganaccount
 
-DEFAULT_USER_CREDENTIALS_PATH = os.path.join(
-    SOUNDWAVE_ROOT_PATH, 'user-credentials.json')
 DEFAULT_DATABASE_PATH = os.path.join(
     SOUNDWAVE_ROOT_PATH, 'soundwave.db')
-
-
-def VerboseLevel(count):
-  if count == 0:
-    return logging.WARNING
-  elif count == 1:
-    return logging.INFO
-  else:
-    return logging.DEBUG
 
 
 def Main():
   # Args for API access.
   parser = argparse.ArgumentParser(parents=[oauth2client.tools.argparser])
-  parser.add_argument(
-      '--service-account-json',
-      help=('Path to json credentials file for a service account. Falls back '
-            'to user credentials if not provided.'))
-  parser.add_argument(
-      '--user-credentials-json', default=DEFAULT_USER_CREDENTIALS_PATH,
-      help='Path to file where to store user credentials')
   # Default args for all actions.
   parser.add_argument(
       '-s', '--sheriff', default='Chromium Perf Sheriff',
@@ -91,7 +73,7 @@ def Main():
 
   args = parser.parse_args()
 
-  logging.basicConfig(level=VerboseLevel(args.verbose))
+  utils.ConfigureLogging(args.verbose)
   if args.action == 'alerts':
     commands.FetchAlertsData(args)
   elif args.action == 'timeseries':

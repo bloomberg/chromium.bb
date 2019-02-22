@@ -49,7 +49,7 @@ namespace blink {
 
 namespace {
 
-const size_t kMaximumLineLength = 76;
+const wtf_size_t kMaximumLineLength = 76;
 
 const char kRFC2047EncodingPrefix[] = "=?utf-8?Q?";
 const size_t kRFC2047EncodingPrefixLength = 10;
@@ -122,7 +122,7 @@ class QuotedPrintableEncodeHeaderDelegate
 static String ConvertToPrintableCharacters(const String& text) {
   // If the text contains all printable ASCII characters, no need for encoding.
   bool found_non_printable_char = false;
-  for (size_t i = 0; i < text.length(); ++i) {
+  for (wtf_size_t i = 0; i < text.length(); ++i) {
     if (!IsASCIIPrintable(text[i])) {
       found_non_printable_char = true;
       break;
@@ -168,13 +168,13 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
 
   size_t resources_count = resources.size();
   // The first document suitable resource is the main resource of the top frame.
-  for (size_t i = 0; i < resources_count; ++i) {
+  for (ArchiveResource* resource : resources) {
     if (archive->MainResource()) {
-      archive->AddSubresource(resources[i].Get());
+      archive->AddSubresource(resource);
       continue;
     }
 
-    const AtomicString& mime_type = resources[i]->MimeType();
+    const AtomicString& mime_type = resource->MimeType();
     bool is_mime_type_suitable_for_main_resource =
         MIMETypeRegistry::IsSupportedNonImageMIMEType(mime_type);
     // Want to allow image-only MHTML archives, but retain behavior for other
@@ -190,9 +190,9 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
       is_mime_type_suitable_for_main_resource = false;
 
     if (is_mime_type_suitable_for_main_resource)
-      archive->SetMainResource(resources[i].Get());
+      archive->SetMainResource(resource);
     else
-      archive->AddSubresource(resources[i].Get());
+      archive->AddSubresource(resource);
   }
   if (archive->MainResource())
     return archive;
@@ -305,7 +305,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
 
   if (!strcmp(content_encoding, kBinary)) {
     for (const auto& span : *resource.data)
-      output_buffer.Append(span.data(), span.size());
+      output_buffer.Append(span.data(), SafeCast<wtf_size_t>(span.size()));
   } else {
     // FIXME: ideally we would encode the content as a stream without having to
     // fetch it all.
@@ -315,17 +315,18 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
     Vector<char> encoded_data;
     if (!strcmp(content_encoding, kQuotedPrintable)) {
       QuotedPrintableEncodeBodyDelegate body_delegate;
-      QuotedPrintableEncode(data, data_length, &body_delegate, encoded_data);
+      QuotedPrintableEncode(data, SafeCast<wtf_size_t>(data_length),
+                            &body_delegate, encoded_data);
       output_buffer.Append(encoded_data.data(), encoded_data.size());
     } else {
       DCHECK(!strcmp(content_encoding, kBase64));
       // We are not specifying insertLFs = true below as it would cut the lines
       // with LFs and MHTML requires CRLFs.
-      Base64Encode(data, data_length, encoded_data);
-      size_t index = 0;
-      size_t encoded_data_length = encoded_data.size();
+      Base64Encode(data, SafeCast<wtf_size_t>(data_length), encoded_data);
+      wtf_size_t index = 0;
+      wtf_size_t encoded_data_length = encoded_data.size();
       do {
-        size_t line_length =
+        wtf_size_t line_length =
             std::min(encoded_data_length - index, kMaximumLineLength);
         output_buffer.Append(encoded_data.data() + index, line_length);
         output_buffer.Append("\r\n", 2u);

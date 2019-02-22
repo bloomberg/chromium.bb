@@ -2,7 +2,7 @@
   "comments": [
     "Tests for 64-bit iOS devices."
   ],
-  "xcode build version": "9C40b",
+  "xcode build version": "10l232m",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,8 +21,7 @@
   "tests": [
     {
       "include": "perf_tests.json",
-      "device type": "iPhone 7",
-      "os": "11.0.3",
+      "os": "11.4.1",
       "dimensions": [
         {
           "os": "Mac",

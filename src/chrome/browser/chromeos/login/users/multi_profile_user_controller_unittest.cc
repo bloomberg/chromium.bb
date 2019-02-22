@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -415,7 +416,7 @@ TEST_F(MultiProfileUserControllerTest,
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(0), TestPolicyCertServiceFactory));
+          profile(0), base::BindRepeating(&TestPolicyCertServiceFactory)));
 
   MultiProfileUserController::UserAllowedInSessionReason reason;
   EXPECT_FALSE(controller()->IsUserAllowedInSession(
@@ -453,7 +454,7 @@ TEST_F(MultiProfileUserControllerTest,
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(0), TestPolicyCertServiceFactory));
+          profile(0), base::BindRepeating(&TestPolicyCertServiceFactory)));
   policy::PolicyCertService* service =
       policy::PolicyCertServiceFactory::GetForProfile(profile(0));
   ASSERT_TRUE(service);

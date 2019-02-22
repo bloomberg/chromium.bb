@@ -69,13 +69,14 @@ interface PresentationConnection {
   // Called when a message is sent by the target connection.
   // TODO(crbug.com/749327): Remove the return value since it is no longer
   // used.
-  OnMessage(PresentationConnectionMessage message) => (bool success);
+  OnMessage(PresentationConnectionMessage message);
 
-  // Called when target connection notifies connection state change.
+  // Called when target connection notifies connection state change. This should
+  // not be called with CLOSED. Instead, call DidClose().
   DidChangeState(PresentationConnectionState state);
 
   // Called when target connection calls close().
-  RequestClose();
+  DidClose(PresentationConnectionCloseReason reason);
 };
 
 // Holds result from successfully starting or reconnecting to a presentation

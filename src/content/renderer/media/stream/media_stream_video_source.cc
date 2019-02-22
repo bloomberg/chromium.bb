@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
@@ -86,8 +85,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
                                          base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   {
-    std::vector<MediaStreamVideoTrack*>::iterator it =
-        std::find(tracks_.begin(), tracks_.end(), video_track);
+    auto it = std::find(tracks_.begin(), tracks_.end(), video_track);
     DCHECK(it != tracks_.end());
     tracks_.erase(it);
   }
@@ -126,7 +124,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
       // stopping a source with StopSource() can have side effects that affect
       // sources created after that StopSource() call, but before the actual
       // stop takes place. See http://crbug.com/778039.
-      StopForRestart(base::BindOnce(&MediaStreamVideoSource::DidRemoveLastTrack,
+      StopForRestart(base::BindOnce(&MediaStreamVideoSource::DidStopSource,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(callback)));
       if (state_ == STOPPING_FOR_RESTART || state_ == STOPPED_FOR_RESTART) {
@@ -139,7 +137,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
         FinalizeStopSource();
       } else {
         // If the source does not support restarting, call StopSource()
-        // to ensure stop on this task. DidRemoveLastTrack() will be called on
+        // to ensure stop on this task. DidStopSource() will be called on
         // another task even if the source does not support restarting, as
         // StopForRestart() always posts a task to run its callback.
         StopSource();
@@ -152,11 +150,10 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
   }
 }
 
-void MediaStreamVideoSource::DidRemoveLastTrack(base::OnceClosure callback,
-                                                RestartResult result) {
+void MediaStreamVideoSource::DidStopSource(base::OnceClosure callback,
+                                           RestartResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
-  DCHECK(tracks_.empty());
   DCHECK_EQ(Owner().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateEnded);
   if (result == RestartResult::IS_STOPPED) {

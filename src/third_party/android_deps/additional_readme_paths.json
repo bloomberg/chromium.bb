@@ -46,14 +46,19 @@
     "libs/com_google_android_gms_play_services_vision",
     "libs/com_google_android_gms_play_services_vision_common",
     "libs/com_google_android_play_core",
+    "libs/com_google_code_findbugs_jsr305",
     "libs/com_google_dagger_dagger",
     "libs/com_google_dagger_dagger_compiler",
     "libs/com_google_dagger_dagger_producers",
     "libs/com_google_dagger_dagger_spi",
+    "libs/com_google_errorprone_error_prone_annotations",
     "libs/com_google_errorprone_javac_shaded",
     "libs/com_google_googlejavaformat_google_java_format",
     "libs/com_google_guava_guava",
+    "libs/com_google_j2objc_j2objc_annotations",
     "libs/com_squareup_javapoet",
     "libs/javax_annotation_jsr250_api",
-    "libs/javax_inject_javax_inject"
+    "libs/javax_inject_javax_inject",
+    "libs/org_checkerframework_checker_compat_qual",
+    "libs/org_codehaus_mojo_animal_sniffer_annotations"
 ]

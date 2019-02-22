@@ -29,26 +29,26 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedServiceFactory
   RefcountedKeyedServiceFactory(const char* name, DependencyManager* manager);
   ~RefcountedKeyedServiceFactory() override;
 
-  // A function that supplies the instance of a KeyedService for a given
+  // A callback that supplies the instance of a KeyedService for a given
   // |context|. This is used primarily for testing, where we want to feed
-  // a specific mock into the KeyedServiceFactory system.
-  typedef std::function<scoped_refptr<RefcountedKeyedService>(
-      base::SupportsUserData* context)>
-      TestingFactoryFunction;
+  // a specific test double into the KeyedServiceFactory system.
+  using TestingFactory =
+      base::RepeatingCallback<scoped_refptr<RefcountedKeyedService>(
+          base::SupportsUserData* context)>;
 
-  // Associates |factory| with |context| so that |factory| is used to create
-  // the KeyedService when requested.  |factory| can be NULL to signal that
-  // KeyedService should be NULL. Multiple calls to SetTestingFactory() are
-  // allowed; previous services will be shut down.
+  // Associates |testing_factory| with |context| so that |testing_factory| is
+  // used to create the KeyedService when requested.  |testing_factory| can be
+  // empty to signal that KeyedService should be null.  Multiple calls to
+  // SetTestingFactory() are allowed; previous services will be shut down.
   void SetTestingFactory(base::SupportsUserData* context,
-                         TestingFactoryFunction factory);
+                         TestingFactory testing_factory);
 
-  // Associates |factory| with |context| and immediately returns the created
-  // KeyedService. Since the factory will be used immediately, it may not be
-  // NULL.
+  // Associates |testing_factory| with |context| and immediately returns the
+  // created KeyedService. Since the factory will be used immediately, it may
+  // not be empty.
   scoped_refptr<RefcountedKeyedService> SetTestingFactoryAndUse(
       base::SupportsUserData* context,
-      TestingFactoryFunction factory);
+      TestingFactory testing_factory);
 
   // Common implementation that maps |context| to some service object. Deals
   // with incognito contexts per subclass instructions with GetContextToUse()
@@ -58,9 +58,14 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedServiceFactory
       base::SupportsUserData* context,
       bool create);
 
-  // Maps |context| to |service| with debug checks to prevent duplication.
-  void Associate(base::SupportsUserData* context,
-                 const scoped_refptr<RefcountedKeyedService>& service);
+  // Maps |context| to |service| with debug checks to prevent duplication and
+  // returns |service|.
+  scoped_refptr<RefcountedKeyedService> Associate(
+      base::SupportsUserData* context,
+      scoped_refptr<RefcountedKeyedService> service);
+
+  // Removes the mapping from |context| to a service.
+  void Disassociate(base::SupportsUserData* context);
 
   // Returns a new RefcountedKeyedService that will be associated with
   // |context|.
@@ -79,17 +84,12 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedServiceFactory
   void CreateServiceNow(base::SupportsUserData* context) override;
 
  private:
-  typedef std::map<base::SupportsUserData*,
-                   scoped_refptr<RefcountedKeyedService>> KeyedServices;
-  typedef std::map<base::SupportsUserData*, TestingFactoryFunction>
-      OverriddenTestingFunctions;
-
   // The mapping between a context and its refcounted service.
-  KeyedServices mapping_;
+  std::map<base::SupportsUserData*, scoped_refptr<RefcountedKeyedService>>
+      mapping_;
 
-  // The mapping between a context and its overridden
-  // TestingFactoryFunction.
-  OverriddenTestingFunctions testing_factories_;
+  // The mapping between a context and its overridden TestingFactory.
+  std::map<base::SupportsUserData*, TestingFactory> testing_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RefcountedKeyedServiceFactory);
 };

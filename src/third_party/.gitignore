@@ -8,6 +8,9 @@
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
+/android_build_tools/art/dexlayout
+/android_build_tools/art/lib/*.so
+/android_build_tools/art/profman
 /android_build_tools/bundletool/*.jar
 /android_ndk/
 /android_sdk/public/
@@ -41,6 +44,7 @@
 /cacheinvalidation/cacheinvalidation_unittests_run.xml
 /cardboard-java/src
 /catapult
+/cct_dynamic_module/src
 /ced/src
 /checkstyle/*.jar
 /chromeos_login_manager
@@ -58,7 +62,6 @@
 /devtools-node-modules
 /directxsdk
 /dom_distiller_js/dist
-/dynamicmodule
 /elfutils/src
 /errorprone/lib
 /espresso/lib/
@@ -110,7 +113,6 @@
 /jsr-305/src
 /junit/src
 /khronos_glcts
-/leakcanary/src
 /leveldatabase/src
 /leveldb
 /libaom/source/libaom
@@ -208,7 +210,6 @@
 /usrsctp/usrsctplib
 /v8-i18n
 /valgrind
-/vulkan-validation-layers/src
 /visualmetrics
 /wayland/src
 /wayland-protocols/src

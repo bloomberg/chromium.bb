@@ -100,19 +100,19 @@ enum FindMatchUpdateType {
 
 struct FindOptions {
  // Whether to search forward or backward within the page.
-  bool forward;
+  bool forward = true;
 
   // Whether search should be case-sensitive.
-  bool match_case;
+  bool match_case = false;
 
   // Whether this operation is the first request or a follow-up.
-  bool find_next;
+  bool find_next = false;
 
   // Force a re-search of the frame: typically used when forcing a re-search
   // after the frame navigates.
-  bool force;
+  bool force = false;
 
   // Signifies whether we should force text scoping to happen immediately
   // or not. Only used for testing purposes.
-  bool run_synchronously_for_testing;
+  bool run_synchronously_for_testing = false;
 };

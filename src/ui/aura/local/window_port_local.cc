@@ -9,6 +9,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/hit_test_data_provider_aura.h"
@@ -19,7 +20,9 @@
 #include "ui/display/screen.h"
 
 namespace aura {
+
 namespace {
+static const char* kExo = "Exo";
 
 class ScopedCursorHider {
  public:
@@ -63,7 +66,9 @@ class ScopedCursorHider {
 }  // namespace
 
 WindowPortLocal::WindowPortLocal(Window* window)
-    : window_(window), weak_factory_(this) {}
+    : WindowPort(WindowPort::Type::kLocal),
+      window_(window),
+      weak_factory_(this) {}
 
 WindowPortLocal::~WindowPortLocal() {
   if (frame_sink_id_.is_valid()) {
@@ -156,10 +161,16 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
+  params.client_name = kExo;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
+    bool root_accepts_events =
+        (window_->event_targeting_policy() ==
+         ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+        (window_->event_targeting_policy() ==
+         ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */);
+            true /* should_ask_for_child_region */, root_accepts_events);
   } else {
     params.hit_test_data_provider =
         std::make_unique<HitTestDataProviderAura>(window_);

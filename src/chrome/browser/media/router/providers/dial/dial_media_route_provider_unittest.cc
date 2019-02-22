@@ -7,11 +7,11 @@
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -196,8 +196,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
         })";
     EXPECT_CALL(*mock_sink_service_.app_discovery_service(),
                 DoFetchDialAppInfo(_, _));
-    provider_->SendRouteMessage(route_id, kClientConnectMessage,
-                                base::DoNothing());
+    provider_->SendRouteMessage(route_id, kClientConnectMessage);
     base::RunLoop().RunUntilIdle();
     auto app_info_cb =
         mock_sink_service_.app_discovery_service()->PassCallback();
@@ -252,10 +251,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     activity_manager_->SetExpectedRequest(app_launch_url, "POST",
                                           "pairingCode=foo");
     provider_->SendRouteMessage(
-        route_id,
-        base::StringPrintf(kCustomDialLaunchMessage,
-                           custom_dial_launch_seq_number_),
-        base::DoNothing());
+        route_id, base::StringPrintf(kCustomDialLaunchMessage,
+                                     custom_dial_launch_seq_number_));
     base::RunLoop().RunUntilIdle();
 
     // Simulate a successful launch response.
@@ -325,8 +322,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
                                 network::ResourceResponseHead(), "",
                                 network::URLLoaderCompletionStatus());
 
-    provider_->SendRouteMessage(route_id, kStopSessionMessage,
-                                base::DoNothing());
+    provider_->SendRouteMessage(route_id, kStopSessionMessage);
     ExpectTerminateRouteCommon();
   }
 
@@ -379,7 +375,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
                     RouteRequestResult::ResultCode));
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 

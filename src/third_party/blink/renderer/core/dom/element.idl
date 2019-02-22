@@ -48,8 +48,8 @@ interface Element : Node {
     [Affects=Nothing] sequence<DOMString> getAttributeNames();
     [Affects=Nothing] DOMString? getAttribute(DOMString name);
     [Affects=Nothing] DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
-    [RaisesException, CEReactions, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString name, DOMString value);
+    [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, TrustedString value);
+    [RaisesException, CEReactions, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString name, TrustedString value);
     [CEReactions, CustomElementCallbacks] void removeAttribute(DOMString name);
     [CEReactions, CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
     [Affects=Nothing] boolean hasAttribute(DOMString name);
@@ -135,17 +135,16 @@ interface Element : Node {
     // Accessibility Object Model
     [RuntimeEnabled=AccessibilityObjectModel] readonly attribute AccessibleNode? accessibleNode;
 
-    [RuntimeEnabled=InvisibleDOM, CEReactions, CustomElementCallbacks] attribute DOMString invisible;
+    [RuntimeEnabled=InvisibleDOM, CEReactions, CustomElementCallbacks, Reflect, ReflectOnly=("static","invisible"), ReflectEmpty="invisible", ReflectInvalid="invisible"] attribute DOMString invisible;
 
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
-    attribute EventHandler oncopy;
-    attribute EventHandler oncut;
-    attribute EventHandler onpaste;
     attribute EventHandler onsearch;
-    attribute EventHandler onselectstart;
+
+    // Display locking.
+    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise acquireDisplayLock(DisplayLockCallback callback);
 };
 
 Element implements ParentNode;

@@ -102,8 +102,7 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
       nullptr,  /* surface */
       !window_, /* is_offscreen */
       window_, attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
-      image_factory_, nullptr /* gpu_channel_manager_delegate */,
-      base::ThreadTaskRunnerHandle::Get());
+      image_factory_, base::ThreadTaskRunnerHandle::Get());
 
   if (bind_result_ != gpu::ContextResult::kSuccess)
     return bind_result_;
@@ -167,6 +166,10 @@ class GrContext* InProcessContextProvider::GrContext() {
   cache_controller_->SetGrContext(gr_context_->get());
 
   return gr_context_->get();
+}
+
+gpu::SharedImageInterface* InProcessContextProvider::SharedImageInterface() {
+  return context_->GetSharedImageInterface();
 }
 
 viz::ContextCacheController* InProcessContextProvider::CacheController() {

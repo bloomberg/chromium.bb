@@ -177,55 +177,59 @@ TEST(HttpAuthCacheTest, Basic) {
   EXPECT_EQ(ASCIIToUTF16("realm2-password"), entry->credentials().password());
 
   // Check that subpaths are recognized.
-  HttpAuthCache::Entry* realm2_entry = cache.Lookup(
-      origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC);
-  HttpAuthCache::Entry* realm4_entry = cache.Lookup(
-      origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC);
-  EXPECT_FALSE(NULL == realm2_entry);
-  EXPECT_FALSE(NULL == realm4_entry);
+  HttpAuthCache::Entry* p_realm2_entry =
+      cache.Lookup(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC);
+  HttpAuthCache::Entry* p_realm4_entry =
+      cache.Lookup(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC);
+  EXPECT_FALSE(NULL == p_realm2_entry);
+  EXPECT_FALSE(NULL == p_realm4_entry);
+  HttpAuthCache::Entry realm2_entry = *p_realm2_entry;
+  HttpAuthCache::Entry realm4_entry = *p_realm4_entry;
   // Realm4 applies to '/' and Realm2 applies to '/foo2/'.
   // LookupByPath() should return the closest enclosing path.
   // Positive tests:
   entry = cache.LookupByPath(origin, "/foo2/index.html");
-  EXPECT_TRUE(realm2_entry == entry);
+  EXPECT_TRUE(realm2_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/foo2/foobar.html");
-  EXPECT_TRUE(realm2_entry == entry);
+  EXPECT_TRUE(realm2_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/foo2/bar/index.html");
-  EXPECT_TRUE(realm2_entry == entry);
+  EXPECT_TRUE(realm2_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/foo2/");
-  EXPECT_TRUE(realm2_entry == entry);
+  EXPECT_TRUE(realm2_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/foo2");
-  EXPECT_TRUE(realm4_entry == entry);
+  EXPECT_TRUE(realm4_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/");
-  EXPECT_TRUE(realm4_entry == entry);
+  EXPECT_TRUE(realm4_entry.IsEqualForTesting(*entry));
 
   // Negative tests:
   entry = cache.LookupByPath(origin, "/foo3/index.html");
-  EXPECT_FALSE(realm2_entry == entry);
+  EXPECT_FALSE(realm2_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, std::string());
-  EXPECT_FALSE(realm2_entry == entry);
+  EXPECT_FALSE(realm2_entry.IsEqualForTesting(*entry));
 
   // Confirm we find the same realm, different auth scheme by path lookup
-  HttpAuthCache::Entry* realm3_digest_entry =
+  HttpAuthCache::Entry* p_realm3_digest_entry =
       cache.Lookup(origin, kRealm3, HttpAuth::AUTH_SCHEME_DIGEST);
-  EXPECT_FALSE(NULL == realm3_digest_entry);
+  EXPECT_FALSE(NULL == p_realm3_digest_entry);
+  HttpAuthCache::Entry realm3_digest_entry = *p_realm3_digest_entry;
   entry = cache.LookupByPath(origin, "/baz/index.html");
-  EXPECT_TRUE(realm3_digest_entry == entry);
+  EXPECT_TRUE(realm3_digest_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/baz/");
-  EXPECT_TRUE(realm3_digest_entry == entry);
+  EXPECT_TRUE(realm3_digest_entry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/baz");
-  EXPECT_FALSE(realm3_digest_entry == entry);
+  EXPECT_FALSE(realm3_digest_entry.IsEqualForTesting(*entry));
 
   // Confirm we find the same realm, different auth scheme by path lookup
-  HttpAuthCache::Entry* realm3DigestEntry =
+  HttpAuthCache::Entry* p_realm3DigestEntry =
       cache.Lookup(origin, kRealm3, HttpAuth::AUTH_SCHEME_DIGEST);
-  EXPECT_FALSE(NULL == realm3DigestEntry);
+  EXPECT_FALSE(NULL == p_realm3DigestEntry);
+  HttpAuthCache::Entry realm3DigestEntry = *p_realm3DigestEntry;
   entry = cache.LookupByPath(origin, "/baz/index.html");
-  EXPECT_TRUE(realm3DigestEntry == entry);
+  EXPECT_TRUE(realm3DigestEntry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/baz/");
-  EXPECT_TRUE(realm3DigestEntry == entry);
+  EXPECT_TRUE(realm3DigestEntry.IsEqualForTesting(*entry));
   entry = cache.LookupByPath(origin, "/baz");
-  EXPECT_FALSE(realm3DigestEntry == entry);
+  EXPECT_FALSE(realm3DigestEntry.IsEqualForTesting(*entry));
 
   // Lookup using empty path (may be used for proxy).
   entry = cache.LookupByPath(origin, std::string());

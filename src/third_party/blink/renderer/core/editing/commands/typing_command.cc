@@ -119,8 +119,8 @@ PlainTextRange GetSelectionOffsets(const SelectionInDOMTree& selection) {
   return PlainTextRange::Create(*editable, range);
 }
 
-SelectionInDOMTree CreateSelection(const size_t start,
-                                   const size_t end,
+SelectionInDOMTree CreateSelection(const wtf_size_t start,
+                                   const wtf_size_t end,
                                    Element* element) {
   const EphemeralRange& start_range =
       PlainTextRange(0, static_cast<int>(start)).CreateRange(*element);
@@ -307,8 +307,8 @@ void TypingCommand::InsertText(Document& document,
 
 void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
     LocalFrame* frame,
-    const size_t selection_start,
-    const size_t text_length,
+    const wtf_size_t selection_start,
+    const wtf_size_t text_length,
     EditingState* editing_state) {
   if (!IsIncrementalInsertion())
     return;
@@ -330,7 +330,7 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
     return;
   }
 
-  const size_t new_end = selection_start + text_length;
+  const wtf_size_t new_end = selection_start + text_length;
   const SelectionInDOMTree& selection =
       CreateSelection(new_end, new_end, element);
   SetEndingSelection(SelectionForUndoStep::From(selection));
@@ -388,7 +388,7 @@ void TypingCommand::InsertText(
       GetSelectionOffsets(selection_for_insertion.AsSelection());
   if (selection_offsets.IsNull())
     return;
-  const size_t selection_start = selection_offsets.Start();
+  const wtf_size_t selection_start = selection_offsets.Start();
 
   // Set the starting and ending selection appropriately if we are using a
   // selection that is different from the current selection.  In the future, we
@@ -552,7 +552,7 @@ InputEvent::InputType TypingCommand::GetInputType() const {
     return input_type_;
 
   switch (command_type_) {
-    // TODO(chongz): |DeleteSelection| is used by IME but we don't have
+    // TODO(editing-dev): |DeleteSelection| is used by IME but we don't have
     // direction info.
     case kDeleteSelection:
       return InputType::kDeleteContentBackward;
@@ -595,12 +595,12 @@ void TypingCommand::InsertTextInternal(const String& text,
     InsertTextRunWithoutNewlines(text, editing_state);
     return;
   }
-  size_t selection_start = selection_start_;
+  wtf_size_t selection_start = selection_start_;
   unsigned offset = 0;
-  size_t newline;
+  wtf_size_t newline;
   while ((newline = text.find('\n', offset)) != kNotFound) {
     if (newline > offset) {
-      const size_t insertion_length = newline - offset;
+      const wtf_size_t insertion_length = newline - offset;
       InsertTextRunWithoutNewlines(text.Substring(offset, insertion_length),
                                    editing_state);
       if (editing_state->IsAborted())
@@ -621,7 +621,7 @@ void TypingCommand::InsertTextInternal(const String& text,
   }
 
   if (text.length() > offset) {
-    const size_t insertion_length = text.length() - offset;
+    const wtf_size_t insertion_length = text.length() - offset;
     InsertTextRunWithoutNewlines(text.Substring(offset, insertion_length),
                                  editing_state);
     if (editing_state->IsAborted())

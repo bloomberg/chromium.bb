@@ -131,12 +131,12 @@ sk_sp<GrSurface> GrSurfaceProxy::createSurfaceImpl(GrResourceProvider* resourceP
     desc.fConfig = fConfig;
     desc.fSampleCnt = sampleCnt;
 
-    GrResourceProvider::Flags resourceProviderFlags = GrResourceProvider::kNone_Flag;
-    if (fSurfaceFlags & GrInternalSurfaceFlags::kNoPendingIO ||
+    GrResourceProvider::Flags resourceProviderFlags = GrResourceProvider::Flags::kNone;
+    if ((fSurfaceFlags & GrInternalSurfaceFlags::kNoPendingIO) ||
         resourceProvider->explicitlyAllocateGPUResources()) {
         // The explicit resource allocator requires that any resources it pulls out of the
         // cache have no pending IO.
-        resourceProviderFlags = GrResourceProvider::kNoPendingIO_Flag;
+        resourceProviderFlags = GrResourceProvider::Flags::kNoPendingIO;
     }
 
     sk_sp<GrSurface> surface;
@@ -392,7 +392,16 @@ void GrSurfaceProxyPriv::exactify() {
 bool GrSurfaceProxyPriv::doLazyInstantiation(GrResourceProvider* resourceProvider) {
     SkASSERT(GrSurfaceProxy::LazyState::kNot != fProxy->lazyInstantiationState());
 
-    sk_sp<GrSurface> surface = fProxy->fLazyInstantiateCallback(resourceProvider);
+    sk_sp<GrSurface> surface;
+    if (fProxy->asTextureProxy() && fProxy->asTextureProxy()->getUniqueKey().isValid()) {
+        // First try to reattach to a cached version if the proxy is uniquely keyed
+        surface = resourceProvider->findByUniqueKey<GrSurface>(
+                                                        fProxy->asTextureProxy()->getUniqueKey());
+    }
+
+    if (!surface) {
+        surface = fProxy->fLazyInstantiateCallback(resourceProvider);
+    }
     if (GrSurfaceProxy::LazyInstantiationType::kSingleUse == fProxy->fLazyInstantiationType) {
         fProxy->fLazyInstantiateCallback(nullptr);
         fProxy->fLazyInstantiateCallback = nullptr;
@@ -418,6 +427,19 @@ bool GrSurfaceProxyPriv::doLazyInstantiation(GrResourceProvider* resourceProvide
 
     if (!GrSurfaceProxyPriv::AttachStencilIfNeeded(resourceProvider, surface.get(), needsStencil)) {
         return false;
+    }
+
+    if (GrTextureProxy* texProxy = fProxy->asTextureProxy()) {
+        const GrUniqueKey& key = texProxy->getUniqueKey();
+        if (key.isValid()) {
+            if (!surface->asTexture()->getUniqueKey().isValid()) {
+                // If 'surface' is newly created, attach the unique key
+                resourceProvider->assignUniqueKeyToResource(key, surface.get());
+            } else {
+                // otherwise we had better have reattached to a cached version
+                SkASSERT(surface->asTexture()->getUniqueKey() == key);
+            }
+        }
     }
 
     this->assign(std::move(surface));

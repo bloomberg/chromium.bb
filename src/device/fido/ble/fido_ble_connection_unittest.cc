@@ -209,6 +209,15 @@ class FidoBleConnectionTest : public ::testing::Test {
     adapter_->NotifyGattServicesDiscovered(fido_device_);
   }
 
+  void ChangeDeviceAddressAndNotifyObservers(std::string new_address) {
+    auto old_address = fido_device_->GetAddress();
+    EXPECT_CALL(*fido_device_, GetAddress)
+        .WillRepeatedly(::testing::Return(new_address));
+    for (auto& observer : adapter_->GetObservers())
+      observer.DeviceAddressChanged(adapter_.get(), fido_device_,
+                                    std::move(old_address));
+  }
+
   void SetNextReadControlPointLengthReponse(bool success,
                                             const std::vector<uint8_t>& value) {
     EXPECT_CALL(*fido_control_point_length_, ReadRemoteCharacteristic(_, _))
@@ -733,6 +742,17 @@ TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   connection.WriteControlPoint({}, write_callback.callback());
   write_callback.WaitForCallback();
   EXPECT_FALSE(write_callback.value());
+}
+
+TEST_F(FidoBleConnectionTest, ConnectionAddressChangeWhenDeviceAddressChanges) {
+  const std::string device_address = BluetoothTest::kTestDeviceAddress1;
+  static constexpr char kTestDeviceAddress2[] = "test_device_address_2";
+
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  ChangeDeviceAddressAndNotifyObservers(kTestDeviceAddress2);
+  EXPECT_EQ(kTestDeviceAddress2, connection.address());
 }
 
 }  // namespace device

@@ -13,8 +13,13 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 
-namespace cronet {
+extern "C" typedef struct stream_engine stream_engine;
 
+namespace net {
+class CertVerifier;
+}
+
+namespace cronet {
 class CronetURLRequestContext;
 
 // Implementation of Cronet_Engine that uses CronetURLRequestContext.
@@ -35,11 +40,20 @@ class Cronet_EngineImpl : public Cronet_Engine {
   // is true.
   Cronet_RESULT CheckResult(Cronet_RESULT result);
 
+  // Set Mock CertVerifier for testing. Must be called before StartWithParams.
+  void SetMockCertVerifierForTesting(
+      std::unique_ptr<net::CertVerifier> mock_cert_verifier);
+
+  // Get stream engine for GRPC Bidirectional Stream support. The returned
+  // stream_engine is owned by |this| and is only valid until |this| shutdown.
+  stream_engine* GetBidirectionalStreamEngine();
+
   CronetURLRequestContext* cronet_url_request_context() const {
     return context_.get();
   }
 
  private:
+  class StreamEngineImpl;
   class Callback;
 
   // Enable runtime CHECK of the result.
@@ -59,6 +73,12 @@ class Cronet_EngineImpl : public Cronet_Engine {
 
   // Storage path used by this engine.
   std::string in_use_storage_path_;
+
+  // Stream engine for GRPC Bidirectional Stream support.
+  std::unique_ptr<StreamEngineImpl> stream_engine_;
+
+  // Mock CertVerifier for testing. Only valid until StartWithParams.
+  std::unique_ptr<net::CertVerifier> mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineImpl);
 };

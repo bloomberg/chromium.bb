@@ -39,6 +39,8 @@ const char kHistogramFromGWSParseDuration[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.ParseDuration";
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
+const char kHistogramFromGWSFirstInputDelay[] =
+    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay";
 
 const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.NewNavigation."
@@ -410,6 +412,12 @@ void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
   logger_.OnFirstContentfulPaintInPage(timing, extra_info);
 }
 
+void FromGWSPageLoadMetricsObserver::OnFirstInputInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFirstInputInPage(timing, extra_info);
+}
+
 void FromGWSPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -613,6 +621,16 @@ void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaintInPage(
         internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnFirstInputInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(
+          timing.interactive_timing->first_input_delay, extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstInputDelay,
+                        timing.interactive_timing->first_input_delay.value());
   }
 }
 

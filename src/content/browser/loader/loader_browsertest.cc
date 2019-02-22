@@ -16,11 +16,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -67,11 +69,11 @@ class LoaderBrowserTest : public ContentBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
@@ -286,11 +288,11 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
     return nullptr;
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     crash_network_service_callback);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             crash_network_service_callback);
   } else {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
                        base::Unretained(ResourceDispatcherHostImpl::Get()),
                        child_id));
@@ -835,23 +837,23 @@ class PreviewsStateBrowserTest : public ContentBrowserTest {
         embedded_test_server()->GetURL("/image.jpg"),
         embedded_test_server()->GetURL("/title1.html")));
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &PreviewsStateResourceDispatcherHostDelegate::SetDelegate,
             base::Unretained(delegate_.get())));
   }
 
   void Reset(PreviewsState previews_state) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PreviewsStateResourceDispatcherHostDelegate::Reset,
                        base::Unretained(delegate_.get()), previews_state));
   }
 
   void CheckResourcesRequested(bool should_get_previews_state_called) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PreviewsStateResourceDispatcherHostDelegate::
                            CheckResourcesRequested,
                        base::Unretained(delegate_.get()),
@@ -933,8 +935,6 @@ struct RequestData {
         load_flags(load_flags),
         referrer(referrer) {}
 };
-
-const GURL kURLWithUniqueOrigin("data:,");
 
 }  // namespace
 
@@ -1092,7 +1092,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   // document in which they're embedded.
   for (size_t i = 2; i < requests.size(); i++) {
     SCOPED_TRACE(requests[i].url);
-    EXPECT_EQ(kURLWithUniqueOrigin, requests[i].first_party);
+    EXPECT_EQ(GURL::EmptyGURL(), requests[i].first_party);
     EXPECT_EQ(nested_origin, requests[i].initiator);
   }
 }
@@ -1259,7 +1259,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
   // Cross-origin subresource requests have a unique first-party, and an
   // initiator that matches the document in which they're embedded.
   EXPECT_EQ(nested_js_url, requests[3].url);
-  EXPECT_EQ(kURLWithUniqueOrigin, requests[3].first_party);
+  EXPECT_EQ(GURL::EmptyGURL(), requests[3].first_party);
   EXPECT_EQ(nested_origin, requests[3].initiator);
 }
 

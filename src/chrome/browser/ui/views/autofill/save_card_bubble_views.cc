@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -199,15 +200,17 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   box_layout->SetFlexForView(spacer, /*flex=*/1);
 
   description_view->AddChildView(new views::Label(
-      card.AbbreviatedExpirationDateForDisplay(), CONTEXT_BODY_TEXT_LARGE,
-      ChromeTextStyle::STYLE_SECONDARY));
+      card.AbbreviatedExpirationDateForDisplay(
+          !features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()),
+      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY));
 
   return view;
 }
 
-void SaveCardBubbleViews::SetFootnoteViewForTesting(
-    views::View* footnote_view) {
+void SaveCardBubbleViews::InitFootnoteView(views::View* footnote_view) {
+  DCHECK(!footnote_view_);
   footnote_view_ = footnote_view;
+  footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
 }
 
 void SaveCardBubbleViews::AssignIdsToDialogClientView() {

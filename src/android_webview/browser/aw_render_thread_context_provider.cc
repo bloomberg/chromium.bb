@@ -68,7 +68,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_ = std::make_unique<gpu::GLInProcessContext>();
   context_->Initialize(std::move(task_executor), surface,
                        surface->IsOffscreen(), gpu::kNullSurfaceHandle,
-                       attributes, limits, nullptr, nullptr, nullptr, nullptr);
+                       attributes, limits, nullptr, nullptr, nullptr);
 
   context_->GetImplementation()->SetLostContextCallback(base::BindOnce(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
@@ -147,6 +147,11 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
   gr_context_ = GrContext::MakeGL(std::move(interface));
   cache_controller_->SetGrContext(gr_context_.get());
   return gr_context_.get();
+}
+
+gpu::SharedImageInterface*
+AwRenderThreadContextProvider::SharedImageInterface() {
+  return context_->GetSharedImageInterface();
 }
 
 viz::ContextCacheController* AwRenderThreadContextProvider::CacheController() {

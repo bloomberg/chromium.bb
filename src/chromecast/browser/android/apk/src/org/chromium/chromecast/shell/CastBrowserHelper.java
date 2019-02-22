@@ -23,7 +23,7 @@ public class CastBrowserHelper {
     private static final String TAG = "CastBrowserHelper";
     private static final String COMMAND_LINE_FILE = "castshell-command-line";
 
-    private static boolean sIsBrowserInitialized = false;
+    private static boolean sIsBrowserInitialized;
 
     /**
      * Starts the browser process synchronously, returning success or failure. If the browser has

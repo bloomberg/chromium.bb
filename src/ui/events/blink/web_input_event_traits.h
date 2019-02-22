@@ -10,7 +10,6 @@
 
 namespace blink {
 class WebGestureEvent;
-class WebMouseWheelEvent;
 }
 
 namespace ui {
@@ -29,8 +28,6 @@ class WebInputEventTraits {
   static size_t GetSize(blink::WebInputEvent::Type type);
   static WebScopedInputEvent Clone(const blink::WebInputEvent& event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event);
-
-  static bool CanCauseScroll(const blink::WebMouseWheelEvent& event);
 
   // Return uniqueTouchEventId for WebTouchEvent, otherwise return 0.
   static uint32_t GetUniqueTouchEventId(const blink::WebInputEvent& event);

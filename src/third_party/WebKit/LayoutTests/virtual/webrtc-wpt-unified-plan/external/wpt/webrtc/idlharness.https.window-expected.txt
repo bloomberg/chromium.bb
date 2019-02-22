@@ -131,8 +131,8 @@ PASS RTCSessionDescription interface object name
 PASS RTCSessionDescription interface: existence and properties of interface prototype object
 PASS RTCSessionDescription interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCSessionDescription interface: existence and properties of interface prototype object's @@unscopables property
-FAIL RTCSessionDescription interface: attribute type assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
-FAIL RTCSessionDescription interface: attribute sdp assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
+FAIL RTCSessionDescription interface: attribute type assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function set type() { [native code] }"
+FAIL RTCSessionDescription interface: attribute sdp assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function set sdp() { [native code] }"
 PASS RTCSessionDescription interface: operation toJSON()
 PASS RTCSessionDescription must be primary interface of new RTCSessionDescription({ type: 'offer' })
 PASS Stringification of new RTCSessionDescription({ type: 'offer' })
@@ -146,13 +146,13 @@ PASS RTCIceCandidate interface object name
 PASS RTCIceCandidate interface: existence and properties of interface prototype object
 PASS RTCIceCandidate interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCIceCandidate interface: existence and properties of interface prototype object's @@unscopables property
-FAIL RTCIceCandidate interface: attribute candidate assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
-FAIL RTCIceCandidate interface: attribute sdpMid assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
-FAIL RTCIceCandidate interface: attribute sdpMLineIndex assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
+FAIL RTCIceCandidate interface: attribute candidate assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function set candidate() { [native code] }"
+FAIL RTCIceCandidate interface: attribute sdpMid assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function set sdpMid() { [native code] }"
+FAIL RTCIceCandidate interface: attribute sdpMLineIndex assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function set sdpMLineIndex() { [native code] }"
 FAIL RTCIceCandidate interface: attribute foundation assert_true: The prototype object must have a property "foundation" expected true got false
 FAIL RTCIceCandidate interface: attribute component assert_true: The prototype object must have a property "component" expected true got false
 FAIL RTCIceCandidate interface: attribute priority assert_true: The prototype object must have a property "priority" expected true got false
-FAIL RTCIceCandidate interface: attribute ip assert_true: The prototype object must have a property "ip" expected true got false
+FAIL RTCIceCandidate interface: attribute address assert_true: The prototype object must have a property "address" expected true got false
 FAIL RTCIceCandidate interface: attribute protocol assert_true: The prototype object must have a property "protocol" expected true got false
 FAIL RTCIceCandidate interface: attribute port assert_true: The prototype object must have a property "port" expected true got false
 FAIL RTCIceCandidate interface: attribute type assert_true: The prototype object must have a property "type" expected true got false
@@ -169,7 +169,7 @@ FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit 
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "foundation" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "component" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "priority" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
-FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "ip" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
+FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "address" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "protocol" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "port" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "type" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
@@ -338,7 +338,7 @@ PASS RTCIceTransport interface: operation getLocalParameters()
 PASS RTCIceTransport interface: operation getRemoteParameters()
 PASS RTCIceTransport interface: attribute onstatechange
 PASS RTCIceTransport interface: attribute ongatheringstatechange
-FAIL RTCIceTransport interface: attribute onselectedcandidatepairchange assert_true: The prototype object must have a property "onselectedcandidatepairchange" expected true got false
+PASS RTCIceTransport interface: attribute onselectedcandidatepairchange
 FAIL RTCIceTransport must be primary interface of idlTestObjects.iceTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of idlTestObjects.iceTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit property "role" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

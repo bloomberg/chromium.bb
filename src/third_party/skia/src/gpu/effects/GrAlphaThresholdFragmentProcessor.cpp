@@ -48,7 +48,7 @@ public:
                 "color.w;\n        color.xyz *= scale;\n        color.w = %s;\n    }\n} else if "
                 "(color.w < %s) {\n    half scale = float(%s) / max(0.001, float(color.w));\n    "
                 "color.xyz *= scale;\n    color.w = %s;\n}\n%s = color;\n",
-                args.fInputColor ? args.fInputColor : "half4(1)",
+                args.fInputColor,
                 fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
                 sk_TransformedCoords2D_0.c_str(),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
@@ -66,8 +66,8 @@ private:
         const GrAlphaThresholdFragmentProcessor& _outer =
                 _proc.cast<GrAlphaThresholdFragmentProcessor>();
         {
-            pdman.set1f(fInnerThresholdVar, _outer.innerThreshold());
-            pdman.set1f(fOuterThresholdVar, _outer.outerThreshold());
+            pdman.set1f(fInnerThresholdVar, (_outer.innerThreshold()));
+            pdman.set1f(fOuterThresholdVar, (_outer.outerThreshold()));
         }
     }
     UniformHandle fInnerThresholdVar;

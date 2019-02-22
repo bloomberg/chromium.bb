@@ -348,7 +348,7 @@ GrSemaphoresSubmitted GrGpu::finishFlush(int numSemaphores,
             this->insertSemaphore(semaphore, false);
 
             if (!backendSemaphores[i].isInitialized()) {
-                semaphore->setBackendSemaphore(&backendSemaphores[i]);
+                backendSemaphores[i] = semaphore->backendSemaphore();
             }
         }
     }
@@ -357,6 +357,7 @@ GrSemaphoresSubmitted GrGpu::finishFlush(int numSemaphores,
                                             : GrSemaphoresSubmitted::kNo;
 }
 
+#ifdef SK_ENABLE_DUMP_GPU
 void GrGpu::dumpJSON(SkJSONWriter* writer) const {
     writer->beginObject();
 
@@ -366,3 +367,17 @@ void GrGpu::dumpJSON(SkJSONWriter* writer) const {
 
     writer->endObject();
 }
+#else
+void GrGpu::dumpJSON(SkJSONWriter* writer) const { }
+#endif
+
+#if GR_TEST_UTILS
+GrBackendTexture GrGpu::createTestingOnlyBackendTexture(const void* pixels, int w, int h,
+                                                        SkColorType colorType, bool isRenderTarget,
+                                                        GrMipMapped isMipped, size_t rowBytes) {
+    GrColorType grCT = SkColorTypeToGrColorType(colorType);
+
+    return this->createTestingOnlyBackendTexture(pixels, w, h, grCT, isRenderTarget, isMipped,
+                                                 rowBytes);
+}
+#endif

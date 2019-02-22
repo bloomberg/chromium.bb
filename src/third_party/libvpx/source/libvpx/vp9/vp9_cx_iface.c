@@ -249,7 +249,7 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
 
   RANGE_CHECK(extra_cfg, row_mt, 0, 1);
   RANGE_CHECK(extra_cfg, motion_vector_unit_test, 0, 2);
-  RANGE_CHECK(extra_cfg, enable_auto_alt_ref, 0, 2);
+  RANGE_CHECK(extra_cfg, enable_auto_alt_ref, 0, MAX_ARF_LAYERS);
   RANGE_CHECK(extra_cfg, cpu_used, -9, 9);
   RANGE_CHECK_HI(extra_cfg, noise_sensitivity, 6);
   RANGE_CHECK(extra_cfg, tile_columns, 0, 6);
@@ -1099,7 +1099,7 @@ static vpx_codec_err_t encoder_encode(vpx_codec_alg_priv_t *ctx,
       // There's no codec control for multiple alt-refs so check the encoder
       // instance for its status to determine the compressed data size.
       data_sz = ctx->cfg.g_w * ctx->cfg.g_h * get_image_bps(img) / 8 *
-                (cpi->multi_arf_allowed ? 8 : 2);
+                (cpi->multi_layer_arf ? 8 : 2);
       if (data_sz < kMinCompressedSize) data_sz = kMinCompressedSize;
       if (ctx->cx_data == NULL || ctx->cx_data_sz < data_sz) {
         ctx->cx_data_sz = data_sz;
@@ -1149,6 +1149,8 @@ static vpx_codec_err_t encoder_encode(vpx_codec_alg_priv_t *ctx,
         timebase_units_to_ticks(timebase, pts + duration);
     size_t size, cx_data_sz;
     unsigned char *cx_data;
+
+    cpi->svc.timebase_fac = timebase_units_to_ticks(timebase, 1);
 
     // Set up internal flags
     if (ctx->base.init_flags & VPX_CODEC_USE_PSNR) cpi->b_calculate_psnr = 1;
@@ -1449,6 +1451,7 @@ static vpx_codec_err_t ctrl_set_svc_layer_id(vpx_codec_alg_priv_t *ctx,
   int sl;
 
   svc->spatial_layer_to_encode = data->spatial_layer_id;
+  svc->first_spatial_layer_to_encode = data->spatial_layer_id;
   // TODO(jianj): Deprecated to be removed.
   svc->temporal_layer_id = data->temporal_layer_id;
   // Allow for setting temporal layer per spatial layer for superframe.
@@ -1536,6 +1539,7 @@ static vpx_codec_err_t ctrl_set_svc_ref_frame_config(vpx_codec_alg_priv_t *ctx,
     cpi->svc.lst_fb_idx[sl] = data->lst_fb_idx[sl];
     cpi->svc.gld_fb_idx[sl] = data->gld_fb_idx[sl];
     cpi->svc.alt_fb_idx[sl] = data->alt_fb_idx[sl];
+    cpi->svc.duration[sl] = data->duration[sl];
   }
   return VPX_CODEC_OK;
 }

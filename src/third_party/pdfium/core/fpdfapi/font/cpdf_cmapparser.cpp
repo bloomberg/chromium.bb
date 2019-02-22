@@ -109,14 +109,19 @@ void CPDF_CMapParser::ParseWord(const ByteStringView& word) {
     m_Status = 0;
   } else if (m_Status == 7) {
     if (word == "endcodespacerange") {
-      size_t nSegs = m_CodeRanges.size();
+      const auto& code_ranges = m_pCMap->GetMixedFourByteLeadingRanges();
+      size_t nSegs = code_ranges.size() + m_PendingRanges.size();
       if (nSegs == 1) {
-        m_pCMap->SetCodingScheme((m_CodeRanges[0].m_CharSize == 2)
+        const auto& first_range =
+            code_ranges.size() > 0 ? code_ranges[0] : m_PendingRanges[0];
+        m_pCMap->SetCodingScheme((first_range.m_CharSize == 2)
                                      ? CPDF_CMap::TwoBytes
                                      : CPDF_CMap::OneByte);
       } else if (nSegs > 1) {
         m_pCMap->SetCodingScheme(CPDF_CMap::MixedFourBytes);
-        m_pCMap->SetMixedFourByteLeadingRanges(m_CodeRanges);
+        for (const auto& range : m_PendingRanges)
+          m_pCMap->AppendMixedFourByteLeadingRanges(range);
+        m_PendingRanges.clear();
       }
       m_Status = 0;
     } else {
@@ -126,7 +131,7 @@ void CPDF_CMapParser::ParseWord(const ByteStringView& word) {
       if (m_CodeSeq % 2) {
         CPDF_CMap::CodeRange range;
         if (GetCodeRange(range, m_LastWord.AsStringView(), word))
-          m_CodeRanges.push_back(range);
+          m_PendingRanges.push_back(range);
       }
       m_CodeSeq++;
     }

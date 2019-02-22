@@ -13,7 +13,7 @@ see [Wrapper Tracing Reference](../bindings/TraceWrapperReference.md).
 Unless otherwise noted, any of the primitives explained in this page requires the following `#include` statement:
 
 ```c++
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 ```
 
 ## Base class templates
@@ -231,19 +231,14 @@ Classes with this annotation do not need a `Trace()` method, and should not inhe
 
 ### DISALLOW_NEW()
 
-Class-level annotation declaring the class a part object that cannot be separately allocated using `operator new`.
+Class-level annotation declaring the class cannot be separately allocated using `operator new`.
+It can be used on stack, as a part of object, or as a value in a heap collection.
 If the class has `Member<T>` references, you need a `Trace()` method which the object containing the `DISALLOW_NEW()`
 part object must call upon. The clang Blink GC plugin checks and enforces this.
 
 Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
 
-### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 
-Class-level annotation allowing only the use of the placement `new` operator. This disallows general allocation of the
-object but allows putting the object as a value object in collections.  If the class has `Member<T>` references,
-you need to declare a `Trace()` method. That trace method will be called automatically by the on-heap collections.
-
-Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
 
 ## Handles
 
@@ -311,12 +306,16 @@ garbage-collected, just like `WeakMember<T>`.
 `WeakPersistent<T>`, respectively, which can point to an object in a different thread.
 
 ```c++
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+...
 class NonGarbageCollectedClass {
     ...
 private:
     Persistent<SomeGarbageCollectedClass> m_something; // OK, the object will be alive while this persistent is alive.
 };
 ```
+
+`persistent.h` provides these persistent pointers.
 
 *** note
 **Warning:** `Persistent<T>` and `CrossThreadPersistent<T>` are vulnerable to reference cycles. If a reference cycle
@@ -472,12 +471,12 @@ class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass>
 };
 ```
 
-When you want to add a heap collection as a member of a non-garbage-collected class (on the main thread), please use the persistent variants (just prefix the type with Persistent e.g. PersistentHeapVector, PersistentHeapHashMap, etc.).
+When you want to add a heap collection as a member of a non-garbage-collected class (on the main thread), please use a Persistent to reference it.
 
 ```c++
 class MyNotGarbageCollectedClass {
  private:
-  PersistentHeapVector<Member<MyGarbageCollectedClass>> list_;
+  Persistent<HeapVector<Member<MyGarbageCollectedClass>>> list_;
 };
 ```
 

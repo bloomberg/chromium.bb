@@ -84,3 +84,4 @@ vr_common_unittests
 webkit_unit_tests
 wm_unittests
 wtf_unittests
+zucchini_unittests

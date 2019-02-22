@@ -9,8 +9,8 @@
 
   var logView = UI.panels.network._networkLogView;
 
-  function newRequest(headers, data, opt_url) {
-    var request = new SDK.NetworkRequest(0, opt_url || 'http://example.org/path', 0, 0, 0);
+  function newRequest(isBlob, headers, data, opt_url) {
+    var request = new SDK.NetworkRequest(0, (isBlob === true ? 'blob:' : '') + (opt_url || 'http://example.org/path'), 0, 0, 0);
     request.requestMethod = data ? 'POST' : 'GET';
     var headerList = [];
     if (headers) {
@@ -25,14 +25,29 @@
   }
 
   async function dumpRequest(headers, data, opt_url) {
-    var curlWin = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'win');
-    var curlUnix = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'unix');
-    var powershell = await logView._generatePowerShellCommand(newRequest(headers, data, opt_url));
-    var fetch = await logView._generateFetchCall(newRequest(headers, data, opt_url));
+    var curlWin = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'win');
+    var curlUnix = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'unix');
+    var powershell = await logView._generatePowerShellCommand(newRequest(false, headers, data, opt_url));
+    var fetch = await logView._generateFetchCall(newRequest(false, headers, data, opt_url));
     TestRunner.addResult(`cURL Windows: ${curlWin}`);
     TestRunner.addResult(`cURL Unix: ${curlUnix}`);
     TestRunner.addResult(`Powershell: ${powershell}`);
     TestRunner.addResult(`fetch: ${fetch}`);
+  }
+
+  async function dumpMultipleRequests(blobPattern) {
+    const header = {'Content-Type': 'foo/bar'};
+    const data = 'baz';
+    const allRequests = blobPattern.map(isBlob => newRequest(isBlob, header, data));
+
+    var allCurlWin = await logView._generateAllCurlCommand(allRequests, 'win');
+    var allCurlUnix = await logView._generateAllCurlCommand(allRequests, 'unix');
+    var allPowershell = await logView._generateAllPowerShellCommand(allRequests);
+    var allFetch = await logView._generateAllFetchCall(allRequests);
+    TestRunner.addResult(`cURL Windows: ${allCurlWin}`);
+    TestRunner.addResult(`cURL Unix: ${allCurlUnix}`);
+    TestRunner.addResult(`Powershell: ${allPowershell}`);
+    TestRunner.addResult(`fetch: ${allFetch}`);
   }
 
   await dumpRequest({});
@@ -54,6 +69,12 @@
   await dumpRequest({'Content-Type': 'application/binary'}, '%PATH%$PATH');
   await dumpRequest({':host': 'h', 'version': 'v'});
   await dumpRequest({'Cookie': '_x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117'});
+
+  await dumpMultipleRequests([]);
+  await dumpMultipleRequests([true]);
+  await dumpMultipleRequests([true, true]);
+  await dumpMultipleRequests([false]);
+  await dumpMultipleRequests([true, false]);
 
   TestRunner.completeTest();
 })();

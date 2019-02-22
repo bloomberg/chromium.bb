@@ -33,6 +33,7 @@ PASS testElement(t26.firstChild, true, true) is green
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Should stay green when hovered and/or active: 
  
  

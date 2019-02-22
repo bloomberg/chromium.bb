@@ -104,6 +104,7 @@ namespace {
 static CompositingQueryMode g_compositing_query_mode =
     kCompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
+#ifdef OS_LINUX
 struct SameSizeAsPaintLayer : DisplayItemClient {
   // The bit fields may fit into the machine word of DisplayItemClient which
   // has only 8-bit data.
@@ -121,6 +122,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
               "PaintLayer should stay small");
+#endif
 
 }  // namespace
 
@@ -156,14 +158,12 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_repaint_(false),
       previous_paint_result_(kFullyPainted),
       needs_paint_phase_descendant_outlines_(false),
-      previous_paint_phase_descendant_outlines_was_empty_(false),
       needs_paint_phase_float_(false),
-      previous_paint_phase_float_was_empty_(false),
       needs_paint_phase_descendant_block_backgrounds_(false),
-      previous_paint_phase_descendant_block_backgrounds_was_empty_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
-      has_descendant_with_sticky_or_fixed_(false),
+      has_fixed_position_descendant_(false),
+      has_sticky_position_descendant_(false),
       has_non_contained_absolute_position_descendant_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
@@ -454,7 +454,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
     return;
   }
 
-  // hasTransform() on the layoutObject is also true when there is
+  // LayoutObject::HasTransformRelatedProperty is also true when there is
   // transform-style: preserve-3d or perspective set, so check style too.
   bool has_transform = GetLayoutObject().HasTransformRelatedProperty() &&
                        new_style.HasTransform();
@@ -711,7 +711,8 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_visible_descendant_ = false;
     has_non_isolated_descendant_with_blend_mode_ = false;
     has_descendant_with_clip_path_ = false;
-    has_descendant_with_sticky_or_fixed_ = false;
+    has_fixed_position_descendant_ = false;
+    has_sticky_position_descendant_ = false;
     has_non_contained_absolute_position_descendant_ = false;
     has_self_painting_layer_descendant_ = false;
     is_non_stacked_with_in_flow_stacked_descendant_ = false;
@@ -740,10 +741,12 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       has_descendant_with_clip_path_ |= child->HasDescendantWithClipPath() ||
                                         child->GetLayoutObject().HasClipPath();
 
-      has_descendant_with_sticky_or_fixed_ |=
-          child->HasDescendantWithStickyOrFixed() ||
-          child_style.GetPosition() == EPosition::kSticky ||
+      has_fixed_position_descendant_ |=
+          child->HasFixedPositionDescendant() ||
           child_style.GetPosition() == EPosition::kFixed;
+      has_sticky_position_descendant_ |=
+          child->HasStickyPositionDescendant() ||
+          child_style.GetPosition() == EPosition::kSticky;
 
       if (!can_contain_abs) {
         has_non_contained_absolute_position_descendant_ |=
@@ -1685,6 +1688,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
                       dirty_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
+  fragment.root_fragment_data = &root_layer->GetLayoutObject().FirstFragment();
   fragment.fragment_data = &GetLayoutObject().FirstFragment();
   fragments.push_back(fragment);
 }
@@ -1716,51 +1720,71 @@ void PaintLayer::CollectFragments(
     const LayoutPoint* offset_from_root,
     const LayoutSize& sub_pixel_accumulation) const {
   PaintLayerFragment fragment;
+  const auto& first_fragment_data = GetLayoutObject().FirstFragment();
+  const auto& first_root_fragment_data =
+      root_layer->GetLayoutObject().FirstFragment();
 
-  // If |root_layer| is inside the same pagination container as |this|, and
-  // there is no compositing boundary inside pagination (this is what
-  // ShouldFragmentCompositedBounds() checks), then try to match
-  // fragments from |root_layer| to |this|, so that any
-  // fragment clip for |root_layer|'s fragment matches |this|'s.
-  bool should_match_fragments = root_layer->EnclosingPaginationLayer() &&
-      root_layer->EnclosingPaginationLayer() == EnclosingPaginationLayer() &&
-      ShouldFragmentCompositedBounds();
+  // If both |this| and |root_layer| are fragmented and are inside the same
+  // pagination container, then try to match fragments from |root_layer| to
+  // |this|, so that any fragment clip for |root_layer|'s fragment matches
+  // |this|'s. Note we check both ShouldFragmentCompositedBounds() and next
+  // fragment here because the former may return false even if |this| is
+  // fragmented, e.g. for fixed-position objects in paged media, and the next
+  // fragment can be null even if the first fragment is actually in a fragmented
+  // context when the current layer appears in only one of the multiple
+  // fragments of the pagination container.
+  bool is_fragmented =
+      ShouldFragmentCompositedBounds() || first_fragment_data.NextFragment();
+  bool should_match_fragments =
+      is_fragmented &&
+      root_layer->EnclosingPaginationLayer() == EnclosingPaginationLayer();
 
   // The inherited offset_from_root does not include any pagination offsets.
-  // In the presence of fragmentation, we cannot use it. Note that we may also
-  // create fragments when ShouldFragmentCompositedBounds() is false, e.g. for
-  // fixed-position objects in paged media.
-  bool offset_from_root_can_be_used =
-      offset_from_root && !ShouldFragmentCompositedBounds(root_layer) &&
-      !GetLayoutObject().FirstFragment().NextFragment();
-  for (auto* fragment_data = &GetLayoutObject().FirstFragment(); fragment_data;
+  // In the presence of fragmentation, we cannot use it.
+  bool offset_from_root_can_be_used = offset_from_root && !is_fragmented;
+  for (auto* fragment_data = &first_fragment_data; fragment_data;
        fragment_data = fragment_data->NextFragment()) {
-    const FragmentData* root_fragment =
-        &root_layer->GetLayoutObject().FirstFragment();
-    if (should_match_fragments) {
-      for (root_fragment = &root_layer->GetLayoutObject().FirstFragment();
-           root_fragment; root_fragment = root_fragment->NextFragment()) {
-        if (root_fragment->LogicalTopInFlowThread() ==
+    const FragmentData* root_fragment_data;
+    if (root_layer == this) {
+      root_fragment_data = fragment_data;
+    } else if (should_match_fragments) {
+      for (root_fragment_data = &first_root_fragment_data; root_fragment_data;
+           root_fragment_data = root_fragment_data->NextFragment()) {
+        if (root_fragment_data->LogicalTopInFlowThread() ==
             fragment_data->LogicalTopInFlowThread())
           break;
       }
+    } else {
+      root_fragment_data = &first_root_fragment_data;
     }
 
-    bool cant_find_fragment = !root_fragment;
+    bool cant_find_fragment = !root_fragment_data;
     if (cant_find_fragment) {
+      DCHECK(should_match_fragments);
       // Fall back to the first fragment, in order to have
       // PaintLayerClipper at least compute |fragment.layer_bounds|.
-      root_fragment = &root_layer->GetLayoutObject().FirstFragment();
+      root_fragment_data = &first_root_fragment_data;
     }
 
     ClipRectsContext clip_rects_context(
-        root_layer, root_fragment, kUncachedClipRects,
+        root_layer, root_fragment_data, kUncachedClipRects,
         overlay_scrollbar_clip_behavior, respect_overflow_clip,
         sub_pixel_accumulation);
 
+    base::Optional<LayoutRect> fragment_dirty_rect;
+    if (dirty_rect) {
+      // |dirty_rect| is in the coordinate space of |root_layer| (i.e. the
+      // space of |root_layer|'s first fragment). Map the rect to the space of
+      // the current root fragment.
+      fragment_dirty_rect = *dirty_rect;
+      first_root_fragment_data.MapRectToFragment(*root_fragment_data,
+                                                 *fragment_dirty_rect);
+    }
+
     Clipper(kUseGeometryMapper)
         .CalculateRects(
-            clip_rects_context, fragment_data, dirty_rect,
+            clip_rects_context, fragment_data,
+            fragment_dirty_rect ? &*fragment_dirty_rect : nullptr,
             fragment.layer_bounds, fragment.background_rect,
             fragment.foreground_rect,
             offset_from_root_can_be_used ? offset_from_root : nullptr);
@@ -1772,8 +1796,8 @@ void PaintLayer::CollectFragments(
       fragment.foreground_rect.Reset();
     }
 
+    fragment.root_fragment_data = root_fragment_data;
     fragment.fragment_data = fragment_data;
-    fragment.pagination_offset = fragment_data->PaginationOffset();
 
     fragments.push_back(fragment);
   }
@@ -1878,29 +1902,29 @@ static double ComputeZOffset(const HitTestingTransformState& transform_state) {
   return backmapped_point.Z();
 }
 
-scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
+HitTestingTransformState PaintLayer::CreateLocalTransformState(
     PaintLayer* root_layer,
     PaintLayer* container_layer,
     const HitTestRecursionData& recursion_data,
     const HitTestingTransformState* container_transform_state,
     const LayoutPoint& translation_offset) const {
-  scoped_refptr<HitTestingTransformState> transform_state;
+  // If we're already computing transform state, then it's relative to the
+  // container (which we know is non-null).
+  // If this is the first time we need to make transform state, then base it
+  // off of hitTestLocation, which is relative to rootLayer.
+  HitTestingTransformState transform_state =
+      container_transform_state
+          ? *container_transform_state
+          : HitTestingTransformState(recursion_data.location.TransformedPoint(),
+                                     recursion_data.location.TransformedRect(),
+                                     FloatQuad(FloatRect(recursion_data.rect)));
+
   LayoutPoint offset;
-  if (container_transform_state) {
-    // If we're already computing transform state, then it's relative to the
-    // container (which we know is non-null).
-    transform_state =
-        HitTestingTransformState::Create(*container_transform_state);
+  if (container_transform_state)
     ConvertToLayerCoords(container_layer, offset);
-  } else {
-    // If this is the first time we need to make transform state, then base it
-    // off of hitTestLocation, which is relative to rootLayer.
-    transform_state = HitTestingTransformState::Create(
-        recursion_data.location.TransformedPoint(),
-        recursion_data.location.TransformedRect(),
-        FloatQuad(FloatRect(recursion_data.rect)));
+  else
     ConvertToLayerCoords(root_layer, offset);
-  }
+
   offset.MoveBy(translation_offset);
 
   LayoutObject* container_layout_object =
@@ -1910,11 +1934,11 @@ scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     TransformationMatrix container_transform;
     GetLayoutObject().GetTransformFromContainer(
         container_layout_object, ToLayoutSize(offset), container_transform);
-    transform_state->ApplyTransform(
+    transform_state.ApplyTransform(
         container_transform, HitTestingTransformState::kAccumulateTransform);
   } else {
-    transform_state->Translate(offset.X().ToInt(), offset.Y().ToInt(),
-                               HitTestingTransformState::kAccumulateTransform);
+    transform_state.Translate(offset.X().ToInt(), offset.Y().ToInt(),
+                              HitTestingTransformState::kAccumulateTransform);
   }
 
   return transform_state;
@@ -1960,14 +1984,13 @@ static bool IsHitCandidate(const PaintLayer* hit_layer,
 // If zOffset is non-null (which indicates that the caller wants z offset
 // information), *zOffset on return is the z offset of the hit point relative to
 // the containing flattening layer.
-PaintLayer* PaintLayer::HitTestLayer(
-    PaintLayer* root_layer,
-    PaintLayer* container_layer,
-    HitTestResult& result,
-    const HitTestRecursionData& recursion_data,
-    bool applied_transform,
-    const HitTestingTransformState* transform_state,
-    double* z_offset) {
+PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
+                                     PaintLayer* container_layer,
+                                     HitTestResult& result,
+                                     const HitTestRecursionData& recursion_data,
+                                     bool applied_transform,
+                                     HitTestingTransformState* transform_state,
+                                     double* z_offset) {
   const LayoutObject& layout_object = GetLayoutObject();
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
@@ -2025,19 +2048,21 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
-  scoped_refptr<HitTestingTransformState> local_transform_state;
+  HitTestingTransformState* local_transform_state = nullptr;
+  base::Optional<HitTestingTransformState> storage;
+
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
     // reference it.
     DCHECK(transform_state);
-    local_transform_state =
-        const_cast<HitTestingTransformState*>(transform_state);
+    local_transform_state = transform_state;
   } else if (transform_state || has3d_transformed_descendant_ ||
              Preserves3D()) {
     // We need transform state for the first time, or to offset the container
     // state, so create it here.
-    local_transform_state = CreateLocalTransformState(
-        root_layer, container_layer, recursion_data, transform_state);
+    storage = CreateLocalTransformState(root_layer, container_layer,
+                                        recursion_data, transform_state);
+    local_transform_state = &*storage;
   }
 
   // Check for hit test on backface if backface-visibility is 'hidden'
@@ -2051,13 +2076,13 @@ PaintLayer* PaintLayer::HitTestLayer(
       return nullptr;
   }
 
-  scoped_refptr<HitTestingTransformState> unflattened_transform_state =
-      local_transform_state;
+  HitTestingTransformState* unflattened_transform_state = local_transform_state;
+  base::Optional<HitTestingTransformState> unflattened_storage;
   if (local_transform_state && !Preserves3D()) {
     // Keep a copy of the pre-flattening state, for computing z-offsets for the
     // container
-    unflattened_transform_state =
-        HitTestingTransformState::Create(*local_transform_state);
+    unflattened_storage.emplace(*local_transform_state);
+    unflattened_transform_state = &*unflattened_storage;
     // This layer is flattening, so flatten the state passed to descendants.
     local_transform_state->Flatten();
   }
@@ -2088,8 +2113,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // the lowest z-index.
   PaintLayer* hit_layer = HitTestChildren(
       kPositiveZOrderChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2099,8 +2124,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our overflow objects.
   hit_layer = HitTestChildren(
       kNormalFlowChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2146,7 +2171,7 @@ PaintLayer* PaintLayer::HitTestLayer(
               *layer_fragments, offset, temp_result, recursion_data.location,
               kHitTestDescendants, inside_fragment_foreground_rect) &&
           IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                         unflattened_transform_state.get())) {
+                         unflattened_transform_state)) {
         if (result.GetHitTestRequest().ListBased())
           result.Append(temp_result);
         else
@@ -2166,8 +2191,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our negative z-index children.
   hit_layer = HitTestChildren(
       kNegativeZOrderChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2187,7 +2212,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     recursion_data.location, kHitTestSelf,
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                       unflattened_transform_state.get())) {
+                       unflattened_transform_state)) {
       if (result.GetHitTestRequest().ListBased())
         result.Append(temp_result);
       else
@@ -2235,7 +2260,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     PaintLayer* container_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset,
     ShouldRespectOverflowClipType clip_behavior) {
   PaintLayerFragments enclosing_pagination_fragments;
@@ -2255,7 +2280,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
 
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
-        z_offset, fragment.pagination_offset);
+        z_offset, fragment.fragment_data->PaginationOffset());
     if (hit_layer)
       return hit_layer;
   }
@@ -2268,16 +2293,16 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     PaintLayer* container_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset,
     const LayoutPoint& translation_offset) {
   // Create a transform state to accumulate this transform.
-  scoped_refptr<HitTestingTransformState> new_transform_state =
+  HitTestingTransformState new_transform_state =
       CreateLocalTransformState(root_layer, container_layer, recursion_data,
                                 transform_state, translation_offset);
 
   // If the transform can't be inverted, then don't hit test this layer at all.
-  if (!new_transform_state->accumulated_transform_.IsInvertible())
+  if (!new_transform_state.accumulated_transform_.IsInvertible())
     return nullptr;
 
   // Compute the point and the hit test rect in the coords of this layer by
@@ -2287,9 +2312,9 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   //
   // We can't just map hitTestLocation and hitTestRect because they may have
   // been flattened (losing z) by our container.
-  FloatPoint local_point = new_transform_state->MappedPoint();
-  FloatQuad local_point_quad = new_transform_state->MappedQuad();
-  LayoutRect bounds_of_mapped_area = new_transform_state->BoundsOfMappedArea();
+  FloatPoint local_point = new_transform_state.MappedPoint();
+  FloatQuad local_point_quad = new_transform_state.MappedQuad();
+  LayoutRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
   base::Optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
     new_location.emplace(local_point, local_point_quad);
@@ -2300,7 +2325,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 
   // Now do a hit test with the root layer shifted to be us.
   return HitTestLayer(this, container_layer, result, new_recursion_data, true,
-                      new_transform_state.get(), z_offset);
+                      &new_transform_state, z_offset);
 }
 
 bool PaintLayer::HitTestContents(HitTestResult& result,
@@ -2375,10 +2400,10 @@ PaintLayer* PaintLayer::HitTestChildren(
     PaintLayer* root_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset_for_descendants,
     double* z_offset,
-    const HitTestingTransformState* unflattened_transform_state,
+    HitTestingTransformState* unflattened_transform_state,
     bool depth_sort_descendants) {
   if (!HasSelfPaintingLayerDescendant())
     return nullptr;
@@ -3349,7 +3374,7 @@ void PaintLayer::ComputeSelfHitTestRects(
     LayerHitTestRects& rects,
     TouchAction supported_fast_actions) const {
   if (!Size().IsEmpty()) {
-    Vector<TouchActionRect> rect;
+    Vector<HitTestRect> rect;
     TouchAction whitelisted_touch_action =
         GetLayoutObject().StyleRef().GetEffectiveTouchAction() &
         supported_fast_actions;
@@ -3362,25 +3387,25 @@ void PaintLayer::ComputeSelfHitTestRects(
       // composited layer. Skip reporting contents for non-composited layers as
       // they'll get projected to the same layer as the bounding box.
       if (GetCompositingState() != kNotComposited && scrollable_area_) {
-        rect.push_back(TouchActionRect(scrollable_area_->OverflowRect(),
-                                       whitelisted_touch_action));
+        rect.push_back(HitTestRect(scrollable_area_->OverflowRect(),
+                                   whitelisted_touch_action));
       }
 
       rects.Set(this, rect);
       if (const PaintLayer* parent_layer = Parent()) {
         LayerHitTestRects::iterator iter = rects.find(parent_layer);
         if (iter == rects.end()) {
-          rects.insert(parent_layer, Vector<TouchActionRect>())
-              .stored_value->value.push_back(TouchActionRect(
+          rects.insert(parent_layer, Vector<HitTestRect>())
+              .stored_value->value.push_back(HitTestRect(
                   PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
         } else {
-          iter->value.push_back(TouchActionRect(
-              PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
+          iter->value.push_back(HitTestRect(PhysicalBoundingBox(parent_layer),
+                                            whitelisted_touch_action));
         }
       }
     } else {
       rect.push_back(
-          TouchActionRect(LogicalBoundingBox(), whitelisted_touch_action));
+          HitTestRect(LogicalBoundingBox(), whitelisted_touch_action));
       rects.Set(this, rect);
     }
   }

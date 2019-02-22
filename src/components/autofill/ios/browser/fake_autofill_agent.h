@@ -21,12 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 // with |fieldName| and |fieldIdentifier|.
 - (void)addSuggestion:(FormSuggestion*)suggestion
           forFormName:(NSString*)formName
-      fieldIdentifier:(NSString*)fieldIdentifier;
+      fieldIdentifier:(NSString*)fieldIdentifier
+              frameID:(NSString*)frameID;
 
 // Returns the last selected |suggestion| for form with |formName| and field
 // with |fieldName| and |fieldIdentifier|.
 - (FormSuggestion*)selectedSuggestionForFormName:(NSString*)formName
-                                 fieldIdentifier:(NSString*)fieldIdentifier;
+                                 fieldIdentifier:(NSString*)fieldIdentifier
+                                         frameID:(NSString*)frameID;
 
 @end
 

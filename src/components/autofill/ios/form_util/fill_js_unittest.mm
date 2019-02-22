@@ -22,7 +22,7 @@ class FillJsTest : public web::WebJsTest<web::WebTestWithWebState> {
  public:
   FillJsTest()
       : web::WebJsTest<web::WebTestWithWebState>(
-            @[ @"chrome_bundle_main_frame" ]) {}
+            @[ @"chrome_bundle_all_frames" ]) {}
 };
 
 TEST_F(FillJsTest, GetCanonicalActionForForm) {

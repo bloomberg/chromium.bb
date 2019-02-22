@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class Resource;
 class SubresourceFilter;
 class WebURLLoader;
 class WebURLLoaderFactory;
@@ -24,6 +25,7 @@ class WorkerClients;
 class WorkerContentSettingsClient;
 class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
+enum class ResourceType : uint8_t;
 
 CORE_EXPORT void ProvideWorkerFetchContextToWorker(
     WorkerClients*,
@@ -48,7 +50,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
-                               Resource::Type) const override;
+                               ResourceType) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -57,14 +59,14 @@ class WorkerFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
       override;
   bool ShouldBlockFetchByMixedContentCheck(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
-  bool ShouldLoadNewResource(Resource::Type) const override { return true; }
+  bool ShouldLoadNewResource(ResourceType) const override { return true; }
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
   base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
@@ -86,12 +88,12 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchWillSendRequest(unsigned long,
                                ResourceRequest&,
                                const ResourceResponse&,
-                               Resource::Type,
+                               ResourceType,
                                const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
                                   network::mojom::RequestContextFrameType,
-                                  WebURLRequest::RequestContext,
+                                  mojom::RequestContextType,
                                   Resource*,
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,
@@ -110,11 +112,11 @@ class WorkerFetchContext final : public BaseFetchContext {
                        int64_t encoded_data_length,
                        bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
-  void PopulateResourceRequest(Resource::Type,
+  void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
+  bool DefersLoading() const override;
 
   std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
   CreateResourceLoadingTaskRunnerHandle() override;
@@ -132,7 +134,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      std::unique_ptr<WebWorkerFetchContext>);
 
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
+  void SetFirstPartyCookie(ResourceRequest&);
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
   const std::unique_ptr<WebWorkerFetchContext> web_context_;
@@ -147,7 +149,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoaderFactory> script_loader_factory_;
 
   Member<SubresourceFilter> subresource_filter_;
-  const scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 
   const Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
 

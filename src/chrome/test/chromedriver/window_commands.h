@@ -296,13 +296,6 @@ Status ExecuteScreenshot(Session* session,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout);
 
-// Retrieve a screenshot of a specific element
-Status ExecuteElementScreenshot(Session* session,
-                                WebView* web_view,
-                                const std::string& element_id,
-                                const base::DictionaryValue& params,
-                                std::unique_ptr<base::Value>* value);
-
 // Retrieve all cookies visible to the current page.
 Status ExecuteGetCookies(Session* session,
                          WebView* web_view,

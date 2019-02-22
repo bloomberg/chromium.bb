@@ -84,15 +84,14 @@ void MediaRouterAndroidBridge::TerminateRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterAndroidBridge::SendRouteMessage(const MediaRoute::Id& route_id,
-                                                const std::string& message,
-                                                int callback_id) {
+                                                const std::string& message) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
       base::android::ConvertUTF8ToJavaString(env, route_id);
   ScopedJavaLocalRef<jstring> jmessage =
       base::android::ConvertUTF8ToJavaString(env, message);
   Java_ChromeMediaRouter_sendStringMessage(env, java_media_router_, jroute_id,
-                                           jmessage, callback_id);
+                                           jmessage);
 }
 
 void MediaRouterAndroidBridge::DetachRoute(const MediaRoute::Id& route_id) {
@@ -179,29 +178,24 @@ void MediaRouterAndroidBridge::OnRouteRequestError(
       ConvertJavaStringToUTF8(jerror_text), jroute_request_id);
 }
 
-void MediaRouterAndroidBridge::OnRouteClosed(
+void MediaRouterAndroidBridge::OnRouteTerminated(
     JNIEnv* env,
     const JavaRef<jobject>& obj,
     const JavaRef<jstring>& jmedia_route_id) {
-  native_media_router_->OnRouteClosed(
+  native_media_router_->OnRouteTerminated(
       ConvertJavaStringToUTF8(env, jmedia_route_id));
 }
 
-void MediaRouterAndroidBridge::OnRouteClosedWithError(
+void MediaRouterAndroidBridge::OnRouteClosed(
     JNIEnv* env,
     const JavaRef<jobject>& obj,
     const JavaRef<jstring>& jmedia_route_id,
-    const JavaRef<jstring>& jmessage) {
-  native_media_router_->OnRouteClosedWithError(
+    const JavaRef<jstring>& jerror) {
+  native_media_router_->OnRouteClosed(
       ConvertJavaStringToUTF8(env, jmedia_route_id),
-      ConvertJavaStringToUTF8(env, jmessage));
-}
-
-void MediaRouterAndroidBridge::OnMessageSentResult(JNIEnv* env,
-                                                   const JavaRef<jobject>& obj,
-                                                   jboolean jsuccess,
-                                                   jint jcallback_id) {
-  native_media_router_->OnMessageSentResult(jsuccess, jcallback_id);
+      jerror.is_null()
+          ? base::nullopt
+          : base::make_optional(ConvertJavaStringToUTF8(env, jerror)));
 }
 
 void MediaRouterAndroidBridge::OnMessage(

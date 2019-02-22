@@ -137,6 +137,7 @@ TEST_F(OneClickSigninDialogViewTest, HideDialog) {
 
 TEST_F(OneClickSigninDialogViewTest, OkButton) {
   OneClickSigninDialogView* view = ShowOneClickSigninDialog();
+  view->GetDialogClientView()->ResetViewShownTimeStampForTesting();
 
   gfx::Point center(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, center, center,
@@ -153,6 +154,7 @@ TEST_F(OneClickSigninDialogViewTest, OkButton) {
 
 TEST_F(OneClickSigninDialogViewTest, UndoButton) {
   OneClickSigninDialogView* view = ShowOneClickSigninDialog();
+  view->GetDialogClientView()->ResetViewShownTimeStampForTesting();
 
   gfx::Point center(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, center, center,

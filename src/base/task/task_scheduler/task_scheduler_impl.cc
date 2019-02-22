@@ -140,26 +140,26 @@ void TaskSchedulerImpl::Start(
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
 #endif
 
-  // On platforms that can't use the background thread priority, background
+  // On platforms that can't use the background thread priority, best-effort
   // tasks run in foreground pools. A cap is set on the number of background
   // tasks that can run in foreground pools to ensure that there is always room
   // for incoming foreground tasks and to minimize the performance impact of
-  // background tasks.
-  const int max_background_tasks_in_foreground_pool = std::max(
+  // best-effort tasks.
+  const int max_best_effort_tasks_in_foreground_pool = std::max(
       1, std::min(init_params.background_worker_pool_params.max_tasks(),
                   init_params.foreground_worker_pool_params.max_tasks() / 2));
   worker_pools_[FOREGROUND]->Start(
       init_params.foreground_worker_pool_params,
-      max_background_tasks_in_foreground_pool, service_thread_task_runner,
+      max_best_effort_tasks_in_foreground_pool, service_thread_task_runner,
       scheduler_worker_observer, worker_environment);
-  const int max_background_tasks_in_foreground_blocking_pool = std::max(
+  const int max_best_effort_tasks_in_foreground_blocking_pool = std::max(
       1,
       std::min(
           init_params.background_blocking_worker_pool_params.max_tasks(),
           init_params.foreground_blocking_worker_pool_params.max_tasks() / 2));
   worker_pools_[FOREGROUND_BLOCKING]->Start(
       init_params.foreground_blocking_worker_pool_params,
-      max_background_tasks_in_foreground_blocking_pool,
+      max_best_effort_tasks_in_foreground_blocking_pool,
       service_thread_task_runner, scheduler_worker_observer,
       worker_environment);
 
@@ -184,9 +184,8 @@ bool TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
   // Post |task| as part of a one-off single-task Sequence.
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return GetWorkerPoolForTraits(new_traits)
-      ->PostTaskWithSequence(
-          Task(from_here, std::move(task), new_traits, delay),
-          MakeRefCounted<Sequence>());
+      ->PostTaskWithSequence(Task(from_here, std::move(task), delay),
+                             MakeRefCounted<Sequence>(new_traits));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(

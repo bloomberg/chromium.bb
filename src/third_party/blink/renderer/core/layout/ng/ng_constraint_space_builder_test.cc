@@ -25,15 +25,16 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
   NGConstraintSpaceBuilder vertical_builder(
-      *horizontal_builder.ToConstraintSpace(WritingMode::kHorizontalTb));
+      horizontal_builder.ToConstraintSpace(WritingMode::kHorizontalTb));
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  scoped_refptr<NGConstraintSpace> space =
+
+  NGConstraintSpace space =
       vertical_builder.ToConstraintSpace(WritingMode::kVerticalLr);
 
-  EXPECT_EQ(space->AvailableSize().inline_size, icb_size.height);
-  EXPECT_EQ(space->PercentageResolutionSize().inline_size, icb_size.height);
+  EXPECT_EQ(space.AvailableSize().inline_size, icb_size.height);
+  EXPECT_EQ(space.PercentageResolutionSize().inline_size, icb_size.height);
 };
 
 // Asserts that indefinite inline length becomes initial containing
@@ -50,15 +51,16 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
   NGConstraintSpaceBuilder vertical_builder(
-      *horizontal_builder.ToConstraintSpace(WritingMode::kVerticalLr));
+      horizontal_builder.ToConstraintSpace(WritingMode::kVerticalLr));
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  scoped_refptr<NGConstraintSpace> space =
+
+  NGConstraintSpace space =
       vertical_builder.ToConstraintSpace(WritingMode::kHorizontalTb);
 
-  EXPECT_EQ(space->AvailableSize().inline_size, icb_size.width);
-  EXPECT_EQ(space->PercentageResolutionSize().inline_size, icb_size.width);
+  EXPECT_EQ(space.AvailableSize().inline_size, icb_size.width);
+  EXPECT_EQ(space.PercentageResolutionSize().inline_size, icb_size.width);
 };
 
 }  // namespace

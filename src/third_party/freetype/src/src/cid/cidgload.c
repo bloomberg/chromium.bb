@@ -38,7 +38,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cidgload
+#define FT_COMPONENT  cidgload
 
 
   FT_CALLBACK_DEF( FT_Error )
@@ -393,8 +393,7 @@
     must_finish_decoder = TRUE;
 
     /* set up the decoder */
-    decoder.builder.no_recurse = FT_BOOL(
-      ( ( load_flags & FT_LOAD_NO_RECURSE ) != 0 ) );
+    decoder.builder.no_recurse = FT_BOOL( load_flags & FT_LOAD_NO_RECURSE );
 
     error = cid_load_glyph( &decoder, glyph_index );
     if ( error )

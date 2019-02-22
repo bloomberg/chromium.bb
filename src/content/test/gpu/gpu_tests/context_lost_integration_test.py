@@ -25,7 +25,7 @@ harness_script = r"""
   domAutomationController._finished = false;
 
   domAutomationController.send = function(msg) {
-    msg = msg.toLowerCase()
+    msg = msg.toLowerCase();
     if (msg == "loaded") {
       domAutomationController._loaded = true;
     } else if (msg == "success") {
@@ -90,7 +90,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('ContextLost_WebGLBlockedAfterJSNavigation',
               'webgl-domain-blocking-page1.html'),
              ('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
-              'webgl-domain-unblocking.html'))
+              'webgl-domain-unblocking.html'),
+             ('ContextLost_WorkerRAFAfterGPUCrash',
+              'worker-raf-after-gpu-crash.html'),
+             ('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
+              'worker-raf-after-gpu-crash.html'))
     for t in tests:
       yield (t[0], t[1], ('_' + t[0]))
 
@@ -322,6 +326,26 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'window.domAutomationController._succeeded'):
       self.fail(
         'WebGL should have been unblocked after a user-initiated navigation')
+    self._RestartBrowser('must restart after tests that kill the GPU process')
+
+  def _ContextLost_WorkerRAFAfterGPUCrash(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--enable-experimental-web-platform-features'
+    ]))
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
+    self._NavigateAndWaitForLoad(test_path)
+    self._KillGPUProcess(1, False)
+    self._WaitForTabAndCheckCompletion()
+    self._RestartBrowser('must restart after tests that kill the GPU process')
+
+  def _ContextLost_WorkerRAFAfterGPUCrash_OOPD(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--enable-viz-display-compositor',
+      '--enable-experimental-web-platform-features'
+    ]))
+    self._NavigateAndWaitForLoad(test_path)
+    self._KillGPUProcess(1, False)
+    self._WaitForTabAndCheckCompletion()
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
 def load_tests(loader, tests, pattern):

@@ -18,8 +18,8 @@ class CORE_EXPORT BackwardsTextBuffer final : public TextBufferBase {
   const UChar* Data() const override;
 
  private:
-  UChar* CalcDestination(size_t length) override;
-  void ShiftData(size_t old_capacity) override;
+  UChar* CalcDestination(wtf_size_t length) override;
+  void ShiftData(wtf_size_t old_capacity) override;
 
   DISALLOW_COPY_AND_ASSIGN(BackwardsTextBuffer);
 };

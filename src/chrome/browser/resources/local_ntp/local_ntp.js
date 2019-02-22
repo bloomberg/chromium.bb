@@ -29,7 +29,7 @@ var onDdllogResponse = null;
  * raciness in the creation/destruction of the iframe. crbug.com/786313.
  * @type {boolean}
  */
-let iframesDisabledForTesting = false;
+let iframesAndVoiceSearchDisabledForTesting = false;
 
 
 /**
@@ -44,8 +44,8 @@ function LocalNTP() {
  * Called by tests to disable the creation of Most Visited and edit custom link
  * iframes.
  */
-function disableIframesForTesting() {
-  iframesDisabledForTesting = true;
+function disableIframesAndVoiceSearchForTesting() {
+  iframesAndVoiceSearchDisabledForTesting = true;
 }
 
 
@@ -288,11 +288,13 @@ var ntpApiHandle;
  * Returns a timeout that can be executed early.
  * @param {!Function} timeout The timeout function.
  * @param {number} delay The timeout delay.
+ * @param {Object} previousContainer The pre-existing notification container.
  * @return {Object}
  */
-function createExecutableTimeout(timeout, delay) {
+function createExecutableTimeout(timeout, delay, previousContainer) {
   let timeoutId = window.setTimeout(timeout, delay);
   return {
+    previousContainer: previousContainer,
     clear: () => {
       window.clearTimeout(timeoutId);
     },
@@ -410,8 +412,8 @@ function renderTheme() {
 
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
-    // disabled and/or a theme is installed.
-    customBackgrounds.setMenuVisibility(!info.usingDefaultTheme);
+    // disabled.
+    customBackgrounds.setMenuVisibility();
   }
 }
 
@@ -593,7 +595,7 @@ function reloadTiles() {
 /**
  * Callback for embeddedSearch.newTabPage.onaddcustomlinkdone. Called when the
  * custom link was successfully added. Shows the "Shortcut added" notification.
- * @param {string} success True if the link was successfully added.
+ * @param {boolean} success True if the link was successfully added.
  */
 function onAddCustomLinkDone(success) {
   if (success)
@@ -608,7 +610,7 @@ function onAddCustomLinkDone(success) {
  * Callback for embeddedSearch.newTabPage.onupdatecustomlinkdone. Called when
  * the custom link was successfully updated. Shows the "Shortcut edited"
  * notification.
- * @param {string} success True if the link was successfully updated.
+ * @param {boolean} success True if the link was successfully updated.
  */
 function onUpdateCustomLinkDone(success) {
   if (success)
@@ -622,13 +624,26 @@ function onUpdateCustomLinkDone(success) {
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
  * notification.
- * @param {string} success True if the link was successfully deleted.
+ * @param {boolean} success True if the link was successfully deleted.
  */
 function onDeleteCustomLinkDone(success) {
   if (success)
     showNotification(configData.translatedStrings.linkRemovedMsg);
   else
     showErrorNotification(configData.translatedStrings.linkCantRemove);
+}
+
+
+/**
+ * Callback for embeddedSearch.newTabPage.ondoesurlresolve. Called when we
+ * determine if a custom link URL can resolve. Notifies the edit custom link
+ * dialog with the result.
+ * @param {boolean} resolves True if the URL can resolve.
+ */
+function onDoesUrlResolve(resolves) {
+  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
+      .contentWindow.postMessage(
+          {cmd: 'doesUrlResolve', resolves: resolves}, '*');
 }
 
 
@@ -649,6 +664,8 @@ function showNotification(msg) {
     notification.scrollTop;
     notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
   }
+
+  $(IDS.UNDO_LINK).focus();
 }
 
 
@@ -698,9 +715,13 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Hide any pre-existing notification.
+  // Hide pre-existing notification if it was different type. Clear timeout and
+  // replace it with the new timeout and new message if it was the same type.
   if (delayedHideNotification) {
-    delayedHideNotification.trigger();
+    if (delayedHideNotification.previousContainer === notificationContainer)
+      delayedHideNotification.clear();
+    else
+      delayedHideNotification.trigger();
     delayedHideNotification = null;
   }
 
@@ -714,7 +735,7 @@ function floatUpNotification(notification, notificationContainer) {
   // Automatically hide the notification after a period of time.
   delayedHideNotification = createExecutableTimeout(() => {
     floatDownNotification(notification, notificationContainer);
-  }, NOTIFICATION_TIMEOUT);
+  }, NOTIFICATION_TIMEOUT, notificationContainer);
 }
 
 
@@ -737,11 +758,14 @@ function floatDownNotification(notification, notificationContainer) {
   // Reset notification visibility once the animation is complete.
   notificationContainer.classList.remove(CLASSES.FLOAT_UP);
   let afterHide = (event) => {
-    if (event.propertyName == 'bottom') {
+    if (event.propertyName === 'bottom') {
       notification.classList.add(CLASSES.HIDE_NOTIFICATION);
       notification.classList.remove(CLASSES.HAS_LINK);
       notificationContainer.removeEventListener('transitionend', afterHide);
     }
+    // Blur the hidden items.
+    $(IDS.UNDO_LINK).blur();
+    $(IDS.RESTORE_ALL_LINK).blur();
   };
   notificationContainer.addEventListener('transitionend', afterHide);
 }
@@ -753,6 +777,8 @@ function floatDownNotification(notification, notificationContainer) {
  */
 function onUndo() {
   hideNotification();
+  // Focus on the omnibox after the notification is hidden.
+  window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
   if (configData.isCustomLinksEnabled) {
     ntpApiHandle.undoCustomLinkAction();
   } else if (lastBlacklistedTile != null) {
@@ -767,6 +793,8 @@ function onUndo() {
  */
 function onRestoreAll() {
   hideNotification();
+  // Focus on the omnibox after the notification is hidden.
+  window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
   if (configData.isCustomLinksEnabled) {
     ntpApiHandle.resetCustomLinks();
   } else {
@@ -908,6 +936,11 @@ function handlePostMessage(event) {
     }, 10);
   } else if (cmd === 'closeDialog') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG).close();
+  } else if (cmd === 'focusMenu') {
+    // Focus the edited tile's menu or the add shortcut tile after closing the
+    // custom link edit dialog without saving.
+    $(IDS.TILES_IFRAME)
+        .contentWindow.postMessage({cmd: 'focusMenu', tid: args.tid}, '*');
   }
 }
 
@@ -1079,11 +1112,12 @@ function init() {
       ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
       ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
       ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
+      ntpApiHandle.doesurlresolve = onDoesUrlResolve;
     }
 
     if (configData.isCustomBackgroundsEnabled ||
         configData.isCustomLinksEnabled) {
-      customBackgrounds.init(showErrorNotification);
+      customBackgrounds.init(showErrorNotification, hideNotification);
     }
 
 
@@ -1098,7 +1132,7 @@ function init() {
     $(IDS.FAKEBOX_TEXT).textContent =
         configData.translatedStrings.searchboxPlaceholder;
 
-    if (configData.isVoiceSearchEnabled) {
+    if (!iframesAndVoiceSearchDisabledForTesting) {
       speech.init(
           configData.googleBaseUrl, configData.translatedStrings,
           $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
@@ -1201,7 +1235,7 @@ function init() {
     document.documentElement.classList.add(CLASSES.RTL);
   }
 
-  if (!iframesDisabledForTesting) {
+  if (!iframesAndVoiceSearchDisabledForTesting) {
     createIframes();
   }
 
@@ -1500,7 +1534,11 @@ var getDoodleTargetUrl = function() {
 
 
 var showLogoOrDoodle = function(fromCache) {
-  if (targetDoodle.metadata !== null) {
+  const cachedInteractiveOffline = fromCache &&
+      targetDoodle.metadata !== null &&
+      targetDoodle.metadata.type == LOGO_TYPE.INTERACTIVE &&
+      !window.navigator.onLine;
+  if (targetDoodle.metadata !== null && !cachedInteractiveOffline) {
     applyDoodleMetadata();
     if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
       $(IDS.LOGO_DOODLE_BUTTON).classList.remove(CLASSES.SHOW_LOGO);
@@ -1676,7 +1714,7 @@ var applyDoodleMetadata = function() {
 return {
   init: init,  // Exposed for testing.
   listen: listen,
-  disableIframesForTesting: disableIframesForTesting
+  disableIframesAndVoiceSearchForTesting: disableIframesAndVoiceSearchForTesting
 };
 
 }

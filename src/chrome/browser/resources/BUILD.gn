@@ -15,11 +15,14 @@ if (closure_compile) {
     ]
     if (is_linux || is_win || is_mac) {
       deps += [
+        "discards:closure_compile",
+        "management:closure_compile",
         "md_bookmarks:closure_compile",
         "md_downloads:closure_compile",
         "md_history:closure_compile",
         "media_router:closure_compile",
         "ntp4:closure_compile",
+        "omnibox:closure_compile",
         "pdf:closure_compile",
         "print_preview:closure_compile",
         "settings:closure_compile",

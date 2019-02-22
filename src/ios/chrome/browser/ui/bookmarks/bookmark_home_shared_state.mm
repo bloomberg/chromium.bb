@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_editing.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,6 +35,7 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
 @synthesize addingNewFolder = _addingNewFolder;
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize currentlyInEditMode = _currentlyInEditMode;
+@synthesize currentlyShowingSearchResults = _currentlyShowingSearchResults;
 @synthesize editingFolderCell = _editingFolderCell;
 @synthesize editingFolderNode = _editingFolderNode;
 @synthesize faviconDownloadCount = _faviconDownloadCount;

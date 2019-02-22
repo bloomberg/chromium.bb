@@ -54,8 +54,9 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   // Methods to set and clear proxy override
   void SetProxyOverride(const std::string& host,
                         int port,
-                        const std::vector<std::string>& exclusion_list);
-  void ClearProxyOverride();
+                        const std::vector<std::string>& exclusion_list,
+                        base::OnceClosure callback);
+  void ClearProxyOverride(base::OnceClosure callback);
 
  private:
   friend class AwBrowserContext;

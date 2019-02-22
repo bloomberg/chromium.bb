@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -473,8 +474,10 @@ TEST_F(AuthenticatorRequestDialogModelTest,
       [](int* i, const std::string& authenticator_id) { ++(*i); },
       &num_called));
   model.saved_authenticators().emplace_back(
-      AuthenticatorRequestDialogModel::AuthenticatorReference(
-          "authenticator", AuthenticatorTransport::kInternal));
+      std::make_unique<AuthenticatorReference>(
+          "authenticator" /* authenticator_id */,
+          base::string16() /* authenticator_display_name */,
+          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
 
   model.StartFlow(std::move(transports_info), base::nullopt);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,

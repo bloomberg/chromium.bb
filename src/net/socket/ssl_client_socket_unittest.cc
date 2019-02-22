@@ -3066,52 +3066,6 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
-TEST_F(SSLClientSocketTest, TokenBindingEnabled) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLConfig ssl_config;
-  ssl_config.token_binding_params.push_back(TB_PARAM_ECDSAP256);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_TRUE(info.token_binding_negotiated);
-  EXPECT_EQ(TB_PARAM_ECDSAP256, info.token_binding_key_param);
-}
-
-TEST_F(SSLClientSocketTest, TokenBindingFailsWithEmsDisabled) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  ssl_options.disable_extended_master_secret = true;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLConfig ssl_config;
-  ssl_config.token_binding_params.push_back(TB_PARAM_ECDSAP256);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
-}
-
-TEST_F(SSLClientSocketTest, TokenBindingEnabledWithoutServerSupport) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLConfig ssl_config;
-  ssl_config.token_binding_params.push_back(TB_PARAM_ECDSAP256);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  SSLInfo info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_FALSE(info.token_binding_negotiated);
-}
-
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires ALPN, ECDHE, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;

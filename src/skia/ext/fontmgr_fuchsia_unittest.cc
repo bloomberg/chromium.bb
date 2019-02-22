@@ -25,20 +25,19 @@ namespace {
 constexpr zx_rights_t kFontDataRights =
     ZX_RIGHTS_BASIC | ZX_RIGHT_READ | ZX_RIGHT_MAP;
 
-fuchsia::fonts::FontData LoadFont(const base::FilePath& file_path) {
+fuchsia::mem::Buffer LoadFont(const base::FilePath& file_path) {
   std::string file_content;
   CHECK(ReadFileToString(file_path, &file_content));
-  fuchsia::fonts::FontData data;
-  zx_status_t status =
-      zx::vmo::create(file_content.size(), 0, &data.buffer.vmo);
+  fuchsia::mem::Buffer buffer;
+  zx_status_t status = zx::vmo::create(file_content.size(), 0, &buffer.vmo);
   ZX_CHECK(status == ZX_OK, status);
-  status = data.buffer.vmo.write(file_content.data(), 0, file_content.size());
+  status = buffer.vmo.write(file_content.data(), 0, file_content.size());
   ZX_CHECK(status == ZX_OK, status);
-  data.buffer.size = file_content.size();
-  return data;
+  buffer.size = file_content.size();
+  return buffer;
 }
 
-class MockFontProvider : public fuchsia::fonts::FontProvider {
+class MockFontProvider : public fuchsia::fonts::Provider {
  public:
   MockFontProvider() {
     base::FilePath assets_dir;
@@ -50,32 +49,32 @@ class MockFontProvider : public fuchsia::fonts::FontProvider {
     roboto_slab_ = LoadFont(assets_dir.Append("test_fonts/Tinos-Regular.ttf"));
   }
 
-  // fuchsia::fonts::FontProvider implementation.
-  void GetFont(fuchsia::fonts::FontRequest request,
+  // fuchsia::fonts::Provider implementation.
+  void GetFont(fuchsia::fonts::Request request,
                GetFontCallback callback) override {
-    fuchsia::fonts::FontData* font_data = nullptr;
+    fuchsia::mem::Buffer* font_buffer = nullptr;
     if (*request.family == "Roboto") {
-      font_data = &roboto_;
+      font_buffer = &roboto_;
     } else if (*request.family == "RobotoSlab") {
-      font_data = &roboto_slab_;
+      font_buffer = &roboto_slab_;
     }
 
-    if (!font_data) {
+    if (!font_buffer) {
       callback(nullptr);
       return;
     }
 
-    auto response = fuchsia::fonts::FontResponse::New();
-    EXPECT_EQ(font_data->buffer.vmo.duplicate(kFontDataRights,
-                                              &(response->data.buffer.vmo)),
-              ZX_OK);
-    response->data.buffer.size = font_data->buffer.size;
+    auto response = fuchsia::fonts::Response::New();
+    EXPECT_EQ(
+        font_buffer->vmo.duplicate(kFontDataRights, &(response->buffer.vmo)),
+        ZX_OK);
+    response->buffer.size = font_buffer->size;
     callback(std::move(response));
   }
 
  private:
-  fuchsia::fonts::FontData roboto_;
-  fuchsia::fonts::FontData roboto_slab_;
+  fuchsia::mem::Buffer roboto_;
+  fuchsia::mem::Buffer roboto_slab_;
 };
 
 class MockFontProviderService {
@@ -90,24 +89,23 @@ class MockFontProviderService {
                                                std::move(provider_binding_));
   }
 
-  void Bind(fidl::InterfaceRequest<fuchsia::fonts::FontProvider> request) {
+  void Bind(fidl::InterfaceRequest<fuchsia::fonts::Provider> request) {
     provider_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&MockFontProviderService::DoBind,
                                   base::Unretained(this), std::move(request)));
   }
 
  private:
-  void DoBind(fidl::InterfaceRequest<fuchsia::fonts::FontProvider> request) {
+  void DoBind(fidl::InterfaceRequest<fuchsia::fonts::Provider> request) {
     provider_binding_ =
-        std::make_unique<fidl::Binding<fuchsia::fonts::FontProvider>>(
+        std::make_unique<fidl::Binding<fuchsia::fonts::Provider>>(
             &provider_, std::move(request));
   }
 
   base::Thread provider_thread_;
 
   MockFontProvider provider_;
-  std::unique_ptr<fidl::Binding<fuchsia::fonts::FontProvider>>
-      provider_binding_;
+  std::unique_ptr<fidl::Binding<fuchsia::fonts::Provider>> provider_binding_;
 };
 
 }  // namespace
@@ -115,7 +113,7 @@ class MockFontProviderService {
 class FuchsiaFontManagerTest : public testing::Test {
  public:
   FuchsiaFontManagerTest() {
-    fuchsia::fonts::FontProviderSyncPtr font_provider;
+    fuchsia::fonts::ProviderSyncPtr font_provider;
     font_provider_service_.Bind(font_provider.NewRequest());
     font_manager_ = sk_make_sp<FuchsiaFontManager>(std::move(font_provider));
   }

@@ -125,13 +125,18 @@ void MediaControlPanelElement::MakeTransparent() {
   opaque_ = false;
 }
 
-void MediaControlPanelElement::RemovedFrom(ContainerNode&) {
+void MediaControlPanelElement::RemovedFrom(ContainerNode& insertion_point) {
+  MediaControlDivElement::RemovedFrom(insertion_point);
   DetachTransitionEventListener();
 }
 
 void MediaControlPanelElement::Trace(blink::Visitor* visitor) {
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
+}
+
+bool MediaControlPanelElement::KeepDisplayedForAccessibility() {
+  return keep_displayed_for_accessibility_;
 }
 
 void MediaControlPanelElement::SetKeepDisplayedForAccessibility(bool value) {
@@ -168,7 +173,7 @@ void MediaControlPanelElement::DetachTransitionEventListener() {
 void MediaControlPanelElement::DefaultEventHandler(Event& event) {
   // Suppress the media element activation behavior (toggle play/pause) when
   // any part of the control panel is clicked.
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == EventTypeNames::click && !MediaControlsImpl::IsModern()) {
     event.SetDefaultHandled();
     return;
   }
@@ -176,7 +181,8 @@ void MediaControlPanelElement::DefaultEventHandler(Event& event) {
 }
 
 bool MediaControlPanelElement::KeepEventInNode(const Event& event) const {
-  return !MediaControlsImpl::IsModern() &&
+  return (!MediaControlsImpl::IsModern() ||
+          GetMediaControls().ShouldShowAudioControls()) &&
          MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 

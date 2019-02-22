@@ -26,7 +26,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
     return StyleRef().ListStyleImage() &&
            !StyleRef().ListStyleImage()->ErrorOccurred();
   }
-  bool IsLayoutNGObject() const override { return true; }
 
   void UpdateMarkerTextIfNeeded() {
     if (marker_ && !is_marker_text_updated_ && !IsMarkerImage())

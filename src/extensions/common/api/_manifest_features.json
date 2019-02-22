@@ -111,7 +111,7 @@
     "extension_types": "all"
   },
   "declarative_net_request": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["extension"],
     "min_manifest_version": 2
   },

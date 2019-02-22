@@ -397,6 +397,11 @@ html[dir=rtl] .mv-favicon {
   padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
 }
 
+body.using-theme .md-tile {
+  /* The theme title pill adds 2*4px of vertical padding. */
+  padding-bottom: calc(var(--md-tile-padding-vertical) - 2*4px);
+}
+
 .md-empty-tile {
   display: none;
 }
@@ -485,7 +490,7 @@ body.dark-theme .md-tile-container:active + .md-menu::after {
 
 .md-title {
   color: rgba(33, 32, 36, 0.86);
-  font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
+  font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
   height: var(--md-title-height);
@@ -494,6 +499,12 @@ body.dark-theme .md-tile-container:active + .md-menu::after {
   width: 96px;
   word-break: break-word;
   word-wrap: break-word;
+}
+
+/* Font weight on Mac and ChromeOS looks heavier on default background and
+ * needs to be reduced. */
+body.mac-chromeos .md-title {
+  font-weight: 400;
 }
 
 /* Apply when a custom background is set */

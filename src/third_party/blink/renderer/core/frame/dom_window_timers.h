@@ -39,8 +39,10 @@
 namespace blink {
 
 class EventTarget;
+class ExceptionState;
 class ScriptState;
 class ScriptValue;
+class StringOrTrustedScript;
 
 namespace DOMWindowTimers {
 int setTimeout(ScriptState*,
@@ -50,9 +52,15 @@ int setTimeout(ScriptState*,
                const Vector<ScriptValue>& arguments);
 int setTimeout(ScriptState*,
                EventTarget&,
-               const String& handler,
+               const StringOrTrustedScript&,
                int timeout,
-               const Vector<ScriptValue>&);
+               const Vector<ScriptValue>&,
+               ExceptionState&);
+int setTimeoutFromString(ScriptState*,
+                         EventTarget&,
+                         const String& handler,
+                         int timeout,
+                         const Vector<ScriptValue>&);
 int setInterval(ScriptState*,
                 EventTarget&,
                 const ScriptValue& handler,
@@ -60,9 +68,15 @@ int setInterval(ScriptState*,
                 const Vector<ScriptValue>&);
 int setInterval(ScriptState*,
                 EventTarget&,
-                const String& handler,
+                const StringOrTrustedScript&,
                 int timeout,
-                const Vector<ScriptValue>&);
+                const Vector<ScriptValue>&,
+                ExceptionState&);
+int setIntervalFromString(ScriptState*,
+                          EventTarget&,
+                          const String& handler,
+                          int timeout,
+                          const Vector<ScriptValue>&);
 void clearTimeout(EventTarget&, int timeout_id);
 void clearInterval(EventTarget&, int timeout_id);
 }

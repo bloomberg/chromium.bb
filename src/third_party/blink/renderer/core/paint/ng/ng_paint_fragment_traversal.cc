@@ -150,7 +150,7 @@ unsigned IndexOfChild(const NGPaintFragment& parent,
       children.begin(), children.end(),
       [&fragment](const auto& child) { return &fragment == child.get(); });
   DCHECK(it != children.end());
-  return std::distance(children.begin(), it);
+  return static_cast<unsigned>(std::distance(children.begin(), it));
 }
 
 }  // namespace
@@ -248,6 +248,11 @@ void NGPaintFragmentTraversal::MoveToPrevious() {
   current_ = stack_top.parent->Children()[stack_top.index].get();
   while (!current_->Children().IsEmpty())
     Push(*current_, current_->Children().size() - 1);
+}
+
+NGPaintFragmentTraversal::AncestorRange
+NGPaintFragmentTraversal::InclusiveAncestorsOf(const NGPaintFragment& start) {
+  return AncestorRange(start);
 }
 
 Vector<NGPaintFragmentWithContainerOffset>
@@ -358,6 +363,18 @@ NGPaintFragmentTraversal::NextInlineLeafOfIgnoringLineBreak(
   while (!runner.IsNull() && IsLineBreak(runner))
     runner = NextInlineLeafOf(runner);
   return runner;
+}
+
+// ----
+NGPaintFragment* NGPaintFragmentTraversal::AncestorRange::Iterator::operator->()
+    const {
+  DCHECK(current_);
+  return current_;
+}
+
+void NGPaintFragmentTraversal::AncestorRange::Iterator::operator++() {
+  DCHECK(current_);
+  current_ = current_->Parent();
 }
 
 }  // namespace blink

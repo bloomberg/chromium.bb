@@ -18,7 +18,10 @@ if (current_cpu == "x86") {
     cpu_arch_full = "x64"
   }
 } else if (current_cpu == "arm") {
-  if (arm_use_neon) {
+  if (is_chromeos) {
+    # ChromeOS gets highbd vp9 but other arm targets do not.
+    cpu_arch_full = "chromeos-arm-neon"
+  } else if (arm_use_neon) {
     cpu_arch_full = "arm-neon"
   } else if (is_android) {
     cpu_arch_full = "arm-neon-cpu-detect"
@@ -26,7 +29,12 @@ if (current_cpu == "x86") {
     cpu_arch_full = "arm"
   }
 } else {
-  cpu_arch_full = current_cpu
+  if (is_chromeos) {
+    # ChromeOS gets highbd vp9 but other arm targets do not.
+    cpu_arch_full = "chromeos-arm64"
+  } else {
+    cpu_arch_full = current_cpu
+  }
 }
 
 if (is_nacl) {
@@ -243,6 +251,8 @@ if (cpu_arch_full == "arm-neon-cpu-detect") {
 if (current_cpu == "arm") {
   if (cpu_arch_full == "arm-neon") {
     arm_assembly_sources = libvpx_srcs_arm_neon_assembly
+  } else if (cpu_arch_full == "chromeos-arm-neon") {
+    arm_assembly_sources = libvpx_srcs_chromeos_arm_neon_assembly
   } else if (cpu_arch_full == "arm-neon-cpu-detect") {
     arm_assembly_sources = libvpx_srcs_arm_neon_cpu_detect_assembly
   } else {
@@ -282,7 +292,8 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
     sources = get_target_outputs(":convert_arm_assembly")
     configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
     configs += [ ":libvpx_config" ]
-    if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
+    if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect" ||
+        cpu_arch_full == "chromeos-arm-neon") {
       asmflags = [ "-mfpu=neon" ]
 
       # allow asm files to include generated sources which match the source
@@ -315,7 +326,9 @@ static_library("libvpx") {
   } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
     sources = libvpx_srcs_mips
   } else if (current_cpu == "arm") {
-    if (arm_use_neon) {
+    if (is_chromeos) {
+      sources = libvpx_srcs_chromeos_arm_neon
+    } else if (arm_use_neon) {
       sources = libvpx_srcs_arm_neon
     } else if (is_android) {
       sources = libvpx_srcs_arm_neon_cpu_detect
@@ -323,7 +336,11 @@ static_library("libvpx") {
       sources = libvpx_srcs_arm
     }
   } else if (current_cpu == "arm64") {
-    sources = libvpx_srcs_arm64
+    if (is_chromeos) {
+      sources = libvpx_srcs_chromeos_arm64
+    } else {
+      sources = libvpx_srcs_arm64
+    }
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

@@ -237,7 +237,7 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
     for board in self._run.site_config.GetBoards():
       try:
         toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
-      except portage_util.MissingOverlayException:
+      except portage_util.MissingOverlayError:
         # The board overlay may not exist, e.g. on external builders.
         continue
 
@@ -322,7 +322,7 @@ class SDKTestStage(generic_stages.BuilderStage):
                           extra_env=self._portage_extra_env,
                           chroot_args=new_chroot_args)
       commands.Build(self._build_root, board, build_autotest=True,
-                     usepkg=False, chrome_binhost_only=False,
+                     usepkg=False,
                      extra_env=self._portage_extra_env,
                      chroot_args=new_chroot_args)
 

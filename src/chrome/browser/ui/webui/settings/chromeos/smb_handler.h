@@ -42,6 +42,9 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   void HandleGatherSharesResponse(
       const std::vector<smb_client::SmbUrl>& shares_gathered);
 
+  // Callback handler that indicates discovery is complete.
+  void HandleDiscoveryDone();
+
   bool host_discovery_done_ = false;
   base::OnceClosure stored_mount_call_;
   Profile* const profile_;

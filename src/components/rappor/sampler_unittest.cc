@@ -14,17 +14,15 @@
 
 namespace rappor {
 
-const RapporParameters kTestRapporParameters = {
-    1 /* Num cohorts */,
-    1 /* Bloom filter size bytes */,
-    4 /* Bloom filter hash count */,
-    NORMAL_NOISE /* Noise level */,
+const RapporParameters kRapporSamplerTestParameters = {
+    1 /* Num cohorts */, 1 /* Bloom filter size bytes */,
+    4 /* Bloom filter hash count */, NORMAL_NOISE /* Noise level */,
     UMA_RAPPOR_GROUP /* Recording group (not used) */};
 
 class TestSamplerFactory {
  public:
   static std::unique_ptr<Sample> CreateSample() {
-    return std::unique_ptr<Sample>(new Sample(0, kTestRapporParameters));
+    return std::unique_ptr<Sample>(new Sample(0, kRapporSamplerTestParameters));
   }
 };
 

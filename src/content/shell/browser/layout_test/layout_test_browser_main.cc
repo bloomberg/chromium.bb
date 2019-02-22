@@ -155,15 +155,6 @@ int LayoutTestBrowserMain(
   android_configuration.RedirectStreams();
 #endif
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCheckLayoutTestSysDeps)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&content::Shell::CloseAllWindows));
-    main_runner->Run();
-    main_runner->Shutdown();
-    return 0;
-  }
-
   exit_code = RunTests(main_runner);
   base::RunLoop().RunUntilIdle();
 

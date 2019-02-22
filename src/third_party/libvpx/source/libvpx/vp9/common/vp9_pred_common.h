@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VP9_COMMON_VP9_PRED_COMMON_H_
-#define VP9_COMMON_VP9_PRED_COMMON_H_
+#ifndef VPX_VP9_COMMON_VP9_PRED_COMMON_H_
+#define VPX_VP9_COMMON_VP9_PRED_COMMON_H_
 
 #include "vp9/common/vp9_blockd.h"
 #include "vp9/common/vp9_onyxc_int.h"
@@ -145,6 +145,10 @@ static INLINE vpx_prob vp9_get_pred_prob_single_ref_p2(const VP9_COMMON *cm,
   return cm->fc->single_ref_prob[vp9_get_pred_context_single_ref_p2(xd)][1];
 }
 
+int vp9_compound_reference_allowed(const VP9_COMMON *cm);
+
+void vp9_setup_compound_reference_mode(VP9_COMMON *cm);
+
 // Returns a context number for the given MB prediction signal
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real blocks.
@@ -190,4 +194,4 @@ static INLINE unsigned int *get_tx_counts(TX_SIZE max_tx_size, int ctx,
 }  // extern "C"
 #endif
 
-#endif  // VP9_COMMON_VP9_PRED_COMMON_H_
+#endif  // VPX_VP9_COMMON_VP9_PRED_COMMON_H_

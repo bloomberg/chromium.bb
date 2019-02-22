@@ -1,11 +1,14 @@
 include_rules = [
   "+components/download/internal/test",
   "+components/download/public",
+  "+components/prefs",
   "+google_apis",
   "+components/variations",
   "+components/gcm_driver",
   "+components/ntp_snippets",
   "+components/version_info",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+sql",
 ]

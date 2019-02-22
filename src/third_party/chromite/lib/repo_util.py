@@ -16,6 +16,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import repo_manifest
 
 
 # Match `repo` error: "error: project <name> not found"
@@ -55,6 +56,7 @@ class Repository(object):
     """
     self.root = os.path.abspath(root)
     self._repo_dir = os.path.join(self.root, '.repo')
+    self._manifests_dir = os.path.join(self._repo_dir, 'manifests')
     self._ValidateRepoDir()
 
   def _ValidateRepoDir(self):
@@ -169,7 +171,7 @@ class Repository(object):
                                      debug_level=logging.DEBUG)
 
   def Sync(self, projects=None, local_only=False, current_branch=False,
-           jobs=None, cwd=None):
+           jobs=None, manifest_path=None, cwd=None):
     """Run `repo sync`.
 
     Args:
@@ -177,6 +179,7 @@ class Repository(object):
       local_only: Only update working tree; don't fetch.
       current_branch: Fetch only the current branch.
       jobs: Number of projects to sync in parallel.
+      manifest_path: Path to a manifest XML file to use for this sync.
       cwd: The path to run the command in. Defaults to Repository root.
 
     Raises:
@@ -190,6 +193,12 @@ class Repository(object):
       args += ['--current-branch']
     if jobs is not None:
       args += ['--jobs', str(jobs)]
+
+    if manifest_path is not None:
+      # --manifest-name must be relative to .repo/manifests.
+      manifest_name = os.path.relpath(manifest_path, self._manifests_dir)
+      args += ['--manifest-name', manifest_name]
+
     self._Run(['sync'] + args, cwd=cwd)
 
   def StartBranch(self, name, projects=None, cwd=None):
@@ -214,7 +223,7 @@ class Repository(object):
   def List(self, projects=None, cwd=None):
     """Run `repo list` and returns a list of ProjectInfos for synced projects.
 
-    Note that this may produce a different list than parsing the manifest file
+    Note that this may produce a different list than Manifest().Projects()
     due to partial project syncing (e.g. `repo init -g minilayout`).
 
     Args:
@@ -240,6 +249,23 @@ class Repository(object):
       path, name = line.rsplit(' : ', 1)
       infos.append(ProjectInfo(name=name, path=path))
     return infos
+
+  def Manifest(self, revision_locked=False):
+    """Run `repo manifest` and return a repo_manifest.Manifest.
+
+    Args:
+      revision_locked: If True, create a "revision locked" manifest with each
+      project's revision set to that project's current HEAD.
+
+    Raises:
+      RunCommandError: if `repo list` otherwise failed.
+      repo_manifest.Error: if the output couldn't be parsed into a Manifest.
+    """
+    cmd = ['manifest']
+    if revision_locked:
+      cmd += ['--revision-as-HEAD']
+    result = self._Run(cmd, capture_output=True)
+    return repo_manifest.Manifest.FromString(result.output)
 
   def Copy(self, dest_root):
     """Efficiently `cp` the .repo directory, using hardlinks if possible.
@@ -270,6 +296,7 @@ class Repository(object):
           cros_build_lib.RunCommand(
               ['cp', '--archive', '--link', '--parents', objects_dir,
                dest_path],
+              debug_level=logging.DEBUG, capture_output=True,
               extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
         except cros_build_lib.RunCommandError as e:
           if 'Invalid cross-device link' in e.result.error:
@@ -281,7 +308,8 @@ class Repository(object):
       try:
         cros_build_lib.RunCommand(
             ['cp', '--archive', '--no-clobber', '.repo', dest_path],
-            cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+            debug_level=logging.DEBUG, capture_output=True,
+            extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
       except cros_build_lib.RunCommandError as e:
         # Despite the --no-clobber, `cp` still complains when trying to copy a
         # file to its existing hard link. Filter these errors from the output

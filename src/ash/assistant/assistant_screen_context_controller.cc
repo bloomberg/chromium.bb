@@ -144,12 +144,12 @@ void AssistantScreenContextController::SetAssistant(
 
 void AssistantScreenContextController::AddModelObserver(
     AssistantScreenContextModelObserver* observer) {
-  assistant_screen_context_model_.AddObserver(observer);
+  model_.AddObserver(observer);
 }
 
 void AssistantScreenContextController::RemoveModelObserver(
     AssistantScreenContextModelObserver* observer) {
-  assistant_screen_context_model_.RemoveObserver(observer);
+  model_.RemoveObserver(observer);
 }
 
 void AssistantScreenContextController::RequestScreenshot(
@@ -195,8 +195,7 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
   // Otherwise, we abort any requests in progress and reset state.
   if (new_visibility != AssistantVisibility::kVisible) {
     screen_context_request_factory_.InvalidateWeakPtrs();
-    assistant_screen_context_model_.SetRequestState(
-        ScreenContextRequestState::kIdle);
+    model_.SetRequestState(ScreenContextRequestState::kIdle);
     return;
   }
 
@@ -210,8 +209,7 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
 
   // Abort any request in progress and update request state.
   screen_context_request_factory_.InvalidateWeakPtrs();
-  assistant_screen_context_model_.SetRequestState(
-      ScreenContextRequestState::kInProgress);
+  model_.SetRequestState(ScreenContextRequestState::kInProgress);
 
   // Cache screen context for the entire screen.
   assistant_->CacheScreenContext(base::BindOnce(
@@ -220,8 +218,7 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
 }
 
 void AssistantScreenContextController::OnScreenContextRequestFinished() {
-  assistant_screen_context_model_.SetRequestState(
-      ScreenContextRequestState::kIdle);
+  model_.SetRequestState(ScreenContextRequestState::kIdle);
 }
 
 std::unique_ptr<ui::LayerTreeOwner>

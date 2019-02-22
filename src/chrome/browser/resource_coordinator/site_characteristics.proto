@@ -11,19 +11,22 @@ option optimize_for = LITE_RUNTIME;
 message SiteCharacteristicsFeatureProto {
   // The cumulative observation time for this feature in seconds, set to 0 once
   // this feature has been observed.
-  required int64 observation_duration = 1;
+  optional int64 observation_duration = 1;
   // The time at which this feature has been used (set to 0 if it hasn't been
   // used), in seconds since epoch.
-  required int64 use_timestamp = 2;
+  optional int64 use_timestamp = 2;
 }
 
 // Contains decaying average performance measurement estimates.
-// Next Id: 3
+// Next Id: 4
 message SiteCharacteristicsPerformanceMeasurement {
   // A decaying average of the CPU usage measurements. Units: microseconds.
   optional float avg_cpu_usage_us = 1;
   // A decaying average of the process footprint measurements. Units: kilobytes.
   optional float avg_footprint_kb = 2;
+  // A decaying average of the duration from navigation commit to "loaded".
+  // Units: microseconds.
+  optional float avg_load_duration_us = 3;
 };
 
 // Defines the characteristics that we want to track about a given site.
@@ -31,13 +34,13 @@ message SiteCharacteristicsPerformanceMeasurement {
 message SiteCharacteristicsProto {
   // The last time this site has been in the loaded state, in seconds since
   // epoch.
-  required uint32 last_loaded = 1;
+  optional uint32 last_loaded = 1;
 
   // List of features that we're tracking.
-  required SiteCharacteristicsFeatureProto updates_favicon_in_background = 2;
-  required SiteCharacteristicsFeatureProto updates_title_in_background = 3;
-  required SiteCharacteristicsFeatureProto uses_audio_in_background = 4;
-  required SiteCharacteristicsFeatureProto uses_notifications_in_background = 5;
+  optional SiteCharacteristicsFeatureProto updates_favicon_in_background = 2;
+  optional SiteCharacteristicsFeatureProto updates_title_in_background = 3;
+  optional SiteCharacteristicsFeatureProto uses_audio_in_background = 4;
+  optional SiteCharacteristicsFeatureProto uses_notifications_in_background = 5;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes

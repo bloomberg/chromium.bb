@@ -16,6 +16,7 @@
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -37,7 +38,7 @@ namespace views {
 class BoundsAnimator;
 class MenuRunner;
 class Separator;
-}
+}  // namespace views
 
 namespace ash {
 class AppListButton;
@@ -112,7 +113,8 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost,
-                             public ash::TabletModeObserver {
+                             public ash::TabletModeObserver,
+                             public VirtualKeyboardModel::Observer {
  public:
   ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
   ~ShelfView() override;
@@ -134,7 +136,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns true if we're showing a menu for |view|. |view| could be a
   // ShelfButton or the ShelfView.
-  bool IsShowingMenuForView(views::View* view) const;
+  bool IsShowingMenuForView(const views::View* view) const;
 
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
@@ -189,11 +191,15 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // Overridden from VirtualKeyboardModel::Observer:
+  void OnVirtualKeyboardVisibilityChanged() override;
+
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
-      float scale_factor) override;
+      float scale_factor,
+      int blur_radius) override;
 
   void UpdateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates) override;
@@ -228,7 +234,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Enumerates the shelf items that are centered in the new UI and returns
   // the total size they occupy.
-  int GetDimensionOfCenteredShelfItemsInNewUi() const;
+  int GetDimensionOfCenteredShelfItems() const;
 
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
@@ -391,8 +397,6 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -468,6 +472,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Updates the back button opacity and focus behavior based on tablet mode.
   void UpdateBackButton();
 
+  // Set background blur to the dragged image. |size| is the image size.
+  void SetDragImageBlur(const gfx::Size& size, int blur_radius);
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 
@@ -531,6 +538,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_ = false;
 
+  // Whether context menu options have been requested. Prevents multiple
+  // requests.
+  bool waiting_for_context_menu_options_ = false;
+
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
 
@@ -547,6 +558,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
   std::unique_ptr<ash::DragImageView> drag_image_;
+
+  // The owner of a mask layer used to clip the background blur.
+  std::unique_ptr<ui::LayerOwner> drag_image_mask_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;

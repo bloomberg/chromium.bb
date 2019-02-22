@@ -28,10 +28,12 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/event_utils.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -130,6 +132,11 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   SetImageFromVectorIcon(close_button, vector_icons::kCloseRoundedIcon);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
+
+  // Let the close button use a circular inkdrop shape.
+  auto highlight_path = std::make_unique<gfx::Path>();
+  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
+  close_button->SetProperty(kHighlightPathKey, highlight_path.release());
 
   // Remove the close button from tab traversal on all platforms. Note this does
   // not affect screen readers' ability to focus the close button. Keyboard
@@ -407,6 +414,13 @@ void BubbleFrameView::ViewHierarchyChanged(
   }
 }
 
+void BubbleFrameView::VisibilityChanged(View* starting_from, bool is_visible) {
+  NonClientFrameView::VisibilityChanged(starting_from, is_visible);
+
+  if (is_visible)
+    view_shown_time_stamp_ = base::TimeTicks::Now();
+}
+
 void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   // Border comes after children.
@@ -424,6 +438,9 @@ void BubbleFrameView::PaintChildren(const PaintInfo& paint_info) {
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (IsPossiblyUnintendedInteraction(view_shown_time_stamp_, event))
+    return;
+
   if (sender == close_) {
     close_button_clicked_ = true;
     GetWidget()->Close();
@@ -475,6 +492,10 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 
   // Calculate the bounds with the arrow in its updated location and offset.
   return bubble_border_->GetBounds(anchor_rect, size);
+}
+
+void BubbleFrameView::ResetViewShownTimeStampForTesting() {
+  view_shown_time_stamp_ = base::TimeTicks();
 }
 
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(

@@ -360,13 +360,18 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   EXPECT_EQ(now.since_origin().InMicroseconds(),
             consent.client_consent_time_usec());
   EXPECT_EQ(kAccountId, consent.account_id());
-  EXPECT_EQ(UserConsentSpecifics::CHROME_SYNC, consent.feature());
-  EXPECT_EQ(3, consent.description_grd_ids_size());
-  EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
-  EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
-  EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
-  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
+
+  EXPECT_TRUE(consent.has_sync_consent());
+  const SyncConsent& actual_sync_consent = consent.sync_consent();
+  EXPECT_EQ(3, actual_sync_consent.description_grd_ids_size());
+  EXPECT_EQ(kDescriptionMessageIds[0],
+            actual_sync_consent.description_grd_ids(0));
+  EXPECT_EQ(kDescriptionMessageIds[1],
+            actual_sync_consent.description_grd_ids(1));
+  EXPECT_EQ(kDescriptionMessageIds[2],
+            actual_sync_consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, actual_sync_consent.confirmation_grd_id());
 }
 
 TEST_F(ConsentAuditorImplTest, RecordArcPlayConsentRevocation) {
@@ -405,14 +410,22 @@ TEST_F(ConsentAuditorImplTest, RecordArcPlayConsentRevocation) {
   UserConsentSpecifics consent = consents[0];
 
   EXPECT_EQ(kAccountId, consent.account_id());
-  EXPECT_EQ(UserConsentTypes::NOT_GIVEN, consent.status());
-  EXPECT_EQ(UserConsentSpecifics::PLAY_STORE, consent.feature());
-  EXPECT_EQ(3, consent.description_grd_ids_size());
-  EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
-  EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
-  EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
-  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
+
+  EXPECT_TRUE(consent.has_arc_play_terms_of_service_consent());
+  const ArcPlayTermsOfServiceConsent& actual_play_consent =
+      consent.arc_play_terms_of_service_consent();
+  EXPECT_EQ(UserConsentTypes::NOT_GIVEN, actual_play_consent.status());
+  EXPECT_EQ(ArcPlayTermsOfServiceConsent::SETTING_CHANGE,
+            actual_play_consent.consent_flow());
+  EXPECT_EQ(3, actual_play_consent.description_grd_ids_size());
+  EXPECT_EQ(kDescriptionMessageIds[0],
+            actual_play_consent.description_grd_ids(0));
+  EXPECT_EQ(kDescriptionMessageIds[1],
+            actual_play_consent.description_grd_ids(1));
+  EXPECT_EQ(kDescriptionMessageIds[2],
+            actual_play_consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, actual_play_consent.confirmation_grd_id());
 }
 
 TEST_F(ConsentAuditorImplTest, RecordArcPlayConsent) {
@@ -456,18 +469,20 @@ TEST_F(ConsentAuditorImplTest, RecordArcPlayConsent) {
   UserConsentSpecifics consent = consents[0];
 
   EXPECT_EQ(kAccountId, consent.account_id());
-  EXPECT_EQ(UserConsentSpecifics::PLAY_STORE, consent.feature());
-
-  EXPECT_EQ(6, consent.description_grd_ids_size());
-  EXPECT_EQ(7, consent.description_grd_ids(0));
-  EXPECT_EQ(static_cast<int>(0x2fd4e1c6), consent.description_grd_ids(1));
-  EXPECT_EQ(static_cast<int>(0x7a2d28fc), consent.description_grd_ids(2));
-  EXPECT_EQ(static_cast<int>(0xed849ee1), consent.description_grd_ids(3));
-  EXPECT_EQ(static_cast<int>(0xbb76e739), consent.description_grd_ids(4));
-  EXPECT_EQ(static_cast<int>(0x1b93eb12), consent.description_grd_ids(5));
-
-  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
+
+  EXPECT_TRUE(consent.has_arc_play_terms_of_service_consent());
+  const ArcPlayTermsOfServiceConsent& actual_play_consent =
+      consent.arc_play_terms_of_service_consent();
+
+  EXPECT_EQ(7, actual_play_consent.play_terms_of_service_text_length());
+  EXPECT_EQ(std::string(play_tos_hash, base::kSHA1Length),
+            actual_play_consent.play_terms_of_service_hash());
+
+  EXPECT_EQ(kConfirmationMessageId, actual_play_consent.confirmation_grd_id());
+  EXPECT_EQ(ArcPlayTermsOfServiceConsent::SETUP,
+            actual_play_consent.consent_flow());
+  EXPECT_EQ(UserConsentTypes::GIVEN, actual_play_consent.status());
 }
 
 TEST_F(ConsentAuditorImplTest, ShouldReturnNoSyncDelegateWhenNoBridge) {

@@ -11,9 +11,4 @@
         android:width="@dimen/modern_toolbar_background_size"
         android:height="@dimen/modern_toolbar_background_size" />
     <corners android:radius="@dimen/modern_toolbar_background_corner_radius" />
-    <padding
-        android:top="0dp"
-        android:bottom="0dp"
-        android:left="@dimen/modern_toolbar_background_lateral_inset"
-        android:right="@dimen/modern_toolbar_background_lateral_inset" />
 </shape>

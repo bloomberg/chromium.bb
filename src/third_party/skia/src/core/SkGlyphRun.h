@@ -5,18 +5,19 @@
  * found in the LICENSE file.
  */
 
-#ifndef SkGlyphRunInfo_DEFINED
-#define SkGlyphRunInfo_DEFINED
+#ifndef SkGlyphRun_DEFINED
+#define SkGlyphRun_DEFINED
 
 #include <functional>
 #include <memory>
 #include <vector>
 
-#include "SkDescriptor.h"
 #include "SkDistanceFieldGen.h"
+#include "SkGlyph.h"
 #include "SkMask.h"
 #include "SkPath.h"
 #include "SkPoint.h"
+#include "SkScalerContext.h"
 #include "SkSpan.h"
 #include "SkSurfaceProps.h"
 #include "SkTemplates.h"
@@ -27,11 +28,6 @@ class SkArenaAlloc;
 class SkBaseDevice;
 class SkGlyphRunList;
 class SkRasterClip;
-
-#if SK_SUPPORT_GPU
-class GrColorSpaceInfo;
-class GrRenderTargetContext;
-#endif
 
 class SkGlyphCacheInterface {
 public:
@@ -76,12 +72,21 @@ public:
 
         return {lookupX, lookupY};
     }
+
+    // An atlas consists of plots, and plots hold glyphs. The minimum a plot can be is 256x256.
+    // This means that the maximum size a glyph can be is 256x256.
+    static constexpr uint16_t kSkSideTooBigForAtlas = 256;
+
+    inline static bool GlyphTooBigForAtlas(const SkGlyph& glyph) {
+        return glyph.fWidth > kSkSideTooBigForAtlas || glyph.fHeight > kSkSideTooBigForAtlas;
+    }
 };
 
 class SkGlyphRun {
 public:
     SkGlyphRun() = default;
-    SkGlyphRun(SkPaint&& runPaint,
+    SkGlyphRun(const SkPaint& basePaint,
+               const SkRunFont& runFont,
                SkSpan<const uint16_t> denseIndices,
                SkSpan<const SkPoint> positions,
                SkSpan<const SkGlyphID> glyphIDs,
@@ -98,11 +103,6 @@ public:
     template <typename PerGlyphPos>
     void forEachGlyphAndPosition(PerGlyphPos perGlyph) const;
 
-    // The temporaryShunt calls are to allow inter-operating with existing code while glyph runs
-    // are developed.
-    void temporaryShuntToDrawPosText(SkBaseDevice* device, SkPoint origin);
-    using TemporaryShuntCallback = std::function<void(size_t, const char*, const SkScalar*)>;
-    void temporaryShuntToCallback(TemporaryShuntCallback callback);
     void filloutGlyphsAndPositions(SkGlyphID* glyphIDs, SkPoint* positions);
 
     size_t runSize() const { return fGlyphIDs.size(); }
@@ -128,74 +128,6 @@ private:
     const SkSpan<const uint32_t>   fClusters;
     // Paint for this run modified to have glyph encoding and left alignment.
     SkPaint fRunPaint;
-};
-
-class SkGlyphRunListPainter {
-public:
-    // Constructor for SkBitmpapDevice.
-    SkGlyphRunListPainter(
-            const SkSurfaceProps& props, SkColorType colorType, SkScalerContextFlags flags);
-
-    #if SK_SUPPORT_GPU
-    SkGlyphRunListPainter(const SkSurfaceProps&, const GrColorSpaceInfo&);
-    explicit SkGlyphRunListPainter(const GrRenderTargetContext& renderTargetContext);
-    #endif
-
-    using PerMask = std::function<void(const SkMask&, const SkGlyph&, SkPoint)>;
-    using PerMaskCreator = std::function<PerMask(const SkPaint&, SkArenaAlloc* alloc)>;
-    using PerPath = std::function<void(const SkPath*, const SkGlyph&, SkPoint)>;
-    using PerPathCreator = std::function<PerPath(
-            const SkPaint&, SkScalar matrixScale, SkArenaAlloc* alloc)>;
-    void drawForBitmapDevice(
-            const SkGlyphRunList& glyphRunList, const SkMatrix& deviceMatrix,
-            PerMaskCreator perMaskCreator, PerPathCreator perPathCreator);
-    void drawUsingMasks(
-            SkGlyphCache* cache, const SkGlyphRun& glyphRun, SkPoint origin,
-            const SkMatrix& deviceMatrix, PerMask perMask);
-    void drawUsingPaths(
-            const SkGlyphRun& glyphRun, SkPoint origin, SkGlyphCache* cache, PerPath perPath) const;
-
-    //using PerGlyph = std::function<void(const SkGlyph&, SkPoint)>;
-    template <typename PerGlyphT, typename PerPathT>
-    void drawGlyphRunAsBMPWithPathFallback(
-            SkGlyphCacheInterface* cache, const SkGlyphRun& glyphRun,
-            SkPoint origin, const SkMatrix& deviceMatrix,
-            PerGlyphT perGlyph, PerPathT perPath);
-
-    template <typename PerSDFT, typename PerPathT, typename PerFallbackT>
-    void drawGlyphRunAsSDFWithFallback(
-            SkGlyphCache* cache, const SkGlyphRun& glyphRun,
-            SkPoint origin, SkScalar textRatio,
-            PerSDFT perSDF, PerPathT perPath, PerFallbackT perFallback);
-
-private:
-    static bool ShouldDrawAsPath(const SkPaint& paint, const SkMatrix& matrix);
-    bool ensureBitmapBuffers(size_t runSize);
-
-
-    template <typename EachGlyph>
-    void forEachMappedDrawableGlyph(
-            const SkGlyphRun& glyphRun, SkPoint origin, const SkMatrix& deviceMatrix,
-            SkGlyphCacheInterface* cache, EachGlyph eachGlyph);
-
-    void drawGlyphRunAsSubpixelMask(
-            SkGlyphCache* cache, const SkGlyphRun& glyphRun,
-            SkPoint origin, const SkMatrix& deviceMatrix,
-            PerMask perMask);
-
-    void drawGlyphRunAsFullpixelMask(
-            SkGlyphCache* cache, const SkGlyphRun& glyphRun,
-            SkPoint origin, const SkMatrix& deviceMatrix,
-            PerMask perMask);
-
-    // The props as on the actual device.
-    const SkSurfaceProps fDeviceProps;
-    // The props for when the bitmap device can't draw LCD text.
-    const SkSurfaceProps fBitmapFallbackProps;
-    const SkColorType fColorType;
-    const SkScalerContextFlags fScalerContextFlags;
-    size_t fMaxRunSize{0};
-    SkAutoTMalloc<SkPoint> fPositions;
 };
 
 class SkGlyphRunList {
@@ -242,11 +174,6 @@ public:
     auto size()  const -> decltype(fGlyphRuns.size())          { return fGlyphRuns.size();   }
     auto empty() const -> decltype(fGlyphRuns.empty())         { return fGlyphRuns.empty();  }
     auto operator [] (size_t i) const -> decltype(fGlyphRuns[i]) { return fGlyphRuns[i];     }
-    void temporaryShuntToDrawPosText(SkBaseDevice* device, SkPoint origin) const {
-        for (auto& run : fGlyphRuns) {
-            run.temporaryShuntToDrawPosText(device, origin);
-        }
-    }
 };
 
 class SkGlyphIDSet {
@@ -288,7 +215,8 @@ private:
             SkGlyphID* uniqueGlyphIDs);
 
     void makeGlyphRun(
-            const SkPaint& runPaint,
+            const SkPaint& basePaint,
+            const SkRunFont& runFont,
             SkSpan<const SkGlyphID> glyphIDs,
             SkSpan<const SkPoint> positions,
             SkSpan<const uint16_t> uniqueGlyphIDIndices,
@@ -299,19 +227,20 @@ private:
     void makeGlyphRunList(const SkPaint& paint, const SkTextBlob* blob, SkPoint origin);
 
     size_t simplifyDrawText(
-            const SkPaint& paint, SkSpan<const SkGlyphID> glyphIDs, SkPoint origin,
-            uint16_t* uniqueGlyphIDIndices, SkGlyphID* uniqueGlyphIDs, SkPoint* positions,
+            const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
+            SkPoint origin,uint16_t* uniqueGlyphIDIndices, SkGlyphID* uniqueGlyphIDs,
+            SkPoint* positions,
             SkSpan<const char> text = SkSpan<const char>{},
             SkSpan<const uint32_t> clusters = SkSpan<const uint32_t>{});
     size_t simplifyDrawPosTextH(
-            const SkPaint& paint, SkSpan<const SkGlyphID> glyphIDs,
+            const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
             const SkScalar* xpos, SkScalar constY,
             uint16_t* uniqueGlyphIDIndices, SkGlyphID* uniqueGlyphIDs, SkPoint* positions,
             SkSpan<const char> text = SkSpan<const char>{},
             SkSpan<const uint32_t> clusters = SkSpan<const uint32_t>{});
     size_t simplifyDrawPosText(
-            const SkPaint& paint, SkSpan<const SkGlyphID> glyphIDs, const SkPoint* pos,
-            uint16_t* uniqueGlyphIDIndices, SkGlyphID* uniqueGlyphIDs,
+            const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
+            const SkPoint* pos, uint16_t* uniqueGlyphIDIndices, SkGlyphID* uniqueGlyphIDs,
             SkSpan<const char> text = SkSpan<const char>{},
             SkSpan<const uint32_t> clusters = SkSpan<const uint32_t>{});
 
@@ -343,85 +272,4 @@ inline void SkGlyphRun::forEachGlyphAndPosition(PerGlyphPos perGlyph) const {
     }
 }
 
-inline static bool glyph_too_big_for_atlas(const SkGlyph& glyph) {
-    return glyph.fWidth > 256 || glyph.fHeight > 256;
-}
-
-inline static SkRect rect_to_draw(
-        const SkGlyph& glyph, SkPoint origin, SkScalar textScale, bool isDFT) {
-
-    SkScalar dx = SkIntToScalar(glyph.fLeft);
-    SkScalar dy = SkIntToScalar(glyph.fTop);
-    SkScalar width = SkIntToScalar(glyph.fWidth);
-    SkScalar height = SkIntToScalar(glyph.fHeight);
-
-    if (isDFT) {
-        dx += SK_DistanceFieldInset;
-        dy += SK_DistanceFieldInset;
-        width -= 2 * SK_DistanceFieldInset;
-        height -= 2 * SK_DistanceFieldInset;
-    }
-
-    dx *= textScale;
-    dy *= textScale;
-    width *= textScale;
-    height *= textScale;
-
-    return SkRect::MakeXYWH(origin.x() + dx, origin.y() + dy, width, height);
-}
-
-// forEachMappedDrawableGlyph handles positioning for mask type glyph handling for both sub-pixel
-// and full pixel positioning.
-template <typename EachGlyph>
-void SkGlyphRunListPainter::forEachMappedDrawableGlyph(
-        const SkGlyphRun& glyphRun, SkPoint origin, const SkMatrix& deviceMatrix,
-        SkGlyphCacheInterface* cache, EachGlyph eachGlyph) {
-    SkMatrix mapping = deviceMatrix;
-    mapping.preTranslate(origin.x(), origin.y());
-    SkVector rounding = cache->rounding();
-    mapping.postTranslate(rounding.x(), rounding.y());
-
-    auto runSize = glyphRun.runSize();
-    if (this->ensureBitmapBuffers(runSize)) {
-        mapping.mapPoints(fPositions, glyphRun.positions().data(), runSize);
-        const SkPoint* mappedPtCursor = fPositions;
-        const SkPoint* ptCursor = glyphRun.positions().data();
-        for (auto glyphID : glyphRun.shuntGlyphsIDs()) {
-            auto mappedPt = *mappedPtCursor++;
-            auto pt = origin + *ptCursor++;
-            if (SkScalarsAreFinite(mappedPt.x(), mappedPt.y())) {
-                const SkGlyph& glyph = cache->getGlyphMetrics(glyphID, mappedPt);
-                eachGlyph(glyph, pt, mappedPt);
-            }
-        }
-    }
-}
-
-template <typename PerGlyphT, typename PerPathT>
-void SkGlyphRunListPainter::drawGlyphRunAsBMPWithPathFallback(
-        SkGlyphCacheInterface* cache, const SkGlyphRun& glyphRun,
-        SkPoint origin, const SkMatrix& deviceMatrix,
-        PerGlyphT perGlyph, PerPathT perPath) {
-
-    auto eachGlyph =
-            [perGlyph{std::move(perGlyph)}, perPath{std::move(perPath)}]
-                    (const SkGlyph& glyph, SkPoint pt, SkPoint mappedPt) {
-                if (glyph_too_big_for_atlas(glyph)) {
-                    SkScalar sx = SkScalarFloorToScalar(mappedPt.fX),
-                            sy = SkScalarFloorToScalar(mappedPt.fY);
-
-                    SkRect glyphRect =
-                            rect_to_draw(glyph, {sx, sy}, SK_Scalar1, false);
-
-                    if (!glyphRect.isEmpty()) {
-                        perPath(glyph, mappedPt);
-                    }
-                } else {
-                    perGlyph(glyph, mappedPt);
-                }
-            };
-
-    this->forEachMappedDrawableGlyph(glyphRun, origin, deviceMatrix, cache, eachGlyph);
-}
-
-#endif  // SkGlyphRunInfo_DEFINED
+#endif  // SkGlyphRun_DEFINED

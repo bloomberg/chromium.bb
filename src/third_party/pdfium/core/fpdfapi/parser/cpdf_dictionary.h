@@ -52,7 +52,7 @@ class CPDF_Dictionary final : public CPDF_Object {
   WideString GetUnicodeTextFor(const ByteString& key) const;
   int GetIntegerFor(const ByteString& key) const;
   int GetIntegerFor(const ByteString& key, int default_int) const;
-  bool GetBooleanFor(const ByteString& key, bool bDefault = false) const;
+  bool GetBooleanFor(const ByteString& key, bool bDefault) const;
   float GetNumberFor(const ByteString& key) const;
   const CPDF_Dictionary* GetDictFor(const ByteString& key) const;
   CPDF_Dictionary* GetDictFor(const ByteString& key);
@@ -65,7 +65,6 @@ class CPDF_Dictionary final : public CPDF_Object {
   float GetFloatFor(const ByteString& key) const { return GetNumberFor(key); }
 
   bool KeyExist(const ByteString& key) const;
-  bool IsSignatureDict() const;
 
   // Set* functions invalidate iterators for the element with the key |key|.
   // Takes ownership of |pObj|, returns an unowned pointer to it.
@@ -106,7 +105,7 @@ class CPDF_Dictionary final : public CPDF_Object {
 
   WeakPtr<ByteStringPool> GetByteStringPool() const { return m_pPool; }
 
- protected:
+ private:
   ByteString MaybeIntern(const ByteString& str);
   std::unique_ptr<CPDF_Object> CloneNonCyclic(
       bool bDirect,

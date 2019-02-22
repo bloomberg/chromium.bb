@@ -78,6 +78,14 @@ class WebServiceWorkerNetworkProviderForFrame
             blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
     }
+
+    // Inject this frame's fetch window id into the request. This is really only
+    // needed for subresource requests in S13nServiceWorker. For main resource
+    // requests or non-S13nSW case, the browser process sets the id on the
+    // request when dispatching the fetch event to the service worker. But it
+    // doesn't hurt to set it always.
+    if (provider_->context())
+      request.SetFetchWindowId(provider_->context()->fetch_request_window_id());
   }
 
   int ProviderID() const override { return provider_->provider_id(); }
@@ -207,13 +215,14 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   // S13nServiceWorker: |info| holds info about the precreated provider host.
   if (info) {
     DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return base::WrapUnique(new ServiceWorkerNetworkProvider(
         std::move(info), std::move(script_loader_factory_info),
-        std::move(fallback_loader_factory)));
+        std::move(controller_info), std::move(fallback_loader_factory)));
   }
 
   return base::WrapUnique(new ServiceWorkerNetworkProvider(
@@ -317,12 +326,13 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
+    mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id,
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
-      nullptr /* controller */, std::move(fallback_loader_factory));
+      std::move(controller_info), std::move(fallback_loader_factory));
   if (script_loader_factory_info.is_valid())
     script_loader_factory_.Bind(std::move(script_loader_factory_info));
 }

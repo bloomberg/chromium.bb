@@ -879,21 +879,6 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_AdvanceFocus) {
     content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
                               ui::DomCode::TAB, ui::VKEY_TAB, false, false,
                               false, false);
-
-#if defined(OS_MACOSX)
-    bool is_cocoa = true;
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-    is_cocoa = views_mode_controller::IsViewsBrowserCocoa();
-#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
-    // TODO(mcnee): A third Tab key press should not be necessary, but we seem
-    // to need this on Mac when using Cocoa browser UI.
-    if (is_cocoa) {
-      content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
-                                ui::DomCode::TAB, ui::VKEY_TAB, false, false,
-                                false, false);
-    }
-#endif  //  defined(OS_MACOSX)
-
     ASSERT_TRUE(listener.WaitUntilSatisfied());
   }
 }

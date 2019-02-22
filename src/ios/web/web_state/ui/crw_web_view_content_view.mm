@@ -136,6 +136,9 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 // Updates the viewport by updating the web view frame after self.contentInset
 // is changed to a new value from |oldInsets|.
 - (void)resizeViewportForContentInsetChangeFromInsets:(UIEdgeInsets)oldInsets {
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen))
+    return;
+
   // Update the content offset of the scroll view to match the padding
   // that will be included in the frame.
   CGFloat topPaddingChange = self.contentInset.top - oldInsets.top;

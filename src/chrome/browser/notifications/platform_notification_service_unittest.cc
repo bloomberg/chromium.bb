@@ -26,13 +26,13 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/common/notification_resources.h"
-#include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -43,8 +43,8 @@
 #include "extensions/common/value_builder.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-using content::NotificationResources;
-using content::PlatformNotificationData;
+using blink::NotificationResources;
+using blink::PlatformNotificationData;
 using content::NotificationDatabaseData;
 using message_center::Notification;
 
@@ -79,7 +79,9 @@ class PlatformNotificationServiceTest : public testing::Test {
     mock_logger_ = static_cast<MockNotificationMetricsLogger*>(
         NotificationMetricsLoggerFactory::GetInstance()
             ->SetTestingFactoryAndUse(
-                &profile_, &MockNotificationMetricsLogger::FactoryForTests));
+                &profile_,
+                base::BindRepeating(
+                    &MockNotificationMetricsLogger::FactoryForTests)));
 
     recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
@@ -206,9 +208,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   data.vibration_pattern = vibration_pattern;
   data.silent = true;
   data.actions.resize(2);
-  data.actions[0].type = content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+  data.actions[0].type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   data.actions[0].title = base::ASCIIToUTF16("Button 1");
-  data.actions[1].type = content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+  data.actions[1].type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
   data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   NotificationResources notification_resources;
@@ -246,10 +248,10 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEventHistory) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, [](content::BrowserContext* context) {
+      &profile_, base::BindRepeating([](content::BrowserContext* context) {
         return static_cast<std::unique_ptr<KeyedService>>(
             std::make_unique<history::HistoryService>());
-      });
+      }));
 
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(&profile_,
@@ -318,7 +320,7 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   data.notification_data.renotify = false;
   data.notification_data.tag = "tag";
   data.notification_data.silent = true;
-  content::PlatformNotificationAction action1, action2, action3;
+  blink::PlatformNotificationAction action1, action2, action3;
   data.notification_data.actions.push_back(action1);
   data.notification_data.actions.push_back(action2);
   data.notification_data.actions.push_back(action3);
@@ -380,7 +382,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
   EXPECT_TRUE(display_name.empty());
 
   // Create a mocked extension.
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetID("honijodknafkokifofgiaalefdiedpko")
           .SetManifest(extensions::DictionaryBuilder()
@@ -412,7 +414,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetID("honijodknafkokifofgiaalefdiedpko")
           .SetManifest(extensions::DictionaryBuilder()

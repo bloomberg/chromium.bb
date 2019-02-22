@@ -20,6 +20,20 @@ arc::mojom::PrintMediaSizePtr ToMediaSize(
                                          size_mil.width(), size_mil.height());
 }
 
+arc::mojom::PrintDuplexMode ToArcDuplexMode(printing::DuplexMode mode) {
+  switch (mode) {
+    case printing::LONG_EDGE:
+      return arc::mojom::PrintDuplexMode::LONG_EDGE;
+    case printing::SHORT_EDGE:
+      return arc::mojom::PrintDuplexMode::SHORT_EDGE;
+    case printing::SIMPLEX:
+      return arc::mojom::PrintDuplexMode::NONE;
+    default:
+      NOTREACHED();
+  }
+  return arc::mojom::PrintDuplexMode::NONE;
+}
+
 }  // namespace
 
 std::string StructTraits<arc::mojom::PrintResolutionDataView, gfx::Size>::id(
@@ -68,31 +82,19 @@ arc::mojom::PrintDuplexMode
 StructTraits<arc::mojom::PrinterCapabilitiesDataView,
              printing::PrinterSemanticCapsAndDefaults>::
     duplex_modes(const printing::PrinterSemanticCapsAndDefaults& caps) {
-  arc::mojom::PrintDuplexMode duplex_modes = arc::mojom::PrintDuplexMode::NONE;
-  if (caps.duplex_capable) {
-    duplex_modes = static_cast<arc::mojom::PrintDuplexMode>(
-        static_cast<uint32_t>(duplex_modes) |
-        static_cast<uint32_t>(arc::mojom::PrintDuplexMode::LONG_EDGE) |
-        static_cast<uint32_t>(arc::mojom::PrintDuplexMode::SHORT_EDGE));
+  uint32_t duplex_modes = 0;
+  for (printing::DuplexMode mode : caps.duplex_modes) {
+    duplex_modes |= static_cast<uint32_t>(ToArcDuplexMode(mode));
   }
-  return duplex_modes;
+  return static_cast<arc::mojom::PrintDuplexMode>(duplex_modes);
 }
 
 arc::mojom::PrintAttributesPtr
 StructTraits<arc::mojom::PrinterCapabilitiesDataView,
              printing::PrinterSemanticCapsAndDefaults>::
     defaults(const printing::PrinterSemanticCapsAndDefaults& caps) {
-  arc::mojom::PrintDuplexMode default_duplex_mode;
-  switch (caps.duplex_default) {
-    case printing::LONG_EDGE:
-      default_duplex_mode = arc::mojom::PrintDuplexMode::LONG_EDGE;
-      break;
-    case printing::SHORT_EDGE:
-      default_duplex_mode = arc::mojom::PrintDuplexMode::SHORT_EDGE;
-      break;
-    default:
-      default_duplex_mode = arc::mojom::PrintDuplexMode::NONE;
-  }
+  arc::mojom::PrintDuplexMode default_duplex_mode =
+      ToArcDuplexMode(caps.duplex_default);
   return arc::mojom::PrintAttributes::New(
       ToMediaSize(caps.default_paper), caps.default_dpi,
       arc::mojom::PrintMargins::New(0, 0, 0, 0),

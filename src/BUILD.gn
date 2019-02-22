@@ -139,7 +139,6 @@ group("gn_all") {
       "//ppapi/examples/url_loader",
       "//ppapi/examples/video_capture",
       "//ppapi/examples/video_decode",
-      "//ppapi/examples/video_effects",
       "//ppapi/examples/video_encode",
       "//printing:printing_unittests",
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
@@ -217,7 +216,10 @@ group("gn_all") {
   } else if (is_ios) {
     deps += [ "//ios:all" ]
   } else if (is_fuchsia) {
-    deps += [ ":d8_fuchsia" ]
+    deps += [
+      ":d8_fuchsia",
+      "tools/fuchsia/fidlgen_js:fidlgen_js_unittests",
+    ]
   }
 
   deps += root_extra_deps
@@ -265,6 +267,13 @@ group("gn_all") {
 
   if (use_x11 || ozone_platform_x11) {
     deps += [ "//tools/xdisplaycheck" ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//chrome/credential_provider",
+      "//chrome/credential_provider/test:gcp_unittests",
+    ]
   }
 
   if (is_mac) {
@@ -547,7 +556,6 @@ group("gn_all") {
     deps += [
       "//third_party/breakpad:crash_inspector",
       "//third_party/breakpad:dump_syms",
-      "//third_party/molokocacao",
     ]
     deps -= [
       # Mojo in GN contains some things which are never compiled in GYP on Mac,
@@ -692,8 +700,8 @@ group("gn_all") {
     }
   }
 
-  if ((is_linux && !is_chromeos && !is_chromecast) || (is_win && use_drfuzz) ||
-      (use_libfuzzer && is_mac)) {
+  if ((is_linux && !is_chromeos && !is_chromecast) ||
+      (is_win && (use_drfuzz || use_libfuzzer)) || (use_libfuzzer && is_mac)) {
     deps += [
       "//testing/libfuzzer/fuzzers",
       "//testing/libfuzzer/tests:libfuzzer_tests",
@@ -743,17 +751,26 @@ group("gn_all") {
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan/demo" ]
   }
+
+  if (use_atk) {
+    deps += [
+      "//tools/accessibility/inspect:ax_dump_events",
+      "//tools/accessibility/inspect:ax_dump_tree",
+    ]
+  }
 }
 
 if (is_fuchsia) {
   # TODO(https://crbug.com/731217): This can't practically be in //v8 without
   # duplicating all the Fuchsia running infrastructure there.
   fuchsia_package("d8_fuchsia_pkg") {
+    testonly = true
     binary = "//v8:d8"
     package_name_override = "d8"
   }
 
   fuchsia_package_runner("d8_fuchsia") {
+    testonly = true
     package = ":d8_fuchsia_pkg"
     package_name_override = "d8"
   }
@@ -818,6 +835,7 @@ if (is_chromeos) {
       "//chrome",
       "//chrome/test/chromedriver",
       "//media:media_unittests",
+      "//media/gpu:jpeg_decode_accelerator_unittest",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",

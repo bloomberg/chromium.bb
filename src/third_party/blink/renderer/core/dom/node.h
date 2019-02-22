@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
-// This needs to be here because Element.cpp also depends on it.
+// This needs to be here because element.cc also depends on it.
 #define DUMP_NODE_STATISTICS 0
 
 namespace blink {
@@ -72,7 +72,6 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
-class WebMouseEvent;
 class WebPluginContainerImpl;
 
 const int kNodeStyleChangeShift = 18;
@@ -328,9 +327,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   // If this node is in a shadow tree, returns its shadow host. Otherwise,
   // returns nullptr.
-  // TODO(kochi): crbug.com/507413 ownerShadowHost() can return nullptr even
-  // when it is in a shadow tree but its root is detached from its host. This
-  // can happen when handling queued events (e.g. during execCommand()).
   Element* OwnerShadowHost() const;
   // crbug.com/569532: containingShadowRoot() can return nullptr even if
   // isInShadowTree() returns true.
@@ -501,8 +497,7 @@ class CORE_EXPORT Node : public EventTarget {
   void SetNeedsStyleInvalidation();
 
   // This needs to be called before using FlatTreeTraversal.
-  // Once 1) IncrementalShadowDOM is launched, and 2) Shadow DOM v0 is removed,
-  // this function can be removed.
+  // Once Shadow DOM v0 is removed, this function can be removed.
   void UpdateDistributionForFlatTreeTraversal() {
     UpdateDistributionInternal();
   }
@@ -600,6 +595,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsChildOfV1ShadowHost() const;
   bool IsChildOfV0ShadowHost() const;
   ShadowRoot* V1ShadowRootOfParent() const;
+  ContainerNode* GetReattachParent() const;
 
   bool IsDocumentTypeNode() const { return getNodeType() == kDocumentTypeNode; }
   virtual bool ChildTypeAllowed(NodeType) const { return false; }
@@ -684,7 +680,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   // -----------------------------------------------------------------------------
-  // Notification of document structure changes (see ContainerNode.h for more
+  // Notification of document structure changes (see container_node.h for more
   // notification methods)
   //
   // At first, Blinkt notifies the node that it has been inserted into the
@@ -783,12 +779,6 @@ class CORE_EXPORT Node : public EventTarget {
   void DispatchSubtreeModifiedEvent();
   DispatchEventResult DispatchDOMActivateEvent(int detail,
                                                Event& underlying_event);
-
-  void DispatchMouseEvent(const WebMouseEvent&,
-                          const AtomicString& event_type,
-                          int click_count = 0,
-                          const String& canvas_node_id = String(),
-                          Node* related_target = nullptr);
 
   void DispatchSimulatedClick(Event* underlying_event,
                               SimulatedClickMouseEventOptions = kSendNoEvents,
@@ -923,13 +913,6 @@ class CORE_EXPORT Node : public EventTarget {
   void SetFlag(NodeFlags mask) { node_flags_ |= mask; }
   void ClearFlag(NodeFlags mask) { node_flags_ &= ~mask; }
 
-  // TODO(mustaq): This is a hack to fix sites with flash objects. We should
-  // instead route all WebMouseEvents through EventHandler. See
-  // crbug.com/665924.
-  void CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
-                                     const WebMouseEvent&,
-                                     LocalDOMWindow* view);
-
  protected:
   enum ConstructionType {
     kCreateOther = kIsFinishedParsingChildrenFlag,
@@ -981,6 +964,9 @@ class CORE_EXPORT Node : public EventTarget {
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
 
   void MarkAncestorsWithChildNeedsStyleRecalc();
+  static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
+    child->MarkAncestorsWithChildNeedsStyleRecalc();
+  }
 
   void SetIsFinishedParsingChildren(bool value) {
     SetFlag(value, kIsFinishedParsingChildrenFlag);
@@ -1053,7 +1039,9 @@ inline void Node::LazyReattachIfAttached() {
   context.performing_reattach = true;
 
   DetachLayoutTree(context);
-  MarkAncestorsWithChildNeedsStyleRecalc();
+  // Comments and processing instructions are never marked dirty.
+  if (NeedsStyleRecalc())
+    MarkAncestorsWithChildNeedsStyleRecalc();
 }
 
 inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {

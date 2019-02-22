@@ -22,9 +22,12 @@ import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.DurationBucket;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.NavigationSource;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -50,6 +53,8 @@ public final class PageViewTimerTest {
     @Mock
     private WebContents mWebContents;
     @Mock
+    private LayoutManagerChrome mLayoutManagerChrome;
+    @Mock
     private NavigationController mNavigationController;
     @Mock
     private NavigationEntry mNavigationEntry;
@@ -65,6 +70,8 @@ public final class PageViewTimerTest {
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
     private ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
+    @Captor
+    private ArgumentCaptor<EmptyOverviewModeObserver> mEmptyOverviewModeObserverCaptor;
 
     private PageViewTimer mTimer;
 
@@ -74,6 +81,10 @@ public final class PageViewTimerTest {
 
     private TabModelObserver getTabModelObserver() {
         return mTabModelObserverCaptor.getValue();
+    }
+
+    private EmptyOverviewModeObserver getEmptyOverviewModeObserver() {
+        return mEmptyOverviewModeObserverCaptor.getValue();
     }
 
     @Before
@@ -219,6 +230,20 @@ public final class PageViewTimerTest {
     }
 
     @Test
+    public void selectTab_didFirstVisuallyNonEmptyPaint_hideShow_reported() {
+        selectTab_showContent_pauseTimer_resumeTimer_stopTimer(
+                showContentByDidFirstVisuallyNonEmptyPaint(mTab), pauseTimerByHidingTab(mTab),
+                resumeTimerByShowingTab(mTab), stopTimerByClosingTab(mTab), 1);
+    }
+
+    @Test
+    public void selectTab_didFirstVisuallyNonEmptyPaint_tabSwitcherOpenClose_reported() {
+        selectTab_showContent_pauseTimer_resumeTimer_stopTimer(
+                showContentByDidFirstVisuallyNonEmptyPaint(mTab), pauseTimerByOpeningTabSwitcher(),
+                resumeTimerByClosingTabSwitcher(), stopTimerByClosingTab(mTab), 1);
+    }
+
+    @Test
     public void getNavigationSource_nullEntry() {
         PageViewTimer timer = createPageViewTimer();
         doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
@@ -323,21 +348,54 @@ public final class PageViewTimerTest {
         return () -> mTimer.destroy();
     }
 
-    private void selectTab_showContent_stopTimer(
-            Runnable showContentRunnable, Runnable stopTimerRunnable, int expectedSamples) {
+    private Runnable pauseTimerByOpeningTabSwitcher() {
+        return () -> getEmptyOverviewModeObserver().onOverviewModeStartedShowing(false);
+    }
+
+    private Runnable resumeTimerByClosingTabSwitcher() {
+        return () -> getEmptyOverviewModeObserver().onOverviewModeFinishedHiding();
+    }
+
+    private Runnable pauseTimerByHidingTab(Tab tab) {
+        return () -> getTabObserver().onHidden(tab, TabHidingType.CHANGED_TABS);
+    }
+
+    private Runnable resumeTimerByShowingTab(Tab tab) {
+        return () -> getTabObserver().onShown(tab, TabSelectionType.FROM_USER);
+    }
+
+    private void selectTab_showContent_pauseTimer_resumeTimer_stopTimer(
+            Runnable showContentRunnable, Runnable pauseRunnable, Runnable resumeRunnable,
+            Runnable stopTimerRunnable, int expectedSamples) {
+        int expectedTime = SAMPLE_PAGE_VIEW_TIME;
         mTimer = createPageViewTimer();
         switchTabs(null, mTab);
         showContentRunnable.run();
         ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+        if (pauseRunnable != null && resumeRunnable != null) {
+            expectedTime += SAMPLE_PAGE_VIEW_TIME;
+            pauseRunnable.run();
+            ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+            resumeRunnable.run();
+            ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+        }
         stopTimerRunnable.run();
         assertEquals(expectedSamples,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
-                        PAGE_VIEW_TIME_METRIC, SAMPLE_PAGE_VIEW_TIME));
+                        PAGE_VIEW_TIME_METRIC, expectedTime));
+    }
+
+    private void selectTab_showContent_stopTimer(
+            Runnable showContentRunnable, Runnable stopTimerRunnable, int expectedSamples) {
+        selectTab_showContent_pauseTimer_resumeTimer_stopTimer(
+                showContentRunnable, null, null, stopTimerRunnable, expectedSamples);
     }
 
     public PageViewTimer createPageViewTimer() {
-        PageViewTimer timer = new PageViewTimer(mTabModelSelector);
+        PageViewTimer timer = new PageViewTimer(mTabModelSelector, mLayoutManagerChrome);
         verify(mTabModel, times(1)).addObserver(mTabModelObserverCaptor.capture());
+        verify(mLayoutManagerChrome, times(1))
+                .addOverviewModeObserver(mEmptyOverviewModeObserverCaptor.capture());
         return timer;
     }
 

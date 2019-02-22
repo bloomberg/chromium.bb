@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -31,7 +32,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -65,7 +65,8 @@ CreateCrOsOAuthDelegate(Profile* profile) {
 
   return std::make_unique<chromeos::ChromeOSOAuth2TokenServiceDelegate>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
-      account_manager);
+      account_manager,
+      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
 }
 #endif  // defined(OS_CHROMEOS)
 

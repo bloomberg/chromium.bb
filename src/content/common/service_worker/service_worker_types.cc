@@ -5,7 +5,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 
 #include "content/common/service_worker/service_worker_types.pb.h"
-#include "net/base/load_flags.h"
 #include "storage/common/blob_storage/blob_handle.h"
 
 namespace content {
@@ -67,7 +66,8 @@ std::string ServiceWorkerFetchRequest::Serialize() const {
   request_proto.set_is_reload(is_reload);
   request_proto.set_mode(static_cast<int>(mode));
   request_proto.set_is_main_resource_load(is_main_resource_load);
-  request_proto.set_request_context_type(request_context_type);
+  request_proto.set_request_context_type(
+      static_cast<int>(request_context_type));
   request_proto.set_credentials_mode(static_cast<int>(credentials_mode));
   request_proto.set_cache_mode(static_cast<int>(cache_mode));
   request_proto.set_redirect_mode(static_cast<int>(redirect_mode));
@@ -111,8 +111,8 @@ ServiceWorkerFetchRequest ServiceWorkerFetchRequest::ParseFromString(
   request.mode =
       static_cast<network::mojom::FetchRequestMode>(request_proto.mode());
   request.is_main_resource_load = request_proto.is_main_resource_load();
-  request.request_context_type =
-      static_cast<RequestContextType>(request_proto.request_context_type());
+  request.request_context_type = static_cast<blink::mojom::RequestContextType>(
+      request_proto.request_context_type());
   request.credentials_mode = static_cast<network::mojom::FetchCredentialsMode>(
       request_proto.credentials_mode());
   request.cache_mode =
@@ -125,35 +125,6 @@ ServiceWorkerFetchRequest ServiceWorkerFetchRequest::ParseFromString(
   request.client_id = request_proto.client_id();
 
   return request;
-}
-
-// static
-blink::mojom::FetchCacheMode
-ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(int load_flags) {
-  if (load_flags & net::LOAD_DISABLE_CACHE)
-    return blink::mojom::FetchCacheMode::kNoStore;
-
-  if (load_flags & net::LOAD_VALIDATE_CACHE)
-    return blink::mojom::FetchCacheMode::kValidateCache;
-
-  if (load_flags & net::LOAD_BYPASS_CACHE) {
-    if (load_flags & net::LOAD_ONLY_FROM_CACHE)
-      return blink::mojom::FetchCacheMode::kUnspecifiedForceCacheMiss;
-    return blink::mojom::FetchCacheMode::kBypassCache;
-  }
-
-  if (load_flags & net::LOAD_SKIP_CACHE_VALIDATION) {
-    if (load_flags & net::LOAD_ONLY_FROM_CACHE)
-      return blink::mojom::FetchCacheMode::kOnlyIfCached;
-    return blink::mojom::FetchCacheMode::kForceCache;
-  }
-
-  if (load_flags & net::LOAD_ONLY_FROM_CACHE) {
-    DCHECK(!(load_flags & net::LOAD_SKIP_CACHE_VALIDATION));
-    DCHECK(!(load_flags & net::LOAD_BYPASS_CACHE));
-    return blink::mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict;
-  }
-  return blink::mojom::FetchCacheMode::kDefault;
 }
 
 }  // namespace content

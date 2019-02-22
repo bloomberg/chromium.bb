@@ -805,24 +805,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
             config.child_configs,
             'Unexpected group builder found: %s' % build_name)
 
-  def testGroupBuildersHaveMaximumConfigs(self):
-    """Verify that release group builders don't exceed a maximum board count.
-
-    The count ignores variant boards (detected as "chrome_sdk" == False), since
-    they don't add significant build time.
-    """
-    msg = 'Group config %s has %d child configurations (maximum is %d).'
-    for build_name, config in self.site_config.iteritems():
-      if build_name.endswith('-release-group'):
-        child_count = 0
-        for child in config.child_configs:
-          if not child.chrome_sdk:
-            continue
-          child_count += 1
-        self.assertLessEqual(child_count, constants.MAX_RELEASE_GROUP_BOARDS,
-                             msg % (build_name, child_count,
-                                    constants.MAX_RELEASE_GROUP_BOARDS))
-
   def testAFDOSameInChildConfigs(self):
     """Verify that 'afdo_use' is the same for all children in a group."""
     msg = ('Child config %s for %s should have same value for afdo_use '
@@ -1039,16 +1021,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         self.assertIn('base', config.images,
                       '%s does not build the base image, which is required for '
                       'building the recovery image' % build_name)
-
-  def testChildConfigsNotImportantInReleaseGroup(self):
-    """Verify that configs in an important group are not important."""
-    msg = ('Child config %s for %s should not be important because %s is '
-           'already important')
-    for build_name, config in self.site_config.iteritems():
-      if build_name.endswith('-release-group') and config['important']:
-        for child_config in config.child_configs:
-          self.assertFalse(child_config.important,
-                           msg % (child_config.name, build_name, build_name))
 
   def testExternalConfigsDoNotUseInternalFeatures(self):
     """External configs should not use chrome_internal, or official.xml."""

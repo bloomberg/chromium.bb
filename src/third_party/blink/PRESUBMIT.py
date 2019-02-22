@@ -16,7 +16,8 @@ try:
     # pylint: disable=C0103
     audit_non_blink_usage = imp.load_source(
         'audit_non_blink_usage',
-        os.path.join(os.path.dirname(inspect.stack()[0][1]), 'tools/audit_non_blink_usage.py'))
+        os.path.join(os.path.dirname(inspect.stack()[0][1]),
+                     'tools/blinkpy/presubmit/audit_non_blink_usage.py'))
 except IOError:
     # One of the presubmit upload tests tries to exec this script, which doesn't interact so well
     # with the import hack... just ignore the exception here and hope for the best.
@@ -94,26 +95,34 @@ def _CommonChecks(input_api, output_api):
     return results
 
 
-def _CheckStyle(input_api, output_api):
-    style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                                'tools', 'check_blink_style.py')
-    args = [input_api.python_executable, style_checker_path, '--diff-files']
+def _FilterPaths(input_api):
+    """Returns input files with certain paths removed."""
     files = []
     for f in input_api.AffectedFiles():
         file_path = f.LocalPath()
-        # Filter out changes in LayoutTests.
-        if 'web_tests' + input_api.os_path.sep in file_path and 'TestExpectations' not in file_path:
+        # Filter out changes in web_tests/.
+        if ('web_tests' + input_api.os_path.sep in file_path
+            and 'TestExpectations' not in file_path):
             continue
         if '/PRESUBMIT' in file_path:
             continue
         files.append(input_api.os_path.join('..', '..', file_path))
+    return files
+
+
+def _CheckStyle(input_api, output_api):
+    files = _FilterPaths(input_api)
     # Do not call check_blink_style.py with empty affected file list if all
     # input_api.AffectedFiles got filtered.
     if not files:
         return []
-    args += files
-    results = []
 
+    style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                                'tools', 'check_blink_style.py')
+    args = [input_api.python_executable, style_checker_path, '--diff-files']
+    args += files
+
+    results = []
     try:
         child = input_api.subprocess.Popen(args,
                                            stderr=input_api.subprocess.PIPE)
@@ -157,9 +166,12 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
         if errors:
             errors = audit_non_blink_usage.check(path, f.ChangedContents())
             if errors:
-                for line_number, disallowed_identifier in errors:
-                    results.append(output_api.PresubmitError(
-                        '%s:%d uses disallowed identifier %s' % (path, line_number, disallowed_identifier)))
+                for error in errors:
+                    msg = '%s:%d uses disallowed identifier %s' % (
+                        path, error.line, error.identifier)
+                    if error.advice:
+                        msg += ". Advice: %s" % "\n".join(error.advice)
+                    results.append(output_api.PresubmitError(msg))
     return results
 
 

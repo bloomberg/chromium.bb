@@ -32,32 +32,24 @@ namespace blink {
 SVGFELightElement::SVGFELightElement(const QualifiedName& tag_name,
                                      Document& document)
     : SVGElement(tag_name, document),
-      azimuth_(SVGAnimatedNumber::Create(this,
-                                         SVGNames::azimuthAttr,
-                                         SVGNumber::Create())),
-      elevation_(SVGAnimatedNumber::Create(this,
-                                           SVGNames::elevationAttr,
-                                           SVGNumber::Create())),
-      x_(SVGAnimatedNumber::Create(this, SVGNames::xAttr, SVGNumber::Create())),
-      y_(SVGAnimatedNumber::Create(this, SVGNames::yAttr, SVGNumber::Create())),
-      z_(SVGAnimatedNumber::Create(this, SVGNames::zAttr, SVGNumber::Create())),
-      points_at_x_(SVGAnimatedNumber::Create(this,
-                                             SVGNames::pointsAtXAttr,
-                                             SVGNumber::Create())),
-      points_at_y_(SVGAnimatedNumber::Create(this,
-                                             SVGNames::pointsAtYAttr,
-                                             SVGNumber::Create())),
-      points_at_z_(SVGAnimatedNumber::Create(this,
-                                             SVGNames::pointsAtZAttr,
-                                             SVGNumber::Create())),
+      azimuth_(SVGAnimatedNumber::Create(this, SVGNames::azimuthAttr, 0.0f)),
+      elevation_(
+          SVGAnimatedNumber::Create(this, SVGNames::elevationAttr, 0.0f)),
+      x_(SVGAnimatedNumber::Create(this, SVGNames::xAttr, 0.0f)),
+      y_(SVGAnimatedNumber::Create(this, SVGNames::yAttr, 0.0f)),
+      z_(SVGAnimatedNumber::Create(this, SVGNames::zAttr, 0.0f)),
+      points_at_x_(
+          SVGAnimatedNumber::Create(this, SVGNames::pointsAtXAttr, 0.0f)),
+      points_at_y_(
+          SVGAnimatedNumber::Create(this, SVGNames::pointsAtYAttr, 0.0f)),
+      points_at_z_(
+          SVGAnimatedNumber::Create(this, SVGNames::pointsAtZAttr, 0.0f)),
       specular_exponent_(
-          SVGAnimatedNumber::Create(this,
-                                    SVGNames::specularExponentAttr,
-                                    SVGNumber::Create(1))),
+          SVGAnimatedNumber::Create(this, SVGNames::specularExponentAttr, 1)),
       limiting_cone_angle_(
           SVGAnimatedNumber::Create(this,
                                     SVGNames::limitingConeAngleAttr,
-                                    SVGNumber::Create())) {
+                                    0.0f)) {
   AddToPropertyMap(azimuth_);
   AddToPropertyMap(elevation_);
   AddToPropertyMap(x_);

@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

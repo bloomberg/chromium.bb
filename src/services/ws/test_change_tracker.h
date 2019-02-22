@@ -45,8 +45,8 @@ enum ChangeType {
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
   CHANGE_TYPE_OPACITY,
   CHANGE_TYPE_REQUEST_CLOSE,
-  CHANGE_TYPE_SURFACE_CHANGED,
   CHANGE_TYPE_TRANSFORM_CHANGED,
+  CHANGE_TYPE_DISPLAY_CHANGED,
   CHANGE_TYPE_DRAG_DROP_START,
   CHANGE_TYPE_DRAG_ENTER,
   CHANGE_TYPE_DRAG_OVER,
@@ -102,9 +102,6 @@ struct Change {
   std::string property_value;
   ui::CursorType cursor_type;
   uint32_t change_id;
-  viz::SurfaceId surface_id;
-  gfx::Size frame_size;
-  float device_scale_factor;
   gfx::Transform transform;
   // Set in OnWindowInputEvent() if the event is a KeyEvent.
   base::flat_map<std::string, std::vector<uint8_t>> key_event_properties;
@@ -200,6 +197,7 @@ class TestChangeTracker {
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowOpacityChanged(Id window_id, float opacity);
+  void OnWindowDisplayChanged(Id window_id, int64_t display_id);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,
                           const ui::Event& event,
@@ -216,8 +214,6 @@ class TestChangeTracker {
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr window_data,
                          bool drawn);
-  void OnWindowSurfaceChanged(Id window_id,
-                              const viz::SurfaceInfo& surface_info);
   void OnDragDropStart(
       const base::flat_map<std::string, std::vector<uint8_t>>& drag_data);
   void OnDragEnter(Id window_id);

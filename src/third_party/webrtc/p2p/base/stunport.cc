@@ -21,6 +21,7 @@
 #include "rtc_base/ipaddress.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/nethelpers.h"
+#include "rtc_base/strings/string_builder.h"
 
 namespace cricket {
 
@@ -172,6 +173,7 @@ UDPPort::UDPPort(rtc::Thread* thread,
       error_(0),
       ready_(false),
       stun_keepalive_delay_(STUN_KEEPALIVE_INTERVAL),
+      dscp_(rtc::DSCP_NO_CHANGE),
       emit_local_for_anyaddress_(emit_local_for_anyaddress) {
   requests_.set_origin(origin);
 }
@@ -198,6 +200,7 @@ UDPPort::UDPPort(rtc::Thread* thread,
       error_(0),
       ready_(false),
       stun_keepalive_delay_(STUN_KEEPALIVE_INTERVAL),
+      dscp_(rtc::DSCP_NO_CHANGE),
       emit_local_for_anyaddress_(emit_local_for_anyaddress) {
   requests_.set_origin(origin);
 }
@@ -292,7 +295,15 @@ void UDPPort::UpdateNetworkCost() {
   stun_keepalive_lifetime_ = GetStunKeepaliveLifetime();
 }
 
+rtc::DiffServCodePoint UDPPort::StunDscpValue() const {
+  return dscp_;
+}
+
 int UDPPort::SetOption(rtc::Socket::Option opt, int value) {
+  if (opt == rtc::Socket::OPT_DSCP) {
+    // Save value for future packets we instantiate.
+    dscp_ = static_cast<rtc::DiffServCodePoint>(value);
+  }
   return socket_->SetOption(opt, value);
 }
 
@@ -485,7 +496,7 @@ void UDPPort::OnStunBindingRequestSucceeded(
           rtc::EmptySocketAddressWithFamily(related_address.family());
     }
 
-    std::ostringstream url;
+    rtc::StringBuilder url;
     url << "stun:" << stun_server_addr.ipaddr().ToString() << ":"
         << stun_server_addr.port();
     AddAddress(stun_reflected_addr, socket_->GetLocalAddress(), related_address,
@@ -533,7 +544,7 @@ void UDPPort::MaybeSetPortCompleteOrError() {
 // TODO(?): merge this with SendTo above.
 void UDPPort::OnSendPacket(const void* data, size_t size, StunRequest* req) {
   StunBindingRequest* sreq = static_cast<StunBindingRequest*>(req);
-  rtc::PacketOptions options(DefaultDscpValue());
+  rtc::PacketOptions options(StunDscpValue());
   options.info_signaled_after_sent.packet_type = rtc::PacketType::kStunMessage;
   CopyPortInformationToPacketInfo(&options.info_signaled_after_sent);
   if (socket_->SendTo(data, size, sreq->server_addr(), options) < 0) {
@@ -552,22 +563,24 @@ bool UDPPort::HasCandidateWithAddress(const rtc::SocketAddress& addr) const {
   return false;
 }
 
-StunPort* StunPort::Create(rtc::Thread* thread,
-                           rtc::PacketSocketFactory* factory,
-                           rtc::Network* network,
-                           uint16_t min_port,
-                           uint16_t max_port,
-                           const std::string& username,
-                           const std::string& password,
-                           const ServerAddresses& servers,
-                           const std::string& origin,
-                           absl::optional<int> stun_keepalive_interval) {
-  StunPort* port = new StunPort(thread, factory, network, min_port, max_port,
-                                username, password, servers, origin);
+std::unique_ptr<StunPort> StunPort::Create(
+    rtc::Thread* thread,
+    rtc::PacketSocketFactory* factory,
+    rtc::Network* network,
+    uint16_t min_port,
+    uint16_t max_port,
+    const std::string& username,
+    const std::string& password,
+    const ServerAddresses& servers,
+    const std::string& origin,
+    absl::optional<int> stun_keepalive_interval) {
+  // Using `new` to access a non-public constructor.
+  auto port = absl::WrapUnique(new StunPort(thread, factory, network, min_port,
+                                            max_port, username, password,
+                                            servers, origin));
   port->set_stun_keepalive_delay(stun_keepalive_interval);
   if (!port->Init()) {
-    delete port;
-    port = NULL;
+    return nullptr;
   }
   return port;
 }

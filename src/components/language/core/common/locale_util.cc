@@ -52,15 +52,6 @@ bool GetUIFallbackLocale(const std::string& input, std::string* const output) {
   return false;
 }
 
-// Given a language code, extract the base language only.
-// Example: from "en-US", extract "en".
-std::string ExtractBaseLanguage(const std::string& language_code) {
-  std::string base;
-  std::string tail;
-  SplitIntoMainAndTail(language_code, &base, &tail);
-  return base;
-}
-
 }  // namespace
 
 void SplitIntoMainAndTail(const std::string& locale,
@@ -76,6 +67,13 @@ void SplitIntoMainAndTail(const std::string& locale,
 
   chunks[0].CopyToString(main_part);
   *tail_part = locale.substr(main_part->size());
+}
+
+std::string ExtractBaseLanguage(const std::string& language_code) {
+  std::string base;
+  std::string tail;
+  SplitIntoMainAndTail(language_code, &base, &tail);
+  return base;
 }
 
 bool ContainsSameBaseLanguage(const std::vector<std::string>& list,

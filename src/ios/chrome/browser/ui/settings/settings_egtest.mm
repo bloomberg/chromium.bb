@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_member.h"
@@ -22,7 +23,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -39,6 +39,7 @@
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -142,7 +143,7 @@ void CheckCertificate(scoped_refptr<net::URLRequestContextGetter> getter,
   if (channel_id_service->channel_id_count() == 0) {
     // If the channel_id_count is still 0, no certs have been added yet.
     // Re-post this task and check again later.
-    web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                              base::Bind(&CheckCertificate, getter, semaphore));
   } else {
     // If certs have been added, signal the calling thread.
@@ -157,8 +158,8 @@ void SetCertificate() {
   dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         net::ChannelIDStore* channel_id_store =
@@ -172,7 +173,7 @@ void SetCertificate() {
   // The ChannelIDStore may not be loaded, so adding the new cert may not happen
   // immediately.  This posted task signals the semaphore if the cert was added,
   // or re-posts itself to check again later otherwise.
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::Bind(&CheckCertificate, getter, semaphore));
 
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
@@ -192,8 +193,8 @@ bool IsCertificateCleared() {
   dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         std::unique_ptr<crypto::ECPrivateKey> dummy_key;

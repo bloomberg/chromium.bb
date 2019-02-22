@@ -6,10 +6,12 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -29,13 +31,15 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace message_center {
 
 namespace {
 
-const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
-const int kShadowCornerRadius = 0;
-const int kShadowElevation = 2;
+constexpr SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -55,8 +59,12 @@ base::string16 CreateAccessibleName(const Notification& notification) {
   return base::JoinString(accessible_lines, base::ASCIIToUTF16("\n"));
 }
 
-bool ShouldRoundMessageViewCorners() {
-  return base::FeatureList::IsEnabled(message_center::kNewStyleNotifications);
+bool ShouldShowAeroShadowBorder() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -72,22 +80,22 @@ MessageView::MessageView(const Notification& notification)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  // Create the opaque background that's above the view's shadow.
-  background_view_ = new views::View();
-
-  // ChromeOS rounds the corners of the message view. TODO(estade): should we do
-  // this for all platforms?
-  if (ShouldRoundMessageViewCorners())
-    UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
-  else
-    UpdateCornerRadius(0, 0);
-
-  AddChildView(background_view_);
-
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
 
   UpdateWithNotification(notification);
+
+  UpdateCornerRadius(0, 0);
+
+  // If Aero is enabled, set shadow border.
+  if (ShouldShowAeroShadowBorder()) {
+    const auto& shadow = gfx::ShadowDetails::Get(2, 0);
+    gfx::Insets ninebox_insets = gfx::ShadowValue::GetBlurRegion(shadow.values);
+    SetBorder(views::CreateBorderPainter(
+        views::Painter::CreateImagePainter(shadow.ninebox_image,
+                                           ninebox_insets),
+        -gfx::ShadowValue::GetMargin(shadow.values)));
+  }
 }
 
 MessageView::~MessageView() {
@@ -111,23 +119,9 @@ void MessageView::SetIsNested() {
   // Update enability since it might be changed by "is_nested" flag.
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
 
-  if (ShouldRoundMessageViewCorners()) {
-    SetBorder(views::CreateRoundedRectBorder(
-        kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
-  } else {
-    const auto& shadow =
-        gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
-    gfx::Insets ninebox_insets =
-        gfx::ShadowValue::GetBlurRegion(shadow.values) +
-        gfx::Insets(kShadowCornerRadius);
-    SetBorder(views::CreateBorderPainter(
-        views::Painter::CreateImagePainter(shadow.ninebox_image,
-                                           ninebox_insets),
-        -gfx::ShadowValue::GetMargin(shadow.values)));
-  }
+  SetBorder(views::CreateRoundedRectBorder(
+      kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
 
-  if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
-    return;
   auto* control_buttons_view = GetControlButtonsView();
   if (control_buttons_view) {
     int control_button_count =
@@ -183,7 +177,7 @@ void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
 }
 
 void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
-  background_view_->SetBackground(views::CreateBackgroundFromPainter(
+  SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(top_radius,
                                                       bottom_radius)));
   SchedulePaint();
@@ -248,9 +242,23 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
+void MessageView::PaintChildren(const views::PaintInfo& paint_info) {
+  views::View::PaintChildren(paint_info);
+
+  // Paint focus ring on top of all the children.
+  ui::PaintRecorder recorder(paint_info.context(), size());
+  views::Painter::PaintFocusPainter(this, recorder.canvas(),
+                                    focus_painter_.get());
+}
+
 void MessageView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
+  if (ShouldShowAeroShadowBorder()) {
+    // If the border is shadow, paint border first.
+    OnPaintBorder(canvas);
+    OnPaintBackground(canvas);
+  } else {
+    views::View::OnPaint(canvas);
+  }
 }
 
 void MessageView::OnFocus() {
@@ -263,15 +271,6 @@ void MessageView::OnBlur() {
   views::View::OnBlur();
   // We paint a focus indicator.
   SchedulePaint();
-}
-
-void MessageView::Layout() {
-  views::View::Layout();
-
-  gfx::Rect content_bounds = GetContentsBounds();
-
-  // Background.
-  background_view_->SetBoundsRect(content_bounds);
 }
 
 const char* MessageView::GetClassName() const {
@@ -409,8 +408,8 @@ void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {
-  background_view_->background()->SetNativeControlColor(
-      active ? kHoveredButtonBackgroundColor : kNotificationBackgroundColor);
+  background()->SetNativeControlColor(active ? kHoveredButtonBackgroundColor
+                                             : kNotificationBackgroundColor);
   SchedulePaint();
 }
 

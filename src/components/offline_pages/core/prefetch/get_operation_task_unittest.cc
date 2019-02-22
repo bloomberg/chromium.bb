@@ -9,7 +9,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,8 +53,7 @@ TEST_F(GetOperationTaskTest, NormalOperationTask) {
 
   EXPECT_NE(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          kOperationName));
-  std::string path =
-      url_fetcher_factory()->GetFetcherByID(0)->GetOriginalURL().path();
+  std::string path = GetPendingRequest(0 /*index*/)->request.url.path();
   EXPECT_THAT(path, HasSubstr(kOperationName));
   EXPECT_EQ(1, store_util()->LastCommandChangeCount());
   ASSERT_NE(nullptr, store_util()->GetPrefetchItem(id));

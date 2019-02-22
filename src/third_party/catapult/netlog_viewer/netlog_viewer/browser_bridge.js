@@ -24,7 +24,6 @@ var BrowserBridge = (function() {
     assertFirstConstructorCall(BrowserBridge);
 
     // List of observers for various bits of browser state.
-    this.connectionTestsObservers_ = [];
     this.hstsObservers_ = [];
     this.expectCTObservers_ = [];
     this.constantsObservers_ = [];
@@ -53,6 +52,8 @@ var BrowserBridge = (function() {
     this.addNetInfoPollableDataHelper(
         'altSvcMappings', 'onAltSvcMappingsChanged');
     this.addNetInfoPollableDataHelper('quicInfo', 'onQuicInfoChanged');
+    this.addNetInfoPollableDataHelper(
+        'reportingInfo', 'onReportingInfoChanged');
     this.addNetInfoPollableDataHelper(
         'httpCacheInfo', 'onHttpCacheInfoChanged');
 
@@ -162,19 +163,12 @@ var BrowserBridge = (function() {
       this.sendClearBrowserCache();
     },
 
-    sendStartConnectionTests: function(url) {
-      this.send('startConnectionTests', [url]);
-    },
-
     sendHSTSQuery: function(domain) {
       this.send('hstsQuery', [domain]);
     },
 
-    sendHSTSAdd: function(
-        domain, sts_include_subdomains, pkp_include_subdomains, pins) {
-      this.send(
-          'hstsAdd',
-          [domain, sts_include_subdomains, pkp_include_subdomains, pins]);
+    sendHSTSAdd: function(domain, sts_include_subdomains) {
+      this.send('hstsAdd', [domain, sts_include_subdomains]);
     },
 
     sendDomainSecurityPolicyDelete: function(domain) {
@@ -187,6 +181,10 @@ var BrowserBridge = (function() {
 
     sendExpectCTAdd: function(domain, report_uri, enforce) {
       this.send('expectCTAdd', [domain, report_uri, enforce]);
+    },
+
+    sendExpectCTTestReport: function(report_uri) {
+      this.send('expectCTTestReport', [report_uri]);
     },
 
     sendGetSessionNetworkStats: function() {
@@ -302,30 +300,6 @@ var BrowserBridge = (function() {
       this.pollableDataHelpers_.serviceProviders.update(serviceProviders);
     },
 
-    receivedStartConnectionTestSuite: function() {
-      for (var i = 0; i < this.connectionTestsObservers_.length; i++)
-        this.connectionTestsObservers_[i].onStartedConnectionTestSuite();
-    },
-
-    receivedStartConnectionTestExperiment: function(experiment) {
-      for (var i = 0; i < this.connectionTestsObservers_.length; i++) {
-        this.connectionTestsObservers_[i].onStartedConnectionTestExperiment(
-            experiment);
-      }
-    },
-
-    receivedCompletedConnectionTestExperiment: function(info) {
-      for (var i = 0; i < this.connectionTestsObservers_.length; i++) {
-        this.connectionTestsObservers_[i].onCompletedConnectionTestExperiment(
-            info.experiment, info.result);
-      }
-    },
-
-    receivedCompletedConnectionTestSuite: function() {
-      for (var i = 0; i < this.connectionTestsObservers_.length; i++)
-        this.connectionTestsObservers_[i].onCompletedConnectionTestSuite();
-    },
-
     receivedHSTSResult: function(info) {
       for (var i = 0; i < this.hstsObservers_.length; i++)
         this.hstsObservers_[i].onHSTSQueryResult(info);
@@ -334,6 +308,11 @@ var BrowserBridge = (function() {
     receivedExpectCTResult: function(info) {
       for (var i = 0; i < this.expectCTObservers_.length; i++)
         this.expectCTObservers_[i].onExpectCTQueryResult(info);
+    },
+
+    receivedExpectCTTestReportResult: function(result) {
+      for (var i = 0; i < this.expectCTObservers_.length; i++)
+        this.expectCTObservers_[i].onExpectCTTestReportResult(result);
     },
 
     receivedONCFileParse: function(error) {
@@ -478,6 +457,17 @@ var BrowserBridge = (function() {
     },
 
     /**
+     * Adds a listener of the Reporting info. |observer| will be called back
+     * when data is received, through:
+     *
+     *   observer.onReportingInfoChanged(reportingInfo)
+     */
+    addReportingInfoObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.reportingInfo.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
      * Adds a listener of the SPDY info. |observer| will be called back
      * when data is received, through:
      *
@@ -524,19 +514,6 @@ var BrowserBridge = (function() {
         this.pollableDataHelpers_.serviceProviders.addObserver(
             observer, ignoreWhenUnchanged);
       }
-    },
-
-    /**
-     * Adds a listener for the progress of the connection tests.
-     * The observer will be called back with:
-     *
-     *   observer.onStartedConnectionTestSuite();
-     *   observer.onStartedConnectionTestExperiment(experiment);
-     *   observer.onCompletedConnectionTestExperiment(experiment, result);
-     *   observer.onCompletedConnectionTestSuite();
-     */
-    addConnectionTestsObserver: function(observer) {
-      this.connectionTestsObservers_.push(observer);
     },
 
     /**

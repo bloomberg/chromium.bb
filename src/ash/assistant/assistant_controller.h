@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
@@ -46,7 +47,8 @@ class ASH_EXPORT AssistantController
       public mojom::ManagedWebContentsOpenUrlDelegate,
       public mojom::VoiceInteractionObserver,
       public mojom::AssistantVolumeControl,
-      public chromeos::CrasAudioHandler::AudioObserver {
+      public chromeos::CrasAudioHandler::AudioObserver,
+      public AccessibilityObserver {
  public:
   AssistantController();
   ~AssistantController() override;
@@ -112,6 +114,7 @@ class ASH_EXPORT AssistantController
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void ShouldOpenUrlFromTab(
       const GURL& url,
+      WindowOpenDisposition disposition,
       mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
           callback) override;
 
@@ -124,9 +127,12 @@ class ASH_EXPORT AssistantController
   void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
   void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
 
-  // Opens the specified |url| in a new browser tab.
-  // TODO(dmblack): Support opening specific URLs in the Assistant container.
-  void OpenUrl(const GURL& url);
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+
+  // Opens the specified |url| in a new browser tab. Special handling is applied
+  // to deep links which may cause deviation from this behavior.
+  void OpenUrl(const GURL& url, bool from_server = false);
 
   AssistantCacheController* cache_controller() {
     DCHECK(assistant_cache_controller_);
@@ -164,7 +170,7 @@ class ASH_EXPORT AssistantController
   void NotifyConstructed();
   void NotifyDestroying();
   void NotifyDeepLinkReceived(const GURL& deep_link);
-  void NotifyUrlOpened(const GURL& url);
+  void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(

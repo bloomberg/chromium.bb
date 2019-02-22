@@ -14,14 +14,16 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class GaiaCookieManagerService;
+namespace identity {
+class IdentityManager;
+}  // namespace identity
 
 // A service that downloads, caches, and hands out OneGoogleBarData. It never
 // initiates a download automatically, only when Refresh is called. When the
 // user signs in or out, the cached value is cleared.
 class OneGoogleBarService : public KeyedService {
  public:
-  OneGoogleBarService(GaiaCookieManagerService* cookie_service,
+  OneGoogleBarService(identity::IdentityManager* identity_manager,
                       std::unique_ptr<OneGoogleBarLoader> loader);
   ~OneGoogleBarService() override;
 

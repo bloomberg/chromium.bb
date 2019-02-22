@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/task/post_task.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
 namespace ios {
@@ -46,8 +48,8 @@ void StartSyncOnUIThread(const base::FilePath& browser_state_path,
 
 void StartSyncProxy(const base::FilePath& browser_state_path,
                     syncer::ModelType type) {
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
       base::Bind(&StartSyncOnUIThread, browser_state_path, type));
 }
 

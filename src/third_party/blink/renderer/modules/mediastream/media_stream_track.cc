@@ -71,10 +71,12 @@ bool ConstraintSetHasImageCapture(
          constraint_set.hasExposureMode() || constraint_set.hasFocusMode() ||
          constraint_set.hasPointsOfInterest() ||
          constraint_set.hasExposureCompensation() ||
+         constraint_set.hasExposureTime() ||
          constraint_set.hasColorTemperature() || constraint_set.hasIso() ||
          constraint_set.hasBrightness() || constraint_set.hasContrast() ||
          constraint_set.hasSaturation() || constraint_set.hasSharpness() ||
-         constraint_set.hasZoom() || constraint_set.hasTorch();
+         constraint_set.hasFocusDistance() || constraint_set.hasZoom() ||
+         constraint_set.hasTorch();
 }
 
 bool ConstraintSetHasNonImageCapture(
@@ -294,7 +296,7 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (user_media)
@@ -320,8 +322,8 @@ void MediaStreamTrack::SetConstraints(const WebMediaConstraints& constraints) {
 void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
   if (image_capture_)
     capabilities = image_capture_->GetMediaTrackCapabilities();
-
   auto platform_capabilities = component_->Source()->GetCapabilities();
+
   capabilities.setDeviceId(platform_capabilities.device_id);
   if (!platform_capabilities.group_id.IsNull())
     capabilities.setGroupId(platform_capabilities.group_id);
@@ -405,12 +407,14 @@ void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
       image_capture_constraints.hasExposureMode() ||
       image_capture_constraints.hasFocusMode() ||
       image_capture_constraints.hasExposureCompensation() ||
+      image_capture_constraints.hasExposureTime() ||
       image_capture_constraints.hasColorTemperature() ||
       image_capture_constraints.hasIso() ||
       image_capture_constraints.hasBrightness() ||
       image_capture_constraints.hasContrast() ||
       image_capture_constraints.hasSaturation() ||
       image_capture_constraints.hasSharpness() ||
+      image_capture_constraints.hasFocusDistance() ||
       image_capture_constraints.hasZoom()) {
     // Add image capture constraints, if any, as another entry to advanced().
     vector.emplace_back(image_capture_constraints);
@@ -493,6 +497,42 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
 
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);
+
+  if (platform_settings.display_surface) {
+    WTF::String value;
+    switch (platform_settings.display_surface.value()) {
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor:
+        value = "monitor";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow:
+        value = "window";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kApplication:
+        value = "application";
+        break;
+      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser:
+        value = "browser";
+        break;
+    }
+    settings.setDisplaySurface(value);
+  }
+  if (platform_settings.logical_surface)
+    settings.setLogicalSurface(platform_settings.logical_surface.value());
+  if (platform_settings.cursor) {
+    WTF::String value;
+    switch (platform_settings.cursor.value()) {
+      case WebMediaStreamTrack::CursorCaptureType::kNever:
+        value = "never";
+        break;
+      case WebMediaStreamTrack::CursorCaptureType::kAlways:
+        value = "always";
+        break;
+      case WebMediaStreamTrack::CursorCaptureType::kMotion:
+        value = "motion";
+        break;
+    }
+    settings.setCursor(value);
+  }
 }
 
 ScriptPromise MediaStreamTrack::applyConstraints(
@@ -543,7 +583,7 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media) {

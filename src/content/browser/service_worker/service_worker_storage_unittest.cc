@@ -69,10 +69,10 @@ const uint8_t kTestPublicKey[] = {
 };
 
 void StatusAndQuitCallback(blink::ServiceWorkerStatusCode* result,
-                           const base::Closure& quit_closure,
+                           base::OnceClosure quit_closure,
                            blink::ServiceWorkerStatusCode status) {
   *result = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void StatusCallback(bool* was_called,
@@ -200,7 +200,8 @@ int WriteStringResponse(ServiceWorkerStorage* storage,
                         int64_t id,
                         const std::string& headers,
                         const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(body.data());
   return WriteResponse(storage, id, headers, body_buffer.get(), body.length());
 }
 
@@ -237,7 +238,8 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
 
   std::string received_body;
   const int kBigEnough = 512;
-  scoped_refptr<net::IOBuffer> buffer = new IOBuffer(kBigEnough);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<IOBuffer>(kBigEnough);
   TestCompletionCallback cb;
   reader->ReadData(buffer.get(), kBigEnough, cb.callback());
   rv = cb.WaitForResult();
@@ -259,7 +261,8 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
 int WriteResponseMetadata(ServiceWorkerStorage* storage,
                           int64_t id,
                           const std::string& metadata) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(metadata.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(metadata.data());
   std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
       storage->CreateResponseMetadataWriter(id);
   TestCompletionCallback cb;
@@ -368,8 +371,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, storage()->NewRegistrationId(), context()->AsWeakPtr());
     auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration.get(), script, storage()->NewVersionId(),
-        context()->AsWeakPtr());
+        registration.get(), script, blink::mojom::ScriptType::kClassic,
+        storage()->NewVersionId(), context()->AsWeakPtr());
     std::vector<ResourceRecord> records = {
         ResourceRecord(storage()->NewResourceId(), script, 100)};
     version->script_cache_map()->SetResources(records);
@@ -646,7 +649,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
       new ServiceWorkerRegistration(options, kRegistrationId,
                                     context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+      live_registration.get(), kScript, blink::mojom::ScriptType::kClassic,
+      kVersionId, context()->AsWeakPtr());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
             StoreRegistration(live_registration, live_version));
 
@@ -734,7 +738,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       new ServiceWorkerRegistration(options, kRegistrationId,
                                     context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kResource1, kVersionId, context()->AsWeakPtr());
+      live_registration.get(), kResource1, blink::mojom::ScriptType::kClassic,
+      kVersionId, context()->AsWeakPtr());
   live_version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
@@ -904,7 +909,8 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
       new ServiceWorkerRegistration(options, kRegistrationId,
                                     context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+      live_registration.get(), kScript, blink::mojom::ScriptType::kClassic,
+      kVersionId, context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
   live_registration->SetWaitingVersion(live_version);
 
@@ -1657,8 +1663,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      registration_.get(), script_, storage()->NewVersionId(),
-      context()->AsWeakPtr());
+      registration_.get(), script_, blink::mojom::ScriptType::kClassic,
+      storage()->NewVersionId(), context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;
@@ -1859,7 +1865,8 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
       new ServiceWorkerRegistration(options, kRegistrationId,
                                     context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+      registration.get(), kScript, blink::mojom::ScriptType::kClassic,
+      kVersionId, context()->AsWeakPtr());
 
   net::HttpResponseInfo http_info;
   http_info.ssl_info.cert =

@@ -368,26 +368,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Results Tables, such as the omnibox.
     kColorId_ResultsTableNormalBackground,
     kColorId_ResultsTableHoveredBackground,
-    kColorId_ResultsTableSelectedBackground,
     kColorId_ResultsTableNormalText,
-    kColorId_ResultsTableHoveredText,
-    kColorId_ResultsTableSelectedText,
-    kColorId_ResultsTableNormalDimmedText,
-    kColorId_ResultsTableHoveredDimmedText,
-    kColorId_ResultsTableSelectedDimmedText,
-    kColorId_ResultsTableNormalUrl,
-    kColorId_ResultsTableHoveredUrl,
-    kColorId_ResultsTableSelectedUrl,
-    // Positive text refers to good (often rendered in green) text, such as the
-    // stock value went up.
-    kColorId_ResultsTablePositiveText,
-    kColorId_ResultsTablePositiveHoveredText,
-    kColorId_ResultsTablePositiveSelectedText,
-    // Negative text refers to something alarming (often rendered in red), such
-    // as the stock value went down.
-    kColorId_ResultsTableNegativeText,
-    kColorId_ResultsTableNegativeHoveredText,
-    kColorId_ResultsTableNegativeSelectedText,
+    kColorId_ResultsTableDimmedText,
     // Colors for the material spinner (aka throbber).
     kColorId_ThrobberSpinningColor,
     kColorId_ThrobberWaitingColor,

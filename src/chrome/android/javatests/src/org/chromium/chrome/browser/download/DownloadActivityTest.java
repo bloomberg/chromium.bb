@@ -52,8 +52,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.HashMap;
@@ -140,8 +140,8 @@ public class DownloadActivityTest {
         mAdapter = mUi.getDownloadHistoryAdapterForTests();
         mAdapter.registerAdapterDataObserver(mAdapterObserver);
 
-        mSpaceUsedDisplay =
-                (TextView) mActivityTestRule.getActivity().findViewById(R.id.size_downloaded);
+        mSpaceUsedDisplay = (TextView) mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.download.R.id.size_downloaded);
         mRecyclerView =
                 ((RecyclerView) mActivityTestRule.getActivity().findViewById(R.id.recycler_view));
 
@@ -650,8 +650,8 @@ public class DownloadActivityTest {
                 mActivityTestRule.getActivity()
                         .findViewById(R.id.selection_mode_number)
                         .getVisibility());
-        Assert.assertNull(
-                mActivityTestRule.getActivity().findViewById(R.id.selection_mode_share_menu_id));
+        Assert.assertNull(mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.download.R.id.selection_mode_share_menu_id));
         Assert.assertNull(
                 mActivityTestRule.getActivity().findViewById(R.id.selection_mode_delete_menu_id));
         Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
@@ -667,7 +667,8 @@ public class DownloadActivityTest {
                         .getVisibility());
         Assert.assertEquals(View.VISIBLE,
                 mActivityTestRule.getActivity()
-                        .findViewById(R.id.selection_mode_share_menu_id)
+                        .findViewById(
+                                org.chromium.chrome.download.R.id.selection_mode_share_menu_id)
                         .getVisibility());
         Assert.assertEquals(View.VISIBLE,
                 mActivityTestRule.getActivity()
@@ -686,8 +687,8 @@ public class DownloadActivityTest {
                 mActivityTestRule.getActivity()
                         .findViewById(R.id.selection_mode_number)
                         .getVisibility());
-        Assert.assertNull(
-                mActivityTestRule.getActivity().findViewById(R.id.selection_mode_share_menu_id));
+        Assert.assertNull(mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.download.R.id.selection_mode_share_menu_id));
         Assert.assertNull(
                 mActivityTestRule.getActivity().findViewById(R.id.selection_mode_delete_menu_id));
         Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());

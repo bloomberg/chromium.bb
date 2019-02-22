@@ -84,9 +84,9 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
       .WillOnce(service_.SucceedJob(android_management_response_));
   EXPECT_CALL(service_,
               StartJob(dm_protocol::kValueRequestCheckAndroidManagement,
-                       std::string(), kOAuthToken, std::string(), _,
-                       MatchProto(android_management_request_)))
-      .WillOnce(SaveArg<4>(&client_id));
+                       std::string(), kOAuthToken, std::string(), std::string(),
+                       _, MatchProto(android_management_request_)))
+      .WillOnce(SaveArg<5>(&client_id));
   EXPECT_CALL(callback_observer_,
               Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);

@@ -116,7 +116,7 @@
 }
 
 - (void)applicationWillEnterForeground {
-  self.mediator->WillEnterForeground();
+  self.mediator->ExitFullscreen();
 }
 
 @end

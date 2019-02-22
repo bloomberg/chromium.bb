@@ -36,10 +36,28 @@ class CONTENT_EXPORT GeneratedCodeCache {
                                    const std::vector<uint8_t>&)>;
   static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
+  // Cache type. Used for collecting statistics for JS and Wasm in separate
+  // buckets.
+  enum CodeCacheType { kJavaScript, kWebAssembly };
+
+  // Used for collecting statistics about cache behaviour.
+  enum CacheEntryStatus {
+    kHit,
+    kMiss,
+    kClear,
+    kUpdate,
+    kCreate,
+    kError,
+    kIncompleteEntry,
+    kMaxValue = kIncompleteEntry
+  };
+
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
   // If |max_size_bytes| is 0, then disk_cache picks a default size based on
   // some heuristics.
-  GeneratedCodeCache(const base::FilePath& path, int max_size_bytes);
+  GeneratedCodeCache(const base::FilePath& path,
+                     int max_size_bytes,
+                     CodeCacheType cache_type);
 
   ~GeneratedCodeCache();
 
@@ -120,6 +138,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void DoPendingClearCache(net::CompletionCallback callback);
   void PendingClearComplete(net::CompletionCallback callback, int rv);
 
+  void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status);
+
   std::unique_ptr<disk_cache::Backend> backend_;
   BackendState backend_state_;
 
@@ -127,6 +147,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   base::FilePath path_;
   int max_size_bytes_;
+  CodeCacheType cache_type_;
 
   base::WeakPtrFactory<GeneratedCodeCache> weak_ptr_factory_;
 

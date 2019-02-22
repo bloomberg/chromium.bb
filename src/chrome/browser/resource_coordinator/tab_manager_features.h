@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
@@ -27,97 +28,13 @@ namespace resource_coordinator {
 // The name of the ProactiveTabFreezeAndDiscard feature.
 extern const char kProactiveTabFreezeAndDiscardFeatureName[];
 
-// Variations parameter names related to proactive discarding.
-// See ProactiveTabFreezeAndDiscardsParams for details.
-//
-// TODO(sebmarchand): Use the base::FeatureParam API here.
+// The name of the |ShouldProactivelyDiscard| parameter of the
+// ProactiveTabFreezeAndDiscard feature.
 extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
-extern const char
-    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
-extern const char
-    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceParam
-        [];
-extern const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[];
-extern const char
-    kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[];
-extern const char kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam[];
-extern const char kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_FreezeTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_UnfreezeTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_RefreezeTimeoutParam[];
 
-// Variations parameter names related to the site characteristics database.
-// See ProactiveTabFreezeAndDiscardsParams for details.
-extern const char kSiteCharacteristicsDb_FaviconUpdateObservationWindow[];
-extern const char kSiteCharacteristicsDb_TitleUpdateObservationWindow[];
-extern const char kSiteCharacteristicsDb_AudioUsageObservationWindow[];
-extern const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[];
-extern const char kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod[];
-extern const char kSiteCharacteristicsDb_AudioUsageGracePeriod[];
-
-// Variation parameter names related to infinite session restore.
-extern const char kInfiniteSessionRestore_MinSimultaneousTabLoads[];
-extern const char kInfiniteSessionRestore_MaxSimultaneousTabLoads[];
-extern const char kInfiniteSessionRestore_CoresPerSimultaneousTabLoad[];
-extern const char kInfiniteSessionRestore_MinTabsToRestore[];
-extern const char kInfiniteSessionRestore_MaxTabsToRestore[];
-extern const char kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore[];
-// This is expressed in seconds.
-extern const char kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore[];
-extern const char kInfiniteSessionRestore_MinSiteEngagementToRestore[];
-
-// Default values of parameters related to the site characteristics database.
-// See ProactiveTabFreezeAndDiscardsParams for details.
-extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
-extern const bool
-    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault;
-extern const bool
-    kProactiveTabFreezeAndDiscard_ShouldProtectTabsSharingBrowsingInstanceDefault;
-extern const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault;
-extern const uint32_t
-    kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault;
-extern const uint32_t kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault;
-extern const base::TimeDelta kProactiveTabFreezeAndDiscard_FreezeTimeoutDefault;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_UnfreezeTimeoutDefault;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_RefreezeTimeoutDefault;
-
-// Default values of parameters related to the site characteristics database.
-// See SiteCharacteristicsDatabaseParams for details.
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default;
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default;
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_AudioUsageObservationWindow_Default;
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default;
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_TitleOrFaviconChangeGracePeriod_Default;
-extern const base::TimeDelta
-    kSiteCharacteristicsDb_AudioUsageGracePeriod_Default;
-
-// Default values for infinite session restore feature.
-extern const uint32_t kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault;
-extern const uint32_t kInfiniteSessionRestore_MaxSimultaneousTabLoadsDefault;
-extern const uint32_t
-    kInfiniteSessionRestore_CoresPerSimultaneousTabLoadDefault;
-extern const uint32_t kInfiniteSessionRestore_MinTabsToRestoreDefault;
-extern const uint32_t kInfiniteSessionRestore_MaxTabsToRestoreDefault;
-extern const uint32_t
-    kInfiniteSessionRestore_MbFreeMemoryPerTabToRestoreDefault;
-extern const base::TimeDelta
-    kInfiniteSessionRestore_MaxTimeSinceLastUseToRestoreDefault;
-extern const uint32_t kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault;
+// The name of the |DisableHeuristicsProtections| parameter of the
+// ProactiveTabFreezeAndDiscard feature.
+extern const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[];
 
 // Parameters used by the proactive tab discarding feature.
 //
@@ -159,6 +76,63 @@ struct ProactiveTabFreezeAndDiscardParams {
   ProactiveTabFreezeAndDiscardParams(
       const ProactiveTabFreezeAndDiscardParams& rhs);
 
+  // Static definition of the different parameters that can be used by this
+  // feature.
+
+  static constexpr base::FeatureParam<bool> kShouldProactivelyDiscard{
+      &features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, false};
+  static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
+      &features::kProactiveTabFreezeAndDiscard, "ShouldPeriodicallyUnfreeze",
+      false};
+  static constexpr base::FeatureParam<bool>
+      kShouldProtectTabsSharingBrowsingInstance{
+          &features::kProactiveTabFreezeAndDiscard,
+          "ShouldProtectTabsSharingBrowsingInstance", true};
+  // 50% of people cap out at 4 tabs, so for them proactive discarding won't
+  // even be invoked. See Tabs.MaxTabsInADay.
+  // TODO(chrisha): This should eventually be informed by the number of tabs
+  // typically used over a given time horizon (metric being developed).
+  static constexpr base::FeatureParam<int> kLowLoadedTabCount{
+      &features::kProactiveTabFreezeAndDiscard, "LowLoadedTabCount", 4};
+  // Testing in the lab shows that 2GB devices suffer beyond 6 tabs, and 4GB
+  // devices suffer beyond about 12 tabs. As a very simple first step, we'll aim
+  // at allowing 3 tabs per GB of RAM on a system before proactive discarding
+  // kicks in. This is a system resource dependent max, which is combined with
+  // the DefaultMaxLoadedTabCount to determine the max on a system.
+  static constexpr base::FeatureParam<int> kModerateLoadedTabsPerGbRam{
+      &features::kProactiveTabFreezeAndDiscard, "ModerateLoadedTabsPerGbRam",
+      3};
+  // 99.9% of people cap out with fewer than this number, so only 0.1% of the
+  // population should ever encounter proactive discarding based on this cap.
+  static constexpr base::FeatureParam<int> kHighLoadedTabCount{
+      &features::kProactiveTabFreezeAndDiscard, "HighLoadedTabCount", 100};
+  // Current discarding uses 10 minutes as a minimum cap. This uses
+  // exponentially increasing timeouts beyond that.
+  static constexpr base::FeatureParam<int> kLowOccludedTimeout{
+      &features::kProactiveTabFreezeAndDiscard, "LowOccludedTimeoutSeconds",
+      base::TimeDelta::FromHours(6).InSeconds()};
+  static constexpr base::FeatureParam<int> kModerateOccludedTimeout{
+      &features::kProactiveTabFreezeAndDiscard,
+      "ModerateOccludedTimeoutSeconds",
+      base::TimeDelta::FromHours(1).InSeconds()};
+  static constexpr base::FeatureParam<int> kHighOccludedTimeout{
+      &features::kProactiveTabFreezeAndDiscard, "HighOccludedTimeoutSeconds",
+      static_cast<int>(base::TimeDelta::FromMinutes(10).InSeconds())};
+  static constexpr base::FeatureParam<int> kFreezeTimeout{
+      &features::kProactiveTabFreezeAndDiscard, "FreezeTimeout",
+      base::TimeDelta::FromMinutes(10).InSeconds()};
+  static constexpr base::FeatureParam<int> kUnfreezeTimeout{
+      &features::kProactiveTabFreezeAndDiscard, "UnfreezeTimeout",
+      base::TimeDelta::FromMinutes(15).InSeconds()};
+  static constexpr base::FeatureParam<int> kRefreezeTimeout{
+      &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout",
+      base::TimeDelta::FromMinutes(10).InSeconds()};
+
+  static constexpr base::FeatureParam<bool> kDisableHeuristicsProtections{
+      &features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_DisableHeuristicsParam, false};
+
   // Whether tabs should be proactively discarded. When the
   // |kProactiveTabFreezeAndDiscard| feature is enabled and this is false, only
   // proactive tab freezing happens.
@@ -196,6 +170,9 @@ struct ProactiveTabFreezeAndDiscardParams {
   base::TimeDelta unfreeze_timeout;
   // Amount of time that a tab stays unfrozen before being frozen again.
   base::TimeDelta refreeze_timeout;
+  // Disable all the heuristics protections when doing a freezing or discarding
+  // intervention.
+  bool disable_heuristics_protections;
 };
 
 // Parameters used by the site characteristics database.
@@ -213,6 +190,31 @@ struct SiteCharacteristicsDatabaseParams {
   SiteCharacteristicsDatabaseParams();
   SiteCharacteristicsDatabaseParams(
       const SiteCharacteristicsDatabaseParams& rhs);
+
+  // Static definition of the different parameters that can be used by this
+  // feature.
+
+  // Observations windows have a default value of 2 hours, 95% of backgrounded
+  // tabs don't use any of these features in this time window.
+  static constexpr base::FeatureParam<int> kFaviconUpdateObservationWindow{
+      &features::kSiteCharacteristicsDatabase, "FaviconUpdateObservationWindow",
+      base::TimeDelta::FromHours(2).InSeconds()};
+  static constexpr base::FeatureParam<int> kTitleUpdateObservationWindow{
+      &features::kSiteCharacteristicsDatabase, "TitleUpdateObservationWindow",
+      base::TimeDelta::FromHours(2).InSeconds()};
+  static constexpr base::FeatureParam<int> kAudioUsageObservationWindow{
+      &features::kSiteCharacteristicsDatabase, "AudioUsageObservationWindow",
+      base::TimeDelta::FromHours(2).InSeconds()};
+  static constexpr base::FeatureParam<int> kNotificationsUsageObservationWindow{
+      &features::kSiteCharacteristicsDatabase,
+      "NotificationsUsageObservationWindow",
+      base::TimeDelta::FromHours(2).InSeconds()};
+  static constexpr base::FeatureParam<int> kTitleOrFaviconChangeGracePeriod{
+      &features::kSiteCharacteristicsDatabase,
+      "TitleOrFaviconChangeGracePeriod", 20 /* 20 seconds */};
+  static constexpr base::FeatureParam<int> kAudioUsageGracePeriod{
+      &features::kSiteCharacteristicsDatabase, "AudioUsageGracePeriod",
+      10 /* 10 seconds */};
 
   // Minimum observation window before considering that this website doesn't
   // update its favicon while in background.
@@ -242,6 +244,32 @@ struct SiteCharacteristicsDatabaseParams {
 struct InfiniteSessionRestoreParams {
   InfiniteSessionRestoreParams();
   InfiniteSessionRestoreParams(const InfiniteSessionRestoreParams& rhs);
+
+  // Static definition of the different parameters that can be used by this
+  // feature.
+
+  static constexpr base::FeatureParam<int> kMinSimultaneousTabLoads{
+      &features::kInfiniteSessionRestore, "MinSimultaneousTabLoads", 1};
+  static constexpr base::FeatureParam<int> kMaxSimultaneousTabLoads{
+      &features::kInfiniteSessionRestore, "MaxSimultaneousTabLoads", 4};
+  static constexpr base::FeatureParam<int> kCoresPerSimultaneousTabLoad{
+      &features::kInfiniteSessionRestore, "CoresPerSimultaneousTabLoad", 2};
+  static constexpr base::FeatureParam<int> kMinTabsToRestore{
+      &features::kInfiniteSessionRestore, "MinTabsToRestore", 4};
+  static constexpr base::FeatureParam<int> kMaxTabsToRestore{
+      &features::kInfiniteSessionRestore, "MaxTabsToRestore", 20};
+  // This is the 75th percentile of Memory.Renderer.PrivateMemoryFootprint.
+  static constexpr base::FeatureParam<int> kMbFreeMemoryPerTabToRestore{
+      &features::kInfiniteSessionRestore, "MbFreeMemoryPerTabToRestore", 150};
+  // This is the 75th percentile of SessionRestore.RestoredTab.TimeSinceActive.
+  static constexpr base::FeatureParam<int> kMaxTimeSinceLastUseToRestore{
+      &features::kInfiniteSessionRestore, "MaxTimeSinceLastUseToRestore",
+      base::TimeDelta::FromHours(6).InSeconds()};
+  // Taken from an informal survey of Googlers on min engagement of things they
+  // think *must* load. Note that about 25% of session-restore tabs fall above
+  // this threshold (see SessionRestore.RestoredTab.SiteEngagementScore).
+  static constexpr base::FeatureParam<int> kMinSiteEngagementToRestore{
+      &features::kInfiniteSessionRestore, "MinSiteEngagementToRestore", 15};
 
   // Parameters directly retrieved from the experiment configuration.
 

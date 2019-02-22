@@ -8,16 +8,20 @@
 #ifndef SkPDFTypes_DEFINED
 #define SkPDFTypes_DEFINED
 
-#include <new>
-#include <type_traits>
-
 #include "SkRefCnt.h"
 #include "SkScalar.h"
 #include "SkTHash.h"
 #include "SkTo.h"
 #include "SkTypes.h"
 
+#include <new>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 class SkData;
+class SkPDFCanon;
+class SkPDFDocument;
 class SkPDFObjNumMap;
 class SkPDFObject;
 class SkStreamAsset;
@@ -174,6 +178,9 @@ private:
 };
 static_assert(sizeof(SkString) == sizeof(void*), "SkString_size");
 
+// Exposed for unit testing.
+void SkPDFWriteString(SkWStream* wStream, const char* cin, size_t len);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #if 0  // Enable if needed.
@@ -214,7 +221,7 @@ public:
 
     /** The size of the array.
      */
-    int size() const;
+    size_t size() const;
 
     /** Preallocate space for the given number of entries.
      *  @param length The number of array slots to preallocate.
@@ -236,10 +243,28 @@ public:
     void appendObjRef(sk_sp<SkPDFObject>);
 
 private:
-    SkTArray<SkPDFUnion> fValues;
+    std::vector<SkPDFUnion> fValues;
     void append(SkPDFUnion&& value);
     SkDEBUGCODE(bool fDumped;)
 };
+
+static inline void SkPDFArray_Append(SkPDFArray* a, int v) { a->appendInt(v); }
+
+static inline void SkPDFArray_Append(SkPDFArray* a, SkScalar v) { a->appendScalar(v); }
+
+template <typename T, typename... Args>
+inline void SkPDFArray_Append(SkPDFArray* a, T v, Args... args) {
+    SkPDFArray_Append(a, v);
+    SkPDFArray_Append(a, args...);
+}
+
+template <typename... Args>
+inline sk_sp<SkPDFArray> SkPDFMakeArray(Args... args) {
+    auto ret = sk_make_sp<SkPDFArray>();
+    ret->reserve(sizeof...(Args));
+    SkPDFArray_Append(ret.get(), args...);
+    return ret;
+}
 
 /** \class SkPDFDict
 
@@ -262,7 +287,7 @@ public:
 
     /** The size of the dictionary.
      */
-    int size() const;
+    size_t size() const;
 
     /** Preallocate space for n key-value pairs */
     void reserve(int n);
@@ -299,7 +324,7 @@ private:
         SkPDFUnion fKey;
         SkPDFUnion fValue;
     };
-    SkTArray<Record> fRecords;
+    std::vector<Record> fRecords;
     SkDEBUGCODE(bool fDumped;)
 };
 
@@ -386,10 +411,10 @@ public:
      */
     int32_t getObjectNumber(SkPDFObject* obj) const;
 
-    const SkTArray<sk_sp<SkPDFObject>>& objects() const { return fObjects; }
+    const std::vector<sk_sp<SkPDFObject>>& objects() const { return fObjects; }
 
 private:
-    SkTArray<sk_sp<SkPDFObject>> fObjects;
+    std::vector<sk_sp<SkPDFObject>> fObjects;
     SkTHashMap<SkPDFObject*, int32_t> fObjectNumbers;
 };
 

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/threading/thread.h"
@@ -83,7 +84,7 @@ class AssistantManagerServiceImpl
   void StartCachedScreenContextInteraction() override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartVoiceInteraction() override;
-  void StopActiveInteraction() override;
+  void StopActiveInteraction(bool cancel_conversation) override;
   void SendTextQuery(const std::string& query) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
@@ -94,10 +95,12 @@ class AssistantManagerServiceImpl
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
 
   // AssistantActionObserver overrides:
   void OnShowContextualQueryFallback() override;
-  void OnShowHtml(const std::string& html) override;
+  void OnShowHtml(const std::string& html,
+                  const std::string& fallback) override;
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
@@ -124,6 +127,7 @@ class AssistantManagerServiceImpl
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
   void OnNotificationRemoved(const std::string& grouping_key) override;
+  void OnCommunicationError(int error_code) override;
   // Last search source will be cleared after it is retrieved.
   std::string GetLastSearchSource() override;
 
@@ -136,7 +140,7 @@ class AssistantManagerServiceImpl
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
+  void OnLocaleChanged(const std::string& locale) override;
 
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
@@ -152,6 +156,7 @@ class AssistantManagerServiceImpl
 
   // Update device id, type and locale
   void UpdateDeviceSettings();
+  void UpdateInternalOptions();
 
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
@@ -163,7 +168,8 @@ class AssistantManagerServiceImpl
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
-  void OnShowHtmlOnMainThread(const std::string& html);
+  void OnShowHtmlOnMainThread(const std::string& html,
+                              const std::string& fallback);
   void OnShowSuggestionsOnMainThread(
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
@@ -171,6 +177,7 @@ class AssistantManagerServiceImpl
   void OnShowNotificationOnMainThread(
       const mojom::AssistantNotificationPtr& notification);
   void OnNotificationRemovedOnMainThread(const std::string& grouping_id);
+  void OnCommunicationErrorOnMainThread(int error_code);
   void OnRecognitionStateChangedOnMainThread(
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
@@ -203,7 +210,8 @@ class AssistantManagerServiceImpl
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
   // same ownership as assistant_manager_.
-  assistant_client::AssistantManagerInternal* assistant_manager_internal_;
+  assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
+      nullptr;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
@@ -212,16 +220,22 @@ class AssistantManagerServiceImpl
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
-
+  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
   Service* service_;  // unowned.
+
+  base::Optional<std::string> arc_version_;
 
   bool assistant_enabled_ = false;
   bool context_enabled_ = false;
+  bool spoken_feedback_enabled_ = false;
+  std::string locale_;
+
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
   std::vector<uint8_t> assistant_screenshot_;
   std::string last_search_source_;
   base::Lock last_search_source_lock_;
+  base::TimeTicks started_time_;
 
   base::Thread background_thread_;
 

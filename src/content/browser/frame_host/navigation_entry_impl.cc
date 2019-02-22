@@ -613,8 +613,7 @@ void NavigationEntryImpl::SetExtraData(const std::string& key,
 
 bool NavigationEntryImpl::GetExtraData(const std::string& key,
                                        base::string16* data) const {
-  std::map<std::string, base::string16>::const_iterator iter =
-      extra_data_.find(key);
+  auto iter = extra_data_.find(key);
   if (iter == extra_data_.end())
     return false;
   *data = iter->second;
@@ -686,17 +685,15 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,
     PreviewsState previews_state,
-    const base::TimeTicks& navigation_start) const {
+    base::TimeTicks navigation_start,
+    base::TimeTicks input_start) const {
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), GetBaseURLForDataURL(),
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */,
-      has_started_from_context_menu(), has_user_gesture(),
-      std::vector<ContentSecurityPolicy>() /* initiator_csp */,
-      CSPSource() /* initiator_self_source */);
+      base::Optional<SourceLocation>(), has_started_from_context_menu(),
+      has_user_gesture(), InitiatorCSPInfo(), input_start);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(

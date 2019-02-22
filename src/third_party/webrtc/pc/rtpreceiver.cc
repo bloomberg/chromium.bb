@@ -43,6 +43,21 @@ std::vector<rtc::scoped_refptr<MediaStreamInterface>> CreateStreamsFromIds(
   return streams;
 }
 
+// Attempt to attach the frame decryptor to the current media channel on the
+// correct worker thread only if both the media channel exists and a ssrc has
+// been allocated to the stream.
+void MaybeAttachFrameDecryptorToMediaChannel(
+    const absl::optional<uint32_t>& ssrc,
+    rtc::Thread* worker_thread,
+    rtc::scoped_refptr<webrtc::FrameDecryptorInterface> frame_decryptor,
+    cricket::MediaChannel* media_channel) {
+  if (media_channel && frame_decryptor && ssrc.has_value()) {
+    worker_thread->Invoke<void>(RTC_FROM_HERE, [&] {
+      media_channel->SetFrameDecryptor(*ssrc, frame_decryptor);
+    });
+  }
+}
+
 }  // namespace
 
 AudioRtpReceiver::AudioRtpReceiver(rtc::Thread* worker_thread,
@@ -138,6 +153,22 @@ bool AudioRtpReceiver::SetParameters(const RtpParameters& parameters) {
   });
 }
 
+void AudioRtpReceiver::SetFrameDecryptor(
+    rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor) {
+  frame_decryptor_ = std::move(frame_decryptor);
+  // Special Case: Set the frame decryptor to any value on any existing channel.
+  if (media_channel_ && ssrc_.has_value()) {
+    worker_thread_->Invoke<void>(RTC_FROM_HERE, [&] {
+      media_channel_->SetFrameDecryptor(*ssrc_, frame_decryptor_);
+    });
+  }
+}
+
+rtc::scoped_refptr<FrameDecryptorInterface>
+AudioRtpReceiver::GetFrameDecryptor() const {
+  return frame_decryptor_;
+}
+
 void AudioRtpReceiver::Stop() {
   // TODO(deadbeef): Need to do more here to fully stop receiving packets.
   if (stopped_) {
@@ -223,6 +254,9 @@ void AudioRtpReceiver::Reconfigure() {
   if (!SetOutputVolume(track_->enabled() ? cached_volume_ : 0)) {
     RTC_NOTREACHED();
   }
+  // Reattach the frame decryptor if we were reconfigured.
+  MaybeAttachFrameDecryptorToMediaChannel(ssrc_, worker_thread_,
+                                          frame_decryptor_, media_channel_);
 }
 
 void AudioRtpReceiver::SetObserver(RtpReceiverObserverInterface* observer) {
@@ -231,6 +265,11 @@ void AudioRtpReceiver::SetObserver(RtpReceiverObserverInterface* observer) {
   if (received_first_packet_ && observer_) {
     observer_->OnFirstPacketReceived(media_type());
   }
+}
+
+void AudioRtpReceiver::SetVoiceMediaChannel(
+    cricket::VoiceMediaChannel* voice_media_channel) {
+  media_channel_ = voice_media_channel;
 }
 
 void AudioRtpReceiver::NotifyFirstPacketReceived() {
@@ -308,6 +347,22 @@ bool VideoRtpReceiver::SetParameters(const RtpParameters& parameters) {
   });
 }
 
+void VideoRtpReceiver::SetFrameDecryptor(
+    rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor) {
+  frame_decryptor_ = std::move(frame_decryptor);
+  // Special Case: Set the frame decryptor to any value on any existing channel.
+  if (media_channel_ && ssrc_.has_value()) {
+    worker_thread_->Invoke<void>(RTC_FROM_HERE, [&] {
+      media_channel_->SetFrameDecryptor(*ssrc_, frame_decryptor_);
+    });
+  }
+}
+
+rtc::scoped_refptr<FrameDecryptorInterface>
+VideoRtpReceiver::GetFrameDecryptor() const {
+  return frame_decryptor_;
+}
+
 void VideoRtpReceiver::Stop() {
   // TODO(deadbeef): Need to do more here to fully stop receiving packets.
   if (stopped_) {
@@ -337,6 +392,9 @@ void VideoRtpReceiver::SetupMediaChannel(uint32_t ssrc) {
   }
   ssrc_ = ssrc;
   SetSink(source_->sink());
+  // Attach any existing frame decryptor to the media channel.
+  MaybeAttachFrameDecryptorToMediaChannel(ssrc_, worker_thread_,
+                                          frame_decryptor_, media_channel_);
 }
 
 void VideoRtpReceiver::set_stream_ids(std::vector<std::string> stream_ids) {
@@ -384,11 +442,24 @@ void VideoRtpReceiver::SetObserver(RtpReceiverObserverInterface* observer) {
   }
 }
 
+void VideoRtpReceiver::SetVideoMediaChannel(
+    cricket::VideoMediaChannel* video_media_channel) {
+  media_channel_ = video_media_channel;
+}
+
 void VideoRtpReceiver::NotifyFirstPacketReceived() {
   if (observer_) {
     observer_->OnFirstPacketReceived(media_type());
   }
   received_first_packet_ = true;
+}
+
+std::vector<RtpSource> VideoRtpReceiver::GetSources() const {
+  if (!media_channel_ || !ssrc_ || stopped_) {
+    return {};
+  }
+  return worker_thread_->Invoke<std::vector<RtpSource>>(
+      RTC_FROM_HERE, [&] { return media_channel_->GetSources(*ssrc_); });
 }
 
 }  // namespace webrtc

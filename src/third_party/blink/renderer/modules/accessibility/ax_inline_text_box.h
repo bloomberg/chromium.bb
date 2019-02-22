@@ -53,8 +53,10 @@ class AXInlineTextBox final : public AXObject {
   bool IsAXInlineTextBox() const override { return true; }
 
  public:
-  AccessibilityRole RoleValue() const override { return kInlineTextBoxRole; }
-  String GetName(AXNameFrom&,
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kInlineTextBox;
+  }
+  String GetName(ax::mojom::NameFrom&,
                  AXObject::AXObjectVector* name_objects) const override;
   void TextCharacterOffsets(Vector<int>&) const override;
   void GetWordBoundaries(Vector<AXRange>&) const override;
@@ -63,7 +65,7 @@ class AXInlineTextBox final : public AXObject {
                          SkMatrix44& out_container_transform,
                          bool* clips_children = nullptr) const override;
   AXObject* ComputeParent() const override;
-  AccessibilityTextDirection GetTextDirection() const override;
+  ax::mojom::TextDirection GetTextDirection() const override;
   Node* GetNode() const override;
   AXObject* NextOnLine() const override;
   AXObject* PreviousOnLine() const override;

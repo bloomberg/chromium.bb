@@ -8,8 +8,10 @@ import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_param.mojom";
@@ -80,7 +82,12 @@ interface NetworkServiceClient {
   // called.
   // 2. The request is aborted, net::URLRequest::CancelWithError() needs to be
   // called.
-  OnCertificateRequested(uint32 process_id,
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates
+  // the frame making the request, see
+  // network::ResourceRequest::fetch_window_id.
+  OnCertificateRequested(mojo_base.mojom.UnguessableToken? window_id,
+                         uint32 process_id,
                          uint32 routing_id,
                          uint32 request_id,
                          network.mojom.SSLCertRequestInfo cert_info) => (
@@ -222,7 +229,15 @@ interface NetworkService {
   // for more details). Most clients will just be adding a dictionary under
   // the key "clientInfo".
   StartNetLog(mojo_base.mojom.File file,
+              NetLogCaptureMode capture_mode,
               mojo_base.mojom.DictionaryValue constants);
+
+  // Starts logging SSL key material to the |file|. This must be called before
+  // any SSL connections are made. (See |SSLClientSocket::SetSSLKeyLogger()|
+  // for more details).
+  // TODO(crbug.com/841001) This should pass a File which has already been
+  // opened to be sandbox friendly.
+  SetSSLKeyLogFile(mojo_base.mojom.FilePath file);
 
   // Creates a new network context with the given parameters.
   CreateNetworkContext(NetworkContext& context,
@@ -316,4 +331,8 @@ interface NetworkService {
 
   // Reverts AddCorbExceptionForPlugin.
   RemoveCorbExceptionForPlugin(uint32 process_id);
+
+  // Called on state changes of the Android application.
+  [EnableIf=is_android]
+  OnApplicationStateChange(ApplicationState state);
 };

@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/buildflags.h"
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -31,10 +32,12 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
+class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
@@ -78,28 +81,31 @@ class WebRtcEventLogManager;
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
-  // |user_pref_store|: if non-null, will be used as the source (and
-  // destination) of user prefs for Local State instead of loading the JSON file
-  // from disk.
+  // |chrome_feature_list_creator| should not be null. The BrowserProcessImpl
+  // will take the PrefService owned by the creator as the Local State instead
+  // of loading the JSON file from disk.
   explicit BrowserProcessImpl(
-      scoped_refptr<PersistentPrefStore> user_pref_store);
+      ChromeFeatureListCreator* chrome_feature_list_creator);
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.
   void Init();
 
 #if !defined(OS_ANDROID)
-  // Called by ChromeBrowserMainParts to provide a closure that will quit the
-  // browser main message-loop.
+  // Sets a closure to be run to break out of a run loop on browser shutdown
+  // (when the KeepAlive count reaches zero).
+  // TODO(https://crbug.com/845966): This is also used on macOS for the Cocoa
+  // first run dialog so that shutdown can be initiated via a signal while the
+  // first run dialog is showing.
   void SetQuitClosure(base::OnceClosure quit_closure);
 #endif
 
 #if defined(OS_MACOSX)
-  // TODO(https://crbug.com/845966): Replaces the current |quit_closure_| and
-  // returns it. Used by the Cocoa first-run dialog to swap-out the RunLoop set
-  // by ChromeBrowserMainParts' for one that will cause the first-run dialog's
-  // modal RunLoop to exit.
-  base::OnceClosure SwapQuitClosure(base::OnceClosure quit_closure);
+  // Clears the quit closure. Shutdown will not be initiated should the
+  // KeepAlive count reach zero. This function may be called more than once.
+  // TODO(https://crbug.com/845966): Remove this once the Cocoa first run
+  // dialog no longer needs it.
+  void ClearQuitClosure();
 #endif
 
   // Called before the browser threads are created.
@@ -119,6 +125,12 @@ class BrowserProcessImpl : public BrowserProcess,
   void PostDestroyThreads();
 #endif
 
+  // Sets |metrics_services_manager_| and |metrics_services_manager_client_|
+  // which is owned by it.
+  void SetMetricsServices(
+      std::unique_ptr<metrics_services_manager::MetricsServicesManager> manager,
+      metrics_services_manager::MetricsServicesManagerClient* client);
+
   // BrowserProcess implementation.
   void ResourceDispatcherHostCreated() override;
   void EndSession() override;
@@ -128,6 +140,8 @@ class BrowserProcessImpl : public BrowserProcess,
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
   IOThread* io_thread() override;
+  // TODO(qinmin): Remove this method as callers can retrieve the global
+  // instance from SystemNetworkContextManager directly.
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
@@ -154,7 +168,7 @@ class BrowserProcessImpl : public BrowserProcess,
   printing::BackgroundPrintingManager* background_printing_manager() override;
   IntranetRedirectDetector* intranet_redirect_detector() override;
   const std::string& GetApplicationLocale() override;
-  void SetApplicationLocale(const std::string& locale) override;
+  void SetApplicationLocale(const std::string& actual_locale) override;
   DownloadStatusUpdater* download_status_updater() override;
   DownloadRequestLimiter* download_request_limiter() override;
   BackgroundModeManager* background_mode_manager() override;
@@ -188,12 +202,19 @@ class BrowserProcessImpl : public BrowserProcess,
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // The locale used by the application.
+  std::string actual_locale();
+
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 
   // KeepAliveStateObserver implementation
   void OnKeepAliveStateChanged(bool is_keeping_alive) override;
   void OnKeepAliveRestartStateChanged(bool can_restart) override;
+
+  // Create network quality observer so that it can propagate network quality
+  // changes to the render process.
+  void CreateNetworkQualityObserver();
 
   void CreateWatchdogThread();
   void CreateProfileManager();
@@ -247,9 +268,13 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<PrefService> local_state_;
 
-  std::unique_ptr<SystemNetworkContextManager> system_network_context_manager_;
-
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
+
+  // Listens to NetworkQualityTracker and sends network quality updates to the
+  // renderer.
+  std::unique_ptr<
+      network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver>
+      network_quality_observer_;
 
   bool created_icon_manager_ = false;
   std::unique_ptr<IconManager> icon_manager_;
@@ -326,10 +351,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
-  // A pref store that is created from the Local State file. This is handed-off
-  // to |local_state_| when it's created. It will use it, if non-null, instead
-  // of loading the user prefs from disk.
-  scoped_refptr<PersistentPrefStore> user_pref_store_;
+  // If non-null, this object holds a pref store that will be taken by
+  // BrowserProcessImpl to create the |local_state_|.
+  ChromeFeatureListCreator* chrome_feature_list_creator_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

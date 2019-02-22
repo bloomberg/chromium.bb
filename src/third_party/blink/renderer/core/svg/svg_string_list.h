@@ -54,30 +54,27 @@ class SVGStringListTearOff;
 //   SVGString is used only for boxing values for non-list string property
 //   SVGAnimatedString,
 //   and not used for SVGStringList.
-class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
+class SVGStringListBase : public SVGPropertyBase {
  public:
   typedef SVGStringListTearOff TearOffType;
 
-  static SVGStringList* Create() { return new SVGStringList(); }
-
-  ~SVGStringList() override;
+  ~SVGStringListBase() override;
 
   const Vector<String>& Values() const { return values_; }
 
   // SVGStringList DOM Spec implementation. These are only to be called from
   // SVGStringListTearOff:
-  unsigned long length() { return values_.size(); }
+  uint32_t length() { return values_.size(); }
   void clear() { values_.clear(); }
   void Initialize(const String&);
-  String GetItem(size_t, ExceptionState&);
-  void InsertItemBefore(const String&, size_t);
-  String RemoveItem(size_t, ExceptionState&);
+  String GetItem(uint32_t, ExceptionState&);
+  void InsertItemBefore(const String&, uint32_t);
+  String RemoveItem(uint32_t, ExceptionState&);
   void AppendItem(const String&);
-  void ReplaceItem(const String&, size_t, ExceptionState&);
+  void ReplaceItem(const String&, uint32_t, ExceptionState&);
 
   // SVGPropertyBase:
-  SVGParsingError SetValueAsString(const String&);
-  String ValueAsString() const override;
+  virtual SVGParsingError SetValueAsString(const String&) = 0;
 
   void Add(SVGPropertyBase*, SVGElement*) override;
   void CalculateAnimatedValue(SVGAnimationElement*,
@@ -91,14 +88,46 @@ class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
 
   static AnimatedPropertyType ClassType() { return kAnimatedStringList; }
 
- private:
-  SVGStringList();
+  SVGPropertyBase* CloneForAnimation(const String& value) const override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  AnimatedPropertyType GetType() const override { return ClassType(); }
+
+ protected:
+  SVGParsingError SetValueAsStringWithDelimiter(const String& data,
+                                                char list_delimiter);
+  String ValueAsStringWithDelimiter(char list_delimiter) const;
 
   template <typename CharType>
-  void ParseInternal(const CharType*& ptr, const CharType* end);
-  bool CheckIndexBound(size_t, ExceptionState&);
+  void ParseInternal(const CharType*& ptr,
+                     const CharType* end,
+                     char list_delimiter);
+  bool CheckIndexBound(uint32_t, ExceptionState&);
 
   Vector<String> values_;
+};
+
+template <char list_delimiter>
+class SVGStringList final : public SVGStringListBase {
+ public:
+  static SVGStringList<list_delimiter>* Create() {
+    return new SVGStringList<list_delimiter>();
+  }
+  ~SVGStringList() override = default;
+
+  SVGParsingError SetValueAsString(const String& data) override {
+    return SVGStringListBase::SetValueAsStringWithDelimiter(data,
+                                                            list_delimiter);
+  }
+
+  String ValueAsString() const override {
+    return SVGStringListBase::ValueAsStringWithDelimiter(list_delimiter);
+  }
+
+ private:
+  SVGStringList() = default;
 };
 
 }  // namespace blink

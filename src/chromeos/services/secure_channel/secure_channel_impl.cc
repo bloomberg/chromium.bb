@@ -71,7 +71,8 @@ SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
 
 SecureChannelImpl::SecureChannelImpl(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
-    : timer_factory_(TimerFactoryImpl::Factory::Get()->BuildInstance()),
+    : bluetooth_adapter_(std::move(bluetooth_adapter)),
+      timer_factory_(TimerFactoryImpl::Factory::Get()->BuildInstance()),
       remote_device_cache_(
           cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       ble_service_data_helper_(
@@ -79,13 +80,14 @@ SecureChannelImpl::SecureChannelImpl(
               remote_device_cache_.get())),
       ble_connection_manager_(
           BleConnectionManagerImpl::Factory::Get()->BuildInstance(
-              bluetooth_adapter,
+              bluetooth_adapter_,
               ble_service_data_helper_.get(),
               timer_factory_.get())),
       pending_connection_manager_(
           PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
               this /* delegate */,
-              ble_connection_manager_.get())),
+              ble_connection_manager_.get(),
+              bluetooth_adapter_)),
       active_connection_manager_(
           ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
               this /* delegate */)) {}
@@ -207,6 +209,17 @@ void SecureChannelImpl::ProcessConnectionRequest(
     return;
   }
 
+  // Check 4: Medium-specific verification.
+  switch (connection_medium) {
+    case ConnectionMedium::kBluetoothLowEnergy:
+      // Is the local Bluetooth adapter disabled or not present? If either,
+      // notify client and return early.
+      if (CheckIfBluetoothAdapterDisabledOrNotPresent(
+              api_fn_name, client_connection_parameters.get()))
+        return;
+      break;
+  }
+
   // At this point, the request has been deemed valid.
   ConnectionAttemptDetails connection_attempt_details(
       device_to_connect.GetDeviceId(), local_device.GetDeviceId(),
@@ -318,6 +331,26 @@ bool SecureChannelImpl::CheckForInvalidInputDevice(
   }
 
   return true;
+}
+
+bool SecureChannelImpl::CheckIfBluetoothAdapterDisabledOrNotPresent(
+    ApiFunctionName api_fn_name,
+    ClientConnectionParameters* client_connection_parameters) {
+  if (!bluetooth_adapter_->IsPresent()) {
+    RejectRequestForReason(
+        api_fn_name, mojom::ConnectionAttemptFailureReason::ADAPTER_NOT_PRESENT,
+        client_connection_parameters);
+    return true;
+  }
+
+  if (!bluetooth_adapter_->IsPowered()) {
+    RejectRequestForReason(
+        api_fn_name, mojom::ConnectionAttemptFailureReason::ADAPTER_DISABLED,
+        client_connection_parameters);
+    return true;
+  }
+
+  return false;
 }
 
 base::Optional<SecureChannelImpl::InvalidRemoteDeviceReason>

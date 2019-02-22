@@ -22,6 +22,7 @@ class AssistantMainView : public views::View, public AssistantUiModelObserver {
   ~AssistantMainView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -33,6 +34,9 @@ class AssistantMainView : public views::View, public AssistantUiModelObserver {
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,
                              AssistantVisibility old_visibility,
                              AssistantSource source) override;
+
+  // Returns the first focusable view or nullptr to defer to views::FocusSearch.
+  views::View* FindFirstFocusableView();
 
  private:
   void InitLayout();

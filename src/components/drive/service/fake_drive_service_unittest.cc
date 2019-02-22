@@ -26,7 +26,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_apis::AboutResource;
-using google_apis::AppList;
 using google_apis::ChangeList;
 using google_apis::ChangeResource;
 using google_apis::DRIVE_NO_CONNECTION;
@@ -972,37 +971,6 @@ TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
   EXPECT_FALSE(about_resource);
 }
 
-TEST_F(FakeDriveServiceTest, GetAppList) {
-  ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
-      "drive/applist.json"));
-
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  std::unique_ptr<AppList> app_list;
-  fake_service_.GetAppList(
-      test_util::CreateCopyResultCallback(&error, &app_list));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-
-  ASSERT_TRUE(app_list);
-  EXPECT_EQ(1, fake_service_.app_list_load_count());
-}
-
-TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
-  ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
-      "drive/applist.json"));
-  fake_service_.set_offline(true);
-
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  std::unique_ptr<AppList> app_list;
-  fake_service_.GetAppList(
-      test_util::CreateCopyResultCallback(&error, &app_list));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(DRIVE_NO_CONNECTION, error);
-  EXPECT_FALSE(app_list);
-}
-
 TEST_F(FakeDriveServiceTest, GetFileResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
@@ -1046,22 +1014,6 @@ TEST_F(FakeDriveServiceTest, GetFileResource_Offline) {
 
   EXPECT_EQ(DRIVE_NO_CONNECTION, error);
   EXPECT_FALSE(entry);
-}
-
-TEST_F(FakeDriveServiceTest, GetShareUrl) {
-  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-
-  const std::string kResourceId = "2_file_resource_id";
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  GURL share_url;
-  fake_service_.GetShareUrl(
-      kResourceId,
-      GURL(),  // embed origin
-      test_util::CreateCopyResultCallback(&error, &share_url));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_FALSE(share_url.is_empty());
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {

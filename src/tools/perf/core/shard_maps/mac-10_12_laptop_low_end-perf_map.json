@@ -1,0 +1,302 @@
+{
+    "0": {
+        "benchmarks": {
+            "blink_perf.accessibility": {},
+            "blink_perf.bindings": {},
+            "blink_perf.canvas": {},
+            "blink_perf.css": {},
+            "blink_perf.dom": {},
+            "blink_perf.events": {},
+            "blink_perf.image_decoder": {},
+            "blink_perf.layout": {
+                "end": 59
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "blink_perf.layout": {
+                "begin": 59
+            },
+            "blink_perf.owp_storage": {},
+            "blink_perf.paint": {},
+            "blink_perf.parser": {},
+            "blink_perf.shadow_dom": {},
+            "blink_perf.svg": {},
+            "dromaeo": {},
+            "dummy_benchmark.histogram_benchmark_1": {},
+            "dummy_benchmark.noisy_benchmark_1": {},
+            "dummy_benchmark.stable_benchmark_1": {},
+            "jetstream": {},
+            "kraken": {},
+            "loading.desktop": {
+                "end": 9
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 9,
+                "end": 42
+            }
+        }
+    },
+    "3": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 42,
+                "end": 70
+            }
+        }
+    },
+    "4": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 70,
+                "end": 98
+            }
+        }
+    },
+    "5": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 98
+            },
+            "loading.mobile": {},
+            "media.desktop": {},
+            "media.mobile": {},
+            "memory.desktop": {
+                "end": 5
+            }
+        }
+    },
+    "6": {
+        "benchmarks": {
+            "memory.desktop": {
+                "begin": 5
+            },
+            "memory.long_running_idle_gmail_background_tbmv2": {},
+            "memory.long_running_idle_gmail_tbmv2": {},
+            "memory.top_10_mobile": {},
+            "octane": {},
+            "oortonline_tbmv2": {},
+            "power.desktop": {
+                "end": 9
+            }
+        }
+    },
+    "7": {
+        "benchmarks": {
+            "power.desktop": {
+                "begin": 9
+            },
+            "power.typical_10_mobile": {},
+            "rasterize_and_record_micro.partial_invalidation": {},
+            "rasterize_and_record_micro.top_25": {},
+            "rendering.desktop": {
+                "end": 21
+            }
+        }
+    },
+    "8": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 21,
+                "end": 71
+            }
+        }
+    },
+    "9": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 71,
+                "end": 121
+            }
+        }
+    },
+    "10": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 121,
+                "end": 200
+            }
+        }
+    },
+    "11": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 200
+            },
+            "rendering.mobile": {
+                "end": 421
+            }
+        }
+    },
+    "12": {
+        "benchmarks": {
+            "rendering.mobile": {
+                "begin": 421
+            },
+            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
+            "smoothness.tough_pinch_zoom_cases": {},
+            "speedometer": {},
+            "speedometer-future": {},
+            "speedometer2": {},
+            "speedometer2-future": {},
+            "startup.mobile": {},
+            "system_health.common_desktop": {
+                "end": 22
+            }
+        }
+    },
+    "13": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 22,
+                "end": 62
+            }
+        }
+    },
+    "14": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 62
+            },
+            "system_health.common_mobile": {},
+            "system_health.memory_desktop": {
+                "end": 10
+            }
+        }
+    },
+    "15": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 10,
+                "end": 19
+            }
+        }
+    },
+    "16": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 19,
+                "end": 40
+            }
+        }
+    },
+    "17": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 40,
+                "end": 58
+            }
+        }
+    },
+    "18": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 58,
+                "end": 65
+            }
+        }
+    },
+    "19": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 65
+            },
+            "system_health.memory_mobile": {},
+            "system_health.webview_startup": {},
+            "tab_switching.typical_25": {},
+            "tracing.tracing_with_background_memory_infra": {},
+            "v8.browsing_desktop": {
+                "end": 5
+            }
+        }
+    },
+    "20": {
+        "benchmarks": {
+            "v8.browsing_desktop": {
+                "begin": 5
+            }
+        }
+    },
+    "21": {
+        "benchmarks": {
+            "v8.browsing_desktop-future": {
+                "end": 20
+            }
+        }
+    },
+    "22": {
+        "benchmarks": {
+            "v8.browsing_desktop-future": {
+                "begin": 20
+            },
+            "v8.browsing_mobile": {},
+            "v8.browsing_mobile-future": {},
+            "v8.runtime_stats.top_25": {
+                "end": 29
+            }
+        }
+    },
+    "23": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 29,
+                "end": 65
+            }
+        }
+    },
+    "24": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 65,
+                "end": 107
+            }
+        }
+    },
+    "25": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 107
+            },
+            "wasm": {},
+            "webrtc": {}
+        }
+    },
+    "extra_infos": {
+        "num_stories": 1904,
+        "predicted_min_shard_time": 2928.0,
+        "predicted_min_shard_index": 17,
+        "predicted_max_shard_time": 3780.0,
+        "predicted_max_shard_index": 18,
+        "shard #0": 3246.0,
+        "shard #1": 3264.0,
+        "shard #2": 3300.0,
+        "shard #3": 3216.0,
+        "shard #4": 3280.0,
+        "shard #5": 3174.0,
+        "shard #6": 3328.0,
+        "shard #7": 3174.0,
+        "shard #8": 3252.0,
+        "shard #9": 3280.0,
+        "shard #10": 3266.0,
+        "shard #11": 3244.0,
+        "shard #12": 3230.0,
+        "shard #13": 3264.0,
+        "shard #14": 3408.0,
+        "shard #15": 3174.0,
+        "shard #16": 3126.0,
+        "shard #17": 2928.0,
+        "shard #18": 3780.0,
+        "shard #19": 3178.0,
+        "shard #20": 3234.0,
+        "shard #21": 3226.0,
+        "shard #22": 3288.0,
+        "shard #23": 3198.0,
+        "shard #24": 3270.0,
+        "shard #25": 3226.0
+    }
+}

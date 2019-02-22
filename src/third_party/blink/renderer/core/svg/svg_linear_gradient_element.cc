@@ -31,29 +31,26 @@ namespace blink {
 
 inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     : SVGGradientElement(SVGNames::linearGradientTag, document),
+      // Spec: If the x1|y1|y2 attribute is not specified, the effect is as if a
+      // value of "0%" were specified.
+      // Spec: If the x2 attribute is not specified, the effect is as if a value
+      // of "100%" were specified.
       x1_(SVGAnimatedLength::Create(this,
                                     SVGNames::x1Attr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kPercent0)),
       y1_(SVGAnimatedLength::Create(this,
                                     SVGNames::y1Attr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kPercent0)),
       x2_(SVGAnimatedLength::Create(this,
                                     SVGNames::x2Attr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      y2_(SVGAnimatedLength::Create(
-          this,
-          SVGNames::y2Attr,
-          SVGLength::Create(SVGLengthMode::kHeight))) {
-  // Spec: If the x1|y1|y2 attribute is not specified, the effect is as if a
-  // value of "0%" were specified.
-  x1_->SetDefaultValueAsString("0%");
-  y1_->SetDefaultValueAsString("0%");
-  y2_->SetDefaultValueAsString("0%");
-
-  // Spec: If the x2 attribute is not specified, the effect is as if a value of
-  // "100%" were specified.
-  x2_->SetDefaultValueAsString("100%");
-
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kPercent100)),
+      y2_(SVGAnimatedLength::Create(this,
+                                    SVGNames::y2Attr,
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kPercent0)) {
   AddToPropertyMap(x1_);
   AddToPropertyMap(y1_);
   AddToPropertyMap(x2_);

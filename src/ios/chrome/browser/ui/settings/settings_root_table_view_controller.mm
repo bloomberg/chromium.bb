@@ -7,14 +7,11 @@
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @implementation SettingsRootTableViewController
-@synthesize appBarViewController = _appBarViewController;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];

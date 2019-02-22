@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -74,15 +73,10 @@ const CGFloat kVerticalPadding = 16;
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.numberOfLines = 0;
+    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
+    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     [self.contentView addSubview:_textLabel];
 
-    // Fonts and colors vary based on the UI reboot experiment.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-      _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
-    } else {
-      _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    }
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_textLabel.leadingAnchor

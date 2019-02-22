@@ -151,6 +151,10 @@ class RobustBufferAccessBehaviorTest : public ANGLETest
 TEST_P(RobustBufferAccessBehaviorTest, DrawElementsIndexOutOfRangeWithStaticDraw)
 {
     ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsWindows() && IsOpenGL());
+
+    // Failing after changing the shard count of angle_end2end_tests. http://anglebug.com/2799
+    ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsD3D11_FL93());
+
     ANGLE_SKIP_TEST_IF(!initExtension());
 
     runIndexOutOfRangeTests(GL_STATIC_DRAW);
@@ -296,6 +300,29 @@ TEST_P(RobustBufferAccessBehaviorTest, VeryLargeVertexCountWithDynamicVertexData
     glDrawElements(GL_TRIANGLES, kIndexCount, GL_UNSIGNED_INT, nullptr);
 
     // This may or may not generate an error, but it should not crash.
+}
+
+// Test that robust access works even if there's no data uploaded to the vertex buffer at all.
+TEST_P(RobustBufferAccessBehaviorTest, NoBufferData)
+{
+    // http://crbug.com/889303: Possible driver bug on NVIDIA Shield TV.
+    // http://anglebug.com/2861: Fails abnormally on Pixel XL
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    ANGLE_SKIP_TEST_IF(!initExtension());
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    glUseProgram(program);
+
+    glEnableVertexAttribArray(0);
+    GLBuffer buf;
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+
+    glVertexAttribPointer(0, 1, GL_FLOAT, false, 0, nullptr);
+    ASSERT_GL_NO_ERROR();
+
+    std::array<GLubyte, 1u> indices = {0};
+    glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_BYTE, indices.data());
+    ASSERT_GL_NO_ERROR();
 }
 
 ANGLE_INSTANTIATE_TEST(RobustBufferAccessBehaviorTest,

@@ -36,8 +36,6 @@ public:
 
     static sk_sp<GrCoverageCountingPathRenderer> CreateIfSupported(const GrCaps&, AllowCaching);
 
-    ~GrCoverageCountingPathRenderer() override;
-
     using PendingPathsMap = std::map<uint32_t, sk_sp<GrCCPerOpListPaths>>;
 
     // In DDL mode, Ganesh needs to be able to move the pending GrCCPerOpListPaths to the DDL object
@@ -69,6 +67,19 @@ public:
 
     void testingOnly_drawPathDirectly(const DrawPathArgs&);
     const GrUniqueKey& testingOnly_getStashedAtlasKey() const;
+
+    // If a path spans more pixels than this, we need to crop it or else analytic AA can run out of
+    // fp32 precision.
+    static constexpr float kPathCropThreshold = 1 << 16;
+
+    static void CropPath(const SkPath&, const SkIRect& cropbox, SkPath* out);
+
+    // Maximum inflation of path bounds due to stroking (from width, miter, caps). Strokes wider
+    // than this will be converted to fill paths and drawn by the CCPR filler instead.
+    static constexpr float kMaxBoundsInflationFromStroke = 4096;
+
+    static float GetStrokeDevWidth(const SkMatrix&, const SkStrokeRec&,
+                                   float* inflationRadius = nullptr);
 
 private:
     GrCoverageCountingPathRenderer(AllowCaching);

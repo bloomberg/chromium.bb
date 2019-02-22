@@ -43,7 +43,7 @@ namespace views {
 namespace {
 
 // As the window manager renderers the non-client decorations this class does
-// very little but honor the client area insets from the window manager.
+// very little but honor kTopViewInset.
 class ClientSideNonClientFrameView : public NonClientFrameView,
                                      public aura::WindowObserver {
  public:
@@ -53,16 +53,22 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     // provided by the window manager.
     GetViewAccessibility().set_is_ignored(true);
 
-    observed_.Add(widget_->GetNativeWindow()->GetRootWindow());
+    // Initialize kTopViewInset to a default value. Further updates will come
+    // from Ash. This is necessary so that during app window creation,
+    // GetWindowBoundsForClientBounds() can calculate correctly.
+    const auto& values = views::WindowManagerFrameValues::instance();
+    widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                           widget->IsMaximized()
+                                               ? values.maximized_insets.top()
+                                               : values.normal_insets.top());
+    observed_.Add(window());
   }
   ~ClientSideNonClientFrameView() override {}
 
  private:
-  // Returns the default values of client area insets from the window manager.
-  static gfx::Insets GetDefaultWindowManagerInsets(bool is_maximized) {
-    const WindowManagerFrameValues& values =
-        WindowManagerFrameValues::instance();
-    return is_maximized ? values.maximized_insets : values.normal_insets;
+  gfx::Insets GetClientInsets() const {
+    const int top_inset = window()->GetProperty(aura::client::kTopViewInset);
+    return gfx::Insets(top_inset, 0, 0, 0);
   }
 
   // View:
@@ -75,7 +81,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     gfx::Rect result(GetLocalBounds());
     if (widget_->IsFullscreen())
       return result;
-    result.Inset(GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    result.Inset(GetClientInsets());
     return result;
   }
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -83,12 +89,9 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     if (widget_->IsFullscreen())
       return client_bounds;
 
-    const gfx::Insets insets(
-        GetDefaultWindowManagerInsets(widget_->IsMaximized()));
-    return gfx::Rect(client_bounds.x() - insets.left(),
-                     client_bounds.y() - insets.top(),
-                     client_bounds.width() + insets.width(),
-                     client_bounds.height() + insets.height());
+    gfx::Rect outset_bounds = client_bounds;
+    outset_bounds.Inset(-GetClientInsets());
+    return outset_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
@@ -136,18 +139,14 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    // Do a re-layout on state changes which affect GetBoundsForClientView().
-    // The associated bounds change would also cause a re-layout, but there may
-    // not be a bounds change or it may come from the server before the state is
-    // updated.
-    if (key == aura::client::kShowStateKey) {
-      if (GetBoundsForClientView() != widget_->client_view()->bounds() &&
-          window->GetProperty(aura::client::kShowStateKey) !=
-              ui::SHOW_STATE_MINIMIZED) {
-        InvalidateLayout();
-        widget_->GetRootView()->Layout();
-      }
+    if (key == aura::client::kTopViewInset) {
+      InvalidateLayout();
+      widget_->GetRootView()->Layout();
     }
+  }
+
+  aura::Window* window() const {
+    return widget_->GetNativeWindow()->GetRootWindow();
   }
 
   views::Widget* widget_;
@@ -286,20 +285,6 @@ void DesktopWindowTreeHostMus::SendClientAreaToServer() {
       std::vector<gfx::Rect>());
 }
 
-void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
-  if (!native_widget_delegate_->HasHitTestMask()) {
-    aura::WindowPortMus::Get(window())->SetHitTestMask(base::nullopt);
-    return;
-  }
-
-  gfx::Path mask_path;
-  native_widget_delegate_->GetHitTestMask(&mask_path);
-  // TODO(jamescook): Use the full path for the mask.
-  gfx::Rect mask_rect =
-      gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
-  aura::WindowPortMus::Get(window())->SetHitTestMask(mask_rect);
-}
-
 bool DesktopWindowTreeHostMus::IsFocusClientInstalledOnFocusSynchronizer()
     const {
   return MusClient::Get()
@@ -340,8 +325,11 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
   window()->SetProperty(aura::client::kShowStateKey, params.show_state);
 
-  if (!params.bounds.IsEmpty())
+  if (!params.bounds.IsEmpty()) {
+    // Init the scale now (before InitHost below), it is used by SetBoundsInDIP.
+    IntializeDeviceScaleFactor(GetDisplay().device_scale_factor());
     SetBoundsInDIP(params.bounds);
+  }
 
   cursor_manager_ = std::make_unique<wm::CursorManager>(
       std::make_unique<NativeCursorManagerMus>(window()));
@@ -428,7 +416,6 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
   // the NonClientView was created, which means we may not have sent the
   // client-area and hit-test-mask.
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 
   MusClient::Get()->OnCaptureClientSet(
       aura::client::GetCaptureClient(window()));
@@ -871,7 +858,6 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   }
 
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 }
 
 void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
@@ -946,7 +932,6 @@ void DesktopWindowTreeHostMus::OnViewBoundsChanged(views::View* observed_view) {
       native_widget_delegate_->AsWidget()->non_client_view()->frame_view());
 
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 }
 
 void DesktopWindowTreeHostMus::OnViewIsDeleting(View* observed_view) {

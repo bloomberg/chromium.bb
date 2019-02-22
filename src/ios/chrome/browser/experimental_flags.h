@@ -39,9 +39,6 @@ std::string GetOriginServerHost();
 // If |WHATS_NEW_DEFAULT| is returned, no promo is force enabled.
 WhatsNewPromoStatus GetWhatsNewPromoStatus();
 
-// Whether the lru snapshot cache experiment is enabled.
-bool IsLRUSnapshotCacheEnabled();
-
 // Whether memory debugging tools are enabled.
 bool IsMemoryDebuggingEnabled();
 
@@ -54,17 +51,9 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 
-// Whether RecentTabs UI Reboot is enabled.
-bool IsRecentTabsUIRebootEnabled();
-
 // Whether the Bookmarks UI Reboot is enabled.
+// TODO (crbug.com/884719): Remove all use of this flag.
 bool IsBookmarksUIRebootEnabled();
-
-// Whether the Reading List UI Reboot is enabled.
-bool IsReadingListUIRebootEnabled();
-
-// Whether the Settings UI Reboot is enabled.
-bool IsSettingsUIRebootEnabled();
 
 // Whether the application group sandbox must be cleared before starting.
 // Calling this method will reset the flag to false, so the sandbox is cleared

@@ -30,6 +30,7 @@ extern const char kNoSelfDeleteSwitch[];
 extern const char kPostRebootSwitch[];
 extern const char kPostRebootSwitchesInOtherRegistryKeySwitch[];
 extern const char kPostRebootTriggerSwitch[];
+extern const char kQuarantineDirSwitch[];
 extern const char kRemoveScanOnlyUwS[];
 extern const char kReportExtensionsSwitch[];
 extern const char kSandboxMojoPipeTokenSwitch[];

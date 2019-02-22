@@ -47,10 +47,11 @@ class AudioFader {
 
   int buffered_frames() const { return buffered_frames_; }
 
-  // Fills |buffer| with up to |num_frames| frames of data, fading as
-  // appropriate to avoid pops/clicks. This will call through to the source to
-  // get more data. Returns the number of frames filled.
-  int FillFrames(int num_frames, ::media::AudioBus* buffer);
+  // Fills |buffer| with up to |num_frames| frames of data, starting at
+  // |write_offset| within |buffer|, and fading as appropriate to avoid
+  // pops/clicks. This will call through to the source to get more data. Returns
+  // the number of frames filled.
+  int FillFrames(int num_frames, ::media::AudioBus* buffer, int write_offset);
 
   // Returns the total number of frames that will be requested from the source
   // (potentially over multiple calls to source_->FillFaderFrames()) if
@@ -60,17 +61,20 @@ class AudioFader {
   // Helper methods to fade in/out an AudioBus. |buffer| contains the data to
   // fade; |filled_frames| is the amount of data actually in |buffer| (if the
   // buffer was partially filled, this will not be equal to buffer->frames()).
-  // |fade_frames| is the number of frames over which a complete fade should
+  // |write_offset| is the offset within |buffer| to starting writing frames
+  // to. |fade_frames| is the number of frames over which a complete fade should
   // happen (ie, how many frames it takes to go from a 1.0 to 0.0 multiplier).
   // |fade_frames_remaining| is the number of frames left in the current fade
   // (which will be less than |fade_frames| if part of the fade has already
   // been completed on a previous buffer).
   static void FadeInHelper(::media::AudioBus* buffer,
                            int filled_frames,
+                           int write_offset,
                            int fade_frames,
                            int fade_frames_remaining);
   static void FadeOutHelper(::media::AudioBus* buffer,
                             int filled_frames,
+                            int write_offset,
                             int fade_frames,
                             int fade_frames_remaining);
 
@@ -82,10 +86,14 @@ class AudioFader {
     kFadingOut,
   };
 
-  void CompleteFill(::media::AudioBus* buffer, int filled_frames);
-  void IncompleteFill(::media::AudioBus* buffer, int filled_frames);
-  void FadeIn(::media::AudioBus* buffer, int filled_frames);
-  void FadeOut(::media::AudioBus* buffer, int filled_frames);
+  void CompleteFill(::media::AudioBus* buffer,
+                    int filled_frames,
+                    int write_offset);
+  void IncompleteFill(::media::AudioBus* buffer,
+                      int filled_frames,
+                      int write_offset);
+  void FadeIn(::media::AudioBus* buffer, int filled_frames, int write_offset);
+  void FadeOut(::media::AudioBus* buffer, int filled_frames, int write_offset);
 
   Source* const source_;
   const int fade_frames_;

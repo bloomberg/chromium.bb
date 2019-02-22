@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL url-tojson assert_equals: expected "\"https://example.com/\"" but got "{}"
-Harness: the test ran to completion.
-

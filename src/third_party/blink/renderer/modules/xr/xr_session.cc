@@ -249,7 +249,7 @@ void XRSession::cancelAnimationFrame(int id) {
 }
 
 HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
-  Document* doc = ToDocumentOrNull(GetExecutionContext());
+  Document* doc = To<Document>(GetExecutionContext());
   if (!did_log_getInputSources_ && doc) {
     ukm::builders::XR_WebXR(device_->GetSourceId())
         .SetDidGetXRInputSources(1)
@@ -492,10 +492,8 @@ void XRSession::OnFrame(
       // If using a background image, the caller must provide its pixel size
       // also. The source size can differ from the current drawing buffer size.
       DCHECK(background_size);
-      // TODO(https://crbug.com/837509): Remove this static_cast.
-      XRWebGLLayer* webgl_layer = static_cast<XRWebGLLayer*>(frame_base_layer);
-      webgl_layer->OverwriteColorBufferFromMailboxTexture(
-          background_mailbox_holder.value(), background_size.value());
+      frame_base_layer->HandleBackgroundImage(background_mailbox_holder.value(),
+                                              background_size.value());
     }
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
@@ -512,7 +510,7 @@ void XRSession::OnFrame(
 }
 
 void XRSession::LogGetPose() const {
-  Document* doc = ToDocumentOrNull(GetExecutionContext());
+  Document* doc = To<Document>(GetExecutionContext());
   if (!did_log_getDevicePose_ && doc) {
     did_log_getDevicePose_ = true;
 
@@ -633,7 +631,7 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
     return;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
 
   XRInputSourceEvent* event =
       CreateInputSourceEvent(EventTypeNames::selectend, input_source);

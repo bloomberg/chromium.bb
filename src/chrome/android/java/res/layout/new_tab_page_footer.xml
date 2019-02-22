@@ -14,8 +14,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/ntp_suggestions_footer_padding_top"
-    android:paddingBottom="@dimen/ntp_suggestions_footer_padding_bottom"
+    android:paddingTop="@dimen/ntp_suggestions_footer_vertical_padding"
+    android:paddingBottom="@dimen/ntp_suggestions_footer_vertical_padding"
     android:paddingStart="16dp"
     android:paddingEnd="16dp">
     <org.chromium.ui.widget.TextViewWithClickableSpans

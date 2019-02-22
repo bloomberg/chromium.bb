@@ -371,6 +371,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // change password URL) have been changed.
   void OnEnterprisePasswordUrlChanged();
 
+  // Get the content area size of current browsing window.
+  gfx::Size GetCurrentContentAreaSize() const override;
+
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   TriggerManager* trigger_manager_;
   // Profile associated with this instance.

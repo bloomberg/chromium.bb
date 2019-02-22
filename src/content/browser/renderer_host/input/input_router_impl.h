@@ -114,7 +114,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
  private:
   friend class InputRouterImplTest;
   friend class MockRenderWidgetHost;
-  friend class RenderWidgetHostBrowserTest;
+  friend class RenderWidgetHostSitePerProcessTest;
+  friend class SitePerProcessBrowserTouchActionTest;
 
   // Keeps track of last position of touch points and sets MovementXY for them.
   void SetMovementXYForTouchPoints(blink::WebTouchEvent* event);

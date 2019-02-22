@@ -27,7 +27,7 @@ void RespondWithObserver::ContextDestroyed(ExecutionContext*) {
 }
 
 void RespondWithObserver::WillDispatchEvent() {
-  event_dispatch_time_ = WTF::CurrentTime();
+  event_dispatch_time_ = WTF::CurrentTimeTicks();
 }
 
 void RespondWithObserver::DidDispatchEvent(

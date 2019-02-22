@@ -270,7 +270,7 @@ class CIDBAPITest(CIDBIntegrationTest):
       self.assertIn(k, build_status)
 
   def testBuildMessages(self):
-    db = self._PrepareFreshDatabase(56)
+    db = self._PrepareFreshDatabase(65)
     self.assertEqual([], db.GetBuildMessages(1))
     master_build_id = db.InsertBuild('builder name',
                                      waterfall.WATERFALL_TRYBOT,
@@ -367,8 +367,8 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   def testCQWithSchema56(self):
-    """Run the CQ test with schema version 56."""
-    db = self._PrepareFreshDatabase(56)
+    """Run the CQ test with schema version 65."""
+    db = self._PrepareFreshDatabase(65)
     self._runCQTest(db)
 
   def _runCQTest(self, db):
@@ -1119,6 +1119,8 @@ class HWTestResultTableTest(CIDBIntegrationTest):
 
     self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
 
+    self.assertRaises(AssertionError, bot_db.GetHWTestResultsForBuilds([]))
+
 
 class BuildRequestTableTest(CIDBIntegrationTest):
   """Tests for BuildRequestTable."""
@@ -1444,7 +1446,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(56)
+    self._PrepareFreshDatabase(65)
 
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 

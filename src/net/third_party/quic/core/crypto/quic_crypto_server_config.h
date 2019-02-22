@@ -164,7 +164,8 @@ class QUIC_EXPORT_PRIVATE KeyExchangeSource {
 
   // Create a new KeyExchange of the specified type using the specified
   // private key.
-  virtual std::unique_ptr<KeyExchange> Create(QuicTag type,
+  virtual std::unique_ptr<KeyExchange> Create(QuicString /*server_config_id*/,
+                                              QuicTag type,
                                               QuicStringPiece private_key) = 0;
 };
 

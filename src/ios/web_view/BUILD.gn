@@ -66,7 +66,13 @@ ios_web_view_public_headers = [
   "public/cwv_web_view_configuration.h",
 ]
 if (ios_web_view_enable_sync) {
-  ios_web_view_public_headers += [ "public/cwv_identity.h" ]
+  ios_web_view_public_headers += [
+    "public/cwv_identity.h",
+    "public/cwv_sync_controller.h",
+    "public/cwv_sync_controller_data_source.h",
+    "public/cwv_sync_controller_delegate.h",
+    "public/cwv_web_view_configuration_sync.h",
+  ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_public_headers += [
@@ -93,6 +99,8 @@ ios_web_view_sources = [
   "internal/autofill/web_view_autofill_client_ios.mm",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
   "internal/autofill/web_view_personal_data_manager_factory.h",
+  "internal/autofill/web_view_strike_database_factory.cc",
+  "internal/autofill/web_view_strike_database_factory.h",
   "internal/content_settings/web_view_cookie_settings_factory.cc",
   "internal/content_settings/web_view_cookie_settings_factory.h",
   "internal/content_settings/web_view_host_content_settings_map_factory.cc",
@@ -205,7 +213,11 @@ ios_web_view_sources = [
 ]
 ios_web_view_sources += ios_web_view_public_headers
 if (ios_web_view_enable_sync) {
-  ios_web_view_sources += [ "internal/signin/cwv_identity.mm" ]
+  ios_web_view_sources += [
+    "internal/signin/cwv_identity.mm",
+    "internal/sync/cwv_sync_controller.mm",
+    "internal/sync/cwv_sync_controller_internal.h",
+  ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_sources += [
@@ -222,6 +234,8 @@ if (ios_web_view_enable_autofill) {
     "internal/autofill/cwv_credit_card_internal.h",
     "internal/autofill/cwv_credit_card_verifier.mm",
     "internal/autofill/cwv_credit_card_verifier_internal.h",
+    "internal/passwords/cwv_password_controller.mm",
+    "internal/passwords/cwv_password_controller.h",
   ]
 }
 
@@ -246,10 +260,11 @@ ios_web_view_deps = [
   "//components/language/core/browser",
   "//components/language/core/common",
   "//components/net_log",
+  "//services/network:network_service",
   "//components/password_manager/core/browser",
   "//components/password_manager/core/browser/form_parsing:form_parsing",
   "//components/password_manager/core/common",
-  "//components/password_manager/sync/browser",
+  "//components/password_manager/ios",
   "//components/pref_registry",
   "//components/prefs",
   "//components/proxy_config",
@@ -258,6 +273,7 @@ ios_web_view_deps = [
   "//components/signin/ios/browser:active_state_manager",
   "//components/strings:components_strings_grit",
   "//components/sync",
+  "//components/sync_sessions",
   "//components/translate/core/browser",
   "//components/translate/core/common",
   "//components/translate/ios/browser",
@@ -365,7 +381,9 @@ test("ios_web_view_unittests") {
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
+    "internal/cwv_scroll_view_unittest.mm",
     "internal/signin/cwv_identity_unittest.mm",
+    "internal/sync/cwv_sync_controller_unittest.mm",
     "internal/translate/cwv_translation_controller_unittest.mm",
     "internal/translate/cwv_translation_language_unittest.mm",
     "internal/translate/cwv_translation_policy_unittest.mm",
@@ -381,7 +399,10 @@ test("ios_web_view_unittests") {
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
     "//components/autofill/ios/form_util:test_support",
+    "//components/browser_sync:test_support",
     "//components/prefs:test_support",
+    "//components/signin/core/browser:test_support",
+    "//components/sync:test_support_driver",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
@@ -412,8 +433,10 @@ js_compile_bundle("web_view_bundle") {
   closure_entry_point = "__crWeb.webViewBundle"
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
+    "//components/autofill/ios/browser/resources/suggestion_controller.js",
     "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
+    "//components/autofill/ios/form_util/resources/form_handlers.js",
     "//components/password_manager/ios/resources/password_controller.js",
     "resources/web_view_bundle.js",
   ]

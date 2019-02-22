@@ -88,7 +88,8 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
 
   bool IsBatchMode() const override;
 
-  char* GetNextWriteLocation() const override;
+  char* GetNextWriteLocation(const QuicIpAddress& self_address,
+                             const QuicSocketAddress& peer_address) override;
 
   WriteResult Flush() override;
 

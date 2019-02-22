@@ -38,7 +38,9 @@ D3D11PictureBuffer::D3D11PictureBuffer(GLenum target,
                                        size_t level)
     : target_(target), size_(size), level_(level) {}
 
-D3D11PictureBuffer::~D3D11PictureBuffer() {}
+D3D11PictureBuffer::~D3D11PictureBuffer() {
+  // TODO(liberato): post destruction of |gpu_resources_| to the gpu thread.
+}
 
 bool D3D11PictureBuffer::Init(
     base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
@@ -71,6 +73,7 @@ bool D3D11PictureBuffer::Init(
   // device for decoding.  Sharing seems not to work very well.  Otherwise, we
   // would create the texture with KEYED_MUTEX and NTHANDLE, then send along
   // a handle that we get from |texture| as an IDXGIResource1.
+  // TODO(liberato): this should happen on the gpu thread.
   gpu_resources_ = std::make_unique<GpuResources>();
   if (!gpu_resources_->Init(std::move(get_stub_cb), level_,
                             std::move(mailboxes), target_, size_, texture,

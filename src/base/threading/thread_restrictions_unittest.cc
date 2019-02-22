@@ -134,4 +134,15 @@ TEST_F(ThreadRestrictionsTest,
       scoped_allow_base_sync_primitives_for_testing;
 }
 
+TEST_F(ThreadRestrictionsTest, LongCPUWorkAllowedByDefault) {
+  AssertLongCPUWorkAllowed();
+}
+
+TEST_F(ThreadRestrictionsTest, DisallowUnresponsiveTasks) {
+  DisallowUnresponsiveTasks();
+  EXPECT_DCHECK_DEATH(AssertBlockingAllowed());
+  EXPECT_DCHECK_DEATH(internal::AssertBaseSyncPrimitivesAllowed());
+  EXPECT_DCHECK_DEATH(AssertLongCPUWorkAllowed());
+}
+
 }  // namespace base

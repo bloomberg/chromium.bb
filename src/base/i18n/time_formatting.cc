@@ -123,9 +123,8 @@ string16 TimeFormatTimeOfDayWithHourClockType(const Time& time,
 
   if (ampm == kKeepAmPm) {
     return TimeFormat(&formatter, time);
-  } else {
-    return TimeFormatWithoutAmPm(&formatter, time);
   }
+  return TimeFormatWithoutAmPm(&formatter, time);
 }
 
 string16 TimeFormatShortDate(const Time& time) {
@@ -291,11 +290,7 @@ HourClockType GetHourClockType() {
   //
   // See http://userguide.icu-project.org/formatparse/datetime for details
   // about the date/time format syntax.
-  if (pattern_unicode.indexOf('a') == -1) {
-    return k24HourClock;
-  } else {
-    return k12HourClock;
-  }
+  return pattern_unicode.indexOf('a') == -1 ? k24HourClock : k12HourClock;
 }
 
 }  // namespace base

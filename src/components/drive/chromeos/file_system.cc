@@ -171,19 +171,19 @@ FileError IsCacheFileMarkedAsMountedInternal(
 }
 
 // Runs the callback with arguments.
-void RunMarkMountedCallback(const MarkMountedCallback& callback,
+void RunMarkMountedCallback(MarkMountedCallback callback,
                             base::FilePath* cache_file_path,
                             FileError error) {
   DCHECK(callback);
-  callback.Run(error, *cache_file_path);
+  std::move(callback).Run(error, *cache_file_path);
 }
 
 // Runs the callback with arguments.
-void RunIsMountedCallback(const IsMountedCallback& callback,
+void RunIsMountedCallback(IsMountedCallback callback,
                           bool* result,
                           FileError error) {
   DCHECK(callback);
-  callback.Run(error, *result);
+  std::move(callback).Run(error, *result);
 }
 
 // Callback for internals::GetStartPageToken.
@@ -738,19 +738,17 @@ void FileSystem::ReadDirectory(
       directory_path, std::move(entries_callback), completion_callback);
 }
 
-void FileSystem::GetAvailableSpace(
-    const GetAvailableSpaceCallback& callback) {
+void FileSystem::GetAvailableSpace(GetAvailableSpaceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  about_resource_loader_->GetAboutResource(
-      base::Bind(&FileSystem::OnGetAboutResource,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  about_resource_loader_->GetAboutResource(base::Bind(
+      &FileSystem::OnGetAboutResource, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(std::move(callback))));
 }
 
 void FileSystem::OnGetAboutResource(
-    const GetAvailableSpaceCallback& callback,
+    GetAvailableSpaceCallback callback,
     google_apis::DriveApiErrorCode status,
     std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -758,85 +756,13 @@ void FileSystem::OnGetAboutResource(
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, -1, -1);
+    std::move(callback).Run(error, -1, -1);
     return;
   }
   DCHECK(about_resource);
 
-  callback.Run(FILE_ERROR_OK, about_resource->quota_bytes_total(),
-               about_resource->quota_bytes_used_aggregate());
-}
-
-void FileSystem::GetShareUrl(const base::FilePath& file_path,
-                             const GURL& embed_origin,
-                             const GetShareUrlCallback& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(callback);
-
-  // Resolve the resource id.
-  ResourceEntry* entry = new ResourceEntry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(resource_metadata_),
-                 file_path,
-                 entry),
-      base::Bind(&FileSystem::GetShareUrlAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 embed_origin,
-                 callback,
-                 base::Owned(entry)));
-}
-
-void FileSystem::GetShareUrlAfterGetResourceEntry(
-    const base::FilePath& file_path,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback,
-    ResourceEntry* entry,
-    FileError error) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(callback);
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL());
-    return;
-  }
-  if (entry->resource_id().empty()) {
-    // This entry does not exist on the server. Just return.
-    callback.Run(FILE_ERROR_FAILED, GURL());
-    return;
-  }
-
-  scheduler_->GetShareUrl(
-      entry->resource_id(),
-      embed_origin,
-      ClientContext(USER_INITIATED),
-      base::Bind(&FileSystem::OnGetResourceEntryForGetShareUrl,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void FileSystem::OnGetResourceEntryForGetShareUrl(
-    const GetShareUrlCallback& callback,
-    google_apis::DriveApiErrorCode status,
-    const GURL& share_url) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(callback);
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL());
-    return;
-  }
-
-  if (share_url.is_empty()) {
-    callback.Run(FILE_ERROR_FAILED, GURL());
-    return;
-  }
-
-  callback.Run(FILE_ERROR_OK, share_url);
+  std::move(callback).Run(FILE_ERROR_OK, about_resource->quota_bytes_total(),
+                          about_resource->quota_bytes_used_aggregate());
 }
 
 void FileSystem::Search(const std::string& search_query,
@@ -1076,37 +1002,33 @@ void FileSystem::OnGetMetadata(
   std::move(callback).Run(*default_corpus_metadata, *team_drive_metadata);
 }
 
-void FileSystem::MarkCacheFileAsMounted(
-    const base::FilePath& drive_file_path,
-    const MarkMountedCallback& callback) {
+void FileSystem::MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
+                                        MarkMountedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&MarkCacheFileAsMountedInternal,
-                 resource_metadata_,
-                 cache_,
-                 drive_file_path,
-                 cache_file_path),
-      base::Bind(
-          &RunMarkMountedCallback, callback, base::Owned(cache_file_path)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MarkCacheFileAsMountedInternal, resource_metadata_,
+                     cache_, drive_file_path, cache_file_path),
+      base::BindOnce(&RunMarkMountedCallback, std::move(callback),
+                     base::Owned(cache_file_path)));
 }
 
 void FileSystem::IsCacheFileMarkedAsMounted(
     const base::FilePath& drive_file_path,
-    const IsMountedCallback& callback) {
+    IsMountedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   bool* is_mounted = new bool(false);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&IsCacheFileMarkedAsMountedInternal, resource_metadata_,
-                 cache_, drive_file_path, is_mounted),
-      base::Bind(&RunIsMountedCallback, callback, base::Owned(is_mounted)));
+      base::BindOnce(&IsCacheFileMarkedAsMountedInternal, resource_metadata_,
+                     cache_, drive_file_path, is_mounted),
+      base::BindOnce(&RunIsMountedCallback, std::move(callback),
+                     base::Owned(is_mounted)));
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(

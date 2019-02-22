@@ -47,6 +47,7 @@ from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest
@@ -254,6 +255,8 @@ class Port(object):
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT,
                 '--user-data-dir']
+        if TESTS_IN_BLINK:
+            flags += ['--tests-in-blink']
         return flags
 
     def supports_per_test_timeout(self):
@@ -383,37 +386,12 @@ class Port(object):
     def check_sys_deps(self, needs_http):
         """Checks whether the system is properly configured.
 
-        If the port needs to do some runtime checks to ensure that the
-        tests can be run successfully, it should override this routine.
-        This step can be skipped with --nocheck-sys-deps.
+        Most checks happen during invocation of the driver prior to running
+        tests. This can be overridden to run custom checks.
 
         Returns:
             An exit status code.
         """
-        cmd = [self._path_to_driver(), '--check-layout-test-sys-deps']
-
-        additional_flags = self.get_option('additional_driver_flag', [])
-        if additional_flags:
-            cmd.append(additional_flags[0])
-
-        local_error = ScriptError()
-
-        def error_handler(script_error):
-            local_error.exit_code = script_error.exit_code
-
-        if self.host.platform.is_linux():
-            _log.debug('DISPLAY = %s', self.host.environ.get('DISPLAY', ''))
-        output = self._executive.run_command(cmd, error_handler=error_handler)
-        if local_error.exit_code:
-            _log.error('System dependencies check failed.')
-            _log.error('To override, invoke with --nocheck-sys-deps')
-            _log.error('')
-            _log.error(output)
-            if self.BUILD_REQUIREMENTS_URL is not '':
-                _log.error('')
-                _log.error('For complete build requirements, please see:')
-                _log.error(self.BUILD_REQUIREMENTS_URL)
-            return exit_codes.SYS_DEPS_EXIT_STATUS
         return exit_codes.OK_EXIT_STATUS
 
     def check_image_diff(self):
@@ -1616,17 +1594,19 @@ class Port(object):
     def virtual_test_suites(self):
         if self._virtual_test_suites is None:
             path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
-            assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
+            assert self._filesystem.exists(path_to_virtual_test_suites), path_to_virtual_test_suites + ' not found'
             try:
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
                 self._virtual_test_suites = []
                 for json_config in test_suite_json:
                     vts = VirtualTestSuite(**json_config)
                     if vts in self._virtual_test_suites:
-                        raise ValueError('LayoutTests/VirtualTestSuites contains duplicate definition: %r' % json_config)
+                        raise ValueError('{} contains duplicate definition: {!r}'.format(
+                            path_to_virtual_test_suites, json_config))
                     self._virtual_test_suites.append(vts)
             except ValueError as error:
-                raise ValueError('LayoutTests/VirtualTestSuites is not a valid JSON file: %s' % error)
+                raise ValueError('{} is not a valid JSON file: {}'.format(
+                    path_to_virtual_test_suites, error))
         return self._virtual_test_suites
 
     def _all_virtual_tests(self, suites):

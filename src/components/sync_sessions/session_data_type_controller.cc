@@ -24,8 +24,7 @@ SessionDataTypeController::SessionDataTypeController(
                                    base::SequencedTaskRunnerHandle::Get()),
       sync_client_(sync_client),
       local_device_(local_device),
-      history_disabled_pref_name_(history_disabled_pref_name),
-      waiting_on_local_device_info_(false) {
+      history_disabled_pref_name_(history_disabled_pref_name) {
   DCHECK(local_device_);
   pref_registrar_.Init(sync_client_->GetPrefService());
   pref_registrar_.Add(
@@ -38,44 +37,14 @@ SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
-
-  if (!local_device_->GetLocalDeviceInfo()) {
-    subscription_ = local_device_->RegisterOnInitializedCallback(
-        base::Bind(&SessionDataTypeController::OnLocalDeviceInfoInitialized,
-                   base::AsWeakPtr(this)));
-    waiting_on_local_device_info_ = true;
-  }
-
-  return !IsWaiting();
-}
-
-void SessionDataTypeController::StopModels() {
-  DCHECK(CalledOnValidThread());
-  subscription_.reset();
+  DCHECK(local_device_->GetLocalDeviceInfo());
+  return true;
 }
 
 bool SessionDataTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
   return !sync_client_->GetPrefService()->GetBoolean(
       history_disabled_pref_name_);
-}
-
-bool SessionDataTypeController::IsWaiting() {
-  return waiting_on_local_device_info_;
-}
-
-void SessionDataTypeController::MaybeCompleteLoading() {
-  if (state() == MODEL_STARTING && !IsWaiting()) {
-    OnModelLoaded();
-  }
-}
-
-void SessionDataTypeController::OnLocalDeviceInfoInitialized() {
-  DCHECK(CalledOnValidThread());
-  subscription_.reset();
-
-  waiting_on_local_device_info_ = false;
-  MaybeCompleteLoading();
 }
 
 void SessionDataTypeController::OnSavingBrowserHistoryPrefChanged() {

@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
@@ -16,26 +18,43 @@
   <template>
     <style include="print-preview-shared action-link cr-hidden-style throbber">
       :host {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         user-select: none;
       }
 
-      :host > header {
-        background-color: transparent;
-        border-bottom: 1px solid #d2d2d2;
+      #listContainer {
+        flex: 1;
+        min-height: calc(2 * var(--destination-item-height));
+      }
+
+      .title,
+      .total {
+        color: var(--google-grey-refresh-700);
+        font-weight: 500;
+      }
+
+      header {
+        align-items: center;
+        border-bottom: 2px solid var(--google-grey-300);
+        display: flex;
+        flex: 0;
+        margin-top: 2px;
+        min-height: calc(20/13 * 1em);
         padding-bottom: 8px;
-        padding-inline-end: 19px;
-        padding-inline-start: 0;
       }
 
-      :host :-webkit-any(.title, .action-link, .total) {
+      :-webkit-any(.action-link, .total) {
         display: inline;
-        padding-inline-end: 8px;
-        padding-inline-start: 4px;
-        vertical-align: middle;
+        padding: 0 4px;
       }
 
-      :host .throbber-container {
+      .action-link {
+        margin: 0 2px;
+      }
+
+      .throbber-container {
         display: inline-block;
         padding-inline-end: 16px;
         padding-inline-start: 8px;
@@ -43,24 +62,15 @@
         vertical-align: middle;
       }
 
-      :host .throbber {
+      .throbber {
         vertical-align: middle;
       }
 
-      :host .no-destinations-message {
+      .no-destinations-message {
         color: #999;
         padding-bottom: 8px;
         padding-inline-start: 18px;
         padding-top: 8px;
-      }
-
-      :host .list-item {
-        cursor: default;
-        display: flex;
-        padding-bottom: 3px;
-        padding-inline-end: 2px;
-        padding-inline-start: 18px;
-        padding-top: 3px;
       }
 
       :not(.moving).list-item {
@@ -77,7 +87,7 @@
       }
     </style>
     <header>
-      <h4 class="title">[[listName]]</h4>
+      <span class="title">[[listName]]</span>
       <span class="total" hidden$="[[!showDestinationsTotal_]]">
         [[i18n('destinationCount', matchingDestinations_.length)]]
       </span>
@@ -92,15 +102,17 @@
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
       $i18n{noDestinationsMessage}
     </div>
-    <iron-list id="list" items="[[matchingDestinations_]]">
-      <template>
-        <print-preview-destination-list-item class="list-item"
-            search-query="[[searchQuery]]" destination="[[item]]"
-            on-click="onDestinationSelected_" on-keydown="onKeydown_"
-            tabindex$="[[tabIndex]]">
-        </print-preview-destination-list-item>
-      </template>
-    </iron-list>
+    <div id="listContainer">
+      <iron-list id="list" items="[[matchingDestinations_]]">
+        <template>
+          <print-preview-destination-list-item class="list-item"
+              search-query="[[searchQuery]]" destination="[[item]]"
+              on-click="onDestinationSelected_" on-keydown="onKeydown_"
+              tabindex$="[[tabIndex]]">
+          </print-preview-destination-list-item>
+        </template>
+      </iron-list>
+    </div>
   </template>
   <script src="destination_list.js"></script>
 </dom-module>

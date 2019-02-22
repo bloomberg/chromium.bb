@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

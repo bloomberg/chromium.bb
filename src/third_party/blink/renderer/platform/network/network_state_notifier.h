@@ -63,6 +63,12 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     base::Optional<TimeDelta> transport_rtt;
     base::Optional<double> downlink_throughput_mbps;
     bool save_data = false;
+
+    // If set, then network quality corresponding to
+    // |network_quality_web_holdback| should be returned to the web consumers.
+    // Consumers within Blink should still receive the actual network quality
+    // values.
+    base::Optional<WebEffectiveConnectionType> network_quality_web_holdback;
   };
 
   class NetworkStateObserver {
@@ -212,6 +218,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
                          TimeDelta http_rtt,
                          TimeDelta transport_rtt,
                          int downlink_throughput_kbps);
+  void SetNetworkQualityWebHoldback(WebEffectiveConnectionType);
   void SetSaveDataEnabled(bool enabled);
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
@@ -262,6 +269,35 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // device, and is generated only once. This makes it possible to add the same
   // amount of noise for a given origin.
   uint8_t RandomizationSalt() const { return randomization_salt_; }
+
+  // Returns the overriding effective connection type that should be returned to
+  // the web consumers. If the returned value is null, then the actual network
+  // quality value should be returned to the web consumers.
+  // Consumers within Blink should not call this API.
+  base::Optional<WebEffectiveConnectionType> GetWebHoldbackEffectiveType()
+      const;
+
+  // Returns the overriding HTTP RTT estimate that should be returned to
+  // the web consumers. If the returned value is null, then the actual network
+  // quality value should be returned to the web consumers.
+  // Consumers within Blink should not call this API.
+  base::Optional<TimeDelta> GetWebHoldbackHttpRtt() const;
+
+  // Returns the overriding HTTP RTT estimate that should be returned to
+  // the web consumers. If the returned value is null, then the actual network
+  // quality value should be returned to the web consumers.
+  // Consumers within Blink should not call this API.
+  base::Optional<double> GetWebHoldbackDownlinkThroughputMbps() const;
+
+  // Sets the metrics of all the values while taking into account any network
+  // quality web holdbacks in place. The caller must guarantee that all pointers
+  // are non-null.
+  void GetMetricsWithWebHoldback(WebConnectionType* type,
+                                 double* downlink_max_mbps,
+                                 WebEffectiveConnectionType* effective_type,
+                                 base::Optional<TimeDelta>* http_rtt,
+                                 base::Optional<double>* downlink_mbps,
+                                 bool* save_data) const;
 
  private:
   friend class NetworkStateObserverHandle;

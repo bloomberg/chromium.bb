@@ -48,7 +48,7 @@ THE SOFTWARE.
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_bdfdriver
+#define FT_COMPONENT  bdfdriver
 
 
   typedef struct  BDF_CMapRec_
@@ -106,7 +106,7 @@ THE SOFTWARE.
 
 
       mid  = ( min + max ) >> 1;
-      code = (FT_ULong)encodings[mid].enc;
+      code = encodings[mid].enc;
 
       if ( charcode == code )
       {
@@ -146,7 +146,7 @@ THE SOFTWARE.
 
 
       mid  = ( min + max ) >> 1;
-      code = (FT_ULong)encodings[mid].enc;
+      code = encodings[mid].enc;
 
       if ( charcode == code )
       {
@@ -165,7 +165,7 @@ THE SOFTWARE.
     charcode = 0;
     if ( min < cmap->num_encodings )
     {
-      charcode = (FT_ULong)encodings[min].enc;
+      charcode = encodings[min].enc;
       result   = encodings[min].glyph + 1;
     }
 

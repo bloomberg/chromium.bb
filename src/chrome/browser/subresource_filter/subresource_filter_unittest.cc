@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
@@ -17,10 +18,10 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -72,7 +73,7 @@ TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
   // If the site later activates as DRYRUN due to e.g. a configuration change,
   // it should also be removed from the metadata.
   scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::SUBRESOURCE_FILTER));
 
@@ -106,7 +107,7 @@ TEST_F(SubresourceFilterTest, SimpleAllowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
+  EXPECT_EQ(subresource_filter::mojom::ActivationLevel::kEnabled,
             observer.GetPageActivation(url).value());
 
   GURL allowed_url("https://example.test/foo");
@@ -125,7 +126,7 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
+  EXPECT_EQ(subresource_filter::mojom::ActivationLevel::kEnabled,
             observer.GetPageActivation(url).value());
 
   GURL disallowed_url(SubresourceFilterTest::kDefaultDisallowedUrl);
@@ -210,34 +211,60 @@ TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
                                      SubresourceFilterAction::kUIShown, 1);
 }
 
+enum class AdBlockOnAbusiveSitesTest { kEnabled, kDisabled };
+
 TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
   typedef safe_browsing::SubresourceFilterType Type;
   typedef safe_browsing::SubresourceFilterLevel Level;
   const struct {
+    AdBlockOnAbusiveSitesTest adblock_on_abusive_sites;
     safe_browsing::SubresourceFilterMatch match;
     subresource_filter::ActivationList expected_activation;
     bool expected_warning;
   } kTestCases[]{
-      {{}, subresource_filter::ActivationList::SUBRESOURCE_FILTER, false},
-      {{{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+      // AdBlockOnAbusiveSitesTest::kDisabled
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {},
+       subresource_filter::ActivationList::SUBRESOURCE_FILTER,
+       false},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::NONE,
        false},
-      {{{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::NONE,
        false},
-      {{{{Type::BETTER_ADS, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
        false},
-      {{{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
        true},
-      {{{{Type::BETTER_ADS, Level::ENFORCE}, {Type::ABUSIVE, Level::ENFORCE}},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::ENFORCE}, {Type::ABUSIVE, Level::ENFORCE}},
         base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
-       false}};
+       false},
+      // AdBlockOnAbusiveSitesTest::kEnabled
+      {AdBlockOnAbusiveSitesTest::kEnabled,
+       {{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::ABUSIVE,
+       false},
+      {AdBlockOnAbusiveSitesTest::kEnabled,
+       {{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::ABUSIVE,
+       true}};
 
   const GURL url("https://example.test");
   for (const auto& test_case : kTestCases) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        subresource_filter::kFilterAdsOnAbusiveSites,
+        test_case.adblock_on_abusive_sites ==
+            AdBlockOnAbusiveSitesTest::kEnabled);
     subresource_filter::TestSubresourceFilterObserver observer(web_contents());
     auto threat_type =
         safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
@@ -250,12 +277,13 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
     EXPECT_EQ(test_case.expected_activation,
               subresource_filter::GetListForThreatTypeAndMetadata(
                   threat_type, metadata, &warning));
+    EXPECT_EQ(warning, test_case.expected_warning);
   }
 }
 
 TEST_F(SubresourceFilterTest, WarningSite_NoMetadata) {
   subresource_filter::Configuration config(
-      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::mojom::ActivationLevel::kEnabled,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::BETTER_ADS);
   scoped_configuration().ResetConfiguration(std::move(config));

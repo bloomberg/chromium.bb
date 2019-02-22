@@ -22,6 +22,7 @@
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 using base::FilePath;
 
@@ -102,7 +103,6 @@ BlobDataBuilder::~BlobDataBuilder() = default;
 
 void BlobDataBuilder::AppendIPCDataElement(
     const network::DataElement& ipc_data,
-    const scoped_refptr<FileSystemContext>& file_system_context,
     const BlobStorageRegistry& blob_registry) {
   uint64_t length = ipc_data.length();
   switch (ipc_data.type()) {
@@ -171,7 +171,7 @@ BlobDataBuilder::FutureFile BlobDataBuilder::AppendFutureFile(
     uint64_t length,
     uint64_t file_id) {
   CHECK_NE(length, 0ull);
-  DCHECK_NE(length, BlobDataItem::kUnknownSize);
+  DCHECK_NE(length, blink::BlobUtils::kUnknownSize);
   auto item = BlobDataItem::CreateFutureFile(offset, length, file_id);
 
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
@@ -202,7 +202,7 @@ void BlobDataBuilder::AppendFile(const FilePath& file_path,
   items_.push_back(std::move(shareable_item));
 
   total_size_ += length;
-  bool unknown_size = length == BlobDataItem::kUnknownSize;
+  bool unknown_size = length == blink::BlobUtils::kUnknownSize;
   UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", unknown_size);
   if (!unknown_size)
     UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.File", length / 1024);
@@ -229,12 +229,12 @@ void BlobDataBuilder::AppendBlob(const std::string& uuid,
   }
 
   // We can't reference a blob with unknown size.
-  if (ref_entry->total_size() == BlobDataItem::kUnknownSize) {
+  if (ref_entry->total_size() == blink::BlobUtils::kUnknownSize) {
     has_blob_errors_ = true;
     return;
   }
 
-  if (length == BlobDataItem::kUnknownSize)
+  if (length == blink::BlobUtils::kUnknownSize)
     length = ref_entry->total_size() - offset;
 
   UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob", length / 1024);
@@ -372,7 +372,7 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid,
                                  const BlobStorageRegistry& blob_registry) {
-  AppendBlob(uuid, 0, BlobDataItem::kUnknownSize, blob_registry);
+  AppendBlob(uuid, 0, blink::BlobUtils::kUnknownSize, blob_registry);
 }
 
 void BlobDataBuilder::AppendFileSystemFile(
@@ -391,7 +391,7 @@ void BlobDataBuilder::AppendFileSystemFile(
   items_.push_back(std::move(shareable_item));
 
   total_size_ += length;
-  bool unknown_size = length == BlobDataItem::kUnknownSize;
+  bool unknown_size = length == blink::BlobUtils::kUnknownSize;
   UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
                         unknown_size);
   if (!unknown_size)
@@ -399,22 +399,23 @@ void BlobDataBuilder::AppendFileSystemFile(
 }
 
 void BlobDataBuilder::AppendDiskCacheEntry(
-    const scoped_refptr<DataHandle>& data_handle,
+    scoped_refptr<DataHandle> data_handle,
     disk_cache::Entry* disk_cache_entry,
     int disk_cache_stream_index) {
-  AppendDiskCacheEntryWithSideData(data_handle, disk_cache_entry,
+  AppendDiskCacheEntryWithSideData(std::move(data_handle), disk_cache_entry,
                                    disk_cache_stream_index,
                                    kInvalidDiskCacheSideStreamIndex);
 }
 
 void BlobDataBuilder::AppendDiskCacheEntryWithSideData(
-    const scoped_refptr<DataHandle>& data_handle,
+    scoped_refptr<DataHandle> data_handle,
     disk_cache::Entry* disk_cache_entry,
     int disk_cache_stream_index,
     int disk_cache_side_stream_index) {
   auto item = BlobDataItem::CreateDiskCacheEntry(
-      0u, disk_cache_entry->GetDataSize(disk_cache_stream_index), data_handle,
-      disk_cache_entry, disk_cache_stream_index, disk_cache_side_stream_index);
+      0u, disk_cache_entry->GetDataSize(disk_cache_stream_index),
+      std::move(data_handle), disk_cache_entry, disk_cache_stream_index,
+      disk_cache_side_stream_index);
 
   total_size_ += item->length();
   UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",

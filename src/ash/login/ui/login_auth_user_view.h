@@ -79,14 +79,15 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
 
   // Flags which describe the set of currently visible auth methods.
   enum AuthMethods {
-    AUTH_NONE = 0,                 // No extra auth methods.
-    AUTH_PASSWORD = 1 << 0,        // Display password.
-    AUTH_PIN = 1 << 1,             // Display PIN keyboard.
-    AUTH_TAP = 1 << 2,             // Tap to unlock.
-    AUTH_ONLINE_SIGN_IN = 1 << 3,  // Force online sign-in.
-    AUTH_FINGERPRINT = 1 << 4,     // Use fingerprint to unlock.
-    AUTH_DISABLED = 1 << 5,        // Disable all the auth methods and show a
-                                   // message to user.
+    AUTH_NONE = 0,                  // No extra auth methods.
+    AUTH_PASSWORD = 1 << 0,         // Display password.
+    AUTH_PIN = 1 << 1,              // Display PIN keyboard.
+    AUTH_TAP = 1 << 2,              // Tap to unlock.
+    AUTH_ONLINE_SIGN_IN = 1 << 3,   // Force online sign-in.
+    AUTH_FINGERPRINT = 1 << 4,      // Use fingerprint to unlock.
+    AUTH_EXTERNAL_BINARY = 1 << 5,  // Authenticate via an external binary.
+    AUTH_DISABLED = 1 << 6,         // Disable all the auth methods and show a
+                                    // message to user.
   };
 
   LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
@@ -164,6 +165,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   views::LabelButton* online_sign_in_message_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
+  views::LabelButton* external_binary_auth_button_ = nullptr;
+
   // Displays padding between:
   // 1. Password field and pin keyboard
   // 2. Password field and fingerprint view, when pin is not available.

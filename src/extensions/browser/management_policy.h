@@ -61,6 +61,12 @@ class ManagementPolicy {
     virtual bool UserMayLoad(const Extension* extension,
                              base::string16* error) const;
 
+    // Returns false if the user should not be allowed to install the given
+    // |extension|. By default, this forwards to UserMayLoad() (since a user
+    // should not be able to install an extension they cannot load).
+    virtual bool UserMayInstall(const Extension* extension,
+                                base::string16* error) const;
+
     // Providers should return false if a user may not enable, disable, or
     // uninstall the |extension|, or change its usage options (incognito
     // permission, file access, etc.).
@@ -118,6 +124,11 @@ class ManagementPolicy {
   // DISABLE_BLOCKED_BY_POLICY.
   // TODO(treib,pam): Misleading name; see comment in Provider. crbug.com/461747
   bool UserMayLoad(const Extension* extension, base::string16* error) const;
+
+  // Returns false if the user should not be allowed to install the given
+  // |extension|. By default, this forwards to UserMayLoad() (since a user
+  // should not be able to install an extension they cannot load).
+  bool UserMayInstall(const Extension* extension, base::string16* error) const;
 
   // Returns true if the user is permitted to enable, disable, or uninstall the
   // given extension, or change the extension's usage options (incognito mode,

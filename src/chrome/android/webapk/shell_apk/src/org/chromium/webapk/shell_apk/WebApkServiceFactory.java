@@ -50,7 +50,7 @@ public class WebApkServiceFactory extends Service {
                     webApkClassLoader.loadClass(WEBAPK_SERVICE_IMPL_CLASS_NAME);
             Constructor<?> webApkServiceImplConstructor =
                     webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
-            int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
+            int hostBrowserUid = HostBrowserUtils.getHostBrowserUid(this);
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.notification_badge);
             bundle.putInt(KEY_HOST_BROWSER_UID, hostBrowserUid);

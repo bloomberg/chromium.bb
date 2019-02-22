@@ -1,6 +1,9 @@
 sergeyu@chromium.org
 tommi@chromium.org
 
+# For WebRTC desktop capturer related changes only
+braveyao@chromium.org
+
 # For WebRTC browser tests.
 per-file *webrtc*browsertest*=hbos@chromium.org
 per-file *webrtc*browsertest*=phoglund@chromium.org
@@ -11,10 +14,6 @@ per-file media_stream_capture_indicator*=miu@chromium.org
 # For permissions related code.
 per-file media_stream_device*=raymes@chromium.org
 per-file media_permission*=raymes@chromium.org
-
-# For WebRTC desktop capturer related changes only
-per-file *desktop*=braveyao@chromium.org
-per-file screen_capture*=braveyao@chromium.org
 
 # For WebRTC event logging code.
 per-file webrtc_event_log_*=eladalon@chromium.org

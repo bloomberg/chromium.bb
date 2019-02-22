@@ -92,11 +92,11 @@ const InlineTextBox* CachedLogicallyOrderedLeafBoxes::NextTextBox(
   // If box is null, root is box's next RootInlineBox, and nextBox is the first
   // logical box in root. Otherwise, root is box's RootInlineBox, and nextBox is
   // the next logical box in the same line.
-  size_t next_box_index = 0;
+  wtf_size_t next_box_index = 0;
   if (box)
     next_box_index = BoxIndexInLeaves(box) + 1;
 
-  for (size_t i = next_box_index; i < leaf_boxes_.size(); ++i) {
+  for (wtf_size_t i = next_box_index; i < leaf_boxes_.size(); ++i) {
     if (leaf_boxes_[i]->IsInlineTextBox())
       return ToInlineTextBox(leaf_boxes_[i]);
   }
@@ -116,7 +116,7 @@ const Vector<InlineBox*>& CachedLogicallyOrderedLeafBoxes::CollectBoxes(
 
 int CachedLogicallyOrderedLeafBoxes::BoxIndexInLeaves(
     const InlineTextBox* box) const {
-  for (size_t i = 0; i < leaf_boxes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < leaf_boxes_.size(); ++i) {
     if (box == leaf_boxes_[i])
       return i;
   }

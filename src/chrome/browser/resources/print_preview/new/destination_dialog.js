@@ -62,6 +62,7 @@ Polymer({
       computed: 'computeRecentDestinationList_(' +
           'destinationStore, recentDestinations, recentDestinations.*, ' +
           'userInfo, destinations_.*)',
+      observer: 'onRecentDestinationListChange_',
     },
 
     /** @private {?RegExp} */
@@ -70,10 +71,6 @@ Polymer({
       value: null,
     },
   },
-
-  observers: [
-    'adjustHeight_(invitation_, showCloudPrintPromo)',
-  ],
 
   listeners: {
     'keydown': 'onKeydown_',
@@ -122,31 +119,6 @@ Polymer({
       this.$.dialog.cancel();
       e.preventDefault();
     }
-  },
-
-  /** @private */
-  adjustHeight_: function() {
-    // Baseline size of recent list + buttons + title + search box
-    let px = 266;
-    let lines = 5;
-    if (this.invitation_) {
-      // Invitation promo size
-      px += 57;
-      lines += 4;
-    }
-    if (this.showCloudPrintPromo) {
-      // Cloud print promo size
-      px += 28;
-      lines += 2;
-    }
-    if (this.userInfo && this.userInfo.loggedIn) {
-      // User accounts select size
-      px += 14;
-      lines += 2;
-    }
-
-    // Compute sizing
-    this.$.printList.style.height = `calc(100vh - ${px}px - ${lines}rem)`;
   },
 
   /** @private */
@@ -229,6 +201,13 @@ Polymer({
   },
 
   /** @private */
+  onRecentDestinationListChange_: function() {
+    const numRecent = Math.max(2, this.recentDestinationList_.length);
+    this.$.recentList.style.maxHeight = `calc(${numRecent} *
+            var(--destination-item-height) + 10px + 20 / 13 * 1rem)`;
+  },
+
+  /** @private */
   onCloseOrCancel_: function() {
     if (this.searchQuery_)
       this.$.searchBox.setValue('');
@@ -269,7 +248,7 @@ Polymer({
       this.$.provisionalResolver.resolveDestination(destination)
           .then(this.selectDestination_.bind(this))
           .catch(function() {
-            console.error(
+            console.warn(
                 'Failed to resolve provisional destination: ' + destination.id);
           })
           .then(() => {

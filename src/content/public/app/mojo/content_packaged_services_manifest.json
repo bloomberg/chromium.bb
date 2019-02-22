@@ -9,7 +9,9 @@
   "name": "content_packaged_services",
   "display_name": "Content Packaged Services",
   "options" : {
-    "instance_sharing" : "singleton"
+    "instance_sharing" : "singleton",
+    "can_connect_to_other_services_as_any_user": true,
+    "can_create_other_service_instances": true
   },
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -20,11 +22,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "content_browser": [],
-        "service_manager": [
-          "service_manager:client_process",
-          "service_manager:user_id"
-        ]
+        "content_browser": []
       }
     }
   }

@@ -134,8 +134,8 @@ void EventPageRequestManager::AttemptWakeEventPage() {
   // |this|.
   if (!event_page_tracker_->WakeEventPage(
           media_route_provider_extension_id_,
-          base::Bind(&EventPageRequestManager::OnWakeComplete,
-                     weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&EventPageRequestManager::OnWakeComplete,
+                         weak_factory_.GetWeakPtr()))) {
     DLOG(ERROR) << "Failed to schedule a wakeup for event page.";
   }
 }

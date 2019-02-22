@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -33,8 +33,8 @@ namespace blink {
 
 void BoxPainter::Paint(const PaintInfo& paint_info) {
   // Default implementation. Just pass paint through to the children.
-  PaintInfoWithOffset paint_info_with_offset(layout_box_, paint_info);
-  PaintChildren(paint_info_with_offset.GetPaintInfo());
+  ScopedPaintState paint_state(layout_box_, paint_info);
+  PaintChildren(paint_state.GetPaintInfo());
 }
 
 void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
@@ -53,7 +53,7 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
 void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                                               const LayoutPoint& paint_offset) {
   LayoutRect paint_rect;
-  base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+  base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (BoxModelObjectPainter::
           IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
               &layout_box_, paint_info)) {
@@ -62,36 +62,31 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
 
-    if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
-      scoped_scroll_property.emplace(
-          paint_info.context.GetPaintController(),
-          fragment->ContentsProperties(), layout_box_,
-          DisplayItem::PaintPhaseToScrollType(paint_info.phase));
-    }
+    contents_paint_state.emplace(paint_info, paint_offset, layout_box_);
+    paint_rect.MoveBy(contents_paint_state->PaintOffset());
 
     // The background painting code assumes that the borders are part of the
-    // paintRect so we expand the paintRect by the border size when painting the
-    // background into the scrolling contents layer.
+    // paint_rect so we expand the paint_rect by the border size when painting
+    // the background into the scrolling contents layer.
     paint_rect.Expand(layout_box_.BorderBoxOutsets());
   } else {
     paint_rect = layout_box_.BorderBoxRect();
+    paint_rect.MoveBy(paint_offset);
   }
 
-  paint_rect.MoveBy(paint_offset);
-  PaintBoxDecorationBackgroundWithRect(paint_info, paint_rect);
+  PaintBoxDecorationBackgroundWithRect(
+      contents_paint_state ? contents_paint_state->GetPaintInfo() : paint_info,
+      paint_rect);
 }
 
-LayoutRect BoxPainter::BoundsForDrawingRecorder(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
   LayoutRect bounds =
       BoxModelObjectPainter::
               IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
                   &layout_box_, paint_info)
           ? layout_box_.LayoutOverflowRect()
           : layout_box_.SelfVisualOverflowRect();
-  bounds.MoveBy(paint_offset);
-  return bounds;
+  return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
 }
 
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
@@ -133,10 +128,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
-      // TODO(wkorman): Rename BoundsForDrawingRecorder as it's used
-      // here for another purpose.
-      layout_box_.BackgroundIsKnownToBeOpaqueInRect(
-          BoundsForDrawingRecorder(paint_info, LayoutPoint())))
+      BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 
   bool needs_end_layer = false;

@@ -5,6 +5,11 @@
 #ifndef UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 #define UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 
+#include <stdint.h>
+
+#include <string>
+
+#include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/mojo/event.mojom.h"
@@ -13,6 +18,7 @@
 namespace ui {
 class Event;
 class LatencyInfo;
+struct PointerDetails;
 }
 
 namespace mojo {
@@ -39,6 +45,10 @@ struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static ui::mojom::PointerDataPtr pointer_data(const EventUniquePtr& event);
   static ui::mojom::GestureDataPtr gesture_data(const EventUniquePtr& event);
   static ui::mojom::ScrollDataPtr scroll_data(const EventUniquePtr& event);
+  static ui::mojom::TouchDataPtr touch_data(const EventUniquePtr& event);
+  static ui::mojom::MouseDataPtr mouse_data(const EventUniquePtr& event);
+  static base::flat_map<std::string, std::vector<uint8_t>> properties(
+      const EventUniquePtr& event);
   static bool Read(ui::mojom::EventDataView r, EventUniquePtr* out);
 };
 
@@ -83,6 +93,71 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
     NOTREACHED();
     return false;
   }
+};
+
+template <>
+struct EnumTraits<ui::mojom::PointerKind, ui::EventPointerType> {
+  static ui::mojom::PointerKind ToMojom(ui::EventPointerType input) {
+    switch (input) {
+      case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
+        return ui::mojom::PointerKind::UNKNOWN;
+      case ui::EventPointerType::POINTER_TYPE_MOUSE:
+        return ui::mojom::PointerKind::MOUSE;
+      case ui::EventPointerType::POINTER_TYPE_PEN:
+        return ui::mojom::PointerKind::PEN;
+      case ui::EventPointerType::POINTER_TYPE_TOUCH:
+        return ui::mojom::PointerKind::TOUCH;
+      case ui::EventPointerType::POINTER_TYPE_ERASER:
+        return ui::mojom::PointerKind::ERASER;
+    }
+    NOTREACHED();
+    return ui::mojom::PointerKind::UNKNOWN;
+  }
+
+  static bool FromMojom(ui::mojom::PointerKind input,
+                        ui::EventPointerType* out) {
+    switch (input) {
+      case ui::mojom::PointerKind::UNKNOWN:
+        *out = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+        return true;
+      case ui::mojom::PointerKind::MOUSE:
+        *out = ui::EventPointerType::POINTER_TYPE_MOUSE;
+        return true;
+      case ui::mojom::PointerKind::PEN:
+        *out = ui::EventPointerType::POINTER_TYPE_PEN;
+        return true;
+      case ui::mojom::PointerKind::TOUCH:
+        *out = ui::EventPointerType::POINTER_TYPE_TOUCH;
+        return true;
+      case ui::mojom::PointerKind::ERASER:
+        *out = ui::EventPointerType::POINTER_TYPE_ERASER;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
+struct StructTraits<ui::mojom::PointerDetailsDataView, ui::PointerDetails> {
+  static ui::EventPointerType pointer_type(const ui::PointerDetails& i) {
+    return i.pointer_type;
+  }
+  static float radius_x(const ui::PointerDetails& i) { return i.radius_x; }
+  static float radius_y(const ui::PointerDetails& i) { return i.radius_y; }
+  static float force(const ui::PointerDetails& i) { return i.force; }
+  static float tilt_x(const ui::PointerDetails& i) { return i.tilt_x; }
+  static float tilt_y(const ui::PointerDetails& i) { return i.tilt_y; }
+  static float tangential_pressure(const ui::PointerDetails& i) {
+    return i.tangential_pressure;
+  }
+  static float twist(const ui::PointerDetails& i) { return i.twist; }
+  static int32_t id(const ui::PointerDetails& i) { return i.id; }
+  static int32_t offset_x(const ui::PointerDetails& i) { return i.offset.x(); }
+  static int32_t offset_y(const ui::PointerDetails& i) { return i.offset.y(); }
+
+  static bool Read(ui::mojom::PointerDetailsDataView data,
+                   ui::PointerDetails* out);
 };
 
 template <>

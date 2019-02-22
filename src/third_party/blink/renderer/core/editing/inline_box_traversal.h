@@ -15,7 +15,6 @@ namespace blink {
 class InlineBox;
 struct InlineBoxPosition;
 struct NGCaretPosition;
-enum class UnicodeBidi : unsigned;
 
 class BidiAdjustment final {
   STATIC_ONLY(BidiAdjustment);
@@ -23,10 +22,8 @@ class BidiAdjustment final {
  public:
   // Function to be called at the end of caret position resolution, adjusting
   // the result in bidi text runs.
-  // TODO(editing-dev): Eliminate |unicode_bidi| from parameters.
   static InlineBoxPosition AdjustForCaretPositionResolution(
-      const InlineBoxPosition&,
-      UnicodeBidi unicode_bidi);
+      const InlineBoxPosition&);
   static NGCaretPosition AdjustForCaretPositionResolution(
       const NGCaretPosition&);
 

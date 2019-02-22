@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 
 namespace blink {
 
@@ -194,7 +195,7 @@ void HitTestResult::SetInnerNode(Node* n) {
     return;
   }
   if (n->IsPseudoElement())
-    n = ToPseudoElement(n)->FindAssociatedNode();
+    n = ToPseudoElement(n)->InnerNodeForHitTesting();
   inner_node_ = n;
   if (HTMLAreaElement* area = ImageAreaForImage()) {
     inner_node_ = area;
@@ -317,6 +318,12 @@ KURL HitTestResult::AbsoluteMediaURL() const {
   if (HTMLMediaElement* media_elt = MediaElement())
     return media_elt->currentSrc();
   return KURL();
+}
+
+MediaStreamDescriptor* HitTestResult::GetMediaStreamDescriptor() const {
+  if (HTMLMediaElement* media_elt = MediaElement())
+    return media_elt->GetSrcObject();
+  return nullptr;
 }
 
 HTMLMediaElement* HitTestResult::MediaElement() const {

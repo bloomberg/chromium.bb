@@ -15,8 +15,8 @@ struct UStringSearch;
 namespace blink {
 
 struct CORE_EXPORT MatchResultICU {
-  size_t start;
-  size_t length;
+  wtf_size_t start;
+  wtf_size_t length;
 };
 
 class CORE_EXPORT TextSearcherICU {
@@ -25,16 +25,16 @@ class CORE_EXPORT TextSearcherICU {
   ~TextSearcherICU();
 
   void SetPattern(const StringView& pattern, bool sensitive);
-  void SetText(const UChar* text, size_t length);
-  void SetOffset(size_t);
+  void SetText(const UChar* text, wtf_size_t length);
+  void SetOffset(wtf_size_t);
   bool NextMatchResult(MatchResultICU&);
 
  private:
-  void SetPattern(const UChar* pattern, size_t length);
+  void SetPattern(const UChar* pattern, wtf_size_t length);
   void SetCaseSensitivity(bool case_sensitive);
 
   UStringSearch* searcher_ = nullptr;
-  size_t text_length_ = 0;
+  wtf_size_t text_length_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TextSearcherICU);
 };

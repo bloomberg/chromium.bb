@@ -116,7 +116,7 @@ bool WebDialogView::CanClose() {
   if (!is_attempting_close_dialog_) {
     // Fire beforeunload event when user attempts to close the dialog.
     is_attempting_close_dialog_ = true;
-    web_view_->web_contents()->DispatchBeforeUnload();
+    web_view_->web_contents()->DispatchBeforeUnload(false /* auto_cancel */);
   }
   return false;
 }
@@ -138,6 +138,12 @@ base::string16 WebDialogView::GetWindowTitle() const {
   if (delegate_)
     return delegate_->GetDialogTitle();
   return base::string16();
+}
+
+base::string16 WebDialogView::GetAccessibleWindowTitle() const {
+  if (delegate_)
+    return delegate_->GetAccessibleDialogTitle();
+  return GetWindowTitle();
 }
 
 std::string WebDialogView::GetWindowName() const {

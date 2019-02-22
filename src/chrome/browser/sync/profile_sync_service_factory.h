@@ -18,18 +18,19 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace browser_sync {
+class ChromeSyncClient;
 class ProfileSyncService;
 }  // namespace browser_sync
 
 namespace syncer {
-class SyncClient;
 class SyncService;
 }  // namespace syncer
 
 class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   using SyncClientFactory =
-      base::Callback<std::unique_ptr<syncer::SyncClient>(Profile*)>;
+      base::RepeatingCallback<std::unique_ptr<browser_sync::ChromeSyncClient>(
+          Profile*)>;
 
   static browser_sync::ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);

@@ -189,14 +189,13 @@ void RemoteFontFaceSource::UpdatePeriod() {
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
-  if (!font_selector_->GetExecutionContext()->IsDocument())
+  const auto* document =
+      DynamicTo<Document>(font_selector_->GetExecutionContext());
+  if (!document)
     return false;
 
   WebEffectiveConnectionType connection_type =
-      ToDocument(font_selector_->GetExecutionContext())
-          ->GetFrame()
-          ->Client()
-          ->GetEffectiveConnectionType();
+      document->GetFrame()->Client()->GetEffectiveConnectionType();
 
   bool network_is_slow =
       WebEffectiveConnectionType::kTypeOffline <= connection_type &&
@@ -333,7 +332,7 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
 
     enum { kCORSFail, kCORSSuccess, kCORSEnumMax };
     int cors_value =
-        font->IsSameOriginOrCORSSuccessful() ? kCORSSuccess : kCORSFail;
+        font->GetResponse().IsCORSSameOrigin() ? kCORSSuccess : kCORSFail;
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
                                     ("WebFont.CORSSuccess", kCORSEnumMax));
     cors_histogram.Count(cors_value);
@@ -371,7 +370,7 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     return;
   }
 
-  unsigned size = font->EncodedSize();
+  size_t size = font->EncodedSize();
   if (size < 10 * 1024) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, under10k_histogram,

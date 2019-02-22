@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -26,6 +26,8 @@ namespace content {
 namespace protocol {
 
 namespace {
+
+const char kNotAllowedError[] = "Not allowed.";
 
 static const char kInitializerScript[] = R"(
   (function() {
@@ -99,14 +101,37 @@ base::LazyInstance<base::flat_map<DevToolsAgentHost*,
                                   std::unique_ptr<BrowserToPageConnector>>>::
     Leaky g_browser_to_page_connectors;
 
-class BrowserToPageConnector : public DevToolsAgentHostClient {
+class BrowserToPageConnector {
  public:
+  class BrowserConnectorHostClient : public DevToolsAgentHostClient {
+   public:
+    BrowserConnectorHostClient(BrowserToPageConnector* connector,
+                               DevToolsAgentHost* host)
+        : connector_(connector) {
+      // TODO(dgozman): handle return value of AttachClient.
+      host->AttachClient(this);
+    }
+    void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                                 const std::string& message) override {
+      connector_->DispatchProtocolMessage(agent_host, message);
+    }
+    void AgentHostClosed(DevToolsAgentHost* agent_host) override {
+      connector_->AgentHostClosed(agent_host);
+    }
+
+   private:
+    BrowserToPageConnector* connector_;
+    DISALLOW_COPY_AND_ASSIGN(BrowserConnectorHostClient);
+  };
+
   BrowserToPageConnector(const std::string& binding_name,
                          DevToolsAgentHost* page_host)
       : binding_name_(binding_name), page_host_(page_host) {
     browser_host_ = BrowserDevToolsAgentHost::CreateForDiscovery();
-    browser_host_->AttachClient(this);
-    page_host_->AttachClient(this);
+    browser_host_client_ =
+        std::make_unique<BrowserConnectorHostClient>(this, browser_host_.get());
+    page_host_client_ =
+        std::make_unique<BrowserConnectorHostClient>(this, page_host_.get());
 
     SendProtocolMessageToPage("Page.enable", std::make_unique<base::Value>());
     SendProtocolMessageToPage("Runtime.enable",
@@ -143,11 +168,11 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
     message.Set("params", std::move(params));
     std::string json_message;
     base::JSONWriter::Write(message, &json_message);
-    page_host_->DispatchProtocolMessage(this, json_message);
+    page_host_->DispatchProtocolMessage(page_host_client_.get(), json_message);
   }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
+                               const std::string& message) {
     if (agent_host == page_host_.get()) {
       std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
       if (!value || !value->is_dict())
@@ -166,7 +191,8 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
       base::Value* payload = params->FindKey("payload");
       if (!payload || !payload->is_string())
         return;
-      browser_host_->DispatchProtocolMessage(this, payload->GetString());
+      browser_host_->DispatchProtocolMessage(browser_host_client_.get(),
+                                             payload->GetString());
       return;
     }
     DCHECK(agent_host == browser_host_.get());
@@ -185,12 +211,12 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
     SendProtocolMessageToPage("Runtime.evaluate", std::move(params));
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) {
     if (agent_host == browser_host_.get()) {
-      page_host_->DetachClient(this);
+      page_host_->DetachClient(page_host_client_.get());
     } else {
       DCHECK(agent_host == page_host_.get());
-      browser_host_->DetachClient(this);
+      browser_host_->DetachClient(browser_host_client_.get());
     }
     g_browser_to_page_connectors.Get().erase(page_host_.get());
   }
@@ -198,6 +224,8 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
   std::string binding_name_;
   scoped_refptr<DevToolsAgentHost> browser_host_;
   scoped_refptr<DevToolsAgentHost> page_host_;
+  std::unique_ptr<BrowserConnectorHostClient> browser_host_client_;
+  std::unique_ptr<BrowserConnectorHostClient> page_host_client_;
   int page_message_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToPageConnector);
@@ -391,7 +419,7 @@ void TargetHandler::Throttle::Clear() {
   }
 }
 
-TargetHandler::TargetHandler(bool browser_only,
+TargetHandler::TargetHandler(AccessMode access_mode,
                              const std::string& owner_target_id,
                              TargetRegistry* target_registry)
     : DevToolsDomainHandler(Target::Metainfo::domainName),
@@ -399,7 +427,7 @@ TargetHandler::TargetHandler(bool browser_only,
           base::Bind(&TargetHandler::AutoAttach, base::Unretained(this)),
           base::Bind(&TargetHandler::AutoDetach, base::Unretained(this))),
       discover_(false),
-      browser_only_(browser_only),
+      access_mode_(access_mode),
       owner_target_id_(owner_target_id),
       target_registry_(target_registry),
       weak_factory_(this) {}
@@ -410,8 +438,7 @@ TargetHandler::~TargetHandler() {
 // static
 std::vector<TargetHandler*> TargetHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<TargetHandler>(
-      host, Target::Metainfo::domainName);
+  return host->HandlersByName<TargetHandler>(Target::Metainfo::domainName);
 }
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {
@@ -470,7 +497,7 @@ Response TargetHandler::FindSession(Maybe<std::string> session_id,
                                     Session** session,
                                     bool fall_through) {
   *session = nullptr;
-  fall_through &= !browser_only_;
+  fall_through &= access_mode_ != AccessMode::kBrowser;
   if (session_id.isJust()) {
     auto it = attached_sessions_.find(session_id.fromJust());
     if (it == attached_sessions_.end()) {
@@ -504,6 +531,8 @@ Response TargetHandler::FindSession(Maybe<std::string> session_id,
 // ----------------- Protocol ----------------------
 
 Response TargetHandler::SetDiscoverTargets(bool discover) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   if (discover_ == discover)
     return Response::OK();
   discover_ = discover;
@@ -519,11 +548,16 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
 Response TargetHandler::SetAutoAttach(bool auto_attach,
                                       bool wait_for_debugger_on_start,
                                       Maybe<bool> flatten) {
+  if (flatten.fromMaybe(false) && !target_registry_) {
+    return Response::InvalidParams(
+        "Will only provide flatten access for browser endpoint");
+  }
   flatten_auto_attach_ = flatten.fromMaybe(false);
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
     ClearThrottles();
-  return browser_only_ ? Response::OK() : Response::FallThrough();
+  return access_mode_ == AccessMode::kBrowser ? Response::OK()
+                                              : Response::FallThrough();
 }
 
 Response TargetHandler::SetRemoteLocations(
@@ -534,6 +568,8 @@ Response TargetHandler::SetRemoteLocations(
 Response TargetHandler::AttachToTarget(const std::string& target_id,
                                        Maybe<bool> flatten,
                                        std::string* out_session_id) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
@@ -549,6 +585,8 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
 }
 
 Response TargetHandler::AttachToBrowserTarget(std::string* out_session_id) {
+  if (access_mode_ != AccessMode::kBrowser)
+    return Response::Error(kNotAllowedError);
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::CreateForBrowser(
           nullptr, DevToolsAgentHost::CreateServerSocketCallback());
@@ -558,6 +596,8 @@ Response TargetHandler::AttachToBrowserTarget(std::string* out_session_id) {
 
 Response TargetHandler::DetachFromTarget(Maybe<std::string> session_id,
                                          Maybe<std::string> target_id) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   Session* session = nullptr;
   Response response =
       FindSession(std::move(session_id), std::move(target_id), &session, false);
@@ -587,6 +627,8 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
 Response TargetHandler::GetTargetInfo(
     Maybe<std::string> maybe_target_id,
     std::unique_ptr<Target::TargetInfo>* target_info) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   const std::string& target_id =
       maybe_target_id.isJust() ? maybe_target_id.fromJust() : owner_target_id_;
   // TODO(dgozman): only allow reported hosts.
@@ -599,6 +641,8 @@ Response TargetHandler::GetTargetInfo(
 }
 
 Response TargetHandler::ActivateTarget(const std::string& target_id) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
@@ -610,6 +654,8 @@ Response TargetHandler::ActivateTarget(const std::string& target_id) {
 
 Response TargetHandler::CloseTarget(const std::string& target_id,
                                     bool* out_success) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
@@ -621,10 +667,8 @@ Response TargetHandler::CloseTarget(const std::string& target_id,
 Response TargetHandler::ExposeDevToolsProtocol(
     const std::string& target_id,
     Maybe<std::string> binding_name) {
-  if (!browser_only_) {
-    return Response::InvalidParams(
-        "Cannot grant remote debugging capability from non-browser session.");
-  }
+  if (access_mode_ != AccessMode::kBrowser)
+    return Response::InvalidParams(kNotAllowedError);
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
@@ -650,6 +694,8 @@ Response TargetHandler::CreateTarget(const std::string& url,
                                      Maybe<std::string> context_id,
                                      Maybe<bool> enable_begin_frame_control,
                                      std::string* out_target_id) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
@@ -664,6 +710,8 @@ Response TargetHandler::CreateTarget(const std::string& url,
 
 Response TargetHandler::GetTargets(
     std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos) {
+  if (access_mode_ == AccessMode::kAutoAttachOnly)
+    return Response::Error(kNotAllowedError);
   *target_infos = protocol::Array<Target::TargetInfo>::create();
   for (const auto& host : DevToolsAgentHost::GetOrCreateAll())
     (*target_infos)->addItem(CreateInfo(host.get()));
@@ -720,8 +768,12 @@ void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
                                : 0);
 }
 
+// ----------------- More protocol methods -------------------
+
 protocol::Response TargetHandler::CreateBrowserContext(
     std::string* out_context_id) {
+  if (access_mode_ != AccessMode::kBrowser)
+    return Response::Error(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
@@ -730,11 +782,13 @@ protocol::Response TargetHandler::CreateBrowserContext(
   if (!context)
     return Response::Error("Failed to create browser context.");
   *out_context_id = context->UniqueId();
-  return protocol::Response::OK();
+  return Response::OK();
 }
 
 protocol::Response TargetHandler::GetBrowserContexts(
     std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
+  if (access_mode_ != AccessMode::kBrowser)
+    return Response::Error(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
@@ -744,17 +798,21 @@ protocol::Response TargetHandler::GetBrowserContexts(
   *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
   for (auto* context : contexts)
     (*browser_context_ids)->addItem(context->UniqueId());
-  return protocol::Response::OK();
+  return Response::OK();
 }
 
 void TargetHandler::DisposeBrowserContext(
     const std::string& context_id,
     std::unique_ptr<DisposeBrowserContextCallback> callback) {
+  if (access_mode_ != AccessMode::kBrowser) {
+    callback->sendFailure(Response::Error(kNotAllowedError));
+    return;
+  }
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate) {
-    callback->sendFailure(protocol::Response::Error(
-        "Browser context management is not supported."));
+    callback->sendFailure(
+        Response::Error("Browser context management is not supported."));
     return;
   }
   std::vector<content::BrowserContext*> contexts =
@@ -765,8 +823,8 @@ void TargetHandler::DisposeBrowserContext(
                      return context->UniqueId() == context_id;
                    });
   if (context_it == contexts.end()) {
-    callback->sendFailure(protocol::Response::Error(
-        "Failed to find context with id " + context_id));
+    callback->sendFailure(
+        Response::Error("Failed to find context with id " + context_id));
     return;
   }
   delegate->DisposeBrowserContext(
@@ -777,7 +835,7 @@ void TargetHandler::DisposeBrowserContext(
             if (success)
               callback->sendSuccess();
             else
-              callback->sendFailure(protocol::Response::Error(error));
+              callback->sendFailure(Response::Error(error));
           },
           std::move(callback)));
 }

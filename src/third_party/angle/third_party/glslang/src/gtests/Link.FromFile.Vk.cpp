@@ -79,6 +79,7 @@ TEST_P(LinkTestVulkan, FromFile)
         std::vector<uint32_t> spirv_binary;
         glslang::SpvOptions options;
         options.disableOptimizer = true;
+        options.validate = true;
         glslang::GlslangToSpv(*program.getIntermediate(shaders.front()->getStage()),
                                 spirv_binary, &logger, &options);
 
@@ -106,6 +107,7 @@ INSTANTIATE_TEST_CASE_P(
     Glsl, LinkTestVulkan,
     ::testing::ValuesIn(std::vector<std::vector<std::string>>({
         {"link1.vk.frag", "link2.vk.frag"},
+        {"spv.unit1.frag", "spv.unit2.frag", "spv.unit3.frag"},
     })),
 );
 // clang-format on

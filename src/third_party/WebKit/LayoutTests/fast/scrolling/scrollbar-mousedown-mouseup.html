@@ -1,51 +1,66 @@
 <!DOCTYPE html>
-<style>
-#scrollme {
-  width: 100px;
-  height: 100px;
-  overflow: auto;
-}
-#scrollme p {
-  height: 1000px;
-}
-</style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/gesture-util.js"></script>
+<html>
+<head>
+    <script src="../../resources/js-test.js"></script>
+    <script>
+        window.jsTestIsAsync = true;
 
-<div id="scrollme"><p>This is a scrollable div.</p></div>
-<script>
-function initEventHandlers(element) {
-  element.addEventListener('mousedown', handleEvent);
-  element.addEventListener('mouseup', handleEvent);
-  element.addEventListener('click', handleEvent);
-}
+        function initEventHandlers(element) {
+            element.addEventListener('mousedown', handleEvent);
+            element.addEventListener('mouseup', handleEvent);
+            element.addEventListener('click', handleEvent);
+        }
 
-window.events = [];
-function handleEvent(e) {
-  window.events.push(e);
-}
+        window.events = [];
+        function handleEvent(e) {
+            window.events.push(e);
+        }
 
-promise_test(async () => {
-  var d = document.querySelector('#scrollme');
-  initEventHandlers(d);
+        function finish() {
+            shouldBe("events.length", "4");
+            shouldBeEqualToString("events[0].type", "mousedown");
+            shouldBeEqualToString("events[0].target.id", "scrollme");
+            shouldBe("events[0].which", "1");
+            shouldBeEqualToString("events[1].type", "mouseup");
+            shouldBeEqualToString("events[1].target.id", "scrollme");
+            shouldBe("events[1].which", "1");
+            shouldBeEqualToString("events[2].type", "mousedown");
+            shouldBeEqualToString("events[2].target.id", "scrollme");
+            shouldBe("events[2].which", "2");
+            shouldBeEqualToString("events[3].type", "mouseup");
+            shouldBeEqualToString("events[3].target.id", "scrollme");
+            shouldBe("events[3].which", "2");
+            finishJSTest();
+        }
 
-  var x = d.offsetLeft + d.offsetWidth - 4;
-  var y = d.offsetTop + 4;
-  await mouseClickOn(x, y);
-  await mouseClickOn(x, y, 'middle');
-  await waitFor(() => {return window.events.length == 4;} );
-  assert_equals(events[0].type, "mousedown");
-  assert_equals(events[0].target.id, "scrollme");
-  assert_equals(events[0].which, 1);
-  assert_equals(events[1].type, "mouseup");
-  assert_equals(events[1].target.id, "scrollme");
-  assert_equals(events[1].which, 1);
-  assert_equals(events[2].type, "mousedown");
-  assert_equals(events[2].target.id, "scrollme");
-  assert_equals(events[2].which, 2);
-  assert_equals(events[3].type, "mouseup");
-  assert_equals(events[3].target.id, "scrollme");
-  assert_equals(events[3].which, 2);
-});
-</script>    
+        window.onload = function () {
+            var d = document.querySelector('#scrollme');
+            initEventHandlers(d);
+
+            if (window.eventSender) {
+                eventSender.mouseMoveTo(d.offsetLeft + d.offsetWidth - 4, d.offsetTop + 4);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.mouseDown(1);
+                eventSender.mouseUp(1);
+                finish();
+            } else
+                debug('This test requires eventSender. Click the scrollbar to play manually.');
+        };
+    </script>
+    <style>
+        #scrollme {
+            width: 100px;
+            height: 100px;
+            overflow: auto;
+        }
+        #scrollme p {
+            height: 1000px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scrollme"><p>This is a scrollable div.</p></div>
+    <pre id="console"></pre>
+</body>
+</html>

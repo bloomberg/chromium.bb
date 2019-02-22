@@ -20,6 +20,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_INTERNAL_OBJECTS_H
+#include FT_INTERNAL_CALC_H
 #include "pshglob.h"
 
 #ifdef DEBUG_HINTER
@@ -568,7 +569,7 @@
 
     for ( ; count > 0; count--, zone++ )
     {
-      delta = stem_top - zone->org_bottom;
+      delta = SUB_LONG( stem_top, zone->org_bottom );
       if ( delta < -blues->blue_fuzz )
         break;
 
@@ -590,7 +591,7 @@
 
     for ( ; count > 0; count--, zone-- )
     {
-      delta = zone->org_top - stem_bot;
+      delta = SUB_LONG( zone->org_top, stem_bot );
       if ( delta < -blues->blue_fuzz )
         break;
 

@@ -112,7 +112,7 @@ class BitmapImageTest : public testing::Test {
     }
     void AsyncLoadCompleted(const Image*) override { NOTREACHED(); }
 
-    void ChangedInRect(const Image*, const IntRect&) override {}
+    void Changed(const Image*) override {}
 
     size_t last_decoded_size_;
     int last_decoded_size_changed_delta_;
@@ -562,22 +562,6 @@ TEST_F(BitmapImageTest, GIFRepetitionCount) {
   EXPECT_EQ(paint_image.FrameCount(), 3u);
 }
 
-TEST_F(BitmapImageTest, DecoderAndCacheMipLevels) {
-  // Tests that the supported sizes from the decoder match the mip level sizes
-  // in cc.
-  LoadImage("/images/resources/cat.jpg");
-  auto paint_image = image_->PaintImageForCurrentFrame();
-  // Jpeg decoder supports upto 1/8 downscales, or mip level 3.
-  for (int mip_level = 0; mip_level < 4; ++mip_level) {
-    SCOPED_TRACE(mip_level);
-    SkISize scaled_size = gfx::SizeToSkISize(cc::MipMapUtil::GetSizeForLevel(
-        gfx::Size(paint_image.width(), paint_image.height()), mip_level));
-    SkISize supported_size = paint_image.GetSupportedDecodeSize(scaled_size);
-    EXPECT_EQ(gfx::SkISizeToSize(supported_size),
-              gfx::SkISizeToSize(scaled_size));
-  }
-}
-
 class BitmapImageTestWithMockDecoder : public BitmapImageTest,
                                        public MockImageDecoderClient {
  public:
@@ -652,7 +636,65 @@ TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
   }
 };
 
-TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionNone) {
+  repetition_count_ = kAnimationNone;
+  frame_count_ = 4u;
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
+
+  PaintImage image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // In all cases, the image shouldn't animate.
+
+  // Only one loop allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // No animation allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyNoAnimation);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // Default policy.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAllowed);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+}
+
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionOnce) {
+  repetition_count_ = kAnimationLoopOnce;
+  frame_count_ = 4u;
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
+
+  PaintImage image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // If the policy is no animation, then the repetition count is none. In all
+  // other cases, it remains loop once.
+
+  // Only one loop allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationLoopOnce);
+
+  // No animation allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyNoAnimation);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // Default policy.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAllowed);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationLoopOnce);
+}
+
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionInfinite) {
   repetition_count_ = kAnimationLoopInfinite;
   frame_count_ = 4u;
   last_frame_complete_ = true;
@@ -660,6 +702,8 @@ TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
 
   PaintImage image = image_->PaintImageForCurrentFrame();
   EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // The repetition count is determined by the animation policy.
 
   // Only one loop allowed.
   image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
@@ -715,12 +759,22 @@ template <typename HistogramEnumType>
 class BitmapHistogramTest : public BitmapImageTest,
                             public testing::WithParamInterface<
                                 HistogramTestParams<HistogramEnumType>> {
+ public:
+  // Flag to tell the test that no samples should have been reported in this
+  // case. Only useful when the parametric type is int.
+  static const int kNoSamplesReported = -1;
+
  protected:
   void RunTest(const char* histogram_name) {
     HistogramTester histogram_tester;
     LoadImage(this->GetParam().filename);
-    histogram_tester.ExpectUniqueSample(histogram_name, this->GetParam().type,
-                                        1);
+    if (std::is_same<HistogramEnumType, int>::value &&
+        this->GetParam().type == kNoSamplesReported) {
+      histogram_tester.ExpectTotalCount(histogram_name, 0);
+    } else {
+      histogram_tester.ExpectUniqueSample(histogram_name, this->GetParam().type,
+                                          1);
+    }
   }
 };
 
@@ -773,22 +827,50 @@ INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
-using DecodedImageDensityHistogramTest = BitmapHistogramTest<int>;
+using DecodedImageDensityHistogramTest100px = BitmapHistogramTest<int>;
 
-TEST_P(DecodedImageDensityHistogramTest, ImageOrientation) {
-  RunTest("Blink.DecodedImage.JpegDensity");
+TEST_P(DecodedImageDensityHistogramTest100px, JpegDensity) {
+  RunTest("Blink.DecodedImage.JpegDensity.100px");
 }
 
-const DecodedImageDensityHistogramTest::ParamType
-    kDecodedImageDensityHistogramTestParams[] = {
+const DecodedImageDensityHistogramTest100px::ParamType
+    kDecodedImageDensityHistogramTest100pxParams[] = {
+        // 64x64 too small to report any metric
+        {"/images/resources/rgb-jpeg-red.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported},
         // 439x154, 23220 bytes --> 2.74 bpp
         {"/images/resources/cropped_mandrill.jpg", 274},
         // 320x320, 74017 bytes --> 5.78
-        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578}};
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578},
+        // 632x475 too big for the 100-399px range.
+        {"/images/resources/cat.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
 
 INSTANTIATE_TEST_CASE_P(
-    DecodedImageDensityHistogramTest,
-    DecodedImageDensityHistogramTest,
-    testing::ValuesIn(kDecodedImageDensityHistogramTestParams));
+    DecodedImageDensityHistogramTest100px,
+    DecodedImageDensityHistogramTest100px,
+    testing::ValuesIn(kDecodedImageDensityHistogramTest100pxParams));
+
+using DecodedImageDensityHistogramTest400px = BitmapHistogramTest<int>;
+
+TEST_P(DecodedImageDensityHistogramTest400px, JpegDensity) {
+  RunTest("Blink.DecodedImage.JpegDensity.400px");
+}
+
+const DecodedImageDensityHistogramTest400px::ParamType
+    kDecodedImageDensityHistogramTest400pxParams[] = {
+        // 439x154, only one dimension is big enough.
+        {"/images/resources/cropped_mandrill.jpg",
+         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
+        // 320x320, not big enough.
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg",
+         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
+        // 632x475, 68826 bytes --> 1.83
+        {"/images/resources/cat.jpg", 183}};
+
+INSTANTIATE_TEST_CASE_P(
+    DecodedImageDensityHistogramTest400px,
+    DecodedImageDensityHistogramTest400px,
+    testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));
 
 }  // namespace blink

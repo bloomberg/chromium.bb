@@ -88,8 +88,8 @@ void MaybeWriteUma(int number_of_devices, int number_of_suspended_devices) {
   std::string model = base::mac::GetModelIdentifier();
   if (base::StartsWith(model, "MacBook",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.MacBook.NumberOfDevices",
-                         number_of_devices + number_of_suspended_devices);
+    UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.MacBook.NumberOfDevices",
+                            number_of_devices + number_of_suspended_devices);
     if (number_of_devices + number_of_suspended_devices == 0) {
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MacBook.HardwareVersionWhenNoCamera",

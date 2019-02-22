@@ -31,6 +31,7 @@
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #if defined(OS_WIN)
@@ -41,8 +42,6 @@
 #include "chrome/browser/media/library_cdm_test_helper.h"
 #include "media/cdm/cdm_paths.h"
 #endif
-
-#include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
@@ -142,11 +141,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     return key_system.substr(0, prefix.size()) == prefix;
   }
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   bool IsWidevine(const std::string& key_system) {
     return key_system == kWidevineKeySystem;
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
   void RunEncryptedMediaTestPage(const std::string& html_page,
                                  const std::string& key_system,
@@ -259,23 +258,23 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
   bool IsPlayBackPossible(const std::string& key_system) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     if (IsWidevine(key_system) && !GetServerConfig(key_system))
       return false;
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
     return true;
   }
 
   std::unique_ptr<TestLicenseServerConfig> GetServerConfig(
       const std::string& key_system) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     if (IsWidevine(key_system)) {
       std::unique_ptr<TestLicenseServerConfig> config(
           new WVTestLicenseServerConfig);
       if (config->IsPlatformSupported())
         return config;
     }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
     return nullptr;
   }
 
@@ -300,9 +299,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kAutoplayPolicy,
-        switches::autoplay::kNoUserGestureRequiredPolicy);
+    MediaBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "EncryptedMediaHdcpPolicyCheck");
   }
@@ -318,11 +315,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
   void SetUpCommandLineForKeySystem(const std::string& key_system,
                                     base::CommandLine* command_line) {
-    if (GetServerConfig(key_system))
+    if (GetServerConfig(key_system)) {
       // Since the web and license servers listen on different ports, we need to
       // disable web-security to send license requests to the license server.
       // TODO(shadi): Add port forwarding to the test web server configuration.
       command_line->AppendSwitch(switches::kDisableWebSecurity);
+    }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     if (IsExternalClearKey(key_system)) {
@@ -519,12 +517,12 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                                 Values(SrcType::SRC)));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(SrcType::MSE)));
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video);
@@ -557,16 +555,22 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
-// TODO(xhwang): Test is flaky on Mac. https://crbug.com/835585
-#if defined(MACOS)
-#define MAYBE_Playback_Multiple_VideoAudio_WebM \
-  DISABLED_Playback_Multiple_VideoAudio_WebM
-#else
-#define MAYBE_Playback_Multiple_VideoAudio_WebM \
-  Playback_Multiple_VideoAudio_WebM
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
+  if (IsWidevine(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
+    return;
+  }
 #endif
+  // TODO(crbug.com/707127): Support VP9 Profile2 query and update mime type.
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
+                     kWebMVp9VideoOnly);
+}
+
+// TODO(xhwang): Test is flaky. https://crbug.com/890124.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       MAYBE_Playback_Multiple_VideoAudio_WebM) {
+                       DISABLED_Playback_Multiple_VideoAudio_WebM) {
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Playback_Multiple test requires playback.";
     return;
@@ -590,6 +594,24 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
     return;
   }
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
+  if (IsWidevine(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
+    return;
+  }
+#endif
+  // TODO(crbug.com/707127): Support VP9 Profile2 query and update mime type.
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
+                     kMp4Vp9VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
@@ -624,7 +646,32 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, PolicyCheck) {
+  // There is no need to run this test twice for the same key system.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test.";
+    return;
+  }
+
   TestPolicyCheck();
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, RemoveTemporarySession) {
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - RemoveTemporarySession test requires license "
+                "server.";
+    return;
+  }
+
+  // Although this test doesn't play anything, there is no need to run it
+  // twice for the same key system.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test.";
+    return;
+  }
+
+  base::StringPairs query_params{{"keySystem", CurrentKeySystem()}};
+  RunEncryptedMediaTestPage("eme_remove_session_test.html", CurrentKeySystem(),
+                            query_params, media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {

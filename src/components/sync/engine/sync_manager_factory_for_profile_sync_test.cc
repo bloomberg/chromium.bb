@@ -9,8 +9,10 @@
 namespace syncer {
 
 SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
-    base::OnceClosure init_callback)
-    : init_callback_(std::move(init_callback)) {}
+    base::OnceClosure init_callback,
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : SyncManagerFactory(network_connection_tracker),
+      init_callback_(std::move(init_callback)) {}
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 

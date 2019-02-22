@@ -64,7 +64,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
-  bool IsDefaultSubframeSiteInstance() const override;
 
   // The policy to apply when selecting a RenderProcessHost for the
   // SiteInstance. If no suitable RenderProcessHost for the SiteInstance exists
@@ -78,9 +77,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
     // In this mode, all instances of the site will be hosted in the same
     // RenderProcessHost.
     PROCESS_PER_SITE,
-
-    // In this mode, subframes will be hosted in a designated RenderProcessHost.
-    USE_DEFAULT_SUBFRAME_PROCESS,
 
     // In this mode, the site will be rendered in a RenderProcessHost that is
     // already in use for the site, either for a pending navigation or a
@@ -127,23 +123,24 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  // |use_effective_urls| specifies whether to resolve |url| to an effective
-  // URL (via ContentBrowserClient::GetEffectiveURL()) before determining the
-  // site.
+  // |should_use_effective_urls| specifies whether to resolve |url| to an
+  // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
+  // determining the site.
   static GURL GetSiteForURL(BrowserContext* context,
                             const GURL& url,
-                            bool use_effective_urls);
+                            bool should_use_effective_urls);
+
+  // Returns the site of a given |origin|.  Unlike GetSiteForURL(), this does
+  // not utilize effective URLs, isolated origins, or other special logic.  It
+  // only translates an origin into a site (i.e., scheme and eTLD+1) and is
+  // used internally by GetSiteForURL().  For making process model decisions,
+  // GetSiteForURL() should be used instead.
+  static GURL GetSiteForOrigin(const url::Origin& origin);
 
   // Returns the URL to which a process should be locked for the given URL.
   // This is computed similarly to the site URL (see GetSiteForURL), but
   // without resolving effective URLs.
   static GURL DetermineProcessLockURL(BrowserContext* context, const GURL& url);
-
-  // Returns the SiteInstance, related to this one, that should be used
-  // for subframes when an oopif is required, but a dedicated process is not.
-  // This SiteInstance will be created if it doesn't already exist. There is
-  // at most one of these per BrowsingInstance.
-  scoped_refptr<SiteInstanceImpl> GetDefaultSubframeSiteInstance();
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -225,12 +222,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // true here also implies that |site_url| requires a dedicated process.
   // However, the converse does not hold: this might still return false for
   // certain special cases where an origin lock can't be applied even when
-  // |site_url| requires a dedicated process (e.g., with
-  // --site-per-process).  Examples of those cases include <webview> guests,
-  // WebUI, single-process mode, or extensions where a process is currently
-  // allowed to be reused for different extensions.  Most of these special
-  // cases should eventually be removed, and this function should become
-  // equivalent to DoesSiteRequireDedicatedProcess().
+  // |site_url| requires a dedicated process (e.g., with --site-per-process).
+  // Examples of those cases include <webview> guests, single-process mode, or
+  // extensions where a process is currently allowed to be reused for different
+  // extensions.  Most of these special cases should eventually be removed, and
+  // this function should become equivalent to
+  // DoesSiteRequireDedicatedProcess().
   static bool ShouldLockToOrigin(BrowserContext* browser_context,
                                  GURL site_url);
 
@@ -251,11 +248,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Used to restrict a process' origin access rights.
   void LockToOriginIfNeeded();
-
-  // This gets the render process to use for default subframe site instances.
-  RenderProcessHost* GetDefaultSubframeProcessHost(
-      BrowserContext* browser_context,
-      bool is_for_guests_only);
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

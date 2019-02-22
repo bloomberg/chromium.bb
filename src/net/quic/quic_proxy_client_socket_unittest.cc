@@ -1345,7 +1345,8 @@ TEST_P(QuicProxyClientSocketTest, WritePendingOnClose) {
   base::RunLoop().RunUntilIdle();
 
   session_->CloseSessionOnError(ERR_CONNECTION_CLOSED,
-                                quic::QUIC_INTERNAL_ERROR);
+                                quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
 
   EXPECT_THAT(write_callback_.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 }

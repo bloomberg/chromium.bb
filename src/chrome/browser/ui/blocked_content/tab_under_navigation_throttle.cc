@@ -102,7 +102,7 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
   ukm::SourceId opener_source_id =
       ukm::GetSourceIdForWebContentsDocument(handle->GetWebContents());
   if (opener_source_id != ukm::kInvalidSourceId && ukm_recorder) {
-    ukm::builders::AbusiveExperienceHeuristic(opener_source_id)
+    ukm::builders::AbusiveExperienceHeuristic_TabUnder(opener_source_id)
         .SetDidTabUnder(true)
         .Record(ukm_recorder);
   }

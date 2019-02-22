@@ -47,7 +47,7 @@ FileGrid.prototype = {
  * Decorates an HTML element to be a FileGrid.
  * @param {!Element} element The grid to decorate.
  * @param {!MetadataModel} metadataModel File system metadata.
- * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
 FileGrid.decorate = function(

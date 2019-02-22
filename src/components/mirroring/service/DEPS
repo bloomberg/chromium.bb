@@ -4,8 +4,12 @@ include_rules = [
   "+components/mirroring/service",
   "+components/version_info",
   "+crypto",
+  "+gpu/config",
+  "+gpu/ipc/client",
   "+net",
   "+services/network/public",
   "+services/network/test",
   "+services/service_manager",
+  "+services/ws/public",
+  "+ui/base",
 ]

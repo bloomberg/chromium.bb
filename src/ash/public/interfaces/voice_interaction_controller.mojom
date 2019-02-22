@@ -44,7 +44,9 @@ enum AssistantAllowedState {
   // Disallowed because incognito mode.
   DISALLOWED_BY_INCOGNITO,
   // Disallowed because the device is in demo mode.
-  DISALLOWED_BY_DEMO_MODE
+  DISALLOWED_BY_DEMO_MODE,
+  // Disallowed because the device is in public session.
+  DISALLOWED_BY_PUBLIC_SESSION
 };
 
 // Allows observing changes to voice interaction status and settings.
@@ -103,6 +105,9 @@ interface VoiceInteractionController {
 
   // Called when the locale is changed.
   NotifyLocaleChanged(string locale);
+
+  // Called when the launch with mic open state is changed.
+  NotifyLaunchWithMicOpen(bool launch_with_mic_open);
 
   // Return if the voice interaction setting is enabled/disabled.
   IsSettingEnabled() => (bool enabled);

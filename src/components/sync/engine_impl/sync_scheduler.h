@@ -14,7 +14,7 @@
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/nudge_source.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace base {
 class Location;
@@ -145,7 +145,7 @@ class SyncScheduler : public SyncCycle::Delegate {
 
   // Called when the network layer detects a connection status change.
   virtual void OnConnectionStatusChange(
-      net::NetworkChangeNotifier::ConnectionType type) = 0;
+      network::mojom::ConnectionType type) = 0;
 };
 
 }  // namespace syncer

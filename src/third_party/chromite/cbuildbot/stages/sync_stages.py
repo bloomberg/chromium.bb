@@ -23,7 +23,6 @@ from xml.dom import minidom
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
-from chromite.cbuildbot import repository
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
@@ -1396,7 +1395,7 @@ class PreCQLauncherStage(SyncStage):
     return {t['build_config']: t['buildbucket_id'] for t in tryjob_output}
 
   def _LaunchTrybots(self, pool, configs, plan=None,
-                     sanity_check_build=False, swarming=True):
+                     sanity_check_build=False):
     """Launch tryjobs on the configs with patches if provided.
 
     Args:
@@ -1405,7 +1404,6 @@ class PreCQLauncherStage(SyncStage):
       plan: A list of patches to test in the pre-cq tryjob, default to None.
       sanity_check_build: Boolean indicating whether to run the tryjobs as
         sanity-check-build.
-      swarming: Boolean indicating jobs should running as swarming builds.
 
     Returns:
       A dict mapping from build_config (string) to the buildbucket_id (string)
@@ -1430,9 +1428,6 @@ class PreCQLauncherStage(SyncStage):
 
     if sanity_check_build:
       cmd += ['--sanity-check-build']
-
-    if swarming:
-      cmd += ['--swarming']
 
     if plan is not None:
       for patch in plan:

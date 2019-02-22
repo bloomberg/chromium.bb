@@ -18,15 +18,11 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/util_constants.h"
 
-class BrowserDistribution;
 class WorkItemList;
-
-namespace base {
-class Version;
-}
 
 // This is a utility class that provides common installation related
 // utility methods that can be used by installer and also unit tested
@@ -51,15 +47,10 @@ class InstallUtil {
   // whether HKLM (true) or HKCU (false) should be checked.
   static base::Version GetChromeVersion(bool system_install);
 
-  // Find the last critical update (version) of Chrome. Fills |version| with the
-  // version or a default-constructed Version if no version is found. A critical
-  // update is a specially flagged version (by Google Update) that contains an
-  // important security fix.
-  // system_install: if true, looks for version number under the HKLM root,
-  //                 otherwise looks under the HKCU.
-  static void GetCriticalUpdateVersion(BrowserDistribution* dist,
-                                       bool system_install,
-                                       base::Version* version);
+  // Returns the last critical update (version) of Chrome, or an invalid Version
+  // in case no such value is found. A critical update is a specially flagged
+  // version (by Google Update) that contains an important security fix.
+  static base::Version GetCriticalUpdateVersion();
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();
@@ -90,12 +81,14 @@ class InstallUtil {
   // CLSID registered.
   static bool IsStartMenuShortcutWithActivatorGuidInstalled();
 
-  // Returns the toast activator registry path if found, or an empty string in
-  // case of error.
+  // Returns a string representation of |guid|.
+  static base::string16 String16FromGUID(const GUID& guid);
+
+  // Returns the toast activator registry path.
   static base::string16 GetToastActivatorRegistryPath();
 
   // Populates |path| with EULA sentinel file path. Returns false on error.
-  static bool GetEULASentinelFilePath(base::FilePath* path);
+  static bool GetEulaSentinelFilePath(base::FilePath* path);
 
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key,
@@ -202,8 +195,31 @@ class InstallUtil {
   // be enrolled.
   static std::wstring GetMachineLevelUserCloudPolicyEnrollmentToken();
 
+  // Returns the localized name of the browser.
+  static base::string16 GetDisplayName();
+
   // Returns the app description for shortcuts.
   static base::string16 GetAppDescription();
+
+  // Returns the name of the browser's publisher.
+  static base::string16 GetPublisherName();
+
+  // Returns the name of Chrome's shortcut in the Start Menu (among other
+  // places).
+  static base::string16 GetShortcutName();
+
+  // Returns the name of the subdirectory in which Chrome's Start Menu shortcut
+  // was once placed. This remains purely to migrate old installs to the new
+  // style.
+  static base::string16 GetChromeShortcutDirNameDeprecated();
+
+  // Returns the name of the subdirectory in the Start Menu in which Chrome
+  // apps' shortcuts are placed.
+  static base::string16 GetChromeAppsShortcutDirName();
+
+  // Returns the long description of Chrome used when registering as a browser
+  // with Windows.
+  static base::string16 GetLongAppDescription();
 
   // A predicate that compares the program portion of a command line with a
   // given file path.  First, the file paths are compared directly.  If they do

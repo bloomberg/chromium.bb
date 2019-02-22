@@ -243,18 +243,28 @@ class BlinkTestController : public WebContentsObserver,
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
   void OnBlockThirdPartyCookies(bool block);
-  mojom::LayoutTestControl* GetLayoutTestControlPtr(RenderFrameHost* frame);
+  mojom::LayoutTestControlAssociatedPtr& GetLayoutTestControlPtr(
+      RenderFrameHost* frame);
   void HandleLayoutTestControlError(const GlobalFrameRoutingId& key);
 
   void OnCleanupFinished();
   void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
+  void EnqueueSurfaceCopyRequest();
 
-  void CompositeAllFrames();
-  Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames,
-                       std::vector<Node>* storage) const;
-  void CompositeDepthFirst(Node* node);
+  // CompositeAllFramesThen() first builds a frame tree based on
+  // frame->GetParent(). Then, it builds a queue of frames in depth-first order,
+  // so that compositing happens from the leaves up. Finally,
+  // CompositeNodeQueueThen() is used to composite one frame at a time,
+  // asynchronously, continuing on to the next frame once each composite
+  // finishes. Once all nodes have been composited, the final callback is run.
+  // Each call to CompositeWithRaster() is an asynchronous Mojo call, to avoid
+  // reentrancy problems.
+  void CompositeAllFramesThen(base::OnceCallback<void()> callback);
+  Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames);
+  void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
+  void BuildDepthFirstQueue(Node* node);
 
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
@@ -328,6 +338,9 @@ class BlinkTestController : public WebContentsObserver,
   mojom::LayoutTestDumpPtr main_frame_dump_;
   bool waiting_for_pixel_results_ = false;
   bool waiting_for_main_frame_dump_ = false;
+
+  std::vector<Node> composite_all_frames_node_storage_;
+  std::queue<Node*> composite_all_frames_node_queue_;
 
   // Map from one frame to one mojo pipe.
   std::map<GlobalFrameRoutingId, mojom::LayoutTestControlAssociatedPtr>

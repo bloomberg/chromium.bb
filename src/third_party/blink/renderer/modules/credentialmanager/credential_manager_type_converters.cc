@@ -130,6 +130,9 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::NOT_IMPLEMENTED;
     case blink::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
       return CredentialManagerError::NOT_FOCUSED;
+    case blink::mojom::blink::AuthenticatorStatus::
+        RESIDENT_CREDENTIALS_UNSUPPORTED:
+      return CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED;
     case blink::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
       return CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED;
     case blink::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
@@ -208,6 +211,23 @@ AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
     return AuthenticatorTransport::INTERNAL;
   NOTREACHED();
   return AuthenticatorTransport::USB;
+}
+
+// static
+String TypeConverter<String, AuthenticatorTransport>::Convert(
+    const AuthenticatorTransport& transport) {
+  if (transport == AuthenticatorTransport::USB)
+    return "usb";
+  if (transport == AuthenticatorTransport::NFC)
+    return "nfc";
+  if (transport == AuthenticatorTransport::BLE)
+    return "ble";
+  if (transport == AuthenticatorTransport::CABLE)
+    return "cable";
+  if (transport == AuthenticatorTransport::INTERNAL)
+    return "internal";
+  NOTREACHED();
+  return "usb";
 }
 
 // static

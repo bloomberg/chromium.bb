@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/permissions_updater.h"
 
+#include <set>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -72,7 +74,15 @@ std::unique_ptr<const PermissionSet> GetBoundedActivePermissions(
   return adjusted_active;
 }
 
-PermissionsUpdater::Delegate* g_delegate = nullptr;
+std::unique_ptr<PermissionsUpdater::Delegate>& GetDelegateWrapper() {
+  static base::NoDestructor<std::unique_ptr<PermissionsUpdater::Delegate>>
+      delegate_wrapper;
+  return *delegate_wrapper;
+}
+
+PermissionsUpdater::Delegate* GetDelegate() {
+  return GetDelegateWrapper().get();
+}
 
 }  // namespace
 
@@ -88,11 +98,9 @@ PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
 PermissionsUpdater::~PermissionsUpdater() {}
 
 // static
-void PermissionsUpdater::SetPlatformDelegate(Delegate* delegate) {
-  // Make sure we're setting it only once (allow setting to nullptr, but then
-  // take special care of actually freeing it).
-  CHECK(!g_delegate || !delegate);
-  g_delegate = delegate;
+void PermissionsUpdater::SetPlatformDelegate(
+    std::unique_ptr<Delegate> delegate) {
+  GetDelegateWrapper() = std::move(delegate);
 }
 
 void PermissionsUpdater::GrantOptionalPermissions(
@@ -121,7 +129,8 @@ void PermissionsUpdater::GrantOptionalPermissions(
 void PermissionsUpdater::GrantRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRuntimeHostPermissions));
+  DCHECK(base::FeatureList::IsEnabled(
+      extensions_features::kRuntimeHostPermissions));
 
   // We don't want to grant the extension object/process more privilege than it
   // requested, even if the user grants additional permission. For instance, if
@@ -182,7 +191,8 @@ void PermissionsUpdater::RevokeOptionalPermissions(
 void PermissionsUpdater::RevokeRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRuntimeHostPermissions));
+  DCHECK(base::FeatureList::IsEnabled(
+      extensions_features::kRuntimeHostPermissions));
   // Similar to the process in adding permissions, we might be revoking more
   // permissions than the extension currently has explicit access to. For
   // instance, we might be revoking https://*.google.com/* even if the extension
@@ -336,8 +346,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
       *extension, *prefs, *bounded_active, &granted_permissions);
 
-  if (g_delegate)
-    g_delegate->InitializePermissions(extension, &granted_permissions);
+  if (GetDelegate())
+    GetDelegate()->InitializePermissions(extension, &granted_permissions);
 
   bool update_active_permissions = false;
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {

@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chromeos {
 
@@ -22,8 +24,8 @@ ConnectionEstablisherImpl::~ConnectionEstablisherImpl() = default;
 
 void ConnectionEstablisherImpl::EstablishConnection(
     content::ServiceWorkerContext* service_worker_context) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected,
           base::Unretained(this), service_worker_context));

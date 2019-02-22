@@ -16,6 +16,9 @@ namespace system {
 // Activation date key.
 CHROMEOS_EXPORT extern const char kActivateDateKey[];
 
+// The key that will be present in VPD if the device was enrolled in a domain
+// that blocks dev mode.
+CHROMEOS_EXPORT extern const char kBlockDevModeKey[];
 // The key that will be present in VPD if the device ever was enrolled.
 CHROMEOS_EXPORT extern const char kCheckEnrollmentKey[];
 
@@ -35,6 +38,11 @@ CHROMEOS_EXPORT extern const char kCustomizationIdKey[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootKey[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootValueDev[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootValueVerified[];
+
+// Firmware write protect switch value.
+CHROMEOS_EXPORT extern const char kFirmwareWriteProtectBootKey[];
+CHROMEOS_EXPORT extern const char kFirmwareWriteProtectBootValueOn[];
+CHROMEOS_EXPORT extern const char kFirmwareWriteProtectBootValueOff[];
 
 // Firmware type and associated values. The values are from crossystem output
 // for the mainfw_type key. Normal and developer correspond to Chrome OS

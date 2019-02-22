@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/cronet/native/test/test_util.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -154,6 +155,18 @@ TEST_F(EngineTest, ValidPkpParams) {
   Cronet_Engine_Destroy(engine);
   Cronet_EngineParams_Destroy(engine_params);
   Cronet_PublicKeyPins_Destroy(public_key_pins);
+}
+
+// Verify that Cronet_Engine_SetMockCertVerifierForTesting() doesn't crash or
+// leak anything.
+TEST_F(EngineTest, SetMockCertVerifierForTesting) {
+  auto cert_verifier(std::make_unique<net::MockCertVerifier>());
+  Cronet_EnginePtr engine = Cronet_Engine_Create();
+  Cronet_Engine_SetMockCertVerifierForTesting(engine, cert_verifier.release());
+  Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
+  Cronet_Engine_StartWithParams(engine, engine_params);
+  Cronet_Engine_Destroy(engine);
+  Cronet_EngineParams_Destroy(engine_params);
 }
 
 TEST_F(EngineTest, StartNetLogToFile) {

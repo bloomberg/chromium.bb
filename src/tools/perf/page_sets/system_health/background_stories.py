@@ -30,7 +30,7 @@ class _BackgroundStory(system_health_story.SystemHealthStory):
 class BackgroundGoogleStory(_BackgroundStory):
   NAME = 'background:search:google'
   URL = 'https://www.google.co.uk/#q=tom+cruise+movies'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # Activte the immersive movie browsing experience
@@ -43,13 +43,14 @@ class BackgroundFacebookMobileStory(_BackgroundStory):
   NAME = 'background:social:facebook'
   URL = 'https://www.facebook.com/rihanna'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2016]
 
 
 class BackgroundNytimesMobileStory(_BackgroundStory):
   NAME = 'background:news:nytimes'
   URL = 'http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # Dismiss the 'You have n free articles' message.
@@ -80,13 +81,13 @@ class BackgroundImgurMobileStory(_BackgroundStory):
   NAME = 'background:media:imgur'
   URL = 'http://imgur.com/gallery/hUita'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class BackgroundGmailMobileStory(LoadGmailMobileStory):
   NAME = 'background:tools:gmail'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
   def _Measure(self, action_runner):
     action_runner.tab.browser.Background()

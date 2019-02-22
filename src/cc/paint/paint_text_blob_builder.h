@@ -38,7 +38,7 @@ class CC_PAINT_EXPORT PaintTextBlobBuilder {
                                const SkRect* bounds = nullptr);
 
  private:
-  std::vector<PaintTypeface> typefaces_;
+  std::vector<sk_sp<SkTypeface>> typefaces_;
   SkTextBlobBuilder sk_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTextBlobBuilder);

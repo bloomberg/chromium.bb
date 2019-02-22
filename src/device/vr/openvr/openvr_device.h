@@ -16,12 +16,13 @@
 
 namespace device {
 
-class OpenVRRenderLoop;
+class XRCompositorCommon;
 
 class DEVICE_VR_EXPORT OpenVRDevice
     : public VRDeviceBase,
       public mojom::XRSessionController,
-      public mojom::IsolatedXRGamepadProviderFactory {
+      public mojom::IsolatedXRGamepadProviderFactory,
+      public mojom::XRCompositorHost {
  public:
   OpenVRDevice();
   ~OpenVRDevice() override;
@@ -42,6 +43,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
   bool IsInitialized() { return !!openvr_; }
 
   mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
+  mojom::XRCompositorHostPtr BindCompositorHost();
 
  private:
   // VRDeviceBase
@@ -55,10 +57,14 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void GetIsolatedXRGamepadProvider(
       mojom::IsolatedXRGamepadProviderRequest provider_request) override;
 
+  // XRCompositorHost
+  void CreateImmersiveOverlay(
+      mojom::ImmersiveOverlayRequest overlay_request) override;
+
   void OnPresentingControllerMojoConnectionError();
   void OnPresentationEnded();
 
-  std::unique_ptr<OpenVRRenderLoop> render_loop_;
+  std::unique_ptr<XRCompositorCommon> render_loop_;
   std::unique_ptr<OpenVRWrapper> openvr_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
@@ -67,6 +73,9 @@ class DEVICE_VR_EXPORT OpenVRDevice
   mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
       gamepad_provider_factory_binding_;
   mojom::IsolatedXRGamepadProviderRequest provider_request_;
+
+  mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
+  mojom::ImmersiveOverlayRequest overlay_request_;
 
   base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
 

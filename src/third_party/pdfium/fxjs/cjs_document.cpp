@@ -12,12 +12,13 @@
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
-#include "core/fpdfdoc/cpdf_interform.h"
+#include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_nametree.h"
 #include "fpdfsdk/cpdfsdk_annotiteration.h"
-#include "fpdfsdk/cpdfsdk_interform.h"
+#include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fxjs/cjs_annot.h"
 #include "fxjs/cjs_app.h"
@@ -26,6 +27,79 @@
 #include "fxjs/cjs_icon.h"
 #include "fxjs/cjs_printparamsobj.h"
 #include "fxjs/js_resources.h"
+
+namespace {
+
+#define ISLATINWORD(u) (u != 0x20 && u <= 0x28FF)
+
+int CountWords(CPDF_TextObject* pTextObj) {
+  if (!pTextObj)
+    return 0;
+
+  CPDF_Font* pFont = pTextObj->GetFont();
+  if (!pFont)
+    return 0;
+
+  bool bIsLatin = false;
+  int nWords = 0;
+  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
+    uint32_t charcode = CPDF_Font::kInvalidCharCode;
+    float kerning;
+
+    pTextObj->GetCharInfo(i, &charcode, &kerning);
+    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
+
+    uint16_t unicode = 0;
+    if (swUnicode.GetLength() > 0)
+      unicode = swUnicode[0];
+
+    if (ISLATINWORD(unicode) && bIsLatin)
+      continue;
+
+    bIsLatin = ISLATINWORD(unicode);
+    if (unicode != 0x20)
+      nWords++;
+  }
+
+  return nWords;
+}
+
+WideString GetObjWordStr(CPDF_TextObject* pTextObj, int nWordIndex) {
+  WideString swRet;
+
+  CPDF_Font* pFont = pTextObj->GetFont();
+  if (!pFont)
+    return L"";
+
+  int nWords = 0;
+  bool bIsLatin = false;
+
+  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
+    uint32_t charcode = CPDF_Font::kInvalidCharCode;
+    float kerning;
+
+    pTextObj->GetCharInfo(i, &charcode, &kerning);
+    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
+
+    uint16_t unicode = 0;
+    if (swUnicode.GetLength() > 0)
+      unicode = swUnicode[0];
+
+    if (ISLATINWORD(unicode) && bIsLatin) {
+    } else {
+      bIsLatin = ISLATINWORD(unicode);
+      if (unicode != 0x20)
+        nWords++;
+    }
+
+    if (nWords - 1 == nWordIndex)
+      swRet += unicode;
+  }
+
+  return swRet;
+}
+
+}  // namespace
 
 const JSPropertySpec CJS_Document::PropertySpecs[] = {
     {"ADBE", get_ADBE_static, set_ADBE_static},
@@ -135,8 +209,7 @@ CJS_Result CJS_Document::get_num_fields(CJS_Runtime* pRuntime) {
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  CPDF_InterForm* pPDFForm = pInterForm->GetInterForm();
+  CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   return CJS_Result::Success(pRuntime->NewNumber(
       static_cast<int>(pPDFForm->CountFields(WideString()))));
 }
@@ -246,8 +319,7 @@ CJS_Result CJS_Document::getField(
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   WideString wideName = pRuntime->ToWideString(params[0]);
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  CPDF_InterForm* pPDFForm = pInterForm->GetInterForm();
+  CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   if (pPDFForm->CountFields(wideName) <= 0)
     return CJS_Result::Success(pRuntime->NewUndefined());
 
@@ -278,8 +350,7 @@ CJS_Result CJS_Document::getNthFieldName(
   if (nIndex < 0)
     return CJS_Result::Failure(JSMessage::kValueError);
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  CPDF_InterForm* pPDFForm = pInterForm->GetInterForm();
+  CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   CPDF_FormField* pField = pPDFForm->GetField(nIndex, WideString());
   if (!pField)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
@@ -319,8 +390,8 @@ CJS_Result CJS_Document::mailForm(
   if (!m_pFormFillEnv->GetPermissions(FPDFPERM_EXTRACT_ACCESS))
     return CJS_Result::Failure(JSMessage::kPermissionError);
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  ByteString sTextBuf = pInterForm->ExportFormToFDFTextBuf();
+  CPDFSDK_InteractiveForm* pInteractiveForm = GetSDKInteractiveForm();
+  ByteString sTextBuf = pInteractiveForm->ExportFormToFDFTextBuf();
   if (sTextBuf.GetLength() == 0)
     return CJS_Result::Failure(L"Bad FDF format.");
 
@@ -415,9 +486,9 @@ CJS_Result CJS_Document::removeField(
     return CJS_Result::Failure(JSMessage::kPermissionError);
 
   WideString sFieldName = pRuntime->ToWideString(params[0]);
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
+  CPDFSDK_InteractiveForm* pInteractiveForm = GetSDKInteractiveForm();
   std::vector<CPDFSDK_Annot::ObservedPtr> widgets;
-  pInterForm->GetWidgets(sFieldName, &widgets);
+  pInteractiveForm->GetWidgets(sFieldName, &widgets);
   if (widgets.empty())
     return CJS_Result::Success();
 
@@ -440,15 +511,10 @@ CJS_Result CJS_Document::removeField(
     // do not create one. We may be in the process of tearing down the document
     // and creating a new pageview at this point will cause bad things.
     CPDFSDK_PageView* pPageView = m_pFormFillEnv->GetPageView(pPage, false);
-    if (pPageView) {
-#ifdef PDF_ENABLE_XFA
-      pPageView->DeleteAnnot(pWidget);
-#endif  // PDF_ENABLE_XFA
+    if (pPageView)
       pPageView->UpdateRects(aRefresh);
-    }
   }
   m_pFormFillEnv->SetChangeMark();
-
   return CJS_Result::Success();
 }
 
@@ -467,8 +533,7 @@ CJS_Result CJS_Document::resetForm(
     return CJS_Result::Failure(JSMessage::kPermissionError);
   }
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  CPDF_InterForm* pPDFForm = pInterForm->GetInterForm();
+  CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   if (params.empty()) {
     pPDFForm->ResetForm(NotificationOption::kNotify);
     m_pFormFillEnv->SetChangeMark();
@@ -544,13 +609,11 @@ CJS_Result CJS_Document::submitForm(
     aFields = pRuntime->ToArray(pRuntime->GetObjectProperty(pObj, L"aFields"));
   }
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  CPDF_InterForm* pPDFInterForm = pInterForm->GetInterForm();
-
+  CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   if (pRuntime->GetArrayLength(aFields) == 0 && bEmpty) {
-    if (pPDFInterForm->CheckRequiredFields(nullptr, true)) {
+    if (pPDFForm->CheckRequiredFields(nullptr, true)) {
       pRuntime->BeginBlock();
-      pInterForm->SubmitForm(strURL, false);
+      GetSDKInteractiveForm()->SubmitForm(strURL, false);
       pRuntime->EndBlock();
     }
     return CJS_Result::Success();
@@ -560,7 +623,6 @@ CJS_Result CJS_Document::submitForm(
   for (size_t i = 0; i < pRuntime->GetArrayLength(aFields); ++i) {
     WideString sName =
         pRuntime->ToWideString(pRuntime->GetArrayElement(aFields, i));
-    CPDF_InterForm* pPDFForm = pInterForm->GetInterForm();
     for (int j = 0, jsz = pPDFForm->CountFields(sName); j < jsz; ++j) {
       CPDF_FormField* pField = pPDFForm->GetField(j, sName);
       if (!bEmpty && pField->GetValue().IsEmpty())
@@ -570,9 +632,9 @@ CJS_Result CJS_Document::submitForm(
     }
   }
 
-  if (pPDFInterForm->CheckRequiredFields(&fieldObjects, true)) {
+  if (pPDFForm->CheckRequiredFields(&fieldObjects, true)) {
     pRuntime->BeginBlock();
-    pInterForm->SubmitFields(strURL, fieldObjects, true, !bFDF);
+    GetSDKInteractiveForm()->SubmitFields(strURL, fieldObjects, true, !bFDF);
     pRuntime->EndBlock();
   }
   return CJS_Result::Success();
@@ -682,8 +744,9 @@ CJS_Result CJS_Document::get_info(CJS_Runtime* pRuntime) {
   pRuntime->PutObjectProperty(pObj, L"Trapped",
                               pRuntime->NewString(cwTrapped.AsStringView()));
 
-  // It's to be compatible to non-standard info dictionary.
-  for (const auto& it : *pDictionary) {
+  // PutObjectProperty() calls below may re-enter JS and change info dict.
+  auto pCopy = pDictionary->Clone();
+  for (const auto& it : *ToDictionary(pCopy.get())) {
     const ByteString& bsKey = it.first;
     CPDF_Object* pValueObj = it.second.get();
     WideString wsKey = WideString::FromUTF8(bsKey.AsStringView());
@@ -908,9 +971,9 @@ CJS_Result CJS_Document::get_calculate(CJS_Runtime* pRuntime) {
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
+  CPDFSDK_InteractiveForm* pInteractiveForm = GetSDKInteractiveForm();
   return CJS_Result::Success(
-      pRuntime->NewBoolean(!!pInterForm->IsCalculateEnabled()));
+      pRuntime->NewBoolean(!!pInteractiveForm->IsCalculateEnabled()));
 }
 
 CJS_Result CJS_Document::set_calculate(CJS_Runtime* pRuntime,
@@ -918,8 +981,8 @@ CJS_Result CJS_Document::set_calculate(CJS_Runtime* pRuntime,
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CPDFSDK_InterForm* pInterForm = m_pFormFillEnv->GetInterForm();
-  pInterForm->EnableCalculate(pRuntime->ToBoolean(vp));
+  CPDFSDK_InteractiveForm* pInteractiveForm = GetSDKInteractiveForm();
+  pInteractiveForm->EnableCalculate(pRuntime->ToBoolean(vp));
   return CJS_Result::Success();
 }
 
@@ -1095,12 +1158,6 @@ CJS_Result CJS_Document::getLinks(
   return CJS_Result::Success();
 }
 
-bool CJS_Document::IsEnclosedInRect(CFX_FloatRect rect,
-                                    CFX_FloatRect LinkRect) {
-  return (rect.left <= LinkRect.left && rect.top <= LinkRect.top &&
-          rect.right >= LinkRect.right && rect.bottom >= LinkRect.bottom);
-}
-
 CJS_Result CJS_Document::addIcon(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
@@ -1206,7 +1263,7 @@ CJS_Result CJS_Document::calculateNow(
     return CJS_Result::Failure(JSMessage::kPermissionError);
   }
 
-  m_pFormFillEnv->GetInterForm()->OnCalculate(nullptr);
+  GetSDKInteractiveForm()->OnCalculate(nullptr);
   return CJS_Result::Success();
 }
 
@@ -1315,76 +1372,6 @@ CJS_Result CJS_Document::getPrintParams(
   return CJS_Result::Failure(JSMessage::kNotSupportedError);
 }
 
-#define ISLATINWORD(u) (u != 0x20 && u <= 0x28FF)
-
-int CJS_Document::CountWords(CPDF_TextObject* pTextObj) {
-  if (!pTextObj)
-    return 0;
-
-  CPDF_Font* pFont = pTextObj->GetFont();
-  if (!pFont)
-    return 0;
-
-  bool bIsLatin = false;
-  int nWords = 0;
-  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
-    uint32_t charcode = CPDF_Font::kInvalidCharCode;
-    float kerning;
-
-    pTextObj->GetCharInfo(i, &charcode, &kerning);
-    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
-
-    uint16_t unicode = 0;
-    if (swUnicode.GetLength() > 0)
-      unicode = swUnicode[0];
-
-    if (ISLATINWORD(unicode) && bIsLatin)
-      continue;
-
-    bIsLatin = ISLATINWORD(unicode);
-    if (unicode != 0x20)
-      nWords++;
-  }
-
-  return nWords;
-}
-
-WideString CJS_Document::GetObjWordStr(CPDF_TextObject* pTextObj,
-                                       int nWordIndex) {
-  WideString swRet;
-
-  CPDF_Font* pFont = pTextObj->GetFont();
-  if (!pFont)
-    return L"";
-
-  int nWords = 0;
-  bool bIsLatin = false;
-
-  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
-    uint32_t charcode = CPDF_Font::kInvalidCharCode;
-    float kerning;
-
-    pTextObj->GetCharInfo(i, &charcode, &kerning);
-    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
-
-    uint16_t unicode = 0;
-    if (swUnicode.GetLength() > 0)
-      unicode = swUnicode[0];
-
-    if (ISLATINWORD(unicode) && bIsLatin) {
-    } else {
-      bIsLatin = ISLATINWORD(unicode);
-      if (unicode != 0x20)
-        nWords++;
-    }
-
-    if (nWords - 1 == nWordIndex)
-      swRet += unicode;
-  }
-
-  return swRet;
-}
-
 CJS_Result CJS_Document::get_zoom(CJS_Runtime* pRuntime) {
   return CJS_Result::Success();
 }
@@ -1491,4 +1478,12 @@ void CJS_Document::DoFieldDelay(const WideString& sFieldName,
 
   for (const auto& pData : delayed_data)
     CJS_Field::DoDelay(m_pFormFillEnv.Get(), pData.get());
+}
+
+CPDF_InteractiveForm* CJS_Document::GetCoreInteractiveForm() {
+  return GetSDKInteractiveForm()->GetInteractiveForm();
+}
+
+CPDFSDK_InteractiveForm* CJS_Document::GetSDKInteractiveForm() {
+  return m_pFormFillEnv->GetInteractiveForm();
 }

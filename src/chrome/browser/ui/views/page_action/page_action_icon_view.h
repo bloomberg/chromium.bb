@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/widget/widget_observer.h"
 
 class CommandUpdater;
 
@@ -34,11 +33,13 @@ class BubbleDialogDelegateView;
 
 // Represents an inbuilt (as opposed to an extension) page action icon that
 // shows a bubble when clicked.
-// TODO(ellyjones): Convert this to subclass Button.
 class PageActionIconView : public IconLabelBubbleView {
  public:
   class Delegate {
    public:
+    // Gets the color to use for the ink highlight.
+    virtual SkColor GetPageActionInkDropColor() const = 0;
+
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
   };
 
@@ -49,16 +50,15 @@ class PageActionIconView : public IconLabelBubbleView {
 
   void set_icon_size(int size) { icon_size_ = size; }
 
-  // Invoked when a bubble for this icon is created. The PageActionIconView
-  // changes highlights based on this widget's visibility.
-  void OnBubbleWidgetCreated(views::Widget* bubble_widget);
-
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
 
   // Updates the icon state and associated bubble when the WebContents changes.
   // Returns true if there was a change.
   virtual bool Update();
+
+  // Retrieve the text to be used for a tooltip or accessible name.
+  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
 
  protected:
   enum ExecuteSource {
@@ -76,8 +76,6 @@ class PageActionIconView : public IconLabelBubbleView {
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const override;
 
-  SkColor GetTextColor() const override;
-
   // Enables or disables the associated command.
   // Returns true if the command is enabled.
   bool SetCommandEnabled(bool enabled) const;
@@ -92,6 +90,7 @@ class PageActionIconView : public IconLabelBubbleView {
   virtual void OnPressed(bool activated) {}
 
   // views::IconLabelBubbleView:
+  SkColor GetTextColor() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
@@ -109,8 +108,8 @@ class PageActionIconView : public IconLabelBubbleView {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -122,8 +121,10 @@ class PageActionIconView : public IconLabelBubbleView {
   // Gets the given vector icon in the correct color and size based on |active|.
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
-  // views::View:
+  // IconLabelBubbleView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnMdModeChanged() override;
+  void UpdateBorder() override;
 
   // Updates the icon image after some state has changed.
   void UpdateIconImage();
@@ -137,34 +138,7 @@ class PageActionIconView : public IconLabelBubbleView {
 
   bool active() const { return active_; }
 
-  // Retrieve the text to be used for a tooltip or accessible name.
-  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
-
  private:
-  class WidgetObserver : public views::WidgetObserver {
-   public:
-    explicit WidgetObserver(PageActionIconView* parent);
-    ~WidgetObserver() override;
-
-    void SetWidget(views::Widget* widget);
-
-   private:
-    // views::WidgetObserver:
-    void OnWidgetDestroying(views::Widget* widget) override;
-    void OnWidgetVisibilityChanged(views::Widget* widget,
-                                   bool visible) override;
-
-    PageActionIconView* const parent_;
-    ScopedObserver<views::Widget, views::WidgetObserver> scoped_observer_;
-    DISALLOW_COPY_AND_ASSIGN(WidgetObserver);
-  };
-
-  // Highlights the ink drop for the icon, used when the corresponding widget
-  // is visible.
-  void SetHighlighted(bool bubble_visible);
-
-  WidgetObserver widget_observer_;
-
   // The size of the icon image (excluding the ink drop).
   int icon_size_;
 

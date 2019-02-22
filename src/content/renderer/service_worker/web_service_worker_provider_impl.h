@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -41,6 +41,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   void RegisterServiceWorker(
       const blink::WebURL& web_pattern,
       const blink::WebURL& web_script_url,
+      blink::mojom::ScriptType script_type,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) override;
   void GetRegistration(
@@ -54,8 +55,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   bool ValidateScopeAndScriptURL(const blink::WebURL& pattern,
                                  const blink::WebURL& script_url,
                                  blink::WebString* error_message) override;
-  // Sets the ServiceWorkerContainer#controller for this provider. It's not
-  // used when this WebServiceWorkerProvider is for a service worker context.
+  // Sets the ServiceWorkerContainer#controller for this provider.
   void SetController(blink::mojom::ServiceWorkerObjectInfoPtr controller,
                      const std::set<blink::mojom::WebFeature>& features,
                      bool should_notify_controller_change);
@@ -66,8 +66,6 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   // For UseCounter purposes. Called when the controller service worker used a
   // feature. It is counted as if it were a feature usage from the page.
   void CountFeature(blink::mojom::WebFeature feature);
-
-  int provider_id() const;
 
  private:
   void OnRegistered(

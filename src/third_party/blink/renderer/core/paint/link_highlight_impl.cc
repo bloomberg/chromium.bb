@@ -188,7 +188,7 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   DCHECK(quads.size());
   Path new_path;
 
-  for (size_t quad_index = 0; quad_index < quads.size(); ++quad_index) {
+  for (wtf_size_t quad_index = 0; quad_index < quads.size(); ++quad_index) {
     FloatQuad absolute_quad = quads[quad_index];
 
     // Scrolling content layers have the same offset from layout object as the

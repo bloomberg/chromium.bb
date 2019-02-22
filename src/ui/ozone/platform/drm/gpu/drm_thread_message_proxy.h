@@ -94,7 +94,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
                               display::HDCPState state) const;
   void OnSetHDCPStateCallback(int64_t display_id, bool success) const;
 
-  DrmThread* drm_thread_;
+  DrmThread* drm_thread_ = nullptr;
 
   IPC::Sender* sender_ = nullptr;
 

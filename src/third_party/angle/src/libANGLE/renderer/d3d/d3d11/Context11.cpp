@@ -170,10 +170,7 @@ TextureImpl *Context11::createTexture(const gl::TextureState &state)
         case gl::TextureType::_2DMultisample:
             return new TextureD3D_2DMultisample(state, mRenderer);
         case gl::TextureType::_2DMultisampleArray:
-            // TODO(http://anglebug.com/2775): Proper implementation of D3D multisample array
-            // textures. Right now multisample array textures are not supported but we need to
-            // create some object so we don't end up with asserts when using the zero texture array.
-            return new TextureD3D_2DMultisample(state, mRenderer);
+            return new TextureD3D_2DMultisampleArray(state, mRenderer);
         default:
             UNREACHABLE();
     }
@@ -243,10 +240,10 @@ gl::Error Context11::finish(const gl::Context *context)
     return mRenderer->finish(this);
 }
 
-gl::Error Context11::drawArrays(const gl::Context *context,
-                                gl::PrimitiveMode mode,
-                                GLint first,
-                                GLsizei count)
+angle::Result Context11::drawArrays(const gl::Context *context,
+                                    gl::PrimitiveMode mode,
+                                    GLint first,
+                                    GLsizei count)
 {
     const gl::DrawCallParams &drawCallParams = context->getParams<gl::DrawCallParams>();
     ASSERT(!drawCallParams.isDrawElements() && !drawCallParams.isDrawIndirect());
@@ -412,10 +409,12 @@ void Context11::popDebugGroup()
     popGroupMarker();
 }
 
-gl::Error Context11::syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits)
+angle::Result Context11::syncState(const gl::Context *context,
+                                   const gl::State::DirtyBits &dirtyBits,
+                                   const gl::State::DirtyBits &bitMask)
 {
     mRenderer->getStateManager()->syncState(context, dirtyBits);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 GLint Context11::getGPUDisjoint()
@@ -485,8 +484,7 @@ gl::Error Context11::dispatchCompute(const gl::Context *context,
 
 gl::Error Context11::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    return mRenderer->dispatchComputeIndirect(context, indirect);
 }
 
 angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *context,
@@ -511,15 +509,14 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     }
 
     // Load the compiler if necessary and recompile the programs.
-    ANGLE_TRY(mRenderer->ensureHLSLCompilerInitialized(context));
+    ANGLE_TRY(mRenderer->ensureHLSLCompilerInitialized(this));
 
     gl::InfoLog infoLog;
 
     if (recompileVS)
     {
         ShaderExecutableD3D *vertexExe = nullptr;
-        ANGLE_TRY(
-            programD3D->getVertexExecutableForCachedInputLayout(context, &vertexExe, &infoLog));
+        ANGLE_TRY(programD3D->getVertexExecutableForCachedInputLayout(this, &vertexExe, &infoLog));
         if (!programD3D->hasVertexExecutableForCachedInputLayout())
         {
             ASSERT(infoLog.getLength() > 0);
@@ -531,8 +528,8 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     if (recompileGS)
     {
         ShaderExecutableD3D *geometryExe = nullptr;
-        ANGLE_TRY(programD3D->getGeometryExecutableForPrimitiveType(context, drawMode, &geometryExe,
-                                                                    &infoLog));
+        ANGLE_TRY(programD3D->getGeometryExecutableForPrimitiveType(
+            this, mState.getCaps(), drawMode, &geometryExe, &infoLog));
         if (!programD3D->hasGeometryExecutableForPrimitiveType(drawMode))
         {
             ASSERT(infoLog.getLength() > 0);
@@ -544,8 +541,7 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     if (recompilePS)
     {
         ShaderExecutableD3D *pixelExe = nullptr;
-        ANGLE_TRY(
-            programD3D->getPixelExecutableForCachedOutputLayout(context, &pixelExe, &infoLog));
+        ANGLE_TRY(programD3D->getPixelExecutableForCachedOutputLayout(this, &pixelExe, &infoLog));
         if (!programD3D->hasPixelExecutableForCachedOutputLayout())
         {
             ASSERT(infoLog.getLength() > 0);

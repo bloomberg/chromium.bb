@@ -17,3 +17,6 @@ device-orientation-success.js:32 alpha: 90 beta: 0 gamma: 0
 device-orientation-success.js:39 quaternion: 0.000000,0.000000,0.707107,0.707107
 device-orientation-success.js:32 alpha: 1.1 beta: 2.2 gamma: 3.3
 
+Running: reloadPageAndOverride
+Page reloaded.
+

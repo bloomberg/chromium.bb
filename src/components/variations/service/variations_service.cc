@@ -12,7 +12,9 @@
 
 #include "base/base64.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/build_time.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -122,6 +124,7 @@ std::string GetRestrictParameterPref(VariationsServiceClient* client,
   return policy_pref_service->GetString(prefs::kVariationsRestrictParameter);
 }
 
+// Reported to UMA, keep in sync with enums.xml and don't renumber entries.
 enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_ALLOWED,
   RESOURCE_REQUESTS_NOT_ALLOWED,
@@ -129,6 +132,7 @@ enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_NOT_ALLOWED_EULA_NOT_ACCEPTED,
   RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN,
   RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED,
+  RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_STATE_NOT_INITIALIZED,
   RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE,
 };
 
@@ -157,6 +161,9 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
       return RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN;
     case ResourceRequestAllowedNotifier::DISALLOWED_COMMAND_LINE_DISABLED:
       return RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED;
+    case ResourceRequestAllowedNotifier::
+        DISALLOWED_NETWORK_STATE_NOT_INITIALIZED:
+      return RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_STATE_NOT_INITIALIZED;
     case ResourceRequestAllowedNotifier::ALLOWED:
       return RESOURCE_REQUESTS_ALLOWED;
   }
@@ -249,6 +256,14 @@ std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
   return nullptr;
 }
 
+// Called when the VariationsSeedStore first stores a seed.
+void OnInitialSeedStored() {
+#if defined(OS_ANDROID)
+  android::MarkVariationsSeedAsStored();
+  android::ClearJavaFirstRunPrefs();
+#endif
+}
+
 }  // namespace
 
 VariationsService::VariationsService(
@@ -269,8 +284,11 @@ VariationsService::VariationsService(
                          local_state),
       field_trial_creator_(local_state,
                            client_.get(),
-                           ui_string_overrider,
-                           MaybeImportFirstRunSeed(local_state)),
+                           std::make_unique<VariationsSeedStore>(
+                               local_state,
+                               MaybeImportFirstRunSeed(local_state),
+                               base::BindOnce(&OnInitialSeedStored)),
+                           ui_string_overrider),
       weak_ptr_factory_(this) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
@@ -281,13 +299,20 @@ VariationsService::~VariationsService() {
 
 void VariationsService::PerformPreMainMessageLoopStartup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(field_trial_creator_.IsOverrideResourceMapEmpty());
 
   InitResourceRequestedAllowedNotifier();
 
+// Android instead calls OnAppEnterForeground() which then calls
+// StartRepeatedVariationsSeedFetch(). This is too early to do it on Android
+// because at this point the |restrict_mode_| hasn't been set yet. See also
+// the CHECK in SetRestrictMode().
+#if !defined(OS_ANDROID)
   if (!IsFetchingEnabled())
     return;
 
   StartRepeatedVariationsSeedFetch();
+#endif  // !defined(OS_ANDROID)
 }
 
 std::string VariationsService::LoadPermanentConsistencyCountry(
@@ -335,8 +360,10 @@ void VariationsService::OnAppEnterForeground() {
 void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // This should be called before the server URL has been computed.
-  DCHECK(variations_server_url_.is_empty());
+  // This should be called before the server URL has been computed. Note: This
+  // uses a CHECK because this is relevant for the behavior in release official
+  // builds that talk to the variations server - which don't enable DCHECKs.
+  CHECK(variations_server_url_.is_empty());
   restrict_mode_ = restrict_mode;
 }
 
@@ -385,6 +412,26 @@ GURL VariationsService::GetVariationsServerURL(
   return server_url;
 }
 
+void VariationsService::EnsureLocaleEquals(const std::string& locale) {
+#if defined(OS_CHROMEOS)
+  // Chrome OS may switch language on the fly.
+  DCHECK_EQ(locale, field_trial_creator_.application_locale());
+#else
+
+#if defined(OS_ANDROID)
+  // TODO(asvitkine): Speculative early return to silence CHECK failures on
+  // Android, see crbug.com/912320.
+  if (locale.empty())
+    return;
+#endif
+
+  // Uses a CHECK rather than a DCHECK to ensure that issues are caught since
+  // problems in this area may only appear in the wild due to official builds
+  // and end user machines.
+  CHECK_EQ(locale, field_trial_creator_.application_locale());
+#endif
+}
+
 // static
 std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
   return kDefaultServerUrl;
@@ -419,12 +466,15 @@ std::unique_ptr<VariationsService> VariationsService::Create(
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager,
     const char* disable_network_switch,
-    const UIStringOverrider& ui_string_overrider) {
+    const UIStringOverrider& ui_string_overrider,
+    web_resource::ResourceRequestAllowedNotifier::NetworkConnectionTrackerGetter
+        network_connection_tracker_getter) {
   std::unique_ptr<VariationsService> result;
   result.reset(new VariationsService(
       std::move(client),
       std::make_unique<web_resource::ResourceRequestAllowedNotifier>(
-          local_state, disable_network_switch),
+          local_state, disable_network_switch,
+          std::move(network_connection_tracker_getter)),
       local_state, state_manager, ui_string_overrider));
   return result;
 }
@@ -478,8 +528,7 @@ void VariationsService::InitResourceRequestedAllowedNotifier() {
   // ResourceRequestAllowedNotifier does not install an observer if there is no
   // NetworkChangeNotifier, which results in never being notified of changes to
   // network status.
-  DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
-  resource_request_allowed_notifier_->Init(this);
+  resource_request_allowed_notifier_->Init(this, false /* leaky */);
 }
 
 bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
@@ -802,6 +851,10 @@ bool VariationsService::SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures,
       unforceable_field_trials, variation_ids, CreateLowEntropyProvider(),
       std::move(feature_list), platform_field_trials, &safe_seed_manager_);
+}
+
+void VariationsService::OverrideCachedUIStrings() {
+  field_trial_creator_.OverrideCachedUIStrings();
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {

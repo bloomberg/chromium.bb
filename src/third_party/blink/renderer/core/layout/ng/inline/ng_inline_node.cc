@@ -235,33 +235,9 @@ NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
     block->ResetNGInlineNodeData();
 }
 
-bool NGInlineNode::InLineHeightQuirksMode() const {
-  return GetDocument().InLineHeightQuirksMode();
-}
-
-bool NGInlineNode::CanContainFirstFormattedLine() const {
-  DCHECK(GetLayoutBlockFlow());
-  return GetLayoutBlockFlow()->CanContainFirstFormattedLine();
-}
-
-NGInlineNodeData* NGInlineNode::MutableData() {
-  return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-}
-
 bool NGInlineNode::IsPrepareLayoutFinished() const {
   const NGInlineNodeData* data = ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   return data && !data->text_content.IsNull();
-}
-
-const NGInlineNodeData& NGInlineNode::Data() const {
-  DCHECK(IsPrepareLayoutFinished() &&
-         !GetLayoutBlockFlow()->NeedsCollectInlines());
-  return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-}
-
-void NGInlineNode::InvalidatePrepareLayoutForTest() {
-  GetLayoutBlockFlow()->ResetNGInlineNodeData();
-  DCHECK(!IsPrepareLayoutFinished());
 }
 
 void NGInlineNode::PrepareLayoutIfNeeded() {
@@ -677,7 +653,8 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
 
 // Clear associated fragments for all LayoutObjects. They are associated when
 // NGPaintFragment is constructed.
-void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
+void NGInlineNode::ClearAssociatedFragments(
+    const NGInlineBreakToken* break_token) {
   if (!IsPrepareLayoutFinished())
     return;
 
@@ -700,17 +677,19 @@ void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
 
 scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
-    NGBreakToken* break_token) {
+    const NGBreakToken* break_token,
+    NGInlineChildLayoutContext* context) {
   bool needs_clear_fragments = IsPrepareLayoutFinished();
   PrepareLayoutIfNeeded();
 
-  NGInlineBreakToken* inline_break_token = ToNGInlineBreakToken(break_token);
+  const NGInlineBreakToken* inline_break_token =
+      ToNGInlineBreakToken(break_token);
   if (needs_clear_fragments && !constraint_space.IsIntermediateLayout()) {
     ClearAssociatedFragments(inline_break_token);
   }
 
-  NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
-                                    inline_break_token);
+  NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
+                                    context);
   return algorithm.Layout();
 }
 
@@ -732,7 +711,8 @@ static LayoutUnit ComputeContentSize(
                                   node.InitialContainingBlockSize())
       << constraint_space->InitialContainingBlockSize() << " vs "
       << node.InitialContainingBlockSize();
-  scoped_refptr<NGConstraintSpace> space =
+
+  NGConstraintSpace space =
       NGConstraintSpaceBuilder(writing_mode, icb_size)
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
@@ -742,27 +722,24 @@ static LayoutUnit ComputeContentSize(
   Vector<NGPositionedFloat> positioned_floats;
   NGUnpositionedFloatVector unpositioned_floats;
 
-  scoped_refptr<NGInlineBreakToken> break_token;
   NGExclusionSpace empty_exclusion_space;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
   LayoutUnit previous_floats_inline_size =
       input.float_left_inline_size + input.float_right_inline_size;
   DCHECK_GE(previous_floats_inline_size, 0);
-  while (!break_token || !break_token->IsFinished()) {
+  NGLineBreaker line_breaker(
+      node, mode, space, &positioned_floats, &unpositioned_floats,
+      nullptr /* container_builder */, &empty_exclusion_space, 0u,
+      line_opportunity, nullptr /* break_token */);
+  do {
     unpositioned_floats.clear();
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(
-        node, mode, *space, &positioned_floats, &unpositioned_floats,
-        nullptr /* container_builder */, &empty_exclusion_space, 0u,
-        line_opportunity, break_token.get());
     line_breaker.NextLine(&line_info);
-
     if (line_info.Results().IsEmpty())
       break;
 
-    break_token = line_breaker.CreateBreakToken(line_info, nullptr);
     LayoutUnit inline_size = line_info.Width();
     DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
 
@@ -786,14 +763,14 @@ static LayoutUnit ComputeContentSize(
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
       // We'll need extrinsic sizing data when computing min/max for orthogonal
       // flow roots.
-      scoped_refptr<NGConstraintSpace> extrinsic_constraint_space;
+      NGConstraintSpace extrinsic_constraint_space;
       const NGConstraintSpace* optional_constraint_space = nullptr;
       if (!IsParallelWritingMode(container_writing_mode,
                                  float_node.Style().GetWritingMode())) {
         DCHECK(constraint_space);
         extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
             *constraint_space, input.extrinsic_block_size, float_node);
-        optional_constraint_space = extrinsic_constraint_space.get();
+        optional_constraint_space = &extrinsic_constraint_space;
       }
 
       MinMaxSize child_sizes = ComputeMinAndMaxContentContribution(
@@ -828,7 +805,7 @@ static LayoutUnit ComputeContentSize(
     // NOTE: floats_inline_size will be zero for the min-content calculation,
     // and will just take the inline size of the un-breakable line.
     result = std::max(result, inline_size + floats_inline_size);
-  }
+  } while (!line_breaker.IsFinished());
 
   return result;
 }

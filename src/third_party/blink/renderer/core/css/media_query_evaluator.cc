@@ -118,7 +118,7 @@ bool MediaQueryEvaluator::Eval(
   const ExpressionHeapVector& expressions = query.Expressions();
   // Iterate through expressions, stop if any of them eval to false (AND
   // semantics).
-  size_t i = 0;
+  wtf_size_t i = 0;
   for (; i < expressions.size(); ++i) {
     bool expr_result = Eval(expressions.at(i));
     if (viewport_dependent_media_query_results &&
@@ -149,7 +149,7 @@ bool MediaQueryEvaluator::Eval(
 
   // Iterate over queries, stop if any of them eval to true (OR semantics).
   bool result = false;
-  for (size_t i = 0; i < queries.size() && !result; ++i)
+  for (wtf_size_t i = 0; i < queries.size() && !result; ++i)
     result = Eval(*queries[i], viewport_dependent_media_query_results,
                   device_dependent_media_query_results);
 

@@ -67,6 +67,10 @@ void NativeViewHost::SetNativeViewSize(const gfx::Size& size) {
   InvalidateLayout();
 }
 
+gfx::NativeView NativeViewHost::GetNativeViewContainer() const {
+  return native_view_ ? native_wrapper_->GetNativeViewContainer() : nullptr;
+}
+
 void NativeViewHost::NativeViewDestroyed() {
   // Detach so we can clear our state and notify the native_wrapper_ to release
   // ref on the native view.
@@ -225,7 +229,7 @@ void NativeViewHost::ClearFocus() {
 
   Widget::Widgets widgets;
   Widget::GetAllChildWidgets(native_view(), &widgets);
-  for (Widget::Widgets::iterator i = widgets.begin(); i != widgets.end(); ++i) {
+  for (auto i = widgets.begin(); i != widgets.end(); ++i) {
     focus_manager->ViewRemoved((*i)->GetRootView());
     if (!focus_manager->GetFocusedView())
       return;

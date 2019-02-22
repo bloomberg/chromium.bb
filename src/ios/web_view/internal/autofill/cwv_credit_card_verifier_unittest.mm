@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +51,8 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
   void OnUnmaskResponse(const UnmaskResponse& unmask_response) override {
     unmask_response_ = unmask_response;
     // Fake the actual verification and just respond with success.
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
           autofill::AutofillClient::PaymentsRpcResult result =
               autofill::AutofillClient::SUCCESS;
           [credit_card_verifier_ didReceiveUnmaskVerificationResult:result];

@@ -29,7 +29,7 @@ class UtilsUnittest : public ModuleSystemTest {
 
     // Native bindings set up the chrome.runtime accessor, so we don't need to
     // stub it out.
-    if (base::FeatureList::IsEnabled(features::kNativeCrxBindings))
+    if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings))
       return;
 
     gin::Dictionary chrome(env()->isolate(), env()->CreateGlobal("chrome"));

@@ -36,15 +36,17 @@
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
@@ -76,7 +78,7 @@ struct GlobalScopeCreationParams;
 //    If the running task is for debugger, it's guaranteed to finish without
 //    any interruptions.
 //  - Queued tasks never run.
-class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
+class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
  public:
   // Represents how this thread is terminated. Used for UMA. Append only.
   enum class ExitCode {
@@ -105,6 +107,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Posts a task to evaluate a top-level classic script on the worker thread.
   // Called on the main thread after Start().
   void EvaluateClassicScript(const KURL& script_url,
+                             AccessControlStatus access_control_status,
                              const String& source_code,
                              std::unique_ptr<Vector<char>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
@@ -133,9 +136,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // workers are shut down. Please be careful when using this function, because
   // after the synchronous termination any V8 APIs may suddenly start to return
   // empty handles and it may cause crashes.
+  // WARNING: This is not safe if a nested worker is running.
   static void TerminateAllWorkersForTesting();
 
-  // WebThread::TaskObserver.
+  // Thread::TaskObserver.
   void WillProcessTask() override;
   void DidProcessTask() override;
 
@@ -152,17 +156,24 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
-  // Only callable on the main thread.
-  void AppendDebuggerTask(CrossThreadClosure);
+  // Only constructible on the main thread.
+  class CORE_EXPORT ScopedDebuggerTask {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ScopedDebuggerTask(WorkerThread*);
+    ~ScopedDebuggerTask();
+
+   private:
+    WorkerThread* thread_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedDebuggerTask);
+  };
+  InspectorTaskRunner* GetInspectorTaskRunner();
 
   // Callable on both the main thread and the worker thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
     return devtools_worker_token_;
   }
-
-  // Runs only debugger tasks while paused in debugger.
-  void StartRunningDebuggerTasksOnPauseOnWorkerThread();
-  void StopRunningDebuggerTasksOnPauseOnWorkerThread();
 
   // Can be called only on the worker thread, WorkerOrWorkletGlobalScope
   // and WorkerInspectorController are not thread safe.
@@ -172,9 +183,19 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Number of active worker threads.
   static unsigned WorkerThreadCount();
 
-  // Returns a set of all worker threads. This must be called only on the main
-  // thread and the returned set must not be stored for future use.
-  static HashSet<WorkerThread*>& WorkerThreads();
+  // Runs |function| with |parameters| on each worker thread, and
+  // adds the current WorkerThread* as the first parameter |function|.
+  template <typename FunctionType, typename... Parameters>
+  static void CallOnAllWorkerThreads(FunctionType function,
+                                     Parameters&&... parameters) {
+    MutexLocker lock(ThreadSetMutex());
+    for (WorkerThread* thread : WorkerThreads()) {
+      PostCrossThreadTask(
+          *thread->GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+          CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
+                          parameters...));
+    }
+  }
 
   int GetWorkerThreadId() const { return worker_thread_id_; }
 
@@ -227,6 +248,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
 
+  static HashSet<WorkerThread*>& WorkerThreads();
+  static Mutex& ThreadSetMutex();
+
   // Represents the state of this worker thread.
   enum class ThreadState {
     kNotStarted,
@@ -270,6 +294,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
+      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
@@ -294,9 +319,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Set on the main thread.
   bool requested_to_terminate_ GUARDED_BY(mutex_) = false;
 
-  // Accessed only on the worker thread.
-  bool paused_in_debugger_ = false;
-
   ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
   ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
@@ -304,6 +326,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   const base::UnguessableToken devtools_worker_token_;
+  int debugger_task_counter_ GUARDED_BY(mutex_) = 0;
 
   WorkerReportingProxy& worker_reporting_proxy_;
 

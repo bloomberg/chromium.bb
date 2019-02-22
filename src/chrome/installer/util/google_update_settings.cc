@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,18 +22,12 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/install_static/install_details.h"
-#include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
-using install_static::InstallDetails;
 using installer::InstallationState;
 
 const wchar_t GoogleUpdateSettings::kPoliciesKey[] =
@@ -71,7 +64,7 @@ bool ReadGoogleUpdateStrKeyFromRoot(HKEY root,
                                     const wchar_t* const name,
                                     base::string16* value) {
   RegKey key;
-  return key.Open(root, InstallDetails::Get().GetClientStateKeyPath().c_str(),
+  return key.Open(root, install_static::GetClientStateKeyPath().c_str(),
                   KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.ReadValue(name, value) == ERROR_SUCCESS;
 }
@@ -113,7 +106,7 @@ bool WriteGoogleUpdateAggregateNumKeyInternal(const wchar_t* const name,
     return false;
   }
 
-  base::string16 reg_path(InstallDetails::Get().GetClientStateMediumKeyPath());
+  base::string16 reg_path(install_static::GetClientStateMediumKeyPath());
   reg_path.append(L"\\").append(name);
   RegKey key;
   if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
@@ -131,7 +124,7 @@ bool WriteUserGoogleUpdateStrKey(const wchar_t* const name,
                                  const base::string16& value) {
   RegKey key;
   return key.Create(HKEY_CURRENT_USER,
-                    InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                    install_static::GetClientStateKeyPath().c_str(),
                     KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.WriteValue(name, value.c_str()) == ERROR_SUCCESS;
 }
@@ -156,7 +149,7 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
   RegKey key;
   auto result = key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
                                                            : HKEY_CURRENT_USER,
-                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         install_static::GetClientStateKeyPath().c_str(),
                          KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
     return true;  // The key doesn't exist; consider the value cleared.
@@ -177,7 +170,7 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
 bool RemoveUserGoogleUpdateStrKey(const wchar_t* const name) {
   RegKey key;
   auto result = key.Open(HKEY_CURRENT_USER,
-                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         install_static::GetClientStateKeyPath().c_str(),
                          KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
     return true;  // The key doesn't exist; consider the value cleared.
@@ -194,8 +187,7 @@ bool RemoveUserGoogleUpdateStrKey(const wchar_t* const name) {
 bool InitChannelInfo(bool system_install,
                      installer::ChannelInfo* channel_info) {
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  RegKey key(root_key, dist->GetStateKey().c_str(),
+  RegKey key(root_key, install_static::GetClientStateKeyPath().c_str(),
              KEY_QUERY_VALUE | KEY_WOW64_32KEY);
   return channel_info->Initialize(key);
 }
@@ -221,6 +213,44 @@ bool GetUpdatePolicyFromDword(
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+// Returns the stats consent tristate held in the registry keys given by the two
+// functions |state_key_fn_ptr| and |state_medium_key_fn_ptr|. The state is read
+// from the ClientState key in HKCU for user-level installs, and from either the
+// ClientStateMedium key or the ClientState key in HKLM for system-level
+// installs.
+google_update::Tristate GetCollectStatsConsentImpl(
+    decltype(&install_static::GetClientStateKeyPath) state_key_fn_ptr,
+    decltype(
+        &install_static::GetClientStateMediumKeyPath) state_medium_key_fn_ptr) {
+  const bool system_install = install_static::IsSystemInstall();
+  DWORD value = google_update::TRISTATE_NONE;
+  bool have_value = false;
+  RegKey key;
+  const REGSAM kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
+
+  // For system-level installs, try ClientStateMedium first.
+  have_value = system_install &&
+               key.Open(HKEY_LOCAL_MACHINE, state_medium_key_fn_ptr().c_str(),
+                        kAccess) == ERROR_SUCCESS &&
+               key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
+                   ERROR_SUCCESS;
+
+  // Otherwise, try ClientState.
+  if (!have_value) {
+    have_value =
+        key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+                 state_key_fn_ptr().c_str(), kAccess) == ERROR_SUCCESS &&
+        key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
+            ERROR_SUCCESS;
+  }
+
+  if (!have_value)
+    return google_update::TRISTATE_NONE;
+
+  return value == google_update::TRISTATE_TRUE ? google_update::TRISTATE_TRUE
+                                               : google_update::TRISTATE_FALSE;
+}
+
 }  // namespace
 
 // TODO(grt): Remove this now that it has no added value.
@@ -236,63 +266,22 @@ GoogleUpdateSettings::CollectStatsConsentTaskRunner() {
 }
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
-  return GetCollectStatsConsentAtLevel(IsSystemInstall());
-}
-
-bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
-  return SetCollectStatsConsentAtLevel(IsSystemInstall(), consented);
-}
-
-bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
-  return GetCollectStatsConsentForApp(system_install,
-                                      BrowserDistribution::GetDistribution()
-                                          ->GetAppRegistrationData()) ==
+  return GetCollectStatsConsentImpl(
+             &install_static::GetClientStateKeyPath,
+             &install_static::GetClientStateMediumKeyPath) ==
          google_update::TRISTATE_TRUE;
 }
 
-google_update::Tristate GoogleUpdateSettings::GetCollectStatsConsentForApp(
-    bool system_install,
-    const AppRegistrationData& reg_data) {
-  RegKey key;
-  DWORD value = google_update::TRISTATE_NONE;
-  bool have_value = false;
-  const REGSAM kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
-
-  // For system-level installs, try ClientStateMedium first.
-  have_value =
-      system_install &&
-      key.Open(HKEY_LOCAL_MACHINE, reg_data.GetStateMediumKey().c_str(),
-               kAccess) == ERROR_SUCCESS &&
-      key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
-          ERROR_SUCCESS;
-
-  // Otherwise, try ClientState.
-  if (!have_value) {
-    have_value =
-        key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                 reg_data.GetStateKey().c_str(), kAccess) == ERROR_SUCCESS &&
-        key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
-            ERROR_SUCCESS;
-  }
-
-  if (!have_value)
-    return google_update::TRISTATE_NONE;
-
-  return value == google_update::TRISTATE_TRUE ? google_update::TRISTATE_TRUE
-                                               : google_update::TRISTATE_FALSE;
-}
-
-// static
-bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
-                                                         bool consented) {
+bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   DWORD value =
       consented ? google_update::TRISTATE_TRUE : google_update::TRISTATE_FALSE;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   // Write to ClientStateMedium for system-level; ClientState otherwise.
+  const bool system_install = install_static::IsSystemInstall();
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  base::string16 reg_path =
-      system_install ? dist->GetStateMediumKey() : dist->GetStateKey();
+  base::string16 reg_path = system_install
+                                ? install_static::GetClientStateMediumKeyPath()
+                                : install_static::GetClientStateKeyPath();
   RegKey key;
   LONG result = key.Create(
       root_key, reg_path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
@@ -311,6 +300,13 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
     StoreMetricsClientInfo(metrics::ClientInfo());
 
   return (result == ERROR_SUCCESS);
+}
+
+google_update::Tristate
+GoogleUpdateSettings::GetCollectStatsConsentForBinaries() {
+  return GetCollectStatsConsentImpl(
+      &install_static::GetClientStateKeyPathForBinaries,
+      &install_static::GetClientStateMediumKeyPathForBinaries);
 }
 
 // static
@@ -370,19 +366,18 @@ void GoogleUpdateSettings::StoreMetricsClientInfo(
 }
 
 // EULA consent is only relevant for system-level installs.
-bool GoogleUpdateSettings::SetEULAConsent(
+bool GoogleUpdateSettings::SetEulaConsent(
     const InstallationState& machine_state,
-    BrowserDistribution* dist,
     bool consented) {
-  DCHECK(dist);
   const DWORD eula_accepted = consented ? 1 : 0;
   const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
   RegKey key;
 
   // Write the consent value into the product's ClientStateMedium key.
-  return key.Create(HKEY_LOCAL_MACHINE, dist->GetStateMediumKey().c_str(),
+  return key.Create(HKEY_LOCAL_MACHINE,
+                    install_static::GetClientStateMediumKeyPath().c_str(),
                     kAccess) == ERROR_SUCCESS &&
-         key.WriteValue(google_update::kRegEULAAceptedField, eula_accepted) ==
+         key.WriteValue(google_update::kRegEulaAceptedField, eula_accepted) ==
              ERROR_SUCCESS;
 }
 
@@ -718,15 +713,6 @@ base::string16 GoogleUpdateSettings::GetDownloadPreference() {
   return base::string16();
 }
 
-void GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms() {
-  bool is_overridden = false;
-  const UpdatePolicy update_policy =
-      GetAppUpdatePolicy(install_static::GetAppGuid(), &is_overridden);
-  UMA_HISTOGRAM_BOOLEAN("GoogleUpdate.UpdatePolicyIsOverridden", is_overridden);
-  UMA_HISTOGRAM_ENUMERATION("GoogleUpdate.EffectivePolicy", update_policy,
-                            UPDATE_POLICIES_COUNT);
-}
-
 base::string16 GoogleUpdateSettings::GetUninstallCommandLine(
     bool system_install) {
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -856,15 +842,13 @@ bool GoogleUpdateSettings::GetUpdateDetail(ProductData* data) {
 }
 
 bool GoogleUpdateSettings::SetExperimentLabels(
-    bool system_install,
     const base::string16& experiment_labels) {
-  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  // Use the browser distribution and install level to write to the correct
-  // client state/app guid key.
-  bool success = false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 client_state_path(system_install ? dist->GetStateMediumKey()
-                                                  : dist->GetStateKey());
+  const bool system_install = install_static::IsSystemInstall();
+  const HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  // Use install level to write to the correct client state/app guid key.
+  base::string16 client_state_path(
+      system_install ? install_static::GetClientStateMediumKeyPath()
+                     : install_static::GetClientStateKeyPath());
   RegKey client_state(reg_root, client_state_path.c_str(),
                       KEY_SET_VALUE | KEY_WOW64_32KEY);
   // It is possible that the registry keys do not yet exist or have not yet
@@ -872,24 +856,20 @@ bool GoogleUpdateSettings::SetExperimentLabels(
   if (!client_state.Valid())
     return false;
   if (experiment_labels.empty()) {
-    success = client_state.DeleteValue(google_update::kExperimentLabels) ==
-              ERROR_SUCCESS;
-  } else {
-    success =
-        client_state.WriteValue(google_update::kExperimentLabels,
-                                experiment_labels.c_str()) == ERROR_SUCCESS;
+    return client_state.DeleteValue(google_update::kExperimentLabels) ==
+           ERROR_SUCCESS;
   }
-
-  return success;
+  return client_state.WriteValue(google_update::kExperimentLabels,
+                                 experiment_labels.c_str()) == ERROR_SUCCESS;
 }
 
 bool GoogleUpdateSettings::ReadExperimentLabels(
-    bool system_install,
     base::string16* experiment_labels) {
-  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const bool system_install = install_static::IsSystemInstall();
+  const HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   base::string16 client_state_path(
-      system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
+      system_install ? install_static::GetClientStateMediumKeyPath()
+                     : install_static::GetClientStateKeyPath());
 
   RegKey client_state;
   LONG result = client_state.Open(

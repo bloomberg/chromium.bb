@@ -36,8 +36,8 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "v8/include/v8-inspector.h"
@@ -48,8 +48,8 @@ using protocol::Response;
 
 namespace {
 
-std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
-    const FloatRect& rect) {
+std::unique_ptr<protocol::DOM::Rect> BuildRectForLayoutRect(
+    const LayoutRect& rect) {
   return protocol::DOM::Rect::create()
       .setX(rect.X())
       .setY(rect.Y())
@@ -58,8 +58,8 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
       .build();
 }
 
-std::unique_ptr<protocol::Array<double>> BuildRectForFloatRect2(
-    const FloatRect& rect) {
+std::unique_ptr<protocol::Array<double>> BuildRectForLayoutRect2(
+    const LayoutRect& rect) {
   std::unique_ptr<protocol::Array<double>> result =
       protocol::Array<double>::create();
   result->addItem(rect.X());
@@ -67,6 +67,29 @@ std::unique_ptr<protocol::Array<double>> BuildRectForFloatRect2(
   result->addItem(rect.Width());
   result->addItem(rect.Height());
   return result;
+}
+
+// Returns |layout_object|'s bounding box in document coordinates.
+LayoutRect RectInDocument(const LayoutObject* layout_object) {
+  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  // Don't do frame to document coordinate transformation for layout view,
+  // whose bounding box is not affected by scroll offset.
+  if (local_frame_view && !layout_object->IsLayoutView())
+    return local_frame_view->FrameToDocument(rect_in_absolute);
+  return rect_in_absolute;
+}
+
+LayoutRect TextFragmentRectInDocument(const LayoutObject* layout_object,
+                                      const LayoutText::TextBoxInfo& text_box) {
+  FloatRect local_coords_text_box_rect(text_box.local_rect);
+  LayoutRect absolute_coords_text_box_rect(
+      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
+          .BoundingBox());
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  return local_frame_view
+             ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
+             : absolute_coords_text_box_rect;
 }
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
@@ -108,7 +131,7 @@ struct InspectorDOMSnapshotAgent::VectorStringHashTraits
     : public WTF::GenericHashTraits<Vector<String>> {
   static unsigned GetHash(const Vector<String>& vec) {
     unsigned h = DefaultHash<size_t>::Hash::GetHash(vec.size());
-    for (size_t i = 0; i < vec.size(); i++) {
+    for (wtf_size_t i = 0; i < vec.size(); i++) {
       h = WTF::HashInts(h, DefaultHash<String>::Hash::GetHash(vec[i]));
     }
     return h;
@@ -117,7 +140,7 @@ struct InspectorDOMSnapshotAgent::VectorStringHashTraits
   static bool Equal(const Vector<String>& a, const Vector<String>& b) {
     if (a.size() != b.size())
       return false;
-    for (size_t i = 0; i < a.size(); i++) {
+    for (wtf_size_t i = 0; i < a.size(); i++) {
       if (a[i] != b[i])
         return false;
     }
@@ -238,7 +261,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
 
   // Look up the CSSPropertyIDs for each entry in |style_whitelist|.
-  for (size_t i = 0; i < style_whitelist->length(); i++) {
+  for (wtf_size_t i = 0; i < style_whitelist->length(); i++) {
     CSSPropertyID property_id = cssPropertyID(style_whitelist->get(i));
     if (property_id == CSSPropertyInvalid)
       continue;
@@ -334,7 +357,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
           .setNodeType(static_cast<int>(node->getNodeType()))
           .setNodeName(node->nodeName())
           .setNodeValue(node_value)
-          .setBackendNodeId(DOMNodeIds::IdForNode(node))
+          .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
           .build();
   if (origin_url_map_ &&
       origin_url_map_->Contains(owned_value->getBackendNodeId())) {
@@ -348,7 +371,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     }
   }
   protocol::DOMSnapshot::DOMNode* value = owned_value.get();
-  int index = dom_nodes_->length();
+  int index = static_cast<int>(dom_nodes_->length());
   dom_nodes_->addItem(std::move(owned_value));
 
   int layoutNodeIndex =
@@ -433,8 +456,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
     if (image_element)
       value->setCurrentSourceURL(image_element->currentSrc());
-  } else if (node->IsDocumentNode()) {
-    Document* document = ToDocument(node);
+  } else if (auto* document = DynamicTo<Document>(node)) {
     value->setDocumentURL(InspectorDOMAgent::DocumentURLString(document));
     value->setBaseURL(InspectorDOMAgent::DocumentBaseURLString(document));
     if (document->ContentLanguage())
@@ -442,6 +464,11 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     if (document->EncodingName())
       value->setDocumentEncoding(document->EncodingName().Utf8().data());
     value->setFrameId(IdentifiersFactory::FrameId(document->GetFrame()));
+    if (document->View() && document->View()->LayoutViewport()) {
+      auto offset = document->View()->LayoutViewport()->GetScrollOffset();
+      value->setScrollOffsetX(offset.Width());
+      value->setScrollOffsetY(offset.Height());
+    }
   } else if (node->IsDocumentTypeNode()) {
     DocumentType* doc_type = ToDocumentType(node);
     value->setPublicId(doc_type->publicId());
@@ -465,7 +492,7 @@ int InspectorDOMSnapshotAgent::AddString(const String& string) {
   auto it = string_table_.find(string);
   int index;
   if (it == string_table_.end()) {
-    index = strings_->length();
+    index = static_cast<int>(strings_->length());
     strings_->addItem(string);
     string_table_.Set(string, index);
   } else {
@@ -550,6 +577,13 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
                   .setLength(protocol::Array<int>::create())
                   .build())
           .build();
+
+  if (document->View() && document->View()->LayoutViewport()) {
+    auto offset = document->View()->LayoutViewport()->GetScrollOffset();
+    document_->setScrollOffsetX(offset.Width());
+    document_->setScrollOffsetY(offset.Height());
+  }
+
   VisitNode2(document, -1);
   documents_->addItem(std::move(document_));
 }
@@ -569,8 +603,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   }
 
   auto* nodes = document_->getNodes();
-  int index = nodes->getNodeName(nullptr)->length();
-  int backend_node_id = DOMNodeIds::IdForNode(node);
+  int index = static_cast<int>(nodes->getNodeName(nullptr)->length());
+  DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
 
   // Create DOMNode object and add it to the result array before traversing
   // children, so that parents appear before their children in the array.
@@ -579,7 +613,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   nodes->getNodeType(nullptr)->addItem(static_cast<int>(node->getNodeType()));
   nodes->getNodeName(nullptr)->addItem(AddString(node->nodeName()));
   nodes->getNodeValue(nullptr)->addItem(AddString(node_value));
-  nodes->getBackendNodeId(nullptr)->addItem(backend_node_id);
+  nodes->getBackendNodeId(nullptr)->addItem(
+      IdentifiersFactory::IntIdForNode(node));
   nodes->getAttributes(nullptr)->addItem(BuildArrayForElementAttributes2(node));
   BuildLayoutTreeNode(node->GetLayoutObject(), node, index);
 
@@ -804,17 +839,17 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (!layout_object)
     return -1;
 
-  auto layout_tree_node = protocol::DOMSnapshot::LayoutTreeNode::create()
-                              .setDomNodeIndex(node_index)
-                              .setBoundingBox(BuildRectForFloatRect(FloatRect(
-                                  layout_object->AbsoluteBoundingBoxRect())))
-                              .build();
+  auto layout_tree_node =
+      protocol::DOMSnapshot::LayoutTreeNode::create()
+          .setDomNodeIndex(node_index)
+          .setBoundingBox(BuildRectForLayoutRect(RectInDocument(layout_object)))
+          .build();
 
   int style_index = GetStyleIndexForNode(node);
   if (style_index != -1)
     layout_tree_node->setStyleIndex(style_index);
 
-  if (layout_object->Style() && layout_object->Style()->IsStacked())
+  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     layout_tree_node->setIsStackingContext(true);
 
   if (paint_order_map_) {
@@ -835,23 +870,20 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
               protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
-      for (const LayoutText::TextBoxInfo& text_box : text_boxes) {
-        FloatRect absolute_coords_text_box_rect =
-            layout_object->LocalToAbsoluteQuad(FloatRect(text_box.local_rect))
-                .BoundingBox();
+      for (const auto& text_box : text_boxes) {
         inline_text_nodes->addItem(
             protocol::DOMSnapshot::InlineTextBox::create()
                 .setStartCharacterIndex(text_box.dom_start_offset)
                 .setNumCharacters(text_box.dom_length)
-                .setBoundingBox(
-                    BuildRectForFloatRect(absolute_coords_text_box_rect))
+                .setBoundingBox(BuildRectForLayoutRect(
+                    TextFragmentRectInDocument(layout_object, text_box)))
                 .build());
       }
       layout_tree_node->setInlineTextNodes(std::move(inline_text_nodes));
     }
   }
 
-  int index = layout_tree_nodes_->length();
+  int index = static_cast<int>(layout_tree_nodes_->length());
   layout_tree_nodes_->addItem(std::move(layout_tree_node));
   return index;
 }
@@ -864,13 +896,14 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   auto* layout_tree_snapshot = document_->getLayout();
   auto* text_box_snapshot = document_->getTextBoxes();
 
-  int layout_index = layout_tree_snapshot->getNodeIndex()->length();
+  int layout_index =
+      static_cast<int>(layout_tree_snapshot->getNodeIndex()->length());
   layout_tree_snapshot->getNodeIndex()->addItem(node_index);
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
-  layout_tree_snapshot->getBounds()->addItem(BuildRectForFloatRect2(
-      FloatRect(layout_object->AbsoluteBoundingBoxRect())));
+  layout_tree_snapshot->getBounds()->addItem(
+      BuildRectForLayoutRect2(RectInDocument(layout_object)));
 
-  if (layout_object->Style() && layout_object->Style()->IsStacked())
+  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
@@ -881,19 +914,16 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     return layout_index;
 
   LayoutText* layout_text = ToLayoutText(layout_object);
-  if (!layout_text->HasTextBoxes())
+  Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
+  if (text_boxes.IsEmpty())
     return layout_index;
 
-  for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
-    FloatRect local_coords_text_box_rect(text_box->FrameRect());
-    FloatRect absolute_coords_text_box_rect =
-        layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-            .BoundingBox();
+  for (const auto& text_box : text_boxes) {
     text_box_snapshot->getLayoutIndex()->addItem(layout_index);
-    text_box_snapshot->getBounds()->addItem(
-        BuildRectForFloatRect2(absolute_coords_text_box_rect));
-    text_box_snapshot->getStart()->addItem(text_box->Start());
-    text_box_snapshot->getLength()->addItem(text_box->Len());
+    text_box_snapshot->getBounds()->addItem(BuildRectForLayoutRect2(
+        TextFragmentRectInDocument(layout_object, text_box)));
+    text_box_snapshot->getStart()->addItem(text_box.dom_start_offset);
+    text_box_snapshot->getLength()->addItem(text_box.dom_length);
   }
 
   return layout_index;
@@ -924,7 +954,7 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
   auto style_properties =
       protocol::Array<protocol::DOMSnapshot::NameValue>::create();
 
-  for (size_t i = 0; i < style.size(); i++) {
+  for (wtf_size_t i = 0; i < style.size(); i++) {
     if (style[i].IsEmpty())
       continue;
     style_properties->addItem(protocol::DOMSnapshot::NameValue::create()
@@ -933,7 +963,7 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
                                   .build());
   }
 
-  size_t index = computed_styles_->length();
+  wtf_size_t index = static_cast<wtf_size_t>(computed_styles_->length());
   computed_styles_->addItem(protocol::DOMSnapshot::ComputedStyle::create()
                                 .setProperties(std::move(style_properties))
                                 .build());

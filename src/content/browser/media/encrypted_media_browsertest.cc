@@ -182,9 +182,7 @@ class EncryptedMediaTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kAutoplayPolicy,
-        switches::autoplay::kNoUserGestureRequiredPolicy);
+    MediaBrowserTest::SetUpCommandLine(command_line);
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
     scoped_feature_list_.InitWithFeatures({media::kExternalClearKeyForTesting},
                                           {});
@@ -274,6 +272,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
+// TODO(crbug.com/707127): Decide when it's supported on Android. Also support
+// VP9 Profile2 query and update the mime type.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
+                     kWebMVp9VideoOnly);
+}
+#endif
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
   RunMultipleFileTest(std::string(), std::string(), "bear-flac-cenc.mp4",
                       kMp4FlacAudioOnly, media::kEnded);
@@ -287,6 +294,20 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   }
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly);
 }
+
+// TODO(crbug.com/707127): Decide when it's supported on Android. Also support
+// VP9 Profile2 query and update the mime type.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
+                     kMp4Vp9VideoOnly);
+}
+#endif
 
 // Strictly speaking this is not an "encrypted" media test. Keep it here for
 // completeness.
@@ -307,13 +328,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 
-// https://crbug.com/788748 https://crbug.com/794080
-#if (defined(OS_ANDROID) || defined(OS_LINUX)) && defined(ADDRESS_SANITIZER)
-#define MAYBE_FrameSizeChangeVideo DISABLED_FrameSizeChangeVideo
-#else
-#define MAYBE_FrameSizeChangeVideo FrameSizeChangeVideo
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
+#if defined(OS_ANDROID)
+  // https://crbug.com/778245
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_KITKAT) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+    return;
+  }
 #endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameSizeChangeVideo) {
+
   TestFrameSizeChange();
 }
 

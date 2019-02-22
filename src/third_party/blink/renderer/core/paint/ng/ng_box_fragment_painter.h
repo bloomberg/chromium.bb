@@ -23,7 +23,7 @@ class HitTestResult;
 class LayoutRect;
 class NGPaintFragment;
 class NGPhysicalFragment;
-class PaintInfoWithOffset;
+class ScopedPaintState;
 struct PaintInfo;
 
 // Painter for LayoutNG box fragments, paints borders and background. Delegates
@@ -67,10 +67,14 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
       const NGPaintFragment&,
       const PaintInfo&);
-  bool ShouldPaint(const PaintInfoWithOffset&) const;
+  bool ShouldPaint(const ScopedPaintState&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint& paint_offset);
+  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
+                                            const LayoutRect&);
+  bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
+
   void PaintAllPhasesAtomically(const PaintInfo&,
                                 bool is_self_painting);
   void PaintBlockChildren(const PaintInfo&);
@@ -110,6 +114,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    const PaintInfo&,
                    const LayoutPoint& paint_offset);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
+
+  void RecordHitTestData(const PaintInfo& paint_info,
+                         const LayoutPoint& paint_offset);
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;

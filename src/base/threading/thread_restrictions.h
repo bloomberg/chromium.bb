@@ -169,7 +169,9 @@ class ThreadTestHelper;
 // a socket, rename or delete a file, enumerate files in a directory, etc.
 // Acquiring a low contention lock is not considered a blocking call.
 
-// Asserts that blocking calls are allowed in the current scope.
+// Asserts that blocking calls are allowed in the current scope. Prefer using
+// ScopedBlockingCall instead, which also serves as a precise annotation of the
+// scope that may/will block.
 //
 // Style tip: It's best if you put AssertBlockingAllowed() checks as close to
 // the blocking call as possible. For example:
@@ -404,6 +406,21 @@ INLINE_IF_DCHECK_IS_OFF void ResetThreadRestrictionsForTesting()
     EMPTY_BODY_IF_DCHECK_IS_OFF;
 
 }  // namespace internal
+
+// "Long CPU" work refers to any code that takes more than 100 ms to
+// run when there is no CPU contention and no hard page faults and therefore,
+// is not suitable to run on a thread required to keep the browser responsive
+// (where jank could be visible to the user).
+
+// Asserts that running long CPU work is allowed in the current scope.
+INLINE_IF_DCHECK_IS_OFF void AssertLongCPUWorkAllowed()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+// Disallows all tasks that may be unresponsive on the current thread. This
+// disallows blocking calls, waiting on a //base sync primitive and long CPU
+// work.
+INLINE_IF_DCHECK_IS_OFF void DisallowUnresponsiveTasks()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
 
 class BASE_EXPORT ThreadRestrictions {
  public:

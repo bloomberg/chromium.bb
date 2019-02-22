@@ -165,7 +165,7 @@ if (is_android) {
     deps = [
       ":media_java_resources",
       "//base:base_java",
-      "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/android_deps:android_support_annotations_java",
     ]
     srcjar_deps = [
       ":java_enums",

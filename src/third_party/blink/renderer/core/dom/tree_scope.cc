@@ -127,12 +127,12 @@ Element* TreeScope::getElementById(const AtomicString& element_id) const {
 
 const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
     const AtomicString& element_id) const {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, empty_vector,
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
                       (new HeapVector<Member<Element>>));
   if (element_id.IsEmpty())
-    return empty_vector;
+    return *empty_vector;
   if (!elements_by_id_)
-    return empty_vector;
+    return *empty_vector;
   return elements_by_id_->GetAllElementsById(element_id, *this);
 }
 
@@ -188,7 +188,7 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
     return nullptr;
   if (!image_maps_by_name_)
     return nullptr;
-  size_t hash_pos = url.find('#');
+  wtf_size_t hash_pos = url.find('#');
   String name = hash_pos == kNotFound ? url : url.Substring(hash_pos + 1);
   return ToHTMLMapElement(
       image_maps_by_name_->GetElementByMapName(AtomicString(name), *this));
@@ -332,6 +332,50 @@ SVGTreeScopeResources& TreeScope::EnsureSVGTreeScopedResources() {
   if (!svg_tree_scoped_resources_)
     svg_tree_scoped_resources_ = new SVGTreeScopeResources(this);
   return *svg_tree_scoped_resources_;
+}
+
+bool TreeScope::HasAdoptedStyleSheets() const {
+  return adopted_style_sheets_ && adopted_style_sheets_->length() > 0;
+}
+
+StyleSheetList& TreeScope::AdoptedStyleSheets() {
+  if (!adopted_style_sheets_)
+    SetAdoptedStyleSheets(StyleSheetList::Create());
+  return *adopted_style_sheets_;
+}
+
+void TreeScope::SetAdoptedStyleSheets(StyleSheetList* adopted_style_sheets,
+                                      ExceptionState& exception_state) {
+  unsigned style_sheets_count =
+      adopted_style_sheets ? adopted_style_sheets->length() : 0;
+  for (unsigned i = 0; i < style_sheets_count; ++i) {
+    CSSStyleSheet* style_sheet = ToCSSStyleSheet(adopted_style_sheets->item(i));
+    Document* associated_document = style_sheet->AssociatedDocument();
+    Node* owner_node = style_sheet->ownerNode();
+    if (associated_document && *associated_document != GetDocument()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                        "Sharing constructable stylesheets in "
+                                        "multiple documents is not allowed");
+      return;
+    }
+    if (owner_node && owner_node->GetDocument() != GetDocument()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "When the style sheet's owner node and the AdoptedStyleSheets' tree "
+          "scope is not in the same Document tree, adding non-constructed "
+          "stylesheets to AdoptedStyleSheets is not allowed");
+      return;
+    }
+    // TODO(momon): Don't allow using non-constructed stylesheets, pending
+    // resolution of https://github.com/WICG/construct-stylesheets/issues/34
+  }
+  SetAdoptedStyleSheets(adopted_style_sheets);
+}
+
+void TreeScope::SetAdoptedStyleSheets(StyleSheetList* adopted_style_sheets) {
+  GetDocument().GetStyleEngine().AdoptedStyleSheetsWillChange(
+      *this, adopted_style_sheets_, adopted_style_sheets);
+  adopted_style_sheets_ = adopted_style_sheets;
 }
 
 DOMSelection* TreeScope::GetSelection() const {
@@ -589,6 +633,7 @@ void TreeScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_style_resolver_);
   visitor->Trace(radio_button_group_scope_);
   visitor->Trace(svg_tree_scoped_resources_);
+  visitor->Trace(adopted_style_sheets_);
 }
 
 }  // namespace blink

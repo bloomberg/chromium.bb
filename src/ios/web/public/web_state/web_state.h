@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#import <CoreGraphics/CoreGraphics.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -48,6 +49,7 @@ namespace web {
 class BrowserState;
 class NavigationManager;
 class SessionCertificatePolicyCache;
+class WebFrame;
 class WebInterstitial;
 class WebStateDelegate;
 class WebStateInterfaceProvider;
@@ -244,8 +246,20 @@ class WebState : public base::SupportsUserData {
   // the URL of the page, the third parameter is a bool indicating if the
   // user is currently interacting with the page, the fourth parameter indicates
   // if the message was sent from the main frame.
-  typedef base::RepeatingCallback<
-      bool(const base::DictionaryValue&, const GURL&, bool, bool)>
+  // The fifth parameter is the frame that sent the message. If frame messaging
+  // is not supported, its value will always be null (see
+  // |CRWWebController frameBecameAvailableWithMessage:|, and javascript
+  // function isFrameMessagingSupported_ for details).
+  // TODO(crbug.com/881811): remove the fourth parameter indicating if message
+  // has been sent from main frame once frame messaging is fully enabled.
+  // TODO(crbug.com/881813): remove the second parameter indicating the URL
+  // of the main frame.
+  // TODO(crbug.com/881816): Update comment once WebFrame cannot be null.
+  typedef base::RepeatingCallback<bool(const base::DictionaryValue&,
+                                       const GURL&,
+                                       bool,
+                                       bool,
+                                       web::WebFrame*)>
       ScriptCommandCallback;
 
   // Registers a callback that will be called when a command matching
@@ -298,10 +312,10 @@ class WebState : public base::SupportsUserData {
   // Callback used to handle snapshots. The parameter is the snapshot image.
   typedef base::OnceCallback<void(gfx::Image)> SnapshotCallback;
 
-  // Takes a snapshot of this WebState with |target_size|. |callback| is
-  // asynchronously invoked after performing the snapshot.
-  virtual void TakeSnapshot(SnapshotCallback callback,
-                            CGSize target_size) const = 0;
+  // Takes a snapshot of this WebState with |rect|. |callback| is asynchronously
+  // invoked after performing the snapshot. Prior to iOS 11, the callback is
+  // invoked with a nil snapshot.
+  virtual void TakeSnapshot(CGRect rect, SnapshotCallback callback) = 0;
 
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be

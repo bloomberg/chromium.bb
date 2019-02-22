@@ -8,7 +8,6 @@
 #define XFA_FXFA_FXFA_H_
 
 #include <memory>
-#include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/retain_ptr.h"
@@ -119,7 +118,7 @@ enum XFA_WIDGETTYPE {
 // Probably should be called IXFA_AppDelegate.
 class IXFA_AppProvider {
  public:
-  virtual ~IXFA_AppProvider() {}
+  virtual ~IXFA_AppProvider() = default;
 
   /**
    * Returns the language of the running host application. Such as zh_CN
@@ -222,7 +221,7 @@ class IXFA_AppProvider {
 
 class IXFA_DocEnvironment {
  public:
-  virtual ~IXFA_DocEnvironment() {}
+  virtual ~IXFA_DocEnvironment() = default;
 
   virtual void SetChangeMark(CXFA_FFDoc* hDoc) = 0;
   virtual void InvalidateRect(CXFA_FFPageView* pPageView,
@@ -278,7 +277,7 @@ class IXFA_DocEnvironment {
 
 class IXFA_WidgetIterator {
  public:
-  virtual ~IXFA_WidgetIterator() {}
+  virtual ~IXFA_WidgetIterator() = default;
 
   virtual void Reset() = 0;
   virtual CXFA_FFWidget* MoveToFirst() = 0;

@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_fe_specular_lighting_element.h"
 
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_specular_lighting.h"
@@ -34,19 +34,15 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feSpecularLightingTag,
                                            document),
       specular_constant_(
-          SVGAnimatedNumber::Create(this,
-                                    SVGNames::specularConstantAttr,
-                                    SVGNumber::Create(1))),
+          SVGAnimatedNumber::Create(this, SVGNames::specularConstantAttr, 1)),
       specular_exponent_(
-          SVGAnimatedNumber::Create(this,
-                                    SVGNames::specularExponentAttr,
-                                    SVGNumber::Create(1))),
-      surface_scale_(SVGAnimatedNumber::Create(this,
-                                               SVGNames::surfaceScaleAttr,
-                                               SVGNumber::Create(1))),
+          SVGAnimatedNumber::Create(this, SVGNames::specularExponentAttr, 1)),
+      surface_scale_(
+          SVGAnimatedNumber::Create(this, SVGNames::surfaceScaleAttr, 1)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr)),
+          SVGNames::kernelUnitLengthAttr,
+          0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
   AddToPropertyMap(specular_constant_);
   AddToPropertyMap(specular_exponent_);
@@ -73,11 +69,9 @@ bool SVGFESpecularLightingElement::SetFilterEffectAttribute(
       static_cast<FESpecularLighting*>(effect);
 
   if (attr_name == SVGNames::lighting_colorAttr) {
-    LayoutObject* layout_object = this->GetLayoutObject();
-    DCHECK(layout_object);
-    DCHECK(layout_object->Style());
+    const ComputedStyle& style = ComputedStyleRef();
     return specular_lighting->SetLightingColor(
-        layout_object->StyleRef().SvgStyle().LightingColor());
+        style.VisitedDependentColor(GetCSSPropertyLightingColor()));
   }
   if (attr_name == SVGNames::surfaceScaleAttr)
     return specular_lighting->SetSurfaceScale(
@@ -159,12 +153,11 @@ FilterEffect* SVGFESpecularLightingElement::Build(
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  LayoutObject* layout_object = this->GetLayoutObject();
-  if (!layout_object)
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style)
     return nullptr;
 
-  DCHECK(layout_object->Style());
-  Color color = layout_object->StyleRef().SvgStyle().LightingColor();
+  Color color = style->VisitedDependentColor(GetCSSPropertyLightingColor());
 
   const SVGFELightElement* light_node =
       SVGFELightElement::FindLightElement(*this);

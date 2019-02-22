@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
@@ -339,24 +338,6 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
   return false;
 }
 
-std::unique_ptr<content::WebContents> TabAndroid::SwapTabContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_swapWebContents(env, weak_java_tab_.get(env),
-                           new_contents->GetJavaWebContents(), did_start_load,
-                           did_finish_load);
-  new_contents.release();
-  return base::WrapUnique(old_contents);
-}
-
 void TabAndroid::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
@@ -397,7 +378,7 @@ void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
     return;
   }
 
-  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
+  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
   if (favicon.empty())
     return;
 
@@ -566,7 +547,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     jboolean is_renderer_initiated,
     jboolean should_replace_current_entry,
     jboolean has_user_gesture,
-    jboolean should_clear_history_list) {
+    jboolean should_clear_history_list,
+    jlong input_start_timestamp) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -629,6 +611,10 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     load_params.should_replace_current_entry = should_replace_current_entry;
     load_params.has_user_gesture = has_user_gesture;
     load_params.should_clear_history_list = should_clear_history_list;
+    if (input_start_timestamp != 0) {
+      load_params.input_start =
+          base::TimeTicks::FromUptimeMillis(input_start_timestamp);
+    }
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;

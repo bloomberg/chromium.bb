@@ -500,10 +500,6 @@ void WindowCycleList::OnWindowDestroying(aura::Window* window) {
   }
 }
 
-void WindowCycleList::OnDisplayAdded(const display::Display& new_display) {}
-
-void WindowCycleList::OnDisplayRemoved(const display::Display& old_display) {}
-
 void WindowCycleList::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t changed_metrics) {
   if (cycle_ui_widget_ &&

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/animation/css_border_image_length_box_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_clip_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/css_custom_list_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_filter_list_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_font_size_interpolation_type.h"
@@ -53,7 +54,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const PropertyRegistry* registry,
     const Document& document)
     : registry_(registry) {
-  allow_all_animations_ = document.GetFrame()->IsFeatureEnabled(
+  allow_all_animations_ = document.IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kAnimations);
 }
 
@@ -374,6 +375,53 @@ size_t CSSInterpolationTypesMap::Version() const {
   return registry_ ? registry_->RegistrationCount() : 0;
 }
 
+static std::unique_ptr<CSSInterpolationType>
+CreateInterpolationTypeForCSSSyntax(CSSSyntaxType syntax,
+                                    PropertyHandle property,
+                                    const PropertyRegistration& registration) {
+  switch (syntax) {
+    case CSSSyntaxType::kAngle:
+      return std::make_unique<CSSAngleInterpolationType>(property,
+                                                         &registration);
+    case CSSSyntaxType::kColor:
+      return std::make_unique<CSSColorInterpolationType>(property,
+                                                         &registration);
+    case CSSSyntaxType::kLength:
+    case CSSSyntaxType::kLengthPercentage:
+    case CSSSyntaxType::kPercentage:
+      return std::make_unique<CSSLengthInterpolationType>(property,
+                                                          &registration);
+    case CSSSyntaxType::kNumber:
+      return std::make_unique<CSSNumberInterpolationType>(property,
+                                                          &registration);
+    case CSSSyntaxType::kResolution:
+      return std::make_unique<CSSResolutionInterpolationType>(property,
+                                                              &registration);
+    case CSSSyntaxType::kTime:
+      return std::make_unique<CSSTimeInterpolationType>(property,
+                                                        &registration);
+    case CSSSyntaxType::kImage:
+      // TODO(andruud): Implement smooth interpolation for gradients.
+      return nullptr;
+    case CSSSyntaxType::kInteger:
+      return std::make_unique<CSSNumberInterpolationType>(property,
+                                                          &registration, true);
+    case CSSSyntaxType::kTransformFunction:
+    case CSSSyntaxType::kTransformList:
+      // TODO(alancutter): Support smooth interpolation of these types.
+      return nullptr;
+    case CSSSyntaxType::kCustomIdent:
+    case CSSSyntaxType::kIdent:
+    case CSSSyntaxType::kTokenStream:
+    case CSSSyntaxType::kUrl:
+      // Smooth interpolation not supported for these types.
+      return nullptr;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 InterpolationTypes
 CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     const AtomicString& property_name,
@@ -387,60 +435,20 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
       std::make_unique<CSSVarCycleInterpolationType>(property, registration));
 
   for (const CSSSyntaxComponent& component : descriptor.Components()) {
-    if (component.IsRepeatable()) {
-      // TODO(alancutter): Support animation of repeatable types.
+    std::unique_ptr<CSSInterpolationType> interpolation_type =
+        CreateInterpolationTypeForCSSSyntax(component.type_, property,
+                                            registration);
+
+    if (!interpolation_type)
       continue;
+
+    if (component.IsRepeatable()) {
+      interpolation_type = std::make_unique<CSSCustomListInterpolationType>(
+          property, &registration, std::move(interpolation_type),
+          component.repeat_);
     }
 
-    switch (component.type_) {
-      case CSSSyntaxType::kAngle:
-        result.push_back(std::make_unique<CSSAngleInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kColor:
-        result.push_back(std::make_unique<CSSColorInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kLength:
-      case CSSSyntaxType::kLengthPercentage:
-      case CSSSyntaxType::kPercentage:
-        result.push_back(std::make_unique<CSSLengthInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kNumber:
-        result.push_back(std::make_unique<CSSNumberInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kResolution:
-        result.push_back(std::make_unique<CSSResolutionInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kTime:
-        result.push_back(std::make_unique<CSSTimeInterpolationType>(
-            property, &registration));
-        break;
-      case CSSSyntaxType::kImage:
-        // TODO(andruud): Implement smooth interpolation for gradients.
-        break;
-      case CSSSyntaxType::kInteger:
-        result.push_back(std::make_unique<CSSNumberInterpolationType>(
-            property, &registration, true));
-        break;
-      case CSSSyntaxType::kTransformFunction:
-      case CSSSyntaxType::kTransformList:
-        // TODO(alancutter): Support smooth interpolation of these types.
-        break;
-      case CSSSyntaxType::kCustomIdent:
-      case CSSSyntaxType::kIdent:
-      case CSSSyntaxType::kTokenStream:
-      case CSSSyntaxType::kUrl:
-        // No interpolation behaviour defined, uses the
-        // CSSDefaultInterpolationType added below.
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    result.push_back(std::move(interpolation_type));
   }
   result.push_back(std::make_unique<CSSDefaultInterpolationType>(property));
   return result;

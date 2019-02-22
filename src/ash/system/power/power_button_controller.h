@@ -114,6 +114,9 @@ class ASH_EXPORT PowerButtonController
   // Dismisses the menu.
   void DismissMenu();
 
+  // Do not force backlights to be turned off.
+  void StopForcingBacklightsOff();
+
   // display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
@@ -153,6 +156,10 @@ class ASH_EXPORT PowerButtonController
   class ActiveWindowWidgetController;
   friend class PowerButtonControllerTestApi;
 
+  // Returns true if tablet power button behavior (i.e. tapping the button turns
+  // the screen off) should currently be used.
+  bool UseTabletBehavior() const;
+
   // Stops |power_button_menu_timer_|, |shutdown_timer_| and dismisses the power
   // button menu.
   void StopTimersAndDismissMenu();
@@ -165,8 +172,8 @@ class ASH_EXPORT PowerButtonController
   // animation.
   void OnPreShutdownTimeout();
 
-  // Updates |button_type_| and |force_clamshell_power_button_| based on the
-  // current command line.
+  // Updates |button_type_| and power button position info based on the current
+  // command line.
   void ProcessCommandLine();
 
   // Initializes tablet power button behavior related member
@@ -214,9 +221,9 @@ class ASH_EXPORT PowerButtonController
   // mode.
   bool observe_accelerometer_events_ = false;
 
-  // True if the device should use non-tablet-style power button behavior even
-  // if it is a convertible device.
-  bool force_clamshell_power_button_ = false;
+  // True if the kForceTabletPowerButton flag is set. This forces tablet power
+  // button behavior even while in laptop mode.
+  bool force_tablet_power_button_ = false;
 
   // True if the device has tablet mode switch.
   bool has_tablet_mode_switch_ = false;

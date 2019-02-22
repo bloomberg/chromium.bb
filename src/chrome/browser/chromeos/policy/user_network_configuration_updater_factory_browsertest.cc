@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -27,9 +28,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -42,6 +43,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -98,17 +100,21 @@ class WebTrustedCertsChangedObserver
   DISALLOW_COPY_AND_ASSIGN(WebTrustedCertsChangedObserver);
 };
 
-// Allows waiting until |CertLoader| updates its list of certificates.
-class CertLoaderTestObserver : public chromeos::CertLoader::Observer {
+// Allows waiting until |NetworkCertLoader| updates its list of certificates.
+class NetworkCertLoaderTestObserver
+    : public chromeos::NetworkCertLoader::Observer {
  public:
-  explicit CertLoaderTestObserver(chromeos::CertLoader* cert_loader)
-      : cert_loader_(cert_loader) {
-    cert_loader_->AddObserver(this);
+  explicit NetworkCertLoaderTestObserver(
+      chromeos::NetworkCertLoader* network_cert_loader)
+      : network_cert_loader_(network_cert_loader) {
+    network_cert_loader_->AddObserver(this);
   }
 
-  ~CertLoaderTestObserver() override { cert_loader_->RemoveObserver(this); }
+  ~NetworkCertLoaderTestObserver() override {
+    network_cert_loader_->RemoveObserver(this);
+  }
 
-  // chromeos::CertLoader::Observer
+  // chromeos::NetworkCertLoader::Observer
   void OnCertificatesLoaded(
       const net::ScopedCERTCertificateList& all_certs) override {
     run_loop_.Quit();
@@ -117,10 +123,10 @@ class CertLoaderTestObserver : public chromeos::CertLoader::Observer {
   void Wait() { run_loop_.Run(); }
 
  private:
-  chromeos::CertLoader* cert_loader_;
+  chromeos::NetworkCertLoader* network_cert_loader_;
   base::RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(CertLoaderTestObserver);
+  DISALLOW_COPY_AND_ASSIGN(NetworkCertLoaderTestObserver);
 };
 
 // Allows waiting until the |CertDatabase| notifies its observers that it has
@@ -174,8 +180,8 @@ int VerifyTestServerCert(
   int verification_result;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
       profile->GetRequestContext();
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&VerifyTestServerCertOnIOThread,
                      url_request_context_getter, certificate,
                      &verification_result),
@@ -241,8 +247,8 @@ bool IsCertInNSSDatabase(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool cert_found = false;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(IsCertInNSSDatabaseOnIOThread,
                      profile->GetResourceContext(), subject_common_name,
                      &cert_found, run_loop.QuitClosure()));
@@ -352,26 +358,27 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
-                       AuthorityAvailableThroughCertLoader) {
-  // Set |CertLoader| to use a test NSS database - otherwise, it is not properly
-  // initialized because |UserSessionManager| only sets the primary user's NSS
-  // Database in |CertLoader| if running on ChromeOS according to
-  // |base::SysInfo|.
-  ASSERT_TRUE(chromeos::CertLoader::IsInitialized());
-  chromeos::CertLoader::Get()->SetUserNSSDB(test_nss_cert_db_.get());
+                       AuthorityAvailableThroughNetworkCertLoader) {
+  // Set |NetworkCertLoader| to use a test NSS database - otherwise, it is not
+  // properly initialized because |UserSessionManager| only sets the primary
+  // user's NSS Database in |NetworkCertLoader| if running on ChromeOS according
+  // to |base::SysInfo|.
+  ASSERT_TRUE(chromeos::NetworkCertLoader::IsInitialized());
+  chromeos::NetworkCertLoader::Get()->SetUserNSSDB(test_nss_cert_db_.get());
 
   EXPECT_FALSE(IsCertInCertificateList(
-      test_root_cert_.get(), chromeos::CertLoader::Get()->all_certs()));
+      test_root_cert_.get(), chromeos::NetworkCertLoader::Get()->all_certs()));
 
-  CertLoaderTestObserver cert_loader_observer(chromeos::CertLoader::Get());
+  NetworkCertLoaderTestObserver network_cert_loader_observer(
+      chromeos::NetworkCertLoader::Get());
   SetRootCertONCPolicy(browser()->profile());
-  cert_loader_observer.Wait();
+  network_cert_loader_observer.Wait();
 
-  // Check that |CertLoader| is aware of the authority certificate.
-  // (Web Trust does not matter for the CertLoader, but we currently only set a
-  // policy with a certificate requesting Web Trust here).
+  // Check that |NetworkCertLoader| is aware of the authority certificate.
+  // (Web Trust does not matter for the NetworkCertLoader, but we currently only
+  // set a policy with a certificate requesting Web Trust here).
   EXPECT_TRUE(IsCertInCertificateList(
-      test_root_cert_.get(), chromeos::CertLoader::Get()->all_certs()));
+      test_root_cert_.get(), chromeos::NetworkCertLoader::Get()->all_certs()));
 }
 
 // Base class for testing policy-provided trust roots with device-local

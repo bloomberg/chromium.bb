@@ -7,26 +7,16 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/client_surface_embedder.h"
+#include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/window_port_mus_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 
 namespace aura {
 
-class WindowPortMusTest : public test::AuraTestBase {
- public:
-  WindowPortMusTest() { EnableMusWithTestWindowTree(); }
-
-  ~WindowPortMusTest() override = default;
-
-  base::WeakPtr<cc::LayerTreeFrameSink> GetFrameSinkFor(Window* window) {
-    auto* window_mus = WindowPortMus::Get(window);
-    return window_mus->local_layer_tree_frame_sink_;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowPortMusTest);
-};
+using WindowPortMusTest = test::AuraMusClientTestBase;
 
 // TODO(sadrul): https://crbug.com/842361.
 TEST_F(WindowPortMusTest,
@@ -45,7 +35,7 @@ TEST_F(WindowPortMusTest,
       window.CreateLayerTreeFrameSink());
   EXPECT_TRUE(frame_sink.get());
 
-  auto mus_frame_sink = GetFrameSinkFor(&window);
+  auto mus_frame_sink = WindowPortMusTestHelper(&window).GetFrameSink();
   ASSERT_TRUE(mus_frame_sink);
   auto frame_sink_local_surface_id =
       static_cast<cc::mojo_embedder::AsyncLayerTreeFrameSink*>(
@@ -69,6 +59,48 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   viz::SurfaceId primary_surface_id =
       window_mus->client_surface_embedder()->GetPrimarySurfaceIdForTesting();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
+}
+
+TEST_F(WindowPortMusTest,
+       UpdateLocalSurfaceIdFromEmbeddedClientUpdateClientSurfaceEmbedder) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(300, 300));
+  // Simulate an embedding.
+  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+  root_window()->AddChild(&window);
+
+  // AckAllChanges() so that can verify a bounds change happens from
+  // UpdateLocalSurfaceIdFromEmbeddedClient().
+  window_tree()->AckAllChanges();
+
+  // Update the LocalSurfaceId.
+  viz::LocalSurfaceId current_id = window.GetSurfaceId().local_surface_id();
+  ASSERT_TRUE(current_id.is_valid());
+  viz::ParentLocalSurfaceIdAllocator* parent_allocator =
+      WindowPortMusTestHelper(&window).GetParentLocalSurfaceIdAllocator();
+  parent_allocator->Reset(current_id);
+  viz::LocalSurfaceId updated_id = parent_allocator->GenerateId();
+  ASSERT_TRUE(updated_id.is_valid());
+  EXPECT_NE(updated_id, current_id);
+  window.UpdateLocalSurfaceIdFromEmbeddedClient(updated_id);
+
+  // Updating the LocalSurfaceId should propagate to the ClientSurfaceEmbedder.
+  auto* window_mus = WindowPortMus::Get(&window);
+  ASSERT_TRUE(window_mus);
+  ASSERT_TRUE(window_mus->client_surface_embedder());
+  EXPECT_EQ(updated_id, window_mus->client_surface_embedder()
+                            ->GetPrimarySurfaceIdForTesting()
+                            .local_surface_id());
+
+  // The server is notified of a bounds change, so that it sees the new
+  // LocalSurfaceId.
+  ASSERT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  EXPECT_EQ(window_mus->server_id(), window_tree()->window_id());
+  EXPECT_EQ(updated_id, *(window_tree()->last_local_surface_id()));
 }
 
 }  // namespace aura

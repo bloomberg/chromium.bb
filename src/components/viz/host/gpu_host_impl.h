@@ -9,7 +9,9 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +22,7 @@
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_domain_guilt.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
@@ -37,28 +40,39 @@ class ShaderCacheFactory;
 class ShaderDiskCache;
 }  // namespace gpu
 
-namespace IPC {
-class Channel;
-}
-
 namespace viz {
+
+// Contains either an interface or an associated interface pointer to a
+// mojom::VizMain implementation and routes the requests appropriately.
+class VIZ_HOST_EXPORT VizMainWrapper {
+ public:
+  explicit VizMainWrapper(mojom::VizMainPtr viz_main_ptr);
+  explicit VizMainWrapper(mojom::VizMainAssociatedPtr viz_main_associated_ptr);
+  ~VizMainWrapper();
+
+  void CreateGpuService(
+      mojom::GpuServiceRequest request,
+      mojom::GpuHostPtr gpu_host,
+      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+          discardable_memory_manager,
+      mojo::ScopedSharedBufferHandle activity_flags,
+      gfx::FontRenderParams::SubpixelRendering subpixel_rendering);
+  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params);
+
+ private:
+  mojom::VizMainPtr viz_main_ptr_;
+  mojom::VizMainAssociatedPtr viz_main_associated_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(VizMainWrapper);
+};
 
 class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
  public:
   class VIZ_HOST_EXPORT Delegate {
    public:
-    // Indicates the guilt level of a domain which caused a GPU reset.
-    // If a domain is 100% known to be guilty of resetting the GPU, then
-    // it will generally not cause other domains' use of 3D APIs to be
-    // blocked, unless system stability would be compromised.
-    enum class DomainGuilt {
-      kKnown,
-      kUnknown,
-    };
-
     virtual gpu::GPUInfo GetGPUInfo() const = 0;
     virtual gpu::GpuFeatureInfo GetGpuFeatureInfo() const = 0;
-    virtual void UpdateGpuInfo(
+    virtual void DidInitialize(
         const gpu::GPUInfo& gpu_info,
         const gpu::GpuFeatureInfo& gpu_feature_info,
         const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
@@ -66,7 +80,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
             gpu_feature_info_for_hardware_gpu) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
-    virtual void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) = 0;
+    virtual void BlockDomainFrom3DAPIs(const GURL& url,
+                                       gpu::DomainGuilt guilt) = 0;
     virtual void DisableGpuCompositing() = 0;
     virtual bool GpuAccessAllowed() const = 0;
     virtual gpu::ShaderCacheFactory* GetShaderCacheFactory() = 0;
@@ -76,6 +91,16 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void BindDiscardableMemoryRequest(
         discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
             request) = 0;
+    virtual void BindInterface(
+        const std::string& interface_name,
+        mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+#if defined(USE_OZONE)
+    virtual void TerminateGpuProcess(const std::string& message) = 0;
+
+    // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
+    // is removed.
+    virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
+#endif
 
    protected:
     virtual ~Delegate() {}
@@ -93,14 +118,17 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     bool in_process = false;
 
     // Whether caching GPU shader on disk is disabled or not.
-    bool disable_gpu_shader_disk_cache;
+    bool disable_gpu_shader_disk_cache = false;
 
     // A string representing the product name and version; used to build a
     // prefix for shader keys.
     std::string product;
 
     // Number of frames to CompositorFrame activation deadline.
-    base::Optional<uint32_t> deadline_to_synchronize_surfaces = base::nullopt;
+    base::Optional<uint32_t> deadline_to_synchronize_surfaces;
+
+    // Task runner corresponding to the main thread.
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner;
   };
 
   enum class EstablishChannelStatus {
@@ -117,13 +145,19 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                               const gpu::GpuFeatureInfo&,
                               EstablishChannelStatus)>;
 
-  GpuHostImpl(Delegate* delegate, IPC::Channel* channel, InitParams params);
+  GpuHostImpl(Delegate* delegate,
+              std::unique_ptr<VizMainWrapper> viz_main_ptr,
+              InitParams params);
   ~GpuHostImpl() override;
 
   static void InitFontRenderParams(const gfx::FontRenderParams& params);
+  static void ResetFontRenderParams();
 
   void OnProcessLaunched(base::ProcessId pid);
   void OnProcessCrashed();
+
+  // Adds a connection error handler for the GpuService.
+  void AddConnectionErrorHandler(base::OnceClosure handler);
 
   void BlockLiveOffscreenContexts();
 
@@ -141,15 +175,23 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   void SendOutstandingReplies();
 
-  mojom::GpuService* gpu_service();
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe);
 
-  bool initialized() const { return initialized_; }
+  mojom::GpuService* gpu_service();
 
   bool wake_up_gpu_before_drawing() const {
     return wake_up_gpu_before_drawing_;
   }
 
  private:
+  friend class GpuHostImplTestApi;
+
+#if defined(USE_OZONE)
+  void InitOzone();
+  void TerminateGpuProcess(const std::string& message);
+#endif  // defined(USE_OZONE)
+
   std::string GetShaderPrefixKey();
 
   void LoadedShader(int32_t client_id,
@@ -177,8 +219,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
+#if defined(OS_WIN)
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
+#endif
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
@@ -187,18 +231,20 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                         const std::string& message) override;
 
   Delegate* const delegate_;
-  IPC::Channel* const channel_;
+  std::unique_ptr<VizMainWrapper> viz_main_ptr_;
   const InitParams params_;
 
-  mojom::VizMainAssociatedPtr viz_main_ptr_;
+  // Task runner corresponding to the thread |this| is created on.
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner_;
+
   mojom::GpuServicePtr gpu_service_ptr_;
   mojo::Binding<mojom::GpuHost> gpu_host_binding_;
   gpu::GpuProcessHostActivityFlags activity_flags_;
 
   base::ProcessId pid_ = base::kNullProcessId;
 
-  // Whether the GPU service has started successfully or not.
-  bool initialized_ = false;
+  // List of connection error handlers for the GpuService.
+  std::vector<base::OnceClosure> connection_error_handlers_;
 
   // The following are a list of driver bug workarounds that will only be
   // set to true in DidInitialize(), where GPU service has started and GPU

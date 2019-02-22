@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/address_list.h"
@@ -196,6 +197,280 @@ TEST_F(HostResolverTest, InitialPriority) {
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
   EXPECT_EQ(net::HIGHEST, inner_resolver->last_request_priority());
+}
+
+// Make requests specifying a source for host resolution and ensure the correct
+// source is requested from the inner resolver.
+TEST_F(HostResolverTest, Source) {
+  constexpr char kDomain[] = "example.com";
+  constexpr char kAnyResult[] = "1.2.3.4";
+  constexpr char kSystemResult[] = "127.0.0.1";
+  constexpr char kDnsResult[] = "168.100.12.23";
+  constexpr char kMdnsResult[] = "200.1.2.3";
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
+      kDomain, kAnyResult);
+  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
+      kDomain, kSystemResult);
+  inner_resolver->rules_map()[net::HostResolverSource::DNS]->AddRule(
+      kDomain, kDnsResult);
+  inner_resolver->rules_map()[net::HostResolverSource::MULTICAST_DNS]->AddRule(
+      kDomain, kMdnsResult);
+
+  net::NetLog net_log;
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  base::RunLoop any_run_loop;
+  mojom::ResolveHostClientPtr any_client_ptr;
+  TestResolveHostClient any_client(&any_client_ptr, &any_run_loop);
+  mojom::ResolveHostParametersPtr any_parameters =
+      mojom::ResolveHostParameters::New();
+  any_parameters->source = net::HostResolverSource::ANY;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(any_parameters), std::move(any_client_ptr));
+
+  base::RunLoop system_run_loop;
+  mojom::ResolveHostClientPtr system_client_ptr;
+  TestResolveHostClient system_client(&system_client_ptr, &system_run_loop);
+  mojom::ResolveHostParametersPtr system_parameters =
+      mojom::ResolveHostParameters::New();
+  system_parameters->source = net::HostResolverSource::SYSTEM;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(system_parameters),
+                       std::move(system_client_ptr));
+
+  base::RunLoop dns_run_loop;
+  mojom::ResolveHostClientPtr dns_client_ptr;
+  TestResolveHostClient dns_client(&dns_client_ptr, &dns_run_loop);
+  mojom::ResolveHostParametersPtr dns_parameters =
+      mojom::ResolveHostParameters::New();
+  dns_parameters->source = net::HostResolverSource::DNS;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(dns_parameters), std::move(dns_client_ptr));
+
+  any_run_loop.Run();
+  system_run_loop.Run();
+  dns_run_loop.Run();
+
+  EXPECT_EQ(net::OK, any_client.result_error());
+  EXPECT_THAT(any_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kAnyResult, 80)));
+  EXPECT_EQ(net::OK, system_client.result_error());
+  EXPECT_THAT(system_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kSystemResult, 80)));
+  EXPECT_EQ(net::OK, dns_client.result_error());
+  EXPECT_THAT(dns_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kDnsResult, 80)));
+
+#if BUILDFLAG(ENABLE_MDNS)
+  base::RunLoop mdns_run_loop;
+  mojom::ResolveHostClientPtr mdns_client_ptr;
+  TestResolveHostClient mdns_client(&mdns_client_ptr, &mdns_run_loop);
+  mojom::ResolveHostParametersPtr mdns_parameters =
+      mojom::ResolveHostParameters::New();
+  mdns_parameters->source = net::HostResolverSource::MULTICAST_DNS;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(mdns_parameters), std::move(mdns_client_ptr));
+
+  mdns_run_loop.Run();
+
+  EXPECT_EQ(net::OK, mdns_client.result_error());
+  EXPECT_THAT(mdns_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kMdnsResult, 80)));
+#endif  // BUILDFLAG(ENABLE_MDNS)
+}
+
+// Test that cached results are properly keyed by requested source.
+TEST_F(HostResolverTest, SeparateCacheBySource) {
+  constexpr char kDomain[] = "example.com";
+  constexpr char kAnyResultOriginal[] = "1.2.3.4";
+  constexpr char kSystemResultOriginal[] = "127.0.0.1";
+  auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
+  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
+      kDomain, kAnyResultOriginal);
+  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
+      kDomain, kSystemResultOriginal);
+  base::SimpleTestTickClock test_clock;
+  inner_resolver->set_tick_clock(&test_clock);
+
+  net::NetLog net_log;
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  // Load SYSTEM result into cache.
+  base::RunLoop system_run_loop;
+  mojom::ResolveHostClientPtr system_client_ptr;
+  TestResolveHostClient system_client(&system_client_ptr, &system_run_loop);
+  mojom::ResolveHostParametersPtr system_parameters =
+      mojom::ResolveHostParameters::New();
+  system_parameters->source = net::HostResolverSource::SYSTEM;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(system_parameters),
+                       std::move(system_client_ptr));
+  system_run_loop.Run();
+  ASSERT_EQ(net::OK, system_client.result_error());
+  EXPECT_THAT(
+      system_client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kSystemResultOriginal, 80)));
+
+  // Change |inner_resolver| rules to ensure results are coming from cache or
+  // not based on whether they resolve to the old or new value.
+  constexpr char kAnyResultFresh[] = "111.222.1.1";
+  constexpr char kSystemResultFresh[] = "111.222.1.2";
+  inner_resolver->rules_map()[net::HostResolverSource::ANY]->ClearRules();
+  inner_resolver->rules_map()[net::HostResolverSource::ANY]->AddRule(
+      kDomain, kAnyResultFresh);
+  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->ClearRules();
+  inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
+      kDomain, kSystemResultFresh);
+
+  base::RunLoop cached_run_loop;
+  mojom::ResolveHostClientPtr cached_client_ptr;
+  TestResolveHostClient cached_client(&cached_client_ptr, &cached_run_loop);
+  mojom::ResolveHostParametersPtr cached_parameters =
+      mojom::ResolveHostParameters::New();
+  cached_parameters->source = net::HostResolverSource::SYSTEM;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(cached_parameters),
+                       std::move(cached_client_ptr));
+
+  base::RunLoop uncached_run_loop;
+  mojom::ResolveHostClientPtr uncached_client_ptr;
+  TestResolveHostClient uncached_client(&uncached_client_ptr,
+                                        &uncached_run_loop);
+  mojom::ResolveHostParametersPtr uncached_parameters =
+      mojom::ResolveHostParameters::New();
+  uncached_parameters->source = net::HostResolverSource::ANY;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(uncached_parameters),
+                       std::move(uncached_client_ptr));
+
+  cached_run_loop.Run();
+  uncached_run_loop.Run();
+
+  EXPECT_EQ(net::OK, cached_client.result_error());
+  EXPECT_THAT(
+      cached_client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kSystemResultOriginal, 80)));
+  EXPECT_EQ(net::OK, uncached_client.result_error());
+  EXPECT_THAT(
+      uncached_client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kAnyResultFresh, 80)));
+}
+
+TEST_F(HostResolverTest, CacheDisabled) {
+  constexpr char kDomain[] = "example.com";
+  constexpr char kResultOriginal[] = "1.2.3.4";
+  auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
+  inner_resolver->rules()->AddRule(kDomain, kResultOriginal);
+  base::SimpleTestTickClock test_clock;
+  inner_resolver->set_tick_clock(&test_clock);
+
+  net::NetLog net_log;
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  // Load result into cache.
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr client_ptr;
+  TestResolveHostClient client(&client_ptr, &run_loop);
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80), nullptr,
+                       std::move(client_ptr));
+  run_loop.Run();
+  ASSERT_EQ(net::OK, client.result_error());
+  EXPECT_THAT(
+      client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kResultOriginal, 80)));
+
+  // Change |inner_resolver| rules to ensure results are coming from cache or
+  // not based on whether they resolve to the old or new value.
+  constexpr char kResultFresh[] = "111.222.1.1";
+  inner_resolver->rules()->ClearRules();
+  inner_resolver->rules()->AddRule(kDomain, kResultFresh);
+
+  base::RunLoop cached_run_loop;
+  mojom::ResolveHostClientPtr cached_client_ptr;
+  TestResolveHostClient cached_client(&cached_client_ptr, &cached_run_loop);
+  mojom::ResolveHostParametersPtr cached_parameters =
+      mojom::ResolveHostParameters::New();
+  cached_parameters->allow_cached_response = true;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(cached_parameters),
+                       std::move(cached_client_ptr));
+  cached_run_loop.Run();
+
+  EXPECT_EQ(net::OK, cached_client.result_error());
+  EXPECT_THAT(
+      cached_client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kResultOriginal, 80)));
+
+  base::RunLoop uncached_run_loop;
+  mojom::ResolveHostClientPtr uncached_client_ptr;
+  TestResolveHostClient uncached_client(&uncached_client_ptr,
+                                        &uncached_run_loop);
+  mojom::ResolveHostParametersPtr uncached_parameters =
+      mojom::ResolveHostParameters::New();
+  uncached_parameters->allow_cached_response = false;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(uncached_parameters),
+                       std::move(uncached_client_ptr));
+  uncached_run_loop.Run();
+
+  EXPECT_EQ(net::OK, uncached_client.result_error());
+  EXPECT_THAT(uncached_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kResultFresh, 80)));
+}
+
+// Test for a resolve with a result only in the cache and error if the cache is
+// disabled.
+TEST_F(HostResolverTest, CacheDisabled_ErrorResults) {
+  constexpr char kDomain[] = "example.com";
+  constexpr char kResult[] = "1.2.3.4";
+  auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
+  inner_resolver->rules()->AddRule(kDomain, kResult);
+  base::SimpleTestTickClock test_clock;
+  inner_resolver->set_tick_clock(&test_clock);
+
+  net::NetLog net_log;
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  // Load initial result into cache.
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr client_ptr;
+  TestResolveHostClient client(&client_ptr, &run_loop);
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80), nullptr,
+                       std::move(client_ptr));
+  run_loop.Run();
+  ASSERT_EQ(net::OK, client.result_error());
+
+  // Change |inner_resolver| rules to an error.
+  inner_resolver->rules()->ClearRules();
+  inner_resolver->rules()->AddSimulatedFailure(kDomain);
+
+  // Resolves for |kFreshErrorDomain| should result in error only when cache is
+  // disabled because success was cached.
+  base::RunLoop cached_run_loop;
+  mojom::ResolveHostClientPtr cached_client_ptr;
+  TestResolveHostClient cached_client(&cached_client_ptr, &cached_run_loop);
+  mojom::ResolveHostParametersPtr cached_parameters =
+      mojom::ResolveHostParameters::New();
+  cached_parameters->allow_cached_response = true;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(cached_parameters),
+                       std::move(cached_client_ptr));
+  cached_run_loop.Run();
+  EXPECT_EQ(net::OK, cached_client.result_error());
+
+  base::RunLoop uncached_run_loop;
+  mojom::ResolveHostClientPtr uncached_client_ptr;
+  TestResolveHostClient uncached_client(&uncached_client_ptr,
+                                        &uncached_run_loop);
+  mojom::ResolveHostParametersPtr uncached_parameters =
+      mojom::ResolveHostParameters::New();
+  uncached_parameters->allow_cached_response = false;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       std::move(uncached_parameters),
+                       std::move(uncached_client_ptr));
+  uncached_run_loop.Run();
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, uncached_client.result_error());
 }
 
 TEST_F(HostResolverTest, IncludeCanonicalName) {

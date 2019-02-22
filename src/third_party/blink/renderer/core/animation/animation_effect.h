@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/animation/animation_time_delta.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -112,7 +113,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
 
-  double IterationDuration() const;
+  AnimationTimeDelta IterationDuration() const;
   double RepeatedDuration() const;
   double EndTimeInternal() const;
 
@@ -153,7 +154,9 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   void ClearEventDelegate() { event_delegate_ = nullptr; }
 
   virtual void UpdateChildrenAndEffects() const = 0;
-  virtual double IntrinsicIterationDuration() const { return 0; }
+  virtual AnimationTimeDelta IntrinsicIterationDuration() const {
+    return AnimationTimeDelta();
+  }
   virtual double CalculateTimeToEffectChange(
       bool forwards,
       double local_time,

@@ -10,11 +10,11 @@
 #include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
-#include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpdf_annot.h"
-#include "core/fpdfdoc/cpdf_interform.h"
+#include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_metadata.h"
 #include "public/fpdf_ext.h"
 
@@ -55,7 +55,7 @@ class FPDF_FileHandlerContext final : public IFX_SeekableStream {
 
   void SetPosition(FX_FILESIZE pos) { m_nCurPos = pos; }
 
- protected:
+ private:
   explicit FPDF_FileHandlerContext(FPDF_FILEHANDLER* pFS);
   ~FPDF_FileHandlerContext() override;
 
@@ -239,7 +239,7 @@ void ReportUnsupportedFeatures(CPDF_Document* pDoc) {
   }
 
   // XFA Forms
-  if (!pDoc->GetExtension() && CPDF_InterForm(pDoc).HasXFAForm())
+  if (!pDoc->GetExtension() && CPDF_InteractiveForm(pDoc).HasXFAForm())
     RaiseUnSupportError(FPDF_UNSP_DOC_XFAFORM);
 }
 

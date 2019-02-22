@@ -25,13 +25,13 @@ class Observable {
   // Simple case of a self-nulling pointer.
   class ObservedPtr final : public Observer {
    public:
-    ObservedPtr() : m_pObservable(nullptr) {}
+    ObservedPtr() = default;
     explicit ObservedPtr(T* pObservable) : m_pObservable(pObservable) {
       if (m_pObservable)
         m_pObservable->AddObserver(this);
     }
     ObservedPtr(const ObservedPtr& that) : ObservedPtr(that.Get()) {}
-    ~ObservedPtr() {
+    ~ObservedPtr() override {
       if (m_pObservable)
         m_pObservable->RemoveObserver(this);
     }
@@ -46,6 +46,7 @@ class Observable {
       ASSERT(m_pObservable);
       m_pObservable = nullptr;
     }
+    bool HasObservable() const { return !!m_pObservable; }
     ObservedPtr& operator=(const ObservedPtr& that) {
       Reset(that.Get());
       return *this;
@@ -54,13 +55,13 @@ class Observable {
       return m_pObservable == that.m_pObservable;
     }
     bool operator!=(const ObservedPtr& that) const { return !(*this == that); }
-    explicit operator bool() const { return !!m_pObservable; }
+    explicit operator bool() const { return HasObservable(); }
     T* Get() const { return m_pObservable; }
     T& operator*() const { return *m_pObservable; }
     T* operator->() const { return m_pObservable; }
 
    private:
-    T* m_pObservable;
+    T* m_pObservable = nullptr;
   };
 
   Observable() = default;

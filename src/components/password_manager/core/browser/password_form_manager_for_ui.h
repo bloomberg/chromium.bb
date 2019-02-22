@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
@@ -101,6 +102,8 @@ class PasswordFormManagerForUI {
   virtual void OnPasswordsRevealed() = 0;
 };
 
+class PasswordManagerDriver;
+
 // This is a temporary class for unification of processing of old an new
 // PasswordFormManager in PasswordManager.
 // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
@@ -125,6 +128,13 @@ class PasswordFormManagerInterface : public PasswordFormManagerForUI {
   // A form is considered to be "retry" password if it has only one field which
   // is a current password field.
   virtual bool RetryPasswordFormPasswordUpdate() const = 0;
+
+  // Returns the drivers representing all the frames for the form.
+  virtual std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers()
+      const = 0;
+
+  // Returns the submitted form, if it exists, otherwise nullptr.
+  virtual const autofill::PasswordForm* GetSubmittedForm() const = 0;
 };
 
 }  // namespace  password_manager

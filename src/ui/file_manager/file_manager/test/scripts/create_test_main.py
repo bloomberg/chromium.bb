@@ -12,9 +12,12 @@ as a regular web page in a single renderer.
 
 
 import argparse
+import json
 import os
+import re
 import sys
 import time
+import xml.etree.ElementTree as ET
 
 
 assert __name__ == '__main__'
@@ -126,6 +129,7 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
     '../../webui/resources/js/load_time_data.js',
     '../../webui/resources/js/webui_resource_test.js',
     'test/js/strings.js',
+    'common/js/files_app_entry_types.js',
     'common/js/util.js',
     'common/js/mock_entry.js',
     'common/js/volume_manager_common.js',
@@ -158,8 +162,28 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     ] + scripts)
 
 
+# Get strings from grdp files.  Remove any ph/ex elements before getting text.
+# Parse private_api_strings.cc to match the string name to the grdp message.
+strings = {}
+grdp_files = [
+    '../../../chrome/app/chromeos_strings.grdp',
+    '../../../chrome/app/file_manager_strings.grdp',
+    ]
+resource_bundle = {}
+for grdp in grdp_files:
+  for msg in ET.fromstring(read(grdp)):
+    for ph in msg.findall('ph'):
+      for ex in ph.findall('ex'):
+        ph.remove(ex)
+    resource_bundle[msg.attrib['name']] = ''.join(msg.itertext()).strip()
+private_api_strings = read('../../../chrome/browser/chromeos/extensions/'
+                           'file_manager/private_api_strings.cc')
+for m in re.finditer(r'SET_STRING\(\"(.*?)\",\s+(\w+)\);', private_api_strings):
+  strings[m.group(1)] = resource_bundle.get(m.group(2), m.group(2))
+
+
 def elements_path(elements_filename):
-  return '="../../../%sforeground/elements/%s' % (ROOT, elements_filename)
+  return '="../../../../%sforeground/elements/%s' % (ROOT, elements_filename)
 
 # Fix relative file paths in elements_bundle.html
 # Load QuickView in iframe rather than webview.
@@ -167,16 +191,19 @@ def elements_path(elements_filename):
 # files_safe_media.html which will use webview rather than iframe,
 # and sets src directly on iframe.
 for filename, substitutions in (
-    ('elements/elements_bundle.html', (
+    ('test/js/strings.js', (
+        ('$GRDP', json.dumps(strings, sort_keys=True, indent=2)),
+    )),
+    ('foreground/elements/elements_bundle.html', (
         ('="files_ripple', elements_path('files_ripple')),
         ('="files_toggle_ripple', elements_path('files_toggle_ripple')),
         ('="files_tooltip', elements_path('files_tooltip')),
         ('="icons', elements_path('icons')),
     )),
-    ('js/elements_importer.js', (
-        ("= 'foreground", "= 'test/gen"),
+    ('foreground/js/elements_importer.js', (
+        ("= 'foreground", "= 'test/gen/foreground"),
     )),
-    ('elements/files_quick_view.html', (
+    ('foreground/elements/files_quick_view.html', (
         ('="files_icon', elements_path('files_icon')),
         ('="files_metadata', elements_path('files_metadata')),
         ('="files_tooltip', elements_path('files_tooltip')),
@@ -184,8 +211,8 @@ for filename, substitutions in (
         ('="icons', elements_path('icons')),
         ('webview', 'iframe'),
     )),
-    ('elements/files_safe_media.html', (('webview', 'iframe'),)),
-    ('elements/files_safe_media.js', (
+    ('foreground/elements/files_safe_media.html', (('webview', 'iframe'),)),
+    ('foreground/elements/files_safe_media.js', (
         ("'foreground/elements", "'%sforeground/elements" % ROOT),
         ("'webview'", "'iframe'"),
         ("'contentload'", "'load'"),
@@ -194,11 +221,11 @@ for filename, substitutions in (
           'this.webview_.contentWindow.content.src = this.src;')),
     )),
     ):
-  buf = read('foreground/' + filename)
+  buf = read(filename)
   for old, new in substitutions:
     buf = buf.replace(old, new)
   write('test/gen/' + filename, buf)
-  main_html = replaceline(main_html, 'foreground/' + filename,
+  main_html = replaceline(main_html, filename,
                           ['<script src="test/gen/%s"></script>' % filename])
 
 test_html = GENERATED_HTML + '\n'.join(main_html)

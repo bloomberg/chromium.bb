@@ -28,12 +28,12 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/progress_reporter.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/progress_reporter.h"
 #include "ui/gl/trace_util.h"
 
 using base::trace_event::MemoryAllocatorDump;
@@ -1957,7 +1957,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                GLint max_3d_texture_size,
                                GLint max_array_texture_layers,
                                bool use_default_textures,
-                               ProgressReporter* progress_reporter,
+                               gl::ProgressReporter* progress_reporter,
                                ServiceDiscardableManager* discardable_manager)
     : memory_type_tracker_(new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
@@ -3491,8 +3491,8 @@ bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                   base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/textures/share_group_0x%" PRIX64,
-                           memory_tracker_->ShareGroupTracingGUID());
+        base::StringPrintf("gpu/gl/textures/context_group_0x%" PRIX64,
+                           memory_tracker_->ContextGroupTracingId());
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, mem_represented());
@@ -3526,8 +3526,8 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
     return;
 
   std::string dump_name = base::StringPrintf(
-      "gpu/gl/textures/share_group_0x%" PRIX64 "/texture_0x%" PRIX32,
-      memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
+      "gpu/gl/textures/context_group_0x%" PRIX64 "/texture_0x%" PRIX32,
+      memory_tracker_->ContextGroupTracingId(), ref->client_id());
 
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
@@ -3537,22 +3537,21 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   // Add the |client_guid| which expresses shared ownership with the client
   // process.
   auto client_guid = gl::GetGLTextureClientGUIDForTracing(
-      memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
+      memory_tracker_->ContextGroupTracingId(), ref->client_id());
   pmd->CreateSharedGlobalAllocatorDump(client_guid);
   pmd->AddOwnershipEdge(dump->guid(), client_guid);
 
   // Add a |service_guid| which expresses shared ownership between the various
   // |client_guid|s.
-  // TODO(ericrk): May need to ensure uniqueness using GLShareGroup and
-  // potentially cross-share-group sharing via EGLImages. crbug.com/512534
-  auto service_guid = gl::GetGLTextureServiceGUIDForTracing(
-      memory_tracker_->ShareGroupTracingGUID(), ref->texture()->service_id());
+  auto service_guid =
+      gl::GetGLTextureServiceGUIDForTracing(ref->texture()->service_id());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
   int importance = 0;  // Default importance.
   // The link to the memory tracking |client_id| is given a higher importance
   // than other refs.
-  if (ref == ref->texture()->memory_tracking_ref_)
+  if (!ref->texture()->lightweight_ref_ &&
+      (ref == ref->texture()->memory_tracking_ref_))
     importance = 2;
 
   pmd->AddOwnershipEdge(client_guid, service_guid, importance);

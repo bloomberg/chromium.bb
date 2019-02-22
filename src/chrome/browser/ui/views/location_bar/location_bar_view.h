@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -78,7 +79,8 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
                         public ContentSettingImageView::Delegate,
-                        public PageActionIconView::Delegate {
+                        public PageActionIconView::Delegate,
+                        public ui::MaterialDesignControllerObserver {
  public:
   class Delegate {
    public:
@@ -107,14 +109,8 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
-  // Returns the location bar border thickness in DIPs.
-  static int GetBorderThicknessDip();
-
-  // Whether the location bar is a pill shape.
-  static bool IsRounded();
-
   // Returns the location bar border radius in DIPs.
-  float GetBorderRadius() const;
+  int GetBorderRadius() const;
 
   // Initializes the LocationBarView.
   void Init();
@@ -135,8 +131,19 @@ class LocationBarView : public LocationBar,
   SkColor GetSecurityChipColor(
       security_state::SecurityLevel security_level) const;
 
+  // Returns the color to use for icon ink highlights.
+  SkColor GetIconInkDropColor() const;
+
   // Returns the cached theme color tint for the location bar and results.
   OmniboxTint tint() const { return tint_; }
+
+  // Returns a background that paints an (optionally stroked) rounded rect with
+  // the given color.
+  std::unique_ptr<views::Background> CreateRoundRectBackground(
+      SkColor background_color,
+      SkColor stroke_color,
+      SkBlendMode blend_mode = SkBlendMode::kSrcOver,
+      bool antialias = true) const;
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -184,11 +191,6 @@ class LocationBarView : public LocationBar,
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const base::string16& text);
 
-  // Paints a custom focus ring on platforms that normally do not show focus
-  // rings if |full_keyboard_accessibility_mode| is set to true.
-  // TODO(tommycli): Remove this after after Material Refresh is launched.
-  void SetFullKeyboardAcessibilityMode(bool full_keyboard_accessibility_mode);
-
   // Select all of the text. Needed when the user tabs through controls
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
@@ -198,10 +200,6 @@ class LocationBarView : public LocationBar,
   SelectedKeywordView* selected_keyword_view() {
     return selected_keyword_view_;
   }
-
-  // The anchor view for security-related bubbles. That is, those anchored to
-  // the leading edge of the Omnibox, under the padlock.
-  views::View* GetSecurityBubbleAnchorView();
 
   // Show a page info dialog for |web_contents|.
   // Returns true if a dialog was shown, false otherwise.
@@ -241,6 +239,7 @@ class LocationBarView : public LocationBar,
   content::WebContents* GetWebContents() override;
 
   // ContentSettingImageView::Delegate:
+  SkColor GetContentSettingInkDropColor() const override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -282,9 +281,6 @@ class LocationBarView : public LocationBar,
   // E.g., if the LocationBarView was 50dip long, and the border radius was 2,
   // this method would return a gfx::Rect with 46dip width.
   gfx::Rect GetLocalBoundsWithoutEndcaps() const;
-
-  // Returns the thickness of any visible edge, in pixels.
-  int GetHorizontalEdgeThickness() const;
 
   // Updates the background on a theme change, or dropdown state change.
   void RefreshBackground();
@@ -339,7 +335,9 @@ class LocationBarView : public LocationBar,
   GURL GetDestinationURL() const override;
   WindowOpenDisposition GetWindowOpenDisposition() const override;
   ui::PageTransition GetPageTransition() const override;
+  base::TimeTicks GetMatchSelectionTimestamp() const override;
   void AcceptInput() override;
+  void AcceptInput(base::TimeTicks match_selection_timestamp) override;
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
@@ -360,7 +358,6 @@ class LocationBarView : public LocationBar,
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // views::DragController:
@@ -373,6 +370,7 @@ class LocationBarView : public LocationBar,
                            const gfx::Point& p) override;
 
   // PageActionIconView::Delegate:
+  SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
   // gfx::AnimationDelegate:
@@ -388,9 +386,8 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
 
-  // Returns the total amount of space reserved above or below the content,
-  // which is the vertical edge thickness plus the padding next to it.
-  static int GetTotalVerticalPadding();
+  // ui::MaterialDesignControllerObserver:
+  void OnMdModeChanged() override;
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
@@ -469,12 +466,6 @@ class LocationBarView : public LocationBar,
   // The theme tint. Updated based on the profile and theme settings.
   OmniboxTint tint_;
 
-  // True if we are in full keyboard accessibility mode. This causes us to show
-  // an internally drawn focus ring on platforms that normally don't display any
-  // focus rings. This custom ring is only drawn if |focus_ring_| is nullptr.
-  // TODO(tommycli): Remove this after after Material Refresh is launched.
-  bool full_keyboard_accessibility_mode_ = false;
-
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
 
@@ -489,6 +480,10 @@ class LocationBarView : public LocationBar,
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;
+
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
+      md_observer_{this};
 
   // Used to scope the lifetime of asynchronous icon fetch callbacks to the
   // lifetime of the object. Weak pointers issued by this factory are

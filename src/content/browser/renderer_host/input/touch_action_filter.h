@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -67,14 +66,17 @@ class CONTENT_EXPORT TouchActionFilter {
 
   void OnHasTouchEventHandlers(bool has_handlers);
 
-  void SetActiveTouchInProgress(bool active_touch_in_progress);
+  void IncreaseActiveTouches();
+  void DecreaseActiveTouches();
 
   // Debugging only.
   void AppendToGestureSequenceForDebugging(const char* str);
 
  private:
+  friend class InputRouterImplTest;
   friend class MockRenderWidgetHost;
   friend class TouchActionFilterTest;
+  friend class SitePerProcessBrowserTouchActionTest;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
@@ -107,8 +109,11 @@ class CONTENT_EXPORT TouchActionFilter {
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
 
-  // True at touch start and false at touch end.
-  bool active_touch_in_progress_ = false;
+  // True if we're between a GSB and a GSE.
+  bool gesture_scroll_in_progress_ = false;
+
+  // Increment at receiving ACK for touch start and decrement at touch end.
+  int num_of_active_touches_ = 0;
 
   // What touch actions are currently permitted.
   base::Optional<cc::TouchAction> allowed_touch_action_;

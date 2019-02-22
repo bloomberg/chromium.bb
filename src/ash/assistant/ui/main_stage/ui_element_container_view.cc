@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 
+#include <string>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_response.h"
@@ -14,7 +16,6 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/shell.h"
-#include "base/base64.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -26,6 +27,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -37,7 +40,8 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPaddingHorizontalDip = 32;
+constexpr int kFirstCardMarginTopDip = 40;
+constexpr int kPaddingBottomDip = 24;
 
 // Card element animation.
 constexpr float kCardElementAnimationFadeOutOpacity = 0.26f;
@@ -52,9 +56,6 @@ constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
-
-// WebContents.
-constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
 // Helpers ---------------------------------------------------------------------
 
@@ -83,14 +84,16 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 
 // CardElementViewHolder -------------------------------------------------------
 
+// TODO(dmblack): Move this class to standalone file as part of clean up effort.
 // This class uses a child widget to host a view for a card element that has an
 // aura::Window. The child widget's layer becomes the root of the card's layer
 // hierarchy.
 class CardElementViewHolder : public views::NativeViewHost,
                               public views::ViewObserver {
  public:
-  explicit CardElementViewHolder(views::View* card_element_view)
-      : card_element_view_(card_element_view) {
+  explicit CardElementViewHolder(const AssistantCardElement* card_element)
+      : card_element_view_(app_list::AnswerCardContentsRegistry::Get()->GetView(
+            card_element->embed_token().value())) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
 
     params.name = GetClassName();
@@ -106,10 +109,14 @@ class CardElementViewHolder : public views::NativeViewHost,
     contents_view_->AddChildView(card_element_view_);
 
     card_element_view_->AddObserver(this);
+
+    // OverrideDescription() doesn't work. Only names are read automatically.
+    GetViewAccessibility().OverrideName(card_element->fallback());
   }
 
   ~CardElementViewHolder() override {
-    card_element_view_->RemoveObserver(this);
+    if (card_element_view_)
+      card_element_view_->RemoveObserver(this);
   }
 
   // views::NativeViewHost:
@@ -159,9 +166,32 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
   // views::ViewObserver:
+  void OnViewIsDeleting(views::View* view) override {
+    DCHECK_EQ(card_element_view_, view);
+
+    // It's possible for |card_element_view_| to be destroyed before
+    // CardElementViewHolder. When this happens, we need to perform clean up
+    // prior to |card_element_view_| being destroyed and remove our cached
+    // reference to prevent additional clean up attempts on the destroyed
+    // instance when destroying CardElementViewHolder.
+    card_element_view_->RemoveObserver(this);
+    card_element_view_ = nullptr;
+  }
+
   void OnViewPreferredSizeChanged(views::View* view) override {
-    contents_view_->SetPreferredSize(view->GetPreferredSize());
-    SetPreferredSize(view->GetPreferredSize());
+    DCHECK_EQ(card_element_view_, view);
+
+    gfx::Size preferred_size = view->GetPreferredSize();
+
+    if (border()) {
+      // When a border is present we need to explicitly account for it in our
+      // size calculations by enlarging our preferred size by the border insets.
+      const gfx::Insets insets = border()->GetInsets();
+      preferred_size.Enlarge(insets.width(), insets.height());
+    }
+
+    contents_view_->SetPreferredSize(preferred_size);
+    SetPreferredSize(preferred_size);
   }
 
   void Attach() {
@@ -183,7 +213,7 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
  private:
-  views::View* const card_element_view_;  // Owned by WebContentsManager.
+  views::View* card_element_view_;  // Owned by WebContentsManager.
 
   std::unique_ptr<views::Widget> child_widget_;
 
@@ -203,8 +233,7 @@ UiElementContainerView::UiElementContainerView(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
                   &UiElementContainerView::OnAllUiElementsExitAnimationEnded,
-                  base::Unretained(this)))),
-      render_request_weak_factory_(this) {
+                  base::Unretained(this)))) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which
@@ -214,7 +243,10 @@ UiElementContainerView::UiElementContainerView(
 
 UiElementContainerView::~UiElementContainerView() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
-  ReleaseAllCards();
+}
+
+const char* UiElementContainerView::GetClassName() const {
+  return "UiElementContainerView";
 }
 
 gfx::Size UiElementContainerView::CalculatePreferredSize() const {
@@ -231,14 +263,20 @@ void UiElementContainerView::OnContentsPreferredSizeChanged(
   content_view->SetSize(gfx::Size(width(), preferred_height));
 }
 
-void UiElementContainerView::InitLayout() {
-  views::BoxLayout* layout_manager =
-      content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical,
-          gfx::Insets(0, kPaddingHorizontalDip), kSpacingDip));
+void UiElementContainerView::PreferredSizeChanged() {
+  // Because views are added/removed in batches, we attempt to prevent over-
+  // propagation of the PreferredSizeChanged event during batched view hierarchy
+  // add/remove operations. This helps to reduce layout passes.
+  if (propagate_preferred_size_changed_)
+    AssistantScrollView::PreferredSizeChanged();
+}
 
-  layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
+void UiElementContainerView::InitLayout() {
+  content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kUiElementHorizontalMarginDip, kPaddingBottomDip,
+                  kUiElementHorizontalMarginDip),
+      kSpacingDip));
 }
 
 void UiElementContainerView::OnCommittedQueryChanged(
@@ -262,11 +300,16 @@ void UiElementContainerView::OnCommittedQueryChanged(
 }
 
 void UiElementContainerView::OnResponseChanged(
-    const AssistantResponse& response) {
+    const std::shared_ptr<AssistantResponse>& response) {
+  // We may have to pend the response while we animate the previous response off
+  // stage. We use a shared pointer to ensure that any views we add to the view
+  // hierarchy can be removed before the underlying UI elements are destroyed.
+  pending_response_ = std::shared_ptr<const AssistantResponse>(response);
+
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
   if (!content_view()->has_children()) {
-    OnResponseAdded(response);
+    OnResponseAdded(std::move(pending_response_));
     return;
   }
 
@@ -280,9 +323,13 @@ void UiElementContainerView::OnResponseChanged(
   for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
     StartLayerAnimationSequence(
         pair.first->layer()->GetAnimator(),
-        // Fade out the opacity to 0%.
+        // Fade out the opacity to 0%. Note that we approximate 0% by actually
+        // using 0.01%. We do this to workaround a DCHECK that requires
+        // aura::Windows to have a target opacity > 0% when shown. Because our
+        // window will be removed after it reaches this value, it should be safe
+        // to circumnavigate this DCHECK.
         CreateLayerAnimationSequence(
-            CreateOpacityElement(0.f, kUiElementAnimationFadeOutDuration)),
+            CreateOpacityElement(0.0001f, kUiElementAnimationFadeOutDuration)),
         // Observe the animation.
         ui_elements_exit_animation_observer_.get());
   }
@@ -292,154 +339,101 @@ void UiElementContainerView::OnResponseChanged(
 }
 
 void UiElementContainerView::OnResponseCleared() {
-  // Prevent any in-flight card rendering requests from returning.
-  render_request_weak_factory_.InvalidateWeakPtrs();
+  // We need to detach native view hosts before they are removed from the view
+  // hierarchy and destroyed.
+  if (!native_view_hosts_.empty()) {
+    for (views::NativeViewHost* native_view_host : native_view_hosts_)
+      native_view_host->Detach();
+    native_view_hosts_.clear();
+  }
 
+  // We can prevent over-propagation of the PreferredSizeChanged event by
+  // stopping propagation during batched view hierarchy add/remove operations.
+  SetPropagatePreferredSizeChanged(false);
   content_view()->RemoveAllChildViews(/*delete_children=*/true);
   ui_element_views_.clear();
+  SetPropagatePreferredSizeChanged(true);
 
-  ReleaseAllCards();
+  // Once the response has been cleared from the stage, we can are free to
+  // release our shared pointer. This allows resources associated with the
+  // underlying UI elements to be freed, provided there are no other usages.
+  response_.reset();
 
-  // We can clear any pending UI elements as they are no longer relevant.
-  pending_ui_element_list_.clear();
-  SetProcessingUiElement(false);
+  // Reset state for the next response.
+  is_first_card_ = true;
 }
 
 void UiElementContainerView::OnResponseAdded(
-    const AssistantResponse& response) {
-  for (const std::unique_ptr<AssistantUiElement>& ui_element :
-       response.GetUiElements()) {
-    // If we are processing a UI element we need to pend the incoming elements
-    // instead of handling them immediately.
-    if (is_processing_ui_element_) {
-      pending_ui_element_list_.push_back(ui_element.get());
-      continue;
+    std::shared_ptr<const AssistantResponse> response) {
+  // The response should be fully processed before it is presented.
+  DCHECK_EQ(AssistantResponse::ProcessingState::kProcessed,
+            response->processing_state());
+
+  // We cache a reference to the |response| to ensure that the instance is not
+  // destroyed before we have removed associated views from the view hierarchy.
+  response_ = std::move(response);
+
+  // Because the views for the response are animated in together, we can stop
+  // propagation of PreferredSizeChanged events until all views have been added
+  // to the view hierarchy to reduce layout passes.
+  SetPropagatePreferredSizeChanged(false);
+
+  for (const auto& ui_element : response_->GetUiElements()) {
+    switch (ui_element->GetType()) {
+      case AssistantUiElementType::kCard:
+        OnCardElementAdded(
+            static_cast<const AssistantCardElement*>(ui_element.get()));
+        break;
+      case AssistantUiElementType::kText:
+        OnTextElementAdded(
+            static_cast<const AssistantTextElement*>(ui_element.get()));
+        break;
     }
-    OnUiElementAdded(ui_element.get());
   }
 
-  // If we're no longer processing any UI elements, then all UI elements have
-  // been successfully added.
-  if (!is_processing_ui_element_)
-    OnAllUiElementsAdded();
-}
-
-void UiElementContainerView::OnAllUiElementsAdded() {
-  DCHECK(!is_processing_ui_element_);
-
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-
-  // Now that the response for the current query has been added to the view
-  // hierarchy, we can re-enable processing of events.
-  set_can_process_events_within_subtree(true);
-
-  // Now that we've received and added all UI elements for the current query
-  // response, we can animate them in.
-  for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
-    // We fade in the views to full opacity after a slight delay.
-    pair.first->layer()->GetAnimator()->StartAnimation(
-        CreateLayerAnimationSequence(
-            ui::LayerAnimationElement::CreatePauseElement(
-                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                kUiElementAnimationFadeInDelay),
-            CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
-  }
-}
-
-bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(
-    const ui::CallbackLayerAnimationObserver& observer) {
-  // All UI elements have finished their exit animations so its safe to perform
-  // clearing of their views and managed resources.
-  OnResponseCleared();
-
-  const AssistantResponse* response =
-      assistant_controller_->interaction_controller()->model()->response();
-
-  // If there is a response present (and there should be), it is safe to add it
-  // now that we've cleared the previous content from the stage.
-  if (response)
-    OnResponseAdded(*response);
-
-  // Return false to prevent the observer from destroying itself.
-  return false;
-}
-
-void UiElementContainerView::OnUiElementAdded(
-    const AssistantUiElement* ui_element) {
-  switch (ui_element->GetType()) {
-    case AssistantUiElementType::kCard:
-      OnCardElementAdded(static_cast<const AssistantCardElement*>(ui_element));
-      break;
-    case AssistantUiElementType::kText:
-      OnTextElementAdded(static_cast<const AssistantTextElement*>(ui_element));
-      break;
-  }
+  OnAllUiElementsAdded();
 }
 
 void UiElementContainerView::OnCardElementAdded(
     const AssistantCardElement* card_element) {
-  DCHECK(!is_processing_ui_element_);
-
-  // We need to pend any further UI elements until the card has been rendered.
-  // This insures that views will be added to the view hierarchy in the order in
-  // which they were received.
-  SetProcessingUiElement(true);
-
-  // Generate a unique identifier for the card. This will be used to clean up
-  // card resources when it is no longer needed.
-  base::UnguessableToken id_token = base::UnguessableToken::Create();
-
-  // Encode the card HTML in base64.
-  std::string encoded_html;
-  base::Base64Encode(card_element->html(), &encoded_html);
-
-  // Configure parameters for the card.
-  ash::mojom::ManagedWebContentsParamsPtr params(
-      ash::mojom::ManagedWebContentsParams::New());
-  params->url = GURL(kDataUriPrefix + encoded_html);
-  params->min_size_dip =
-      gfx::Size(kPreferredWidthDip - 2 * kPaddingHorizontalDip, 1);
-  params->max_size_dip =
-      gfx::Size(kPreferredWidthDip - 2 * kPaddingHorizontalDip, INT_MAX);
-
-  // The card will be rendered by AssistantCardRenderer, running the specified
-  // callback when the card is ready for embedding.
-  assistant_controller_->ManageWebContents(
-      id_token, std::move(params),
-      base::BindOnce(&UiElementContainerView::OnCardReady,
-                     render_request_weak_factory_.GetWeakPtr()));
-
-  // Cache the card identifier for freeing up resources when it is no longer
-  // needed.
-  id_token_list_.push_back(id_token);
-}
-
-void UiElementContainerView::OnCardReady(
-    const base::Optional<base::UnguessableToken>& embed_token) {
-  if (!embed_token.has_value()) {
-    // TODO(dmblack): Maybe show a fallback view here?
-    // Something went wrong when processing this card so we'll have to abort
-    // the attempt. We should still resume processing any UI elements that are
-    // in the pending queue.
-    SetProcessingUiElement(false);
+  // The card, for some reason, is not embeddable so we'll have to ignore it.
+  if (!card_element->embed_token().has_value())
     return;
-  }
 
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
-    CardElementViewHolder* view_holder = new CardElementViewHolder(
-        app_list::AnswerCardContentsRegistry::Get()->GetView(
-            embed_token.value()));
+    auto* view_holder = new CardElementViewHolder(card_element);
+
+    if (is_first_card_) {
+      is_first_card_ = false;
+
+      // The first card requires a top margin of |kFirstCardMarginTopDip|, but
+      // we need to account for child spacing because the first card is not
+      // necessarily the first UI element.
+      const int top_margin_dip = child_count() == 0
+                                     ? kFirstCardMarginTopDip
+                                     : kFirstCardMarginTopDip - kSpacingDip;
+
+      // We effectively create a top margin by applying an empty border.
+      view_holder->SetBorder(views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
+    }
 
     content_view()->AddChildView(view_holder);
     view_holder->Attach();
 
+    // Cache a reference to the attached native view host so that it can be
+    // detached prior to being removed from the view hierarchy and destroyed.
+    native_view_hosts_.push_back(view_holder);
+
     // The view will be animated on its own layer, so we need to do some initial
-    // layer setup. We're going to fade the view in, so hide it.
+    // layer setup. We're going to fade the view in, so hide it. Note that we
+    // approximate 0% opacity by actually using 0.01%. We do this to workaround
+    // a DCHECK that requires aura::Windows to have a target opacity > 0% when
+    // shown. Because our window will be animated to full opacity from this
+    // value, it should be safe to circumnavigate this DCHECK.
     view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
-    view_holder->native_view()->layer()->SetOpacity(0.f);
+    view_holder->native_view()->layer()->SetOpacity(0.0001f);
 
     // We cache the native view for use during animations and its desired
     // opacity that we'll animate to while processing the next query response.
@@ -448,16 +442,10 @@ void UiElementContainerView::OnCardReady(
   }
 
   // TODO(dmblack): Handle Mash case.
-
-  // Once the card has been rendered and embedded, we can resume processing
-  // any UI elements that are in the pending queue.
-  SetProcessingUiElement(false);
 }
 
 void UiElementContainerView::OnTextElementAdded(
     const AssistantTextElement* text_element) {
-  DCHECK(!is_processing_ui_element_);
-
   views::View* text_element_view = new AssistantTextElementView(text_element);
 
   // The view will be animated on its own layer, so we need to do some initial
@@ -474,42 +462,62 @@ void UiElementContainerView::OnTextElementAdded(
   content_view()->AddChildView(text_element_view);
 }
 
-void UiElementContainerView::SetProcessingUiElement(bool is_processing) {
-  if (is_processing == is_processing_ui_element_)
-    return;
+void UiElementContainerView::OnAllUiElementsAdded() {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
 
-  is_processing_ui_element_ = is_processing;
+  // Now that the response for the current query has been added to the view
+  // hierarchy, we can re-enable processing of events. We can also restart
+  // propagation of PreferredSizeChanged events since all views have been added
+  // to the view hierarchy.
+  set_can_process_events_within_subtree(true);
+  SetPropagatePreferredSizeChanged(true);
 
-  // If we are no longer processing a UI element, we need to handle anything
-  // that was put in the pending queue. Note that the elements left in the
-  // pending queue may themselves require processing that again pends the queue.
-  if (!is_processing_ui_element_)
-    ProcessPendingUiElements();
-}
-
-void UiElementContainerView::ProcessPendingUiElements() {
-  DCHECK(!is_processing_ui_element_);
-
-  while (!is_processing_ui_element_ && !pending_ui_element_list_.empty()) {
-    const AssistantUiElement* ui_element = pending_ui_element_list_.front();
-    pending_ui_element_list_.pop_front();
-    OnUiElementAdded(ui_element);
+  // Now that we've received and added all UI elements for the current query
+  // response, we can animate them in.
+  for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
+    // We fade in the views to full opacity after a slight delay.
+    pair.first->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kUiElementAnimationFadeInDelay),
+            CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
   }
 
-  // If we're no longer processing any UI elements, then all UI elements have
-  // been successfully added.
-  if (!is_processing_ui_element_)
-    OnAllUiElementsAdded();
+  // Let screen reader read the query result. This includes the text response
+  // and the card fallback text, but webview result is not included.
+  // We don't read when there is TTS to avoid speaking over the server response.
+  const AssistantResponse* response =
+      assistant_controller_->interaction_controller()->model()->response();
+  if (!response->has_tts())
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
-void UiElementContainerView::ReleaseAllCards() {
-  if (id_token_list_.empty())
+bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  // All UI elements have finished their exit animations so its safe to perform
+  // clearing of their views and managed resources.
+  OnResponseCleared();
+
+  // It is safe to add our pending response to the view hierarchy now that we've
+  // cleared the previous response from the stage.
+  OnResponseAdded(std::move(pending_response_));
+
+  // Return false to prevent the observer from destroying itself.
+  return false;
+}
+
+void UiElementContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
+  if (propagate == propagate_preferred_size_changed_)
     return;
 
-  // Release any resources associated with the cards identified in
-  // |id_token_list_| owned by AssistantCardRenderer.
-  assistant_controller_->ReleaseWebContents(id_token_list_);
-  id_token_list_.clear();
+  propagate_preferred_size_changed_ = propagate;
+
+  // When we are no longer stopping propagation of PreferredSizeChanged events,
+  // we fire an event off to ensure the view hierarchy is properly laid out.
+  if (propagate_preferred_size_changed_)
+    PreferredSizeChanged();
 }
 
 }  // namespace ash

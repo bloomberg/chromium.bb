@@ -26,6 +26,8 @@ static_library("test_config") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "../memory/fake_memory_pressure_monitor.cc",
+    "../memory/fake_memory_pressure_monitor.h",
     "../task/sequence_manager/test/fake_task.cc",
     "../task/sequence_manager/test/fake_task.h",
     "../task/sequence_manager/test/lazy_thread_controller_for_test.cc",
@@ -421,7 +423,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
-      "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/android_deps:android_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
     srcjar_deps = [ ":test_support_java_aidl" ]

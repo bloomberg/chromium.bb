@@ -22,7 +22,7 @@
 namespace blink {
 
 class CORE_EXPORT LongOrBoolean final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   LongOrBoolean();
   bool IsNull() const { return type_ == SpecificType::kNone; }

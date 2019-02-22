@@ -88,6 +88,7 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: {
       type: Object,
+      observer: 'onSyncStatusChanged_',
     },
 
     /**
@@ -133,7 +134,6 @@ Polymer({
       type: Boolean,
       value: true,
       computed: 'computeSignedIn_(syncStatus.signedIn)',
-      observer: 'onSignedInChanged_',
     },
 
     /** @private */
@@ -177,6 +177,12 @@ Polymer({
     unifiedConsentEnabled: Boolean,
   },
 
+  observers: [
+    // Depends on signedIn_ so that the sync section is updated on signin
+    // changes, even though the actual value of signedIn_ is not used.
+    'onSyncSectionOpenedShouldChange_(signedIn_, syncSectionDisabled_)',
+  ],
+
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
 
@@ -191,6 +197,13 @@ Polymer({
    * @private {?Function}
    */
   beforeunloadCallback_: null,
+
+  /**
+   * Whether the initial layout for collapsible sections has been computed. It
+   * is computed only once, the first time the sync status is updated.
+   * @private {boolean}
+   */
+  collapsibleSectionsInitialized_: false,
 
   /**
    * Whether the user decided to abort sync.
@@ -245,7 +258,7 @@ Polymer({
    * @private
    */
   computeSyncSectionDisabled_: function() {
-    return !!this.unifiedConsentEnabled &&
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
           this.syncStatus.statusAction !==
@@ -275,6 +288,8 @@ Polymer({
 
     if (this.beforeunloadCallback_)
       return;
+
+    this.collapsibleSectionsInitialized_ = false;
 
     // Display loading page until the settings have been retrieved.
     this.pageStatus_ = settings.PageStatus.SPINNER;
@@ -310,7 +325,7 @@ Polymer({
     this.browserProxy_.unifiedConsentToggleChanged(checked);
 
     if (!checked) {
-      this.syncSectionOpened_ = true;
+      this.syncSectionOpened_ = !this.syncSectionDisabled_;
       this.personalizeSectionOpened_ = true;
     }
   },
@@ -610,12 +625,27 @@ Polymer({
     settings.navigateTo(settings.routes.BASIC);
   },
 
+  // Computes the initial layout for the sync section and the personalize
+  // section. This function only does something on its first call.
+  onSyncStatusChanged_: function() {
+    if (!!this.syncStatus && !this.collapsibleSectionsInitialized_) {
+      this.collapsibleSectionsInitialized_ = true;
+      this.personalizeSectionOpened_ =
+          !this.$$('#unifiedConsentToggle').checked ||
+          !!this.syncStatus.setupInProgress;
+      this.syncSectionOpened_ =
+          this.personalizeSectionOpened_ && !this.syncSectionDisabled_;
+    }
+  },
+
   /**
-   * Collapses/Expands the sync section if the signedIn state has changed.
+   * Collapses the sync section if it becomes disabled, and expands it when it's
+   * re-enabled.
    * @private
    */
-  onSignedInChanged_: function() {
-    this.syncSectionOpened_ = !!this.signedIn_;
+  onSyncSectionOpenedShouldChange_: function() {
+    this.syncSectionOpened_ =
+        !this.syncSectionDisabled_ && !this.$$('#unifiedConsentToggle').checked;
   },
 
   /**
@@ -676,7 +706,7 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    return !!this.unifiedConsentEnabled &&
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
   // </if>
@@ -686,7 +716,8 @@ Polymer({
    * @private
    */
   shouldShowExistingPassphraseBelowAccount_: function() {
-    return !!this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+    return !!this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
+        !!this.syncPrefs.passphraseRequired;
   },
 
   /**
@@ -694,7 +725,8 @@ Polymer({
    * @private
    */
   shouldShowExistingPassphraseInSyncSection_: function() {
-    return !this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+    return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
+        !!this.syncPrefs.passphraseRequired;
   },
 
   /**
@@ -702,7 +734,8 @@ Polymer({
    * @private
    */
   shouldShowSyncControls_: function() {
-    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled;
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+        !this.syncStatus.disabled;
   },
 
   /**
@@ -710,8 +743,8 @@ Polymer({
    * @private
    */
   shouldShowUnifiedConsentToggle_: function() {
-    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled &&
-        !!this.syncStatus.signedIn;
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+        !this.syncStatus.disabled && !!this.syncStatus.signedIn;
   },
 });
 

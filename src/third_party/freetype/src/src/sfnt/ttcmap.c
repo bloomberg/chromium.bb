@@ -36,7 +36,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttcmap
+#define FT_COMPONENT  ttcmap
 
 
 #define TT_PEEK_SHORT   FT_PEEK_SHORT
@@ -3680,6 +3680,9 @@
 
     FT_UNUSED( pointer );
 
+
+    if ( !psnames->unicodes_init )
+      return FT_THROW( Unimplemented_Feature );
 
     return psnames->unicodes_init( memory,
                                    unicodes,

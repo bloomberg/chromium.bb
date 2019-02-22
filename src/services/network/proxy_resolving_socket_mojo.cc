@@ -15,8 +15,13 @@ namespace network {
 
 ProxyResolvingSocketMojo::ProxyResolvingSocketMojo(
     std::unique_ptr<ProxyResolvingClientSocket> socket,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : socket_(std::move(socket)), traffic_annotation_(traffic_annotation) {}
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::SocketObserverPtr observer,
+    TLSSocketFactory* tls_socket_factory)
+    : observer_(std::move(observer)),
+      tls_socket_factory_(tls_socket_factory),
+      socket_(std::move(socket)),
+      traffic_annotation_(traffic_annotation) {}
 
 ProxyResolvingSocketMojo::~ProxyResolvingSocketMojo() {
   if (connect_callback_) {
@@ -44,6 +49,36 @@ void ProxyResolvingSocketMojo::Connect(
   OnConnectCompleted(result);
 }
 
+void ProxyResolvingSocketMojo::UpgradeToTLS(
+    const net::HostPortPair& host_port_pair,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::TLSClientSocketRequest request,
+    mojom::SocketObserverPtr observer,
+    mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback) {
+  // Wait for data pipes to be closed by the client before doing the upgrade.
+  if (socket_data_pump_) {
+    pending_upgrade_to_tls_callback_ = base::BindOnce(
+        &ProxyResolvingSocketMojo::UpgradeToTLS, base::Unretained(this),
+        host_port_pair, traffic_annotation, std::move(request),
+        std::move(observer), std::move(callback));
+    return;
+  }
+  tls_socket_factory_->UpgradeToTLS(
+      this, host_port_pair, nullptr /* sockt_options */, traffic_annotation,
+      std::move(request), std::move(observer),
+      base::BindOnce(
+          [](mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback,
+             int32_t net_error,
+             mojo::ScopedDataPipeConsumerHandle receive_stream,
+             mojo::ScopedDataPipeProducerHandle send_stream,
+             const base::Optional<net::SSLInfo>& ssl_info) {
+            DCHECK(!ssl_info);
+            std::move(callback).Run(net_error, std::move(receive_stream),
+                                    std::move(send_stream));
+          },
+          std::move(callback)));
+}
+
 void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
   DCHECK(!connect_callback_.is_null());
   DCHECK(!socket_data_pump_);
@@ -68,8 +103,7 @@ void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
   mojo::DataPipe send_pipe;
   mojo::DataPipe receive_pipe;
   socket_data_pump_ = std::make_unique<SocketDataPump>(
-      socket_.get(), nullptr /*delegate*/,
-      std::move(receive_pipe.producer_handle),
+      socket_.get(), this /*delegate*/, std::move(receive_pipe.producer_handle),
       std::move(send_pipe.consumer_handle), traffic_annotation_);
   std::move(connect_callback_)
       .Run(net::OK, local_addr,
@@ -78,6 +112,30 @@ void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
                : base::nullopt,
            std::move(receive_pipe.consumer_handle),
            std::move(send_pipe.producer_handle));
+}
+
+void ProxyResolvingSocketMojo::OnNetworkReadError(int net_error) {
+  if (observer_)
+    observer_->OnReadError(net_error);
+}
+
+void ProxyResolvingSocketMojo::OnNetworkWriteError(int net_error) {
+  if (observer_)
+    observer_->OnWriteError(net_error);
+}
+
+void ProxyResolvingSocketMojo::OnShutdown() {
+  socket_data_pump_ = nullptr;
+  if (!pending_upgrade_to_tls_callback_.is_null())
+    std::move(pending_upgrade_to_tls_callback_).Run();
+}
+
+const net::StreamSocket* ProxyResolvingSocketMojo::BorrowSocket() {
+  return socket_.get();
+}
+
+std::unique_ptr<net::StreamSocket> ProxyResolvingSocketMojo::TakeSocket() {
+  return std::move(socket_);
 }
 
 }  // namespace network

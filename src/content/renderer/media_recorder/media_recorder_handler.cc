@@ -133,10 +133,11 @@ MediaRecorderHandler::MediaRecorderHandler(
 MediaRecorderHandler::~MediaRecorderHandler() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Send a |last_in_slice| to our |client_|.
-  if (client_)
+  if (client_) {
     client_->WriteData(
         nullptr, 0u, true,
         (TimeTicks::Now() - TimeTicks::UnixEpoch()).InMillisecondsF());
+  }
 }
 
 bool MediaRecorderHandler::CanSupportMimeType(
@@ -168,7 +169,8 @@ bool MediaRecorderHandler::CanSupportMimeType(
       video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
-  media::SplitCodecsToVector(web_codecs.Utf8(), &codecs_list, true /* strip */);
+  media::SplitCodecs(web_codecs.Utf8(), &codecs_list);
+  media::StripCodecs(&codecs_list);
   for (const auto& codec : codecs_list) {
     auto* const* found = std::find_if(
         &codecs[0], &codecs[codecs_count], [&codec](const char* name) {

@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -231,6 +232,27 @@ public class PlatformSensorAndProviderTest {
                 .when(mSensorManager)
                 .registerListener(any(SensorEventListener.class), any(Sensor.class), anyInt(),
                         any(Handler.class));
+
+        sensor.startSensor(5);
+        verify(mPlatformSensorProvider, times(1)).sensorStarted(sensor);
+        verify(mPlatformSensorProvider, times(1)).sensorStopped(sensor);
+        verify(mPlatformSensorProvider, times(1)).getHandler();
+    }
+
+    /**
+     * Same as the above except instead of a clean failure an exception is thrown.
+     */
+    @Test
+    @Feature({"PlatformSensor"})
+    public void testSensorStartFailsWithException() {
+        addMockSensor(50000, Sensor.TYPE_ACCELEROMETER, Sensor.REPORTING_MODE_CONTINUOUS);
+        PlatformSensor sensor =
+                PlatformSensor.create(Sensor.TYPE_ACCELEROMETER, 3, mPlatformSensorProvider);
+        assertNotNull(sensor);
+
+        when(mSensorManager.registerListener(any(SensorEventListener.class), any(Sensor.class),
+                     anyInt(), any(Handler.class)))
+                .thenThrow(RuntimeException.class);
 
         sensor.startSensor(5);
         verify(mPlatformSensorProvider, times(1)).sensorStarted(sensor);

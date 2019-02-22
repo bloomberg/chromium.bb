@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 #import <Cocoa/Cocoa.h>
+#include <objc/runtime.h>
 
 #include <memory>
 
@@ -25,10 +26,7 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
-#import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
@@ -38,6 +36,9 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
+#import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
 using base::ASCIIToUTF16;
 using base::SysNSStringToUTF8;
@@ -121,8 +122,8 @@ NSArray* const kDeleteActions = @[
   @"deleteToBeginningOfParagraph:", @"deleteToEndOfParagraph:"
 ];
 
-NSArray* const kMiscActions =
-    @[ @"insertText:", @"cancelOperation:", @"transpose:", @"yank:" ];
+// This omits @"insertText:":. See BridgedNativeWidgetTest.NilTextInputClient.
+NSArray* const kMiscActions = @[ @"cancelOperation:", @"transpose:", @"yank:" ];
 
 // Empty range shortcut for readibility.
 NSRange EmptyRange() {
@@ -293,12 +294,12 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 namespace views {
 namespace test {
 
-// Provides the |parent| argument to construct a BridgedNativeWidget.
+// Provides the |parent| argument to construct a BridgedNativeWidgetImpl.
 class MockNativeWidgetMac : public NativeWidgetMac {
  public:
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
-  using NativeWidgetMac::bridge;
+  using NativeWidgetMac::bridge_impl;
   using NativeWidgetMac::bridge_host_for_testing;
 
   // internal::NativeWidgetPrivate:
@@ -311,7 +312,12 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge()->SetWindow(window);
+    bridge_host_for_testing()->CreateLocalBridge(window);
+    if (BridgedNativeWidgetHostImpl* parent =
+            BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+                [params.parent window])) {
+      bridge_host_for_testing()->SetParent(parent);
+    }
     bridge_host_for_testing()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
@@ -330,7 +336,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(MockNativeWidgetMac);
 };
 
-// Helper test base to construct a BridgedNativeWidget with a valid parent.
+// Helper test base to construct a BridgedNativeWidgetImpl with a valid parent.
 class BridgedNativeWidgetTestBase : public ui::CocoaTest {
  public:
   struct SkipInitialization {};
@@ -342,9 +348,25 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   explicit BridgedNativeWidgetTestBase(SkipInitialization tag)
       : native_widget_mac_(nullptr) {}
 
-  BridgedNativeWidget* bridge() { return native_widget_mac_->bridge(); }
+  BridgedNativeWidgetImpl* bridge() {
+    return native_widget_mac_->bridge_impl();
+  }
   BridgedNativeWidgetHostImpl* bridge_host() {
     return native_widget_mac_->bridge_host_for_testing();
+  }
+
+  // Generate an autoreleased KeyDown NSEvent* in |widget_| for pressing the
+  // corresponding |key_code|.
+  NSEvent* VkeyKeyDown(ui::KeyboardCode key_code) {
+    return cocoa_test_event_utils::SynthesizeKeyEvent(
+        widget_->GetNativeWindow(), true /* keyDown */, key_code, 0);
+  }
+
+  // Generate an autoreleased KeyDown NSEvent* using the given keycode, and
+  // representing the first unicode character of |chars|.
+  NSEvent* UnicodeKeyDown(int key_code, NSString* chars) {
+    return cocoa_test_event_utils::KeyEventWithKeyCode(
+        key_code, [chars characterAtIndex:0], NSKeyDown, 0);
   }
 
   // Overridden from testing::Test:
@@ -385,7 +407,9 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
   NSWindow* bridge_window() const {
-    return native_widget_mac_->bridge()->ns_window();
+    if (native_widget_mac_->bridge_impl())
+      return native_widget_mac_->bridge_impl()->ns_window();
+    return nil;
   }
 
  protected:
@@ -614,7 +638,8 @@ void BridgedNativeWidgetTest::SetUp() {
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
   bridge_host()->SetRootView(view_.get());
-  bridge()->CreateContentView(view_->bounds());
+  bridge()->CreateContentView(bridge_host()->GetRootViewNSViewId(),
+                              view_->bounds());
   ns_view_ = bridge()->ns_view();
 
   // Pretend it has been shown via NativeWidgetMac::Show().
@@ -853,7 +878,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetInitTest);
 };
 
-// Test that BridgedNativeWidget remains sane if Init() is never called.
+// Test that BridgedNativeWidgetImpl remains sane if Init() is never called.
 TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   // Don't use a Widget* as the delegate. ~Widget() checks for Widget::
   // |native_widget_destroyed_| being set to true. That can only happen with a
@@ -862,8 +887,8 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   std::unique_ptr<MockNativeWidgetMac> native_widget(
       new MockNativeWidgetMac(nullptr));
   native_widget_mac_ = native_widget.get();
-  EXPECT_FALSE(bridge()->ns_view());
-  EXPECT_FALSE(bridge()->ns_window());
+  EXPECT_FALSE(bridge());
+  EXPECT_FALSE(bridge_host()->GetLocalNSWindow());
 }
 
 // Tests the shadow type given in InitParams.
@@ -1323,10 +1348,16 @@ TEST_F(BridgedNativeWidgetTest, NilTextInputClient) {
   [selectors addObjectsFromArray:kMoveActions];
   [selectors addObjectsFromArray:kSelectActions];
   [selectors addObjectsFromArray:kDeleteActions];
+
+  // -insertText: is omitted from this list to avoid a DCHECK in
+  // doCommandBySelector:. AppKit never passes -insertText: to
+  // doCommandBySelector: (it calls -insertText: directly instead).
   [selectors addObjectsFromArray:kMiscActions];
 
   for (NSString* selector in selectors)
     [ns_view_ doCommandBySelector:NSSelectorFromString(selector)];
+
+  [ns_view_ insertText:@""];
 }
 
 // Test transpose command against expectations set by |dummy_text_view_|.
@@ -1434,27 +1465,22 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
 
   // Sequence of calls (and corresponding keyDown events) obtained via tracing
   // with 2-Set Korean IME and pressing q, o, then Enter on the keyboard.
-  NSEvent* q_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
-      12, [@"ㅂ" characterAtIndex:0], NSKeyDown, 0);
+  NSEvent* q_in_ime = UnicodeKeyDown(12, @"ㅂ");
   InterpretKeyEventsCallback handle_q_in_ime = base::BindRepeating([](id view) {
     [view insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
   });
 
-  NSEvent* o_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
-      31, [@"ㅐ" characterAtIndex:0], NSKeyDown, 0);
+  NSEvent* o_in_ime = UnicodeKeyDown(31, @"ㅐ");
   InterpretKeyEventsCallback handle_o_in_ime = base::BindRepeating([](id view) {
     [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
   });
 
-  NSEvent* return_in_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
   InterpretKeyEventsCallback handle_return_in_ime =
       base::BindRepeating([](id view) {
         // When confirming the composition, AppKit repeats itself.
         [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
         [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
-        // Note: there is no insertText:@"\r", which we would normally see when
-        // not in an IME context for VKEY_RETURN.
+        [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
   // Add a hook for the KeyEvent being received by the TextfieldController. E.g.
@@ -1486,7 +1512,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
   // Note the "Enter" should not replace the replacement range, even though a
   // replacement range was set.
   g_fake_interpret_key_events = &handle_return_in_ime;
-  [ns_view_ keyDown:return_in_ime];
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
 
   // VKEY_RETURN should be seen by via the unhandled key event handler (but not
@@ -1494,6 +1520,76 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
   EXPECT_TRUE(saw_vkey_return);
 
   g_fake_interpret_key_events = nullptr;
+}
+
+// Test simulated codepaths for typing 'm', 'o', 'o', Enter in the Telex IME.
+// This IME does not mark text, but, unlike 2-set Korean, it re-inserts the
+// entire word on each keypress, even though only the last character in the word
+// can be modified. This prevents the keypress being treated as a "character"
+// event (which is unavoidably unfortunate for the Undo buffer), but also led to
+// a codepath that suppressed a VKEY_RETURN when it should not, since there is
+// no candidate IME window to dismiss for this IME.
+TEST_F(BridgedNativeWidgetTest, TextInput_SimulateTelexMoo) {
+  Textfield* textfield = InstallTextField("");
+  EXPECT_TRUE([ns_view_ textInputClient]);
+
+  EnterAcceleratorView* enter_view = new EnterAcceleratorView();
+  textfield->parent()->AddChildView(enter_view);
+
+  // Sequence of calls (and corresponding keyDown events) obtained via tracing
+  // with Telex IME and pressing 'm', 'o', 'o', then Enter on the keyboard.
+  // Note that without the leading 'm', only one character changes, which could
+  // allow the keypress to be treated as a character event, which would not
+  // produce the bug.
+  NSEvent* m_in_ime = UnicodeKeyDown(46, @"m");
+  InterpretKeyEventsCallback handle_m_in_ime = base::BindRepeating([](id view) {
+    [view insertText:@"m" replacementRange:NSMakeRange(NSNotFound, 0)];
+  });
+
+  // Note that (unlike Korean IME), Telex generates a latin "o" for both events:
+  // it doesn't associate a unicode character on the second NSEvent.
+  NSEvent* o_in_ime = UnicodeKeyDown(31, @"o");
+  InterpretKeyEventsCallback handle_first_o_in_ime =
+      base::BindRepeating([](id view) {
+        // Note the whole word is replaced, not just the last character.
+        [view insertText:@"mo" replacementRange:NSMakeRange(0, 1)];
+      });
+  InterpretKeyEventsCallback handle_second_o_in_ime =
+      base::BindRepeating([](id view) {
+        [view insertText:@"mô" replacementRange:NSMakeRange(0, 2)];
+      });
+
+  InterpretKeyEventsCallback handle_return_in_ime =
+      base::BindRepeating([](id view) {
+        // Note the previous -insertText: repeats, even though it is unchanged.
+        // But the IME also follows with an -insertNewLine:.
+        [view insertText:@"mô" replacementRange:NSMakeRange(0, 2)];
+        [view doCommandBySelector:@selector(insertNewLine:)];
+      });
+
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
+  g_fake_interpret_key_events = &handle_m_in_ime;
+  [ns_view_ keyDown:m_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"m"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_first_o_in_ime;
+  [ns_view_ keyDown:o_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mo"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_second_o_in_ime;
+  [ns_view_ keyDown:o_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());
+  EXPECT_EQ(0, enter_view->count());
+
+  g_fake_interpret_key_events = &handle_return_in_ime;
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());  // No change.
+  EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
 // Simulate 'a', Enter in Hiragana. This should just insert "あ", suppressing
@@ -1507,8 +1603,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
 
   // Sequence of calls (and corresponding keyDown events) obtained via tracing
   // with Hiragana IME and pressing 'a', then Enter on the keyboard.
-  NSEvent* a_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
-      0, [@"a" characterAtIndex:0], NSKeyDown, 0);
+  // Note 0 is the actual keyCode for 'a', not a placeholder.
+  NSEvent* a_in_ime = UnicodeKeyDown(0, @"a");
   InterpretKeyEventsCallback handle_a_in_ime = base::BindRepeating([](id view) {
     // TODO(crbug/612675): |text| should be an NSAttributedString.
     [view setMarkedText:@"あ"
@@ -1516,12 +1612,13 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
         replacementRange:NSMakeRange(NSNotFound, 0)];
   });
 
-  NSEvent* return_event = cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
-  InterpretKeyEventsCallback handle_return_in_ime =
+  InterpretKeyEventsCallback handle_first_return_in_ime =
       base::BindRepeating([](id view) {
         [view insertText:@"あ" replacementRange:NSMakeRange(NSNotFound, 0)];
+        // Note there is no call to -insertNewLine: here.
       });
+  InterpretKeyEventsCallback handle_second_return_in_ime = base::BindRepeating(
+      [](id view) { [view doCommandBySelector:@selector(insertNewLine:)]; });
 
   EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
   EXPECT_EQ(0, enter_view->count());
@@ -1532,16 +1629,14 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
   EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
   EXPECT_EQ(0, enter_view->count());
 
-  g_fake_interpret_key_events = &handle_return_in_ime;
-  [ns_view_ keyDown:return_event];
+  g_fake_interpret_key_events = &handle_first_return_in_ime;
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
-  // IME Window is dismissed here and there is no marked text, so remove the
-  // swizzler.
-  object_setClass(ns_view_, [BridgedContentView class]);
-
-  [ns_view_ keyDown:return_event];  // Sanity check: send Enter again.
+  g_fake_interpret_key_events = &handle_second_return_in_ime;
+  [ns_view_
+      keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Sanity check: send Enter again.
   EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());  // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
@@ -1557,8 +1652,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
 
   // Sequence of calls (and corresponding keyDown events) obtained via tracing
   // with Hiragana IME and pressing 'a', Tab, then Enter on the keyboard.
-  NSEvent* a_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
-      0, [@"a" characterAtIndex:0], NSKeyDown, 0);
+  NSEvent* a_in_ime = UnicodeKeyDown(0, @"a");
   InterpretKeyEventsCallback handle_a_in_ime = base::BindRepeating([](id view) {
     // TODO(crbug/612675): |text| should have an underline.
     [view setMarkedText:@"あ"
@@ -1566,8 +1660,6 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
         replacementRange:NSMakeRange(NSNotFound, 0)];
   });
 
-  NSEvent* tab_in_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_TAB, 0);
   InterpretKeyEventsCallback handle_tab_in_ime =
       base::BindRepeating([](id view) {
         // TODO(crbug/612675): |text| should be an NSAttributedString (now with
@@ -1575,10 +1667,9 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
         [view setMarkedText:@"a"
                selectedRange:NSMakeRange(0, 1)
             replacementRange:NSMakeRange(NSNotFound, 0)];
+        // Note there is no -insertTab: generated.
       });
 
-  NSEvent* return_event = cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
   InterpretKeyEventsCallback handle_first_return_in_ime =
       base::BindRepeating([](id view) {
         // Do *nothing*. Enter does not confirm nor change the composition, it
@@ -1588,6 +1679,11 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
       base::BindRepeating([](id view) {
         // The second return will confirm the composition.
         [view insertText:@"a" replacementRange:NSMakeRange(NSNotFound, 0)];
+      });
+  InterpretKeyEventsCallback handle_third_return_in_ime =
+      base::BindRepeating([](id view) {
+        // Only the third return will generate -insertNewLine:.
+        [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
   EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
@@ -1600,28 +1696,26 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_tab_in_ime;
-  [ns_view_ keyDown:tab_in_ime];
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_TAB)];
   // Tab will switch to a Romanji (Latin) character.
   EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_return_in_ime;
-  [ns_view_ keyDown:return_event];
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter just dismisses the IME window. The composition is still active.
   EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_second_return_in_ime;
-  [ns_view_ keyDown:return_event];
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter now confirms the composition (unmarks text). Note there is still no
   // IME window visible but, since there is marked text, IME is still active.
   EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
-  // No marked text, no IME window. We could remove the swizzler here, but
-  // that is equivalent to the "do nothing" case, so set than handler again.
-  g_fake_interpret_key_events = &handle_first_return_in_ime;
-  [ns_view_ keyDown:return_event];  // Send Enter a _third_ time.
+  g_fake_interpret_key_events = &handle_third_return_in_ime;
+  [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Send Enter a third time.
   EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());  // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
@@ -1754,8 +1848,8 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
                         object:window];
 
   // On a failure, Cocoa starts by sending an unexpected *exit* fullscreen, and
-  // BridgedNativeWidget will think it's just a delayed transition and try to go
-  // back into fullscreen but get ignored by Cocoa.
+  // BridgedNativeWidgetImpl will think it's just a delayed transition and try
+  // to go back into fullscreen but get ignored by Cocoa.
   EXPECT_EQ(0, [window ignoredToggleFullScreenCount]);
   EXPECT_TRUE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification

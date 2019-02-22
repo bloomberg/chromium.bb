@@ -103,6 +103,10 @@ class WebStateImpl;
 // NO after wasHidden() call.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
 
+// A Boolean value indicating whether horizontal swipe gestures will trigger
+// back-forward list navigations.
+@property(nonatomic) BOOL allowsBackForwardNavigationGestures;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
@@ -157,7 +161,8 @@ class WebStateImpl;
 - (void)loadCurrentURL;
 
 // Loads the URL indicated by current session state if the current page has not
-// loaded yet.
+// loaded yet. This method should never be called directly. Use
+// NavigationManager::LoadIfNecessary() instead.
 - (void)loadCurrentURLIfNecessary;
 
 // Loads HTML in the page and presents it as if it was originating from an
@@ -190,9 +195,6 @@ class WebStateImpl;
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 
-// Returns |YES| if the current page should should the location bar hint text.
-- (BOOL)wantsLocationBarHintText;
-
 // Adds |recognizer| as a gesture recognizer to the web view.
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer;
 // Removes |recognizer| from the web view.
@@ -209,6 +211,12 @@ class WebStateImpl;
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture;
+
+// Takes snapshot of web view with |rect|. |completion| is always called, but
+// |snapshot| may be nil. Prior to iOS 11, |completion| is called with a nil
+// snapshot.
+- (void)takeSnapshotWithRect:(CGRect)rect
+                  completion:(void (^)(UIImage* snapshot))completion;
 
 @end
 

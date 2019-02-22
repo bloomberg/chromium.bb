@@ -34,8 +34,11 @@ def _GetChannelFromFeatures(api_name, features):
   Returns None if channel information for the API cannot be located.
   '''
   feature = features.Get().get(api_name)
-  return feature.get('channel') if feature else None
+  channel = feature.get('channel') if feature else None
 
+  # Change "trunk" to "master". Extension features use "trunk" while the
+  # Docserver uses "master".
+  return "master" if channel == "trunk" else channel
 
 def _GetChannelFromAPIFeatures(api_name, features_bundle):
   return _GetChannelFromFeatures(api_name, features_bundle.GetAPIFeatures())

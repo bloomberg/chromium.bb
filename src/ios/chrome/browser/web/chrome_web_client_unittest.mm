@@ -13,7 +13,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/payments/core/features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #import "ios/chrome/browser/web/error_page_util.h"
@@ -120,7 +119,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
 
   web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
   NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
+      web_client.Get()->GetDocumentStartScriptForAllFrames(browser_state());
   web::test::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::test::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
@@ -134,7 +133,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
 
   web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
   NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
+      web_client.Get()->GetDocumentStartScriptForAllFrames(browser_state());
   web::test::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object", web::test::ExecuteJavaScript(
                              web_view, @"typeof __gCrWeb.autofill"));
@@ -163,38 +162,18 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
                              web_view, @"typeof navigator.credentials"));
 }
 
-// Tests that ChromeWebClient provides payment request script for WKWebView if
-// the feature is enabled.
-TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestEnabled) {
+// Tests that ChromeWebClient provides payment request script for WKWebView.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
   // Chrome scripts rely on __gCrWeb object presence.
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(payments::features::kWebPayments);
   NSString* script =
       web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
   web::test::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"function", web::test::ExecuteJavaScript(
                                web_view, @"typeof window.PaymentRequest"));
-}
-
-// Tests that ChromeWebClient does not provide payment request script for
-// WKWebView if the feature is disabled.
-TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestDisabled) {
-  // Chrome scripts rely on __gCrWeb object presence.
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
-  web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
-
-  web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(payments::features::kWebPayments);
-  NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
-  web::test::ExecuteJavaScript(web_view, script);
-  EXPECT_NSEQ(@"undefined", web::test::ExecuteJavaScript(
-                                web_view, @"typeof window.PaymentRequest"));
 }
 
 // Tests PrepareErrorPage wth non-post, not Off The Record error.

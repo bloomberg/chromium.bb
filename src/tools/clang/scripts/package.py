@@ -253,7 +253,7 @@ def main():
                  # runtime libraries:
                  'lib/clang/*/lib/darwin/*asan_osx*',
                  'lib/clang/*/lib/darwin/*asan_iossim*',
-                 'lib/clang/*/lib/darwin/*fuzzer*',
+                 'lib/clang/*/lib/darwin/*fuzzer_no_main*',
                  'lib/clang/*/lib/darwin/*profile_osx*',
                  'lib/clang/*/lib/darwin/*profile_iossim*',
                  # And the OSX and ios builtin libraries (iossim is lipo'd into
@@ -270,7 +270,7 @@ def main():
     # but not dfsan.
     want.extend(['lib/clang/*/lib/linux/*[atm]san*',
                  'lib/clang/*/lib/linux/*ubsan*',
-                 'lib/clang/*/lib/linux/*libclang_rt.fuzzer*',
+                 'lib/clang/*/lib/linux/*libclang_rt.fuzzer_no_main*',
                  'lib/clang/*/lib/linux/*libclang_rt.san*',
                  'lib/clang/*/lib/linux/*profile*',
                  'lib/clang/*/share/msan_blacklist.txt',
@@ -278,8 +278,15 @@ def main():
   elif sys.platform == 'win32':
     want.extend(['lib/clang/*/lib/windows/clang_rt.asan*.dll',
                  'lib/clang/*/lib/windows/clang_rt.asan*.lib',
+                 'lib/clang/*/lib/windows/clang_rt.fuzzer_no_main*.lib',
                  'lib/clang/*/lib/windows/clang_rt.profile*.lib',
                  'lib/clang/*/lib/windows/clang_rt.ubsan*.lib',
+                 ])
+
+  if sys.platform in ('linux2', 'darwin'):
+    # Include libclang_rt.builtins.a for Fuchsia targets.
+    want.extend(['lib/clang/*/aarch64-fuchsia/lib/libclang_rt.builtins.a',
+                 'lib/clang/*/x86_64-fuchsia/lib/libclang_rt.builtins.a',
                  ])
 
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
@@ -415,12 +422,34 @@ def main():
     os.makedirs(os.path.join(llddir, 'bin'))
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'lld'),
                 os.path.join(llddir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-ar'),
+                os.path.join(llddir, 'bin'))
     os.symlink('lld', os.path.join(llddir, 'bin', 'lld-link'))
     os.symlink('lld', os.path.join(llddir, 'bin', 'ld.lld'))
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
     MaybeUpload(args, llddir, platform)
+
+  # On Linux and Mac, package and upload llvm-strip in a separate zip.
+  # This is used for the Fuchsia build.
+  if sys.platform == 'darwin' or sys.platform.startswith('linux'):
+    stripdir = 'llvmstrip-' + stamp
+    shutil.rmtree(stripdir, ignore_errors=True)
+    os.makedirs(os.path.join(stripdir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-strip'),
+                os.path.join(stripdir, 'bin'))
+    llvmstrip_stamp_file_base = 'llvmstrip_build_revision'
+    llvmstrip_stamp_file = os.path.join(stripdir, llvmstrip_stamp_file_base)
+    with open(llvmstrip_stamp_file, 'w') as f:
+      f.write(expected_stamp)
+      f.write('\n')
+    with tarfile.open(stripdir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(stripdir, 'bin'), arcname='bin',
+              filter=PrintTarProgress)
+      tar.add(llvmstrip_stamp_file, arcname=llvmstrip_stamp_file_base,
+              filter=PrintTarProgress)
+    MaybeUpload(args, stripdir, platform)
 
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp

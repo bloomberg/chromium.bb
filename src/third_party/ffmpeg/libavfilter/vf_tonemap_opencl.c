@@ -21,7 +21,6 @@
 #include "libavutil/bprint.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
-#include "libavutil/mastering_display_metadata.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
@@ -40,7 +39,6 @@
 // - more format support
 
 #define DETECTION_FRAMES 63
-#define REFERENCE_WHITE 100.0f
 
 enum TonemapAlgorithm {
     TONEMAP_NONE,
@@ -343,47 +341,6 @@ fail:
     return err;
 }
 
-static double determine_signal_peak(AVFrame *in)
-{
-    AVFrameSideData *sd = av_frame_get_side_data(in, AV_FRAME_DATA_CONTENT_LIGHT_LEVEL);
-    double peak = 0;
-
-    if (sd) {
-        AVContentLightMetadata *clm = (AVContentLightMetadata *)sd->data;
-        peak = clm->MaxCLL / REFERENCE_WHITE;
-    }
-
-    sd = av_frame_get_side_data(in, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
-    if (!peak && sd) {
-        AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)sd->data;
-        if (metadata->has_luminance)
-            peak = av_q2d(metadata->max_luminance) / REFERENCE_WHITE;
-    }
-
-    // For untagged source, use peak of 10000 if SMPTE ST.2084
-    // otherwise assume HLG with reference display peak 1000.
-    if (!peak)
-        peak = in->color_trc == AVCOL_TRC_SMPTE2084 ? 100.0f : 10.0f;
-
-    return peak;
-}
-
-static void update_metadata(AVFrame *in, double peak) {
-    AVFrameSideData *sd = av_frame_get_side_data(in, AV_FRAME_DATA_CONTENT_LIGHT_LEVEL);
-
-    if (sd) {
-        AVContentLightMetadata *clm = (AVContentLightMetadata *)sd->data;
-        clm->MaxCLL = (unsigned)(peak * REFERENCE_WHITE);
-    }
-
-    sd = av_frame_get_side_data(in, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
-    if (sd) {
-        AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)sd->data;
-        if (metadata->has_luminance)
-            metadata->max_luminance =av_d2q(peak * REFERENCE_WHITE, 10000);
-    }
-}
-
 static int tonemap_opencl_filter_frame(AVFilterLink *inlink, AVFrame *input)
 {
     AVFilterContext    *avctx = inlink->dst;
@@ -415,7 +372,7 @@ static int tonemap_opencl_filter_frame(AVFilterLink *inlink, AVFrame *input)
         goto fail;
 
     if (!peak)
-        peak = determine_signal_peak(input);
+        peak = ff_determine_signal_peak(input);
 
     if (ctx->trc != -1)
         output->color_trc = ctx->trc;
@@ -470,7 +427,7 @@ static int tonemap_opencl_filter_frame(AVFilterLink *inlink, AVFrame *input)
 
     av_frame_free(&input);
 
-    update_metadata(output, ctx->target_peak);
+    ff_update_hdr_metadata(output, ctx->target_peak);
 
     av_log(ctx, AV_LOG_DEBUG, "Tone-mapping output: %s, %ux%u (%"PRId64").\n",
            av_get_pix_fmt_name(output->format),

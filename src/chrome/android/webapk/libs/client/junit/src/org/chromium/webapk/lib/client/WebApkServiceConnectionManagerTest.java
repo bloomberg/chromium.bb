@@ -21,7 +21,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
-import org.chromium.base.test.asynctask.CustomShadowAsyncTask;
+import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -39,7 +39,7 @@ public class WebApkServiceConnectionManagerTest {
     private WebApkServiceConnectionManager mConnectionManager;
 
     private class TestCallback implements WebApkServiceConnectionManager.ConnectionCallback {
-        public boolean mGotResult = false;
+        public boolean mGotResult;
 
         @Override
         public void onConnected(IBinder service) {

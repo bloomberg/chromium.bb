@@ -12,7 +12,9 @@
 #include "base/base64url.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
@@ -32,6 +34,7 @@
 #include "crypto/sha2.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/fido/attestation_statement.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -43,6 +46,10 @@
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cert/asn1_util.h"
+#include "net/der/input.h"
+#include "net/der/parse_values.h"
+#include "net/der/parser.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -62,12 +69,35 @@ const char kGetType[] = "webauthn.get";
 
 namespace {
 
+// AttestationPromptResult enumerates events related to attestation prompts.
+// These values are recorded in an UMA histogram and so should not be
+// reassigned.
+enum class AttestationPromptResult {
+  // kQueried indicates that the embedder was queried in order to determine
+  // whether attestation information should be returned to the origin.
+  kQueried = 0,
+  // kTimeout indicates that a timeout occured while awaiting the result of an
+  // attestation query.
+  kTimeout = 1,
+  // kAllowed indicates that the query to the embedder was resolved positively.
+  // (E.g. the user clicked to allow, or the embedded allowed immediately by
+  // policy.)
+  kAllowed = 2,
+  // kBlocked indicates that the query to the embedder was resolved negatively.
+  // (E.g. the user clicked to block, or closed the dialog.)
+  kBlocked = 3,
+  // kAbandoned indications that the user closed the tab or navigated away while
+  // the attestation prompt was showing.
+  kAbandoned = 4,
+  kMaxValue = kAbandoned,
+};
+
 // Ensure that the origin's effective domain is a valid domain.
 // Only the domain format of host is valid.
 // Reference https://url.spec.whatwg.org/#valid-domain-string and
 // https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
-  return !caller_origin.unique() &&
+  return !caller_origin.opaque() &&
          !url::HostIsIPAddress(caller_origin.host()) &&
          content::IsOriginSecure(caller_origin.GetURL()) &&
          // Additionally, the scheme is required to be HTTP(S). Other schemes
@@ -262,10 +292,63 @@ ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
   return CreateApplicationParameter(appid);
 }
 
+// Parses the FIDO transport types extension from the DER-encoded, X.509
+// certificate in |der_cert| and appends any unique transport types found to
+// |out_transports|.
+void AppendUniqueTransportsFromCertificate(
+    base::span<const uint8_t> der_cert,
+    std::vector<device::FidoTransportProtocol>* out_transports) {
+  // See
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
+  static constexpr uint8_t kTransportTypesOID[] = {
+      0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
+  bool present, critical;
+  base::StringPiece contents;
+  if (!net::asn1::ExtractExtensionFromDERCert(
+          base::StringPiece(reinterpret_cast<const char*>(der_cert.data()),
+                            der_cert.size()),
+          base::StringPiece(reinterpret_cast<const char*>(kTransportTypesOID),
+                            sizeof(kTransportTypesOID)),
+          &present, &critical, &contents) ||
+      !present) {
+    return;
+  }
+
+  const net::der::Input contents_der(contents);
+  net::der::Parser contents_parser(contents_der);
+  net::der::BitString transport_bits;
+  if (!contents_parser.ReadBitString(&transport_bits)) {
+    return;
+  }
+
+  // The certificate extension contains a BIT STRING where different bits
+  // indicate support for different transports. The following array maps
+  // between these bit indexes and the FidoTransportProtocol enum.
+  static constexpr struct {
+    uint8_t bit_index;
+    device::FidoTransportProtocol transport;
+  } kTransportMapping[] = {
+      // Bit 0 is "Bluetooth Classic", not BLE. Since webauthn doesn't define a
+      // transport type for this we ignore it.
+      {1, device::FidoTransportProtocol::kBluetoothLowEnergy},
+      {2, device::FidoTransportProtocol::kUsbHumanInterfaceDevice},
+      {3, device::FidoTransportProtocol::kNearFieldCommunication},
+      {4, device::FidoTransportProtocol::kInternal},
+  };
+
+  for (const auto& mapping : kTransportMapping) {
+    if (transport_bits.AssertsBit(mapping.bit_index) &&
+        !base::ContainsValue(*out_transports, mapping.transport)) {
+      out_transports->push_back(mapping.transport);
+    }
+  }
+}
+
 blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
-    device::AuthenticatorMakeCredentialResponse response_data) {
+    device::AuthenticatorMakeCredentialResponse response_data,
+    bool preserve_attestation) {
   auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -273,8 +356,32 @@ CreateMakeCredentialResponse(
   common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
+
+  // The transport list must not contain duplicates but the order doesn't matter
+  // because Blink will sort the resulting strings before returning them.
+  std::vector<device::FidoTransportProtocol> transports = {
+      response_data.transport_used()};
+  // If the attestation certificate specifies that the token supports any other
+  // transports, include them in the list.
+  base::Optional<base::span<const uint8_t>> leaf_cert =
+      response_data.attestation_object()
+          .attestation_statement()
+          .GetLeafCertificate();
+  if (leaf_cert) {
+    AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
+  }
+
+  for (auto transport : transports) {
+    response->transports.push_back(
+        mojo::ConvertTo<blink::mojom::AuthenticatorTransport>(transport));
+  }
+
+  if (!preserve_attestation) {
+    response_data.EraseAttestationStatement();
+  }
   response->attestation_object =
       response_data.GetCBOREncodedAttestationObject();
+
   return response;
 }
 
@@ -461,6 +568,16 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
+  if (options->authenticator_selection &&
+      options->authenticator_selection->require_resident_key) {
+    // Disallow the creation of resident credentials.
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+        nullptr, Focus::kDontCheck);
+    return;
+  }
+
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
@@ -506,7 +623,10 @@ void AuthenticatorImpl::MakeCredential(
           request_->GetWeakPtr()) /* request_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
-          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */);
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
+          request_->GetWeakPtr()) /* ble_pairing_callback*/);
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
@@ -548,6 +668,15 @@ void AuthenticatorImpl::GetAssertion(
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                              nullptr);
+    return;
+  }
+
+  if (options->allow_credentials.empty()) {
+    // Chrome currently does not support any resident keys.
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+        nullptr);
     return;
   }
 
@@ -597,7 +726,10 @@ void AuthenticatorImpl::GetAssertion(
           request_->GetWeakPtr()) /* request_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
-          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */);
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
+          request_->GetWeakPtr()) /* ble_pairing_callback*/);
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
@@ -695,6 +827,9 @@ void AuthenticatorImpl::OnRegisterResponse(
 
       if (attestation_preference_ !=
           blink::mojom::AttestationConveyancePreference::NONE) {
+        UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                                  AttestationPromptResult::kQueried);
+        awaiting_attestation_response_ = true;
         request_delegate_->ShouldReturnAttestation(
             relying_party_id_,
             base::BindOnce(
@@ -703,15 +838,13 @@ void AuthenticatorImpl::OnRegisterResponse(
         return;
       }
 
-      if (!response_data->IsSelfAttestation()) {
-        response_data->EraseAttestationStatement();
-      }
-
+      const bool include_attestation = response_data->IsSelfAttestation();
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateMakeCredentialResponse(std::move(client_data_json_),
-                                       std::move(*response_data)),
+                                       std::move(*response_data),
+                                       include_attestation),
           Focus::kDoCheck);
       return;
   }
@@ -721,6 +854,7 @@ void AuthenticatorImpl::OnRegisterResponse(
 void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     device::AuthenticatorMakeCredentialResponse response_data,
     bool attestation_permitted) {
+  awaiting_attestation_response_ = false;
   if (!request_) {
     // The request has already been cleaned up, probably because a navigation
     // occured while the permissions prompt was pending.
@@ -731,12 +865,18 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
          blink::mojom::AttestationConveyancePreference::NONE);
 
   if (!attestation_permitted) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kBlocked);
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
         blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
         Focus::kDoCheck);
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                            AttestationPromptResult::kAllowed);
+  bool include_attestation = true;
 
   // The check for IsAttestationCertificateInappropriatelyIdentifying is
   // performed after the permissions prompt, even though we know the answer
@@ -755,15 +895,15 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     // The only way to get the underlying attestation will be to list the RP ID
     // in the enterprise policy, because that enables the individual attestation
     // bit in the register request and permits individual attestation generally.
-    response_data.EraseAttestationStatement();
+    include_attestation = false;
   }
 
-  InvokeCallbackAndCleanup(
-      std::move(make_credential_response_callback_),
-      blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateMakeCredentialResponse(std::move(client_data_json_),
-                                   std::move(response_data)),
-      Focus::kDoCheck);
+  InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
+                           blink::mojom::AuthenticatorStatus::SUCCESS,
+                           CreateMakeCredentialResponse(
+                               std::move(client_data_json_),
+                               std::move(response_data), include_attestation),
+                           Focus::kDoCheck);
 }
 
 void AuthenticatorImpl::OnSignResponse(
@@ -841,6 +981,12 @@ void AuthenticatorImpl::FailWithNotAllowedErrorAndCleanup() {
 
 void AuthenticatorImpl::OnTimeout() {
   DCHECK(request_delegate_);
+  if (awaiting_attestation_response_) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kTimeout);
+    awaiting_attestation_response_ = false;
+  }
+
   request_delegate_->DidFailWithInterestingReason(
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 
@@ -881,6 +1027,12 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
 }
 
 void AuthenticatorImpl::Cleanup() {
+  if (awaiting_attestation_response_) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kAbandoned);
+    awaiting_attestation_response_ = false;
+  }
+
   timer_->Stop();
   request_.reset();
   request_delegate_.reset();

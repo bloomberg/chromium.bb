@@ -412,8 +412,9 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
   } else if (IsSVGPathElement(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
-    WriteNameAndQuotedValue(ts, "data",
-                            BuildStringFromByteStream(path.ByteStream()));
+    WriteNameAndQuotedValue(
+        ts, "data",
+        BuildStringFromByteStream(path.ByteStream(), kNoTransformation));
   } else {
     NOTREACHED();
   }
@@ -734,6 +735,7 @@ void WriteResources(WTF::TextStream& ts,
       SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (!resources)
     return;
+  const FloatRect reference_box = object.ObjectBoundingBox();
   const ComputedStyle& style = object.StyleRef();
   TreeScope& tree_scope = object.GetDocument();
   if (LayoutSVGResourceMasker* masker = resources->Masker()) {
@@ -743,7 +745,7 @@ void WriteResources(WTF::TextStream& ts,
                            tree_scope);
     ts << " ";
     WriteStandardPrefix(ts, *masker, 0);
-    ts << " " << masker->ResourceBoundingBox(&object) << "\n";
+    ts << " " << masker->ResourceBoundingBox(reference_box) << "\n";
   }
   if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
     DCHECK(style.ClipPath());
@@ -757,8 +759,7 @@ void WriteResources(WTF::TextStream& ts,
     WriteNameAndQuotedValue(ts, "clipPath", id);
     ts << " ";
     WriteStandardPrefix(ts, *clipper, 0);
-    ts << " " << clipper->ResourceBoundingBox(object.ObjectBoundingBox())
-       << "\n";
+    ts << " " << clipper->ResourceBoundingBox(reference_box) << "\n";
   }
   if (LayoutSVGResourceFilter* filter = resources->Filter()) {
     DCHECK(style.HasFilter());
@@ -774,7 +775,7 @@ void WriteResources(WTF::TextStream& ts,
     WriteNameAndQuotedValue(ts, "filter", id);
     ts << " ";
     WriteStandardPrefix(ts, *filter, 0);
-    ts << " " << filter->ResourceBoundingBox(&object) << "\n";
+    ts << " " << filter->ResourceBoundingBox(reference_box) << "\n";
   }
 }
 

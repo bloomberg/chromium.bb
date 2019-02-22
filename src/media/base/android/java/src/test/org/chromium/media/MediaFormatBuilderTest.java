@@ -48,7 +48,7 @@ public class MediaFormatBuilderTest {
             ByteBuffer.allocate(8).putLong(80000000).array();
 
     private static class MockHdrMetadata extends HdrMetadata {
-        public boolean was_called = false;
+        public boolean was_called;
 
         @Override
         public void addMetadataToFormat(MediaFormat format) {

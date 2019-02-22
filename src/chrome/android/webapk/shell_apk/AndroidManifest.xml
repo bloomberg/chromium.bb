@@ -14,20 +14,16 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="26" />
+        android:targetSdkVersion="28" />
 
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/short_name"
         android:allowBackup="false"
         android:supportsRtl="true">
-        <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
+        <activity android:name="org.chromium.webapk.shell_apk.TransparentHostBrowserLauncherActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:excludeFromRecents="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             {{#intent_filters}}
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"></action>
@@ -37,11 +33,41 @@
             </intent-filter>
             {{/intent_filters}}
             {{{raw_intent_filters}}}
+         </activity>
+
+        {{#use_new_splash}}
+        <activity android:name="org.chromium.webapk.shell_apk.h2o.SplashActivity"
+                  android:theme="@style/SplashTheme"
+                  android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
+        <activity android:name="org.chromium.webapk.shell_apk.h2o.H2OMainActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        {{/use_new_splash}}
+        {{^use_new_splash}}
+        <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        {{/use_new_splash}}
+
         {{#share_template}}
         <activity-alias android:name="org.chromium.webapk.shell_apk.ShareActivity{{{index}}}"
                   android:label="{{{title}}}"
-                  android:targetActivity="org.chromium.webapk.shell_apk.ShareActivity">
+                  android:targetActivity="org.chromium.webapk.shell_apk.TransparentHostBrowserLauncherActivity">
           <meta-data android:name="org.chromium.webapk.shell_apk.shareAction" android:value="{{{action}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamTitle" android:value="{{{param_title}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamText" android:value="{{{param_text}}}" />
@@ -53,9 +79,6 @@
           </intent-filter>
         </activity-alias>
         {{/share_template}}
-        <activity android:name="org.chromium.webapk.shell_apk.ShareActivity"
-                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
-                  android:excludeFromRecents="true"/>
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
         {{#bound_webapk}}
         <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
@@ -70,7 +93,6 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{{orientation}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.hasLargeSplashIcons" android:value="{{{has_large_splash_icons}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="@mipmap/app_icon" />
         <meta-data android:name="org.chromium.webapk.shell_apk.splashId" android:resource="@drawable/splash_icon" />
         <meta-data android:name="org.chromium.webapk.shell_apk.distributor" android:value="{{{distributor}}}" />

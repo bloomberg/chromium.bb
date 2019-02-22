@@ -27,6 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORMATION_MATRIX_H_
 
 #include <string.h>  // for memcpy
+#include <cmath>
+#include <limits>
 #include <memory>
 #include "SkMatrix44.h"
 #include "build/build_config.h"
@@ -471,6 +473,10 @@ class PLATFORM_EXPORT TransformationMatrix {
   }
 
   bool IsIntegerTranslation() const;
+
+  // Returns true if axis-aligned 2d rects will remain axis-aligned after being
+  // transformed by this matrix.
+  bool Preserves2dAxisAlignment() const;
 
   // If this transformation is identity or 2D translation, returns the
   // translation.

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 group("common") {
@@ -17,7 +18,7 @@ group("common") {
   }
 }
 
-source_set("internal") {
+jumbo_source_set("internal") {
   visibility = [ "//components/policy/*" ]
 
   configs += [ "//components/policy:component_implementation" ]
@@ -60,6 +61,8 @@ source_set("internal") {
     "cloud/component_cloud_policy_updater.h",
     "cloud/device_management_service.cc",
     "cloud/device_management_service.h",
+    "cloud/dm_auth.cc",
+    "cloud/dm_auth.h",
     "cloud/enterprise_metrics.cc",
     "cloud/enterprise_metrics.h",
     "cloud/external_policy_data_fetcher.cc",
@@ -89,7 +92,6 @@ source_set("internal") {
     "config_dir_policy_loader.h",
     "configuration_policy_provider.cc",
     "configuration_policy_provider.h",
-    "extension_policy_migrator.cc",
     "extension_policy_migrator.h",
     "external_data_fetcher.cc",
     "external_data_fetcher.h",
@@ -241,7 +243,7 @@ source_set("internal") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "cloud/mock_cloud_external_data_manager.cc",
@@ -315,7 +317,6 @@ source_set("unit_tests") {
     "cloud/device_management_service_unittest.cc",
     "cloud/policy_header_service_unittest.cc",
     "cloud/user_info_fetcher_unittest.cc",
-    "extension_policy_migrator_unittest.cc",
     "generate_policy_source_unittest.cc",
     "plist_writer_unittest.cc",
     "policy_bundle_unittest.cc",

@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
@@ -714,12 +713,11 @@ static ScriptState* ToScriptStateImpl(LocalFrame* frame,
 v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   DCHECK(context);
-  if (context->IsDocument()) {
-    if (LocalFrame* frame = ToDocument(context)->GetFrame())
+  if (auto* document = DynamicTo<Document>(context)) {
+    if (LocalFrame* frame = document->GetFrame())
       return ToV8Context(frame, world);
-  } else if (context->IsWorkerOrWorkletGlobalScope()) {
-    if (WorkerOrWorkletScriptController* script =
-            ToWorkerOrWorkletGlobalScope(context)->ScriptController()) {
+  } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
+    if (WorkerOrWorkletScriptController* script = scope->ScriptController()) {
       if (script->GetScriptState()->ContextIsValid())
         return script->GetScriptState()->GetContext();
     }

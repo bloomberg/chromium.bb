@@ -131,7 +131,7 @@ static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
                                            CompositorElementId element_id) {
   if (root->CcLayer()->element_id() == element_id)
     return root;
-  for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
+  for (wtf_size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer =
             FindLayerByElementId(root->Children()[i], element_id))
       return layer;
@@ -327,7 +327,7 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
       GraphicsLayer* graphics_layer =
           root->GetCompositedLayerMapping()->ChildForSuperlayers();
       layer_id_to_node_id_map.Set(graphics_layer->CcLayer()->id(),
-                                  IdForNode(node));
+                                  IdentifiersFactory::IntIdForNode(node));
     }
   }
   for (PaintLayer* child = root->FirstChild(); child;
@@ -362,13 +362,9 @@ void InspectorLayerTreeAgent::GatherGraphicsLayers(
   layers->addItem(BuildObjectForLayer(
       RootGraphicsLayer(), layer, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
-  for (size_t i = 0, size = layer->Children().size(); i < size; ++i)
+  for (wtf_size_t i = 0, size = layer->Children().size(); i < size; ++i)
     GatherGraphicsLayers(layer->Children()[i], layer_id_to_node_id_map, layers,
                          has_wheel_event_handlers, scrolling_layer_id);
-}
-
-int InspectorLayerTreeAgent::IdForNode(Node* node) {
-  return DOMNodeIds::IdForNode(node);
 }
 
 PaintLayerCompositor* InspectorLayerTreeAgent::GetPaintLayerCompositor() {
@@ -388,7 +384,7 @@ GraphicsLayer* InspectorLayerTreeAgent::RootGraphicsLayer() {
 static GraphicsLayer* FindLayerById(GraphicsLayer* root, int layer_id) {
   if (root->CcLayer()->id() == layer_id)
     return root;
-  for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
+  for (wtf_size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer = FindLayerById(root->Children()[i], layer_id))
       return layer;
   }
@@ -434,7 +430,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   if (!layer->DrawsContent())
     return Response::Error("Layer does not draw content");
 
-  IntRect interest_rect(IntPoint(), layer->Size());
+  IntRect interest_rect(IntPoint(), IntSize(layer->Size()));
   suppress_layer_paint_events_ = true;
 
   // If we hit a devtool break point in the middle of document lifecycle, for
@@ -473,9 +469,12 @@ Response InspectorLayerTreeAgent::loadSnapshot(
     String* snapshot_id) {
   if (!tiles->length())
     return Response::Error("Invalid argument, no tiles provided");
+  if (tiles->length() > UINT_MAX)
+    return Response::Error("Invalid argument, too many tiles provided");
+  wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->length());
   Vector<scoped_refptr<PictureSnapshot::TilePictureStream>> decoded_tiles;
-  decoded_tiles.Grow(tiles->length());
-  for (size_t i = 0; i < tiles->length(); ++i) {
+  decoded_tiles.Grow(tiles_length);
+  for (wtf_size_t i = 0; i < tiles_length; ++i) {
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
     decoded_tiles[i] = base::AdoptRef(new PictureSnapshot::TilePictureStream());
     decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());

@@ -93,6 +93,9 @@ class MenuItemBuilder {
   // the one specified here is used instead.
   MenuItemBuilder& key_equivalent(NSString* key_equivalent,
                                   NSEventModifierFlags flags) {
+    DCHECK((flags & NSEventModifierFlagShift) == 0)
+        << "The shift modifier flag should be directly applied to the key "
+           "equivalent.";
     key_equivalent_ = key_equivalent;
     key_equivalent_flags_ = flags;
     return *this;

@@ -45,7 +45,22 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttgload
+#define FT_COMPONENT  ttgload
+
+
+  /**************************************************************************
+   *
+   * Simple glyph flags.
+   */
+#define ON_CURVE_POINT  0x01  /* same value as FT_CURVE_TAG_ON            */
+#define X_SHORT_VECTOR  0x02
+#define Y_SHORT_VECTOR  0x04
+#define REPEAT_FLAG     0x08
+#define X_POSITIVE      0x10  /* two meanings depending on X_SHORT_VECTOR */
+#define SAME_X          0x10
+#define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
+#define SAME_Y          0x20
+#define OVERLAP_SIMPLE  0x40  /* we ignore this value                     */
 
 
   /**************************************************************************
@@ -62,7 +77,7 @@
 #define WE_HAVE_A_2X2              0x0080
 #define WE_HAVE_INSTR              0x0100
 #define USE_MY_METRICS             0x0200
-#define OVERLAP_COMPOUND           0x0400
+#define OVERLAP_COMPOUND           0x0400  /* we ignore this value */
 #define SCALED_COMPONENT_OFFSET    0x0800
 #define UNSCALED_COMPONENT_OFFSET  0x1000
 
@@ -267,11 +282,8 @@
     FT_Error   error;
     FT_Stream  stream = loader->stream;
 
-    /* for non-debug mode */
     FT_UNUSED( glyph_index );
 
-
-    FT_TRACE4(( "Glyph %ld\n", glyph_index ));
 
     /* the following line sets the `error' variable through macros! */
     if ( FT_STREAM_SEEK( offset ) || FT_FRAME_ENTER( byte_count ) )
@@ -337,7 +349,7 @@
     FT_Byte         *flag, *flag_limit;
     FT_Byte         c, count;
     FT_Vector       *vec, *vec_limit;
-    FT_Pos          x;
+    FT_Pos          x, y;
     FT_Short        *cont, *cont_limit, prev_cont;
     FT_Int          xy_size = 0;
 
@@ -454,7 +466,7 @@
         goto Invalid_Outline;
 
       *flag++ = c = FT_NEXT_BYTE( p );
-      if ( c & 8 )
+      if ( c & REPEAT_FLAG )
       {
         if ( p + 1 > limit )
           goto Invalid_Outline;
@@ -480,31 +492,29 @@
 
     for ( ; vec < vec_limit; vec++, flag++ )
     {
-      FT_Pos   y = 0;
-      FT_Byte  f = *flag;
+      FT_Pos   delta = 0;
+      FT_Byte  f     = *flag;
 
 
-      if ( f & 2 )
+      if ( f & X_SHORT_VECTOR )
       {
         if ( p + 1 > limit )
           goto Invalid_Outline;
 
-        y = (FT_Pos)FT_NEXT_BYTE( p );
-        if ( ( f & 16 ) == 0 )
-          y = -y;
+        delta = (FT_Pos)FT_NEXT_BYTE( p );
+        if ( !( f & X_POSITIVE ) )
+          delta = -delta;
       }
-      else if ( ( f & 16 ) == 0 )
+      else if ( !( f & SAME_X ) )
       {
         if ( p + 2 > limit )
           goto Invalid_Outline;
 
-        y = (FT_Pos)FT_NEXT_SHORT( p );
+        delta = (FT_Pos)FT_NEXT_SHORT( p );
       }
 
-      x     += y;
+      x     += delta;
       vec->x = x;
-      /* the cast is for stupid compilers */
-      *flag  = (FT_Byte)( f & ~( 2 | 16 ) );
     }
 
     /* reading the Y coordinates */
@@ -512,35 +522,36 @@
     vec       = gloader->current.outline.points;
     vec_limit = vec + n_points;
     flag      = (FT_Byte*)outline->tags;
-    x         = 0;
+    y         = 0;
 
     for ( ; vec < vec_limit; vec++, flag++ )
     {
-      FT_Pos   y = 0;
-      FT_Byte  f = *flag;
+      FT_Pos   delta = 0;
+      FT_Byte  f     = *flag;
 
 
-      if ( f & 4 )
+      if ( f & Y_SHORT_VECTOR )
       {
         if ( p + 1 > limit )
           goto Invalid_Outline;
 
-        y = (FT_Pos)FT_NEXT_BYTE( p );
-        if ( ( f & 32 ) == 0 )
-          y = -y;
+        delta = (FT_Pos)FT_NEXT_BYTE( p );
+        if ( !( f & Y_POSITIVE ) )
+          delta = -delta;
       }
-      else if ( ( f & 32 ) == 0 )
+      else if ( !( f & SAME_Y ) )
       {
         if ( p + 2 > limit )
           goto Invalid_Outline;
 
-        y = (FT_Pos)FT_NEXT_SHORT( p );
+        delta = (FT_Pos)FT_NEXT_SHORT( p );
       }
 
-      x     += y;
-      vec->y = x;
+      y     += delta;
+      vec->y = y;
+
       /* the cast is for stupid compilers */
-      *flag  = (FT_Byte)( f & FT_CURVE_TAG_ON );
+      *flag  = (FT_Byte)( f & ON_CURVE_POINT );
     }
 
     outline->n_points   = (FT_Short)n_points;
@@ -1468,7 +1479,7 @@
     }
 #endif
 
-    use_aw_2 = (FT_Bool)( subpixel_hinting && grayscale );
+    use_aw_2 = FT_BOOL( subpixel_hinting && grayscale );
 
     loader->pp1.x = loader->bbox.xMin - loader->left_bearing;
     loader->pp1.y = 0;
@@ -1520,12 +1531,13 @@
                        FT_UInt    recurse_count,
                        FT_Bool    header_only )
   {
-    FT_Error        error        = FT_Err_Ok;
+    FT_Error        error   = FT_Err_Ok;
     FT_Fixed        x_scale, y_scale;
     FT_ULong        offset;
-    TT_Face         face         = loader->face;
-    FT_GlyphLoader  gloader      = loader->gloader;
-    FT_Bool         opened_frame = 0;
+    TT_Face         face    = loader->face;
+    FT_GlyphLoader  gloader = loader->gloader;
+
+    FT_Bool  opened_frame = 0;
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     FT_StreamRec    inc_stream;
@@ -1558,15 +1570,15 @@
 
     loader->glyph_index = glyph_index;
 
-    if ( ( loader->load_flags & FT_LOAD_NO_SCALE ) == 0 )
-    {
-      x_scale = loader->size->metrics->x_scale;
-      y_scale = loader->size->metrics->y_scale;
-    }
-    else
+    if ( loader->load_flags & FT_LOAD_NO_SCALE )
     {
       x_scale = 0x10000L;
       y_scale = 0x10000L;
+    }
+    else
+    {
+      x_scale = loader->size->metrics->x_scale;
+      y_scale = loader->size->metrics->y_scale;
     }
 
     /* Set `offset' to the start of the glyph relative to the start of */
@@ -1625,38 +1637,36 @@
       if ( error )
         goto Exit;
 
-      opened_frame = 1;
-
       /* read glyph header first */
       error = face->read_glyph_header( loader );
-      if ( error )
-        goto Exit;
 
-      /* the metrics must be computed after loading the glyph header */
-      /* since we need the glyph's `yMax' value in case the vertical */
-      /* metrics must be emulated                                    */
-      error = tt_get_metrics( loader, glyph_index );
-      if ( error )
-        goto Exit;
+      face->forget_glyph_frame( loader );
 
-      if ( header_only )
+      if ( error )
         goto Exit;
     }
 
+    /* a space glyph */
     if ( loader->byte_len == 0 || loader->n_contours == 0 )
     {
       loader->bbox.xMin = 0;
       loader->bbox.xMax = 0;
       loader->bbox.yMin = 0;
       loader->bbox.yMax = 0;
+    }
 
-      error = tt_get_metrics( loader, glyph_index );
-      if ( error )
-        goto Exit;
+    /* the metrics must be computed after loading the glyph header */
+    /* since we need the glyph's `yMax' value in case the vertical */
+    /* metrics must be emulated                                    */
+    error = tt_get_metrics( loader, glyph_index );
+    if ( error )
+      goto Exit;
 
-      if ( header_only )
-        goto Exit;
+    if ( header_only )
+      goto Exit;
 
+    if ( loader->byte_len == 0 || loader->n_contours == 0 )
+    {
       /* must initialize points before (possibly) overriding */
       /* glyph metrics from the incremental interface        */
       tt_loader_set_pp( loader );
@@ -1712,7 +1722,6 @@
         loader->pp4.x = points[3].x;
         loader->pp4.y = points[3].y;
 
-
         /* recalculate linear horizontal and vertical advances */
         /* if we don't have HVAR and VVAR, respectively        */
         if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
@@ -1752,6 +1761,16 @@
     /***********************************************************************/
     /***********************************************************************/
     /***********************************************************************/
+
+    /* we now open a frame again, right after the glyph header */
+    /* (which consists of 10 bytes)                            */
+    error = face->access_glyph_frame( loader, glyph_index,
+                                      face->glyf_offset + offset + 10,
+                                      (FT_UInt)loader->byte_len - 10 );
+    if ( error )
+      goto Exit;
+
+    opened_frame = 1;
 
     /* if it is a simple glyph, load it */
 
@@ -1797,7 +1816,6 @@
        * double cast to make this portable.  Note, however, that this needs
        * pointers with a width of at least 32 bits.
        */
-
 
       /* clear the nodes filled by sibling chains */
       node = ft_list_get_node_at( &loader->composites, recurse_count );

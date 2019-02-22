@@ -21,7 +21,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -36,6 +35,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/alpha_animated_collection_view_flow_layout.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -217,19 +217,17 @@ initWithActivityItems:(NSArray*)activityItems
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  MDCCollectionViewFlowLayout* layout =
+      [[AlphaAnimatedCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kPasswordExport)) {
-      passwordExporter_ = [[PasswordExporter alloc]
-          initWithReauthenticationModule:reauthenticationModule_
-                                delegate:self];
-    }
+    passwordExporter_ = [[PasswordExporter alloc]
+        initWithReauthenticationModule:reauthenticationModule_
+                              delegate:self];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
@@ -307,14 +305,11 @@ initWithActivityItems:(NSArray*)activityItems
         forSectionWithIdentifier:SectionIdentifierBlacklist];
   }
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    // Export passwords button.
-    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    exportPasswordsItem_ = [self exportPasswordsItem];
-    [model addItem:exportPasswordsItem_
-        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-  }
+  // Export passwords button.
+  [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+  exportPasswordsItem_ = [self exportPasswordsItem];
+  [model addItem:exportPasswordsItem_
+      toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
 
   [self filterItems:self.searchTerm];
 }
@@ -606,8 +601,7 @@ blacklistedFormItemWithText:(NSString*)text
 }
 
 - (void)updateExportPasswordsButton {
-  if (!exportPasswordsItem_ || !base::FeatureList::IsEnabled(
-                                   password_manager::features::kPasswordExport))
+  if (!exportPasswordsItem_)
     return;
   if (!savedForms_.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
@@ -733,8 +727,6 @@ blacklistedFormItemWithText:(NSString*)text
     case ItemTypeExportPasswordsButton:
       DCHECK_EQ(SectionIdentifierExportPasswordsButton,
                 [model sectionIdentifierForSection:indexPath.section]);
-      DCHECK(base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport));
       if (exportReady_) {
         [self startPasswordsExportFlow];
       }
@@ -759,22 +751,18 @@ blacklistedFormItemWithText:(NSString*)text
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:NO];
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    [self setExportPasswordsButtonEnabled:NO];
-  }
+  [self setExportPasswordsButtonEnabled:NO];
+  [self setSearchPasswordsItemEnabled:NO];
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:YES];
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    if (exportReady_) {
-      [self setExportPasswordsButtonEnabled:YES];
-    }
+  if (exportReady_) {
+    [self setExportPasswordsButtonEnabled:YES];
   }
+  [self setSearchPasswordsItemEnabled:YES];
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -1047,6 +1035,39 @@ blacklistedFormItemWithText:(NSString*)text
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];
+}
+
+// Sets the search passwords item's enabled status to |enabled| and
+// reconfigures the corresponding cell.
+- (void)setSearchPasswordsItemEnabled:(BOOL)enabled {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  if (![model hasItemForItemType:ItemTypeSearchBox
+               sectionIdentifier:SectionIdentifierSearchPasswordsBox]) {
+    return;
+  }
+  NSIndexPath* itemPath =
+      [model indexPathForItemType:ItemTypeSearchBox
+                sectionIdentifier:SectionIdentifierSearchPasswordsBox];
+  SettingsSearchItem* searchItem =
+      base::mac::ObjCCastStrict<SettingsSearchItem>(
+          [model itemAtIndexPath:itemPath]);
+  [searchItem setEnabled:enabled];
+
+  NSIndexPath* indexPath =
+      [self.collectionViewModel indexPathForItem:searchItem];
+  MDCCollectionViewCell* cell =
+      base::mac::ObjCCastStrict<MDCCollectionViewCell>(
+          [self.collectionView cellForItemAtIndexPath:indexPath]);
+
+  // |cell| may be nil if the row is not currently on screen. If that's the case
+  // and we are disabling we force the keyboard down (since the cell can't do it
+  // for us).
+  if (cell) {
+    [searchItem configureCell:cell];
+  } else if (!enabled) {
+    [self.view endEditing:YES];
+  }
 }
 
 #pragma mark - Testing

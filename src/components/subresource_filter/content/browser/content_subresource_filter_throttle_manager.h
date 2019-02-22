@@ -18,7 +18,8 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -27,10 +28,6 @@ class NavigationThrottle;
 class RenderFrameHost;
 }  // namespace content
 
-namespace IPC {
-class Message;
-}  // namespace IPC
-
 namespace subresource_filter {
 
 class AsyncDocumentSubresourceFilter;
@@ -38,7 +35,6 @@ class ActivationStateComputingNavigationThrottle;
 class PageLoadStatistics;
 class SubresourceFilterObserverManager;
 class SubresourceFilterClient;
-struct DocumentLoadStatistics;
 
 // The ContentSubresourceFilterThrottleManager manages NavigationThrottles in
 // order to calculate frame activation states and subframe navigation filtering,
@@ -51,6 +47,7 @@ struct DocumentLoadStatistics;
 // navgation, and has veto power for frame activation.
 class ContentSubresourceFilterThrottleManager
     : public content::WebContentsObserver,
+      public mojom::SubresourceFilterHost,
       public SubresourceFilterObserver,
       public SubframeNavigationFilteringThrottle::Delegate {
  public:
@@ -94,14 +91,12 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
 
   // SubresourceFilterObserver:
   void OnSubresourceFilterGoingAway() override;
   void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      const ActivationState& activation_state) override;
+      const mojom::ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy,
@@ -128,18 +123,22 @@ class ContentSubresourceFilterThrottleManager
   AsyncDocumentSubresourceFilter* GetParentFrameFilter(
       content::NavigationHandle* child_frame_navigation);
 
-  // Calls OnFirstSubresourceLoadDisallowed on the Delegate at most once per
-  // committed, non-same-page navigation in the main frame.
-  void MaybeCallFirstDisallowedLoad();
+  // Calls ShowNotification on |client_| at most once per committed,
+  // non-same-page navigation in the main frame.
+  void MaybeShowNotification();
 
   VerifiedRuleset::Handle* EnsureRulesetHandle();
   void DestroyRulesetHandleIfNoLongerUsed();
 
-  void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
-
   // Registers |render_frame_host| as an ad frame. If the frame later moves to
   // a new process its RenderHost will be told that it's an ad.
   void OnFrameIsAdSubframe(content::RenderFrameHost* render_frame_host);
+
+  // mojom::SubresourceFilterHost:
+  void DidDisallowFirstSubresource() override;
+  void FrameIsAdSubframe() override;
+  void SetDocumentLoadStatistics(
+      mojom::DocumentLoadStatisticsPtr statistics) override;
 
   // Adds the navigation's RenderFrameHost to activated_frame_hosts_ if it is a
   // special navigation which did not go through navigation throttles and its
@@ -170,6 +169,8 @@ class ContentSubresourceFilterThrottleManager
   // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
   //    OOPIF)
   std::set<content::RenderFrameHost*> ad_frames_;
+
+  content::WebContentsFrameBindingSet<mojom::SubresourceFilterHost> binding_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
       scoped_observer_;

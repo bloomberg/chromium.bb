@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ImageLoaderUtil = {};
+function ImageLoaderUtil() {}
 
 /**
- * Checks if the options contain any image processing.
+ * Checks if the options on the request contain any image processing.
  *
  * @param {number} width Source width.
  * @param {number} height Source height.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} request The request, containing resizing options.
  * @return {boolean} True if yes, false if not.
  */
-ImageLoaderUtil.shouldProcess = function(width, height, options) {
-  var targetDimensions = ImageLoaderUtil.resizeDimensions(
-      width, height, options);
+ImageLoaderUtil.shouldProcess = function(width, height, request) {
+  const targetDimensions =
+      ImageLoaderUtil.resizeDimensions(width, height, request);
 
   // Dimensions has to be adjusted.
   if (targetDimensions.width != width || targetDimensions.height != height)
     return true;
 
   // Orientation has to be adjusted.
-  if (!options.orientation.isIdentity())
+  if (!request.orientation.isIdentity())
     return true;
 
   // Non-standard color space has to be converted.
-  if (options.colorSpace && options.colorSpace !== ColorSpace.SRGB)
+  if (request.colorSpace && request.colorSpace !== ColorSpace.SRGB)
     return true;
 
   // No changes required.
@@ -41,33 +41,33 @@ ImageLoaderUtil.shouldProcess = function(width, height, options) {
  *
  * @param {number} width Source width.
  * @param {number} height Source height.
- * @param {Object} options Resizing options as a hash array.
- * @return {Object} Dimensions, eg. {width: 100, height: 50}.
+ * @param {!LoadImageRequest} request The request, containing resizing options.
+ * @return {!{width: number, height:number}} Dimensions.
  */
-ImageLoaderUtil.resizeDimensions = function(width, height, options) {
-  var scale = options.scale || 1;
-  var targetDimensions = options.orientation.getSizeAfterCancelling(
-      width * scale, height * scale);
-  var targetWidth = targetDimensions.width;
-  var targetHeight = targetDimensions.height;
+ImageLoaderUtil.resizeDimensions = function(width, height, request) {
+  const scale = request.scale || 1;
+  const targetDimensions =
+      request.orientation.getSizeAfterCancelling(width * scale, height * scale);
+  let targetWidth = targetDimensions.width;
+  let targetHeight = targetDimensions.height;
 
-  if (options.maxWidth && targetWidth > options.maxWidth) {
-    var scale = options.maxWidth / targetWidth;
+  if (request.maxWidth && targetWidth > request.maxWidth) {
+    const scale = request.maxWidth / targetWidth;
     targetWidth *= scale;
     targetHeight *= scale;
   }
 
-  if (options.maxHeight && targetHeight > options.maxHeight) {
-    var scale = options.maxHeight / targetHeight;
+  if (request.maxHeight && targetHeight > request.maxHeight) {
+    const scale = request.maxHeight / targetHeight;
     targetWidth *= scale;
     targetHeight *= scale;
   }
 
-  if (options.width)
-    targetWidth = options.width;
+  if (request.width)
+    targetWidth = request.width;
 
-  if (options.height)
-    targetHeight = options.height;
+  if (request.height)
+    targetHeight = request.height;
 
   targetWidth = Math.round(targetWidth);
   targetHeight = Math.round(targetHeight);
@@ -80,20 +80,20 @@ ImageLoaderUtil.resizeDimensions = function(width, height, options) {
  *
  * @param {HTMLCanvasElement|Image} source Source image or canvas.
  * @param {HTMLCanvasElement} target Target canvas.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} request The request, containing resizing options.
  */
-ImageLoaderUtil.resizeAndCrop = function(source, target, options) {
+ImageLoaderUtil.resizeAndCrop = function(source, target, request) {
   // Calculates copy parameters.
-  var copyParameters = ImageLoaderUtil.calculateCopyParameters(
-      source, options);
+  const copyParameters =
+      ImageLoaderUtil.calculateCopyParameters(source, request);
   target.width = copyParameters.canvas.width;
   target.height = copyParameters.canvas.height;
 
   // Apply.
-  var targetContext =
+  let targetContext =
       /** @type {CanvasRenderingContext2D} */ (target.getContext('2d'));
   targetContext.save();
-  options.orientation.cancelImageOrientation(
+  request.orientation.cancelImageOrientation(
       targetContext, copyParameters.target.width, copyParameters.target.height);
   targetContext.drawImage(
       source,
@@ -121,45 +121,45 @@ ImageLoaderUtil.CopyParameters;
  * Calculates copy parameters.
  *
  * @param {HTMLCanvasElement|Image} source Source image or canvas.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} request The request, containing resizing options.
  * @return {!ImageLoaderUtil.CopyParameters} Calculated copy parameters.
  */
-ImageLoaderUtil.calculateCopyParameters = function(source, options) {
-  if (options.crop) {
+ImageLoaderUtil.calculateCopyParameters = function(source, request) {
+  if (request.crop) {
     // When an image is cropped, target should be a fixed size square.
-    assert(options.width);
-    assert(options.height);
-    assert(options.width === options.height);
+    assert(request.width);
+    assert(request.height);
+    assert(request.width === request.height);
 
     // The length of shorter edge becomes dimension of cropped area in the
     // source.
-    var cropSourceDimension = Math.min(source.width, source.height);
+    const cropSourceDimension = Math.min(source.width, source.height);
 
     return {
       source: {
         x: Math.floor((source.width / 2) - (cropSourceDimension / 2)),
         y: Math.floor((source.height / 2) - (cropSourceDimension / 2)),
         width: cropSourceDimension,
-        height: cropSourceDimension
+        height: cropSourceDimension,
       },
       target: {
         x: 0,
         y: 0,
-        width: options.width,
-        height: options.height
+        width: request.width,
+        height: request.height,
       },
       canvas: {
-        width: options.width,
-        height: options.height
+        width: request.width,
+        height: request.height,
       }
     };
   }
 
   // Target dimension is calculated in the rotated(transformed) coordinate.
-  var targetCanvasDimensions = ImageLoaderUtil.resizeDimensions(
-      source.width, source.height, options);
+  const targetCanvasDimensions =
+      ImageLoaderUtil.resizeDimensions(source.width, source.height, request);
 
-  var targetDimensions = options.orientation.getSizeAfterCancelling(
+  const targetDimensions = request.orientation.getSizeAfterCancelling(
       targetCanvasDimensions.width, targetCanvasDimensions.height);
 
   return {
@@ -201,15 +201,16 @@ ImageLoaderUtil.convertColorSpace = function(target, colorSpace) {
   if (colorSpace === ColorSpace.SRGB)
     return;
   if (colorSpace === ColorSpace.ADOBE_RGB) {
-    var matrix = ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD;
-    var context = target.getContext('2d');
-    var imageData = context.getImageData(0, 0, target.width, target.height);
-    var data = imageData.data;
-    for (var i = 0; i < data.length; i += 4) {
+    const matrix = ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD;
+    let context =
+        assertInstanceof(target.getContext('2d'), CanvasRenderingContext2D);
+    let imageData = context.getImageData(0, 0, target.width, target.height);
+    let data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
       // Scale to [0, 1].
-      var adobeR = data[i] / 255;
-      var adobeG = data[i + 1] / 255;
-      var adobeB = data[i + 2] / 255;
+      let adobeR = data[i] / 255;
+      let adobeG = data[i + 1] / 255;
+      let adobeB = data[i + 2] / 255;
 
       // Revert gannma transformation.
       adobeR = adobeR <= 0.0556 ? adobeR / 32 : Math.pow(adobeR, 2.2);
@@ -217,9 +218,9 @@ ImageLoaderUtil.convertColorSpace = function(target, colorSpace) {
       adobeB = adobeB <= 0.0556 ? adobeB / 32 : Math.pow(adobeB, 2.2);
 
       // Convert color space.
-      var sR = matrix[0] * adobeR + matrix[1] * adobeG + matrix[2] * adobeB;
-      var sG = matrix[3] * adobeR + matrix[4] * adobeG + matrix[5] * adobeB;
-      var sB = matrix[6] * adobeR + matrix[7] * adobeG + matrix[8] * adobeB;
+      let sR = matrix[0] * adobeR + matrix[1] * adobeG + matrix[2] * adobeB;
+      let sG = matrix[3] * adobeR + matrix[4] * adobeG + matrix[5] * adobeB;
+      let sB = matrix[6] * adobeR + matrix[7] * adobeG + matrix[8] * adobeB;
 
       // Gannma transformation.
       sR = sR <= 0.0031308 ? 12.92 * sR : 1.055 * Math.pow(sR, 1 / 2.4) - 0.055;

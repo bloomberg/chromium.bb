@@ -37,7 +37,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_aflatin
+#define FT_COMPONENT  aflatin
 
 
   /* needed for computation of round vs. flat segments */
@@ -1307,7 +1307,7 @@
     /* an extra-light axis corresponds to a standard width that is */
     /* smaller than 5/8 pixels                                     */
     axis->extra_light =
-      (FT_Bool)( FT_MulFix( axis->standard_width, scale ) < 32 + 8 );
+      FT_BOOL( FT_MulFix( axis->standard_width, scale ) < 32 + 8 );
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( axis->extra_light )
@@ -2328,9 +2328,9 @@
 
           /* check for links -- if seg->serif is set, then seg->link must */
           /* be ignored                                                   */
-          is_serif = (FT_Bool)( seg->serif               &&
-                                seg->serif->edge         &&
-                                seg->serif->edge != edge );
+          is_serif = FT_BOOL( seg->serif               &&
+                              seg->serif->edge         &&
+                              seg->serif->edge != edge );
 
           if ( ( seg->link && seg->link->edge ) || is_serif )
           {

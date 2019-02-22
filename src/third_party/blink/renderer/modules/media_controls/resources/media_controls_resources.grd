@@ -17,7 +17,7 @@
     <includes>
       <include name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS" file="legacyMediaControlsAndroid.css" type="BINDATA" compress="gzip" />
       <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_TIMELINE_CSS" file="modernMediaControls_timeline.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_OVERLAY_PLAY_CSS" file="modernMediaControls_overlay_play.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_ANIMATED_ARROW_CSS" file="modernMediaControls_animated_arrow.css" type="BINDATA" compress="gzip" />
       <include name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_SCRUBBING_MESSAGE_CSS" file="modernMediaControls_scrubbing_message.css" type="BINDATA" compress="gzip" />
       <include name="IDR_MODERN_MEDIA_CONTROLS_JUMP_SVG" file="jump_image.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_MODERN_MEDIA_CONTROLS_ARROW_RIGHT_SVG" file="ic_arrow_right.svg" type="BINDATA" compress="gzip" />

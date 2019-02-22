@@ -58,6 +58,9 @@ var WEB_VIEW_API_METHODS = [
   // Returns whether audio is muted.
   'isAudioMuted',
 
+  // Returns whether spatial navigation is enabled.
+  'isSpatialNavigationEnabled',
+
   // Indicates whether or not the webview's user agent string has been
   // overridden.
   'isUserAgentOverridden',
@@ -78,6 +81,9 @@ var WEB_VIEW_API_METHODS = [
 
   // Set audio mute.
   'setAudioMuted',
+
+  // Set spatial navigation state.
+  'setSpatialNavigationEnabled',
 
   // Override the user agent string used by the webview for guest page requests.
   'setUserAgentOverride',

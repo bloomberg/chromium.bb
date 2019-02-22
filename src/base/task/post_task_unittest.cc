@@ -188,6 +188,7 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
 }
 
 TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(
       RegisterTaskExecutor(TestTaskTraitsExtension::kExtensionId, &executor_));
 }

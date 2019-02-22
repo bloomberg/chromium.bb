@@ -6,6 +6,7 @@
 
 #include "base/debug/alias.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
 
 namespace blink {
@@ -198,7 +199,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 #if defined(ADDRESS_SANITIZER)
 void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
 #if DCHECK_IS_ON()
-  DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+  ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
   int persistent_count = 0;
   for (PersistentNodeSlots* slots = persistent_region_.slots_; slots;

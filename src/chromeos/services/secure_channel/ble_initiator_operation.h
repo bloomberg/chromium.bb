@@ -59,7 +59,7 @@ class BleInitiatorOperation
       scoped_refptr<base::TaskRunner> task_runner);
 
   // ConnectToDeviceOperationBase<BleInitiatorFailureType>:
-  void AttemptConnectionToDevice(
+  void PerformAttemptConnectionToDevice(
       ConnectionPriority connection_priority) override;
   void PerformCancellation() override;
   void PerformUpdateConnectionPriority(

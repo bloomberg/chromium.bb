@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/common/previews_state.h"
 

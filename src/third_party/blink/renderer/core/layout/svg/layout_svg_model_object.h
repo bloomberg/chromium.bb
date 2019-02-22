@@ -47,7 +47,7 @@ class LayoutSVGModelObject : public LayoutObject {
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  LayoutRect AbsoluteVisualRect() const override;
+  LayoutRect VisualRectInDocument() const override;
   FloatRect VisualRectInLocalSVGCoordinates() const override {
     return local_visual_rect_;
   }
@@ -95,14 +95,9 @@ class LayoutSVGModelObject : public LayoutObject {
   // LayoutSVGModelObject subclasses should use GetElement() instead.
   void GetNode() const = delete;
 
-  // This method should never be called, SVG uses a different nodeAtPoint method
-  bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
-                   HitTestAction) final;
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
+                       NGOutlineType) const final;
 
  protected:
   FloatRect local_visual_rect_;

@@ -27,6 +27,10 @@ struct InstallableParams {
   // Check whether the site has a manifest valid for a web app.
   bool valid_manifest = false;
 
+  // If the manifest is being checked, check the display setting in the manifest
+  // is a valid webapp display setting.
+  bool check_webapp_manifest_display = true;
+
   // Check whether the site has a service worker controlling the manifest start
   // URL and the current URL.
   bool has_worker = false;

@@ -12,12 +12,14 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/android_key_systems.h"
-#include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
+#include "third_party/widevine/cdm/buildflags.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#if BUILDFLAG(ENABLE_WIDEVINE)
+#include "components/cdm/renderer/widevine_key_system_properties.h"
+#endif
 
 using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
@@ -110,29 +112,31 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 SupportedCodecs GetCastEmeSupportedCodecs() {
-  SupportedCodecs codecs =
-      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
-      ::media::EME_CODEC_MP4_FLAC | ::media::EME_CODEC_COMMON_VP9 |
-      ::media::EME_CODEC_WEBM_OPUS | ::media::EME_CODEC_WEBM_VORBIS |
-      ::media::EME_CODEC_WEBM_VP8 | ::media::EME_CODEC_WEBM_VP9;
+  SupportedCodecs codecs = ::media::EME_CODEC_AAC | ::media::EME_CODEC_AVC1 |
+                           ::media::EME_CODEC_VP9 | ::media::EME_CODEC_VP8 |
+                           ::media::EME_CODEC_LEGACY_VP9;
+
+#if !BUILDFLAG(DISABLE_SECURE_FLAC_OPUS_DECODING)
+  codecs |= ::media::EME_CODEC_FLAC | ::media::EME_CODEC_OPUS;
+#endif  // BUILDFLAG(DISABLE_SECURE_FLAC_OPUS_DECODING)
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_HEVC;
+  codecs |= ::media::EME_CODEC_HEVC;
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_DV_AVC;
+  codecs |= ::media::EME_CODEC_DOLBY_VISION_AVC;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
+  codecs |= ::media::EME_CODEC_DOLBY_VISION_HEVC;
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_AC3 | ::media::EME_CODEC_MP4_EAC3;
+  codecs |= ::media::EME_CODEC_AC3 | ::media::EME_CODEC_EAC3;
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_MPEG_H_AUDIO;
+  codecs |= ::media::EME_CODEC_MPEG_H_AUDIO;
 #endif  // BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
 
   return codecs;
@@ -152,7 +156,7 @@ void AddCmaKeySystems(
       codecs, codecs, enable_persistent_license_support));
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   base::flat_set<::media::EncryptionMode> encryption_schemes = {
@@ -170,7 +174,7 @@ void AddCmaKeySystems(
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED));  // Distinctive identifier.
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif                                      // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #elif defined(OS_ANDROID)
 #if defined(PLAYREADY_CDM_AVAILABLE)
@@ -197,9 +201,9 @@ void AddCastAndroidKeySystems(
   AddCastPlayreadyKeySystemAndroid(key_systems_properties);
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
   cdm::AddAndroidWidevine(key_systems_properties);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #endif  // defined(OS_ANDROID)
 

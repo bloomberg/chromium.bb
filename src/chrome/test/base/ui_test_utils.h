@@ -146,8 +146,10 @@ void WaitForHistoryToLoad(history::HistoryService* history_service);
 void DownloadURL(Browser* browser, const GURL& download_url);
 
 // Send the given text to the omnibox and wait until it's updated.
-void SendToOmniboxAndSubmit(LocationBar* location_bar,
-                            const std::string& input);
+void SendToOmniboxAndSubmit(
+    LocationBar* location_bar,
+    const std::string& input,
+    base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
 // Gets the first browser that is not in the specified set.
 Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers);

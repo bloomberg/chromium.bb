@@ -19,7 +19,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -77,14 +76,6 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
-
-  display::ManagedDisplayMode mode;
-  if (GetDisplayManager()->GetActiveModeForDisplayId(display.id(), &mode) &&
-      mode.refresh_rate() > 0.0f) {
-    host->compositor()->SetAuthoritativeVSyncInterval(
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          mode.refresh_rate()));
-  }
 
   // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
@@ -779,7 +770,8 @@ display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
 }
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
+    ui::KeyEvent* event,
+    base::OnceCallback<void(bool)> ack_callback) {
   aura::Window* root_window = nullptr;
   if (event->target()) {
     root_window = static_cast<aura::Window*>(event->target())->GetRootWindow();
@@ -792,7 +784,8 @@ ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     root_window = active_window ? active_window->GetRootWindow()
                                 : Shell::GetPrimaryRootWindow();
   }
-  return root_window->GetHost()->DispatchKeyEventPostIME(event);
+  return root_window->GetHost()->DispatchKeyEventPostIME(
+      event, std::move(ack_callback));
 }
 
 AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(

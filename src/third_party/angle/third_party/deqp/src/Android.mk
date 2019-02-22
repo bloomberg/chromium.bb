@@ -48,7 +48,7 @@ LOCAL_STATIC_LIBRARIES := \
 LOCAL_CFLAGS += \
 	$(deqp_compile_flags)
 
-LOCAL_SDK_VERSION := 22
+LOCAL_SDK_VERSION := 26
 LOCAL_CPPFLAGS += -Wno-non-virtual-dtor -Wno-delete-non-virtual-dtor
 LOCAL_NDK_STL_VARIANT := c++_static
 LOCAL_RTTI_FLAG := -frtti -fexceptions
@@ -65,4 +65,4 @@ include $(BUILD_SHARED_LIBRARY)
 # Build the test APKs using their own makefiles
 # include $(call all-makefiles-under,$(LOCAL_PATH)/android)
 
-include $(LOCAL_PATH)/android/package/Android.mk $(LOCAL_PATH)/android/cts/Android.mk
+include $(LOCAL_PATH)/android/package/Android.mk

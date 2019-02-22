@@ -48,20 +48,7 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   // as of the first packet's.
   SetPlayoutDelay(first_packet->video_header.playout_delay);
 
-  // Since FFmpeg use an optimized bitstream reader that reads in chunks of
-  // 32/64 bits we have to add at least that much padding to the buffer
-  // to make sure the decoder doesn't read out of bounds.
-  // NOTE! EncodedImage::_size is the size of the buffer (think capacity of
-  //       an std::vector) and EncodedImage::_length is the actual size of
-  //       the bitstream (think size of an std::vector).
-  if (codec_type_ == kVideoCodecH264)
-    _size = frame_size + EncodedImage::kBufferPaddingBytesH264;
-  else
-    _size = frame_size;
-
-  _buffer = new uint8_t[_size];
-  _length = frame_size;
-
+  AllocateBitstreamBuffer(frame_size);
   bool bitstream_copied = GetBitstream(_buffer);
   RTC_DCHECK(bitstream_copied);
   _encodedWidth = first_packet->width;
@@ -72,7 +59,7 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
 
   VCMPacket* last_packet = packet_buffer_->GetPacket(last_seq_num);
   RTC_CHECK(last_packet);
-  RTC_CHECK(last_packet->markerBit);
+  RTC_CHECK(last_packet->is_last_packet_in_frame);
   // http://www.etsi.org/deliver/etsi_ts/126100_126199/126114/12.07.00_60/
   // ts_126114v120700p.pdf Section 7.4.5.
   // The MTSI client shall add the payload bytes as defined in this clause
@@ -135,6 +122,11 @@ VideoCodecType RtpFrameObject::codec_type() const {
   return codec_type_;
 }
 
+void RtpFrameObject::SetBitstream(rtc::ArrayView<const uint8_t> bitstream) {
+  AllocateBitstreamBuffer(bitstream.size());
+  memcpy(_buffer, bitstream.data(), _length);
+}
+
 bool RtpFrameObject::GetBitstream(uint8_t* destination) const {
   return packet_buffer_->GetBitstream(*this, destination);
 }
@@ -151,12 +143,48 @@ bool RtpFrameObject::delayed_by_retransmission() const {
   return times_nacked() > 0;
 }
 
-absl::optional<RTPVideoTypeHeader> RtpFrameObject::GetCodecHeader() const {
+absl::optional<RTPVideoHeader> RtpFrameObject::GetRtpVideoHeader() const {
   rtc::CritScope lock(&packet_buffer_->crit_);
   VCMPacket* packet = packet_buffer_->GetPacket(first_seq_num_);
   if (!packet)
     return absl::nullopt;
-  return packet->video_header.video_type_header;
+  return packet->video_header;
+}
+
+absl::optional<RtpGenericFrameDescriptor>
+RtpFrameObject::GetGenericFrameDescriptor() const {
+  rtc::CritScope lock(&packet_buffer_->crit_);
+  VCMPacket* packet = packet_buffer_->GetPacket(first_seq_num_);
+  if (!packet)
+    return absl::nullopt;
+  return packet->generic_descriptor;
+}
+
+absl::optional<FrameMarking> RtpFrameObject::GetFrameMarking() const {
+  rtc::CritScope lock(&packet_buffer_->crit_);
+  VCMPacket* packet = packet_buffer_->GetPacket(first_seq_num_);
+  if (!packet)
+    return absl::nullopt;
+  return packet->video_header.frame_marking;
+}
+
+void RtpFrameObject::AllocateBitstreamBuffer(size_t frame_size) {
+  // Since FFmpeg use an optimized bitstream reader that reads in chunks of
+  // 32/64 bits we have to add at least that much padding to the buffer
+  // to make sure the decoder doesn't read out of bounds.
+  // NOTE! EncodedImage::_size is the size of the buffer (think capacity of
+  //       an std::vector) and EncodedImage::_length is the actual size of
+  //       the bitstream (think size of an std::vector).
+  size_t new_size = frame_size + (codec_type_ == kVideoCodecH264
+                                      ? EncodedImage::kBufferPaddingBytesH264
+                                      : 0);
+  if (_size < new_size) {
+    delete[] _buffer;
+    _buffer = new uint8_t[new_size];
+    _size = new_size;
+  }
+
+  _length = frame_size;
 }
 
 }  // namespace video_coding

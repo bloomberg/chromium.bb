@@ -35,7 +35,7 @@ v8::Maybe<void> V8VoidCallbackFunctionTestInterfaceSequenceArg::Invoke(ScriptWra
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    v8::Local<v8::Object> callback_object = CallbackFunction();
+    v8::Local<v8::Object> callback_object = CallbackObject();
     CHECK(!callback_object.IsEmpty());
     v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
@@ -55,12 +55,11 @@ v8::Maybe<void> V8VoidCallbackFunctionTestInterfaceSequenceArg::Invoke(ScriptWra
       IncumbentScriptState()->GetContext());
 
   v8::Local<v8::Function> function;
-  // callback function\'s invoke:
+  // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
-  // case.
-  DCHECK(CallbackFunction()->IsFunction());
+  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;

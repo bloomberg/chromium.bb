@@ -102,7 +102,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3171922709365450819">Peranti ini tidak disokong oleh pelanggan ini kerana peranti memerlukan pengesahan pihak ketiga.</translation>
 <translation id="3194245623920924351">Desktop Jauh Chrome</translation>
 <translation id="3197730452537982411">Desktop Jauh</translation>
-<translation id="3212472844831225214">• Sokongan tambahan untuk Android 9.0 Pie.</translation>
 <translation id="324272851072175193">E-melkan arahan ini</translation>
 <translation id="3258789396564295715">Anda boleh mengakses komputer ini dengan selamat menggunakan Desktop Jauh Chrome.</translation>
 <translation id="3286521253923406898">Alat Kawalan Hos Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
 <translation id="8548209692293300397">Sebelum ini anda telah log masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Untuk mengakses komputer anda dalam akaun itu, <ph name="LINK_BEGIN" />log masuk ke Google Chrome<ph name="LINK_END" /> dengan akaun itu dan pasang semula Desktop Jauh Chrome.</translation>
 <translation id="8642984861538780905">Sederhana</translation>
+<translation id="8705151241155781642">• Sokongan tambahan untuk Android 9.0 Pie.
+• Sokongan untuk mengubah saiz peleraian desktop jauh supaya sepadan dengan skrin peranti Android anda.</translation>
 <translation id="8712909229180978490">Saya tidak nampak fail saya yang disimpan dalam talian di Google Drive.</translation>
 <translation id="8743328882720071828">Adakah anda ingin membenarkan <ph name="CLIENT_USERNAME" /> melihat dan mengawal komputer anda?</translation>
 <translation id="8747048596626351634">Sesi mengalami ranap sistem atau gagal dimulakan. Jika sesi ~/.chrome-remote-desktop-session wujud pada komputer jauh, pastikan komputer tersebut memulakan proses latar depan yang memakan masa yang lama, seperti persekitaran desktop atau pengurus tetingkap.</translation>

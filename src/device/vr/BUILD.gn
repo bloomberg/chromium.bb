@@ -106,6 +106,13 @@ if (enable_vr) {
       ]
     }
 
+    if (enable_openvr || enable_oculus_vr) {
+      sources += [
+        "windows/compositor_base.cc",
+        "windows/compositor_base.h",
+      ]
+    }
+
     if (is_win && (enable_openvr || enable_oculus_vr)) {
       libs = [
         "d3d11.lib",
@@ -205,6 +212,8 @@ if (enable_openvr) {
 
     deps = [
       "//base",
+      "//device/vr/public/mojom:test_mojom",
+      "//third_party/openvr:openvr_headers",
     ]
   }
 }

@@ -15,11 +15,7 @@ for cmd in gen-signedexchange gen-certurl dump-signedexchange; do
 done
 
 dumpSignature() {
-  # Switch to dump-signedexchange again once it support b2 format.
-  # dump-signedexchange -i $1 | \
-  #     sed -n 's/^signature: //p' | \
-  strings $1 | grep label | \
-  tr -d '\n'
+  echo "constexpr char $1[] = R\"($(dump-signedexchange -signature -i $2))\";"
 }
 
 tmpdir=$(mktemp -d)
@@ -64,7 +60,8 @@ xxd -p test.example.org_test.sxg |
 # 0x82 : start array of 2 elements.
 # 0xa1 : start map of 1 element -> 0xa4 : 4 elements.
 xxd -p test.example.org_test.sxg |
-  sed '1s/82a1/82a4/' |
+  tr -d '\n' |
+  sed 's/82a1/82a4/' |
   xxd -r -p > test.example.org_test_invalid_cbor_header.sxg
 
 # Generate the signed exchange file with noext certificate
@@ -128,9 +125,7 @@ gen-signedexchange \
   -date 2018-02-06T04:45:41Z \
   -o $tmpdir/out.htxg
 
-echo -n 'constexpr char kSignatureHeaderRSA[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderRSA $tmpdir/out.htxg
 
 gen-signedexchange \
   -version 1b2 \
@@ -142,9 +137,8 @@ gen-signedexchange \
   -o $tmpdir/out.htxg \
   -dumpHeadersCbor $tmpdir/out.cborheader
 
-echo -n 'constexpr char kSignatureHeaderECDSAP256[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderECDSAP256 $tmpdir/out.htxg
+
 echo 'constexpr uint8_t kCborHeaderECDSAP256[] = {'
 xxd --include $tmpdir/out.cborheader | sed '1d;$d'
 
@@ -157,9 +151,7 @@ gen-signedexchange \
   -date 2018-02-06T04:45:41Z \
   -o $tmpdir/out.htxg
 
-echo -n 'constexpr char kSignatureHeaderECDSAP384[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderECDSAP384 $tmpdir/out.htxg
 
 echo "===="
 

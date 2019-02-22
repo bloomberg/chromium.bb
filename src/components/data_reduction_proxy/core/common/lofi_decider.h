@@ -26,17 +26,6 @@ class LoFiDecider {
       const net::URLRequest& request,
       net::HttpRequestHeaders* headers) const = 0;
 
-  // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform
-  // header and a slow page previews directive ("lite-page" or "empty-image")
-  // is present and not conditioned on "if-heavy".
-  virtual bool IsSlowPagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const = 0;
-
-  // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform
-  // header with the "lite-page" directive.
-  virtual bool IsLitePagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const = 0;
-
   // Unconditionally removes the Chrome-Proxy-Accept-Transform header from
   // |headers.|
   virtual void RemoveAcceptTransformHeader(

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/tree_ordered_map.h"
 #include "third_party/blink/renderer/core/html/forms/radio_button_group_scope.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -45,6 +46,7 @@ class HitTestResult;
 class IdTargetObserverRegistry;
 class SVGTreeScopeResources;
 class ScopedStyleResolver;
+class StyleSheetList;
 
 // The root node of a document tree (in which case this is a Document) or of a
 // shadow tree (in which case this is a ShadowRoot). Various things, like
@@ -139,6 +141,11 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   SVGTreeScopeResources& EnsureSVGTreeScopedResources();
 
+  bool HasAdoptedStyleSheets() const;
+  StyleSheetList& AdoptedStyleSheets();
+  void SetAdoptedStyleSheets(StyleSheetList*);
+  void SetAdoptedStyleSheets(StyleSheetList*, ExceptionState&);
+
  protected:
   TreeScope(ContainerNode&, Document&);
   TreeScope(Document&);
@@ -168,6 +175,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   RadioButtonGroupScope radio_button_group_scope_;
 
   Member<SVGTreeScopeResources> svg_tree_scoped_resources_;
+
+  Member<StyleSheetList> adopted_style_sheets_;
 };
 
 inline bool TreeScope::HasElementWithId(const AtomicString& id) const {

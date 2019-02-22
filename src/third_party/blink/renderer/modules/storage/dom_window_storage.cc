@@ -12,8 +12,9 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/modules/storage/storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -88,9 +89,8 @@ StorageArea* DOMWindowStorage::sessionStorage(
   if (!page)
     return nullptr;
 
-  auto storage_area =
-      StorageNamespaceController::From(page)->SessionStorage()->GetStorageArea(
-          document->GetSecurityOrigin());
+  auto storage_area = StorageNamespace::From(page)->GetWebStorageArea(
+      document->GetSecurityOrigin());
   session_storage_ =
       StorageArea::Create(document->GetFrame(), std::move(storage_area),
                           StorageArea::StorageType::kSessionStorage);
@@ -136,8 +136,8 @@ StorageArea* DOMWindowStorage::localStorage(
   Page* page = document->GetPage();
   if (!page || !page->GetSettings().GetLocalStorageEnabled())
     return nullptr;
-  auto storage_area =
-      StorageNamespace::LocalStorageArea(document->GetSecurityOrigin());
+  auto storage_area = StorageController::GetInstance()->GetWebLocalStorageArea(
+      document->GetSecurityOrigin());
   local_storage_ =
       StorageArea::Create(document->GetFrame(), std::move(storage_area),
                           StorageArea::StorageType::kLocalStorage);

@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -27,6 +28,9 @@
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -133,6 +137,10 @@ FormStructureBrowserTest::FormStructureBrowserTest()
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
 
+  // AddressNormalizerFactory must be initialized in a blocking allowed scoped.
+  // Initialize it now as it may DCHECK if it is initialized during the test.
+  AddressNormalizerFactory::GetInstance();
+
   IOSSecurityStateTabHelper::CreateForWebState(web_state());
   InfoBarManagerImpl::CreateForWebState(web_state());
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]
@@ -152,11 +160,6 @@ void FormStructureBrowserTest::SetUp() {
 void FormStructureBrowserTest::TearDown() {
   [autofillController_ detachFromWebState];
 
-  // TODO(crbug.com/776330): remove this manual sync.
-  // This is a workaround to manually sync the tasks posted by
-  // |CRWCertVerificationController verifyTrust:completionHandler:|.
-  // |WaitForBackgroundTasks| currently fails to wait for completion of them.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.1));
   ChromeWebTest::TearDown();
 }
 
@@ -164,9 +167,15 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
   ASSERT_TRUE(LoadHtml(input));
   base::TaskScheduler::GetInstance()->FlushForTesting();
+  web::WebFrame* frame = web::GetMainWebFrame(web_state());
   AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
+      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
+          ->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return autofill_manager->NumFormsDetected() != 0;
+      }));
   *output = FormStructuresToString(autofill_manager->form_structures());
 }
 

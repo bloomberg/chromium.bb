@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/zucchini/disassembler.h"
 #include "components/zucchini/element_detection.h"
 #include "components/zucchini/equivalence_map.h"
@@ -112,8 +113,9 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
   for (const auto& ref_group : old_disasm->MakeReferenceGroups())
     pool_groups[ref_group.pool_tag()].push_back(ref_group);
 
-  OffsetMapper offset_mapper(patch.GetEquivalenceSource(), old_image.size(),
-                             new_image.size());
+  OffsetMapper offset_mapper(patch.GetEquivalenceSource(),
+                             base::checked_cast<offset_t>(old_image.size()),
+                             base::checked_cast<offset_t>(new_image.size()));
 
   std::vector<ReferenceGroup> new_groups = new_disasm->MakeReferenceGroups();
   for (const auto& pool_and_sub_groups : pool_groups) {

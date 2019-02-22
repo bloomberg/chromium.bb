@@ -239,6 +239,7 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -326,7 +327,7 @@ class ChromePrintContext : public PrintContext {
     ComputePageRects(page_size_in_pixels);
 
     const float page_width = page_size_in_pixels.Width();
-    size_t num_pages = PageRects().size();
+    wtf_size_t num_pages = PageRects().size();
     int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
     FloatRect all_pages_rect(0, 0, page_width, total_height);
 
@@ -339,7 +340,7 @@ class ChromePrintContext : public PrintContext {
     context.FillRect(all_pages_rect, Color::kWhite);
 
     int current_height = 0;
-    for (size_t page_index = 0; page_index < num_pages; page_index++) {
+    for (wtf_size_t page_index = 0; page_index < num_pages; page_index++) {
       // Draw a line for a page boundary if this isn't the first page.
       if (page_index > 0) {
         context.Save();
@@ -679,7 +680,8 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(source);
+  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(source, KURL(),
+                                                             kOpaqueResource);
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -689,9 +691,11 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
+  // Note: An error event in an isolated world will never be dispatched to
+  // a foreign world.
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
-                                                                 source_in);
+  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
+      world_id, source_in, KURL(), kSharableCrossOrigin);
 }
 
 v8::Local<v8::Value>
@@ -702,8 +706,10 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
+  // Note: An error event in an isolated world will never be dispatched to
+  // a foreign world.
   return GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in);
+      world_id, source_in, KURL(), kSharableCrossOrigin);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
@@ -785,12 +791,12 @@ WebString WebLocalFrameImpl::Prompt(const WebString& message,
   return GetFrame()->DomWindow()->prompt(script_state, message, default_value);
 }
 
-void WebLocalFrameImpl::CollectGarbage() {
+void WebLocalFrameImpl::CollectGarbageForTesting() {
   if (!GetFrame())
     return;
   if (!GetFrame()->GetSettings()->GetScriptEnabled())
     return;
-  V8GCController::CollectGarbage(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
 }
 
 v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
@@ -799,7 +805,7 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
 
   return GetFrame()
       ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(source);
+      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(), kOpaqueResource);
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
@@ -906,8 +912,7 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
 
   GetFrame()->Loader().StartNavigation(
       FrameLoadRequest(nullptr, request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy,
-                       base::UnguessableToken::Create()),
+                       kCheckContentSecurityPolicy),
       frame_load_type);
 }
 
@@ -931,9 +936,9 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
     GetTextFinder()->ClearActiveFindMatch();
 
   GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(
-          nullptr, request.ToResourceRequest(), /*frame_name=*/AtomicString(),
-          kCheckContentSecurityPolicy, base::UnguessableToken::Create()),
+      FrameLoadRequest(nullptr, request.ToResourceRequest(),
+                       /*frame_name=*/AtomicString(),
+                       kCheckContentSecurityPolicy),
       WebFrameLoadType::kStandard);
 }
 
@@ -943,13 +948,12 @@ void WebLocalFrameImpl::CheckCompleted() {
 
 void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
                                        const WebURL& base_url,
-                                       const WebURL& unreachable_url,
-                                       bool replace) {
+                                       const WebURL& unreachable_url) {
   DCHECK(GetFrame());
-  CommitDataNavigation(data, WebString::FromUTF8("text/html"),
-                       WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
-                       replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr, nullptr);
+  CommitDataNavigation(
+      WebURLRequest(base_url), data, WebString::FromUTF8("text/html"),
+      WebString::FromUTF8("UTF-8"), unreachable_url,
+      WebFrameLoadType::kStandard, WebHistoryItem(), false, nullptr, nullptr);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -1087,7 +1091,8 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
     plugin_lookup_context_node = ContextMenuNodeInner();
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
@@ -1102,7 +1107,8 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
   DCHECK(GetFrame());
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer();
@@ -1199,7 +1205,7 @@ void WebLocalFrameImpl::RemoveSpellingMarkers() {
 void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
     const WebVector<WebString>& words) {
   Vector<String> converted_words;
-  converted_words.Append(words.Data(), words.size());
+  converted_words.Append(words.Data(), SafeCast<wtf_size_t>(words.size()));
   GetFrame()->RemoveSpellingMarkersUnderWords(converted_words);
 }
 
@@ -1785,12 +1791,6 @@ void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
 
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
-
-  local_frame_client_->SetVirtualTimePauser(
-      frame_ ? frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
-                   "WebLocalFrameImpl",
-                   WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant)
-             : WebScopedVirtualTimePauser());
 }
 
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
@@ -1807,12 +1807,6 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
   if (!Parent() && !Opener() &&
       frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
     frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
-  }
-
-  if (frame_->IsLocalRoot()) {
-    frame_->GetInterfaceRegistry()->AddAssociatedInterface(
-        WTF::BindRepeating(&WebLocalFrameImpl::BindDevToolsAgentRequest,
-                           WrapWeakPersistent(this)));
   }
 
   if (!owner) {
@@ -2043,19 +2037,15 @@ void WebLocalFrameImpl::CommitNavigation(
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
   DCHECK(!request.Url().ProtocolIs("javascript"));
-  const ResourceRequest& resource_request = request.ToResourceRequest();
-
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 
-  FrameLoadRequest frame_request =
-      FrameLoadRequest(nullptr, resource_request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy, devtools_navigation_token);
-  if (is_client_redirect)
-    frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
   GetFrame()->Loader().CommitNavigation(
-      frame_request, web_frame_load_type, history_item,
+      request.ToResourceRequest(), SubstituteData(),
+      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      devtools_navigation_token, web_frame_load_type, history_item,
       std::move(navigation_params), std::move(extra_data));
 }
 
@@ -2063,7 +2053,8 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
     const WebURL& url,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
-    bool is_client_redirect) {
+    bool is_client_redirect,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
   DCHECK(!url.ProtocolIs("javascript"));
 
@@ -2071,7 +2062,10 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
   return GetFrame()->Loader().CommitSameDocumentNavigation(
       url, web_frame_load_type, history_item,
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
-                         : ClientRedirectPolicy::kNotClientRedirect);
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      nullptr, /* origin_document */
+      false,   /* has_event */
+      std::move(extra_data));
 }
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
@@ -2099,11 +2093,13 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
       static_cast<const KURL&>(url).GetString().Substring(
           strlen("javascript:")));
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl));
+          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
+          KURL(), kOpaqueResource);
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
@@ -2114,79 +2110,22 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
 }
 
 void WebLocalFrameImpl::CommitDataNavigation(
-    const WebData& data,
-    const WebString& mime_type,
-    const WebString& text_encoding,
-    const WebURL& base_url,
-    const WebURL& unreachable_url,
-    bool replace,
-    WebFrameLoadType web_frame_load_type,
-    const WebHistoryItem& item,
-    bool is_client_redirect,
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
-  DCHECK(GetFrame());
-
-  // TODO(dgozman): this whole logic of rewriting the params is odd,
-  // and should be moved to the callsites instead.
-  ResourceRequest request;
-  HistoryItem* history_item = item;
-  DocumentLoader* provisional_document_loader =
-      GetFrame()->Loader().GetProvisionalDocumentLoader();
-  // If we are loading substitute data to replace an existing load, then
-  // inherit all of the properties of that original request. This way,
-  // reload will re-attempt the original request. It is essential that
-  // we only do this when there is an |unreachable_url| since a non-empty
-  // |unreachable_url| informs FrameLoader::CommitNavigation to load
-  // |unreachable_url| instead of the currently loaded URL.
-  if (replace && !unreachable_url.IsEmpty() && provisional_document_loader) {
-    request = provisional_document_loader->OriginalRequest();
-
-    // When replacing a failed back/forward provisional navigation with an error
-    // page, retain the HistoryItem for the failed provisional navigation
-    // and reuse it for the error page navigation.
-    WebFrameLoadType previous_load_type =
-        provisional_document_loader->LoadType();
-    if (previous_load_type == WebFrameLoadType::kBackForward &&
-        provisional_document_loader->GetHistoryItem()) {
-      history_item = provisional_document_loader->GetHistoryItem();
-      web_frame_load_type = WebFrameLoadType::kBackForward;
-    } else if (previous_load_type == WebFrameLoadType::kReload ||
-               previous_load_type == WebFrameLoadType::kReloadBypassingCache) {
-      web_frame_load_type = previous_load_type;
-    }
-  }
-  request.SetURL(base_url);
-
-  CommitDataNavigationWithRequest(
-      WrappedResourceRequest(request), data, mime_type, text_encoding,
-      unreachable_url, replace, web_frame_load_type, history_item,
-      is_client_redirect, std::move(navigation_params),
-      std::move(navigation_data));
-}
-
-void WebLocalFrameImpl::CommitDataNavigationWithRequest(
     const WebURLRequest& request,
     const WebData& data,
     const WebString& mime_type,
     const WebString& text_encoding,
     const WebURL& unreachable_url,
-    bool replace,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& history_item,
     bool is_client_redirect,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
-  FrameLoadRequest frame_request(
-      nullptr, request.ToResourceRequest(),
-      SubstituteData(data, mime_type, text_encoding, unreachable_url));
-  DCHECK(frame_request.GetSubstituteData().IsValid());
-  frame_request.SetReplacesCurrentItem(replace);
-  if (is_client_redirect)
-    frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-
   GetFrame()->Loader().CommitNavigation(
-      frame_request, web_frame_load_type, history_item,
+      request.ToResourceRequest(),
+      SubstituteData(data, mime_type, text_encoding, unreachable_url),
+      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      base::UnguessableToken::Create(), web_frame_load_type, history_item,
       std::move(navigation_params), std::move(navigation_data));
 }
 
@@ -2264,7 +2203,7 @@ void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
 }
 
 void WebLocalFrameImpl::NotifyUserActivation() {
-  Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }
 
 void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
@@ -2278,7 +2217,7 @@ void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
 void WebLocalFrameImpl::MixedContentFound(
     const WebURL& main_resource_url,
     const WebURL& mixed_content_url,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     bool was_allowed,
     bool had_redirect,
     const WebSourceLocation& source_location) {
@@ -2297,6 +2236,10 @@ void WebLocalFrameImpl::MixedContentFound(
 void WebLocalFrameImpl::ClientDroppedNavigation() {
   DCHECK(GetFrame());
   GetFrame()->Loader().ClientDroppedNavigation();
+}
+
+void WebLocalFrameImpl::MarkAsLoading() {
+  GetFrame()->Loader().MarkAsLoading();
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {
@@ -2333,7 +2276,7 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
   // gesture usage by chaining postMessages across multiple processes.
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && has_user_gesture) {
-    gesture_indicator = Frame::NotifyUserActivation(GetFrame());
+    gesture_indicator = LocalFrame::NotifyUserActivation(GetFrame());
     UserGestureIndicator::SetWasForwardedCrossProcess();
   }
 
@@ -2405,10 +2348,6 @@ void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
     return;
 
   client_->SaveImageFromDataURL(url);
-}
-
-void WebLocalFrameImpl::SetEngagementLevel(mojom::EngagementLevel level) {
-  GetFrame()->GetDocument()->SetEngagementLevel(level);
 }
 
 WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlags() const {
@@ -2597,11 +2536,25 @@ void WebLocalFrameImpl::SetDevToolsAgentImpl(WebDevToolsAgentImpl* agent) {
   dev_tools_agent_ = agent;
 }
 
-void WebLocalFrameImpl::BindDevToolsAgentRequest(
-    mojom::blink::DevToolsAgentAssociatedRequest request) {
+WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
+  if (!frame_->IsLocalRoot())
+    return nullptr;
   if (!dev_tools_agent_)
     dev_tools_agent_ = WebDevToolsAgentImpl::CreateForFrame(this);
-  dev_tools_agent_->BindRequest(std::move(request));
+  return dev_tools_agent_;
+}
+
+void WebLocalFrameImpl::BindDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
+  WebDevToolsAgentImpl* agent = DevToolsAgentImpl();
+  if (!agent)
+    return;
+  agent->BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
+                         std::move(devtools_agent_host_ptr_info),
+                         mojom::blink::DevToolsAgentHost::Version_),
+                     mojom::blink::DevToolsAgentAssociatedRequest(
+                         std::move(devtools_agent_request)));
 }
 
 }  // namespace blink

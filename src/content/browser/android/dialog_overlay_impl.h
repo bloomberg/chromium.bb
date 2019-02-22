@@ -12,6 +12,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/android/view_android_observer.h"
+#include "ui/android/window_android.h"
+#include "ui/android/window_android_observer.h"
 
 namespace content {
 
@@ -20,6 +22,7 @@ namespace content {
 // detached from a WindowAndroid, we get the Android window token and notify the
 // java side.
 class DialogOverlayImpl : public ui::ViewAndroidObserver,
+                          public ui::WindowAndroidObserver,
                           public WebContentsObserver {
  public:
   // This may not call back into |obj| directly, but must post.  This is because
@@ -59,12 +62,21 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
 
-  // Unregister for tokens if we're registered.
-  void UnregisterForTokensIfNeeded();
+  // Unregister callbacks if previously registered.
+  void UnregisterCallbacksIfNeeded();
+
+  // WindowAndroidObserver
+  void OnRootWindowVisibilityChanged(bool visible) override;
+  void OnCompositingDidCommit() override {}
+  void OnAttachCompositor() override {}
+  void OnDetachCompositor() override {}
+  void OnActivityStopped() override {}
+  void OnActivityStarted() override {}
 
  private:
   // Signals the overlay should be cleaned up and no longer used.
   void Stop();
+  void RegisterWindowObserverIfNeeded(ui::WindowAndroid* window);
 
   // Java object that owns us.
   JavaObjectWeakGlobalRef obj_;
@@ -74,6 +86,9 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
 
   // Do we care about power efficiency?
   bool power_efficient_;
+
+  // Whether we added ourselves as an observer through WindowAndroid.
+  bool observed_window_android_;
 };
 
 }  // namespace content

@@ -23,8 +23,8 @@ namespace net {
 namespace android {
 
 void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
-                         const std::string& auth_type,
-                         const std::string& host,
+                         base::StringPiece auth_type,
+                         base::StringPiece host,
                          CertVerifyStatusAndroid* status,
                          bool* is_issued_by_known_root,
                          std::vector<std::string>* verified_chain) {

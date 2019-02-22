@@ -7,7 +7,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -29,6 +28,11 @@
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 using session_manager::SessionState;
 
@@ -301,21 +305,15 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
-    // Mash doesn't do this yet, so don't do it in tests either.
-    // http://crbug.com/718072
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-      chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
-                                                              &local_state_);
-    }
+    chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
+                                                            &local_state_);
     // Networking stubs may have asynchronous initialization.
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     // This roughly matches production shutdown order.
-    if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
-      chromeos::NetworkHandler::Get()->ShutdownPrefServices();
-    }
+    chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -333,6 +331,72 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
 TEST_F(UnifiedStatusAreaWidgetTest, Basics) {
   StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   EXPECT_TRUE(status->unified_system_tray());
+}
+
+class StatusAreaVirtualKeyboardTest : public AshTestBase {
+ protected:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    AshTestBase::SetUp();
+    ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+
+    // These tests only apply to the floating virtual keyboard, as it is the
+    // only case where both the virtual keyboard and the shelf are visible.
+    keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
+                                            base::nullopt, base::DoNothing());
+  }
+
+  keyboard::KeyboardController* keyboard_controller() {
+    return keyboard::KeyboardController::Get();
+  }
+};
+
+TEST_F(StatusAreaVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
+  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  ui::test::EventGenerator generator(
+      status->GetNativeWindow()->GetRootWindow(),
+      status->GetWindowBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+
+  // Times out if test fails.
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+}
+
+TEST_F(StatusAreaVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
+  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  ui::test::EventGenerator generator(
+      status->GetNativeWindow()->GetRootWindow(),
+      status->GetWindowBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+
+  // Times out if test fails.
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+}
+
+TEST_F(StatusAreaVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
+  keyboard_controller()->ShowKeyboard(true /* locked */);
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  ui::test::EventGenerator generator(
+      status->GetNativeWindow()->GetRootWindow(),
+      status->GetWindowBoundsInScreen().CenterPoint());
+
+  generator.ClickLeftButton();
+  EXPECT_FALSE(keyboard::IsKeyboardHiding());
+
+  generator.PressTouch();
+  EXPECT_FALSE(keyboard::IsKeyboardHiding());
 }
 
 }  // namespace ash

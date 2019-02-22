@@ -29,6 +29,7 @@ ARC_EXPORT extern const char kArcTermsShownInOobe[];
 ARC_EXPORT extern const char kArcLocationServiceEnabled[];
 ARC_EXPORT extern const char kArcPackages[];
 ARC_EXPORT extern const char kArcPaiStarted[];
+ARC_EXPORT extern const char kArcProvisioningInitiatedFromOobe[];
 ARC_EXPORT extern const char kArcPushInstallAppsRequested[];
 ARC_EXPORT extern const char kArcPushInstallAppsPending[];
 ARC_EXPORT extern const char kArcSetNotificationsEnabledDeferred[];
@@ -41,9 +42,10 @@ ARC_EXPORT extern const char kEcryptfsMigrationStrategy[];
 
 // TODO(b/110211045): Move Assistant related prefs to ash.
 ARC_EXPORT extern const char kVoiceInteractionActivityControlAccepted[];
-ARC_EXPORT extern const char kVoiceInteractionEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionContextEnabled[];
+ARC_EXPORT extern const char kVoiceInteractionEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionHotwordEnabled[];
+ARC_EXPORT extern const char kVoiceInteractionLaunchWithMicOpen[];
 ARC_EXPORT extern const char kVoiceInteractionNotificationEnabled[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

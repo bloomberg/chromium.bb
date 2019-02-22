@@ -47,22 +47,20 @@ EchoPathDelayEstimator::EchoPathDelayEstimator(
           kMatchedFilterAlignmentShiftSizeSubBlocks,
           GetDownSamplingFactor(config) == 8
               ? config.render_levels.poor_excitation_render_limit_ds8
-              : config.render_levels.poor_excitation_render_limit),
+              : config.render_levels.poor_excitation_render_limit,
+          config.delay.delay_estimate_smoothing,
+          config.delay.delay_candidate_detection_threshold),
       matched_filter_lag_aggregator_(data_dumper_,
-                                     matched_filter_.GetMaxFilterLag()) {
+                                     matched_filter_.GetMaxFilterLag(),
+                                     config.delay.delay_selection_thresholds) {
   RTC_DCHECK(data_dumper);
   RTC_DCHECK(down_sampling_factor_ > 0);
 }
 
 EchoPathDelayEstimator::~EchoPathDelayEstimator() = default;
 
-void EchoPathDelayEstimator::Reset(bool soft_reset) {
-  if (!soft_reset) {
-    matched_filter_lag_aggregator_.Reset();
-  }
-  matched_filter_.Reset();
-  old_aggregated_lag_ = absl::nullopt;
-  consistent_estimate_counter_ = 0;
+void EchoPathDelayEstimator::Reset(bool reset_delay_confidence) {
+  Reset(true, reset_delay_confidence);
 }
 
 absl::optional<DelayEstimate> EchoPathDelayEstimator::EstimateDelay(
@@ -109,10 +107,20 @@ absl::optional<DelayEstimate> EchoPathDelayEstimator::EstimateDelay(
   old_aggregated_lag_ = aggregated_matched_filter_lag;
   constexpr size_t kNumBlocksPerSecondBy2 = kNumBlocksPerSecond / 2;
   if (consistent_estimate_counter_ > kNumBlocksPerSecondBy2) {
-    Reset(true);
+    Reset(false, false);
   }
 
   return aggregated_matched_filter_lag;
+}
+
+void EchoPathDelayEstimator::Reset(bool reset_lag_aggregator,
+                                   bool reset_delay_confidence) {
+  if (reset_lag_aggregator) {
+    matched_filter_lag_aggregator_.Reset(reset_delay_confidence);
+  }
+  matched_filter_.Reset();
+  old_aggregated_lag_ = absl::nullopt;
+  consistent_estimate_counter_ = 0;
 }
 
 }  // namespace webrtc

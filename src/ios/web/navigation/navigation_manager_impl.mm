@@ -4,6 +4,9 @@
 
 #import "ios/web/navigation/navigation_manager_impl.h"
 
+#include <algorithm>
+
+#include "base/metrics/histogram_macros.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
@@ -14,6 +17,8 @@
 #endif
 
 namespace web {
+
+const char kRestoreNavigationItemCount[] = "IOS.RestoreNavigationItemCount";
 
 NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
     : url(url),
@@ -391,6 +396,12 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
 
 void NavigationManagerImpl::LoadIfNecessary() {
   delegate_->LoadIfNecessary();
+}
+
+void NavigationManagerImpl::WillRestore(size_t item_count) {
+  // It should be uncommon for the user to have more than 100 items in their
+  // session, so bucketing 100+ logs together is fine.
+  UMA_HISTOGRAM_COUNTS_100(kRestoreNavigationItemCount, item_count);
 }
 
 std::unique_ptr<NavigationItemImpl>

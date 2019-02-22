@@ -65,7 +65,10 @@ extern const char kWebRestrictionsAuthority[];
 class AwBrowserContext : public content::BrowserContext,
                          public visitedlink::VisitedLinkDelegate {
  public:
-  AwBrowserContext(const base::FilePath path);
+  AwBrowserContext(
+      const base::FilePath path,
+      std::unique_ptr<PrefService> pref_service,
+      std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector);
   ~AwBrowserContext() override;
 
   // Currently only one instance per process is supported.
@@ -126,7 +129,6 @@ class AwBrowserContext : public content::BrowserContext,
   AwSafeBrowsingWhitelistManager* GetSafeBrowsingWhitelistManager() const;
 
  private:
-  void InitUserPrefService();
   void OnWebRestrictionsAuthorityChanged();
 
   // The file path where data for this context is persisted.

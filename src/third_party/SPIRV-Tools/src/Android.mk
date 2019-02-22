@@ -19,6 +19,7 @@ SPVTOOLS_SRC_FILES := \
 		source/print.cpp \
 		source/software_version.cpp \
 		source/spirv_endian.cpp \
+		source/spirv_optimizer_options.cpp \
 		source/spirv_target_env.cpp \
 		source/spirv_validator_options.cpp \
 		source/table.cpp \
@@ -143,6 +144,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/strength_reduction_pass.cpp \
 		source/opt/strip_debug_info_pass.cpp \
 		source/opt/strip_reflect_info_pass.cpp \
+		source/opt/struct_cfg_analysis.cpp \
 		source/opt/type_manager.cpp \
 		source/opt/types.cpp \
 		source/opt/unify_const_pass.cpp \

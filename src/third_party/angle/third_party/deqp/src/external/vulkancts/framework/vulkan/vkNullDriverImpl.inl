@@ -175,6 +175,12 @@ VKAPI_ATTR VkResult VKAPI_CALL createWin32SurfaceKHR (VkInstance instance, const
 	VK_NULL_RETURN((*pSurface = allocateNonDispHandle<SurfaceKHR, VkSurfaceKHR>(instance, pCreateInfo, pAllocator)));
 }
 
+VKAPI_ATTR VkResult VKAPI_CALL createRenderPass2KHR (VkDevice device, const VkRenderPassCreateInfo2KHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass)
+{
+	DE_UNREF(pAllocator);
+	VK_NULL_RETURN((*pRenderPass = allocateNonDispHandle<RenderPass, VkRenderPass>(device, pCreateInfo, pAllocator)));
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL createDebugReportCallbackEXT (VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 {
 	DE_UNREF(pAllocator);
@@ -1444,6 +1450,26 @@ VKAPI_ATTR void VKAPI_CALL cmdPushDescriptorSetWithTemplateKHR (VkCommandBuffer 
 	DE_UNREF(pData);
 }
 
+VKAPI_ATTR void VKAPI_CALL cmdBeginRenderPass2KHR (VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfoKHR* pSubpassBeginInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pRenderPassBegin);
+	DE_UNREF(pSubpassBeginInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdNextSubpass2KHR (VkCommandBuffer commandBuffer, const VkSubpassBeginInfoKHR* pSubpassBeginInfo, const VkSubpassEndInfoKHR* pSubpassEndInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pSubpassBeginInfo);
+	DE_UNREF(pSubpassEndInfo);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdEndRenderPass2KHR (VkCommandBuffer commandBuffer, const VkSubpassEndInfoKHR* pSubpassEndInfo)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(pSubpassEndInfo);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL getSwapchainStatusKHR (VkDevice device, VkSwapchainKHR swapchain)
 {
 	DE_UNREF(device);
@@ -1819,6 +1845,15 @@ VKAPI_ATTR VkResult VKAPI_CALL getValidationCacheDataEXT (VkDevice device, VkVal
 	return VK_SUCCESS;
 }
 
+VKAPI_ATTR VkResult VKAPI_CALL getMemoryHostPointerPropertiesEXT (VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties)
+{
+	DE_UNREF(device);
+	DE_UNREF(handleType);
+	DE_UNREF(pHostPointer);
+	DE_UNREF(pMemoryHostPointerProperties);
+	return VK_SUCCESS;
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL getAndroidHardwareBufferPropertiesANDROID (VkDevice device, const struct pt::AndroidHardwareBufferPtr buffer, VkAndroidHardwareBufferPropertiesANDROID* pProperties)
 {
 	DE_UNREF(device);
@@ -2082,6 +2117,10 @@ static const tcu::StaticFunctionLibrary::Entry s_deviceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkCreateDescriptorUpdateTemplateKHR,			createDescriptorUpdateTemplate),
 	VK_NULL_FUNC_ENTRY(vkDestroyDescriptorUpdateTemplateKHR,		destroyDescriptorUpdateTemplate),
 	VK_NULL_FUNC_ENTRY(vkUpdateDescriptorSetWithTemplateKHR,		updateDescriptorSetWithTemplate),
+	VK_NULL_FUNC_ENTRY(vkCreateRenderPass2KHR,						createRenderPass2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdBeginRenderPass2KHR,					cmdBeginRenderPass2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdNextSubpass2KHR,						cmdNextSubpass2KHR),
+	VK_NULL_FUNC_ENTRY(vkCmdEndRenderPass2KHR,						cmdEndRenderPass2KHR),
 	VK_NULL_FUNC_ENTRY(vkGetSwapchainStatusKHR,						getSwapchainStatusKHR),
 	VK_NULL_FUNC_ENTRY(vkImportFenceWin32HandleKHR,					importFenceWin32HandleKHR),
 	VK_NULL_FUNC_ENTRY(vkGetFenceWin32HandleKHR,					getFenceWin32HandleKHR),
@@ -2127,6 +2166,7 @@ static const tcu::StaticFunctionLibrary::Entry s_deviceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkDestroyValidationCacheEXT,					destroyValidationCacheEXT),
 	VK_NULL_FUNC_ENTRY(vkMergeValidationCachesEXT,					mergeValidationCachesEXT),
 	VK_NULL_FUNC_ENTRY(vkGetValidationCacheDataEXT,					getValidationCacheDataEXT),
+	VK_NULL_FUNC_ENTRY(vkGetMemoryHostPointerPropertiesEXT,			getMemoryHostPointerPropertiesEXT),
 	VK_NULL_FUNC_ENTRY(vkGetAndroidHardwareBufferPropertiesANDROID,	getAndroidHardwareBufferPropertiesANDROID),
 	VK_NULL_FUNC_ENTRY(vkGetMemoryAndroidHardwareBufferANDROID,		getMemoryAndroidHardwareBufferANDROID),
 };

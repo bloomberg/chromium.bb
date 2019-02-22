@@ -262,29 +262,20 @@
             hide-buttons>
         </settings-sync-account-control>
         <div class="divider"></div>
-        <div id="footer-description" on-tap="onSyncDescriptionLinkClicked_">
-          <template is="dom-if" if="[[!syncStatus.hasError]]">
-            <span id="sync-info">
-              $i18nRaw{clearBrowsingDataWithSync}
-            </span>
-          </template>
-          <template is="dom-if" if="[[syncStatus.hasError]]">
-            <template is="dom-if" if="[[isSyncPaused_]]">
-              <span id="sync-paused-info">
-                $i18nRaw{clearBrowsingDataWithSyncPaused}
-              </span>
-            </template>
-            <template is="dom-if" if="[[hasPassphraseError_]]">
-              <span id="sync-passphrase-error-info">
-                $i18nRaw{clearBrowsingDataWithSyncPassphraseError}
-              </span>
-            </template>
-            <template is="dom-if" if="[[hasOtherSyncError_]]">
-              <span id="sync-other-error-info">
-                $i18nRaw{clearBrowsingDataWithSyncError}
-              </span>
-            </template>
-          </template>
+        <div id="footer-description" on-click="onSyncDescriptionLinkClicked_">
+          <span id="sync-info" hidden="[[syncStatus.hasError]]">
+            $i18nRaw{clearBrowsingDataWithSync}
+          </span>
+          <span id="sync-paused-info" hidden="[[!isSyncPaused_]]">
+            $i18nRaw{clearBrowsingDataWithSyncPaused}
+          </span>
+          <span id="sync-passphrase-error-info"
+              hidden="[[!hasPassphraseError_]]">
+            $i18nRaw{clearBrowsingDataWithSyncPassphraseError}
+          </span>
+          <span id="sync-other-error-info" hidden="[[!hasOtherSyncError_]]">
+            $i18nRaw{clearBrowsingDataWithSyncError}
+          </span>
         </div>
       </div>
     </cr-dialog>

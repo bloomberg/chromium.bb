@@ -79,12 +79,14 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   explicit DefaultAudioDestinationHandler(AudioNode&,
                                           const WebAudioLatencyHint&);
 
-  void CreateDestination();
-  void StartDestination();
-  void StopDestination();
+  void CreatePlatformDestination();
+  void StartPlatformDestination();
+  void StopPlatformDestination();
 
   const WebAudioLatencyHint latency_hint_;
-  scoped_refptr<AudioDestination> destination_;
+
+  // Holds the audio device thread that runs the real time audio context.
+  scoped_refptr<AudioDestination> platform_destination_;
 };
 
 // -----------------------------------------------------------------------------

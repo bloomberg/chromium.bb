@@ -47,9 +47,9 @@ import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -389,7 +389,7 @@ public class VrBrowserTransitionTest {
 
         // Enable the mock controller even though we don't use it, because the real controller will
         // never allow the scene to reach quiescense.
-        NativeUiUtils.enableMockedController();
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
@@ -452,7 +452,6 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @LargeTest
-    @CommandLineFlags.Add("enable-features=VrBrowsingNativeAndroidUi")
     public void testExitVrWithPromptDisplayed() throws InterruptedException, TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
@@ -490,7 +489,7 @@ public class VrBrowserTransitionTest {
                 (IncognitoNewTabPage) mTestRule.getActivity().getActivityTab().getNativePage();
         // Enable the mock controller even though we don't use it, because the real controller will
         // never allow the scene to reach quiescense.
-        NativeUiUtils.enableMockedController();
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             ThreadUtils.runOnUiThreadBlocking(
                     () -> { ntp.getView().findViewById(R.id.learn_more).performClick(); });

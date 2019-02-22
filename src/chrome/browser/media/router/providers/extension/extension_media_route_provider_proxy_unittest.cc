@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
@@ -57,7 +58,8 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
   void SetUp() override {
     request_manager_ = static_cast<MockEventPageRequestManager*>(
         EventPageRequestManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, &MockEventPageRequestManager::Create));
+            &profile_,
+            base::BindRepeating(&MockEventPageRequestManager::Create)));
     ON_CALL(*request_manager_, RunOrDeferInternal(_, _))
         .WillByDefault(Invoke([](base::OnceClosure& request,
                                  MediaRouteProviderWakeReason wake_reason) {
@@ -166,29 +168,18 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, TerminateRoute) {
 
 TEST_F(ExtensionMediaRouteProviderProxyTest, SendRouteMessage) {
   const std::string message = "message";
-  EXPECT_CALL(mock_provider_, SendRouteMessageInternal(kRouteId, message, _))
-      .WillOnce(WithArg<2>(Invoke(
-          &mock_provider_, &MockMediaRouteProvider::SendRouteMessageSuccess)));
+  EXPECT_CALL(mock_provider_, SendRouteMessage(kRouteId, message));
 
-  MockBoolCallback callback;
-  provider_proxy_->SendRouteMessage(
-      kRouteId, message,
-      base::BindOnce(&MockBoolCallback::Run, base::Unretained(&callback)));
+  provider_proxy_->SendRouteMessage(kRouteId, message);
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ExtensionMediaRouteProviderProxyTest, SendRouteBinaryMessage) {
   std::vector<uint8_t> data = {42};
   EXPECT_CALL(mock_provider_,
-              SendRouteBinaryMessageInternal(kRouteId, ElementsAre(42), _))
-      .WillOnce(WithArg<2>(
-          Invoke(&mock_provider_,
-                 &MockMediaRouteProvider::SendRouteBinaryMessageSuccess)));
+              SendRouteBinaryMessage(kRouteId, ElementsAre(42)));
 
-  MockBoolCallback callback;
-  provider_proxy_->SendRouteBinaryMessage(
-      kRouteId, data,
-      base::BindOnce(&MockBoolCallback::Run, base::Unretained(&callback)));
+  provider_proxy_->SendRouteBinaryMessage(kRouteId, data);
   base::RunLoop().RunUntilIdle();
 }
 

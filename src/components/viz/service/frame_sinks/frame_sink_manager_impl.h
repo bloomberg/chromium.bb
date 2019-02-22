@@ -38,6 +38,11 @@
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 
 namespace viz {
+
+namespace test {
+class FrameSinkManagerTest;
+}  // namespace test
+
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
 class DisplayProvider;
@@ -95,9 +100,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void UnregisterFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) override;
-  void AssignTemporaryReference(const SurfaceId& surface_id,
-                                const FrameSinkId& owner) override;
-  void DropTemporaryReference(const SurfaceId& surface_id) override;
   void AddVideoDetectorObserver(
       mojom::VideoDetectorObserverPtr observer) override;
   void CreateVideoCapturer(
@@ -189,7 +191,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& frame_sink_id) const;
 
  private:
-  friend class FrameSinkManagerTest;
+  friend class test::FrameSinkManagerTest;
 
   // Metadata for a CompositorFrameSink.
   struct FrameSinkData {

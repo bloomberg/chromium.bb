@@ -34,7 +34,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cffparse
+#define FT_COMPONENT  cffparse
 
 
   FT_LOCAL_DEF( FT_Error )
@@ -808,7 +808,7 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     /* beautify tracing message */
-    if ( ft_trace_levels[FT_COMPONENT] < 4 )
+    if ( ft_trace_levels[FT_TRACE_COMP( FT_COMPONENT )] < 4 )
       FT_TRACE1(( "Multiple Master CFFs not supported yet,"
                   " handling first master design only\n" ));
     else
@@ -1231,6 +1231,8 @@
 
         error = psaux->cff_decoder_funcs->parse_charstrings_old(
                   &decoder, charstring_base, charstring_len, 1 );
+        if ( error )
+          goto Exit;
 
         /* Now copy the stack data in the temporary decoder object,    */
         /* converting it back to charstring number representations     */
@@ -1257,7 +1259,7 @@
 
           if ( *stack < 0 )
           {
-            num = (FT_ULong)-*stack;
+            num = (FT_ULong)NEG_LONG( *stack );
             neg = 1;
           }
           else

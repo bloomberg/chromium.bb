@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -13,7 +12,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -101,9 +99,12 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
     return resource_fetcher_;
   WorkerFetchContext* fetch_context = WorkerFetchContext::Create(*this);
   resource_fetcher_ = ResourceFetcher::Create(fetch_context);
+  if (IsContextPaused())
+    resource_fetcher_->SetDefersLoading(true);
   DCHECK(resource_fetcher_);
   return resource_fetcher_;
 }
+
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
   DCHECK(IsContextThread());
   DCHECK(resource_fetcher_);
@@ -176,7 +177,7 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
     FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-    WebURLRequest::RequestContext destination,
+    mojom::RequestContextType destination,
     network::mojom::FetchCredentialsMode credentials_mode,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
@@ -197,6 +198,18 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   // Step 3. "Perform the internal module script graph fetching procedure ..."
   modulator->FetchTree(module_url_record, fetch_client_settings_object,
                        destination, options, custom_fetch_type, client);
+}
+
+void WorkerOrWorkletGlobalScope::TasksWerePaused() {
+  ExecutionContext::TasksWerePaused();
+  if (resource_fetcher_)
+    resource_fetcher_->SetDefersLoading(true);
+}
+
+void WorkerOrWorkletGlobalScope::TasksWereUnpaused() {
+  ExecutionContext::TasksWereUnpaused();
+  if (resource_fetcher_)
+    resource_fetcher_->SetDefersLoading(false);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

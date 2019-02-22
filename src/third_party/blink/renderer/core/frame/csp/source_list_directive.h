@@ -73,27 +73,27 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
 
   bool ParseSource(const UChar* begin,
                    const UChar* end,
-                   String& scheme,
-                   String& host,
-                   int& port,
-                   String& path,
-                   CSPSource::WildcardDisposition&,
-                   CSPSource::WildcardDisposition&);
-  bool ParseScheme(const UChar* begin, const UChar* end, String& scheme);
+                   String* scheme,
+                   String* host,
+                   int* port,
+                   String* path,
+                   CSPSource::WildcardDisposition*,
+                   CSPSource::WildcardDisposition*);
+  bool ParseScheme(const UChar* begin, const UChar* end, String* scheme);
   static bool ParseHost(const UChar* begin,
                         const UChar* end,
-                        String& host,
-                        CSPSource::WildcardDisposition&);
+                        String* host,
+                        CSPSource::WildcardDisposition*);
   bool ParsePort(const UChar* begin,
                  const UChar* end,
-                 int& port,
-                 CSPSource::WildcardDisposition&);
-  bool ParsePath(const UChar* begin, const UChar* end, String& path);
-  bool ParseNonce(const UChar* begin, const UChar* end, String& nonce);
+                 int* port,
+                 CSPSource::WildcardDisposition*);
+  bool ParsePath(const UChar* begin, const UChar* end, String* path);
+  bool ParseNonce(const UChar* begin, const UChar* end, String* nonce);
   bool ParseHash(const UChar* begin,
                  const UChar* end,
-                 DigestValue& hash,
-                 ContentSecurityPolicyHashAlgorithm&);
+                 DigestValue* hash,
+                 ContentSecurityPolicyHashAlgorithm*);
 
   void AddSourceSelf();
   void AddSourceStar();
@@ -144,4 +144,4 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_SOURCE_LIST_DIRECTIVE_H_

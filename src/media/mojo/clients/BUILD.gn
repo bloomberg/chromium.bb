@@ -8,6 +8,10 @@ import("//build/config/jumbo.gni")
 jumbo_source_set("clients") {
   visibility = [
     "//chromecast/*",
+
+    # Mirroring Service needs the video accelerated encoder mojom interfaces.
+    "//components/mirroring/service:mirroring_service",
+
     "//content/renderer:*",
 
     # TODO(xhwang): Only allow //media/mojo/services:media_service_unittests
@@ -16,6 +20,8 @@ jumbo_source_set("clients") {
     "//media/mojo:test_support",
 
     "//media/test/*",
+
+    "//chrome/browser:*",
 
     "//content/gpu:*",
 

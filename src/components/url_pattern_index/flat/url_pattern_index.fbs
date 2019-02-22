@@ -28,7 +28,7 @@ enum OptionFlag : ubyte (bit_flags) {
   IS_WHITELIST,
   APPLIES_TO_FIRST_PARTY,
   APPLIES_TO_THIRD_PARTY,
-  IS_MATCH_CASE,
+  IS_CASE_INSENSITIVE,
 }
 
 // The options controlling whether or not to activate filtering for subresources
@@ -87,11 +87,16 @@ table UrlRule {
   // The list of domains to be included/excluded from the filter's affected set.
   // Should either be null or have at least a single element. The domains
   // should be in lower-case and kept sorted as defined by
-  // url_pattern_index::CompareDomains.
+  // url_pattern_index::CompareDomains. The entries must consist of only ascii
+  // characters. Use punycode encoding for internationalized domains.
   domains_included : [string];
   domains_excluded : [string];
 
-  // A URL pattern in the format defined by |url_pattern_type|.
+  // A URL pattern in the format defined by |url_pattern_type|.  This should
+  // only consist of ascii characters, since it's matched against a url where
+  // the host is encoded in the punycode format (in case of internationalized
+  // domains) and any other non-ascii characters are percent-escaped in utf-8.
+  // This should be in lower case if the rule is case-insensitive.
   url_pattern : string;
 
   // An id which uniquely identifies the rule. Clients must ensure uniqueness if
@@ -105,8 +110,9 @@ table UrlRule {
 // Contains an N-gram (acting as a key in a hash table) and a list of URL rules
 // associated with that N-gram.
 table NGramToRules {
-  // A string consisting of N (up to 8) non-special characters, which are stored
-  // in the lowest N non-zero bytes, lower bytes corresponding to later symbols.
+  // A string consisting of N (up to 8) ascii-only non-special characters, which
+  // are stored in the lowest N non-zero bytes, lower bytes corresponding to
+  // later symbols. These are lower-cased to support case-insensitive matching.
   ngram : ulong;
 
   // The list of rules containing |ngram| as a substring of their URL pattern.

@@ -726,9 +726,6 @@ void ContentSettingSensorsImageModel::UpdateFromWebContents(
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
   int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
-  icon_size = gfx::kFaviconSize;
-#endif
   return gfx::Image(gfx::CreateVectorIconWithBadge(*icon_, icon_size,
                                                    icon_color, *icon_badge_));
 }

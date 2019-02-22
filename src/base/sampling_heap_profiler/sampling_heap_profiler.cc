@@ -118,7 +118,7 @@ std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
   // Make sure the sampler does not invoke |SampleAdded| or |SampleRemoved|
   // on this thread. Otherwise it could have end up with a deadlock.
   // See crbug.com/882495
-  PoissonAllocationSampler::MuteThreadSamplesScope no_samples_scope;
+  PoissonAllocationSampler::ScopedMuteThreadSamples no_samples_scope;
   AutoLock lock(mutex_);
   std::vector<Sample> samples;
   samples.reserve(samples_.size());

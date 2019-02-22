@@ -27,14 +27,13 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_thread.h"
 
 using blink::mojom::FetchCacheMode;
 using blink::WebData;
@@ -109,95 +108,95 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 
 }  // namespace
 
-ResourceType WebURLRequestContextToResourceType(
-    WebURLRequest::RequestContext request_context) {
+ResourceType RequestContextToResourceType(
+    blink::mojom::RequestContextType request_context) {
   switch (request_context) {
     // CSP report
-    case WebURLRequest::kRequestContextCSPReport:
+    case blink::mojom::RequestContextType::CSP_REPORT:
       return RESOURCE_TYPE_CSP_REPORT;
 
     // Favicon
-    case WebURLRequest::kRequestContextFavicon:
+    case blink::mojom::RequestContextType::FAVICON:
       return RESOURCE_TYPE_FAVICON;
 
     // Font
-    case WebURLRequest::kRequestContextFont:
+    case blink::mojom::RequestContextType::FONT:
       return RESOURCE_TYPE_FONT_RESOURCE;
 
     // Image
-    case WebURLRequest::kRequestContextImage:
-    case WebURLRequest::kRequestContextImageSet:
+    case blink::mojom::RequestContextType::IMAGE:
+    case blink::mojom::RequestContextType::IMAGE_SET:
       return RESOURCE_TYPE_IMAGE;
 
     // Media
-    case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextVideo:
+    case blink::mojom::RequestContextType::AUDIO:
+    case blink::mojom::RequestContextType::VIDEO:
       return RESOURCE_TYPE_MEDIA;
 
     // Object
-    case WebURLRequest::kRequestContextEmbed:
-    case WebURLRequest::kRequestContextObject:
+    case blink::mojom::RequestContextType::EMBED:
+    case blink::mojom::RequestContextType::OBJECT:
       return RESOURCE_TYPE_OBJECT;
 
     // Ping
-    case WebURLRequest::kRequestContextBeacon:
-    case WebURLRequest::kRequestContextPing:
+    case blink::mojom::RequestContextType::BEACON:
+    case blink::mojom::RequestContextType::PING:
       return RESOURCE_TYPE_PING;
 
     // Subresource of plugins
-    case WebURLRequest::kRequestContextPlugin:
+    case blink::mojom::RequestContextType::PLUGIN:
       return RESOURCE_TYPE_PLUGIN_RESOURCE;
 
     // Prefetch
-    case WebURLRequest::kRequestContextPrefetch:
+    case blink::mojom::RequestContextType::PREFETCH:
       return RESOURCE_TYPE_PREFETCH;
 
     // Script
-    case WebURLRequest::kRequestContextImport:
-    case WebURLRequest::kRequestContextScript:
+    case blink::mojom::RequestContextType::IMPORT:
+    case blink::mojom::RequestContextType::SCRIPT:
       return RESOURCE_TYPE_SCRIPT;
 
     // Style
-    case WebURLRequest::kRequestContextXSLT:
-    case WebURLRequest::kRequestContextStyle:
+    case blink::mojom::RequestContextType::XSLT:
+    case blink::mojom::RequestContextType::STYLE:
       return RESOURCE_TYPE_STYLESHEET;
 
     // Subresource
-    case WebURLRequest::kRequestContextDownload:
-    case WebURLRequest::kRequestContextManifest:
-    case WebURLRequest::kRequestContextSubresource:
+    case blink::mojom::RequestContextType::DOWNLOAD:
+    case blink::mojom::RequestContextType::MANIFEST:
+    case blink::mojom::RequestContextType::SUBRESOURCE:
       return RESOURCE_TYPE_SUB_RESOURCE;
 
     // TextTrack
-    case WebURLRequest::kRequestContextTrack:
+    case blink::mojom::RequestContextType::TRACK:
       return RESOURCE_TYPE_MEDIA;
 
     // Workers
-    case WebURLRequest::kRequestContextServiceWorker:
+    case blink::mojom::RequestContextType::SERVICE_WORKER:
       return RESOURCE_TYPE_SERVICE_WORKER;
-    case WebURLRequest::kRequestContextSharedWorker:
+    case blink::mojom::RequestContextType::SHARED_WORKER:
       return RESOURCE_TYPE_SHARED_WORKER;
-    case WebURLRequest::kRequestContextWorker:
+    case blink::mojom::RequestContextType::WORKER:
       return RESOURCE_TYPE_WORKER;
 
     // Unspecified
-    case WebURLRequest::kRequestContextInternal:
-    case WebURLRequest::kRequestContextUnspecified:
+    case blink::mojom::RequestContextType::INTERNAL:
+    case blink::mojom::RequestContextType::UNSPECIFIED:
       return RESOURCE_TYPE_SUB_RESOURCE;
 
     // XHR
-    case WebURLRequest::kRequestContextEventSource:
-    case WebURLRequest::kRequestContextFetch:
-    case WebURLRequest::kRequestContextXMLHttpRequest:
+    case blink::mojom::RequestContextType::EVENT_SOURCE:
+    case blink::mojom::RequestContextType::FETCH:
+    case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
       return RESOURCE_TYPE_XHR;
 
     // These should be handled by the FrameType checks at the top of the
     // function.
-    case WebURLRequest::kRequestContextForm:
-    case WebURLRequest::kRequestContextHyperlink:
-    case WebURLRequest::kRequestContextLocation:
-    case WebURLRequest::kRequestContextFrame:
-    case WebURLRequest::kRequestContextIframe:
+    case blink::mojom::RequestContextType::FORM:
+    case blink::mojom::RequestContextType::HYPERLINK:
+    case blink::mojom::RequestContextType::LOCATION:
+    case blink::mojom::RequestContextType::FRAME:
+    case blink::mojom::RequestContextType::IFRAME:
       NOTREACHED();
       return RESOURCE_TYPE_SUB_RESOURCE;
 
@@ -208,15 +207,16 @@ ResourceType WebURLRequestContextToResourceType(
 }
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  WebURLRequest::RequestContext request_context = request.GetRequestContext();
+  blink::mojom::RequestContextType request_context =
+      request.GetRequestContext();
   if (request.GetFrameType() !=
       network::mojom::RequestContextFrameType::kNone) {
-    DCHECK(request_context == WebURLRequest::kRequestContextForm ||
-           request_context == WebURLRequest::kRequestContextFrame ||
-           request_context == WebURLRequest::kRequestContextHyperlink ||
-           request_context == WebURLRequest::kRequestContextIframe ||
-           request_context == WebURLRequest::kRequestContextInternal ||
-           request_context == WebURLRequest::kRequestContextLocation);
+    DCHECK(request_context == blink::mojom::RequestContextType::FORM ||
+           request_context == blink::mojom::RequestContextType::FRAME ||
+           request_context == blink::mojom::RequestContextType::HYPERLINK ||
+           request_context == blink::mojom::RequestContextType::IFRAME ||
+           request_context == blink::mojom::RequestContextType::INTERNAL ||
+           request_context == blink::mojom::RequestContextType::LOCATION);
     if (request.GetFrameType() ==
             network::mojom::RequestContextFrameType::kTopLevel ||
         request.GetFrameType() ==
@@ -229,7 +229,7 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
     NOTREACHED();
     return RESOURCE_TYPE_SUB_RESOURCE;
   }
-  return WebURLRequestContextToResourceType(request_context);
+  return RequestContextToResourceType(request_context);
 }
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(
@@ -283,7 +283,7 @@ int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   }
 
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextPrefetch)
+  if (request.GetRequestContext() == blink::mojom::RequestContextType::PREFETCH)
     load_flags |= net::LOAD_PREFETCH;
 
   if (request.GetExtraData()) {
@@ -456,78 +456,10 @@ std::string GetFetchIntegrityForWebURLRequest(const WebURLRequest& request) {
   return request.GetFetchIntegrity().Utf8();
 }
 
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
-                   WebURLRequest::kRequestContextUnspecified);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_AUDIO,
-                   WebURLRequest::kRequestContextAudio);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_BEACON,
-                   WebURLRequest::kRequestContextBeacon);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_CSP_REPORT,
-                   WebURLRequest::kRequestContextCSPReport);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_DOWNLOAD,
-                   WebURLRequest::kRequestContextDownload);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_EMBED,
-                   WebURLRequest::kRequestContextEmbed);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_EVENT_SOURCE,
-                   WebURLRequest::kRequestContextEventSource);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FAVICON,
-                   WebURLRequest::kRequestContextFavicon);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FETCH,
-                   WebURLRequest::kRequestContextFetch);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FONT,
-                   WebURLRequest::kRequestContextFont);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FORM,
-                   WebURLRequest::kRequestContextForm);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FRAME,
-                   WebURLRequest::kRequestContextFrame);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_HYPERLINK,
-                   WebURLRequest::kRequestContextHyperlink);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IFRAME,
-                   WebURLRequest::kRequestContextIframe);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMAGE,
-                   WebURLRequest::kRequestContextImage);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMAGE_SET,
-                   WebURLRequest::kRequestContextImageSet);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMPORT,
-                   WebURLRequest::kRequestContextImport);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_INTERNAL,
-                   WebURLRequest::kRequestContextInternal);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_LOCATION,
-                   WebURLRequest::kRequestContextLocation);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_MANIFEST,
-                   WebURLRequest::kRequestContextManifest);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_OBJECT,
-                   WebURLRequest::kRequestContextObject);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PING,
-                   WebURLRequest::kRequestContextPing);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PLUGIN,
-                   WebURLRequest::kRequestContextPlugin);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PREFETCH,
-                   WebURLRequest::kRequestContextPrefetch);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SCRIPT,
-                   WebURLRequest::kRequestContextScript);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-                   WebURLRequest::kRequestContextServiceWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SHARED_WORKER,
-                   WebURLRequest::kRequestContextSharedWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SUBRESOURCE,
-                   WebURLRequest::kRequestContextSubresource);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_STYLE,
-                   WebURLRequest::kRequestContextStyle);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_TRACK,
-                   WebURLRequest::kRequestContextTrack);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_VIDEO,
-                   WebURLRequest::kRequestContextVideo);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_WORKER,
-                   WebURLRequest::kRequestContextWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XML_HTTP_REQUEST,
-                   WebURLRequest::kRequestContextXMLHttpRequest);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XSLT,
-                   WebURLRequest::kRequestContextXSLT);
-
-RequestContextType GetRequestContextTypeForWebURLRequest(
+blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const WebURLRequest& request) {
-  return static_cast<RequestContextType>(request.GetRequestContext());
+  return static_cast<blink::mojom::RequestContextType>(
+      request.GetRequestContext());
 }
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(

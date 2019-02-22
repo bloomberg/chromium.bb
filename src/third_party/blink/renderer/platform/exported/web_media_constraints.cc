@@ -404,8 +404,7 @@ WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
       goog_cpu_overuse_encode_usage("googCpuOveruseEncodeUsage"),
       goog_high_start_bitrate("googHighStartBitrate"),
       goog_payload_padding("googPayloadPadding"),
-      goog_latency_ms("latencyMs"),
-      goog_power_line_frequency("googPowerLineFrequency") {}
+      goog_latency_ms("latencyMs") {}
 
 std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::AllConstraints()
     const {
@@ -464,8 +463,7 @@ std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::AllConstraints()
                                   &goog_cpu_overuse_encode_usage,
                                   &goog_high_start_bitrate,
                                   &goog_payload_padding,
-                                  &goog_latency_ms,
-                                  &goog_power_line_frequency};
+                                  &goog_latency_ms};
   const int element_count = sizeof(temp) / sizeof(temp[0]);
   return std::vector<const BaseConstraint*>(&temp[0], &temp[element_count]);
 }

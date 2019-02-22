@@ -22,7 +22,9 @@ import org.chromium.chrome.browser.compositor.layouts.components.CompositorButto
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabWebContentsObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -31,10 +33,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
 import java.util.Locale;
@@ -86,7 +88,7 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             mCallback.notifyFailed("Tab crashed :(");
             tab.removeObserver(this);
         }
@@ -264,13 +266,13 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             mCallback.notifyFailed("Tab crashed :(");
             mTab.removeObserver(this);
         }
 
         @Override
-        public void onHidden(Tab tab) {
+        public void onHidden(Tab tab, @TabHidingType int type) {
             mCallback.notifyCalled();
             mTab.removeObserver(this);
         }
@@ -728,6 +730,20 @@ public class ChromeTabUtils {
             Assert.assertTrue(backgroundActivity.getTabModelSelector().isIncognitoSelected());
         } else {
             Assert.assertFalse(backgroundActivity.getTabModelSelector().isIncognitoSelected());
+        }
+    }
+
+    /**
+     * Issues a fake notification about the renderer being killed.
+     *
+     * @param tab {@link Tab} instance where the target renderer resides.
+     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
+     *                        (e.g. renderer for the currently selected tab)
+     */
+    public static void simulateRendererKilledForTesting(Tab tab, boolean wasOomProtected) {
+        TabWebContentsObserver observer = TabWebContentsObserver.get(tab);
+        if (observer != null) {
+            observer.simulateRendererKilledForTesting(wasOomProtected);
         }
     }
 }

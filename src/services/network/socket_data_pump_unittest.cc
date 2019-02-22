@@ -234,6 +234,27 @@ TEST_P(SocketDataPumpTest, PartialStreamSocketWrite) {
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 }
 
+TEST_P(SocketDataPumpTest, ReadEof) {
+  net::IoMode mode = GetParam();
+  net::MockRead reads[] = {net::MockRead(mode, net::OK)};
+  const char kTestMsg[] = "hello!";
+  net::MockWrite writes[] = {
+      net::MockWrite(mode, kTestMsg, strlen(kTestMsg), 0)};
+  net::StaticSocketDataProvider data_provider(reads, writes);
+  Init(&data_provider);
+  EXPECT_EQ("", Read(&receive_handle_, 1));
+  EXPECT_EQ(net::OK, delegate()->WaitForReadError());
+  // Writes can proceed even though there is a read error.
+  uint32_t num_bytes = strlen(kTestMsg);
+  EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,
+                                                    MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(strlen(kTestMsg), num_bytes);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data_provider.AllReadDataConsumed());
+  EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
 TEST_P(SocketDataPumpTest, ReadError) {
   net::IoMode mode = GetParam();
   net::MockRead reads[] = {net::MockRead(mode, net::ERR_FAILED)};
@@ -249,6 +270,27 @@ TEST_P(SocketDataPumpTest, ReadError) {
   EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,
                                                     MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(strlen(kTestMsg), num_bytes);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(data_provider.AllReadDataConsumed());
+  EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
+TEST_P(SocketDataPumpTest, WriteEof) {
+  net::IoMode mode = GetParam();
+  const char kTestMsg[] = "hello!";
+  net::MockRead reads[] = {net::MockRead(mode, kTestMsg, strlen(kTestMsg), 0),
+                           net::MockRead(mode, net::OK)};
+  net::MockWrite writes[] = {net::MockWrite(mode, net::OK)};
+  net::StaticSocketDataProvider data_provider(reads, writes);
+  Init(&data_provider);
+  uint32_t num_bytes = strlen(kTestMsg);
+  EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,
+                                                    MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(strlen(kTestMsg), num_bytes);
+  EXPECT_EQ(net::OK, delegate()->WaitForWriteError());
+  // Reads can proceed even though there is a read error.
+  EXPECT_EQ(kTestMsg, Read(&receive_handle_, strlen(kTestMsg)));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());

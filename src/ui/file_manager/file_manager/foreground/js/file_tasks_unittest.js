@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 window.metrics = {
-  recordEnum: function() {}
+  recordEnum: function() {},
+  recordSmallCount: function() {},
 };
 
 var mockTaskHistory = {
@@ -14,6 +15,7 @@ var mockTaskHistory = {
 };
 
 loadTimeData.data = {
+  MORE_ACTIONS_BUTTON_LABEL: 'MORE_ACTIONS_BUTTON_LABEL',
   NO_TASK_FOR_EXECUTABLE: 'NO_TASK_FOR_EXECUTABLE',
   NO_TASK_FOR_FILE_URL: 'NO_TASK_FOR_FILE_URL',
   NO_TASK_FOR_FILE: 'NO_TASK_FOR_FILE',
@@ -21,9 +23,13 @@ loadTimeData.data = {
   NO_TASK_FOR_CRX: 'NO_TASK_FOR_CRX',
   NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE',
   OPEN_WITH_BUTTON_LABEL: 'OPEN_WITH_BUTTON_LABEL',
+  SHARE_BEFORE_OPEN_CROSTINI_TITLE: 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
+  SHARE_BEFORE_OPEN_CROSTINI_SINGLE: 'SHARE_BEFORE_OPEN_CROSTINI_SINGLE',
+  SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE: 'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE',
   TASK_INSTALL_LINUX_PACKAGE: 'TASK_INSTALL_LINUX_PACKAGE',
   TASK_OPEN: 'TASK_OPEN',
-  MORE_ACTIONS_BUTTON_LABEL: 'MORE_ACTIONS_BUTTON_LABEL'
+  UNABLE_TO_OPEN_CROSTINI_TITLE: 'UNABLE_TO_OPEN_CROSTINI_TITLE',
+  UNABLE_TO_OPEN_CROSTINI: 'UNABLE_TO_OPEN_CROSTINI',
 };
 
 function setUp() {
@@ -365,12 +371,16 @@ function testOpenWithMostRecentlyExecuted(callback) {
   reportPromise(promise, callback);
 }
 
-function testChooseZipArchiverOverZipUnpacker(callback) {
-  var zipUnpackerTaskId = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
+function testOpenZipWithZipArchiver(callback) {
   var zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
 
   chrome.commandLinePrivate.hasSwitch = function(name, callback) {
-    callback(name == 'enable-zip-archiver-unpacker');
+    if (name == 'enable-zip-archiver-unpacker') {
+      // This flag used to exist and was used to switch between the "Zip
+      // Unpacker" and "Zip Archiver" component extensions.
+      failWithMessage('run zip archiver', 'zip archiver flags checked');
+    }
+    callback(false);
   };
 
   window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
@@ -383,13 +393,6 @@ function testChooseZipArchiverOverZipUnpacker(callback) {
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'Zip Archiver',
-              },
-              // Zip unpacker. Will be hidden because Zip Archiver is enabled.
-              {
-                taskId: zipUnpackerTaskId,
-                isDefault: false,
-                isGenericFileHandler: false,
-                title: 'ZIP unpacker',
               },
             ]),
         0);
@@ -473,4 +476,94 @@ function testOpenInstallLinuxPackageDialog(callback) {
         });
   });
   reportPromise(promise, callback);
+}
+
+function testMaybeShowCrostiniShareDialog() {
+  const volumeManagerDownloads = {
+    getLocationInfo: (entry) => {
+      return {rootType: 'downloads'};
+    }
+  };
+  const mockFileSystem = new MockFileSystem('downloads');
+  const sharedDir = new MockDirectoryEntry(mockFileSystem, '/shared');
+  const shared = new MockFileEntry(mockFileSystem, '/shared/file');
+  Crostini.registerSharedPath(sharedDir, volumeManagerDownloads);
+  const notShared1 = new MockFileEntry(mockFileSystem, '/notShared/file1');
+  const notShared2 = new MockFileEntry(mockFileSystem, '/notShared/file2');
+  const otherNotShared =
+      new MockFileEntry(mockFileSystem, '/otherNotShared/file');
+
+  const expect =
+      (comment, entries, expectShareDialogShown, expectedTitle,
+       expectedMessage) => {
+        let showHtmlCalled = false;
+        const showHtml = (title, message) => {
+          showHtmlCalled = true;
+          assertEquals(
+              expectedTitle, title, 'crostini share dialog title: ' + comment);
+          assertEquals(
+              expectedMessage, message,
+              'crostini share dialog message: ' + comment);
+        };
+        const fakeFilesTask = {
+          entries_: entries,
+          ui_: {
+            alertDialog: {showHtml: showHtml},
+            confirmDialog: {showHtml: showHtml},
+          },
+          sharePathWithCrostiniAndExecute_: () => {},
+          volumeManager_: volumeManagerDownloads,
+        };
+        const crostiniTask = {taskId: '|crostini|'};
+        const shareDialogShown =
+            FileTasks.prototype.maybeShowCrostiniShareDialog_.call(
+                fakeFilesTask, crostiniTask);
+        assertEquals(
+            expectShareDialogShown, shareDialogShown,
+            'dialog shown: ' + comment);
+        assertEquals(
+            expectShareDialogShown, showHtmlCalled,
+            'showHtml called:' + comment);
+      };
+
+
+  expect('No entries', [], false, '', '');
+
+  Crostini.IS_CROSTINI_FILES_ENABLED = false;
+  expect(
+      'Single entry, crostini-files not enabled', [notShared1], true,
+      'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
+
+  Crostini.IS_CROSTINI_FILES_ENABLED = true;
+
+  expect(
+      'Single entry, not shared', [notShared1], true,
+      'SHARE_BEFORE_OPEN_CROSTINI_TITLE', 'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+
+  expect('Single entry, shared', [shared], false, '', '');
+
+  expect(
+      '2 entries, not shared, same dir', [notShared1, notShared2], true,
+      'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
+      'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE');
+
+  expect(
+      '2 entries, not shared, different dir', [notShared1, otherNotShared],
+      true, 'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
+
+  expect(
+      '2 entries, 1 not shared, different dir, not shared first',
+      [notShared1, shared], true, 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
+      'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+
+  expect(
+      '2 entries, 1 not shared, different dir, shared first',
+      [shared, notShared1], true, 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
+      'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+
+  expect(
+      '3 entries, 2 not shared, different dir',
+      [shared, notShared1, notShared2], true,
+      'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
+      'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE');
 }

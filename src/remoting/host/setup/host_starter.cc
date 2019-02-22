@@ -43,12 +43,11 @@ HostStarter::~HostStarter() = default;
 
 std::unique_ptr<HostStarter> HostStarter::Create(
     const std::string& chromoting_hosts_url,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    net::URLRequestContextGetter* url_request_context_getter) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return base::WrapUnique(new HostStarter(
       std::make_unique<gaia::GaiaOAuthClient>(url_loader_factory),
       std::make_unique<remoting::ServiceClient>(chromoting_hosts_url,
-                                                url_request_context_getter),
+                                                url_loader_factory),
       remoting::DaemonController::Create()));
 }
 

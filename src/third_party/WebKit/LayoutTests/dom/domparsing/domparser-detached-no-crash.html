@@ -13,7 +13,7 @@ test(() => {
     var d = new Parser();
     assert_true(d != null);
     var detached = d.parseFromString("no crash", "text/html");
-    assert_equals(detached.origin, "null");
+    assert_equals(detached.defaultView, null);
 });
 </script>
 </body>

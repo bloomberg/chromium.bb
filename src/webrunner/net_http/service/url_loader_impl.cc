@@ -21,11 +21,8 @@ namespace {
 // server responses.
 const size_t kReadCapacity = 1024;
 
-// Converts |buffer| into a URLBody with the body set to a sized buffer or a
-// raw buffer depending on whether |is_sized_buffer| is set.
-oldhttp::URLBodyPtr BuildResponseBuffer(
-    scoped_refptr<net::GrowableIOBuffer> buffer,
-    bool is_sized_buffer) {
+// Converts |buffer| into a URLBody with the body set to a buffer.
+oldhttp::URLBodyPtr CreateURLBodyFromBuffer(net::GrowableIOBuffer* buffer) {
   oldhttp::URLBodyPtr body = oldhttp::URLBody::New();
 
   // The response buffer size is exactly the offset.
@@ -39,12 +36,7 @@ oldhttp::URLBodyPtr BuildResponseBuffer(
     ZX_DLOG(WARNING, result) << "zx_vmo_write";
     return nullptr;
   }
-
-  if (is_sized_buffer) {
-    body->set_sized_buffer(std::move(mem_buffer));
-  } else {
-    body->set_buffer(std::move(mem_buffer.vmo));
-  }
+  body->set_buffer(std::move(mem_buffer));
 
   return body;
 }
@@ -66,7 +58,7 @@ oldhttp::HttpErrorPtr BuildError(int net_error) {
   return error;
 }
 
-std::unique_ptr<UploadDataStream> UploadDataStreamFromZxBuffer(
+std::unique_ptr<UploadDataStream> UploadDataStreamFromZxSocket(
     zx::socket stream) {
   // TODO(http://crbug.com/875534): Write a ZxStreamUploadStream class.
   std::unique_ptr<ChunkedUploadDataStream> upload_stream =
@@ -90,46 +82,19 @@ std::unique_ptr<UploadDataStream> UploadDataStreamFromZxBuffer(
   return upload_stream;
 }
 
-std::unique_ptr<UploadDataStream> UploadDataStreamFromZxVmo(zx::vmo vmo) {
-  char buffer[kReadCapacity];
-  size_t size = 0;
-  zx_status_t result = vmo.get_size(&size);
-  if (result != ZX_OK) {
-    ZX_DLOG(WARNING, result) << "zx_vmo_get_size";
-    return nullptr;
-  }
-
-  // TODO(http://crbug.com/875534): Write a ZxBufferUploadStream class.
-  std::unique_ptr<ChunkedUploadDataStream> upload_stream =
-      std::make_unique<net::ChunkedUploadDataStream>(0);
-  size_t offset = 0;
-  while (offset != size) {
-    size_t length = std::min(size - offset, kReadCapacity);
-    result = vmo.read(buffer, offset, length);
-    if (result != ZX_OK) {
-      ZX_DLOG(WARNING, result) << "zx_vmo_read";
-      return nullptr;
-    }
-    upload_stream->AppendData(buffer, length, false);
-    offset += length;
-  }
-
-  return upload_stream;
-}
-
 std::unique_ptr<UploadDataStream> UploadDataStreamFromMemBuffer(
-    fuchsia::mem::Buffer sized_buffer) {
+    fuchsia::mem::Buffer mem_buffer) {
   // TODO(http://crbug.com/875534): Write a ZxMemBufferUploadStream class.
   std::unique_ptr<ChunkedUploadDataStream> upload_stream =
       std::make_unique<net::ChunkedUploadDataStream>(0);
 
   char buffer[kReadCapacity];
-  size_t size = sized_buffer.size;
+  size_t size = mem_buffer.size;
   size_t offset = 0;
   zx_status_t result = ZX_OK;
   while (offset != size) {
     size_t length = std::min(size - offset, kReadCapacity);
-    result = sized_buffer.vmo.read(buffer, offset, length);
+    result = mem_buffer.vmo.read(buffer, offset, length);
     if (result != ZX_OK) {
       ZX_DLOG(WARNING, result) << "zx_vmo_read";
       return nullptr;
@@ -185,13 +150,10 @@ void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
   if (request.body) {
     if (request.body->is_stream()) {
       upload_stream =
-          UploadDataStreamFromZxBuffer(std::move(request.body->stream()));
-    } else if (request.body->is_buffer()) {
-      upload_stream =
-          UploadDataStreamFromZxVmo(std::move(request.body->buffer()));
+          UploadDataStreamFromZxSocket(std::move(request.body->stream()));
     } else {
-      upload_stream = UploadDataStreamFromMemBuffer(
-          std::move(request.body->sized_buffer()));
+      upload_stream =
+          UploadDataStreamFromMemBuffer(std::move(request.body->buffer()));
     }
 
     if (!upload_stream) {
@@ -348,8 +310,7 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
       // way to recover from a failed socket close.
       write_socket_ = zx::socket();
     } else {
-      DCHECK(response_body_mode_ == oldhttp::ResponseBodyMode::BUFFER ||
-             response_body_mode_ == oldhttp::ResponseBodyMode::SIZED_BUFFER);
+      DCHECK_EQ(response_body_mode_, oldhttp::ResponseBodyMode::BUFFER);
       std::move(done_callback_)(BuildResponse(result));
     }
     return false;
@@ -365,12 +326,9 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
       write_socket_.write(ZX_SOCKET_SHUTDOWN_WRITE, nullptr, 0, nullptr);
       write_socket_ = zx::socket();
     } else {
-      DCHECK(response_body_mode_ == oldhttp::ResponseBodyMode::BUFFER ||
-             response_body_mode_ == oldhttp::ResponseBodyMode::SIZED_BUFFER);
+      DCHECK_EQ(response_body_mode_, oldhttp::ResponseBodyMode::BUFFER);
       // In buffer mode, build the response and call the callback.
-      oldhttp::URLBodyPtr body = BuildResponseBuffer(
-          buffer_,
-          response_body_mode_ == oldhttp::ResponseBodyMode::SIZED_BUFFER);
+      oldhttp::URLBodyPtr body = CreateURLBodyFromBuffer(buffer_.get());
       if (body) {
         oldhttp::URLResponse response = BuildResponse(result);
         response.body = std::move(body);
@@ -404,8 +362,7 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
       return false;
     }
   } else {
-    DCHECK(response_body_mode_ == oldhttp::ResponseBodyMode::BUFFER ||
-           response_body_mode_ == oldhttp::ResponseBodyMode::SIZED_BUFFER);
+    DCHECK_EQ(response_body_mode_, oldhttp::ResponseBodyMode::BUFFER);
     // In buffer mode, expand the buffer.
     buffer_->SetCapacity(buffer_->capacity() + result);
     buffer_->set_offset(buffer_->offset() + result);

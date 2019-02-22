@@ -37,9 +37,9 @@ public class InterfaceControlMessageTest {
      * See mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.
      */
     class IntegerAccessorImpl extends SideEffectFreeCloseable implements IntegerAccessor {
-        private long mValue = 0;
-        private int mEnum = 0;
-        private boolean mEncounteredError = false;
+        private long mValue;
+        private int mEnum;
+        private boolean mEncounteredError;
 
         /**
          * @see ConnectionErrorHandler#onConnectionError(MojoException)

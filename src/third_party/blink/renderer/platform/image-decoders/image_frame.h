@@ -43,11 +43,11 @@ namespace blink {
 // ImageFrame represents the decoded image data.  This buffer is what all
 // decoders write a single frame into.
 class PLATFORM_EXPORT ImageFrame final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   enum PixelFormat { kN32, kRGBA_F16 };
-  enum Status { kFrameEmpty, kFramePartial, kFrameComplete };
+  enum Status { kFrameEmpty, kFrameInitialized, kFramePartial, kFrameComplete };
   enum DisposalMethod {
     // If you change the numeric values of these, make sure you audit
     // all users, as some users may cast raw values to/from these

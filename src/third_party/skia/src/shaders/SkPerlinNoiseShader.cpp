@@ -8,7 +8,6 @@
 #include "SkPerlinNoiseShader.h"
 
 #include "SkArenaAlloc.h"
-#include "SkDither.h"
 #include "SkColorFilter.h"
 #include "SkMakeUnique.h"
 #include "SkReadBuffer.h"
@@ -866,12 +865,12 @@ void GrGLPerlinNoise::emitCode(EmitArgs& args) {
     const char* dotLattice  = "dot(((%s.ga + %s.rb * half2(%s)) * half2(2.0) - half2(1.0)), %s);";
 
     // Add noise function
-    static const GrShaderVar gPerlinNoiseArgs[] =  {
+    const GrShaderVar gPerlinNoiseArgs[] =  {
         GrShaderVar(chanCoord, kHalf_GrSLType),
         GrShaderVar(noiseVec, kHalf2_GrSLType)
     };
 
-    static const GrShaderVar gPerlinNoiseStitchArgs[] =  {
+    const GrShaderVar gPerlinNoiseStitchArgs[] =  {
         GrShaderVar(chanCoord, kHalf_GrSLType),
         GrShaderVar(noiseVec, kHalf2_GrSLType),
         GrShaderVar(stitchData, kHalf2_GrSLType)
@@ -1257,7 +1256,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
     const char* zUni = uniformHandler->getUniformCStr(fZUni);
 
     // fade function
-    static const GrShaderVar fadeArgs[] =  {
+    const GrShaderVar fadeArgs[] =  {
         GrShaderVar("t", kHalf3_GrSLType)
     };
     SkString fadeFuncName;
@@ -1267,7 +1266,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
                               &fadeFuncName);
 
     // perm function
-    static const GrShaderVar permArgs[] =  {
+    const GrShaderVar permArgs[] =  {
         GrShaderVar("x", kHalf_GrSLType)
     };
     SkString permFuncName;
@@ -1281,7 +1280,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
                               permCode.c_str(), &permFuncName);
 
     // grad function
-    static const GrShaderVar gradArgs[] =  {
+    const GrShaderVar gradArgs[] =  {
         GrShaderVar("x", kHalf_GrSLType),
         GrShaderVar("p", kHalf3_GrSLType)
     };
@@ -1294,7 +1293,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
                               gradCode.c_str(), &gradFuncName);
 
     // lerp function
-    static const GrShaderVar lerpArgs[] =  {
+    const GrShaderVar lerpArgs[] =  {
         GrShaderVar("a", kHalf_GrSLType),
         GrShaderVar("b", kHalf_GrSLType),
         GrShaderVar("w", kHalf_GrSLType)
@@ -1304,7 +1303,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
                               "return a + w * (b - a);", &lerpFuncName);
 
     // noise function
-    static const GrShaderVar noiseArgs[] =  {
+    const GrShaderVar noiseArgs[] =  {
         GrShaderVar("p", kHalf3_GrSLType),
     };
     SkString noiseFuncName;
@@ -1341,7 +1340,7 @@ void GrGLImprovedPerlinNoise::emitCode(EmitArgs& args) {
                               noiseCode.c_str(), &noiseFuncName);
 
     // noiseOctaves function
-    static const GrShaderVar noiseOctavesArgs[] =  {
+    const GrShaderVar noiseOctavesArgs[] =  {
         GrShaderVar("p", kHalf3_GrSLType)
     };
     SkString noiseOctavesFuncName;
@@ -1443,12 +1442,12 @@ std::unique_ptr<GrFragmentProcessor> SkPerlinNoiseShaderImpl::asFragmentProcesso
             // color space of the noise. Either way, this case (and the GLSL) need to convert to
             // the destination.
             auto inner =
-                    GrConstColorProcessor::Make(GrColor4f::FromGrColor(0x80404040),
+                    GrConstColorProcessor::Make(GrColorToPMColor4f(0x80404040),
                                                 GrConstColorProcessor::InputMode::kModulateRGBA);
             return GrFragmentProcessor::MulChildByInputAlpha(std::move(inner));
         }
         // Emit zero.
-        return GrConstColorProcessor::Make(GrColor4f::TransparentBlack(),
+        return GrConstColorProcessor::Make(SK_PMColor4fTRANSPARENT,
                                            GrConstColorProcessor::InputMode::kIgnore);
     }
 

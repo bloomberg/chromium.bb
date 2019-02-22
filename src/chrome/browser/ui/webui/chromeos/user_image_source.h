@@ -27,6 +27,7 @@ namespace chromeos {
 class UserImageSource : public content::URLDataSource {
  public:
   UserImageSource();
+  ~UserImageSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -43,8 +44,6 @@ class UserImageSource : public content::URLDataSource {
       const AccountId& account_id);
 
  private:
-  ~UserImageSource() override;
-
   DISALLOW_COPY_AND_ASSIGN(UserImageSource);
 };
 

@@ -27,4 +27,14 @@ Polymer({
   onProcessSelectChange: function(value) {
     this.setSetting('margins', parseInt(value, 10));
   },
+
+  /**
+   * @param {boolean} globallyDisabled Value of the |disabled| property.
+   * @param {number} pagesPerSheet Number of pages per sheet.
+   * @return {boolean} Whether the margins settings button should be disabled.
+   * @private
+   */
+  getMarginsSettingsDisabled_: function(globallyDisabled, pagesPerSheet) {
+    return globallyDisabled || pagesPerSheet > 1;
+  },
 });

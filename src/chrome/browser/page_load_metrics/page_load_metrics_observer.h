@@ -318,6 +318,13 @@ class PageLoadMetricsObserver {
   virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                                  ukm::SourceId source_id);
 
+  // OnDidInternalNavigationAbort is triggered when the main frame navigation
+  // aborts with HTTP responses that don't commit, such as HTTP 204 responses
+  // and downloads. Note that |navigation_handle| will be destroyed
+  // soon after this call. Don't hold a reference to it.
+  virtual void OnDidInternalNavigationAbort(
+      content::NavigationHandle* navigation_handle) {}
+
   // OnDidFinishSubFrameNavigation is triggered when a sub-frame of the
   // committed page has finished navigating. It has either committed, aborted,
   // was a same document navigation, or has been replaced. It is up to the

@@ -318,7 +318,7 @@ void BrowserRootView::PaintChildren(const views::PaintInfo& paint_info) {
 
     const float scale = canvas->image_scale();
 
-    gfx::RectF toolbar_bounds(browser_view_->GetToolbarBounds());
+    gfx::RectF toolbar_bounds(browser_view_->toolbar()->bounds());
     ConvertRectToTarget(browser_view_, this, &toolbar_bounds);
     const int bottom = std::round(toolbar_bounds.y() * scale);
     const int x = std::round(toolbar_bounds.x() * scale);

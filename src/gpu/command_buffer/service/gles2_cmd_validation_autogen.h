@@ -226,17 +226,7 @@ class PixelStoreAlignmentValidator {
 PixelStoreAlignmentValidator pixel_store_alignment;
 
 ValueValidator<GLenum> pixel_type;
-class ProgramParameterValidator {
- public:
-  bool IsValid(const GLenum value) const;
-  ProgramParameterValidator();
-  void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
-
- private:
-  bool is_es3_;
-};
-ProgramParameterValidator program_parameter;
-
+ValueValidator<GLenum> program_parameter;
 class QueryObjectParameterValidator {
  public:
   bool IsValid(const GLenum value) const;
@@ -268,12 +258,7 @@ class SamplerParameterValidator {
 SamplerParameterValidator sampler_parameter;
 
 ValueValidator<GLenum> shader_binary_format;
-class ShaderParameterValidator {
- public:
-  bool IsValid(const GLenum value) const;
-};
-ShaderParameterValidator shader_parameter;
-
+ValueValidator<GLenum> shader_parameter;
 class ShaderPrecisionValidator {
  public:
   bool IsValid(const GLenum value) const;

@@ -105,7 +105,7 @@ constexpr int kDefaultResourceBufferSize = 10 * 1000 * 1000;  // 10 MB
 bool Matches(const String& url, const String& pattern) {
   Vector<String> parts;
   pattern.Split("*", parts);
-  size_t pos = 0;
+  wtf_size_t pos = 0;
   for (const String& part : parts) {
     pos = url.Find(part, pos);
     if (pos == kNotFound)
@@ -234,7 +234,7 @@ class InspectorPostBodyParser
       return;
 
     parts_.Grow(request_body->Elements().size());
-    for (size_t i = 0; i < request_body->Elements().size(); i++) {
+    for (wtf_size_t i = 0; i < request_body->Elements().size(); i++) {
       const FormDataElement& data = request_body->Elements()[i];
       switch (data.type_) {
         case FormDataElement::kData:
@@ -576,12 +576,10 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     response_object->setRemotePort(response.RemotePort());
   }
 
-  String protocol;
-  if (response.GetResourceLoadInfo())
-    protocol = response.GetResourceLoadInfo()->npn_negotiated_protocol;
+  String protocol = response.AlpnNegotiatedProtocol();
   if (protocol.IsEmpty() || protocol == "unknown") {
     if (response.WasFetchedViaSPDY()) {
-      protocol = "spdy";
+      protocol = "h2";
     } else if (response.IsHTTP()) {
       protocol = "http";
       if (response.HttpVersion() ==
@@ -695,7 +693,7 @@ void InspectorNetworkAgent::DidBlockRequest(
     DocumentLoader* loader,
     const FetchInitiatorInfo& initiator_info,
     ResourceRequestBlockedReason reason,
-    Resource::Type resource_type) {
+    ResourceType resource_type) {
   unsigned long identifier = CreateUniqueIdentifier();
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);
@@ -752,9 +750,12 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                                    request.Url(), post_data);
   if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
+  else if (initiator_info.name == FetchInitiatorTypeNames::fetch)
+    type = InspectorPageAgent::kFetchResource;
 
-  resources_data_->SetResourceType(
-      request_id, pending_request_ ? pending_request_type_ : type);
+  if (pending_request_)
+    type = pending_request_type_;
+  resources_data_->SetResourceType(request_id, type);
 
   if (is_navigation)
     return;
@@ -815,7 +816,7 @@ void InspectorNetworkAgent::WillSendRequest(
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
-    Resource::Type resource_type) {
+    ResourceType resource_type) {
   // Ignore the request initiated internally.
   if (initiator_info.name == FetchInitiatorTypeNames::internal)
     return;
@@ -847,7 +848,7 @@ void InspectorNetworkAgent::WillSendRequest(
 
   if (cache_disabled_.Get()) {
     if (LoadsFromCacheOnly(request) &&
-        request.GetRequestContext() != WebURLRequest::kRequestContextInternal) {
+        request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       request.SetCacheMode(mojom::FetchCacheMode::kUnspecifiedForceCacheMiss);
     } else {
       request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
@@ -937,8 +938,10 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   // If we revalidated the resource and got Not modified, send content length
   // following didReceiveResponse as there will be no calls to didReceiveData
   // from the network stack.
-  if (is_not_modified && cached_resource && cached_resource->EncodedSize())
-    DidReceiveData(identifier, loader, nullptr, cached_resource->EncodedSize());
+  if (is_not_modified && cached_resource && cached_resource->EncodedSize()) {
+    DidReceiveData(identifier, loader, nullptr,
+                   static_cast<int>(cached_resource->EncodedSize()));
+  }
 }
 
 static bool IsErrorStatusCode(int status_code) {
@@ -1074,8 +1077,6 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
                                         bool include_credentials) {
   DCHECK(xhr);
   DCHECK(!pending_request_);
-  pending_request_ = client;
-  pending_request_type_ = InspectorPageAgent::kXHRResource;
   pending_xhr_replay_data_ = XHRReplayData::Create(
       method, UrlWithoutFragment(url), async, include_credentials);
   for (const auto& header : headers)
@@ -1090,12 +1091,6 @@ void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
   replay_xhrs_to_be_deleted_.insert(xhr);
   replay_xhrs_.erase(xhr);
   remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-}
-
-void InspectorNetworkAgent::WillStartFetch(ThreadableLoaderClient* client) {
-  DCHECK(!pending_request_);
-  pending_request_ = client;
-  pending_request_type_ = InspectorPageAgent::kFetchResource;
 }
 
 void InspectorNetworkAgent::WillSendEventSourceRequest(
@@ -1519,38 +1514,13 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      ScheduledNavigation*) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_navigation_.insert(frame_id);
-  if (!frames_with_scheduled_client_navigation_.Contains(frame_id)) {
-    frame_navigation_initiator_map_.Set(
-        frame_id,
-        BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
-  }
+  frame_navigation_initiator_map_.Set(
+      IdentifiersFactory::FrameId(frame),
+      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
 }
 
 void InspectorNetworkAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_navigation_.erase(frame_id);
-  if (!frames_with_scheduled_client_navigation_.Contains(frame_id))
-    frame_navigation_initiator_map_.erase(frame_id);
-}
-
-void InspectorNetworkAgent::FrameScheduledClientNavigation(LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_client_navigation_.insert(frame_id);
-  if (!frames_with_scheduled_navigation_.Contains(frame_id)) {
-    frame_navigation_initiator_map_.Set(
-        frame_id,
-        BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
-  }
-}
-
-void InspectorNetworkAgent::FrameClearedScheduledClientNavigation(
-    LocalFrame* frame) {
-  String frame_id = IdentifiersFactory::FrameId(frame);
-  frames_with_scheduled_client_navigation_.erase(frame_id);
-  if (!frames_with_scheduled_navigation_.Contains(frame_id))
-    frame_navigation_initiator_map_.erase(frame_id);
+  frame_navigation_initiator_map_.erase(IdentifiersFactory::FrameId(frame));
 }
 
 Response InspectorNetworkAgent::GetResponseBody(const String& request_id,
@@ -1643,7 +1613,7 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
 String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
   if (!enabled_.Get())
     return String();
-  FrameNavigationInitiatorMap::iterator it =
+  auto it =
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
   if (it != frame_navigation_initiator_map_.end())
     return it->value->serialize();

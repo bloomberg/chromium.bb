@@ -12,10 +12,12 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -337,8 +339,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       // Use native VoiceOver support for live regions.
       base::scoped_nsobject<BrowserAccessibilityCocoa> retained_node(
           [native_node retain]);
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostDelayedTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::Bind(
               [](base::scoped_nsobject<BrowserAccessibilityCocoa> node) {
                 if (node && [node instanceActive]) {
@@ -376,6 +378,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case Event::DESCRIPTION_CHANGED:
     case Event::DOCUMENT_TITLE_CHANGED:
     case Event::LIVE_REGION_NODE_CHANGED:
+    case Event::LOAD_START:
     case Event::NAME_CHANGED:
     case Event::OTHER_ATTRIBUTE_CHANGED:
     case Event::RELATED_NODE_CHANGED:

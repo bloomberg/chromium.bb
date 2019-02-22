@@ -664,8 +664,7 @@ void SVGImage::ServiceAnimations(
     auto* layer = frame_view->GetLayoutView()->Layer();
     if (layer->NeedsRepaint()) {
       if (auto* observer = GetImageObserver())
-        observer->ChangedInRect(this, Rect());
-      layer->ClearNeedsRepaintRecursively();
+        observer->Changed(this);
     }
   }
 }

@@ -241,6 +241,7 @@ int main(int ac, char **av) {
         break;
       case 'm':
         max_write_size = (size_t) STRTOULL(optarg, (char **) NULL, 0);
+        /* fallthrough */
       case 'n':
         num_bytes = (uint64_t) STRTOULL(optarg, (char **) NULL, 0);
         break;

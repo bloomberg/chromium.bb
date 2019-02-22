@@ -83,6 +83,12 @@ SVGParsingError SVGNumberOptionalNumber::SetValueAsString(const String& value) {
   return parse_status;
 }
 
+void SVGNumberOptionalNumber::SetInitial(unsigned value) {
+  // Propagate the value to the split representation.
+  first_number_->SetInitial(value);
+  second_number_->SetInitial(value);
+}
+
 void SVGNumberOptionalNumber::Add(SVGPropertyBase* other, SVGElement*) {
   SVGNumberOptionalNumber* other_number_optional_number =
       ToSVGNumberOptionalNumber(other);

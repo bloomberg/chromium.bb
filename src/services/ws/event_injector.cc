@@ -79,18 +79,7 @@ EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
   }
 
   event_and_host.window_tree_host = window_tree_host;
-
-  // Map PointerEvents to Mouse/Touch event. This should be unnecessary.
-  // TODO: https://crbug.com/865781
-  if (event->IsMousePointerEvent()) {
-    event_and_host.event =
-        std::make_unique<ui::MouseEvent>(*event->AsPointerEvent());
-  } else if (event->IsTouchPointerEvent()) {
-    event_and_host.event =
-        std::make_unique<ui::TouchEvent>(*event->AsPointerEvent());
-  } else {
-    event_and_host.event = std::move(event);
-  }
+  event_and_host.event = std::move(event);
   return event_and_host;
 }
 

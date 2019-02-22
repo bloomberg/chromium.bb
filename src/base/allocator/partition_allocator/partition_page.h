@@ -198,17 +198,21 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
 }
 
 ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
-// If these asserts fire, you probably corrupted memory.
-#if DCHECK_IS_ON()
   size_t slot_size = this->bucket->slot_size;
-  size_t raw_size = get_raw_size();
-  if (raw_size)
+  const size_t raw_size = get_raw_size();
+  if (raw_size) {
     slot_size = raw_size;
+  }
+
+#if DCHECK_IS_ON()
+  // If these asserts fire, you probably corrupted memory.
   PartitionCookieCheckValue(ptr);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
+
   memset(ptr, kFreedByte, slot_size);
 #endif
+
   DCHECK(this->num_allocated_slots);
   // TODO(palmer): See if we can afford to make this a CHECK.
   // FIX FIX FIX

@@ -5,13 +5,28 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+<script src="/bower_components/web-component-tester/browser.js"></script>
+<link rel="import" href="/bower_components/polymer/polymer.html">
 <link rel="import" href="/dashboard/spa/utils.html">
-<link rel="import" href="/tracing/core/test_utils.html">
+<link rel="import" href="/tracing/base/timing.html">
+
+<test-fixture id="input">
+  <template>
+    <input>
+  </template>
+</test-fixture>
 
 <script>
 'use strict';
-tr.b.unittest.testSuite(function() {
+suite('basic tests', function() {
   test('setImmutable', function() {
+    assert.deepEqual({b: 'c'}, cp.setImmutable(
+        {a: []}, '', {b: 'c'}));
+    assert.deepEqual({a: [], b: 'c'}, cp.setImmutable(
+        {a: []}, '', rootState => {
+          return {...rootState, b: 'c'};
+        }));
     assert.deepEqual({a: [{b: 'c'}]}, cp.setImmutable(
         {a: []}, 'a.0.b', 'c'));
     assert.deepEqual({a: {b: 1, c: 2}}, cp.setImmutable(
@@ -57,13 +72,150 @@ tr.b.unittest.testSuite(function() {
         document.body, document.body));
     assert.isFalse(cp.isElementChildOf(
         document.body.parentElement, document.body));
+
+    const div = document.createElement('div');
+    document.body.appendChild(div);
+    div.root = div.createShadowRoot();
+    const child = document.createElement('div');
+    div.root.appendChild(child);
+    assert.isTrue(cp.isElementChildOf(child, document.body));
   });
 
   test('getActiveElement', function() {
-    const input = document.createElement('input');
-    this.addHTMLOutput(input);
+    const input = fixture('input');
     input.focus();
     assert.strictEqual(input, cp.getActiveElement());
+  });
+
+  test('measureElement', async function() {
+    const rect = await cp.measureElement(fixture('input'));
+    assert.isBelow(0, rect.bottom);
+    assert.isBelow(0, rect.height);
+    assert.isBelow(0, rect.left);
+    assert.isBelow(0, rect.right);
+    assert.isBelow(0, rect.top);
+    assert.isBelow(0, rect.width);
+    assert.isBelow(0, rect.x);
+    assert.isBelow(0, rect.y);
+  });
+
+  test('measureText cache', async function() {
+    assert.strictEqual(await cp.measureText('hello'),
+        await cp.measureText('hello'));
+  });
+
+  test('measureText', async function() {
+    const [rect, larger] = await Promise.all([
+      cp.measureText('hello'),
+      cp.measureText('hello', {fontSize: 'larger'}),
+    ]);
+    assert.isBelow(0, rect.height);
+    assert.isBelow(0, rect.width);
+    assert.isBelow(rect.height, larger.height);
+    assert.isBelow(rect.width, larger.width);
+  });
+
+  test('authorizationHeaders empty', async function() {
+    window.gapi = undefined;
+    assert.deepEqual([], await cp.authorizationHeaders());
+
+    window.gapi = {};
+    assert.deepEqual([], await cp.authorizationHeaders());
+
+    window.gapi = {
+      auth2: {
+        getAuthInstance() {
+          return undefined;
+        },
+      },
+    };
+    assert.deepEqual([], await cp.authorizationHeaders());
+
+    window.gapi = {
+      auth2: {
+        getAuthInstance() {
+          return {
+            currentUser: {
+              get() {
+                return {
+                  getAuthResponse() {
+                    return {};
+                  },
+                };
+              }
+            },
+          };
+        },
+      },
+    };
+    assert.deepEqual([], await cp.authorizationHeaders());
+    window.gapi = undefined;
+  });
+
+  test('authorizationHeaders success', async function() {
+    window.gapi = {
+      auth2: {
+        getAuthInstance() {
+          return {
+            currentUser: {
+              get() {
+                return {
+                  getAuthResponse() {
+                    return {
+                      expires_at: new Date() + 100,
+                      token_type: 'TYPE',
+                      access_token: 'TOKEN',
+                    };
+                  },
+                };
+              }
+            },
+          };
+        },
+      },
+    };
+    assert.deepEqual([['Authorization', 'TYPE TOKEN']],
+        await cp.authorizationHeaders());
+    window.gapi = undefined;
+  });
+
+  test('authorizationHeaders reload', async function() {
+    window.gapi = {
+      auth2: {
+        getAuthInstance() {
+          return {
+            currentUser: {
+              get() {
+                return {
+                  getAuthResponse() {
+                    return {
+                      expires_at: new Date() - 100,
+                    };
+                  },
+
+                  reloadAuthResponse() {
+                    return {
+                      expires_at: new Date() + 100,
+                      token_type: 'TYPE',
+                      access_token: 'TOKEN',
+                    };
+                  }
+                };
+              }
+            },
+          };
+        },
+      },
+    };
+    assert.deepEqual([['Authorization', 'TYPE TOKEN']],
+        await cp.authorizationHeaders());
+    window.gapi = undefined;
+  });
+
+  test('sha', async function() {
+    assert.strictEqual(
+        'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        await cp.sha(''));
   });
 
   test('measureTrace', function() {
@@ -136,6 +288,10 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual('A', state.aaa[0]);
     assert.strictEqual('bbb', state.bbb);
     assert.strictEqual(0, state.ccc);
+  });
+
+  test('normalize', function() {
+    assert.deepEqual({a: 1, b: 2}, cp.normalize(['a', 'b'], [1, 2]));
   });
 });
 </script>

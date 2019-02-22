@@ -115,8 +115,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
     });
 });
 
-// Flaky test: https://crbug.com/819696
-TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
+TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomicText', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
@@ -137,8 +136,7 @@ TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
     });
 });
 
-// Flaky. See https://crbug.com/847028.
-TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeImageAlt', function() {
+TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
   // Note that there is a live region outputted as a result of page load; the
   // test expects a live region announcement after a click on the button, but
   // the LiveRegions module has a half second filter for live region

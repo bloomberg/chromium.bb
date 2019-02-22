@@ -31,7 +31,6 @@ InfoBarIOS::InfoBarIOS(InfoBarController* controller,
 InfoBarIOS::~InfoBarIOS() {
   DCHECK(controller_);
   [controller_ detachView];
-  [controller_ setDelegate:nullptr];
   controller_ = nil;
 }
 
@@ -60,6 +59,10 @@ void InfoBarIOS::PlatformSpecificOnHeightRecalculated() {
 
 void InfoBarIOS::SetInfoBarTargetHeight(int height) {
   SetTargetHeight(height);
+}
+
+bool InfoBarIOS::IsOwned() {
+  return owner() != nullptr;
 }
 
 void InfoBarIOS::RemoveInfoBar() {

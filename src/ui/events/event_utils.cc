@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -88,8 +89,7 @@ display::Display::TouchSupport GetInternalDisplayTouchSupport() {
   if (!screen)
     return display::Display::TouchSupport::UNKNOWN;
   const std::vector<display::Display>& displays = screen->GetAllDisplays();
-  for (std::vector<display::Display>::const_iterator it = displays.begin();
-       it != displays.end(); ++it) {
+  for (auto it = displays.begin(); it != displays.end(); ++it) {
     if (it->IsInternal())
       return it->touch_support();
   }
@@ -108,20 +108,24 @@ void ComputeEventLatencyOS(const PlatformEvent& native_event) {
     case ET_SCROLL:
 #endif
     case ET_MOUSEWHEEL:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.MOUSE_WHEEL",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
     case ET_TOUCH_MOVED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_MOVED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.TOUCH_MOVED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
     case ET_TOUCH_PRESSED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_PRESSED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.TOUCH_PRESSED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
     case ET_TOUCH_RELEASED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.TOUCH_RELEASED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
     default:
       return;

@@ -89,7 +89,11 @@ add_subdirectory(external/glslang)
 add_subdirectory(external/spirv-tools)
 
 # spirv-headers
-include_directories(external/spirv-headers/src/include)
+set(SPIRV_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/external/spirv-headers/src/include")
+if (NOT EXISTS ${SPIRV_INCLUDE_PATH})
+	message(FATAL_ERROR "SPIR-V headers not found, please run external/fetch_sources.py")
+endif()
+include_directories(${SPIRV_INCLUDE_PATH})
 
 include_directories(${PNG_INCLUDE_PATH})
 
@@ -294,6 +298,11 @@ if (DE_OS_IS_ANDROID)
 
 	add_library(deqp SHARED ${DEQP_SRCS})
 	target_link_libraries(deqp ${DEQP_LIBS})
+
+	# Separate out the debug information because it's enormous
+	add_custom_command(TARGET deqp POST_BUILD
+		COMMAND ${CMAKE_STRIP} --only-keep-debug -o $<TARGET_FILE:deqp>.debug $<TARGET_FILE:deqp>
+		COMMAND ${CMAKE_STRIP} -g $<TARGET_FILE:deqp>)
 
 	# Needed by OpenGL CTS that defines its own activity but depends on
 	# common Android support code.

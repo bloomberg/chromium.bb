@@ -21,10 +21,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_CLIPPER_H_
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
-#include "third_party/blink/renderer/core/svg/svg_clip_path_element.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
+
+class SVGClipPathElement;
 
 class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
  public:
@@ -42,12 +44,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
 
   bool HitTestClipContent(const FloatRect&, const FloatPoint&);
 
-  SVGUnitTypes::SVGUnitType ClipPathUnits() const {
-    return ToSVGClipPathElement(GetElement())
-        ->clipPathUnits()
-        ->CurrentValue()
-        ->EnumValue();
-  }
+  SVGUnitTypes::SVGUnitType ClipPathUnits() const;
   AffineTransform CalculateClipTransform(const FloatRect& reference_box) const;
 
   base::Optional<Path> AsPath();
@@ -64,6 +61,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   }
 
  protected:
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
  private:

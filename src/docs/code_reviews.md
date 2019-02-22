@@ -98,80 +98,6 @@ Seldom-updated directories may have exceptions to the "substantiality" and
 "recency" requirements. Directories in `third_party` should list those most
 familiar with the library, regardless of how often the code is updated.
 
-## TBR ("To Be Reviewed")
-
-"TBR" is our mechanism for post-commit review. It should be used rarely and
-only in cases where a review is unnecessary or as described below. The most
-common use of TBR is to revert patches that broke the build.
-
-TBR does not mean "no review." A reviewer TBR-ed on a change should still
-review the change. If there are comments after landing, the author is obligated
-to address them in a followup patch.
-
-Do not use TBR just because a change is urgent or the reviewer is being slow.
-Contact the reviewer directly or find somebody else to review your change.
-
-To send a change TBR, annotate the description and send email like normal.
-Otherwise the reviewer won't know to review the patch.
-
-  * Add the reviewer's email address in the code review tool's reviewer field
-    like normal.
-
-  * Add a line "TBR=<reviewer's email>" to the bottom of the change list
-    description. e.g. `TBR=reviewer1@chromium.org,reviewer2@chromium.org`
-
-  * Type a message so that the owners in the TBR list can understand who is
-    responsible for reviewing what, as part of their post-commit review
-    responsibility. e.g.
-    ```
-    TBRing reviewers:
-    reviewer1: Please review changes to foo/
-    reviewer2: Please review changes to bar/
-    ```
-
-### TBR-ing certain types of mechanical changes
-
-Sometimes you might do something that affects many callers in different
-directories. For example, adding a parameter to a common function in
-`//base`, with callers in `//chrome/browser/foo`, `//net/bar`, and many other
-directories. If the updates to the callers is mechanical, you can:
-
-  * Get a normal owner of the lower-level code you're changing (in this
-    example, the function in `//base`) to do a proper review of those changes.
-
-  * Get _somebody_ to review the downstream changes made to the callers as a
-    result of the `//base` change. This is often the same person from the
-    previous step but could be somebody else.
-
-  * Add the owners of the affected downstream directories as TBR. (In this
-    example, reviewers from `//chrome/browser/foo/OWNERS`, `//net/bar/OWNERS`,
-    etc.)
-
-This process ensures that all code is reviewed prior to checkin and that the
-concept of the change is reviewed by a qualified person, but you don't have to
-wait for many individual owners to review trivial changes to their directories.
-
-### TBR-ing documentation updates
-
-You can TBR documentation updates. Documentation means markdown files, text
-documents, and high-level comments in code. At finer levels of detail, comments
-in source files become more like code and should be reviewed normally (not
-using TBR). Non-TBR-able stuff includes things like function contracts and most
-comments inside functions.
-
-  * Use good judgement. If you're changing something very important, tricky,
-    or something you may not be very familiar with, ask for the code review
-    up-front.
-
-  * Don't TBR changes to policy documents like the style guide or this document.
-
-  * Don't mix unrelated documentation updates with code changes.
-
-  * Be sure to actually send out the email for the code review. If you get one,
-    please actually read the changes.
-
-## More information
-
 ### OWNERS file details
 
 Refer to the [source code](https://chromium.googlesource.com/chromium/tools/depot_tools/+/master/owners.py)
@@ -228,3 +154,97 @@ file with `file://...`. This example indicates that only the people listed in
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 ```
+
+## TBR ("To Be Reviewed")
+
+"TBR" is our mechanism for post-commit review. It should be used rarely and
+only in cases where a normal review is unnecessary, as described under
+"When to TBR", below.
+
+TBR does not mean "no review." A reviewer TBR-ed on a change should still
+review the change. If there are comments after landing, the author is obligated
+to address them in a followup patch.
+
+Do not use TBR just because a change is urgent or the reviewer is being slow.
+Contact the reviewer directly or find somebody else to review your change.
+
+### How to TBR
+
+To send a change TBR, annotate the description and send email like normal.
+Otherwise the reviewer won't know to review the patch.
+
+  * Add the reviewer's email address in the code review tool's reviewer field
+    like normal.
+
+  * Add a line "TBR=<reviewer's email>" to the bottom of the change list
+    description. e.g. `TBR=reviewer1@chromium.org,reviewer2@chromium.org`
+
+  * Type a message so that the owners in the TBR list can understand who is
+    responsible for reviewing what, as part of their post-commit review
+    responsibility. e.g.
+    ```
+    TBRing reviewers:
+    reviewer1: Please review changes to foo/
+    reviewer2: Please review changes to bar/
+    ```
+
+### When to TBR
+
+#### Reverts and relands
+
+The most common use of TBR is to revert patches that broke the build. Clean
+reverts of recent patches may be submitted TBR. However, TBR should not be used
+if the revert required non-trivial conflict resolution, or if the patch being
+reverted is older than a few days.
+
+A developer relanding a patch can TBR the OWNERS for changes which are identical
+to the original (reverted) patch.  If the reland patch contains any new changes
+(such as bug fixes) on top of the original, those changes should go through the
+normal review process.
+
+When creating a reland patch, you should first upload an up-to-date patchset
+with the exact content of the original (reverted) patch, and then upload the
+patchset to be relanded. This is important for the reviewers to understand what
+the fix for relanding was.
+
+#### Mechanical changes
+
+You can use TBR with certain mechanical changes that affect many callers in
+different directories. For example, adding a parameter to a common function in
+`//base`, with callers in `//chrome/browser/foo`, `//net/bar`, and many other
+directories. If the updates to the callers is mechanical, you can:
+
+  * Get a normal owner of the lower-level code you're changing (in this
+    example, the function in `//base`) to do a proper review of those changes.
+
+  * Get _somebody_ to review the downstream changes made to the callers as a
+    result of the `//base` change. This is often the same person from the
+    previous step but could be somebody else.
+
+  * Add the owners of the affected downstream directories as TBR. (In this
+    example, reviewers from `//chrome/browser/foo/OWNERS`, `//net/bar/OWNERS`,
+    etc.)
+
+This process ensures that all code is reviewed prior to checkin and that the
+concept of the change is reviewed by a qualified person, but you don't have to
+wait for many individual owners to review trivial changes to their directories.
+
+#### Documentation updates
+
+You can TBR documentation updates. Documentation means markdown files, text
+documents, and high-level comments in code. At finer levels of detail, comments
+in source files become more like code and should be reviewed normally (not
+using TBR). Non-TBR-able stuff includes things like function contracts and most
+comments inside functions.
+
+  * Use good judgement. If you're changing something very important, tricky,
+    or something you may not be very familiar with, ask for the code review
+    up-front.
+
+  * Don't TBR changes to policy documents like the style guide or this document.
+
+  * Don't mix unrelated documentation updates with code changes.
+
+  * Be sure to actually send out the email for the code review. If you get one,
+    please actually read the changes.
+

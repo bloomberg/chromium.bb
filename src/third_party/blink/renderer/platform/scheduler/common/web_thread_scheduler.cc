@@ -76,7 +76,7 @@ WebThreadScheduler::CleanupTaskRunner() {
   return nullptr;
 }
 
-std::unique_ptr<WebThread> WebThreadScheduler::CreateMainThread() {
+std::unique_ptr<Thread> WebThreadScheduler::CreateMainThread() {
   NOTREACHED();
   return nullptr;
 }

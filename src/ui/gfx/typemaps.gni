@@ -13,6 +13,7 @@ typemaps = [
   "//ui/gfx/mojo/gpu_fence_handle.typemap",
   "//ui/gfx/mojo/overlay_transform.typemap",
   "//ui/gfx/mojo/presentation_feedback.typemap",
+  "//ui/gfx/mojo/swap_result.typemap",
   "//ui/gfx/mojo/selection_bound.typemap",
   "//ui/gfx/mojo/transform.typemap",
   "//ui/gfx/range/mojo/range.typemap",

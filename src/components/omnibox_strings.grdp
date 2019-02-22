@@ -58,6 +58,85 @@
   <message name="IDS_OMNIBOX_FILE" desc="Text shown in the omnibox to indicate a user is viewing a file.">
     File
   </message>
+  <message name="IDS_DRIVE_SUGGESTION_DOCUMENT" desc="Google Docs product name, for use in omnibox Docs result descriptions.">
+    Google Docs
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_FORM" desc="Google Docs product name, for use in omnibox Form result descriptions.">
+    Google Forms
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_SPREADSHEET" desc="Google Sheets product name, for use in omnibox Sheets result descriptions.">
+    Google Sheets
+  </message>
+    <message name="IDS_DRIVE_SUGGESTION_PRESENTATION" desc="Google Slides product name, for use in omnibox Slides result descriptions.">
+    Google Slides
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_GENERAL" desc="Google Drive product name, for use in general omnibox Drive file result descriptions.">
+    Google Drive
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_DESCRIPTION_TEMPLATE" desc="Product description for Google Drive omnibox results.">
+    <ph name="RESULT_MODIFIED_DATE">$1<ex>12/31/2018</ex></ph> - <ph name="RESULT_PRODUCT_SOURCE">$2<ex>Google Docs</ex></ph>
+  </message>
+
+  <!-- Omnibox Pedals -->
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT" desc="The button text contents to suggest pedal action, clear browsing data.">
+    Clear Data
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, clear browsing data.">
+    Clear
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, clear browsing data.">
+    Clear Chrome's browsing history data
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT" desc="The button text contents to suggest pedal action, change search engine.">
+    Change Search Engine
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, change search engine.">
+    Change
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change search engine.">
+    Change Search Engine settings in Chrome
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT" desc="The button text contents to suggest pedal action, manage passwords.">
+    Manage Passwords
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, change language.">
+    Manage
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change language.">
+    Manage passwords in Chrome settings
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT" desc="The button text contents to suggest pedal action, change home page.">
+    Change Home Page
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, change home page.">
+    Change
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change home page.">
+    Change home page in Chrome settings
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT" desc="The button text contents to suggest pedal action, update credit card.">
+    Update Credit Card
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, update credit card.">
+    Update
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, update credit card.">
+    Update credit card autofill info in Chrome settings
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_TRANSLATE_HINT" desc="The button text contents to suggest pedal action, translate.">
+    Translate Page
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_TRANSLATE_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, translate.">
+    Translate
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, translate.">
+    Translate this page
+  </message>
 
   <!-- Accessibility labels for autocomplete match types.
        These are parameterized on the text being completed into the omnibox.
@@ -93,8 +172,15 @@
   <message name="IDS_ACC_AUTOCOMPLETE_N_OF_M" desc="Text for screenreaders describing the current matche's position in the list of suggestions.">
     <ph name="FRIENDLY_MATCH_TEXT">$1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>, <ph name="MATCH_POSITION">$2<ex>2</ex></ph> of <ph name="NUM_MATCHES">$3<ex>3</ex></ph>
   </message>
-  <!-- Accessibility suffix for suggestions with a tab switch match. Comma is important. -->
+  <!-- Accessibility suffix for suggestions with a tab switch match. Commas are important as they add pauses. -->
   <message name="IDS_ACC_TAB_SWITCH_SUFFIX" desc="Suffix for tab switch suggestions to explain keystroke used to switch.">
     <ph name="TAB_SWITCH_SUFFIX">$1, currently open, press tab then enter to switch to the open tab</ph>
+  </message>
+  <!-- Accessibility prefix for suggestions where the tab switch button is focused. Commas are important as they add pauses. -->
+  <message name="IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX" desc="Announcement when tab switch button focused.">
+    <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT">Tab switch button, press enter to switch to the open tab, $1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>
+  </message>
+  <message name="IDS_ACC_TAB_SWITCH_BUTTON" desc="Announcement when tab switch button focused.">
+    Tab switch button, press enter to switch to this tab
   </message>
 </grit-part>

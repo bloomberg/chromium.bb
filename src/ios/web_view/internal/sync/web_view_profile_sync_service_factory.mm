@@ -90,12 +90,12 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_time_update_callback = base::DoNothing();
   init_params.signin_scoped_device_id_callback = base::BindRepeating(
       &signin::GetSigninScopedDeviceId, browser_state->GetPrefs());
+  init_params.network_connection_tracker =
+      ApplicationContext::GetInstance()->GetNetworkConnectionTracker();
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));
-  // Will also initialize the sync client.
   profile_sync_service->Initialize();
-
   return profile_sync_service;
 }
 

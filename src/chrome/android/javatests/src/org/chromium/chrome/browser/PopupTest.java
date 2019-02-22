@@ -27,10 +27,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -163,7 +163,7 @@ public class PopupTest {
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
         waitForForegroundInfoBar(InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE);
         Assert.assertEquals(1, selector.getTotalTabCount());
-        final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
+        final InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
         ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
 
         // Wait until the animations are done, then click the "open popups" button.

@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -24,8 +25,10 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -36,10 +39,10 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
  public:
   TestPreviewsDeciderImpl()
       : previews::PreviewsDeciderImpl(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI),
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI),
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::UI}),
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::UI}),
             base::DefaultClock::GetInstance()) {}
   ~TestPreviewsDeciderImpl() override {}
 
@@ -70,14 +73,15 @@ class PreviewsServiceTest : public testing::Test {
       : field_trial_list_(nullptr), scoped_feature_list_() {}
 
   void SetUp() override {
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>();
 
-    service_ = std::make_unique<PreviewsService>();
+    service_ = std::make_unique<PreviewsService>(nullptr);
     base::FilePath file_path;
     service_->Initialize(previews_decider_impl_.get(),
                          nullptr /* optimization_guide_service */,
-                         content::BrowserThread::GetTaskRunnerForThread(
-                             content::BrowserThread::UI),
+                         base::CreateSingleThreadTaskRunnerWithTraits(
+                             {content::BrowserThread::UI}),
                          file_path);
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews},
@@ -93,6 +97,7 @@ class PreviewsServiceTest : public testing::Test {
   }
 
  private:
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   content::TestBrowserThreadBundle threads_;
   base::FieldTrialList field_trial_list_;
   std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;

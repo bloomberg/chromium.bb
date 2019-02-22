@@ -19,7 +19,6 @@ from chromite.scripts.sysmon import loop
 from chromite.scripts.sysmon import net_metrics
 from chromite.scripts.sysmon import osinfo_metrics
 from chromite.scripts.sysmon import proc_metrics
-from chromite.scripts.sysmon import prod_metrics
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
 from infra_libs.ts_mon.common import interface
@@ -31,17 +30,10 @@ logger = logging.getLogger(__name__)
 class _MetricCollector(object):
   """Metric collector class."""
 
-  def __init__(self, collect_prod_hosts=False):
+  def __init__(self):
     self._collect_osinfo = _TimedCallback(
         callback=osinfo_metrics.collect_os_info,
         interval=60 * 60)
-    if collect_prod_hosts:
-      logger.info(u'Enabling prod host metric collection.')
-      self._collect_prod_hosts = _TimedCallback(
-          callback=prod_metrics.collect_prod_hosts,
-          interval=10 * 60)
-    else:
-      self._collect_prod_hosts = lambda: None
 
   def __call__(self):
     """Collect metrics."""
@@ -54,7 +46,6 @@ class _MetricCollector(object):
     system_metrics.collect_load_avg()
     puppet_metrics.collect_puppet_summary()
     git_metrics.collect_git_metrics()
-    self._collect_prod_hosts()
     self._collect_osinfo()
     system_metrics.collect_unix_time()  # must be just before flush
     metrics.Flush()
@@ -93,17 +84,6 @@ def main():
       default=60,
       type=int,
       help='time (in seconds) between sampling system metrics')
-  parser.add_argument(
-      '--collect-prod-hosts',
-      action='store_true',
-      help='[DEPRECATED. Use --collect-host-manifest instead.] '
-           'Enable collection of prod host metrics, like roles')
-  parser.add_argument(
-      '--collect-host-manifest',
-      default=None,
-      choices=['prod', 'staging'],
-      help='Enable collection of server metrics (e.g. roles) for servers in '
-           'the given lab environment.')
   opts = parser.parse_args()
   opts.Freeze()
 
@@ -114,9 +94,6 @@ def main():
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
 
-  # Transitional, while we migrate users off of |collect_prod_hosts|
-  if opts.collect_host_manifest is not None:
-    opts.collect_prod_hosts = True
-  collector = _MetricCollector(collect_prod_hosts=opts.collect_prod_hosts)
+  collector = _MetricCollector()
   loop.SleepLoop(callback=collector,
                  interval=opts.interval).loop_forever()

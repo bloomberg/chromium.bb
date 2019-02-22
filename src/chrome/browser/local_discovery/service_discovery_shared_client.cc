@@ -16,7 +16,6 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
@@ -41,9 +40,7 @@ void ReportFirewallStats() {
   if (!base::PathService::Get(base::FILE_EXE, &exe_path))
     return;
   base::ElapsedTimer timer;
-  std::unique_ptr<installer::FirewallManager> manager =
-      installer::FirewallManager::Create(BrowserDistribution::GetDistribution(),
-                                         exe_path);
+  auto manager = installer::FirewallManager::Create(exe_path);
   if (!manager)
     return;
   bool is_firewall_ready = manager->CanUseLocalPorts();

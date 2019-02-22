@@ -22,11 +22,11 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
     const String& protocol) {
   DCHECK(execution_context->IsContextThread());
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetInteger("identifier", identifier);
+  value->SetInteger("identifier", static_cast<int>(identifier));
   value->SetString("url", url.GetString());
-  if (execution_context->IsDocument()) {
-    value->SetString("frame", IdentifiersFactory::FrameId(
-                                  ToDocument(execution_context)->GetFrame()));
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    value->SetString("frame",
+                     IdentifiersFactory::FrameId(document->GetFrame()));
   } else if (execution_context->IsWorkerGlobalScope()) {
     value->SetString("workerId", IdentifiersFactory::IdFromToken(
                                      ToWorkerGlobalScope(execution_context)
@@ -47,10 +47,10 @@ std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
     unsigned long identifier) {
   DCHECK(execution_context->IsContextThread());
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetInteger("identifier", identifier);
-  if (execution_context->IsDocument()) {
-    value->SetString("frame", IdentifiersFactory::FrameId(
-                                  ToDocument(execution_context)->GetFrame()));
+  value->SetInteger("identifier", static_cast<int>(identifier));
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    value->SetString("frame",
+                     IdentifiersFactory::FrameId(document->GetFrame()));
   } else if (execution_context->IsWorkerGlobalScope()) {
     value->SetString("workerId", IdentifiersFactory::IdFromToken(
                                      ToWorkerGlobalScope(execution_context)

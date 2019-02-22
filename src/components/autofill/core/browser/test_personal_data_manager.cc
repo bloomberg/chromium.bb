@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace autofill {
@@ -76,6 +77,14 @@ void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   std::unique_ptr<CreditCard> local_credit_card =
       std::make_unique<CreditCard>(credit_card);
   local_credit_cards_.push_back(std::move(local_credit_card));
+  NotifyPersonalDataChanged();
+}
+
+void TestPersonalDataManager::DeleteLocalCreditCards(
+    const std::vector<CreditCard>& cards) {
+  for (const auto& card : cards)
+    RemoveByGUID(card.guid());
+
   NotifyPersonalDataChanged();
 }
 
@@ -212,6 +221,18 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
 void TestPersonalDataManager::ClearAllLocalData() {
   web_profiles_.clear();
   local_credit_cards_.clear();
+}
+
+CreditCard* TestPersonalDataManager::GetCreditCardByNumber(
+    const std::string& number) {
+  CreditCard numbered_card;
+  numbered_card.SetNumber(base::ASCIIToUTF16(number));
+  for (CreditCard* credit_card : GetCreditCards()) {
+    DCHECK(credit_card);
+    if (credit_card->HasSameNumberAs(numbered_card))
+      return credit_card;
+  }
+  return nullptr;
 }
 
 bool TestPersonalDataManager::IsDataLoaded() const {

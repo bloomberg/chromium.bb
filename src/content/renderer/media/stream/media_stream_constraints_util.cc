@@ -152,14 +152,12 @@ AudioCaptureSettings::AudioCaptureSettings(const char* failed_constraint_name)
 
 AudioCaptureSettings::AudioCaptureSettings(
     std::string device_id,
-    const media::AudioParameters& audio_parameters,
     bool enable_hotword,
     bool disable_local_echo,
     bool enable_automatic_output_device_selection,
     const AudioProcessingProperties& audio_processing_properties)
     : failed_constraint_name_(nullptr),
       device_id_(std::move(device_id)),
-      audio_parameters_(audio_parameters),
       hotword_enabled_(enable_hotword),
       disable_local_echo_(disable_local_echo),
       render_to_associated_sink_(enable_automatic_output_device_selection),

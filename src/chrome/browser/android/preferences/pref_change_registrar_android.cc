@@ -40,6 +40,13 @@ void PrefChangeRegistrarAndroid::Add(JNIEnv* env,
                  base::Unretained(this), j_pref_index));
 }
 
+void PrefChangeRegistrarAndroid::Remove(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        const jint j_pref_index) {
+  pref_change_registrar_.Remove(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 void PrefChangeRegistrarAndroid::OnPreferenceChange(const int pref_index) {
   JNIEnv* env = AttachCurrentThread();
   Java_PrefChangeRegistrar_onPreferenceChange(

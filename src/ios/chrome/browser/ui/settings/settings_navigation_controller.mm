@@ -7,20 +7,20 @@
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
@@ -30,8 +30,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarContainerViewController.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -54,7 +54,7 @@
   id<LayoutGuideProvider> safeAreaLayoutGuide =
       SafeAreaLayoutGuideForView(self.view);
   UIView* contentView = self.contentViewController.view;
-  UIView* headerView = self.appBar.headerViewController.headerView;
+  UIView* headerView = self.appBarViewController.headerView;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [contentView.topAnchor constraintEqualToAnchor:headerView.bottomAnchor],
@@ -69,7 +69,13 @@
 
 @end
 
-@interface SettingsNavigationController ()<UIGestureRecognizerDelegate>
+@interface SettingsNavigationController ()<
+    GoogleServicesSettingsCoordinatorDelegate,
+    UIGestureRecognizerDelegate>
+
+// Google services settings coordinator.
+@property(nonatomic, strong)
+    GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
 
 // Sets up the UI.  Used by both initializers.
 - (void)configureUI;
@@ -98,6 +104,8 @@
   NSMutableDictionary* appBarContainedViewControllers_;
 }
 
+@synthesize googleServicesSettingsCoordinator =
+    _googleServicesSettingsCoordinator;
 @synthesize shouldCommitSyncChangesOnDismissal =
     shouldCommitSyncChangesOnDismissal_;
 
@@ -167,22 +175,6 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newClearBrowsingDataController:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate {
-  ClearBrowsingDataCollectionViewController* controller =
-      [[ClearBrowsingDataCollectionViewController alloc]
-          initWithBrowserState:browserState];
-  controller.dispatcher = [delegate dispatcherForSettings];
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
   return nc;
 }
 
@@ -392,6 +384,14 @@ initWithRootViewController:(UIViewController*)rootViewController
   return [self.topViewController shouldAutorotate];
 }
 
+#pragma mark - GoogleServicesSettingsCoordinatorDelegate
+
+- (void)googleServicesSettingsCoordinatorDidRemove:
+    (GoogleServicesSettingsCoordinator*)coordinator {
+  DCHECK_EQ(self.googleServicesSettingsCoordinator, coordinator);
+  self.googleServicesSettingsCoordinator = nil;
+}
+
 #pragma mark - UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
@@ -492,6 +492,26 @@ initWithRootViewController:(UIViewController*)rootViewController
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showGoogleServicesSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if ([self.topViewController
+          isKindOfClass:[GoogleServicesSettingsViewController class]]) {
+    // The top view controller is already the Google services settings panel.
+    // No need to open it.
+    return;
+  }
+  self.googleServicesSettingsCoordinator =
+      [[GoogleServicesSettingsCoordinator alloc]
+          initWithBaseViewController:self
+                        browserState:mainBrowserState_];
+  self.googleServicesSettingsCoordinator.dispatcher =
+      [delegate_ dispatcherForSettings];
+  self.googleServicesSettingsCoordinator.navigationController = self;
+  self.googleServicesSettingsCoordinator.delegate = self;
+  [self.googleServicesSettingsCoordinator start];
+}
+
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController {
   SyncSettingsCollectionViewController* controller =
@@ -536,8 +556,7 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (UIViewController*)wrappedControllerIfNeeded:(UIViewController*)controller {
   // If the controller can't be presented with an app bar, it needs to be
   // wrapped in an MDCAppBarContainerViewController.
-  if (![controller conformsToProtocol:@protocol(AppBarPresenting)] &&
-      ![controller
+  if (![controller
           conformsToProtocol:@protocol(AppBarViewControllerPresenting)]) {
     MDCAppBarContainerViewController* appBarContainer =
         [[SettingsAppBarContainerViewController alloc]
@@ -545,14 +564,12 @@ initWithRootViewController:(UIViewController*)rootViewController
 
     // Configure the style.
     appBarContainer.view.backgroundColor = [UIColor whiteColor];
-    ConfigureAppBarWithCardStyle(appBarContainer.appBar);
+    ConfigureAppBarViewControllerWithCardStyle(
+        appBarContainer.appBarViewController);
 
-    // Override the header view's background color if the UIRefresh experiment
-    // is enabled.
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      appBarContainer.appBar.headerViewController.headerView.backgroundColor =
-          [UIColor groupTableViewBackgroundColor];
-    }
+    // Override the header view's background color.
+    appBarContainer.appBarViewController.headerView.backgroundColor =
+        [UIColor groupTableViewBackgroundColor];
 
     // Register the app bar container and return it.
     [self registerAppBarContainer:appBarContainer];

@@ -146,11 +146,7 @@ namespace bubble_util {
 
 CGFloat BubbleAlignmentOffset() {
   // This is used to replace a constant that would change based on the flag.
-  if (IsUIRefreshPhase1Enabled()) {
-    return 29;
-  } else {
-    return 26;
-  }
+  return 29;
 }
 
 CGPoint AnchorPoint(CGRect targetFrame, BubbleArrowDirection arrowDirection) {

@@ -53,6 +53,7 @@ template("js_library") {
                              "externs_list",
                              "extra_sources",
                              "extra_deps",
+                             "visibility",
                            ])
     output_file = "$target_gen_dir/$target_name.js_library"
     outputs = [
@@ -232,7 +233,11 @@ template("js_type_check") {
     js_binary(target_name) {
       sources = []
       checks_only = true
-      forward_variables_from(invoker, [ "deps" ])
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "closure_flags",
+                             ])
     }
   } else {
     not_needed(invoker, "*")

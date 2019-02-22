@@ -20,13 +20,17 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/startup_helper.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -91,7 +95,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(const base::Closure& task,
                              const base::Closure& quit_task) {
   task.Run();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,
@@ -170,6 +174,12 @@ void BrowserTestBase::SetUp() {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  // Features that depend on external factors (e.g. memory pressure monitor) can
+  // disable themselves based on the switch below (to ensure that browser tests
+  // behave deterministically / do not flakily change behavior based on external
+  // factors).
+  command_line->AppendSwitch(switches::kBrowserTest);
+
   // Override the child process connection timeout since tests can exceed that
   // when sharded.
   command_line->AppendSwitchASCII(
@@ -245,7 +255,7 @@ void BrowserTestBase::SetUp() {
 
   // Use an sRGB color profile to ensure that the machine's color profile does
   // not affect the results.
-  command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
   // Disable compositor Ukm in browser tests until crbug.com/761524 is resolved.
   command_line->AppendSwitch(switches::kDisableCompositorUkmForTests);
@@ -317,7 +327,10 @@ void BrowserTestBase::SetUp() {
   params.ui_task = ui_task.release();
   params.created_main_parts_closure = created_main_parts_closure.release();
   base::TaskScheduler::Create("Browser");
-  BrowserThreadImpl::CreateTaskExecutor();
+  DCHECK(!field_trial_list_);
+  field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+  StartBrowserTaskScheduler();
+  BrowserTaskExecutor::Create();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
 #else

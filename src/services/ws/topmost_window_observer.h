@@ -22,8 +22,9 @@ class WindowTree;
 // windows under the mouse cursor or touch location.
 
 // TODO(mukai): support multiple displays.
-class TopmostWindowObserver : public ui::EventHandler,
-                              public aura::WindowObserver {
+class COMPONENT_EXPORT(WINDOW_SERVICE) TopmostWindowObserver
+    : public ui::EventHandler,
+      public aura::WindowObserver {
  public:
   // |source| determines the type of the event, and |initial_target| is the
   // initial target of the event. This will report the topmost window under the
@@ -34,6 +35,8 @@ class TopmostWindowObserver : public ui::EventHandler,
   ~TopmostWindowObserver() override;
 
  private:
+  friend class TopmostWindowObserverTest;
+
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;

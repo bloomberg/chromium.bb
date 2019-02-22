@@ -677,7 +677,13 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, SentDataObserved) {
+#if defined(MEMORY_SANITIZER)
+// This tests times out when MSan is enabled. See https://crbug.com/890313.
+#define MAYBE_SentDataObserved DISABLED_SentDataObserved
+#else
+#define MAYBE_SentDataObserved SentDataObserved
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_SentDataObserved) {
   ShowTaskManager();
   GURL test_gurl = embedded_test_server()->GetURL("/title1.html");
 
@@ -709,7 +715,13 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, SentDataObserved) {
             model()->GetColumnValue(ColumnSpecifier::TOTAL_NETWORK_USE, 0));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, TotalSentDataObserved) {
+#if defined(MEMORY_SANITIZER)
+// This tests times out when MSan is enabled. See https://crbug.com/890313.
+#define MAYBE_TotalSentDataObserved DISABLED_TotalSentDataObserved
+#else
+#define MAYBE_TotalSentDataObserved TotalSentDataObserved
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_TotalSentDataObserved) {
   ShowTaskManager();
   GURL test_gurl = embedded_test_server()->GetURL("/title1.html");
 

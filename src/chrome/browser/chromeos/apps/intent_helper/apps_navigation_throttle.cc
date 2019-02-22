@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
@@ -26,7 +27,9 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -227,19 +230,17 @@ void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
   PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
   Platform platform = GetDestinationPlatform(selected_app_package, action);
 
-  // TODO(crbug.com/824598): stop recording this histogram in M70.
-  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerAction", action,
-                            PickerAction::SIZE);
-
-  // TODO(crbug.com/824598): stop recording this histogram in M70.
-  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerDestinationPlatform", platform,
-                            Platform::SIZE);
-
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action,
-                            PickerAction::SIZE);
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
 
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                            platform, Platform::SIZE);
+                            platform);
+
+  if (app_type == apps::mojom::AppType::kArc &&
+      (close_reason == IntentPickerCloseReason::PREFERRED_APP_FOUND ||
+       close_reason == IntentPickerCloseReason::OPEN_APP)) {
+    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                              arc::UserInteractionType::APP_STARTED_FROM_LINK);
+  }
 }
 
 // static
@@ -310,11 +311,11 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
                  : Platform::ARC;
     case PickerAction::OBSOLETE_ALWAYS_PRESSED:
     case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
-    case PickerAction::SIZE:
+    case PickerAction::INVALID:
       NOTREACHED();
   }
   NOTREACHED();
-  return Platform::SIZE;
+  return Platform::ARC;
 }
 
 // static
@@ -423,10 +424,9 @@ void AppsNavigationThrottle::CancelNavigation() {
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   if (web_contents && web_contents->GetController().IsInitialNavigation()) {
     // Workaround for b/79167225, closing |web_contents| here may be dangerous.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&AppsNavigationThrottle::CloseTab,
-                       weak_factory_.GetWeakPtr()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&AppsNavigationThrottle::CloseTab,
+                                            weak_factory_.GetWeakPtr()));
   } else {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
   }

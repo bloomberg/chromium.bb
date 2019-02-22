@@ -102,7 +102,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3171922709365450819">El client no admet aquest dispositiu perquè requereix autenticació externa.</translation>
 <translation id="3194245623920924351">Escriptori remot de Chrome</translation>
 <translation id="3197730452537982411">Escriptori remot</translation>
-<translation id="3212472844831225214">• S'admet Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Envia aquestes instruccions per correu electrònic</translation>
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="3286521253923406898">Controlador de Chromoting Host</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Google Chrome<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar l'escriptori remot de Chrome.</translation>
 <translation id="8642984861538780905">Suficient</translation>
+<translation id="8705151241155781642">• S'admet Android 9.0 Pie.
+• Es pot canviar la mida de la resolució de la pantalla remota perquè s'adapti a la pantalla del dispositiu Android.</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="8743328882720071828">Vols permetre que <ph name="CLIENT_USERNAME" /> pugui veure i controlar l'ordinador?</translation>
 <translation id="8747048596626351634">La sessió s'ha bloquejat o no s'ha pogut iniciar. Si s'ha introduït ~/.chrome-remote-desktop-session a l'ordinador remot, comprova que s'iniciï un procés llarg en primer pla, com ara un entorn d'escriptori o un gestor de finestres.</translation>

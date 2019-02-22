@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -109,6 +107,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #endif
@@ -121,6 +120,7 @@
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks_ui.h"
+#include "components/feed/feed_feature_list.h"
 #else
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
@@ -178,13 +178,13 @@
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
-#include "chrome/browser/ui/webui/welcome_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts/conflicts_ui.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
-#include "chrome/browser/ui/webui/welcome_win10_ui.h"
+#include "chrome/browser/ui/webui/welcome/welcome_win10_ui.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -528,7 +528,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIOfflineInternalsHost)
     return &NewWebUI<OfflineInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISnippetsInternalsHost &&
-      !profile->IsOffTheRecord())
+      !profile->IsOffTheRecord() &&
+      !base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions))
     return &NewWebUI<SnippetsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
@@ -592,6 +593,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       PolicyToolUI::IsEnabled()) {
     return &NewWebUI<PolicyToolUI>;
   }
+  if (url.host_piece() == chrome::kChromeUIManagementHost)
+    return &NewWebUI<ManagementUI>;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

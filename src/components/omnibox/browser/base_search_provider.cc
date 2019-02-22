@@ -168,6 +168,23 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
                                 template_url, search_terms_data, 0, false);
 }
 
+// static
+void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
+    const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data,
+    metrics::OmniboxEventProto::PageClassification page_classification,
+    TemplateURLRef::SearchTermsArgs* search_terms_args) {
+  // Only append the suggest client query param for Google template URL.
+  if (template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
+    return;
+
+  if (page_classification == metrics::OmniboxEventProto::CHROMEOS_APP_LIST) {
+    if (!search_terms_args->additional_query_params.empty())
+      search_terms_args->additional_query_params.append("&");
+    search_terms_args->additional_query_params.append("sclient=cros-launcher");
+  }
+}
+
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
@@ -292,13 +309,18 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
         suggestion.suggestion().substr(input.text().length());
     match.allowed_to_be_default_match = true;
   }
-  match.fill_into_edit.append(suggestion.suggestion());
 
   const TemplateURLRef& search_url = template_url->url_ref();
   DCHECK(search_url.SupportsReplacement(search_terms_data));
-  match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
-  match.search_terms_args->original_query = input.text();
+  base::string16 query(suggestion.suggestion());
+  base::string16 original_query(input.text());
+  if (suggestion.type() == AutocompleteMatchType::CALCULATOR) {
+    query = original_query;
+    original_query.clear();
+  }
+  match.fill_into_edit.append(query);
+  match.search_terms_args.reset(new TemplateURLRef::SearchTermsArgs(query));
+  match.search_terms_args->original_query = original_query;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->additional_query_params =
       suggestion.additional_query_params();
@@ -490,7 +512,7 @@ bool BaseSearchProvider::ParseSuggestResults(
 
 void BaseSearchProvider::DeleteMatchFromMatches(
     const AutocompleteMatch& match) {
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+  for (auto i(matches_.begin()); i != matches_.end(); ++i) {
     // Find the desired match to delete by checking the type and contents.
     // We can't check the destination URL, because the autocomplete controller
     // may have reformulated that. Not that while checking for matching

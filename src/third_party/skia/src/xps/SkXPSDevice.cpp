@@ -332,7 +332,7 @@ bool SkXPSDevice::endSheet() {
 static HRESULT subset_typeface(SkXPSDevice::TypefaceUse* current) {
     //CreateFontPackage wants unsigned short.
     //Microsoft, Y U NO stdint.h?
-    SkTDArray<unsigned short> keepList;
+    std::vector<unsigned short> keepList;
     current->glyphsUsed->exportTo(&keepList);
 
     int ttcCount = (current->ttcIndex + 1);
@@ -353,8 +353,8 @@ static HRESULT subset_typeface(SkXPSDevice::TypefaceUse* current) {
         0,
         0,
         0,
-        keepList.begin(),
-        keepList.count(),
+        keepList.data(),
+        SkTo<unsigned short>(keepList.size()),
         sk_malloc_throw,
         sk_realloc_throw,
         sk_free,
@@ -1809,6 +1809,8 @@ void SkXPSDevice::drawSprite(const SkBitmap& bitmap, int x, int y, const SkPaint
     SkDEBUGF("XPS drawSprite not yet implemented.");
 }
 
+#if 0
+
 HRESULT SkXPSDevice::CreateTypefaceUse(const SkPaint& paint,
                                        TypefaceUse** typefaceUse) {
     SkAutoResolveDefaultTypeface typeface(paint.getTypeface());
@@ -2091,7 +2093,7 @@ void SkXPSDevice::drawPosText(const void* text, size_t byteLen,
                   this->ctm(),
                   paint));
 }
-
+#endif
 void SkXPSDevice::drawDevice( SkBaseDevice* dev,
                              int x, int y,
                              const SkPaint&) {

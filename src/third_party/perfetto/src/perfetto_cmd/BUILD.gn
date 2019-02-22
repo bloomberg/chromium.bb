@@ -22,7 +22,7 @@ source_set("perfetto_cmd") {
   ]
   deps = [
     "../../gn:default_deps",
-    "../../protos/perfetto/config",
+    "../../protos/perfetto/config:lite",
     "../base",
     "../protozero",
     "../tracing:ipc_consumer",

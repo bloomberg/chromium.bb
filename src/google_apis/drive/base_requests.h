@@ -10,19 +10,21 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "google_apis/drive/drive_api_error_codes.h"
-#include "net/base/completion_once_callback.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_response_writer.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -114,48 +116,11 @@ class AuthenticatedRequestInterface {
   virtual void Cancel() = 0;
 };
 
-//=========================== ResponseWriter ==================================
-
-// Saves the response for the request to a file or string.
-class ResponseWriter : public net::URLFetcherResponseWriter {
- public:
-  // If file_path is not empty, the response will be saved with file_writer_,
-  // otherwise it will be saved to data_.
-  ResponseWriter(base::SequencedTaskRunner* file_task_runner,
-                 const base::FilePath& file_path,
-                 const GetContentCallback& get_content_callback);
-  ~ResponseWriter() override;
-
-  const std::string& data() const { return data_; }
-
-  // Disowns the output file.
-  void DisownFile();
-
-  // URLFetcherResponseWriter overrides:
-  int Initialize(net::CompletionOnceCallback callback) override;
-  int Write(net::IOBuffer* buffer,
-            int num_bytes,
-            net::CompletionOnceCallback callback) override;
-  int Finish(int net_error, net::CompletionOnceCallback callback) override;
-
- private:
-  void DidWrite(scoped_refptr<net::IOBuffer> buffer,
-                net::CompletionOnceCallback callback,
-                int result);
-
-  const GetContentCallback get_content_callback_;
-  std::string data_;
-  std::unique_ptr<net::URLFetcherFileWriter> file_writer_;
-  base::WeakPtrFactory<ResponseWriter> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
-};
-
 //============================ UrlFetchRequestBase ===========================
 
 // Base class for requests that are fetching URLs.
 class UrlFetchRequestBase : public AuthenticatedRequestInterface,
-                            public net::URLFetcherDelegate {
+                            public network::SimpleURLLoaderStreamConsumer {
  public:
   // AuthenticatedRequestInterface overrides.
   void Start(const std::string& access_token,
@@ -165,7 +130,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   void Cancel() override;
 
  protected:
-  explicit UrlFetchRequestBase(RequestSender* sender);
+  UrlFetchRequestBase(RequestSender* sender,
+                      const ProgressCallback& upload_progress_callback,
+                      const ProgressCallback& download_progress_callback);
   ~UrlFetchRequestBase() override;
 
   // Does async initialization for the request. |Start| calls this method so you
@@ -177,7 +144,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // Returns the request type. A derived class should override this method
   // for a request type other than HTTP GET.
-  virtual net::URLFetcher::RequestType GetRequestType() const;
+  virtual std::string GetRequestType() const;
 
   // Returns the extra HTTP headers for the request. A derived class should
   // override this method to specify any extra headers needed for the request.
@@ -207,9 +174,17 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   virtual void GetOutputFilePath(base::FilePath* local_file_path,
                                  GetContentCallback* get_content_callback);
 
-  // Invoked by OnURLFetchComplete when the request completes without an
-  // authentication error. Must be implemented by a derived class.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) = 0;
+  // Invoked when the request completes without an authentication error.
+  // |response_head| may be nullptr if the resource load failed - call
+  // GetErrorCode() to determine cause of failure. |response_file| will contain
+  // the path to the requested output file. |response_body| will contain the
+  // requested resource. If requested to save the response to disk then
+  // |response_body| may be truncated and only contain the starting portion
+  // of the resource.
+  virtual void ProcessURLFetchResults(
+      const network::ResourceResponseHead* response_head,
+      base::FilePath response_file,
+      std::string response_body) = 0;
 
   // Invoked by this base class upon an authentication error or cancel by
   // a user request. Must be implemented by a derived class.
@@ -219,41 +194,89 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   void OnProcessURLFetchResultsComplete();
 
   // Returns an appropriate DriveApiErrorCode based on the HTTP response code
-  // and the status of the URLFetcher.
-  DriveApiErrorCode GetErrorCode();
+  // and the status of the URLLoader.
+  DriveApiErrorCode GetErrorCode() const;
+
+  // Returns the net::Error representing the final status of the request.
+  // Only valid after the request completes (successful or not).
+  int NetError() const;
 
   // Returns true if called on the thread where the constructor was called.
   bool CalledOnValidThread();
-
-  // Returns the writer which is used to save the response for the request.
-  ResponseWriter* response_writer() const { return response_writer_; }
 
   // Returns the task runner that should be used for blocking tasks.
   base::SequencedTaskRunner* blocking_task_runner() const;
 
  private:
+  // Values for the current in-progress request being handled by the
+  // url_loader_.
+  struct DownloadData {
+    explicit DownloadData(
+        scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+    ~DownloadData();
+    base::File output_file;
+    base::FilePath output_file_path;
+    GetContentCallback get_content_callback;
+    std::string response_body;
+
+   private:
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  };
+
+  // Write the data in |string_piece| to disk and call |resume| once complete on
+  // a blocking sequence.
+  static bool WriteFileData(base::StringPiece string_piece,
+                            DownloadData* download_data);
+
+  // Called by SimpleURLLoader to report download progress.
+  void OnDownloadProgress(const ProgressCallback& progress_callback,
+                          uint64_t current);
+
+  // Called by SimpleURLLoader to report upload progress.
+  void OnUploadProgress(const ProgressCallback& progress_callback,
+                        uint64_t position,
+                        uint64_t total);
+
+  // Called with the result of |WriteFileData|.
+  void OnWriteComplete(std::unique_ptr<DownloadData> download_data,
+                       base::OnceClosure resume,
+                       bool write_success);
+
+  // Called after completion (with output file closed).
+  void OnOutputFileClosed(bool success);
+
+  // SimpleURLLoaderStreamConsumer implementation:
+  void OnDataReceived(base::StringPiece string_piece,
+                      base::OnceClosure resume) override;
+  void OnComplete(bool success) override;
+  void OnRetry(base::OnceClosure start_retry) override;
+
   // Continues |Start| function after |Prepare|.
   void StartAfterPrepare(const std::string& access_token,
                          const std::string& custom_user_agent,
                          const ReAuthenticateCallback& callback,
                          DriveApiErrorCode code);
 
+  // Called when the SimpleURLLoader first receives a response.
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
+
   // Invokes callback with |code| and request to delete the request to
   // |sender_|.
   void CompleteRequestWithError(DriveApiErrorCode code);
-
-  // URLFetcherDelegate overrides.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // AuthenticatedRequestInterface overrides.
   void OnAuthFailed(DriveApiErrorCode code) override;
 
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-  ResponseWriter* response_writer_;  // Owned by |url_fetcher_|.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   RequestSender* sender_;
-  DriveApiErrorCode error_code_;
+  base::Optional<DriveApiErrorCode> error_code_;
+  const ProgressCallback upload_progress_callback_;
+  const ProgressCallback download_progress_callback_;
+  std::unique_ptr<DownloadData> download_data_;
+  int64_t response_content_length_;
 
   base::ThreadChecker thread_checker_;
 
@@ -274,7 +297,7 @@ class BatchableDelegate {
 
   // See UrlFetchRequestBase.
   virtual GURL GetURL() const = 0;
-  virtual net::URLFetcher::RequestType GetRequestType() const = 0;
+  virtual std::string GetRequestType() const = 0;
   virtual std::vector<std::string> GetExtraRequestHeaders() const = 0;
   virtual void Prepare(const PrepareCallback& callback) = 0;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -295,9 +318,7 @@ class BatchableDelegate {
   virtual void NotifyError(DriveApiErrorCode code) = 0;
 
   // Notifies progress.
-  virtual void NotifyUploadProgress(const net::URLFetcher* source,
-                                    int64_t current,
-                                    int64_t total) = 0;
+  virtual void NotifyUploadProgress(int64_t current, int64_t total) = 0;
 };
 
 //============================ EntryActionRequest ============================
@@ -317,7 +338,10 @@ class EntryActionRequest : public UrlFetchRequestBase {
 
  protected:
   // Overridden from UrlFetchRequestBase.
-  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void ProcessURLFetchResults(
+      const network::ResourceResponseHead* response_head,
+      base::FilePath response_file,
+      std::string response_body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
  private:
@@ -356,7 +380,10 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
   ~InitiateUploadRequestBase() override;
 
   // UrlFetchRequestBase overrides.
-  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void ProcessURLFetchResults(
+      const network::ResourceResponseHead* response_head,
+      base::FilePath response_file,
+      std::string response_body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
   std::vector<std::string> GetExtraRequestHeaders() const override;
 
@@ -395,13 +422,18 @@ struct UploadRangeResponse {
 class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
   // |upload_url| is the URL of where to upload the file to.
-  UploadRangeRequestBase(RequestSender* sender, const GURL& upload_url);
+  UploadRangeRequestBase(RequestSender* sender,
+                         const GURL& upload_url,
+                         const ProgressCallback& upload_progress_callback);
   ~UploadRangeRequestBase() override;
 
   // UrlFetchRequestBase overrides.
   GURL GetURL() const override;
-  net::URLFetcher::RequestType GetRequestType() const override;
-  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  std::string GetRequestType() const override;
+  void ProcessURLFetchResults(
+      const network::ResourceResponseHead* response_head,
+      base::FilePath response_file,
+      std::string response_body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
   // This method will be called when the request is done, regardless of
@@ -462,7 +494,8 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
                           int64_t end_position,
                           int64_t content_length,
                           const std::string& content_type,
-                          const base::FilePath& local_file_path);
+                          const base::FilePath& local_file_path,
+                          const ProgressCallback& progress_callback);
   ~ResumeUploadRequestBase() override;
 
   // UrlFetchRequestBase overrides.
@@ -545,9 +578,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
                     const std::string& body,
                     const base::Closure& callback) override;
   void NotifyError(DriveApiErrorCode code) override;
-  void NotifyUploadProgress(const net::URLFetcher* source,
-                            int64_t current,
-                            int64_t total) override;
+  void NotifyUploadProgress(int64_t current, int64_t total) override;
   // Parses the response value and invokes |callback_| with |FileResource|.
   void OnDataParsed(DriveApiErrorCode code,
                     const base::Closure& callback,
@@ -625,19 +656,15 @@ class DownloadFileRequestBase : public UrlFetchRequestBase {
   GURL GetURL() const override;
   void GetOutputFilePath(base::FilePath* local_file_path,
                          GetContentCallback* get_content_callback) override;
-  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void ProcessURLFetchResults(
+      const network::ResourceResponseHead* response_head,
+      base::FilePath response_file,
+      std::string response_body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
-
-  // net::URLFetcherDelegate overrides.
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
 
  private:
   const DownloadActionCallback download_action_callback_;
   const GetContentCallback get_content_callback_;
-  const ProgressCallback progress_callback_;
   const GURL download_url_;
   const base::FilePath output_file_path_;
 

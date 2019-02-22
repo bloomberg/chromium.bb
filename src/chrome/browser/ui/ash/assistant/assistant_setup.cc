@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -19,6 +20,7 @@
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -106,10 +108,12 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   if (!settings_manager_)
     SyncActivityControlState();
 
-  // If the optin flow is active, no need to show the notification since it is
+  // If the OOBE flow is active, no need to show the notification since it is
   // included in the flow.
-  if (chromeos::AssistantOptInDialog::IsActive())
+  if (user_manager::UserManager::Get()->IsCurrentUserNew() &&
+      chromeos::LoginDisplayHost::default_host()) {
     return;
+  }
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PrefService* prefs = profile->GetPrefs();
@@ -179,11 +183,22 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
                           true);
       }
       break;
+    case ConsentFlowUi::ERROR_ACCOUNT:
+      // Show the opted out mode UI for unsupported Account as they are in opted
+      // out mode.
+      // TODO(llin): we should show a error account message in Opted out UI or
+      // in the onboarding flow.
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        false);
+      break;
     case ConsentFlowUi::ALREADY_CONSENTED:
       prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                         true);
       break;
-    default:
+    case ConsentFlowUi::UNSPECIFIED:
+    case ConsentFlowUi::ERROR:
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        false);
       LOG(ERROR) << "Invalid activity control consent status.";
   }
 }

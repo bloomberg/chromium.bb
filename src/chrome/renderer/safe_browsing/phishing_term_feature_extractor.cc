@@ -143,7 +143,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 
   if (!state_->iterator.get()) {
     // We failed to initialize the break iterator, so stop now.
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureBreakIterError", 1);
+    UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureBreakIterError", 1);
     RunCallback(false);
     return;
   }
@@ -164,7 +164,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
           base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
         DLOG(ERROR) << "Feature extraction took too long, giving up";
         // We expect this to happen infrequently, so record when it does.
-        UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureTimeout", 1);
+        UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureTimeout", 1);
         RunCallback(false);
         return;
       }
@@ -207,7 +207,7 @@ void PhishingTermFeatureExtractor::HandleWord(
   // Check if the size of shingle hashes is over the limit.
   if (shingle_hashes_->size() > max_shingles_per_page_) {
     // Pop the largest one.
-    std::set<uint32_t>::iterator it = shingle_hashes_->end();
+    auto it = shingle_hashes_->end();
     shingle_hashes_->erase(--it);
   }
 
@@ -234,16 +234,14 @@ void PhishingTermFeatureExtractor::HandleWord(
   //
   state_->previous_words.append(word_lower);
   std::string current_term = state_->previous_words;
-  for (std::list<size_t>::iterator it = state_->previous_word_sizes.begin();
+  for (auto it = state_->previous_word_sizes.begin();
        it != state_->previous_word_sizes.end(); ++it) {
     hashes_to_check[crypto::SHA256HashString(current_term)] = current_term;
     current_term.erase(0, *it);
   }
 
   // Add features for any hashes that match page_term_hashes_.
-  for (std::map<std::string, std::string>::iterator it =
-           hashes_to_check.begin();
-       it != hashes_to_check.end(); ++it) {
+  for (auto it = hashes_to_check.begin(); it != hashes_to_check.end(); ++it) {
     if (page_term_hashes_->find(it->first) != page_term_hashes_->end()) {
       features_->AddBooleanFeature(features::kPageTerm + it->second);
     }
@@ -277,8 +275,8 @@ void PhishingTermFeatureExtractor::RunCallback(bool success) {
   // Record some timing stats that we can use to evaluate feature extraction
   // performance.  These include both successful and failed extractions.
   DCHECK(state_.get());
-  UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureIterations",
-                       state_->num_iterations);
+  UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureIterations",
+                          state_->num_iterations);
   UMA_HISTOGRAM_TIMES("SBClientPhishing.TermFeatureTotalTime",
                       clock_->Now() - state_->start_time);
 

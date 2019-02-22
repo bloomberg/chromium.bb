@@ -690,35 +690,32 @@ static const GLenum valid_pixel_type_table_es3[] = {
     GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
 };
 
-Validators::ProgramParameterValidator::ProgramParameterValidator()
-    : is_es3_(false) {}
-bool Validators::ProgramParameterValidator::IsValid(const GLenum value) const {
-  switch (value) {
-    case GL_DELETE_STATUS:
-    case GL_LINK_STATUS:
-    case GL_VALIDATE_STATUS:
-    case GL_INFO_LOG_LENGTH:
-    case GL_ATTACHED_SHADERS:
-    case GL_ACTIVE_ATTRIBUTES:
-    case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
-    case GL_ACTIVE_UNIFORMS:
-    case GL_ACTIVE_UNIFORM_MAX_LENGTH:
-      return true;
-    case GL_ACTIVE_UNIFORM_BLOCKS:
-    case GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH:
-    case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
-    case GL_TRANSFORM_FEEDBACK_VARYINGS:
-    case GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH:
-      return is_es3_;
-  }
-  return false;
-}
+static const GLenum valid_program_parameter_table[] = {
+    GL_DELETE_STATUS,
+    GL_LINK_STATUS,
+    GL_VALIDATE_STATUS,
+    GL_INFO_LOG_LENGTH,
+    GL_ATTACHED_SHADERS,
+    GL_ACTIVE_ATTRIBUTES,
+    GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
+    GL_ACTIVE_UNIFORMS,
+    GL_ACTIVE_UNIFORM_MAX_LENGTH,
+};
+
+static const GLenum valid_program_parameter_table_es3[] = {
+    GL_ACTIVE_UNIFORM_BLOCKS,
+    GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH,
+    GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+    GL_TRANSFORM_FEEDBACK_VARYINGS,
+    GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH,
+};
 
 bool Validators::QueryObjectParameterValidator::IsValid(
     const GLenum value) const {
   switch (value) {
     case GL_QUERY_RESULT_EXT:
     case GL_QUERY_RESULT_AVAILABLE_EXT:
+    case GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT:
       return true;
   }
   return false;
@@ -857,18 +854,11 @@ bool Validators::SamplerParameterValidator::IsValid(const GLenum value) const {
   return false;
 }
 
-bool Validators::ShaderParameterValidator::IsValid(const GLenum value) const {
-  switch (value) {
-    case GL_SHADER_TYPE:
-    case GL_DELETE_STATUS:
-    case GL_COMPILE_STATUS:
-    case GL_INFO_LOG_LENGTH:
-    case GL_SHADER_SOURCE_LENGTH:
-    case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-      return true;
-  }
-  return false;
-}
+static const GLenum valid_shader_parameter_table[] = {
+    GL_SHADER_TYPE,          GL_DELETE_STATUS,
+    GL_COMPILE_STATUS,       GL_INFO_LOG_LENGTH,
+    GL_SHADER_SOURCE_LENGTH, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+};
 
 bool Validators::ShaderPrecisionValidator::IsValid(const GLenum value) const {
   switch (value) {
@@ -1412,6 +1402,8 @@ Validators::Validators()
                         arraysize(valid_indexed_g_l_state_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_type(valid_pixel_type_table, arraysize(valid_pixel_type_table)),
+      program_parameter(valid_program_parameter_table,
+                        arraysize(valid_program_parameter_table)),
       read_buffer(valid_read_buffer_table, arraysize(valid_read_buffer_table)),
       read_pixel_format(valid_read_pixel_format_table,
                         arraysize(valid_read_pixel_format_table)),
@@ -1424,6 +1416,8 @@ Validators::Validators()
       render_buffer_target(valid_render_buffer_target_table,
                            arraysize(valid_render_buffer_target_table)),
       shader_binary_format(),
+      shader_parameter(valid_shader_parameter_table,
+                       arraysize(valid_shader_parameter_table)),
       src_blend_factor(valid_src_blend_factor_table,
                        arraysize(valid_src_blend_factor_table)),
       sync_flush_flags(valid_sync_flush_flags_table,
@@ -1498,7 +1492,8 @@ void Validators::UpdateValuesES3() {
                         arraysize(valid_pixel_store_table_es3));
   pixel_type.AddValues(valid_pixel_type_table_es3,
                        arraysize(valid_pixel_type_table_es3));
-  program_parameter.SetIsES3(true);
+  program_parameter.AddValues(valid_program_parameter_table_es3,
+                              arraysize(valid_program_parameter_table_es3));
   read_pixel_format.AddValues(valid_read_pixel_format_table_es3,
                               arraysize(valid_read_pixel_format_table_es3));
   read_pixel_type.AddValues(valid_read_pixel_type_table_es3,

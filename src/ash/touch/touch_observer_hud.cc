@@ -443,8 +443,6 @@ void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   delete this;
 }
 
-void TouchObserverHUD::OnDisplayAdded(const display::Display& new_display) {}
-
 void TouchObserverHUD::OnDisplayRemoved(const display::Display& old_display) {
   if (old_display.id() != display_id_)
     return;

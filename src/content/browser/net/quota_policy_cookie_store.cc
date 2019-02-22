@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/canonical_cookie.h"
@@ -83,12 +84,12 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
     if (!client_task_runner.get()) {
       client_task_runner =
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
     }
 
     if (!background_task_runner.get()) {
       background_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     }
 

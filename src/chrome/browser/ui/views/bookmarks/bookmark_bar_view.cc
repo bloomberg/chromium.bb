@@ -30,7 +30,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -48,7 +47,6 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -61,10 +59,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_service.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "extensions/browser/extension_registry.h"
@@ -105,6 +100,7 @@
 #include "ui/views/metrics.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_constants.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -121,6 +117,7 @@ using views::Button;
 using views::LabelButtonBorder;
 using views::MenuButton;
 using views::View;
+using MD = ui::MaterialDesignController;
 
 // Maximum size of buttons on the bookmark bar.
 static const int kBookmarkBarMaxButtonWidth = 150;
@@ -159,9 +156,7 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
 }
 
 gfx::Insets GetInkDropInsets() {
-  // Slight insets are required for older layouts as they use a slightly smaller
-  // 24dp inkdrop.
-  return gfx::Insets(ui::MaterialDesignController::IsNewerMaterialUi() ? 0 : 2);
+  return gfx::Insets();
 }
 
 int GetInkDropCornerRadius(const views::View* host_view) {
@@ -169,17 +164,15 @@ int GetInkDropCornerRadius(const views::View* host_view) {
       views::EMPHASIS_MAXIMUM, host_view->size());
 }
 
-// Create a SkPath matching the bookmark inkdrops to be used for the focus ring.
-// TODO(pbos): Consolidate inkdrop effects, highlights and ripples along with
-// focus rings so that they are derived from the same actual SkPath or other
-// shared primitive.
-SkPath CreateBookmarkFocusRingPath(views::InkDropHostView* host_view) {
+// Returns a gfx::Path for bookmark inkdrops and focus rings.
+std::unique_ptr<gfx::Path> CreateBookmarkHighlightPath(
+    views::InkDropHostView* host_view) {
   gfx::Rect rect(host_view->size());
   rect.Inset(GetInkDropInsets());
 
-  SkPath path;
+  auto path = std::make_unique<gfx::Path>();
   const int radius = GetInkDropCornerRadius(host_view);
-  path.addRoundRect(gfx::RectToSkRect(rect), radius, radius);
+  path->addRoundRect(gfx::RectToSkRect(rect), radius, radius);
   return path;
 }
 
@@ -196,12 +189,6 @@ std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
       host_view->size(), GetInkDropInsets(), center_point,
       GetToolbarInkDropBaseColor(host_view),
       host_view->ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropMask> CreateBookmarkButtonInkDropMask(
-    const views::InkDropHostView* host_view) {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      host_view->size(), GetInkDropInsets(), GetInkDropCornerRadius(host_view));
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
@@ -262,8 +249,8 @@ class BookmarkButtonBase : public views::LabelButton {
 
   // LabelButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (focus_ring())
-      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    SetProperty(views::kHighlightPathKey,
+                CreateBookmarkHighlightPath(this).release());
     LabelButton::OnBoundsChanged(previous_bounds);
   }
 
@@ -279,10 +266,6 @@ class BookmarkButtonBase : public views::LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return CreateBookmarkButtonInkDropHighlight(this);
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return CreateBookmarkButtonInkDropMask(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
@@ -390,8 +373,8 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   // MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (focus_ring())
-      focus_ring()->SetPath(CreateBookmarkFocusRingPath(this));
+    SetProperty(views::kHighlightPathKey,
+                CreateBookmarkHighlightPath(this).release());
     MenuButton::OnBoundsChanged(previous_bounds);
   }
 
@@ -407,10 +390,6 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return CreateBookmarkButtonInkDropHighlight(this);
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return CreateBookmarkButtonInkDropMask(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
@@ -873,25 +852,6 @@ gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   return prefsize;
 }
 
-bool BookmarkBarView::CanProcessEventsWithinSubtree() const {
-  // Before Material Refresh, the omnibox popup was a full-width dropdown that
-  // laid on top of the bookmark bar if it was attached. For that old UI,
-  // if the bookmark bar is attached and the omnibox popup is open (on top of
-  // the bar), prevent events from targeting the bookmark bar or any of its
-  // descendants. This will prevent hovers/clicks just above the omnibox popup
-  // from activating the top few pixels of items on the bookmark bar.
-  if (!ui::MaterialDesignController::IsRefreshUi() && !IsDetached() &&
-      browser_view_ &&
-      browser_view_->GetLocationBar()
-          ->GetOmniboxView()
-          ->model()
-          ->popup_model()
-          ->IsOpen()) {
-    return false;
-  }
-  return true;
-}
-
 gfx::Size BookmarkBarView::GetMinimumSize() const {
   // The minimum width of the bookmark bar should at least contain the overflow
   // button, by which one can access all the Bookmark Bar items, and the "Other
@@ -1292,11 +1252,11 @@ void BookmarkBarView::OnImportBookmarks() {
   int64_t install_time = g_browser_process->metrics_service()->GetInstallDate();
   int64_t time_from_install = base::Time::Now().ToTimeT() - install_time;
   if (bookmark_bar_state_ == BookmarkBar::SHOW) {
-    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromBookmarkBarView",
-                         time_from_install);
+    UMA_HISTOGRAM_COUNTS_1M("Import.ShowDialog.FromBookmarkBarView",
+                            time_from_install);
   } else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
-    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromFloatingBookmarkBarView",
-                         time_from_install);
+    UMA_HISTOGRAM_COUNTS_1M("Import.ShowDialog.FromFloatingBookmarkBarView",
+                            time_from_install);
   }
 
   chrome::ShowImportDialog(browser_);
@@ -1778,8 +1738,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() &&
-          GetThemeProvider()) {
+      if (MD::IsTouchOptimizedUiEnabled() && GetThemeProvider()) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -2109,11 +2068,10 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(
-          ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-              ? kBookmarkbarTouchOverflowIcon
-              : kOverflowChevronIcon,
-          overflow_color));
+      gfx::CreateVectorIcon(MD::IsTouchOptimizedUiEnabled()
+                                ? kBookmarkbarTouchOverflowIcon
+                                : kOverflowChevronIcon,
+                            overflow_color));
 
   // Redraw the background.
   SchedulePaint();

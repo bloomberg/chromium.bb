@@ -162,14 +162,6 @@ Polymer({
       },
     },
 
-    /** @private */
-    enableEphemeralFlashPermission_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableEphemeralFlashPermission');
-      },
-    },
-
     // <if expr="not chromeos">
     /** @private */
     showRestart_: Boolean,
@@ -177,10 +169,6 @@ Polymer({
 
     /** @private */
     showSignoutDialog_: Boolean,
-  },
-
-  listeners: {
-    'doNotTrackDialogIf.dom-change': 'onDoNotTrackDomChange_',
   },
 
   /** @override */

@@ -19,7 +19,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
-#include "extensions/common/extension.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -53,12 +52,10 @@ bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const scoped_refptr<const extensions::Extension> extension_app(
-      extensions::TabHelper::FromWebContents(web_contents_)->extension_app());
-  if (extension_app.get())
-    return extension_app->id();
-#endif
+  return extensions::TabHelper::FromWebContents(web_contents_)->GetAppId();
+#else
   return std::string();
+#endif
 }
 
 bool TabContentsSyncedTabDelegate::IsInitialBlankNavigation() const {

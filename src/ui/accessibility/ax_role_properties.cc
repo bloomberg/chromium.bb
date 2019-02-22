@@ -8,7 +8,7 @@
 namespace ui {
 
 namespace {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 static bool kExposeLayoutTableAsDataTable = true;
 #else
 static bool kExposeLayoutTableAsDataTable = false;
@@ -120,6 +120,27 @@ bool IsTableLikeRole(ax::mojom::Role role) {
   }
 }
 
+bool IsTableHeaderRole(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRowHeader:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsTableRowRole(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kRow:
+      return true;
+    case ax::mojom::Role::kLayoutTableRow:
+      return kExposeLayoutTableAsDataTable;
+    default:
+      return false;
+  }
+}
+
 bool IsContainerWithSelectableChildrenRole(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kComboBoxGrouping:
@@ -208,6 +229,17 @@ bool IsMenuRelated(ax::mojom::Role role) {
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kMenuListPopup:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsMenuItem(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
       return true;
     default:
       return false;

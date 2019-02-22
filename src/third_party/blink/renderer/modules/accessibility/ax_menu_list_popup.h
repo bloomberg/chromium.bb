@@ -55,7 +55,9 @@ class AXMenuListPopup final : public AXMockObject {
 
   bool IsMenuListPopup() const override { return true; }
 
-  AccessibilityRole RoleValue() const override { return kMenuListPopupRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kMenuListPopup;
+  }
 
   bool IsVisible() const override;
   bool OnNativeClickAction() override;

@@ -54,7 +54,7 @@ class PLATFORM_EXPORT WrappedDataPipeGetter final
 };
 
 class PLATFORM_EXPORT FormDataElement final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   FormDataElement() : type_(kData) {}

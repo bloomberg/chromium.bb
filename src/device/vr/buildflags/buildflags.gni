@@ -54,7 +54,12 @@ declare_args() {
   # When enabled, host Desktop VR devices (OpenVR and Oculus) in a separate
   # process.  When disabled, and Oculus/OpenVR are enabled, they are hosted
   # in the browser process.
-  # TODO(billorr): Enable by default when OpenVR or Oculus are enabled after
-  # tests and controllers are working with the isolated process.
-  enable_isolated_xr_service = false
+  enable_isolated_xr_service = enable_oculus_vr || enable_openvr
+}
+
+declare_args() {
+  # Whether to create a VR/AR module when building bundles. If false, VR/AR code
+  # will become part of the base module.
+  modularize_vr = enable_vr
+  modularize_ar = enable_arcore
 }

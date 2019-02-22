@@ -552,14 +552,29 @@ const IDNTestCase idn_cases[] = {
      L"12\x04e1"
      L"4567890.com",
      false},
-    // 12ვ4567890.com
-    {"xn--124567890-we8a.com",
-     L"12\x10D5"
+    // 12उ4567890.com
+    {"xn--124567890-m3r.com",
+     L"12\u0909"
+     L"4567890.com",
+     false},
+    // 12ও4567890.com
+    {"xn--124567890-17s.com",
+     L"12\u0993"
      L"4567890.com",
      false},
     // 12ဒ4567890.com
     {"xn--124567890-6s6a.com",
      L"12\x1012"
+     L"4567890.com",
+     false},
+    // 12ვ4567890.com
+    {"xn--124567890-we8a.com",
+     L"12\x10D5"
+     L"4567890.com",
+     false},
+    // 12პ4567890.com
+    {"xn--124567890-hh8a.com",
+     L"12\x10DE"
      L"4567890.com",
      false},
     // 123Ꮞ567890.com
@@ -951,6 +966,14 @@ const IDNTestCase idn_cases[] = {
     {"xn--kx8a.com", L"\xa661.com", false},
     // Cyrillic Ext C: ᲂ.com (Narrow o)
     {"xn--43f.com", L"\x1c82.com", false},
+
+    // Test that top domains whose skeletons are the same as the domain name are
+    // handled properly. In this case, tést.net should match test.net top
+    // domain.
+    {"xn--tst-bma.net", L"t\x00e9st.net", false},
+
+    // Modifier-letter-voicing should be blocked (wwwˬtest.com).
+    {"xn--wwwtest-2be.com", L"www\x02ectest.com", false},
 };
 
 struct AdjustOffsetCase {

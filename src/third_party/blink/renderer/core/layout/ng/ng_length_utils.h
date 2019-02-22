@@ -197,11 +197,11 @@ CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
 CORE_EXPORT NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace&,
                                               const ComputedStyle&);
 
-CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
-                                      const ComputedStyle&);
+CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
+                                               const NGLayoutInputNode);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
-                                      const NGLayoutInputNode);
+                                      const ComputedStyle&);
 
 CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
                                               const ComputedStyle&);
@@ -210,6 +210,8 @@ CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
 // values and over-constrainedness. This uses the available size from the
 // constraint space and inline size to compute the margins that are auto, if
 // any, and adjusts the given NGBoxStrut accordingly.
+// available_inline_size, inline_size, and margins are all in the
+// containing_block's writing mode.
 CORE_EXPORT void ResolveInlineMargins(
     const ComputedStyle& child_style,
     const ComputedStyle& containing_block_style,
@@ -233,6 +235,14 @@ CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                          LayoutUnit min,
                                          LayoutUnit max);
 
+// Clamp the inline size of the scrollbar, unless it's larger than the inline
+// size of the content box, in which case we'll return that instead. Scrollbar
+// handling is quite bad in such situations, and this method here is just to
+// make sure that left-hand scrollbars don't mess up scrollWidth. For the full
+// story, visit http://crbug.com/724255.
+bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
+                                LayoutUnit content_box_inline_size);
+
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node);
@@ -245,9 +255,26 @@ NGLogicalSize CalculateBorderBoxSize(
     LayoutUnit block_content_size = NGSizeIndefinite,
     const base::Optional<NGBoxStrut>& border_padding = base::nullopt);
 
-NGLogicalSize CalculateContentBoxSize(
-    const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding);
+// Shrink and return the available size by an inset. This may e.g. be used to
+// convert from border-box to content-box size. Indefinite block size is
+// allowed, in which case the inset will be ignored for block size.
+NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset);
+
+// Calculates the percentage resolution size that children of the node should
+// use.
+NGLogicalSize CalculateChildPercentageSize(
+    const NGConstraintSpace&,
+    const NGBlockNode node,
+    const NGLogicalSize& child_available_size);
+
+// Calculates the percentage resolution size that replaced children of the node
+// should use.
+NGLogicalSize CalculateReplacedChildPercentageSize(
+    const NGConstraintSpace&,
+    const NGBlockNode node,
+    NGLogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
+    const NGBoxStrut& border_padding);
 
 }  // namespace blink
 

@@ -26,10 +26,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -78,11 +81,14 @@ class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
+class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
+class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
+class V8DisplayLockCallback;
 class V8ScrollStateCallback;
 
 enum SpellcheckAttributeState {
@@ -118,6 +124,12 @@ enum class NamedItemType {
   kNameOrIdWithName,
 };
 
+enum class InvisibleState {
+  kMissing,
+  kStatic,
+  kInvisible,
+};
+
 struct FocusParams {
   STACK_ALLOCATED();
 
@@ -151,13 +163,7 @@ class CORE_EXPORT Element : public ContainerNode {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(copy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(gotpointercapture);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(lostpointercapture);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(paste);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
@@ -208,14 +214,28 @@ class CORE_EXPORT Element : public ContainerNode {
                     ExceptionState&);
   void setAttribute(const AtomicString& name, const AtomicString& value);
 
-  // Trusted Type ScriptURL variant of the above.
-  void setAttribute(const QualifiedName&,
-                    const StringOrTrustedScriptURL&,
-                    ExceptionState&);
+  // Trusted Types variant for explicit setAttribute() use.
+  void setAttribute(
+      const AtomicString&,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+      ExceptionState&);
+
+  // Returns attributes that should be checked against Trusted Types
+  virtual const HashSet<AtomicString>& GetCheckedAttributeNames() const;
 
   // Trusted Type HTML variant
   void setAttribute(const QualifiedName&,
                     const StringOrTrustedHTML&,
+                    ExceptionState&);
+
+  // Trusted Type Script variant
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedScript&,
+                    ExceptionState&);
+
+  // Trusted Type ScriptURL variant
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedScriptURL&,
                     ExceptionState&);
 
   // Trusted Type URL variant
@@ -227,10 +247,11 @@ class CORE_EXPORT Element : public ContainerNode {
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
                                  ExceptionState&);
-  void setAttributeNS(const AtomicString& namespace_uri,
-                      const AtomicString& qualified_name,
-                      const AtomicString& value,
-                      ExceptionState&);
+  void setAttributeNS(
+      const AtomicString& namespace_uri,
+      const AtomicString& qualified_name,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+      ExceptionState&);
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
@@ -297,12 +318,10 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual void scrollTo(const ScrollToOptions&);
 
   IntRect BoundsInViewport() const;
-  // For elements that are not contained in any OOPIFs, this returns an
-  // intersection rectangle of the bounds rectangle and the viewport
-  // rectangle, in the visual viewport coordinate. For elements within OOPIFs,
-  // the returned rect is the intersection with the viewport but in the
-  // coordinate space of the local frame root.
-  // This function is used to show popups beside this element.
+  // Returns an intersection rectangle of the bounds rectangle and the visual
+  // viewport's rectangle in the visual viewport's coordinate space.
+  // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
+  // element clipping (crbug.com/889840).
   IntRect VisibleBoundsInVisualViewport() const;
 
   DOMRectList* getClientRects();
@@ -316,9 +335,9 @@ class CORE_EXPORT Element : public ContainerNode {
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
-  const AtomicString& invisible() const;
-  void setInvisible(const AtomicString&);
+  InvisibleState Invisible() const;
   void DispatchActivateInvisibleEventIfNeeded();
+  bool IsInsideInvisibleStaticSubtree();
 
   void DefaultEventHandler(Event&) override;
 
@@ -328,7 +347,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void removeAttributeNS(const AtomicString& namespace_uri,
                          const AtomicString& local_name);
 
-  Attr* DetachAttribute(size_t index);
+  Attr* DetachAttribute(wtf_size_t index);
 
   Attr* getAttributeNode(const AtomicString& name);
   Attr* getAttributeNodeNS(const AtomicString& namespace_uri,
@@ -359,7 +378,7 @@ class CORE_EXPORT Element : public ContainerNode {
     return ContainerNode::HasTagName(tag_name);
   }
 
-  // Should be called only by Document::createElementNS to fix up m_tagName
+  // Should be called only by Document::createElementNS to fix up tag_name_
   // immediately after construction.
   void SetTagNameForCreateElementNS(const QualifiedName&);
 
@@ -477,7 +496,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // Clones attributes only.
   void CloneAttributesFrom(const Element&);
 
-  bool HasEquivalentAttributes(const Element* other) const;
+  bool HasEquivalentAttributes(const Element& other) const;
 
   // Step 5 of https://dom.spec.whatwg.org/#concept-node-clone
   virtual void CloneNonAttributePropertiesFrom(const Element&,
@@ -489,11 +508,14 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(StyleRecalcChange);
+  void RecalcStyleForTraversalRootAncestor();
+  void RebuildLayoutTreeForTraversalRootAncestor() {
+    RebuildFirstLetterLayoutTree();
+  }
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
-    // TODO(futhark@chromium.org): !CanParticipateInFlatTree() can be replaced
-    // by IsActiveV0InsertionPoint() when slots are always part of the flat
-    // tree, and removed completely when Shadow DOM V0 support is removed.
+    // TODO(futhark@chromium.org): !CanParticipateInFlatTree() can be removed
+    // when Shadow DOM V0 support is removed.
     return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
            !CanParticipateInFlatTree() ||
            (whitespace_attacher.TraverseIntoDisplayContents() &&
@@ -733,7 +755,7 @@ class CORE_EXPORT Element : public ContainerNode {
   PseudoElement* GetPseudoElement(PseudoId) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
-  ComputedStyle* CachedStyleForPseudoElement(
+  const ComputedStyle* CachedStyleForPseudoElement(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
   scoped_refptr<ComputedStyle> StyleForPseudoElement(
@@ -875,6 +897,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
+  void ComputeIntersectionObservations(unsigned flags);
 
   HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
   ResizeObserverData() const;
@@ -884,6 +907,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
   void DidEndCustomizedScrollPhase();
+
+  ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
 
  protected:
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
@@ -975,7 +1000,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void InlineStyleChanged();
   void SetInlineStyleFromString(const AtomicString&);
 
-  void InvisibleAttributeChanged();
+  void InvisibleAttributeChanged(const AtomicString& old_value,
+                                 const AtomicString& new_value);
 
   // If the only inherited changes in the parent element are independent,
   // these changes can be directly propagated to this element (the child).
@@ -1044,14 +1070,15 @@ class CORE_EXPORT Element : public ContainerNode {
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
 
-  void SetAttributeInternal(size_t index,
+  void SetAttributeInternal(wtf_size_t index,
                             const QualifiedName&,
                             const AtomicString& value,
                             SynchronizationOfLazyAttribute);
   void AppendAttributeInternal(const QualifiedName&,
                                const AtomicString& value,
                                SynchronizationOfLazyAttribute);
-  void RemoveAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
+  void RemoveAttributeInternal(wtf_size_t index,
+                               SynchronizationOfLazyAttribute);
 
   void CancelFocusAppearanceUpdate();
 
@@ -1091,7 +1118,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void RemoveAttrNodeList();
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
-  void DetachAttrNodeAtIndex(Attr*, size_t index);
+  void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
 
   Member<ElementData> element_data_;
 };

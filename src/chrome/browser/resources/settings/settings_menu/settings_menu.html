@@ -89,7 +89,7 @@
     </style>
     <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
-        role="navigation">
+        role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
       <a href="/internet">
         <iron-icon icon="settings:network-wifi"></iron-icon>
@@ -98,6 +98,11 @@
       <a href="/bluetooth">
         <iron-icon icon="cr:bluetooth"></iron-icon>
         $i18n{bluetoothPageTitle}
+      </a>
+      <a href="/multidevice" hidden="[[!showMultidevice]]">
+        <iron-icon icon="settings:multidevice-better-together-suite">
+        </iron-icon>
+        $i18n{multidevicePageTitle}
       </a>
 </if>
       <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
@@ -152,7 +157,7 @@
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
-            role="navigation">
+            role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
           <a href="/dateTime">
             <iron-icon icon="settings:access-time"></iron-icon>
@@ -182,12 +187,6 @@
             <iron-icon icon="cr:print"></iron-icon>
             $i18n{printingPageTitle}
           </a>
-<if expr="chromeos">
-          <a href="/multidevice" hidden="[[!showMultidevice]]">
-            <iron-icon icon="settings:devices-other"></iron-icon>
-            $i18n{multidevicePageTitle}
-          </a>
-</if>
           <a href="/accessibility">
             <iron-icon icon="settings:accessibility"></iron-icon>
             $i18n{a11yPageTitle}

@@ -5,14 +5,11 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 
 #include <cstddef>
-#include <iterator>
-#include <ostream>
 #include <sstream>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -28,16 +25,11 @@
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
-#include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
@@ -124,35 +116,11 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       username_(username),
       password_(password),
       signin_type_(signin_type),
-      oauth2_refesh_token_number_(0),
       profile_debug_name_(profile->GetDebugName()) {}
 
 ProfileSyncServiceHarness::~ProfileSyncServiceHarness() { }
 
-bool ProfileSyncServiceHarness::SetupSync() {
-  bool result = SetupSync(syncer::UserSelectableTypes(), false);
-  if (!result) {
-    LOG(ERROR) << profile_debug_name_ << ": SetupSync failed. Syncer status:\n"
-               << GetServiceStatus();
-  } else {
-    DVLOG(1) << profile_debug_name_ << ": SetupSync successful.";
-  }
-  return result;
-}
-
-bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
-  bool result = SetupSync(syncer::UserSelectableTypes(), true);
-  if (!result) {
-    LOG(ERROR) << profile_debug_name_
-               << ": SetupSyncForClear failed. Syncer status:\n"
-               << GetServiceStatus();
-  } else {
-    DVLOG(1) << profile_debug_name_ << ": SetupSyncForClear successful.";
-  }
-  return result;
-}
-
-bool ProfileSyncServiceHarness::SignIn() {
+bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
   // TODO(crbug.com/871221): This function should distinguish primary account
   // (aka sync account) from secondary accounts (content area signin). Let's
   // migrate tests that exercise transport-only sync to secondary accounts.
@@ -203,12 +171,44 @@ bool ProfileSyncServiceHarness::SignIn() {
   return false;
 }
 
+#if !defined(OS_CHROMEOS)
+void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
+  DCHECK(!username_.empty());
+  identity::ClearPrimaryAccount(
+      SigninManagerFactory::GetForProfile(profile_),
+      IdentityManagerFactory::GetForProfile(profile_),
+      identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+}
+#endif  // !OS_CHROMEOS
+
+bool ProfileSyncServiceHarness::SetupSync() {
+  bool result = SetupSync(syncer::UserSelectableTypes(), false);
+  if (!result) {
+    LOG(ERROR) << profile_debug_name_ << ": SetupSync failed. Syncer status:\n"
+               << GetServiceStatus();
+  } else {
+    DVLOG(1) << profile_debug_name_ << ": SetupSync successful.";
+  }
+  return result;
+}
+
+bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
+  bool result = SetupSync(syncer::UserSelectableTypes(), true);
+  if (!result) {
+    LOG(ERROR) << profile_debug_name_
+               << ": SetupSyncForClear failed. Syncer status:\n"
+               << GetServiceStatus();
+  } else {
+    DVLOG(1) << profile_debug_name_ << ": SetupSyncForClear successful.";
+  }
+  return result;
+}
+
 bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
                                           bool skip_passphrase_verification) {
   DCHECK(!profile_->IsLegacySupervised())
       << "SetupSync should not be used for legacy supervised users.";
 
-  // Initialize the sync client's profile sync service object.
   if (service() == nullptr) {
     LOG(ERROR) << "SetupSync(): service() is null.";
     return false;
@@ -218,7 +218,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   // until we've finished configuration.
   sync_blocker_ = service()->GetSetupInProgressHandle();
 
-  if (!SignIn()) {
+  if (!SignInPrimaryAccount()) {
     return false;
   }
 
@@ -235,7 +235,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
     // When unified consent given is set to |true|, the unified consent service
     // enables syncing all datatypes.
     UnifiedConsentServiceFactory::GetForProfile(profile_)
-      ->SetUnifiedConsentGiven(sync_everything);
+        ->SetUnifiedConsentGiven(sync_everything);
     if (!sync_everything) {
       service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
     }
@@ -291,6 +291,11 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   return true;
 }
 
+void ProfileSyncServiceHarness::FinishSyncSetup() {
+  sync_blocker_.reset();
+  service()->SetFirstSetupComplete();
+}
+
 void ProfileSyncServiceHarness::StopSyncService(
     syncer::SyncService::SyncStopDataFate data_fate) {
   DVLOG(1) << "Requesting stop for service.";
@@ -331,17 +336,6 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   return true;
 }
 
-#if !defined(OS_CHROMEOS)
-void ProfileSyncServiceHarness::SignoutSyncService() {
-  DCHECK(!username_.empty());
-  // TODO(https://crbug.com/806781): This should go through IdentityManager once
-  // that supports sign-out.
-  SigninManagerFactory::GetForProfile(profile_)->SignOutAndRemoveAllAccounts(
-      signin_metrics::SIGNOUT_TEST,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-#endif  // !OS_CHROMEOS
-
 bool ProfileSyncServiceHarness::HasUnsyncedItems() {
   base::RunLoop loop;
   bool result = false;
@@ -362,19 +356,14 @@ bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
   return AwaitQuiescence(harnesses);
 }
 
-bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
-    const std::vector<ProfileSyncServiceHarness*>& partners) {
-  return AwaitQuiescence(partners);
-}
-
 // static
 bool ProfileSyncServiceHarness::AwaitQuiescence(
     const std::vector<ProfileSyncServiceHarness*>& clients) {
-  std::vector<ProfileSyncService*> services;
   if (clients.empty()) {
     return true;
   }
 
+  std::vector<ProfileSyncService*> services;
   for (const ProfileSyncServiceHarness* harness : clients) {
     services.push_back(harness->service());
   }
@@ -433,30 +422,6 @@ bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion(
   }
 
   return true;
-}
-
-std::string ProfileSyncServiceHarness::GenerateFakeOAuth2RefreshTokenString() {
-  return base::StringPrintf("oauth2_refresh_token_%d",
-                            ++oauth2_refesh_token_number_);
-}
-
-bool ProfileSyncServiceHarness::IsSyncEnabledByUser() const {
-  return service()->IsFirstSetupComplete() &&
-         !service()->HasDisableReason(
-             ProfileSyncService::DISABLE_REASON_USER_CHOICE);
-}
-
-void ProfileSyncServiceHarness::FinishSyncSetup() {
-  sync_blocker_.reset();
-  service()->SetFirstSetupComplete();
-}
-
-SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
-  DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
-  if (service()->IsSyncActive()) {
-    return service()->GetLastCycleSnapshot();
-  }
-  return SyncCycleSnapshot();
 }
 
 bool ProfileSyncServiceHarness::EnableSyncForDatatype(
@@ -565,7 +530,13 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Setting unified consent given to true will enable all sync data types.
+    UnifiedConsentServiceFactory::GetForProfile(profile_)
+        ->SetUnifiedConsentGiven(true);
+  } else {
+    service()->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  }
   if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";
@@ -589,6 +560,24 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
   DVLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all "
            << "datatypes on " << profile_debug_name_;
   return true;
+}
+
+SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
+  DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
+  if (service()->IsSyncFeatureActive()) {
+    return service()->GetLastCycleSnapshot();
+  }
+  return SyncCycleSnapshot();
+}
+
+std::string ProfileSyncServiceHarness::GetServiceStatus() {
+  std::unique_ptr<base::DictionaryValue> value(
+      syncer::sync_ui_util::ConstructAboutInformation(service(),
+                                                      chrome::GetChannel()));
+  std::string service_status;
+  base::JSONWriter::WriteWithOptions(
+      *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);
+  return service_status;
 }
 
 // TODO(sync): Clean up this method in a separate CL. Remove all snapshot fields
@@ -615,23 +604,15 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << syncer::PassphraseRequiredReasonToString(
               service()->passphrase_required_reason_for_test())
        << ", notifications_enabled: " << status.notifications_enabled
-       << ", service_is_active: " << service()->IsSyncActive();
+       << ", service_is_active: " << service()->IsSyncFeatureActive();
   } else {
     os << "Sync service not available";
   }
   return os.str();
 }
 
-bool ProfileSyncServiceHarness::IsTypePreferred(syncer::ModelType type) {
-  return service()->GetPreferredDataTypes().Has(type);
-}
-
-std::string ProfileSyncServiceHarness::GetServiceStatus() {
-  std::unique_ptr<base::DictionaryValue> value(
-      syncer::sync_ui_util::ConstructAboutInformation(service(),
-                                                      chrome::GetChannel()));
-  std::string service_status;
-  base::JSONWriter::WriteWithOptions(
-      *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);
-  return service_status;
+bool ProfileSyncServiceHarness::IsSyncEnabledByUser() const {
+  return service()->IsFirstSetupComplete() &&
+         !service()->HasDisableReason(
+             ProfileSyncService::DISABLE_REASON_USER_CHOICE);
 }

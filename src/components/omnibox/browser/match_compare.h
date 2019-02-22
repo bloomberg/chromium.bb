@@ -64,10 +64,4 @@ class DestinationSort {
   CompareWithDemoteByType<Match> demote_by_type_;
 };
 
-struct MatchGURLHash {
-  size_t operator()(const GURL& gurl) const {
-    return std::hash<std::string>()(gurl.spec());
-  }
-};
-
 #endif  // COMPONENTS_OMNIBOX_BROWSER_MATCH_COMPARE_H_

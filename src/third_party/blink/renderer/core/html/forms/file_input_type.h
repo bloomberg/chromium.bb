@@ -54,9 +54,9 @@ class CORE_EXPORT FileInputType final : public InputType,
   static InputType* Create(HTMLInputElement&);
   void Trace(blink::Visitor*) override;
   using InputType::GetElement;
-  static Vector<FileChooserFileInfo> FilesFromFormControlState(
+  static FileChooserFileInfoList FilesFromFormControlState(
       const FormControlState&);
-  static FileList* CreateFileList(const Vector<FileChooserFileInfo>& files,
+  static FileList* CreateFileList(const FileChooserFileInfoList& files,
                                   bool has_webkit_directory_attr);
 
   void CountUsage() override;
@@ -97,7 +97,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void HandleKeyupEvent(KeyboardEvent&) override;
 
   // FileChooserClient implementation.
-  void FilesChosen(const Vector<FileChooserFileInfo>&) override;
+  void FilesChosen(const FileChooserFileInfoList&) override;
   LocalFrame* FrameOrNull() const override;
 
   // PopupOpeningObserver implementation.

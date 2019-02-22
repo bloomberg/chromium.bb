@@ -24,4 +24,3 @@ PASS blueDiv.innerHTML is ""
 Mouse is invisible, deleting the red div.
 PASS blueDiv.offsetTop is 50
 PASS blueText is "none"
-

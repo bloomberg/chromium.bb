@@ -51,6 +51,10 @@ AssistantMiniView::~AssistantMiniView() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantMiniView::GetClassName() const {
+  return "AssistantMiniView";
+}
+
 gfx::Size AssistantMiniView::CalculatePreferredSize() const {
   const int preferred_width =
       std::min(views::View::CalculatePreferredSize().width(), kMaxWidthDip);
@@ -106,7 +110,8 @@ void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
   UpdatePrompt();
 }
 
-void AssistantMiniView::OnResponseChanged(const AssistantResponse& response) {
+void AssistantMiniView::OnResponseChanged(
+    const std::shared_ptr<AssistantResponse>& response) {
   // When a response changes, the committed query becomes active. We'll cache
   // the text for that query to use as our prompt when not using the stylus.
   const AssistantQuery& committed_query =

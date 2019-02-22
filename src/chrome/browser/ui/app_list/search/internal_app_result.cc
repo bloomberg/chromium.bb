@@ -48,6 +48,11 @@ InternalAppResult::InternalAppResult(Profile* profile,
   SetIcon(GetIconForResourceId(
       GetIconResourceIdByAppId(app_id),
       AppListConfig::instance().search_tile_icon_dimension()));
+  if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
+    SetChipIcon(GetIconForResourceId(
+        GetIconResourceIdByAppId(app_id),
+        AppListConfig::instance().suggestion_chip_icon_dimension()));
+  }
 
   if (id() == kInternalAppIdContinueReading) {
     large_icon_service_ =
@@ -112,7 +117,8 @@ void InternalAppResult::OnGetFaviconFromCacheFinished(
     bool continue_to_google_server,
     const favicon_base::LargeIconImageResult& image_result) {
   if (!image_result.image.IsEmpty()) {
-    SetIcon(*image_result.image.ToImageSkia());
+    // Continue Reading app will only be shown in suggestion chip.
+    SetChipIcon(*image_result.image.ToImageSkia());
     // Update the time when the icon was last requested to postpone the
     // automatic eviction of the favicon from the favicon database.
     large_icon_service_->TouchIconFromGoogleServer(image_result.icon_url);

@@ -51,6 +51,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -70,17 +71,6 @@ base::LazySequencedTaskRunner g_get_network_id_task_runner =
                          base::TaskPriority::BEST_EFFORT,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 #endif
-
-// Values of the UMA DataReductionProxy.Protocol.NotAcceptingTransform histogram
-// defined in metrics/histograms/histograms.xml. This enum must remain
-// synchronized with DataReductionProxyProtocolNotAcceptingTransformReason in
-// tools/metrics/histograms/enums.xml.
-enum NotAcceptingTransformReason {
-  NOT_ACCEPTING_TRANSFORM_DISABLED = 0,
-  NOT_ACCEPTING_TRANSFORM_BLACKLISTED = 1,
-  NOT_ACCEPTING_TRANSFORM_CELLULAR_ONLY = 2,
-  NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY
-};
 
 // Values of the UMA DataReductionProxy.NetworkChangeEvents histograms.
 // This enum must remain synchronized with the enum of the same
@@ -209,7 +199,6 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       configurator_(configurator),
       event_creator_(event_creator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-      ignore_long_term_black_list_rules_(false),
       network_properties_manager_(nullptr),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
@@ -228,8 +217,7 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 void DataReductionProxyConfig::InitializeOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>&
         basic_url_request_context_getter,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_properties_manager_ = manager;
@@ -238,7 +226,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   secure_proxy_checker_.reset(
       new SecureProxyChecker(basic_url_request_context_getter));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      url_request_context_getter,
+      std::move(url_loader_factory),
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),
@@ -367,8 +355,7 @@ bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::ProxyRetryInfoMap::const_iterator found =
-      retry_map.find(proxy_server.ToURI());
+  auto found = retry_map.find(proxy_server.ToURI());
 
   if (found == retry_map.end() || found->second.bad_until < GetTicksNow()) {
     return false;
@@ -792,46 +779,6 @@ bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
   return enabled_by_user_ && !unreachable_;
 }
 
-bool DataReductionProxyConfig::IsBlackListedOrDisabled(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider,
-    previews::PreviewsType previews_type) const {
-  // Make sure request is not locally blacklisted.
-  // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the threshold since we
-  // just want to check blacklisting here.
-  // TODO(crbug.com/720102): Consider new method to just check blacklist.
-  return !previews_decider.ShouldAllowPreviewAtECT(
-      request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
-      std::vector<std::string>(), ignore_long_term_black_list_rules_);
-}
-
-bool DataReductionProxyConfig::ShouldAcceptServerPreview(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  DCHECK(request.url().SchemeIsHTTPOrHTTPS());
-
-  if (!previews::params::ArePreviewsAllowed() ||
-      !base::FeatureList::IsEnabled(
-          features::kDataReductionProxyDecidesTransform)) {
-    return false;
-  }
-
-  if (IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LITE_PAGE) ||
-      IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LOFI)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "DataReductionProxy.Protocol.NotAcceptingTransform",
-        NOT_ACCEPTING_TRANSFORM_BLACKLISTED,
-        NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY);
-    return false;
-  }
-
-  return true;
-}
-
 base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::TimeTicks::Now();
@@ -887,16 +834,5 @@ void DataReductionProxyConfig::EnableGetNetworkIdAsynchronously() {
   get_network_id_asynchronously_ = true;
 }
 #endif  // defined(OS_CHROMEOS)
-
-void DataReductionProxyConfig::SetIgnoreLongTermBlackListRules(
-    bool ignore_long_term_black_list_rules) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ignore_long_term_black_list_rules_ = ignore_long_term_black_list_rules;
-}
-
-bool DataReductionProxyConfig::IgnoreBlackListLongTermRulesForTesting() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return ignore_long_term_black_list_rules_;
-}
 
 }  // namespace data_reduction_proxy

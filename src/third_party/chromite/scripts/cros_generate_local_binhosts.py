@@ -17,7 +17,7 @@ import os
 import sys
 
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
+from chromite.lib import portage_util
 
 
 def FindCandidateBoards():
@@ -30,14 +30,8 @@ def FindCandidateBoards():
 
 def SummarizeCompatibility(board):
   """Returns a string that will be the same for compatible boards."""
-  cmd = ["portageq-%s" % board, "envvar", "ARCH", "CFLAGS"]
-  summary = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                      print_cmd=False).output.rstrip()
-  # We will add -clang-syntax to falco and nyan board. So we need to
-  # filter out -clang-syntax to make the flags from PFQ are the same as
-  # the release-board. See crbug.com/499115
-  # TODO(yunlian): Remove this when all the boards are build with -clang-syntax
-  return summary.replace(" -clang-syntax", "")
+  result = portage_util.PortageqEnvvars(['ARCH', 'CFLAGS'], board=board)
+  return '%s %s' % (result['ARCH'], result['CFLAGS'])
 
 
 def GenerateBinhostLine(build_root, compatible_boards):

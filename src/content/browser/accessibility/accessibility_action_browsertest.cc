@@ -150,6 +150,44 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                      ax::mojom::FloatAttribute::kValueForRange));
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<div style='width:100; height:50; overflow:scroll' "
+      "aria-label='shakespeare'>"
+      "To be or not to be, that is the question."
+      "</div>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kGenericContainer, "shakespeare");
+  EXPECT_NE(target, nullptr);
+
+  int y_before = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kScrollDown;
+  data.target_node_id = target->GetId();
+
+  target->manager()->delegate()->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_after = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_GT(y_after, y_before);
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 

@@ -68,43 +68,6 @@ public:
                                        SkScalar* textRatio,
                                        SkScalerContextFlags* flags);
 
-    class FallbackGlyphRunHelper {
-    public:
-        FallbackGlyphRunHelper(const SkMatrix& viewMatrix,
-                           const SkPaint& pathPaint,
-                           SkScalar maxTextSize,
-                           SkScalar textRatio)
-                : fViewMatrix(viewMatrix)
-                , fTextSize(pathPaint.getTextSize())
-                , fMaxTextSize(maxTextSize)
-                , fTextRatio(textRatio)
-                , fTransformedFallbackTextSize(fMaxTextSize)
-                , fUseTransformedFallback(false) {
-            fMaxScale = viewMatrix.getMaxScale();
-        }
-
-        void appendGlyph(const SkGlyph& glyph, SkGlyphID glyphID, SkPoint glyphPos);
-        void drawGlyphs(
-                GrTextBlob* blob, int runIndex, GrGlyphCache* cache,
-                const SkSurfaceProps& props, const SkPaint& paint, GrColor filteredColor,
-                SkScalerContextFlags scalerContextFlags);
-
-        void initializeForDraw(SkPaint* paint, SkScalar* textRatio, SkMatrix* matrix) const;
-        const std::vector<SkGlyphID>& fallbackText() const { return fFallbackTxt; }
-
-    private:
-        std::vector<SkGlyphID> fFallbackTxt;
-        std::vector<SkPoint> fFallbackPos;
-
-        const SkMatrix& fViewMatrix;
-        SkScalar fTextSize;
-        SkScalar fMaxTextSize;
-        SkScalar fTextRatio;
-        SkScalar fTransformedFallbackTextSize;
-        SkScalar fMaxScale;
-        bool fUseTransformedFallback;
-    };
-
 private:
     GrTextContext(const Options& options);
 
@@ -124,9 +87,9 @@ private:
                             const SkGlyphRunList& glyphRunList,
                             SkGlyphRunListPainter* glyphPainter);
 
-    static void AppendGlyph(GrTextBlob*, int runIndex, GrGlyphCache*,
-                            sk_sp<GrTextStrike>*, const SkGlyph&, GrGlyph::MaskStyle maskStyle,
-                            SkScalar sx, SkScalar sy,
+    static void AppendGlyph(GrTextBlob*, int runIndex,
+                            const sk_sp<GrTextStrike>&, const SkGlyph&,
+                            GrGlyph::MaskStyle maskStyle, SkScalar sx, SkScalar sy,
                             GrColor color, SkGlyphCache*, SkScalar textRatio,
                             bool needsTransform);
 

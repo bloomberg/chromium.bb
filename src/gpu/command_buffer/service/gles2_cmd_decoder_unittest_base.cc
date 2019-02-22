@@ -217,7 +217,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
       &framebuffer_completeness_cache_, feature_info,
       normalized_init.bind_generates_resource, &image_manager_,
       nullptr /* image_factory */, nullptr /* progress_reporter */,
-      gpu_feature_info, &discardable_manager_));
+      gpu_feature_info, &discardable_manager_, &shared_image_manager_));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
   InSequence sequence;
@@ -2429,7 +2429,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
       &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
       context_creation_attribs_.bind_generates_resource, &image_manager_,
       nullptr /* image_factory */, nullptr /* progress_reporter */,
-      GpuFeatureInfo(), &discardable_manager_);
+      GpuFeatureInfo(), &discardable_manager_, &shared_image_manager_);
 
   surface_ = gl::init::CreateOffscreenGLSurface(
       context_creation_attribs_.offscreen_framebuffer_size);

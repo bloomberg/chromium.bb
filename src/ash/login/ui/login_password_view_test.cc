@@ -5,7 +5,6 @@
 #include "ash/login/ui/login_password_view.h"
 
 #include "ash/login/ui/login_test_base.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/test/event_generator.h"

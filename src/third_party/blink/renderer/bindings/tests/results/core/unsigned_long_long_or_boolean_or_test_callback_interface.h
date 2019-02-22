@@ -24,7 +24,7 @@ namespace blink {
 class V8TestCallbackInterface;
 
 class CORE_EXPORT UnsignedLongLongOrBooleanOrTestCallbackInterface final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   UnsignedLongLongOrBooleanOrTestCallbackInterface();
   bool IsNull() const { return type_ == SpecificType::kNone; }

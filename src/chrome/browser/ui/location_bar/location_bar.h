@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -33,9 +34,15 @@ class LocationBar {
   virtual GURL GetDestinationURL() const = 0;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const = 0;
   virtual ui::PageTransition GetPageTransition() const = 0;
+  virtual base::TimeTicks GetMatchSelectionTimestamp() const = 0;
 
   // Accepts the current string of text entered in the location bar.
   virtual void AcceptInput() = 0;
+
+  // Accepts the current string of text entered in the location bar. If
+  // |match_selection_timestamp| is not null, uses this value to track
+  // latency of page loads starting at user input.
+  virtual void AcceptInput(base::TimeTicks match_selection_timestamp) = 0;
 
   // Focuses the location bar.  Optionally also selects its contents.
   virtual void FocusLocation(bool select_all) = 0;

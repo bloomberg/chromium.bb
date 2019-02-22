@@ -6,11 +6,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -20,7 +22,6 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -36,6 +37,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
@@ -78,7 +80,9 @@ class TestNavigationThrottle : public NavigationThrottle {
 
   const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
 
-  RequestContextType request_context_type() { return request_context_type_; }
+  blink::mojom::RequestContextType request_context_type() {
+    return request_context_type_;
+  }
 
   // Expose Resume and Cancel to the installer.
   void ResumeNavigation() { Resume(); }
@@ -92,11 +96,12 @@ class TestNavigationThrottle : public NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
     NavigationHandleImpl* navigation_handle_impl =
         static_cast<NavigationHandleImpl*>(navigation_handle());
-    CHECK_NE(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+    CHECK_NE(blink::mojom::RequestContextType::UNSPECIFIED,
              navigation_handle_impl->request_context_type());
     request_context_type_ = navigation_handle_impl->request_context_type();
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, did_call_will_start_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             did_call_will_start_);
     return will_start_result_;
   }
 
@@ -106,8 +111,8 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            did_call_will_redirect_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             did_call_will_redirect_);
     return will_redirect_result_;
   }
 
@@ -117,7 +122,8 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, did_call_will_fail_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             did_call_will_fail_);
     return will_fail_result_;
   }
 
@@ -127,8 +133,8 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            did_call_will_process_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             did_call_will_process_);
     return will_process_result_;
   }
 
@@ -140,7 +146,8 @@ class TestNavigationThrottle : public NavigationThrottle {
   base::Closure did_call_will_redirect_;
   base::Closure did_call_will_fail_;
   base::Closure did_call_will_process_;
-  RequestContextType request_context_type_ = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+  blink::mojom::RequestContextType request_context_type_ =
+      blink::mojom::RequestContextType::UNSPECIFIED;
 };
 
 // Installs a TestNavigationThrottle either on all following requests or on
@@ -1197,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(main_url, url_recorder.urls().back());
   EXPECT_EQ(1ul, url_recorder.urls().size());
   // Checks the main frame RequestContextType.
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Ditto for frame b navigation.
@@ -1206,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(2, installer.install_count());
   EXPECT_EQ(b_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Ditto for frame c navigation.
@@ -1215,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(3, installer.install_count());
   EXPECT_EQ(c_url, url_recorder.urls().back());
   EXPECT_EQ(3ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Lets the final navigation finish so that we conclude running the
@@ -1253,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_TRUE(link_manager.WaitForRequestStart());
   EXPECT_EQ(link_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
             installer.navigation_throttle()->request_context_type());
 
   // Finishes the last navigation.
@@ -1287,7 +1294,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_TRUE(post_manager.WaitForRequestStart());
   EXPECT_EQ(post_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_FORM,
+  EXPECT_EQ(blink::mojom::RequestContextType::FORM,
             installer.navigation_throttle()->request_context_type());
 
   // Finishes the last navigation.
@@ -1825,8 +1832,8 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   {
@@ -2077,15 +2084,17 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
     // Add the suffix to all existing histogram names, and append the results to
     // |names|.
     std::vector<std::string> names{"Navigation.StartToCommit"};
-    auto add_suffix = [&names](std::string suffix) {
+    auto add_suffix = [&names](std::vector<std::string> suffixes) {
       size_t original_size = names.size();
       for (size_t i = 0; i < original_size; i++) {
-        names.push_back(names[i] + suffix);
+        for (const std::string& suffix : suffixes)
+          names.push_back(names[i] + suffix);
       }
     };
-    add_suffix(kProcessSuffixes.at(process_type));
-    add_suffix(kFrameSuffixes.at(frame_type));
-    add_suffix(kTransitionSuffixes.at(transition_type));
+    add_suffix({kProcessSuffixes.at(process_type)});
+    add_suffix({kFrameSuffixes.at(frame_type)});
+    add_suffix({kTransitionSuffixes.at(transition_type),
+                ".ForegroundProcessPriority"});
 
     // Check that all generated histogram names are logged exactly once.
     for (const auto& name : names) {

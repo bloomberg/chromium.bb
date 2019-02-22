@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -63,7 +64,11 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kLoginManager) &&
          !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
          app_manager->IsAutoLaunchEnabled() &&
-         KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
+         KioskAppLaunchError::Get() == KioskAppLaunchError::NONE &&
+         // IsOobeCompleted() is needed to prevent kiosk session start in case
+         // of enterprise rollback, when keeping the enrollment, policy, not
+         // clearing TPM, but wiping stateful partition.
+         StartupUtils::IsOobeCompleted();
 }
 
 // Starts kiosk app auto launch and shows the splash screen.
@@ -145,8 +150,11 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
-    crostini::CrostiniManager::GetInstance()->MaybeUpgradeCrostini(
-        user_profile);
+
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(user_profile);
+    if (crostini_manager)
+      crostini_manager->MaybeUpgradeCrostini();
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
       ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
@@ -187,7 +195,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
-  SyncConsentScreen::MaybeLaunchSyncConstentSettings(user_profile);
+  SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
 }
 
 }  // namespace

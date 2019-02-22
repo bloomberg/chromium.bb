@@ -40,6 +40,7 @@
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
@@ -407,16 +408,6 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       browser_plugin_instance_id(), allow));
 }
 
-void BrowserPluginGuest::FirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (!features::IsUsingWindowService() &&
-      !features::IsSurfaceSynchronizationEnabled()) {
-    SendMessageToEmbedder(
-        std::make_unique<BrowserPluginMsg_FirstSurfaceActivation>(
-            browser_plugin_instance_id(), surface_info));
-  }
-}
-
 void BrowserPluginGuest::ResendEventToEmbedder(
     const blink::WebInputEvent& event) {
   if (!attached() || !owner_web_contents_)
@@ -667,7 +658,7 @@ void BrowserPluginGuest::RenderViewReady() {
   // In case we've created a new guest render process after a crash, let the
   // associated BrowserPlugin know. We only need to send this if we're attached,
   // as guest_crashed_ is cleared automatically on attach anyways.
-  if (attached() && !features::IsUsingWindowService()) {
+  if (attached() && !features::IsMultiProcessMash()) {
     RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
         web_contents()->GetRenderWidgetHostView());
     if (rwhv) {
@@ -726,12 +717,12 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -955,7 +946,7 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
     RenderWidgetHost* widget_host =
         web_contents()->GetRenderViewHost()->GetWidget();
     widget_host->Send(
-        new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), false));
+        new WidgetMsg_LockMouse_ACK(widget_host->GetRoutingID(), false));
     return;
   }
 
@@ -976,7 +967,7 @@ void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
   RenderWidgetHost* widget_host =
       web_contents()->GetRenderViewHost()->GetWidget();
   widget_host->Send(
-      new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), succeeded));
+      new WidgetMsg_LockMouse_ACK(widget_host->GetRoutingID(), succeeded));
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
@@ -1030,7 +1021,7 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   if (mouse_locked_) {
     RenderWidgetHost* widget_host =
         web_contents()->GetRenderViewHost()->GetWidget();
-    widget_host->Send(new ViewMsg_MouseLockLost(widget_host->GetRoutingID()));
+    widget_host->Send(new WidgetMsg_MouseLockLost(widget_host->GetRoutingID()));
   }
   mouse_locked_ = false;
 }
@@ -1116,10 +1107,11 @@ void BrowserPluginGuest::OnShowPopup(
 }
 #endif
 
-void BrowserPluginGuest::OnShowWidget(int route_id,
+void BrowserPluginGuest::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
   int process_id = GetWebContents()->GetMainFrame()->GetProcess()->GetID();
-  GetWebContents()->ShowCreatedWidget(process_id, route_id, initial_rect);
+  GetWebContents()->ShowCreatedWidget(process_id, widget_route_id,
+                                      initial_rect);
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {

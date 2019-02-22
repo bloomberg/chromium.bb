@@ -77,7 +77,8 @@ declare_args() {
   enable_hls_sample_aes = proprietary_codecs && is_chromecast
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
-  is_cast_using_cma_backend = is_cast_audio_only || !is_android
+  # TODO(sanfin): Remove this flag when all builds enable CMA.
+  is_cast_using_cma_backend = true
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
@@ -128,8 +129,8 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media =
-      is_android || is_chromecast || is_mac || enable_library_cdms || is_win
+  enable_mojo_media = is_android || is_chromecast || is_chromeos || is_mac ||
+                      is_win || enable_library_cdms
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
@@ -185,13 +186,21 @@ if (enable_mojo_media) {
     _default_mojo_media_host = "browser"
   } else if (is_android) {
     # Both chrome for Android and cast for Android belongs to this case
-    _default_mojo_media_services = [
-      "cdm",
-      "audio_decoder",
-      "video_decoder",
-    ]
-    _default_mojo_media_host = "gpu"
-  } else if (is_mac || is_win) {
+    if (is_cast_audio_only) {
+      _default_mojo_media_services = [
+        "cdm",
+        "audio_decoder",
+      ]
+      _default_mojo_media_host = "browser"
+    } else {
+      _default_mojo_media_services = [
+        "cdm",
+        "audio_decoder",
+        "video_decoder",
+      ]
+      _default_mojo_media_host = "gpu"
+    }
+  } else if (is_chromeos || is_mac || is_win) {
     _default_mojo_media_services = [ "video_decoder" ]
     _default_mojo_media_host = "gpu"
   }

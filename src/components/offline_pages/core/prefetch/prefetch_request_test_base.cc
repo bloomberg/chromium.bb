@@ -8,11 +8,12 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_entropy_provider.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/test/test_utils.h"
 
 namespace offline_pages {
 
@@ -21,15 +22,22 @@ const char PrefetchRequestTestBase::kExperimentValueSetInFieldTrial[] =
 
 PrefetchRequestTestBase::PrefetchRequestTestBase()
     : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_),
-      request_context_(new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())) {}
+      test_shared_url_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {
+  message_loop_.SetTaskRunner(task_runner_);
+}
 
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
 void PrefetchRequestTestBase::SetUp() {
   field_trial_list_ = std::make_unique<base::FieldTrialList>(
       std::make_unique<base::MockEntropyProvider>());
+
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        last_resource_request_ = request;
+      }));
 }
 
 void PrefetchRequestTestBase::SetUpExperimentOption() {
@@ -53,40 +61,41 @@ void PrefetchRequestTestBase::SetUpExperimentOption() {
 }
 
 void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
-  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-  DCHECK(url_fetcher);
-  url_fetcher->set_status(net::URLRequestStatus::FromError(net_error));
-  url_fetcher->SetResponseString("");
-  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  int pending_requests_count = test_url_loader_factory_.NumPending();
+  DCHECK(pending_requests_count > 0);
+  network::URLLoaderCompletionStatus completion_status(net_error);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GetPendingRequest(0)->request.url, completion_status,
+      network::ResourceResponseHead(), std::string());
 }
 
-void PrefetchRequestTestBase::RespondWithHttpError(int http_error) {
-  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-  DCHECK(url_fetcher);
-  url_fetcher->set_status(net::URLRequestStatus());
-  url_fetcher->set_response_code(http_error);
-  url_fetcher->SetResponseString("");
-  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+void PrefetchRequestTestBase::RespondWithHttpError(
+    net::HttpStatusCode http_error) {
+  int pending_requests_count = test_url_loader_factory_.NumPending();
+  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  DCHECK(pending_requests_count > 0);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GetPendingRequest(0)->request.url,
+      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      std::string());
 }
 
 void PrefetchRequestTestBase::RespondWithData(const std::string& data) {
-  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-  DCHECK(url_fetcher);
-  url_fetcher->set_status(net::URLRequestStatus());
-  url_fetcher->set_response_code(net::HTTP_OK);
-  url_fetcher->SetResponseString(data);
-  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GetPendingRequest(0)->request.url.spec(), data);
 }
 
-net::TestURLFetcher* PrefetchRequestTestBase::GetRunningFetcher() {
-  // All created TestURLFetchers have ID 0 by default.
-  return url_fetcher_factory_.GetFetcherByID(0);
+network::TestURLLoaderFactory::PendingRequest*
+PrefetchRequestTestBase::GetPendingRequest(size_t index) {
+  return test_url_loader_factory_.GetPendingRequest(index);
 }
 
 std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
-    net::TestURLFetcher* fetcher) {
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
+    network::TestURLLoaderFactory::PendingRequest* pending_request) {
+  DCHECK(pending_request);
+
+  net::HttpRequestHeaders headers = pending_request->request.headers;
 
   std::string experiment_header;
   headers.GetHeader(kPrefetchExperimentHeaderName, &experiment_header);

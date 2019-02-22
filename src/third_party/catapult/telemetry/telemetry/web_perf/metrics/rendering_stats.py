@@ -29,16 +29,6 @@ MAIN_THREAD_SCROLL_UPDATE_EVENT_NAME = 'Latency::ScrollUpdate'
 # Name for a gesture scroll update latency event.
 GESTURE_SCROLL_UPDATE_EVENT_NAME = 'InputLatency::GestureScrollUpdate'
 
-# These are keys used in the 'data' field dictionary located in
-# BenchmarkInstrumentation::ImplThreadRenderingStats.
-VISIBLE_CONTENT_DATA = 'visible_content_area'
-APPROXIMATED_VISIBLE_CONTENT_DATA = 'approximated_visible_content_area'
-CHECKERBOARDED_VISIBLE_CONTENT_DATA = 'checkerboarded_visible_content_area'
-# These are keys used in the 'errors' field  dictionary located in
-# RenderingStats in this file.
-APPROXIMATED_PIXEL_ERROR = 'approximated_pixel_percentages'
-CHECKERBOARDED_PIXEL_ERROR = 'checkerboarded_pixel_percentages'
-
 
 def GetLatencyEvents(process, timeline_range):
   """Get LatencyInfo trace events from the process's trace buffer that are
@@ -105,14 +95,10 @@ def ComputeEventLatencies(input_events):
   return [(name, latency) for _, name, latency in input_event_latencies]
 
 
-def GetTimeStampEventNameAndProcess(browser_process, surface_flinger_process,
-                                    gpu_process):
+def GetTimeStampEventNameAndProcess(browser_process, gpu_process):
   """ Returns the name of the event used to count frame timestamps, and the
       process that produced the events.
   """
-  if surface_flinger_process:
-    return 'vsync_before', surface_flinger_process
-
   drm_event_name = 'DrmEventFlipComplete'
   display_rendering_stats = 'BenchmarkInstrumentation::DisplayRenderingStats'
   if gpu_process:
@@ -127,8 +113,8 @@ def GetTimeStampEventNameAndProcess(browser_process, surface_flinger_process,
 
 
 class RenderingStats(object):
-  def __init__(self, renderer_process, browser_process, surface_flinger_process,
-               gpu_process, interaction_records):
+  def __init__(self, renderer_process, browser_process, gpu_process,
+               interaction_records):
     """
     Utility class for extracting rendering statistics from the timeline (or
     other logging facilities), and providing them in a common format to classes
@@ -143,9 +129,7 @@ class RenderingStats(object):
     self.refresh_period = None
 
     timestamp_event_name, timestamp_process = GetTimeStampEventNameAndProcess(
-        browser_process, surface_flinger_process, gpu_process)
-    if surface_flinger_process:
-      self._GetRefreshPeriodFromSurfaceFlingerProcess(surface_flinger_process)
+        browser_process, gpu_process)
 
     # A lookup from list names below to any errors or exceptions encountered
     # in attempting to generate that list.
@@ -155,8 +139,6 @@ class RenderingStats(object):
     self.frame_times = []
     self.ui_frame_timestamps = []
     self.ui_frame_times = []
-    self.approximated_pixel_percentages = []
-    self.checkerboarded_pixel_percentages = []
     # End-to-end latency for input event - from when input event is
     # generated to when the its resulted page is swap buffered.
     self.input_event_latency = []
@@ -173,8 +155,6 @@ class RenderingStats(object):
       self.frame_times.append([])
       self.ui_frame_timestamps.append([])
       self.ui_frame_times.append([])
-      self.approximated_pixel_percentages.append([])
-      self.checkerboarded_pixel_percentages.append([])
       self.input_event_latency.append([])
       self.main_thread_scroll_latency.append([])
       self.gesture_scroll_update_latency.append([])
@@ -186,17 +166,10 @@ class RenderingStats(object):
             timestamp_process, timestamp_event_name, timeline_range)
       if record.label.startswith("ui_"):
         self._InitUIFrameTimestampsFromTimeline(browser_process, timeline_range)
-      self._InitImplThreadRenderingStatsFromTimeline(
-          renderer_process, timeline_range)
       self._InitInputLatencyStatsFromTimeline(
           browser_process, renderer_process, timeline_range)
       self._InitFrameQueueingDurationsFromTimeline(
           renderer_process, timeline_range)
-
-  def _GetRefreshPeriodFromSurfaceFlingerProcess(self, surface_flinger_process):
-    for event in surface_flinger_process.IterAllEventsOfName('vsync_before'):
-      self.refresh_period = event.args['data']['refresh_period']
-      return
 
   def _InitInputLatencyStatsFromTimeline(
       self, browser_process, renderer_process, timeline_range):
@@ -256,42 +229,6 @@ class RenderingStats(object):
       if len(self.ui_frame_timestamps[-1]) >= 2:
         self.ui_frame_times[-1].append(
             self.ui_frame_timestamps[-1][-1] - self.ui_frame_timestamps[-1][-2])
-
-  def _InitImplThreadRenderingStatsFromTimeline(self, process, timeline_range):
-    event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
-    for event in self._GatherEvents(event_name, process, timeline_range):
-      data = event.args['data']
-      if VISIBLE_CONTENT_DATA not in data:
-        self.errors[APPROXIMATED_PIXEL_ERROR] = (
-            'Calculating approximated_pixel_percentages not possible because '
-            'visible_content_area was missing.')
-        self.errors[CHECKERBOARDED_PIXEL_ERROR] = (
-            'Calculating checkerboarded_pixel_percentages not possible '
-            'because visible_content_area was missing.')
-        return
-      visible_content_area = data[VISIBLE_CONTENT_DATA]
-      if visible_content_area == 0:
-        self.errors[APPROXIMATED_PIXEL_ERROR] = (
-            'Calculating approximated_pixel_percentages would have caused '
-            'a divide-by-zero')
-        self.errors[CHECKERBOARDED_PIXEL_ERROR] = (
-            'Calculating checkerboarded_pixel_percentages would have caused '
-            'a divide-by-zero')
-        return
-      if APPROXIMATED_VISIBLE_CONTENT_DATA in data:
-        self.approximated_pixel_percentages[-1].append(
-            round(float(data[APPROXIMATED_VISIBLE_CONTENT_DATA]) /
-                  float(data[VISIBLE_CONTENT_DATA]) * 100.0, 3))
-      else:
-        self.errors[APPROXIMATED_PIXEL_ERROR] = (
-            'approximated_pixel_percentages was not recorded')
-      if CHECKERBOARDED_VISIBLE_CONTENT_DATA in data:
-        self.checkerboarded_pixel_percentages[-1].append(
-            round(float(data[CHECKERBOARDED_VISIBLE_CONTENT_DATA]) /
-                  float(data[VISIBLE_CONTENT_DATA]) * 100.0, 3))
-      else:
-        self.errors[CHECKERBOARDED_PIXEL_ERROR] = (
-            'checkerboarded_pixel_percentages was not recorded')
 
   def _InitFrameQueueingDurationsFromTimeline(self, process, timeline_range):
     try:

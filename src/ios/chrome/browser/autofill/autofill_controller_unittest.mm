@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -27,6 +28,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -40,6 +42,9 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/test/ios/ui_view_test_utils.h"
@@ -62,7 +67,7 @@
 @synthesize suggestions = _suggestions;
 @synthesize suggestionRetrievalComplete = _suggestionRetrievalComplete;
 
-- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState {
   self.suggestionRetrievalComplete = NO;
   [super retrieveSuggestionsForForm:params webState:webState];
@@ -177,6 +182,10 @@ class AutofillControllerTest : public ChromeWebTest {
   // |retrieveSuggestionsForForm| to avoid considering a former call.
   void WaitForSuggestionRetrieval(BOOL wait_for_trigger);
 
+  // Blocks until |expected_size| forms have been fecthed.
+  bool WaitForFormFetched(AutofillManager* manager,
+                          size_t expected_size) WARN_UNUSED_RESULT;
+
   // Fails if the specified metric was not registered the given number of times.
   void ExpectMetric(const std::string& histogram_name, int sum);
 
@@ -261,6 +270,14 @@ void AutofillControllerTest::WaitForSuggestionRetrieval(BOOL wait_for_trigger) {
   });
 }
 
+bool AutofillControllerTest::WaitForFormFetched(AutofillManager* manager,
+                                                size_t expected_size) {
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^bool {
+        return manager->form_structures().size() == expected_size;
+      });
+}
+
 void AutofillControllerTest::ExpectMetric(const std::string& histogram_name,
                                           int sum) {
   histogram_tester_->ExpectBucketCount(histogram_name, sum, 1);
@@ -274,13 +291,13 @@ void AutofillControllerTest::ExpectHappinessMetric(
 // Checks that viewing an HTML page containing a form results in the form being
 // registered as a FormStructure by the AutofillManager.
 TEST_F(AutofillControllerTest, ReadForm) {
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
-  EXPECT_TRUE(autofill_manager->form_structures().empty())
-      << "Forms are registered at beginning";
   LoadHtml(kProfileFormHtml);
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  AutofillManager* autofill_manager =
+      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
+          ->autofill_manager();
+  EXPECT_TRUE(WaitForFormFetched(autofill_manager, 1));
   const auto& forms = autofill_manager->form_structures();
-  ASSERT_EQ(1U, forms.size());
   const auto& form = *(forms.begin()->second);
   CheckField(form, NAME_FULL, "name_1");
   CheckField(form, ADDRESS_HOME_LINE1, "address_1");
@@ -295,11 +312,13 @@ TEST_F(AutofillControllerTest, ReadForm) {
 // the form being registered as a FormStructure by the AutofillManager, and the
 // name is correctly set.
 TEST_F(AutofillControllerTest, ReadFormName) {
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   LoadHtml(kMinimalFormWithNameHtml);
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  AutofillManager* autofill_manager =
+      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
+          ->autofill_manager();
+  EXPECT_TRUE(WaitForFormFetched(autofill_manager, 1));
   const auto& forms = autofill_manager->form_structures();
-  ASSERT_EQ(1U, forms.size());
   const auto& form = *(forms.begin()->second);
   EXPECT_EQ(base::UTF8ToUTF16("form1"), form.ToFormData().name);
 };
@@ -308,10 +327,9 @@ TEST_F(AutofillControllerTest, ReadFormName) {
 // with scripts (simulating user form submission) results in a profile being
 // successfully imported into the PersonalDataManager.
 TEST_F(AutofillControllerTest, ProfileImport) {
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   PersonalDataManager* personal_data_manager =
-      autofill_manager->client()->GetPersonalDataManager();
+      PersonalDataManagerFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
   LoadHtml(kProfileFormHtml);
@@ -342,10 +360,9 @@ TEST_F(AutofillControllerTest, ProfileImport) {
 };
 
 void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   PersonalDataManager* personal_data_manager =
-      autofill_manager->client()->GetPersonalDataManager();
+      PersonalDataManagerFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Homer Simpson"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Main Street"));
@@ -407,10 +424,9 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
 
 // Checks that multiple profiles will offer a matching number of suggestions.
 TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   PersonalDataManager* personal_data_manager =
-      autofill_manager->client()->GetPersonalDataManager();
+      PersonalDataManagerFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Homer Simpson"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Main Street"));
@@ -577,10 +593,10 @@ TEST_F(AutofillControllerTest, NoKeyValueSuggestionsWithoutTyping) {
 // card being successfully imported into the PersonalDataManager.
 TEST_F(AutofillControllerTest, CreditCardImport) {
   InfoBarManagerImpl::CreateForWebState(web_state());
-  AutofillManager* autofill_manager =
-      AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   PersonalDataManager* personal_data_manager =
-      autofill_manager->client()->GetPersonalDataManager();
+      PersonalDataManagerFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());
   LoadHtml(kCreditCardFormHtml);

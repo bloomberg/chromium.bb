@@ -45,6 +45,8 @@ import("//build/config/dcheck_always_on.gni")
 #       within this output manifest, specifically within a toplevel "services"
 #       list.
 #
+#   testonly (optional)
+#
 # Outputs:
 #
 #   An instantiation of this template produces a meta manifest from the source
@@ -61,6 +63,8 @@ template("service_manifest") {
       "Only one of \"source\" or \"source_manifest\" must be defined for the $target_name target")
 
   action(target_name) {
+    testonly = defined(invoker.testonly) && invoker.testonly
+
     script =
         "//services/service_manager/public/tools/manifest/manifest_collator.py"
 

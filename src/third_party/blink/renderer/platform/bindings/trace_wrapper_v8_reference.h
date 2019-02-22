@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 
 namespace blink {
 
@@ -26,6 +27,10 @@ class TraceWrapperV8Reference {
   }
 
   ~TraceWrapperV8Reference() { Clear(); }
+
+  bool operator==(const TraceWrapperV8Reference& other) const {
+    return handle_ == other.handle_;
+  }
 
   void Set(v8::Isolate* isolate, v8::Local<T> handle) {
     InternalSet(isolate, handle);
@@ -69,6 +74,7 @@ class TraceWrapperV8Reference {
     handle_.Reset(isolate, handle);
     ScriptWrappableMarkingVisitor::WriteBarrier(isolate,
                                                 UnsafeCast<v8::Value>());
+    UnifiedHeapMarkingVisitor::WriteBarrier(isolate, UnsafeCast<v8::Value>());
   }
 
   v8::Persistent<T> handle_;

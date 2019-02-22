@@ -27,8 +27,7 @@ class FromDictTest(unittest.TestCase):
 
   def testMinimumArguments(self):
     quest = run_test.RunTest.FromDict(_BASE_ARGUMENTS)
-    expected = run_test.RunTest('server', [{'key': 'value'}],
-                                run_test._DEFAULT_EXTRA_ARGS)
+    expected = run_test.RunTest('server', [{'key': 'value'}], [])
     self.assertEqual(quest, expected)
 
   def testAllArguments(self):
@@ -36,7 +35,7 @@ class FromDictTest(unittest.TestCase):
     arguments['extra_test_args'] = '["--custom-arg", "custom value"]'
     quest = run_test.RunTest.FromDict(arguments)
 
-    extra_args = ['--custom-arg', 'custom value'] + run_test._DEFAULT_EXTRA_ARGS
+    extra_args = ['--custom-arg', 'custom value']
     expected = run_test.RunTest('server', [{'key': 'value'}], extra_args)
     self.assertEqual(quest, expected)
 
@@ -56,8 +55,7 @@ class FromDictTest(unittest.TestCase):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['dimensions'] = '[{"key": "value"}]'
     quest = run_test.RunTest.FromDict(arguments)
-    expected = run_test.RunTest('server', [{'key': 'value'}],
-                                run_test._DEFAULT_EXTRA_ARGS)
+    expected = run_test.RunTest('server', [{'key': 'value'}], [])
     self.assertEqual(quest, expected)
 
   def testInvalidExtraTestArgs(self):
@@ -71,7 +69,7 @@ class FromDictTest(unittest.TestCase):
     arguments['extra_test_args'] = '--custom-arg "custom value"'
     quest = run_test.RunTest.FromDict(arguments)
 
-    extra_args = ['--custom-arg', 'custom value'] + run_test._DEFAULT_EXTRA_ARGS
+    extra_args = ['--custom-arg', 'custom value']
     expected = run_test.RunTest('server', [{'key': 'value'}], extra_args)
     self.assertEqual(quest, expected)
 
@@ -97,6 +95,35 @@ class _RunTestExecutionTest(unittest.TestCase):
             'execution_timeout_secs': '21600',
             'io_timeout_secs': '1200',
         },
+        'caches': [
+            {
+                'name': 'pinpoint_cache_vpython',
+                'path': '.pinpoint_cache/vpython'
+            },
+        ],
+        'cipd_input': {
+            'client_package': mock.ANY,
+            'server': mock.ANY,
+            'packages': [
+                {
+                    'package_name': 'infra/tools/luci/vpython/${platform}',
+                    'path': '',
+                    'version': mock.ANY,
+                },
+                {
+                    'package_name':
+                        'infra/tools/luci/vpython-native/${platform}',
+                    'path': '',
+                    'version': mock.ANY,
+                },
+            ],
+        },
+        'env': [
+            {
+                'key': 'VPYTHON_VIRTUALENV_ROOT',
+                'value': '.pinpoint_cache/vpython',
+            },
+        ],
     }
     swarming_tasks_new.assert_called_with(body)
 
@@ -119,6 +146,9 @@ class _RunTestExecutionTest(unittest.TestCase):
             'execution_timeout_secs': '21600',
             'io_timeout_secs': '1200',
         },
+        'caches': mock.ANY,
+        'cipd_input': mock.ANY,
+        'env': mock.ANY,
     }
     swarming_tasks_new.assert_called_with(body)
 

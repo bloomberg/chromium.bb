@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -185,7 +186,7 @@ public class DisplayCutoutControllerTest {
         verify(mTab).addObserver(mTabObserverCaptor.capture());
         reset(mTab);
 
-        mTabObserverCaptor.getValue().onShown(mTab);
+        mTabObserverCaptor.getValue().onShown(mTab, TabSelectionType.FROM_NEW);
         verify(mTab).getActivity();
     }
 }

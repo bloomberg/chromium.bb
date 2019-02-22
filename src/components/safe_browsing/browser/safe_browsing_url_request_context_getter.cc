@@ -7,10 +7,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/ssl/channel_id_service.h"
@@ -28,7 +30,7 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
       user_data_dir_(user_data_dir),
       system_context_getter_(system_context_getter),
       network_task_runner_(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {
   DCHECK(!user_data_dir.empty());
   DCHECK(system_context_getter_);
 }
@@ -47,7 +49,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         system_context_getter_->GetURLRequestContext());
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     // Set up the ChannelIDService
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =

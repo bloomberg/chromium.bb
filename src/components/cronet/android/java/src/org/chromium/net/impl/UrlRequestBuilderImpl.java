@@ -53,7 +53,7 @@ public class UrlRequestBuilderImpl extends ExperimentalUrlRequest.Builder {
     private UploadDataProvider mUploadDataProvider;
     // Executor to call upload data provider back on.
     private Executor mUploadDataProviderExecutor;
-    private boolean mAllowDirectExecutor = false;
+    private boolean mAllowDirectExecutor;
     private boolean mTrafficStatsTagSet;
     private int mTrafficStatsTag;
     private boolean mTrafficStatsUidSet;

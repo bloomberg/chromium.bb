@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DRIVEFS_EVENT_ROUTER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
@@ -43,6 +45,7 @@ class DriveFsEventRouter : public drivefs::DriveFsHostObserver {
       const drivefs::mojom::SyncingStatus& status) override;
   void OnFilesChanged(
       const std::vector<drivefs::mojom::FileChange>& changes) override;
+  void OnError(const drivefs::mojom::DriveError& error) override;
 
   void DispatchOnFileTransfersUpdatedEvent(
       const extensions::api::file_manager_private::FileTransferStatus& status);

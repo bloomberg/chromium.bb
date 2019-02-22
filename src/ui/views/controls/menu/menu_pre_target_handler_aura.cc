@@ -6,6 +6,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
@@ -23,16 +24,27 @@ aura::Window* GetOwnerRootWindow(views::Widget* owner) {
 MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
                                                    Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
-  aura::Env::GetInstance()->AddPreTargetHandler(
-      this, ui::EventTarget::Priority::kSystem);
   if (root_) {
+    root_->env()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
     wm::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
+  } else {
+    // TODO(mukai): check if this code path can run in ChromeOS and find the
+    // solution for SingleProcessMash.
+    if (features::IsUsingWindowService()) {
+      LOG(WARNING) << "MenuPreTargetHandlerAura is created without owner "
+                   << "widget. This may not work well in SingleProcessMash.";
+    }
+    aura::Env::GetInstance()->AddPreTargetHandler(
+        this, ui::EventTarget::Priority::kSystem);
   }
 }
 
 MenuPreTargetHandlerAura::~MenuPreTargetHandlerAura() {
-  aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  if (root_)
+    root_->env()->RemovePreTargetHandler(this);
+  else
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
 }
 

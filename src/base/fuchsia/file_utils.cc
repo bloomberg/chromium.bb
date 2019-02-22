@@ -4,6 +4,8 @@
 
 #include "base/fuchsia/file_utils.h"
 
+#include <fcntl.h>
+
 #include <lib/fdio/limits.h>
 #include <lib/fdio/util.h>
 #include <zircon/processargs.h>
@@ -40,6 +42,33 @@ zx::handle GetHandleFromFile(File file) {
   }
 
   return std::move(owned_handles[0]);
+}
+
+base::File GetFileFromHandle(zx::handle handle) {
+  base::ScopedFD fd;
+  zx_handle_t handles[1] = {handle.release()};
+  zx_handle_t types[1] = {PA_FDIO_REMOTE};
+  zx_status_t status = fdio_create_fd(handles, types, 1, fd.receive());
+  if (status != ZX_OK) {
+    ZX_LOG(WARNING, status) << "fdio_create_fd";
+    return base::File();
+  }
+
+  // Verify that the FD is file-like by querying it with a file-specific fcntl.
+  int flags = fcntl(fd.get(), F_GETFL);
+  if (flags == -1) {
+    LOG(WARNING) << "Handle is not a valid file descriptor.";
+
+    // Release the FD using FDIO directly instead of the ScopedFD
+    // destructor. ScopedFD calls close() which isn't supported by this FD.
+    fdio_t* fdio_to_drop;
+    status = fdio_unbind_from_fd(fd.release(), &fdio_to_drop);
+    ZX_CHECK(status == ZX_OK, status) << "fdio_unbind_from_fd";
+
+    return base::File();
+  }
+
+  return base::File(fd.release());
 }
 
 }  // namespace fuchsia

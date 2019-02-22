@@ -26,14 +26,6 @@ namespace gl
 
 namespace
 {
-enum CacheResult
-{
-    kCacheMiss,
-    kCacheHitMemory,
-    kCacheHitDisk,
-    kCacheResultMax,
-};
-
 constexpr unsigned int kWarningLimit = 3;
 
 void WriteShaderVar(BinaryOutputStream *stream, const sh::ShaderVariable &var)
@@ -196,10 +188,19 @@ HashStream &operator<<(HashStream &stream, const std::vector<std::string> &strin
     return stream;
 }
 
+HashStream &operator<<(HashStream &stream, const std::vector<gl::VariableLocation> &locations)
+{
+    for (const auto &loc : locations)
+    {
+        stream << loc.index << loc.arrayIndex << loc.ignored;
+    }
+    return stream;
+}
+
 }  // anonymous namespace
 
-MemoryProgramCache::MemoryProgramCache(size_t maxCacheSizeBytes)
-    : mProgramBinaryCache(maxCacheSizeBytes), mIssuedWarnings(0)
+MemoryProgramCache::MemoryProgramCache(egl::BlobCache &blobCache)
+    : mBlobCache(blobCache), mIssuedWarnings(0)
 {
 }
 
@@ -208,12 +209,12 @@ MemoryProgramCache::~MemoryProgramCache()
 }
 
 // static
-LinkResult MemoryProgramCache::Deserialize(const Context *context,
-                                           const Program *program,
-                                           ProgramState *state,
-                                           const uint8_t *binary,
-                                           size_t length,
-                                           InfoLog &infoLog)
+angle::Result MemoryProgramCache::Deserialize(const Context *context,
+                                              const Program *program,
+                                              ProgramState *state,
+                                              const uint8_t *binary,
+                                              size_t length,
+                                              InfoLog &infoLog)
 {
     BinaryInputStream stream(binary, length);
 
@@ -223,7 +224,7 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
         0)
     {
         infoLog << "Invalid program binary version.";
-        return false;
+        return angle::Result::Incomplete();
     }
 
     int majorVersion = stream.readInt<int>();
@@ -232,7 +233,7 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
         minorVersion != context->getClientMinorVersion())
     {
         infoLog << "Cannot load program binaries across different ES context versions.";
-        return false;
+        return angle::Result::Incomplete();
     }
 
     state->mComputeShaderLocalSize[0] = stream.readInt<int>();
@@ -344,7 +345,7 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
         context->getWorkarounds().disableProgramCachingForTransformFeedback)
     {
         infoLog << "Current driver does not support transform feedback in binary programs.";
-        return false;
+        return angle::Result::Incomplete();
     }
 
     ASSERT(state->mLinkedTransformFeedbackVaryings.empty());
@@ -371,6 +372,7 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
         sh::OutputVariable output;
         LoadShaderVar(&stream, &output);
         output.location = stream.readInt<int>();
+        output.index    = stream.readInt<int>();
         state->mOutputVariables.push_back(output);
     }
 
@@ -383,6 +385,17 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
         stream.readInt(&locationData.index);
         stream.readBool(&locationData.ignored);
         state->mOutputLocations.push_back(locationData);
+    }
+
+    unsigned int secondaryOutputVarCount = stream.readInt<unsigned int>();
+    ASSERT(state->mSecondaryOutputLocations.empty());
+    for (unsigned int outputIndex = 0; outputIndex < secondaryOutputVarCount; ++outputIndex)
+    {
+        VariableLocation locationData;
+        stream.readInt(&locationData.arrayIndex);
+        stream.readInt(&locationData.index);
+        stream.readBool(&locationData.ignored);
+        state->mSecondaryOutputLocations.push_back(locationData);
     }
 
     unsigned int outputTypeCount = stream.readInt<unsigned int>();
@@ -435,6 +448,7 @@ LinkResult MemoryProgramCache::Deserialize(const Context *context,
 
     state->updateTransformFeedbackStrides();
     state->updateActiveSamplers();
+    state->updateActiveImages();
 
     return program->getImplementation()->load(context, infoLog, &stream);
 }
@@ -562,10 +576,19 @@ void MemoryProgramCache::Serialize(const Context *context,
     {
         WriteShaderVar(&stream, output);
         stream.writeInt(output.location);
+        stream.writeInt(output.index);
     }
 
     stream.writeInt(state.getOutputLocations().size());
     for (const auto &outputVar : state.getOutputLocations())
+    {
+        stream.writeInt(outputVar.arrayIndex);
+        stream.writeIntOrNegOne(outputVar.index);
+        stream.writeInt(outputVar.ignored);
+    }
+
+    stream.writeInt(state.getSecondaryOutputLocations().size());
+    for (const auto &outputVar : state.getSecondaryOutputLocations())
     {
         stream.writeInt(outputVar.arrayIndex);
         stream.writeIntOrNegOne(outputVar.index);
@@ -623,7 +646,7 @@ void MemoryProgramCache::Serialize(const Context *context,
 // static
 void MemoryProgramCache::ComputeHash(const Context *context,
                                      const Program *program,
-                                     ProgramHash *hashOut)
+                                     egl::BlobCache::Key *hashOut)
 {
     // Compute the program hash. Start with the shader hashes and resource strings.
     HashStream hashStream;
@@ -640,7 +663,9 @@ void MemoryProgramCache::ComputeHash(const Context *context,
     hashStream << program->getAttributeBindings() << program->getUniformLocationBindings()
                << program->getFragmentInputBindings()
                << program->getState().getTransformFeedbackVaryingNames()
-               << program->getState().getTransformFeedbackBufferMode();
+               << program->getState().getTransformFeedbackBufferMode()
+               << program->getState().getOutputLocations()
+               << program->getState().getSecondaryOutputLocations();
 
     // Call the secure SHA hashing function.
     const std::string &programKey = hashStream.str();
@@ -648,163 +673,128 @@ void MemoryProgramCache::ComputeHash(const Context *context,
                                programKey.length(), hashOut->data());
 }
 
-LinkResult MemoryProgramCache::getProgram(const Context *context,
-                                          const Program *program,
-                                          ProgramState *state,
-                                          ProgramHash *hashOut)
+angle::Result MemoryProgramCache::getProgram(const Context *context,
+                                             const Program *program,
+                                             ProgramState *state,
+                                             egl::BlobCache::Key *hashOut)
 {
     ComputeHash(context, program, hashOut);
-    const angle::MemoryBuffer *binaryProgram = nullptr;
-    LinkResult result(false);
-    if (get(*hashOut, &binaryProgram))
+    egl::BlobCache::Value binaryProgram;
+    if (get(context, *hashOut, &binaryProgram))
     {
         InfoLog infoLog;
-        ANGLE_TRY_RESULT(Deserialize(context, program, state, binaryProgram->data(),
-                                     binaryProgram->size(), infoLog),
-                         result);
-        ANGLE_HISTOGRAM_BOOLEAN("GPU.ANGLE.ProgramCache.LoadBinarySuccess", result.getResult());
-        if (!result.getResult())
-        {
-            // Cache load failed, evict.
-            if (mIssuedWarnings++ < kWarningLimit)
-            {
-                WARN() << "Failed to load binary from cache: " << infoLog.str();
+        angle::Result result = Deserialize(context, program, state, binaryProgram.data(),
+                                           binaryProgram.size(), infoLog);
+        ANGLE_HISTOGRAM_BOOLEAN("GPU.ANGLE.ProgramCache.LoadBinarySuccess",
+                                result == angle::Result::Continue());
+        ANGLE_TRY(result);
 
-                if (mIssuedWarnings == kWarningLimit)
-                {
-                    WARN() << "Reaching warning limit for cache load failures, silencing "
-                              "subsequent warnings.";
-                }
+        if (result == angle::Result::Continue())
+            return angle::Result::Continue();
+
+        // Cache load failed, evict.
+        if (mIssuedWarnings++ < kWarningLimit)
+        {
+            WARN() << "Failed to load binary from cache: " << infoLog.str();
+
+            if (mIssuedWarnings == kWarningLimit)
+            {
+                WARN() << "Reaching warning limit for cache load failures, silencing "
+                          "subsequent warnings.";
             }
-            remove(*hashOut);
         }
+        remove(*hashOut);
     }
-    return result;
+    return angle::Result::Incomplete();
 }
 
-bool MemoryProgramCache::get(const ProgramHash &programHash, const angle::MemoryBuffer **programOut)
+bool MemoryProgramCache::get(const Context *context,
+                             const egl::BlobCache::Key &programHash,
+                             egl::BlobCache::Value *programOut)
 {
-    const CacheEntry *entry = nullptr;
-    if (!mProgramBinaryCache.get(programHash, &entry))
-    {
-        ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.ProgramCache.CacheResult", kCacheMiss,
-                                    kCacheResultMax);
-        return false;
-    }
-
-    if (entry->second == CacheSource::PutProgram)
-    {
-        ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.ProgramCache.CacheResult", kCacheHitMemory,
-                                    kCacheResultMax);
-    }
-    else
-    {
-        ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.ProgramCache.CacheResult", kCacheHitDisk,
-                                    kCacheResultMax);
-    }
-
-    *programOut = &entry->first;
-    return true;
+    return mBlobCache.get(context->getScratchBuffer(), programHash, programOut);
 }
 
 bool MemoryProgramCache::getAt(size_t index,
-                               ProgramHash *hashOut,
-                               const angle::MemoryBuffer **programOut)
+                               const egl::BlobCache::Key **hashOut,
+                               egl::BlobCache::Value *programOut)
 {
-    const CacheEntry *entry = nullptr;
-    if (!mProgramBinaryCache.getAt(index, hashOut, &entry))
-    {
-        return false;
-    }
-
-    *programOut = &entry->first;
-    return true;
+    return mBlobCache.getAt(index, hashOut, programOut);
 }
 
-void MemoryProgramCache::remove(const ProgramHash &programHash)
+void MemoryProgramCache::remove(const egl::BlobCache::Key &programHash)
 {
-    bool result = mProgramBinaryCache.eraseByKey(programHash);
-    ASSERT(result);
+    mBlobCache.remove(programHash);
 }
 
-void MemoryProgramCache::putProgram(const ProgramHash &programHash,
+void MemoryProgramCache::putProgram(const egl::BlobCache::Key &programHash,
                                     const Context *context,
                                     const Program *program)
 {
-    CacheEntry newEntry;
-    Serialize(context, program, &newEntry.first);
-    newEntry.second = CacheSource::PutProgram;
+    angle::MemoryBuffer serializedProgram;
+    Serialize(context, program, &serializedProgram);
 
     ANGLE_HISTOGRAM_COUNTS("GPU.ANGLE.ProgramCache.ProgramBinarySizeBytes",
-                           static_cast<int>(newEntry.first.size()));
+                           static_cast<int>(serializedProgram.size()));
 
-    const CacheEntry *result =
-        mProgramBinaryCache.put(programHash, std::move(newEntry), newEntry.first.size());
-    if (!result)
-    {
-        ERR() << "Failed to store binary program in memory cache, program is too large.";
-    }
-    else
-    {
-        auto *platform = ANGLEPlatformCurrent();
-        platform->cacheProgram(platform, programHash, result->first.size(), result->first.data());
-    }
+    // TODO(syoussefi): to be removed.  Compatibility for Chrome until it supports
+    // EGL_ANDROID_blob_cache. http://anglebug.com/2516
+    auto *platform = ANGLEPlatformCurrent();
+    platform->cacheProgram(platform, programHash, serializedProgram.size(),
+                           serializedProgram.data());
+
+    mBlobCache.put(programHash, std::move(serializedProgram));
 }
 
 void MemoryProgramCache::updateProgram(const Context *context, const Program *program)
 {
-    gl::ProgramHash programHash;
+    egl::BlobCache::Key programHash;
     ComputeHash(context, program, &programHash);
     putProgram(programHash, context, program);
 }
 
-void MemoryProgramCache::putBinary(const ProgramHash &programHash,
+void MemoryProgramCache::putBinary(const egl::BlobCache::Key &programHash,
                                    const uint8_t *binary,
                                    size_t length)
 {
     // Copy the binary.
-    CacheEntry newEntry;
-    newEntry.first.resize(length);
-    memcpy(newEntry.first.data(), binary, length);
-    newEntry.second = CacheSource::PutBinary;
+    angle::MemoryBuffer newEntry;
+    newEntry.resize(length);
+    memcpy(newEntry.data(), binary, length);
 
     // Store the binary.
-    const CacheEntry *result = mProgramBinaryCache.put(programHash, std::move(newEntry), length);
-    if (!result)
-    {
-        ERR() << "Failed to store binary program in memory cache, program is too large.";
-    }
+    mBlobCache.populate(programHash, std::move(newEntry));
 }
 
 void MemoryProgramCache::clear()
 {
-    mProgramBinaryCache.clear();
+    mBlobCache.clear();
     mIssuedWarnings = 0;
 }
 
 void MemoryProgramCache::resize(size_t maxCacheSizeBytes)
 {
-    mProgramBinaryCache.resize(maxCacheSizeBytes);
+    mBlobCache.resize(maxCacheSizeBytes);
 }
 
 size_t MemoryProgramCache::entryCount() const
 {
-    return mProgramBinaryCache.entryCount();
+    return mBlobCache.entryCount();
 }
 
 size_t MemoryProgramCache::trim(size_t limit)
 {
-    return mProgramBinaryCache.shrinkToSize(limit);
+    return mBlobCache.trim(limit);
 }
 
 size_t MemoryProgramCache::size() const
 {
-    return mProgramBinaryCache.size();
+    return mBlobCache.size();
 }
 
 size_t MemoryProgramCache::maxSize() const
 {
-    return mProgramBinaryCache.maxSize();
+    return mBlobCache.maxSize();
 }
 
 }  // namespace gl

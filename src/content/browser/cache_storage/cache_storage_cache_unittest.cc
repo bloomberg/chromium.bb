@@ -20,9 +20,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +62,8 @@ namespace content {
 namespace cache_storage_cache_unittest {
 
 const char kTestData[] = "Hello World";
-const char kOrigin[] = "http://example.com";
+// TODO(crbug.com/889590): Use helper for url::Origin creation from string.
+const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
 const char kCacheName[] = "test_cache";
 const GURL kBodyUrl("http://example.com/body.html");
 const GURL kBodyUrlWithQuery("http://example.com/body.html?query=test");
@@ -96,10 +99,10 @@ class DelayableBackend : public disk_cache::Backend {
     return backend_->GetCacheType();
   }
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
-  int OpenEntry(const std::string& key,
-                net::RequestPriority request_priority,
-                disk_cache::Entry** entry,
-                CompletionOnceCallback callback) override {
+  net::Error OpenEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       disk_cache::Entry** entry,
+                       CompletionOnceCallback callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
       open_entry_callback_ = base::BindOnce(
           &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
@@ -110,32 +113,33 @@ class DelayableBackend : public disk_cache::Backend {
                                std::move(callback));
   }
 
-  int CreateEntry(const std::string& key,
-                  net::RequestPriority request_priority,
-                  disk_cache::Entry** entry,
-                  CompletionOnceCallback callback) override {
+  net::Error CreateEntry(const std::string& key,
+                         net::RequestPriority request_priority,
+                         disk_cache::Entry** entry,
+                         CompletionOnceCallback callback) override {
     return backend_->CreateEntry(key, request_priority, entry,
                                  std::move(callback));
   }
-  int DoomEntry(const std::string& key,
-                net::RequestPriority request_priority,
-                CompletionOnceCallback callback) override {
+  net::Error DoomEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       CompletionOnceCallback callback) override {
     return backend_->DoomEntry(key, request_priority, std::move(callback));
   }
-  int DoomAllEntries(CompletionOnceCallback callback) override {
+  net::Error DoomAllEntries(CompletionOnceCallback callback) override {
     return backend_->DoomAllEntries(std::move(callback));
   }
-  int DoomEntriesBetween(base::Time initial_time,
-                         base::Time end_time,
-                         CompletionOnceCallback callback) override {
+  net::Error DoomEntriesBetween(base::Time initial_time,
+                                base::Time end_time,
+                                CompletionOnceCallback callback) override {
     return backend_->DoomEntriesBetween(initial_time, end_time,
                                         std::move(callback));
   }
-  int DoomEntriesSince(base::Time initial_time,
-                       CompletionOnceCallback callback) override {
+  net::Error DoomEntriesSince(base::Time initial_time,
+                              CompletionOnceCallback callback) override {
     return backend_->DoomEntriesSince(initial_time, std::move(callback));
   }
-  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override {
+  int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) override {
     return backend_->CalculateSizeOfAllEntries(std::move(callback));
   }
   std::unique_ptr<Iterator> CreateIterator() override {
@@ -384,9 +388,8 @@ class CacheStorageCacheTest : public testing::Test {
     mock_quota_manager_ = new MockQuotaManager(
         is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
-    mock_quota_manager_->SetQuota(GURL(kOrigin),
-                                  blink::mojom::StorageType::kTemporary,
-                                  1024 * 1024 * 100);
+    mock_quota_manager_->SetQuota(
+        kOrigin, blink::mojom::StorageType::kTemporary, 1024 * 1024 * 100);
 
     quota_manager_proxy_ = new MockQuotaManagerProxy(
         mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
@@ -412,8 +415,7 @@ class CacheStorageCacheTest : public testing::Test {
         MakeRequest(&blob_ptr_));
 
     cache_ = std::make_unique<TestCacheStorageCache>(
-        url::Origin::Create(GURL(kOrigin)), kCacheName, temp_dir_path,
-        nullptr /* CacheStorage */,
+        kOrigin, kCacheName, temp_dir_path, nullptr /* CacheStorage */,
         BrowserContext::GetDefaultStoragePartition(&browser_context_)
             ->GetURLRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
@@ -920,6 +922,8 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutBadMessage) {
+  base::HistogramTester histogram_tester;
+
   // Two unique puts that will collectively overflow unit64_t size of the
   // batch operation.
   blink::mojom::BatchOperationPtr operation1 =
@@ -938,6 +942,8 @@ TEST_P(CacheStorageCacheTestP, PutBadMessage) {
   operations.push_back(std::move(operation2));
   EXPECT_EQ(CacheStorageError::kErrorStorage,
             BatchOperation(std::move(operations)));
+  histogram_tester.ExpectBucketCount("ServiceWorkerCache.ErrorStorageType",
+                                     ErrorStorageType::kBatchInvalidSpace, 1);
   EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
@@ -1532,8 +1538,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin),
-                                blink::mojom::StorageType::kTemporary,
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
                                 expected_blob_data_.size() - 1);
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
   const std::string expected_side_data = "SideData";
@@ -1548,8 +1553,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin),
-                                blink::mojom::StorageType::kTemporary,
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
                                 expected_blob_data_.size());
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
   const std::string expected_side_data = "SideData";
@@ -1570,6 +1574,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
+  base::HistogramTester histogram_tester;
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
 
   const std::string expected_side_data = "SideData";
@@ -1589,6 +1594,9 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
   operations.emplace_back(std::move(operation));
   EXPECT_EQ(CacheStorageError::kErrorStorage,
             BatchOperation(std::move(operations)));
+  histogram_tester.ExpectBucketCount(
+      "ServiceWorkerCache.ErrorStorageType",
+      ErrorStorageType::kBatchDidGetUsageAndQuotaInvalidSpace, 1);
   EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
@@ -1601,8 +1609,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
   EXPECT_TRUE(Put(body_request_, std::move(response)));
 
   const std::string expected_side_data1 = "SideDataSample";
-  scoped_refptr<net::IOBuffer> buffer1(
-      new net::StringIOBuffer(expected_side_data1));
+  scoped_refptr<net::IOBuffer> buffer1 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data1);
   EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer1,
                             expected_side_data1.length()));
 
@@ -1613,8 +1621,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
   EXPECT_TRUE(ResponseSideDataEqual(expected_side_data1, blob1.get()));
 
   const std::string expected_side_data2 = "New data";
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(expected_side_data2));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data2);
   EXPECT_TRUE(WriteSideData(body_request_.url, response_time, buffer2,
                             expected_side_data2.length()));
   EXPECT_TRUE(Match(body_request_));
@@ -1627,15 +1635,16 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExceeded) {
-  mock_quota_manager_->SetQuota(
-      GURL(kOrigin), blink::mojom::StorageType::kTemporary, 1024 * 1023);
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                1024 * 1023);
   base::Time response_time(base::Time::Now());
   blink::mojom::FetchAPIResponsePtr response(CreateNoBodyResponse());
   response->response_time = response_time;
   EXPECT_TRUE(Put(no_body_request_, std::move(response)));
 
   const size_t kSize = 1024 * 1024;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
@@ -1655,7 +1664,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaManagerModified) {
   EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
 
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_TRUE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
@@ -1671,7 +1681,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
   EXPECT_TRUE(Put(no_body_request_, std::move(response)));
 
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(no_body_request_.url,
                              response_time + base::TimeDelta::FromSeconds(1),
@@ -1682,7 +1693,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_NotFound) {
   const size_t kSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(GURL("http://www.example.com/not_exist"),
                              base::Time::Now(), buffer, kSize));
@@ -1731,8 +1743,8 @@ TEST_P(CacheStorageCacheTestP, QuotaManagerModified) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimits) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin),
-                                blink::mojom::StorageType::kTemporary, 0);
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                0);
   EXPECT_FALSE(Put(body_request_, CreateBlobBodyResponse()));
   EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
 }
@@ -1769,8 +1781,8 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
 
   // Now write some side data to that cache.
   const std::string expected_side_data(2048, 'X');
-  scoped_refptr<net::IOBuffer> side_data_buffer(
-      new net::StringIOBuffer(expected_side_data));
+  scoped_refptr<net::IOBuffer> side_data_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data);
   EXPECT_TRUE(WriteSideData(non_opaque_request.url, response_time,
                             side_data_buffer, expected_side_data.length()));
   int64_t unpadded_total_resource_size = Size();
@@ -1813,8 +1825,8 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
 
   // Now reset opaque side data back to zero.
   const std::string expected_side_data2 = "";
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(expected_side_data2));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data2);
   EXPECT_TRUE(WriteSideData(opaque_request.url, response_time, buffer2,
                             expected_side_data2.length()));
   EXPECT_EQ(size_after_opaque_put, Size());
@@ -1835,8 +1847,8 @@ TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {
   int64_t opaque_cache_size_no_side_data = Size();
 
   const std::string small_side_data(1024, 'X');
-  scoped_refptr<net::IOBuffer> buffer1(
-      new net::StringIOBuffer(small_side_data));
+  scoped_refptr<net::IOBuffer> buffer1 =
+      base::MakeRefCounted<net::StringIOBuffer>(small_side_data);
   EXPECT_TRUE(WriteSideData(request.url, response_time, buffer1,
                             small_side_data.length()));
   int64_t opaque_cache_size_with_side_data = Size();
@@ -1846,8 +1858,8 @@ TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {
   // at all.
   const std::string large_side_data(2048, 'X');
   EXPECT_NE(large_side_data.length(), small_side_data.length());
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(large_side_data));
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::StringIOBuffer>(large_side_data);
   EXPECT_TRUE(WriteSideData(request.url, response_time, buffer2,
                             large_side_data.length()));
   int side_data_delta = large_side_data.length() - small_side_data.length();

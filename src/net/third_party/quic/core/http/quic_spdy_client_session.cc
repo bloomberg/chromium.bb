@@ -9,6 +9,8 @@
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_server_id.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -44,20 +46,30 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
-    QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
-                    << "Already " << GetNumOpenOutgoingStreams() << " open.";
-    return false;
+  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+    if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
+      QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
+                      << "Already " << GetNumOpenOutgoingStreams() << " open.";
+      return false;
+    }
+    if (goaway_received() && respect_goaway_) {
+      QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
+                      << "Already received goaway.";
+      return false;
+    }
+    return true;
   }
   if (goaway_received() && respect_goaway_) {
     QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                     << "Already received goaway.";
     return false;
   }
-  return true;
+  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
+  return CanOpenNextOutgoingStream();
 }
 
-QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
+QuicSpdyClientStream*
+QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
@@ -67,9 +79,16 @@ QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
   return stream_ptr;
 }
 
+QuicSpdyClientStream*
+QuicSpdyClientSession::CreateOutgoingUnidirectionalStream() {
+  QUIC_BUG << "Try to create outgoing unidirectional client data streams";
+  return nullptr;
+}
+
 std::unique_ptr<QuicSpdyClientStream>
 QuicSpdyClientSession::CreateClientStream() {
-  return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this);
+  return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this,
+                                              BIDIRECTIONAL);
 }
 
 QuicCryptoClientStreamBase* QuicSpdyClientSession::GetMutableCryptoStream() {
@@ -119,8 +138,8 @@ QuicSpdyStream* QuicSpdyClientSession::CreateIncomingDynamicStream(
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
-  QuicSpdyStream* stream = new QuicSpdyClientStream(id, this);
-  stream->CloseWriteSide();
+  QuicSpdyStream* stream =
+      new QuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }

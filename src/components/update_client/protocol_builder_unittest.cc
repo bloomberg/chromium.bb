@@ -23,7 +23,7 @@ TEST(BuildProtocolRequest, SessionIdProdIdVersion) {
   // Verifies that |session_id|, |prod_id| and |version| are serialized.
   const string request = BuildProtocolRequest(
       "15160585-8ADE-4D3C-839B-1281A6035D1F", "some_prod_id", "1.0", "", "", "",
-      "", "", "", nullptr);
+      "", "", {}, nullptr);
   EXPECT_NE(
       string::npos,
       request.find(" sessionid=\"{15160585-8ADE-4D3C-839B-1281A6035D1F}\" "));
@@ -35,12 +35,12 @@ TEST(BuildProtocolRequest, SessionIdProdIdVersion) {
 TEST(BuildProtocolRequest, DownloadPreference) {
   // Verifies that an empty |download_preference| is not serialized.
   const string request_no_dlpref =
-      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr);
+      BuildProtocolRequest("1", "", "", "", "", "", "", "", {}, nullptr);
   EXPECT_EQ(string::npos, request_no_dlpref.find(" dlpref="));
 
   // Verifies that |download_preference| is serialized.
   const string request_with_dlpref = BuildProtocolRequest(
-      "1", "", "", "", "", "", "some pref", "", "", nullptr);
+      "1", "", "", "", "", "", "some pref", "", {}, nullptr);
   EXPECT_NE(string::npos, request_with_dlpref.find(" dlpref=\"some pref\""));
 }
 
@@ -48,7 +48,7 @@ TEST(BuildProtocolRequest, UpdaterStateAttributes) {
   // When no updater state is provided, then check that the elements and
   // attributes related to the updater state are not serialized.
   std::string request =
-      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr);
+      BuildProtocolRequest("1", "", "", "", "", "", "", "", {}, nullptr);
   EXPECT_EQ(std::string::npos, request.find(" domainjoined"));
   EXPECT_EQ(std::string::npos, request.find("<updater"));
 
@@ -62,7 +62,7 @@ TEST(BuildProtocolRequest, UpdaterStateAttributes) {
   attributes["autoupdatecheckenabled"] = "0";
   attributes["updatepolicy"] = "-1";
   request = BuildProtocolRequest(
-      "1", "", "", "", "", "", "", "", "",
+      "1", "", "", "", "", "", "", "", {},
       std::make_unique<UpdaterState::Attributes>(attributes));
   EXPECT_NE(std::string::npos, request.find(" domainjoined=\"1\""));
   const std::string updater_element =

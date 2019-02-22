@@ -676,79 +676,6 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   DrainMessageLoop();
 }
 
-static scoped_refptr<SiteInstanceImpl> CreateSiteInstance(
-    BrowserContext* browser_context,
-    const GURL& url) {
-  return SiteInstanceImpl::CreateForURL(browser_context, url);
-}
-
-// Test to ensure that pages that require certain privileges are grouped
-// in processes with similar pages.
-// TODO(nasko): Remove. See https://crbug.com/847127.
-TEST_F(SiteInstanceTest, ProcessSharingByType) {
-  // This test shouldn't run with --site-per-process mode, which prohibits
-  // the renderer process reuse this test explicitly exercises.
-  if (AreAllSitesIsolatedForTesting())
-    return;
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  // Make a bunch of mock renderers so that we hit the limit.
-  std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
-  for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    hosts.push_back(
-        std::make_unique<MockRenderProcessHost>(browser_context.get()));
-    hosts[i]->SetIsUsed();
-  }
-
-  // On Android by default the number of renderer hosts is unlimited and process
-  // sharing doesn't happen. We set the override so that the test can run
-  // everywhere.
-  RenderProcessHost::SetMaxRendererProcessCount(kMaxRendererProcessCount);
-
-  // Create some extension instances and make sure they share a process.
-  scoped_refptr<SiteInstanceImpl> extension1_instance(
-      CreateSiteInstance(browser_context.get(),
-          GURL(kPrivilegedScheme + std::string("://foo/bar"))));
-  set_privileged_process_id(extension1_instance->GetProcess()->GetID());
-
-  scoped_refptr<SiteInstanceImpl> extension2_instance(
-      CreateSiteInstance(browser_context.get(),
-          GURL(kPrivilegedScheme + std::string("://baz/bar"))));
-
-  std::unique_ptr<RenderProcessHost> extension_host(
-      extension1_instance->GetProcess());
-  EXPECT_EQ(extension1_instance->GetProcess(),
-            extension2_instance->GetProcess());
-
-  // Create some WebUI instances and make sure they share a process.
-  scoped_refptr<SiteInstanceImpl> webui1_instance(
-      CreateSiteInstance(browser_context.get(), GetWebUIURL(kChromeUIGpuHost)));
-  policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID(),
-                             BINDINGS_POLICY_WEB_UI);
-
-  scoped_refptr<SiteInstanceImpl> webui2_instance(CreateSiteInstance(
-      browser_context.get(), GetWebUIURL(kChromeUIMediaInternalsHost)));
-
-  std::unique_ptr<RenderProcessHost> dom_host(webui1_instance->GetProcess());
-  EXPECT_EQ(webui1_instance->GetProcess(), webui2_instance->GetProcess());
-
-  // Make sure none of differing privilege processes are mixed.
-  EXPECT_NE(extension1_instance->GetProcess(), webui1_instance->GetProcess());
-
-  for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    EXPECT_NE(extension1_instance->GetProcess(), hosts[i].get());
-    EXPECT_NE(webui1_instance->GetProcess(), hosts[i].get());
-  }
-
-  DrainMessageLoop();
-
-  // Disable the process limit override.
-  RenderProcessHost::SetMaxRendererProcessCount(0u);
-}
-
 // Test to ensure that HasWrongProcessForURL behaves properly for different
 // types of URLs.
 TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
@@ -943,55 +870,6 @@ TEST_F(SiteInstanceTest, IsSameWebsiteForNestedURLs) {
   EXPECT_FALSE(
       SiteInstance::IsSameWebSite(nullptr, https_bar_url, blob_bar_url));
   EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, https_bar_url, fs_bar_url));
-}
-
-TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
-  if (AreAllSitesIsolatedForTesting())
-    return;  // --top-document-isolation is not possible.
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kTopDocumentIsolation);
-
-  std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  scoped_refptr<SiteInstanceImpl> main_instance =
-      SiteInstanceImpl::Create(browser_context.get());
-  scoped_refptr<SiteInstanceImpl> subframe_instance =
-      main_instance->GetDefaultSubframeSiteInstance();
-  int subframe_instance_id = subframe_instance->GetId();
-
-  EXPECT_NE(main_instance, subframe_instance);
-  EXPECT_EQ(subframe_instance, main_instance->GetDefaultSubframeSiteInstance());
-  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
-
-  EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the subframe instance.
-  subframe_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Calling GetDefaultSubframeSiteInstance again should return a new
-  // SiteInstance with a different ID from the original.
-  subframe_instance = main_instance->GetDefaultSubframeSiteInstance();
-  EXPECT_NE(subframe_instance->GetId(), subframe_instance_id);
-  EXPECT_FALSE(main_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_TRUE(subframe_instance->IsDefaultSubframeSiteInstance());
-  EXPECT_EQ(subframe_instance->GetDefaultSubframeSiteInstance(),
-            subframe_instance);
-  EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the main instance.
-  main_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // Free the subframe instance, which should free the browsing instance.
-  subframe_instance = nullptr;
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
 }
 
 TEST_F(SiteInstanceTest, IsolatedOrigins) {

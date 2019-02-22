@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -23,6 +22,7 @@ class ResourceRequest;
 class ResourceResponse;
 class WebLocalFrameImpl;
 class WebViewImpl;
+enum class ResourceType : uint8_t;
 struct FetchInitiatorInfo;
 
 namespace protocol {
@@ -49,6 +49,7 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<int> max_touch_points) override;
   protocol::Response setEmulatedMedia(const String&) override;
   protocol::Response setCPUThrottlingRate(double) override;
+  protocol::Response setFocusEmulationEnabled(bool) override;
   protocol::Response setVirtualTimePolicy(
       const String& policy,
       protocol::Maybe<double> virtual_time_budget_ms,
@@ -88,7 +89,7 @@ class CORE_EXPORT InspectorEmulationAgent final
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       Resource::Type);
+                       ResourceType);
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;
@@ -139,6 +140,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::String virtual_time_policy_;
   InspectorAgentState::Integer virtual_time_task_starvation_count_;
   InspectorAgentState::Boolean wait_for_navigation_;
+  InspectorAgentState::Boolean emulate_focus_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 

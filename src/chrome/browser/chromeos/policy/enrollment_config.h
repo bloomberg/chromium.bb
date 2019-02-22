@@ -106,6 +106,12 @@ struct EnrollmentConfig {
     return mode != MODE_NONE && !is_mode_attestation();
   }
 
+  // Whether state keys request should be skipped.
+  // Skipping the request is allowed only for offline demo mode. Offline demo
+  // mode setup ensures that online validation of state keys is not required in
+  // that case.
+  bool skip_state_keys_request() const { return mode == MODE_OFFLINE_DEMO; }
+
   // Indicates the enrollment flow variant to trigger during OOBE.
   Mode mode = MODE_NONE;
 

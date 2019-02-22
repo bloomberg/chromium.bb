@@ -53,8 +53,8 @@ class TextIteratorTextNodeHandler {
   bool ShouldHandleFirstLetter(const LayoutText&) const;
   bool ShouldProceedToRemainingText() const;
   void ProceedToRemainingText();
-  size_t RestoreCollapsedTrailingSpace(InlineTextBox* next_text_box,
-                                       size_t subrun_end);
+  wtf_size_t RestoreCollapsedTrailingSpace(InlineTextBox* next_text_box,
+                                           wtf_size_t subrun_end);
 
   void HandleTextNodeWithLayoutNG();
 
@@ -101,7 +101,7 @@ class TextIteratorTextNodeHandler {
 
   // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
   Vector<InlineTextBox*> sorted_text_boxes_;
-  size_t sorted_text_boxes_position_ = 0;
+  wtf_size_t sorted_text_boxes_position_ = 0;
 
   const TextIteratorBehavior behavior_;
 

@@ -27,8 +27,8 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-buffer-private.hh"
-#include "hb-utf-private.hh"
+#include "hb-buffer.hh"
+#include "hb-utf.hh"
 
 
 /**
@@ -369,37 +369,6 @@ hb_buffer_t::replace_glyphs (unsigned int num_in,
   out_len += num_out;
 }
 
-void
-hb_buffer_t::output_glyph (hb_codepoint_t glyph_index)
-{
-  if (unlikely (!make_room_for (0, 1))) return;
-
-  out_info[out_len] = info[idx];
-  out_info[out_len].codepoint = glyph_index;
-
-  out_len++;
-}
-
-void
-hb_buffer_t::output_info (const hb_glyph_info_t &glyph_info)
-{
-  if (unlikely (!make_room_for (0, 1))) return;
-
-  out_info[out_len] = glyph_info;
-
-  out_len++;
-}
-
-void
-hb_buffer_t::copy_glyph (void)
-{
-  if (unlikely (!make_room_for (0, 1))) return;
-
-  out_info[out_len] = info[idx];
-
-  out_len++;
-}
-
 bool
 hb_buffer_t::move_to (unsigned int i)
 {
@@ -440,19 +409,6 @@ hb_buffer_t::move_to (unsigned int i)
   }
 
   return true;
-}
-
-void
-hb_buffer_t::replace_glyph (hb_codepoint_t glyph_index)
-{
-  if (unlikely (out_info != info || out_len != idx)) {
-    if (unlikely (!make_room_for (1, 1))) return;
-    out_info[out_len] = info[idx];
-  }
-  out_info[out_len].codepoint = glyph_index;
-
-  idx++;
-  out_len++;
 }
 
 
@@ -1499,6 +1455,8 @@ hb_buffer_reverse_clusters (hb_buffer_t *buffer)
  * it will be set to the process's default language as returned by
  * hb_language_get_default().  This may change in the future by
  * taking buffer script into consideration when choosing a language.
+ * Note that hb_language_get_default() is NOT threadsafe the first time
+ * it is called.  See documentation for that function for details.
  *
  * Since: 0.9.7
  **/
@@ -1887,6 +1845,10 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
 
 /**
  * hb_buffer_diff:
+ * @buffer: a buffer.
+ * @reference: other buffer to compare to.
+ * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepont_t) -1.
+ * @position_fuzz: allowed absolute difference in position values.
  *
  * If dottedcircle_glyph is (hb_codepoint_t) -1 then %HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT
  * and %HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT are never returned.  This should be used by most

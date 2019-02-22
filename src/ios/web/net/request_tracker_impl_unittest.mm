@@ -19,7 +19,7 @@
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#include "ios/web/public/test/test_web_thread.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/cert_test_util.h"
@@ -95,9 +95,7 @@ class DummyURLRequestDelegate : public net::URLRequest::Delegate {
 class RequestTrackerTest : public PlatformTest {
  public:
   RequestTrackerTest()
-      : loop_(base::MessageLoop::TYPE_IO),
-        ui_thread_(web::WebThread::UI, &loop_),
-        io_thread_(web::WebThread::IO, &loop_){};
+      : thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP) {}
 
   ~RequestTrackerTest() override {}
 
@@ -114,9 +112,7 @@ class RequestTrackerTest : public PlatformTest {
     tracker_->Close();
   }
 
-  base::MessageLoop loop_;
-  web::TestWebThread ui_thread_;
-  web::TestWebThread io_thread_;
+  web::TestWebThreadBundle thread_bundle_;
 
   scoped_refptr<web::RequestTrackerImpl> tracker_;
   NSString* request_group_id_;

@@ -3,14 +3,18 @@
 # found in the LICENSE file.
 
 import datetime
+import httplib
 import mock
 import unittest
 import webapp2
 import webtest
 
+from google.appengine.ext import ndb
+
 from dashboard import update_dashboard_stats
 from dashboard.common import utils
 from dashboard.models import anomaly
+from dashboard.services import gerrit_service
 from dashboard.pinpoint.models.change import change as change_module
 from dashboard.pinpoint.models.change import commit
 from dashboard.pinpoint.models import job as job_module
@@ -48,6 +52,11 @@ class ExecutionResults(execution_test._ExecutionStub):
                    result_values=self._result_for_test)
 
 
+@ndb.tasklet
+def _FakeTasklet(*args):
+  del args
+
+
 class UpdateDashboardStatsTest(test.TestCase):
 
   def setUp(self):
@@ -76,11 +85,44 @@ class UpdateDashboardStatsTest(test.TestCase):
     job.put()
 
   @mock.patch.object(
+      update_dashboard_stats, '_ProcessPinpointJobs',
+      mock.MagicMock(side_effect=_FakeTasklet))
+  @mock.patch.object(
+      update_dashboard_stats.deferred, 'defer')
+  def testPost_ProcessAlerts_Success(self, mock_defer):
+    created = datetime.datetime.now() - datetime.timedelta(hours=1)
+    sheriff = ndb.Key('Sheriff', 'Chromium Perf Sheriff')
+    anomaly_entity = anomaly.Anomaly(
+        test=utils.TestKey('M/B/suite'), timestamp=created, sheriff=sheriff)
+    anomaly_entity.put()
+
+    self.testapp.get('/update_dashboard_stats')
+    self.assertTrue(mock_defer.called)
+
+  @mock.patch.object(
+      update_dashboard_stats, '_ProcessPinpointJobs',
+      mock.MagicMock(side_effect=_FakeTasklet))
+  @mock.patch.object(
+      update_dashboard_stats.deferred, 'defer')
+  def testPost_ProcessAlerts_NoAlerts(self, mock_defer):
+    created = datetime.datetime.now() - datetime.timedelta(days=2)
+    sheriff = ndb.Key('Sheriff', 'Chromium Perf Sheriff')
+    anomaly_entity = anomaly.Anomaly(
+        test=utils.TestKey('M/B/suite'), timestamp=created, sheriff=sheriff)
+    anomaly_entity.put()
+
+    self.testapp.get('/update_dashboard_stats')
+    self.assertFalse(mock_defer.called)
+
+  @mock.patch.object(
+      update_dashboard_stats, '_ProcessAlerts',
+      mock.MagicMock(side_effect=_FakeTasklet))
+  @mock.patch.object(
       change_module.Change, 'Midpoint',
       mock.MagicMock(side_effect=commit.NonLinearError))
   @mock.patch.object(
       update_dashboard_stats.deferred, 'defer')
-  def testPost_Success(self, mock_defer):
+  def testPost_ProcessPinpoint_Success(self, mock_defer):
     created = datetime.datetime.now() - datetime.timedelta(days=1)
     self._CreateJob(
         'aaaaaaaa', 'bbbbbbbb', job_state.PERFORMANCE, created, 12345)
@@ -92,11 +134,17 @@ class UpdateDashboardStatsTest(test.TestCase):
     self.assertTrue(mock_defer.called)
 
   @mock.patch.object(
+      gerrit_service, 'GetChange',
+      mock.MagicMock(side_effect=httplib.HTTPException))
+  @mock.patch.object(
+      update_dashboard_stats, '_ProcessAlerts',
+      mock.MagicMock(side_effect=_FakeTasklet))
+  @mock.patch.object(
       change_module.Change, 'Midpoint',
       mock.MagicMock(side_effect=commit.NonLinearError))
   @mock.patch.object(
       update_dashboard_stats.deferred, 'defer')
-  def testPost_NoResults(self, mock_defer):
+  def testPost_ProcessPinpoint_NoResults(self, mock_defer):
     created = datetime.datetime.now() - datetime.timedelta(days=1)
 
     anomaly_entity = anomaly.Anomaly(

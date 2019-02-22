@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 20
+// Next MinVersion: 21
 
 module arc.mojom;
 
@@ -15,12 +15,12 @@ import "components/arc/common/gfx.mojom";
 enum ArcNotificationEvent {
   BODY_CLICKED = 0,
   CLOSED = 1,
-  // Five buttons at maximum (message_center::kNotificationMaximumItems = 5).
-  BUTTON_1_CLICKED = 2,
-  BUTTON_2_CLICKED = 3,
-  BUTTON_3_CLICKED = 4,
-  BUTTON_4_CLICKED = 5,
-  BUTTON_5_CLICKED = 6,
+  // Deprecated: Five button events
+  DEPRECATED_BUTTON_1_CLICKED = 2,
+  DEPRECATED_BUTTON_2_CLICKED = 3,
+  DEPRECATED_BUTTON_3_CLICKED = 4,
+  DEPRECATED_BUTTON_4_CLICKED = 5,
+  DEPRECATED_BUTTON_5_CLICKED = 6,
   // expand/collapse the bundled notification
   [MinVersion=10] TOGGLE_EXPANSION = 7,
 };
@@ -161,7 +161,7 @@ struct ArcDoNotDisturbStatus {
   bool enabled;
 };
 
-// Next Method ID: 8
+// Next Method ID: 9
 interface NotificationsHost {
   // Set the Do-Not-Disturb status on Chrome side from Android side.
   [MinVersion=18]
@@ -184,6 +184,10 @@ interface NotificationsHost {
   [MinVersion=16]
   // Opens the Chrome OS message center.
   OpenMessageCenter@6();
+
+  [MinVersion=20]
+  // Closes the Chrome OS message center.
+  CloseMessageCenter@8();
 };
 
 // Next Method ID: 9

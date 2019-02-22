@@ -93,7 +93,12 @@ cr.define('settings_sync_account_control', function() {
 
       assertVisible(testElement.$$('#promo-header'), true);
       assertVisible(testElement.$$('#avatar-row'), false);
-      assertVisible(testElement.$$('#menu'), false);
+      // TODO (rbpotter): Remove this conditional when the migration to
+      // Polymer 2 is completed.
+      if (Polymer.DomIf)
+        assertEquals(null, testElement.$$('#menu'));
+      else
+        assertVisible(testElement.$$('#menu'), false);
       assertVisible(testElement.$$('#sign-in'), true);
 
       testElement.$$('#sign-in').click();

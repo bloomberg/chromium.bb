@@ -68,7 +68,7 @@ class PromiseAllHandler final
 
     static v8::Local<v8::Function> Create(ScriptState* script_state,
                                           ResolveType resolve_type,
-                                          size_t index,
+                                          wtf_size_t index,
                                           PromiseAllHandler* handler) {
       AdapterFunction* self =
           new AdapterFunction(script_state, resolve_type, index, handler);
@@ -83,7 +83,7 @@ class PromiseAllHandler final
    private:
     AdapterFunction(ScriptState* script_state,
                     ResolveType resolve_type,
-                    size_t index,
+                    wtf_size_t index,
                     PromiseAllHandler* handler)
         : ScriptFunction(script_state),
           resolve_type_(resolve_type),
@@ -100,7 +100,7 @@ class PromiseAllHandler final
     }
 
     const ResolveType resolve_type_;
-    const size_t index_;
+    const wtf_size_t index_;
     Member<PromiseAllHandler> handler_;
   };
 
@@ -108,13 +108,13 @@ class PromiseAllHandler final
       : number_of_pending_promises_(promises.size()), resolver_(script_state) {
     DCHECK(!promises.IsEmpty());
     values_.resize(promises.size());
-    for (size_t i = 0; i < promises.size(); ++i)
+    for (wtf_size_t i = 0; i < promises.size(); ++i)
       promises[i].Then(CreateFulfillFunction(script_state, i),
                        CreateRejectFunction(script_state));
   }
 
   v8::Local<v8::Function> CreateFulfillFunction(ScriptState* script_state,
-                                                size_t index) {
+                                                wtf_size_t index) {
     return AdapterFunction::Create(script_state, AdapterFunction::kFulfilled,
                                    index, this);
   }
@@ -124,7 +124,7 @@ class PromiseAllHandler final
                                    this);
   }
 
-  void OnFulfilled(size_t index, const ScriptValue& value) {
+  void OnFulfilled(wtf_size_t index, const ScriptValue& value) {
     if (is_settled_)
       return;
 
@@ -135,7 +135,7 @@ class PromiseAllHandler final
 
     v8::Local<v8::Array> values =
         v8::Array::New(value.GetIsolate(), values_.size());
-    for (size_t i = 0; i < values_.size(); ++i) {
+    for (wtf_size_t i = 0; i < values_.size(); ++i) {
       if (!V8CallBoolean(values->CreateDataProperty(value.GetContext(), i,
                                                     values_[i].V8Value())))
         return;

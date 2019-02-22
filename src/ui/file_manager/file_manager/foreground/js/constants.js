@@ -57,3 +57,9 @@ constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES = [
  * @type {string}
  */
 constants.FILES_QUICK_VIEW_HTML = 'foreground/elements/files_quick_view.html';
+
+/**
+ * Path for drive_welcome.css file.  Allow override for testing.
+ * @type {string}
+ */
+constants.DRIVE_WELCOME_CSS = 'foreground/css/drive_welcome.css';

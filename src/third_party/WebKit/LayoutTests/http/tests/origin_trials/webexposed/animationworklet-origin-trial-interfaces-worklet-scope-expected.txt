@@ -32,6 +32,7 @@ CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153:     method getWriter
 CONSOLE MESSAGE: line 153: global object
 CONSOLE MESSAGE: line 153:     attribute console
+CONSOLE MESSAGE: line 153:     attribute globalThis
 CONSOLE MESSAGE: line 153:     method gc
 CONSOLE MESSAGE: line 153:     method registerAnimator
 

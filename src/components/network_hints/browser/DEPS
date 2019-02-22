@@ -1,5 +1,7 @@
 include_rules = [
   "+content/public/browser",
   "+ipc",
+  "+mojo/public/cpp/bindings",
   "+net",
+  "+services/network/public/mojom",
 ]

@@ -73,7 +73,7 @@ void SVGNumberList::Add(SVGPropertyBase* other, SVGElement* context_element) {
   if (length() != other_list->length())
     return;
 
-  for (size_t i = 0; i < length(); ++i)
+  for (uint32_t i = 0; i < length(); ++i)
     at(i)->SetValue(at(i)->Value() + other_list->at(i)->Value());
 }
 
@@ -90,15 +90,16 @@ void SVGNumberList::CalculateAnimatedValue(
   SVGNumberList* to_at_end_of_duration_list =
       ToSVGNumberList(to_at_end_of_duration_value);
 
-  size_t from_list_size = from_list->length();
-  size_t to_list_size = to_list->length();
-  size_t to_at_end_of_duration_list_size = to_at_end_of_duration_list->length();
+  uint32_t from_list_size = from_list->length();
+  uint32_t to_list_size = to_list->length();
+  uint32_t to_at_end_of_duration_list_size =
+      to_at_end_of_duration_list->length();
 
   if (!AdjustFromToListValues(from_list, to_list, percentage,
                               animation_element->GetAnimationMode()))
     return;
 
-  for (size_t i = 0; i < to_list_size; ++i) {
+  for (uint32_t i = 0; i < to_list_size; ++i) {
     float effective_from = from_list_size ? from_list->at(i)->Value() : 0;
     float effective_to = to_list_size ? to_list->at(i)->Value() : 0;
     float effective_to_at_end = i < to_at_end_of_duration_list_size
@@ -122,7 +123,7 @@ float SVGNumberList::CalculateDistance(SVGPropertyBase* to, SVGElement*) {
 Vector<float> SVGNumberList::ToFloatVector() const {
   Vector<float> vec;
   vec.ReserveInitialCapacity(length());
-  for (size_t i = 0; i < length(); ++i)
+  for (uint32_t i = 0; i < length(); ++i)
     vec.UncheckedAppend(at(i)->Value());
   return vec;
 }

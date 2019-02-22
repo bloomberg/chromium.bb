@@ -157,7 +157,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   friend class ::PredictorsHandler;
   friend class LoadingDataCollector;
   friend class ResourcePrefetchPredictorTest;
-  friend class ResourcePrefetchPredictorBrowserTest;
+  friend class PredictorInitializer;
 
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, DeleteUrls);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,

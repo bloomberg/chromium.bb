@@ -59,7 +59,7 @@ class MODULES_EXPORT RespondWithObserver
  protected:
   RespondWithObserver(ExecutionContext*, int event_id, WaitUntilObserver*);
   const int event_id_;
-  double event_dispatch_time_ = 0;
+  TimeTicks event_dispatch_time_;
 
  private:
   class ThenFunction;

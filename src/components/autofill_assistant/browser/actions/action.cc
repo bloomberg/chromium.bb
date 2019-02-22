@@ -8,4 +8,12 @@ namespace autofill_assistant {
 
 Action::Action(const ActionProto& proto) : proto_(proto) {}
 
-}  // namespace autofill_assistant.
+Action::~Action() {}
+
+void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
+  // Safety check in case process action is run twice.
+  *processed_action_proto_->mutable_action() = proto_;
+  processed_action_proto_->set_status(status);
+}
+
+}  // namespace autofill_assistant

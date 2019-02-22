@@ -10,8 +10,10 @@ specific_include_rules = {
   # ash_test_environment_content is only compiled with content.
   "ash_test_environment_content\.*": [
     "+content/public/browser/browser_thread.h",
+    "+content/public/browser/network_service_instance.h",
     "+content/public/test/web_contents_tester.h",
     "+content/public/test/test_browser_thread_bundle.h",
+    "+services/network/test/test_network_connection_tracker.h",
   ],
   "ash_test_helper\.cc": [
     "+ash/host",

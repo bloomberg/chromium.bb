@@ -349,12 +349,20 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
       for (unsigned i = 0; i < number_of_channels; ++i) {
         float* destination = destination_channels[i];
         const float* source = source_channels[i];
+        double sample;
 
-        double sample1 = source[read_index];
-        double sample2 = source[read_index2];
-        double sample = (1.0 - interpolation_factor) * sample1 +
-                        interpolation_factor * sample2;
-
+        if (read_index == read_index2 && read_index >= 1) {
+          // We're at the end of the buffer, so just linearly extrapolate from
+          // the last two samples.
+          double sample1 = source[read_index - 1];
+          double sample2 = source[read_index];
+          sample = sample2 + (sample2 - sample1) * interpolation_factor;
+        } else {
+          double sample1 = source[read_index];
+          double sample2 = source[read_index2];
+          sample = (1.0 - interpolation_factor) * sample1 +
+                   interpolation_factor * sample2;
+        }
         destination[write_index] = clampTo<float>(sample);
       }
       write_index++;

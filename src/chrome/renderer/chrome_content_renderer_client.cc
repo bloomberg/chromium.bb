@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/pdf_uma.h"
+#include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/common/prerender_types.h"
@@ -108,7 +108,6 @@
 #include "media/media_buildflags.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -507,14 +506,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
   bool should_whitelist_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess);
-  extensions::Dispatcher* ext_dispatcher = NULL;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ext_dispatcher =
-      ChromeExtensionsRendererClient::GetInstance()->extension_dispatcher();
-#endif
   ContentSettingsObserver* content_settings = new ContentSettingsObserver(
-      render_frame, ext_dispatcher, should_whitelist_for_content_settings,
-      registry);
+      render_frame, should_whitelist_for_content_settings, registry);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  content_settings->SetExtensionDispatcher(
+      ChromeExtensionsRendererClient::GetInstance()->extension_dispatcher());
+#endif
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
@@ -547,8 +544,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
   new NetErrorHelper(render_frame);
-
-  new page_load_metrics::MetricsRenderFrameObserver(render_frame);
 
   if (!render_frame->IsMainFrame()) {
     auto* prerender_helper = prerender::PrerenderHelper::Get(
@@ -586,11 +581,21 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent, associated_interfaces);
 
+  // Owned by |render_frame|.
+  page_load_metrics::MetricsRenderFrameObserver* metrics_render_frame_observer =
+      new page_load_metrics::MetricsRenderFrameObserver(render_frame);
   // There is no render thread, thus no UnverifiedRulesetDealer in
   // ChromeRenderViewTests.
   if (subresource_filter_ruleset_dealer_) {
+    // Create AdResourceTracker to tracker ad resource loads at the chrome
+    // layer.
+    auto ad_resource_tracker =
+        std::make_unique<subresource_filter::AdResourceTracker>();
+    metrics_render_frame_observer->SetAdResourceTracker(
+        ad_resource_tracker.get());
     new subresource_filter::SubresourceFilterAgent(
-        render_frame, subresource_filter_ruleset_dealer_.get());
+        render_frame, subresource_filter_ruleset_dealer_.get(),
+        std::move(ad_resource_tracker));
   }
 
 #if !defined(OS_ANDROID)
@@ -631,7 +636,7 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
                                    .ToSkBitmap());
 }
 
-bool ChromeContentRendererClient::IsPluginHandledByMimeHandlerView(
+bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
     content::RenderFrame* render_frame,
     const blink::WebElement& plugin_element,
     const GURL& original_url,
@@ -652,7 +657,7 @@ bool ChromeContentRendererClient::IsPluginHandledByMimeHandlerView(
       render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), mime_type,
       &plugin_info);
   if (plugin_info->status == chrome::mojom::PluginStatus::kNotFound ||
-      !ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
+      !ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
           plugin_element, original_url, plugin_info->actual_mime_type,
           plugin_info->plugin, instance_id_to_use)) {
     return false;
@@ -1420,24 +1425,6 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
   return std::make_unique<TtsDispatcher>(client);
 }
 
-bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
-    const GURL& url) {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  // Allow access for tests.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePepperTesting)) {
-    return true;
-  }
-
-  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
-  // the whitelist in the renderer, since we're only preventing access until
-  // these APIs are public and stable.
-  return (AppCategorizer::IsHangoutsUrl(url));
-#endif  // !defined(OS_ANDROID)
-}
-
 void ChromeContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems) {
   key_systems_provider_.AddSupportedKeySystems(key_systems);
@@ -1613,6 +1600,16 @@ void ChromeContentRendererClient::
       ->extension_dispatcher()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
           context, service_worker_version_id, service_worker_scope, script_url);
+#endif
+}
+
+void ChromeContentRendererClient::DidStartServiceWorkerContextOnWorkerThread(
+    int64_t service_worker_version_id,
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
+      service_worker_version_id, service_worker_scope, script_url);
 #endif
 }
 

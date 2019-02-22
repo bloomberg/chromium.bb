@@ -25,6 +25,10 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace network_session_configurator {
 
 class NetworkSessionConfiguratorTest : public testing::Test {
@@ -64,6 +68,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
 
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_TRUE(params_.http2_settings.empty());
+  EXPECT_FALSE(params_.greased_http2_frame);
   EXPECT_FALSE(params_.enable_websocket_over_http2);
 
   EXPECT_FALSE(params_.enable_quic);
@@ -117,6 +122,8 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params_.quic_migrate_sessions_early_v2);
+  EXPECT_FALSE(params_.quic_race_stale_dns_on_connection);
+  EXPECT_FALSE(params_.quic_retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(params_.quic_go_away_on_path_degrading);
   EXPECT_FALSE(params_.quic_allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
@@ -344,6 +351,30 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_migrate_sessions_early_v2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicRetryOnAlternateNetworkBeforeHandshakeFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["retry_on_alternate_network_before_handshake"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_retry_on_alternate_network_before_handshake);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicRaceStaleDNSOnCOnnectionFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["race_stale_dns_on_connection"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_race_stale_dns_on_connection);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -707,13 +738,6 @@ TEST_F(NetworkSessionConfiguratorTest, HostRules) {
   EXPECT_EQ("foo", host_port_pair.host());
 }
 
-TEST_F(NetworkSessionConfiguratorTest, TokenBindingDisabled) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  ParseCommandLineAndFieldTrials(command_line);
-
-  EXPECT_FALSE(params_.enable_token_binding);
-}
-
 TEST_F(NetworkSessionConfiguratorTest, ChannelIDEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kChannelID);
@@ -739,6 +763,12 @@ TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             ChooseCacheType(command_line));
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  EXPECT_EQ(
+      base::mac::IsAtLeastOS10_14()
+          ? net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE
+          : net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
+      ChooseCacheType(command_line));
 #else
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
             ChooseCacheType(command_line));
@@ -794,6 +824,37 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_headers_include_h2_stream_dependency);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_grease_settings"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  bool greased_setting_found = false;
+  for (const auto& setting : params_.http2_settings) {
+    if ((setting.first & 0x0f0f) == 0x0a0a) {
+      greased_setting_found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(greased_setting_found);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameType) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_grease_frame_type"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  ASSERT_TRUE(params_.greased_http2_frame);
+  const uint8_t frame_type = params_.greased_http2_frame.value().type;
+  EXPECT_EQ(0x0b, frame_type % 0x1f);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

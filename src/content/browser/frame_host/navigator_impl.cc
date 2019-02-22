@@ -105,35 +105,6 @@ NavigationController* NavigatorImpl::GetController() {
   return controller_;
 }
 
-// TODO(clamy): See if we can remove this function now that PlzNavigate has
-// shipped.
-void NavigatorImpl::DidStartProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    const std::vector<GURL>& redirect_chain,
-    const base::TimeTicks& navigation_start) {
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  bool is_error_page = (url.spec() == kUnreachableWebDataURL);
-  GURL validated_url(url);
-  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
-  render_process_host->FilterURL(false, &validated_url);
-
-  // Do not allow browser plugin guests to navigate to non-web URLs, since they
-  // cannot swap processes or grant bindings.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (render_process_host->IsForGuestsOnly() &&
-      !policy->IsWebSafeScheme(validated_url.scheme())) {
-    validated_url = GURL(url::kAboutBlankURL);
-  }
-
-  if (is_main_frame && !is_error_page) {
-    DidStartMainFrameNavigation(validated_url,
-                                render_frame_host->GetSiteInstance(),
-                                render_frame_host->GetNavigationHandle());
-  }
-}
-
 void NavigatorImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
@@ -398,19 +369,6 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
     // after this point without null checking it first.
   }
 
-  if (frame_tree_node->IsMainFrame() && frame_tree_node->navigation_request()) {
-    // For the trace below we're using the navigation handle as the async
-    // trace id, |navigation_start| as the timestamp and reporting the
-    // FrameTreeNode id as a parameter. For navigations where no network
-    // request is made (data URLs, JavaScript URLs, etc) there is no handle
-    // and so no tracing is done.
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "navigation", "Navigation timeToNetworkStack",
-        frame_tree_node->navigation_request()->navigation_handle(),
-        frame_tree_node->navigation_request()->common_params().navigation_start,
-        "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
-  }
-
   // Make sure no code called via RFH::Navigate clears the pending entry.
   if (is_pending_entry)
     CHECK_EQ(nav_entry_id, controller_->GetPendingEntry()->GetUniqueID());
@@ -624,7 +582,8 @@ void NavigatorImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -687,7 +646,8 @@ void NavigatorImpl::OnBeginNavigation(
           frame_tree_node, pending_entry, common_params,
           std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent,
-          std::move(blob_url_loader_factory), std::move(navigation_client)));
+          std::move(blob_url_loader_factory), std::move(navigation_client),
+          std::move(navigation_initiator)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // This frame has already run beforeunload before it sent this IPC.  See if
@@ -807,9 +767,14 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   // allow the view to clear the pending entry and typed URL if the user
   // requests (e.g., hitting Escape with focus in the address bar).
   //
+  // Do not leave the pending entry visible if it has an invalid URL, since this
+  // might be formatted in an unexpected or unsafe way.
+  // TODO(creis): Block navigations to invalid URLs in https://crbug.com/850824.
+  //
   // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
-                               delegate_->ShouldPreserveAbortedURLs();
+  bool should_preserve_entry = pending_entry->GetURL().is_valid() &&
+                               (controller_->IsUnmodifiedBlankTab() ||
+                                delegate_->ShouldPreserveAbortedURLs());
   if (pending_entry != controller_->GetVisibleEntry() ||
       !should_preserve_entry) {
     controller_->DiscardPendingEntry(true);

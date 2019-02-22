@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -16,9 +15,14 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <deque>
+
+#include <atomic>
+#include <cstring>
 #include <limits>
+#include <queue>
 #include <set>
+#include <thread>
+
 #include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "port/port.h"
@@ -41,7 +45,7 @@ namespace {
 static int open_read_only_file_limit = -1;
 static int mmap_limit = -1;
 
-static const size_t kBufSize = 65536;
+constexpr const size_t kWritableFileBufferSize = 65536;
 
 static Status PosixError(const std::string& context, int err_number) {
   if (err_number == ENOENT) {
@@ -53,52 +57,41 @@ static Status PosixError(const std::string& context, int err_number) {
 
 // Helper class to limit resource usage to avoid exhaustion.
 // Currently used to limit read-only file descriptors and mmap file usage
-// so that we do not end up running out of file descriptors, virtual memory,
-// or running into kernel performance problems for very large databases.
+// so that we do not run out of file descriptors or virtual memory, or run into
+// kernel performance problems for very large databases.
 class Limiter {
  public:
-  // Limit maximum number of resources to |n|.
-  Limiter(intptr_t n) {
-    SetAllowed(n);
-  }
+  // Limit maximum number of resources to |max_acquires|.
+  Limiter(int max_acquires) : acquires_allowed_(max_acquires) {}
+
+  Limiter(const Limiter&) = delete;
+  Limiter operator=(const Limiter&) = delete;
 
   // If another resource is available, acquire it and return true.
   // Else return false.
-  bool Acquire() LOCKS_EXCLUDED(mu_) {
-    if (GetAllowed() <= 0) {
-      return false;
-    }
-    MutexLock l(&mu_);
-    intptr_t x = GetAllowed();
-    if (x <= 0) {
-      return false;
-    } else {
-      SetAllowed(x - 1);
+  bool Acquire() {
+    int old_acquires_allowed =
+        acquires_allowed_.fetch_sub(1, std::memory_order_relaxed);
+
+    if (old_acquires_allowed > 0)
       return true;
-    }
+
+    acquires_allowed_.fetch_add(1, std::memory_order_relaxed);
+    return false;
   }
 
   // Release a resource acquired by a previous call to Acquire() that returned
   // true.
-  void Release() LOCKS_EXCLUDED(mu_) {
-    MutexLock l(&mu_);
-    SetAllowed(GetAllowed() + 1);
+  void Release() {
+    acquires_allowed_.fetch_add(1, std::memory_order_relaxed);
   }
 
  private:
-  port::Mutex mu_;
-  port::AtomicPointer allowed_;
-
-  intptr_t GetAllowed() const {
-    return reinterpret_cast<intptr_t>(allowed_.Acquire_Load());
-  }
-
-  void SetAllowed(intptr_t v) EXCLUSIVE_LOCKS_REQUIRED(mu_) {
-    allowed_.Release_Store(reinterpret_cast<void*>(v));
-  }
-
-  Limiter(const Limiter&);
-  void operator=(const Limiter&);
+  // The number of available resources.
+  //
+  // This is a counter and is not tied to the invariants of any other class, so
+  // it can be operated on safely using std::memory_order_relaxed.
+  std::atomic<int> acquires_allowed_;
 };
 
 class PosixSequentialFile: public SequentialFile {
@@ -221,131 +214,165 @@ class PosixMmapReadableFile: public RandomAccessFile {
   }
 };
 
-class PosixWritableFile : public WritableFile {
- private:
-  // buf_[0, pos_-1] contains data to be written to fd_.
-  std::string filename_;
-  int fd_;
-  char buf_[kBufSize];
-  size_t pos_;
-
+class PosixWritableFile final : public WritableFile {
  public:
-  PosixWritableFile(const std::string& fname, int fd)
-      : filename_(fname), fd_(fd), pos_(0) { }
+  PosixWritableFile(std::string filename, int fd)
+      : pos_(0), fd_(fd), is_manifest_(IsManifest(filename)),
+        filename_(std::move(filename)), dirname_(Dirname(filename_)) {}
 
-  ~PosixWritableFile() {
+  ~PosixWritableFile() override {
     if (fd_ >= 0) {
       // Ignoring any potential errors
       Close();
     }
   }
 
-  virtual Status Append(const Slice& data) {
-    size_t n = data.size();
-    const char* p = data.data();
+  Status Append(const Slice& data) override {
+    size_t write_size = data.size();
+    const char* write_data = data.data();
 
     // Fit as much as possible into buffer.
-    size_t copy = std::min(n, kBufSize - pos_);
-    memcpy(buf_ + pos_, p, copy);
-    p += copy;
-    n -= copy;
-    pos_ += copy;
-    if (n == 0) {
+    size_t copy_size = std::min(write_size, kWritableFileBufferSize - pos_);
+    std::memcpy(buf_ + pos_, write_data, copy_size);
+    write_data += copy_size;
+    write_size -= copy_size;
+    pos_ += copy_size;
+    if (write_size == 0) {
       return Status::OK();
     }
 
     // Can't fit in buffer, so need to do at least one write.
-    Status s = FlushBuffered();
-    if (!s.ok()) {
-      return s;
+    Status status = FlushBuffer();
+    if (!status.ok()) {
+      return status;
     }
 
     // Small writes go to buffer, large writes are written directly.
-    if (n < kBufSize) {
-      memcpy(buf_, p, n);
-      pos_ = n;
+    if (write_size < kWritableFileBufferSize) {
+      std::memcpy(buf_, write_data, write_size);
+      pos_ = write_size;
       return Status::OK();
     }
-    return WriteRaw(p, n);
+    return WriteUnbuffered(write_data, write_size);
   }
 
-  virtual Status Close() {
-    Status result = FlushBuffered();
-    const int r = close(fd_);
-    if (r < 0 && result.ok()) {
-      result = PosixError(filename_, errno);
+  Status Close() override {
+    Status status = FlushBuffer();
+    const int close_result = ::close(fd_);
+    if (close_result < 0 && status.ok()) {
+      status = PosixError(filename_, errno);
     }
     fd_ = -1;
-    return result;
+    return status;
   }
 
-  virtual Status Flush() {
-    return FlushBuffered();
+  Status Flush() override {
+    return FlushBuffer();
   }
 
-  Status SyncDirIfManifest() {
-    const char* f = filename_.c_str();
-    const char* sep = strrchr(f, '/');
-    Slice basename;
-    std::string dir;
-    if (sep == nullptr) {
-      dir = ".";
-      basename = f;
-    } else {
-      dir = std::string(f, sep - f);
-      basename = sep + 1;
-    }
-    Status s;
-    if (basename.starts_with("MANIFEST")) {
-      int fd = open(dir.c_str(), O_RDONLY);
-      if (fd < 0) {
-        s = PosixError(dir, errno);
-      } else {
-        if (fsync(fd) < 0) {
-          s = PosixError(dir, errno);
-        }
-        close(fd);
-      }
-    }
-    return s;
-  }
-
-  virtual Status Sync() {
+  Status Sync() override {
     // Ensure new files referred to by the manifest are in the filesystem.
-    Status s = SyncDirIfManifest();
-    if (!s.ok()) {
-      return s;
+    //
+    // This needs to happen before the manifest file is flushed to disk, to
+    // avoid crashing in a state where the manifest refers to files that are not
+    // yet on disk.
+    Status status = SyncDirIfManifest();
+    if (!status.ok()) {
+      return status;
     }
-    s = FlushBuffered();
-    if (s.ok()) {
-      if (fdatasync(fd_) != 0) {
-        s = PosixError(filename_, errno);
-      }
+
+    status = FlushBuffer();
+    if (status.ok() && ::fdatasync(fd_) != 0) {
+      status = PosixError(filename_, errno);
     }
-    return s;
+    return status;
   }
 
  private:
-  Status FlushBuffered() {
-    Status s = WriteRaw(buf_, pos_);
+  Status FlushBuffer() {
+    Status status = WriteUnbuffered(buf_, pos_);
     pos_ = 0;
-    return s;
+    return status;
   }
 
-  Status WriteRaw(const char* p, size_t n) {
-    while (n > 0) {
-      ssize_t r = write(fd_, p, n);
-      if (r < 0) {
+  Status WriteUnbuffered(const char* data, size_t size) {
+    while (size > 0) {
+      ssize_t write_result = ::write(fd_, data, size);
+      if (write_result < 0) {
         if (errno == EINTR) {
           continue;  // Retry
         }
         return PosixError(filename_, errno);
       }
-      p += r;
-      n -= r;
+      data += write_result;
+      size -= write_result;
     }
     return Status::OK();
   }
+
+  Status SyncDirIfManifest() {
+    Status status;
+    if (!is_manifest_) {
+      return status;
+    }
+
+    int fd = ::open(dirname_.c_str(), O_RDONLY);
+    if (fd < 0) {
+      status = PosixError(dirname_, errno);
+    } else {
+      if (::fsync(fd) < 0) {
+        status = PosixError(dirname_, errno);
+      }
+      ::close(fd);
+    }
+    return status;
+  }
+
+  // Returns the directory name in a path pointing to a file.
+  //
+  // Returns "." if the path does not contain any directory separator.
+  static std::string Dirname(const std::string& filename) {
+    std::string::size_type separator_pos = filename.rfind('/');
+    if (separator_pos == std::string::npos) {
+      return std::string(".");
+    }
+    // The filename component should not contain a path separator. If it does,
+    // the splitting was done incorrectly.
+    assert(filename.find('/', separator_pos + 1) == std::string::npos);
+
+    return filename.substr(0, separator_pos);
+  }
+
+  // Extracts the file name from a path pointing to a file.
+  //
+  // The returned Slice points to |filename|'s data buffer, so it is only valid
+  // while |filename| is alive and unchanged.
+  static Slice Basename(const std::string& filename) {
+    std::string::size_type separator_pos = filename.rfind('/');
+    if (separator_pos == std::string::npos) {
+      return Slice(filename);
+    }
+    // The filename component should not contain a path separator. If it does,
+    // the splitting was done incorrectly.
+    assert(filename.find('/', separator_pos + 1) == std::string::npos);
+
+    return Slice(filename.data() + separator_pos + 1,
+                 filename.length() - separator_pos - 1);
+  }
+
+  // True if the given file is a manifest file.
+  static bool IsManifest(const std::string& filename) {
+    return Basename(filename).starts_with("MANIFEST");
+  }
+
+  // buf_[0, pos_ - 1] contains data to be written to fd_.
+  char buf_[kWritableFileBufferSize];
+  size_t pos_;
+  int fd_;
+
+  const bool is_manifest_;  // True if the file's name starts with MANIFEST.
+  const std::string filename_;
+  const std::string dirname_;  // The directory of filename_.
 };
 
 static int LockOrUnlock(int fd, bool lock) {
@@ -573,20 +600,13 @@ class PosixEnv : public Env {
     return Status::OK();
   }
 
-  static uint64_t gettid() {
-    pthread_t tid = pthread_self();
-    uint64_t thread_id = 0;
-    memcpy(&thread_id, &tid, std::min(sizeof(thread_id), sizeof(tid)));
-    return thread_id;
-  }
-
   virtual Status NewLogger(const std::string& fname, Logger** result) {
     FILE* f = fopen(fname.c_str(), "w");
     if (f == nullptr) {
       *result = nullptr;
       return PosixError(fname, errno);
     } else {
-      *result = new PosixLogger(f, &PosixEnv::gettid);
+      *result = new PosixLogger(f);
       return Status::OK();
     }
   }
@@ -602,29 +622,33 @@ class PosixEnv : public Env {
   }
 
  private:
-  void PthreadCall(const char* label, int result) {
-    if (result != 0) {
-      fprintf(stderr, "pthread %s: %s\n", label, strerror(result));
-      abort();
-    }
+  void BackgroundThreadMain();
+
+  static void BackgroundThreadEntryPoint(PosixEnv* env) {
+    env->BackgroundThreadMain();
   }
 
-  // BGThread() is the body of the background thread
-  void BGThread();
-  static void* BGThreadWrapper(void* arg) {
-    reinterpret_cast<PosixEnv*>(arg)->BGThread();
-    return nullptr;
-  }
+  // Stores the work item data in a Schedule() call.
+  //
+  // Instances are constructed on the thread calling Schedule() and used on the
+  // background thread.
+  //
+  // This structure is thread-safe beacuse it is immutable.
+  struct BackgroundWorkItem {
+    explicit BackgroundWorkItem(void (*function)(void* arg), void* arg)
+        : function(function), arg(arg) {}
 
-  pthread_mutex_t mu_;
-  pthread_cond_t bgsignal_;
-  pthread_t bgthread_;
-  bool started_bgthread_;
+    void (* const function)(void*);
+    void* const arg;
+  };
 
-  // Entry per Schedule() call
-  struct BGItem { void* arg; void (*function)(void*); };
-  typedef std::deque<BGItem> BGQueue;
-  BGQueue queue_;
+
+  port::Mutex background_work_mutex_;
+  port::CondVar background_work_cv_ GUARDED_BY(background_work_mutex_);
+  bool started_background_thread_ GUARDED_BY(background_work_mutex_);
+
+  std::queue<BackgroundWorkItem> background_work_queue_
+      GUARDED_BY(background_work_mutex_);
 
   PosixLockTable locks_;
   Limiter mmap_limit_;
@@ -660,78 +684,59 @@ static intptr_t MaxOpenFiles() {
 }
 
 PosixEnv::PosixEnv()
-    : started_bgthread_(false),
+    : background_work_cv_(&background_work_mutex_),
+      started_background_thread_(false),
       mmap_limit_(MaxMmaps()),
       fd_limit_(MaxOpenFiles()) {
-  PthreadCall("mutex_init", pthread_mutex_init(&mu_, nullptr));
-  PthreadCall("cvar_init", pthread_cond_init(&bgsignal_, nullptr));
 }
 
-void PosixEnv::Schedule(void (*function)(void*), void* arg) {
-  PthreadCall("lock", pthread_mutex_lock(&mu_));
+void PosixEnv::Schedule(
+    void (*background_work_function)(void* background_work_arg),
+    void* background_work_arg) {
+  MutexLock lock(&background_work_mutex_);
 
-  // Start background thread if necessary
-  if (!started_bgthread_) {
-    started_bgthread_ = true;
-    PthreadCall(
-        "create thread",
-        pthread_create(&bgthread_, nullptr,  &PosixEnv::BGThreadWrapper, this));
+  // Start the background thread, if we haven't done so already.
+  if (!started_background_thread_) {
+    started_background_thread_ = true;
+    std::thread background_thread(PosixEnv::BackgroundThreadEntryPoint, this);
+    background_thread.detach();
   }
 
-  // If the queue is currently empty, the background thread may currently be
-  // waiting.
-  if (queue_.empty()) {
-    PthreadCall("signal", pthread_cond_signal(&bgsignal_));
+  // If the queue is empty, the background thread may be waiting for work.
+  if (background_work_queue_.empty()) {
+    background_work_cv_.Signal();
   }
 
-  // Add to priority queue
-  queue_.push_back(BGItem());
-  queue_.back().function = function;
-  queue_.back().arg = arg;
-
-  PthreadCall("unlock", pthread_mutex_unlock(&mu_));
+  background_work_queue_.emplace(background_work_function, background_work_arg);
 }
 
-void PosixEnv::BGThread() {
+void PosixEnv::BackgroundThreadMain() {
   while (true) {
-    // Wait until there is an item that is ready to run
-    PthreadCall("lock", pthread_mutex_lock(&mu_));
-    while (queue_.empty()) {
-      PthreadCall("wait", pthread_cond_wait(&bgsignal_, &mu_));
+    background_work_mutex_.Lock();
+
+    // Wait until there is work to be done.
+    while (background_work_queue_.empty()) {
+      background_work_cv_.Wait();
     }
 
-    void (*function)(void*) = queue_.front().function;
-    void* arg = queue_.front().arg;
-    queue_.pop_front();
+    assert(!background_work_queue_.empty());
+    auto background_work_function =
+        background_work_queue_.front().function;
+    void* background_work_arg = background_work_queue_.front().arg;
+    background_work_queue_.pop();
 
-    PthreadCall("unlock", pthread_mutex_unlock(&mu_));
-    (*function)(arg);
+    background_work_mutex_.Unlock();
+    background_work_function(background_work_arg);
   }
-}
-
-namespace {
-struct StartThreadState {
-  void (*user_function)(void*);
-  void* arg;
-};
-}
-static void* StartThreadWrapper(void* arg) {
-  StartThreadState* state = reinterpret_cast<StartThreadState*>(arg);
-  state->user_function(state->arg);
-  delete state;
-  return nullptr;
-}
-
-void PosixEnv::StartThread(void (*function)(void* arg), void* arg) {
-  pthread_t t;
-  StartThreadState* state = new StartThreadState;
-  state->user_function = function;
-  state->arg = arg;
-  PthreadCall("start thread",
-              pthread_create(&t, nullptr,  &StartThreadWrapper, state));
 }
 
 }  // namespace
+
+void PosixEnv::StartThread(void (*thread_main)(void* thread_main_arg),
+                           void* thread_main_arg) {
+  std::thread new_thread(thread_main, thread_main_arg);
+  new_thread.detach();
+}
 
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static Env* default_env;

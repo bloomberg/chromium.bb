@@ -24,6 +24,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/client/shared_image_interface_proxy.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
@@ -145,6 +146,10 @@ class GPU_EXPORT GpuChannelHost
   // otherwise ignored.
   void CrashGpuProcessForTesting();
 
+  SharedImageInterface* shared_image_interface() {
+    return &shared_image_interface_;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   ~GpuChannelHost() override;
@@ -245,6 +250,8 @@ class GPU_EXPORT GpuChannelHost
   // outlives |this|. It is therefore safe to PostTask calls to the IO thread
   // with base::Unretained(listener_).
   std::unique_ptr<Listener, base::OnTaskRunnerDeleter> listener_;
+
+  SharedImageInterfaceProxy shared_image_interface_;
 
   // Image IDs are allocated in sequence.
   base::AtomicSequenceNumber next_image_id_;

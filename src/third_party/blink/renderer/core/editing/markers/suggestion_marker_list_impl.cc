@@ -12,7 +12,7 @@ namespace blink {
 
 namespace {
 
-UChar32 GetCodePointAt(const String& text, size_t index) {
+UChar32 GetCodePointAt(const String& text, wtf_size_t index) {
   UChar32 c;
   U16_GET(text, 0, index, text.length(), c);
   return c;

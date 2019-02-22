@@ -128,7 +128,7 @@ Status BasicBlockParser<T>::Feed(Callback* callback, Reader* reader,
       }
 
       case State::kGettingAction: {
-        Action action;
+        Action action = Action::kRead;
         status = BasicBlockBegin(frame_metadata_.parent_element, value_,
                                  callback, &action);
         if (!status.completed_ok()) {

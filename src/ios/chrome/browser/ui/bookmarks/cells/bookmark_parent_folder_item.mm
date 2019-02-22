@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -29,11 +28,7 @@
   self = [super initWithType:type];
   if (self) {
     self.accessibilityIdentifier = @"Change Folder";
-    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-      self.cellClass = [BookmarkParentFolderCell class];
-    } else {
-      self.cellClass = [LegacyBookmarkParentFolderCell class];
-    }
+    self.cellClass = [BookmarkParentFolderCell class];
   }
   return self;
 }
@@ -43,15 +38,9 @@
 - (void)configureCell:(UITableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    BookmarkParentFolderCell* cell =
-        base::mac::ObjCCastStrict<BookmarkParentFolderCell>(tableCell);
-    cell.parentFolderNameLabel.text = self.title;
-  } else {
-    LegacyBookmarkParentFolderCell* cell =
-        base::mac::ObjCCastStrict<LegacyBookmarkParentFolderCell>(tableCell);
-    cell.parentFolderNameLabel.text = self.title;
-  }
+  BookmarkParentFolderCell* cell =
+      base::mac::ObjCCastStrict<BookmarkParentFolderCell>(tableCell);
+  cell.parentFolderNameLabel.text = self.title;
 }
 
 @end

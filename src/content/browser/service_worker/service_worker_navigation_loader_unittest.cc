@@ -4,7 +4,10 @@
 
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 
+#include <string>
+#include <utility>
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -51,6 +54,10 @@ blink::mojom::FetchAPIResponsePtr OkResponse(
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
   response->blob = std::move(blob_body);
+  if (response->blob) {
+    response->headers.emplace("Content-Length",
+                              base::NumberToString(response->blob->size));
+  }
   return response;
 }
 
@@ -137,10 +144,11 @@ class NavigationPreloadLoaderClient final
     response->status_text = response_head_.headers->GetStatusText();
     response->response_type = response_head_.response_type;
     response_callback_->OnResponseStream(
-        std::move(response), std::move(stream_handle), base::Time::Now());
+        std::move(response), std::move(stream_handle),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::Time::Now());
+             base::TimeTicks::Now());
     stream_callback->OnCompleted();
     delete this;
   }
@@ -231,8 +239,21 @@ class Helper : public EmbeddedWorkerTestHelper {
   void FinishWaitUntil() {
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::Time::Now());
+             base::TimeTicks::Now());
     base::RunLoop().RunUntilIdle();
+  }
+
+  // Tells this helper to wait for FinishRespondWith() to be called before
+  // providing the response to the fetch event.
+  void DeferResponse() { response_mode_ = ResponseMode::kDeferredResponse; }
+  void FinishRespondWith() {
+    response_callback_->OnResponse(
+        OkResponse(nullptr /* blob_body */),
+        blink::mojom::ServiceWorkerFetchEventTiming::New());
+    response_callback_.FlushForTesting();
+    std::move(finish_callback_)
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+             base::TimeTicks::Now());
   }
 
   void ReadRequestBody(std::string* out_string) {
@@ -244,6 +265,14 @@ class Helper : public EmbeddedWorkerTestHelper {
     const network::DataElement& element = elements->front();
     ASSERT_EQ(network::DataElement::TYPE_BYTES, element.type());
     *out_string = std::string(element.bytes(), element.length());
+  }
+
+  void RunUntilFetchEvent() {
+    if (has_received_fetch_event_)
+      return;
+    base::RunLoop run_loop;
+    quit_closure_for_fetch_event_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
  protected:
@@ -258,6 +287,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(
         static_cast<ResourceType>(request.resource_type)));
 
+    has_received_fetch_event_ = true;
     request_body_ = request.request_body;
 
     switch (response_mode_) {
@@ -265,40 +295,44 @@ class Helper : public EmbeddedWorkerTestHelper {
         EmbeddedWorkerTestHelper::OnFetchEvent(
             embedded_worker_id, request, std::move(preload_handle),
             std::move(response_callback), std::move(finish_callback));
-        return;
+        break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      base::Time::Now());
+        response_callback->OnResponse(
+            OkResponse(std::move(blob_body_)),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
-                                            std::move(stream_handle_),
-                                            base::Time::Now());
+        response_callback->OnResponseStream(
+            OkResponse(nullptr /* blob_body */), std::move(stream_handle_),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(base::Time::Now());
+        response_callback->OnFallback(
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(ErrorResponse(), base::Time::Now());
+        response_callback->OnResponse(
+            ErrorResponse(),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
       case ResponseMode::kNavigationPreloadResponse:
         // Deletes itself when done.
         new NavigationPreloadLoaderClient(std::move(preload_handle),
                                           std::move(response_callback),
                                           std::move(finish_callback));
-        return;
+        break;
       case ResponseMode::kFailFetchEventDispatch:
         // Simulate failure by stopping the worker before the event finishes.
         // This causes ServiceWorkerVersion::StartRequest() to call its error
@@ -313,23 +347,32 @@ class Helper : public EmbeddedWorkerTestHelper {
         // callbacks after an unexpected stop.
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
+      case ResponseMode::kDeferredResponse:
+        finish_callback_ = std::move(finish_callback);
+        response_callback_ = std::move(response_callback);
+        // Now the caller must call FinishRespondWith() to finish the event.
+        break;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      base::Time::Now());
+        response_callback->OnResponse(
+            OkResponse(nullptr /* blob_body */),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         // Now the caller must call FinishWaitUntil() to finish the event.
-        return;
+        break;
       case ResponseMode::kRedirect:
-        response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
-                                      base::Time::Now());
+        response_callback->OnResponse(
+            RedirectResponse(redirected_url_.spec()),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
-        return;
+                 base::TimeTicks::Now());
+        break;
     }
-    NOTREACHED();
+
+    if (quit_closure_for_fetch_event_)
+      std::move(quit_closure_for_fetch_event_).Run();
   }
 
  private:
@@ -341,6 +384,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     kErrorResponse,
     kNavigationPreloadResponse,
     kFailFetchEventDispatch,
+    kDeferredResponse,
     kEarlyResponse,
     kRedirect
   };
@@ -354,12 +398,15 @@ class Helper : public EmbeddedWorkerTestHelper {
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
-  // For ResponseMode::kEarlyResponse.
+  // For ResponseMode::kEarlyResponse and kDeferredResponse.
   mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
 
+  bool has_received_fetch_event_ = false;
+  base::OnceClosure quit_closure_for_fetch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -415,7 +462,8 @@ class ServiceWorkerNavigationLoaderTest
                                       helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"),
-        storage()->NewVersionId(), helper_->context()->AsWeakPtr());
+        blink::mojom::ScriptType::kClassic, storage()->NewVersionId(),
+        helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         storage(), version_->script_url(), storage()->NewResourceId(),
@@ -456,7 +504,7 @@ class ServiceWorkerNavigationLoaderTest
         base::BindOnce(&ReceiveRequestHandler, &handler),
         base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                        base::Unretained(this)),
-        this, *request,
+        this, *request, nullptr,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
     loader_->ForwardToServiceWorker();
@@ -539,6 +587,10 @@ class ServiceWorkerNavigationLoaderTest
   void MainResourceLoadFailed() override {
     was_main_resource_load_failed_called_ = true;
   }
+
+  bool HasWorkInBrowser(ServiceWorkerVersion* version) const {
+    return version->HasWorkInBrowser();
+  }
   // --------------------------------------------------------------------------
 
   TestBrowserThreadBundle thread_bundle_;
@@ -573,6 +625,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      1);
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
@@ -590,6 +646,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
 
   // No fetch event was dispatched.
   histogram_tester.ExpectTotalCount(kHistogramMainResourceFetchEvent, 0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
 }
 
 // Test that the request body is passed to the fetch event.
@@ -615,6 +675,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, RequestBody) {
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
+  base::HistogramTester histogram_tester;
+
   // Construct the blob to respond with.
   const std::string kResponseBody = "Here is sample text for the blob.";
   auto blob_data = std::make_unique<storage::BlobDataBuilder>("blob-id:myblob");
@@ -637,6 +699,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info.content_length);
 
   // Test the body.
   std::string body;
@@ -645,10 +708,18 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
       mojo::BlockingCopyToString(client_.response_body_release(), &body));
   EXPECT_EQ(kResponseBody, body);
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
+
+  // Test histogram of reading body.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      1);
 }
 
 // Tell the helper to respond with a non-existent Blob.
 TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
+  base::HistogramTester histogram_tester;
+
   const std::string kBrokenUUID = "broken_uuid";
 
   // Create the broken blob.
@@ -675,9 +746,21 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
   // the body.
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_OUT_OF_MEMORY, client_.completion_status().error_code);
+
+  // Timing histograms shouldn't be recorded on broken response.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      0);
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
+  base::HistogramTester histogram_tester;
+
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
@@ -694,7 +777,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(version_->HasNoWork());
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -714,10 +797,18 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client_.response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  // Test histogram of reading body.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      1);
 }
 
 // Test when a stream response body is aborted.
 TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
+  base::HistogramTester histogram_tester;
+
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
@@ -752,10 +843,22 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client_.response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  // Timing histograms shouldn't be recorded on abort.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      0);
 }
 
 // Test when the loader is cancelled while a stream response is being written.
 TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
+  base::HistogramTester histogram_tester;
+
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
@@ -772,22 +875,21 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
-  // Start writing the body stream, then cancel the loader before finishing.
+  // Start writing the body stream, then break the Mojo connection to the loader
+  // before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = data_pipe.producer_handle->WriteData(
       kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
-  EXPECT_FALSE(loader_->WasCanceled());
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   loader_ptr_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(loader_->WasCanceled());
-  EXPECT_FALSE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
-  // in Cancel(), the URLLoaderClient still exists. In this test, it is
+  // on connection error, the URLLoaderClient still exists. In this test, it is
   // |client_| which owns the data pipe, so it's still valid to write data to
   // it.
   mojo_result = data_pipe.producer_handle->WriteData(
@@ -798,6 +900,16 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   client_.RunUntilComplete();
   EXPECT_FALSE(data_pipe.consumer_handle.is_valid());
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+
+  // Timing histograms shouldn't be recorded on cancel.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ResponseReceivedToCompleted",
+      0);
 }
 
 // Test when the service worker responds with network fallback.
@@ -820,6 +932,12 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
   EXPECT_FALSE(was_main_resource_load_failed_called_);
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
+
+  // Test histogram of network fallback.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "FetchHandlerEndToFallbackNetwork",
+      1);
 }
 
 // Test when the service worker rejects the FetchEvent.
@@ -837,6 +955,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
   // Event dispatch still succeeded.
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
+  // Timing UMAs shouldn't be recorded when we receive an error response.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
 }
 
 // Test when dispatching the fetch event to the service worker failed.
@@ -856,6 +979,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   histogram_tester.ExpectUniqueSample(
       kHistogramMainResourceFetchEvent,
       blink::ServiceWorkerStatusCode::kErrorFailed, 1);
+  // Timing UMAs shouldn't be recorded when failed to dispatch an event.
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
 }
 
 // Test when the respondWith() promise resolves before the waitUntil() promise
@@ -874,9 +1002,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
 
   // Although the response was already received, the event remains outstanding
   // until waitUntil() resolves.
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   helper_->FinishWaitUntil();
-  EXPECT_FALSE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 }
 
 // Test asking the loader to fallback to network. In production code, this
@@ -898,7 +1026,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
       base::BindOnce(&ReceiveRequestHandler, &handler),
       base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                      base::Unretained(this)),
-      this, request,
+      this, request, nullptr,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   // Ask the loader to fallback to network. In production code,
@@ -909,6 +1037,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
 
   // No fetch event was dispatched.
   histogram_tester.ExpectTotalCount(kHistogramMainResourceFetchEvent, 0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      0);
 }
 
 // Test responding to the fetch event with the navigation preload response.
@@ -998,7 +1130,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
       base::BindOnce(&ReceiveRequestHandler, &handler),
       base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                      base::Unretained(this)),
-      this, request,
+      this, request, nullptr,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   base::WeakPtr<ServiceWorkerNavigationLoader> loader_weakptr =
@@ -1013,6 +1145,27 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
   // DetachedFromRequest() deletes |loader_|.
   loader.release()->DetachedFromRequest();
   EXPECT_FALSE(loader_weakptr);
+}
+
+TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
+  helper_->DeferResponse();
+  LoaderResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+
+  // Wait for the fetch event to be dispatched.
+  helper_->RunUntilFetchEvent();
+
+  // Break the Mojo connection. The loader should return an aborted status.
+  loader_ptr_.reset();
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+
+  // The loader is still alive. Finish the fetch event. It shouldn't crash or
+  // call any callbacks on |client_|, which would throw an error.
+  helper_->FinishRespondWith();
+  // There's no event to wait for, so just pump the message loop and the test
+  // passes if there is no error or crash.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, DetachedDuringFetchEvent) {

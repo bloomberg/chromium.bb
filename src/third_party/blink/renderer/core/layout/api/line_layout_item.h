@@ -29,7 +29,7 @@ static LayoutObject* const kHashTableDeletedValue =
     reinterpret_cast<LayoutObject*>(-1);
 
 class LineLayoutItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   explicit LineLayoutItem(LayoutObject* layout_object)
@@ -240,9 +240,7 @@ class LineLayoutItem {
                                             accumulated_offset);
   }
 
-  SelectionState GetSelectionState() const {
-    return layout_object_->GetSelectionState();
-  }
+  bool IsSelected() const { return layout_object_->IsSelected(); }
 
   // TODO(dgrogan/eae): Needed for Color::current. Can we move this somewhere?
   Color ResolveColor(const ComputedStyle& style_to_use,
@@ -289,9 +287,11 @@ class LineLayoutItem {
     return layout_object_->DocumentBeingDestroyed();
   }
 
-  LayoutRect VisualRect() const { return layout_object_->VisualRect(); }
-  LayoutRect PartialInvalidationVisualRect() const {
-    return layout_object_->PartialInvalidationVisualRect();
+  LayoutRect VisualRectForInlineBox() const {
+    return layout_object_->VisualRectForInlineBox();
+  }
+  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
+    return layout_object_->PartialInvalidationVisualRectForInlineBox();
   }
 
   bool IsHashTableDeletedValue() const {

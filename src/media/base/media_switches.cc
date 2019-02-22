@@ -213,8 +213,9 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-const base::Feature kPreloadMetadataSuspend{"PreloadMetadataSuspend",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+// Only decode preload=metadata elements upon visibility?
+const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
@@ -245,8 +246,8 @@ const base::Feature kAv1Decoder{"Av1Decoder",
                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let video track be unselected when video is playing in the background.
-const base::Feature kBackgroundVideoTrackOptimization{
-    "BackgroundVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kBackgroundSrcVideoTrackOptimization{
+    "BackgroundSrcVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Let video without audio be paused when it is playing in the background.
 const base::Feature kBackgroundVideoPauseOptimization{
@@ -274,6 +275,23 @@ const base::Feature kMojoVideoDecoder {
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow playback of encrypted media through the D3D11 decoder.  Requires
+// D3D11VideoDecoder to be enabled also.
+const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable VP9 decoding in the D3D11VideoDecoder.
+const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Falls back to other decoders after audio/video decode error happens. The
+// implementation may choose different strategies on when to fallback. See
+// DecoderStream for details. When disabled, playback will fail immediately
+// after a decode error happens. This can be useful in debugging and testing
+// because the behavior is simpler and more predictable.
+const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -288,6 +306,10 @@ const base::Feature kNewEncodeCpuLoadEstimator{
 // Use the new Remote Playback / media flinging pipeline.
 const base::Feature kNewRemotePlaybackPipeline{
     "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
+const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
@@ -310,10 +332,6 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 // aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use SurfaceLayer instead of VideoLayer for MediaStream.
-const base::Feature kUseSurfaceLayerForVideoMS{
-    "UseSurfaceLayerForVideoMS", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use SurfaceLayer instead of VideoLayer when entering Picture-in-Picture mode.
 // Does nothing if UseSurfaceLayerForVideo is enabled.  Does not affect
@@ -342,6 +360,11 @@ const base::Feature kExternalClearKeyForTesting{
 const base::Feature kHardwareSecureDecryption{
     "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Limits number of media tags loading in parallel to 6. This speeds up
+// preloading of any media that requires multiple requests to preload.
+const base::Feature kLimitParallelMediaPreloading{
+    "LimitParallelMediaPreloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",
@@ -353,9 +376,13 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether we should show the new unified sound and autoplay settings UI.
-const base::Feature kAutoplaySoundSettings{"AutoplaySoundSettings",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// Whether we should show a setting to disable autoplay policy.
+const base::Feature kAutoplayDisableSettings{"AutoplayDisableSettings",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether we should allow autoplay whitelisting via sounds settings.
+const base::Feature kAutoplayWhitelistSettings{
+    "AutoplayWhitelistSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.

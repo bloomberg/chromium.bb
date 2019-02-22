@@ -771,6 +771,7 @@ TEST(HttpUtilTest, ParseContentType) {
       true,
       ""
     },
+
     { "text/html; boundary=\"WebKit-ada-df-dsf-adsfadsfs\"",
       "text/html",
       "",
@@ -803,7 +804,7 @@ TEST(HttpUtilTest, ParseContentType) {
       "text/html",
       "",
       false,
-      "WebKit-ada-df-dsf-adsfadsfs  "
+      "WebKit-ada-df-dsf-adsfadsfs"
     },
     { "text/html; boundary=WebKit-ada-df-dsf-adsfadsfs",
       "text/html",
@@ -835,15 +836,32 @@ TEST(HttpUtilTest, ParseContentType) {
       false,
       ""
     },
+    // Empty quoted strings are allowed.
     { "text/html; charset=\"\"",
       "text/html",
       "",
-      false,
+      true,
       ""
     },
+
+    // Leading and trailing whitespace in quotes is trimmed.
     { "text/html; charset=\" \"",
       "text/html",
-      " ",
+      "",
+      true,
+      ""
+    },
+    { "text/html; charset=\" foo \"",
+      "text/html",
+      "foo",
+      true,
+      ""
+    },
+
+    // With multiple values, should use the first one.
+    { "text/html; charset=foo; charset=utf-8",
+      "text/html",
+      "foo",
       true,
       ""
     },
@@ -853,12 +871,19 @@ TEST(HttpUtilTest, ParseContentType) {
       true,
       ""
     },
-    { "text/html; charset=utf-8; charset=; charset;",
+    { "text/html; charset=utf-8; charset=; charset",
       "text/html",
       "utf-8",
       true,
       ""
     },
+    { "text/html; boundary=foo; boundary=bar",
+      "text/html",
+      "",
+      false,
+      "foo"
+    },
+
     // Stray quotes ignored.
     { "text/html; \"; \"\"; charset=utf-8",
       "text/html",

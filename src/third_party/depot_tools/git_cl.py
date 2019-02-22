@@ -81,8 +81,15 @@ REFS_THAT_ALIAS_TO_OTHER_REFS = {
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
+# File name for yapf style config files.
+YAPF_CONFIG_FILENAME = '.style.yapf'
+
 # Buildbucket master name prefix.
 MASTER_PREFIX = 'master.'
+
+# TODO(crbug.com/881860): Remove
+# Log gerrit failures to a gerrit_util.GERRIT_ERR_LOG_FILE.
+GERRIT_ERR_LOGGER = logging.getLogger('GerritErrorLogs')
 
 # Shortcut since it quickly becomes redundant.
 Fore = colorama.Fore
@@ -107,8 +114,7 @@ def DieWithError(message, change_desc=None):
 
 def SaveDescriptionBackup(change_desc):
   backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
-  print('\nError after CL description prompt -- saving description to %s\n' %
-        backup_path)
+  print('\nsaving CL description to %s\n' % backup_path)
   backup_file = open(backup_path, 'w')
   backup_file.write(change_desc.description)
   backup_file.close()
@@ -667,6 +673,88 @@ def print_try_jobs(options, builds):
   print('Total: %d try jobs' % total)
 
 
+def _ComputeDiffLineRanges(files, upstream_commit):
+  """Gets the changed line ranges for each file since upstream_commit.
+
+  Parses a git diff on provided files and returns a dict that maps a file name
+  to an ordered list of range tuples in the form (start_line, count).
+  Ranges are in the same format as a git diff.
+  """
+  # If files is empty then diff_output will be a full diff.
+  if len(files) == 0:
+    return {}
+
+  # Take diff and find the line ranges where there are changes.
+  diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, files, allow_prefix=True)
+  diff_output = RunGit(diff_cmd)
+
+  pattern = r'(?:^diff --git a/(?:.*) b/(.*))|(?:^@@.*\+(.*) @@)'
+  # 2 capture groups
+  # 0 == fname of diff file
+  # 1 == 'diff_start,diff_count' or 'diff_start'
+  # will match each of
+  # diff --git a/foo.foo b/foo.py
+  # @@ -12,2 +14,3 @@
+  # @@ -12,2 +17 @@
+  # running re.findall on the above string with pattern will give
+  # [('foo.py', ''), ('', '14,3'), ('', '17')]
+
+  curr_file = None
+  line_diffs = {}
+  for match in re.findall(pattern, diff_output, flags=re.MULTILINE):
+    if match[0] != '':
+      # Will match the second filename in diff --git a/a.py b/b.py.
+      curr_file = match[0]
+      line_diffs[curr_file] = []
+    else:
+      # Matches +14,3
+      if ',' in match[1]:
+        diff_start, diff_count = match[1].split(',')
+      else:
+        # Single line changes are of the form +12 instead of +12,1.
+        diff_start = match[1]
+        diff_count = 1
+
+      diff_start = int(diff_start)
+      diff_count = int(diff_count)
+
+      # If diff_count == 0 this is a removal we can ignore.
+      line_diffs[curr_file].append((diff_start, diff_count))
+
+  return line_diffs
+
+
+def _FindYapfConfigFile(fpath,
+                        yapf_config_cache,
+                        top_dir=None,
+                        default_style=None):
+  """Checks if a yapf file is in any parent directory of fpath until top_dir.
+
+  Recursively checks parent directories to find yapf file
+  and if no yapf file is found returns default_style.
+  Uses yapf_config_cache as a cache for previously found files.
+  """
+  # Return result if we've already computed it.
+  if fpath in yapf_config_cache:
+    return yapf_config_cache[fpath]
+
+  # Check if there is a style file in the current directory.
+  yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
+  dirname = os.path.dirname(fpath)
+  if os.path.isfile(yapf_file):
+    ret = yapf_file
+  elif fpath == top_dir or dirname == fpath:
+    # If we're at the top level directory, or if we're at root
+    # use the chromium default yapf style.
+    ret = default_style
+  else:
+    # Otherwise recurse on the current directory.
+    ret = _FindYapfConfigFile(dirname, yapf_config_cache, top_dir,
+                              default_style)
+  yapf_config_cache[fpath] = ret
+  return ret
+
+
 def write_try_results_json(output_file, builds):
   """Writes a subset of the data from fetch_try_jobs to a file as JSON.
 
@@ -692,7 +780,7 @@ def write_try_results_json(output_file, builds):
 
   converted = []
   for _, build in sorted(builds.items()):
-      converted.append(convert_build_dict(build))
+    converted.append(convert_build_dict(build))
   write_json(output_file, converted)
 
 
@@ -914,57 +1002,6 @@ def _get_gerrit_project_config_file(remote_url):
     project_config_file = os.path.join(tempdir, 'project.config')
     gclient_utils.FileWrite(project_config_file, project_config_data)
     yield project_config_file
-
-
-def _is_git_numberer_enabled(remote_url, remote_ref):
-  """Returns True if Git Numberer is enabled on this ref."""
-  # TODO(tandrii): this should be deleted once repos below are 100% on Gerrit.
-  KNOWN_PROJECTS_WHITELIST = [
-      'chromium/src',
-      'external/webrtc',
-      'v8/v8',
-      'infra/experimental',
-      # For webrtc.googlesource.com/src.
-      'src',
-  ]
-
-  assert remote_ref and remote_ref.startswith('refs/'), remote_ref
-  url_parts = urlparse.urlparse(remote_url)
-  project_name = url_parts.path.lstrip('/').rstrip('git./')
-  for known in KNOWN_PROJECTS_WHITELIST:
-    if project_name.endswith(known):
-      break
-  else:
-    # Early exit to avoid extra fetches for repos that aren't using Git
-    # Numberer.
-    return False
-
-  with _get_gerrit_project_config_file(remote_url) as project_config_file:
-    if project_config_file is None:
-      # Failed to fetch project.config, which shouldn't happen on open source
-      # repos KNOWN_PROJECTS_WHITELIST.
-      return False
-    def get_opts(x):
-      code, out = RunGitWithCode(
-          ['config', '-f', project_config_file, '--get-all',
-           'plugin.git-numberer.validate-%s-refglob' % x])
-      if code == 0:
-        return out.strip().splitlines()
-      return []
-    enabled, disabled = map(get_opts, ['enabled', 'disabled'])
-
-  logging.info('validator config enabled %s disabled %s refglobs for '
-               '(this ref: %s)', enabled, disabled, remote_ref)
-
-  def match_refglobs(refglobs):
-    for refglob in refglobs:
-      if remote_ref == refglob or fnmatch.fnmatch(remote_ref, refglob):
-        return True
-    return False
-
-  if match_refglobs(disabled):
-    return False
-  return match_refglobs(enabled)
 
 
 def ShortBranchName(branch):
@@ -2261,13 +2298,14 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           DieWithError("Must specify reviewers to send email.", change_desc)
         upload_args.append('--send_mail')
 
-      # We check this before applying rietveld.private assuming that in
-      # rietveld.cc only addresses which we can send private CLs to are listed
-      # if rietveld.private is set, and so we should ignore rietveld.cc only
-      # when --private is specified explicitly on the command line.
-      if options.private:
-        logging.warn('rietveld.cc is ignored since private flag is specified.  '
-                     'You need to review and add them manually if necessary.')
+      # We only skip auto-CC-ing addresses from rietveld.cc when --private or
+      # --no-autocc is explicitly specified on the command line. Should private
+      # CL be created due to rietveld.private value, we assume that rietveld.cc
+      # only contains addresses where private CLs are allowed to be sent.
+      if options.private or options.no_autocc:
+        logging.warn('rietveld.cc is ignored since private/no-autocc flag is '
+                     'specified. You need to review and add them manually if '
+                     'necessary.')
         cc = self.GetCCListWithoutDefault()
       else:
         cc = self.GetCCList()
@@ -2454,13 +2492,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # For projects with unusual authentication schemes.
       # See http://crbug.com/603378.
       return
-    # Lazy-loader to identify Gerrit and Git hosts.
-    if gerrit_util.GceAuthenticator.is_gce():
+
+    # Check presence of cookies only if using cookies-based auth method.
+    cookie_auth = gerrit_util.Authenticator.get()
+    if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
+
+    # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
     assert self._gerrit_server and self._gerrit_host
-    cookie_auth = gerrit_util.CookiesAuthenticator()
 
     gerrit_auth = cookie_auth.get_auth_header(self._gerrit_host)
     git_auth = cookie_auth.get_auth_header(git_host)
@@ -2502,7 +2543,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Warm change details cache now to avoid RPCs later, reducing latency for
     # developers.
     self._GetChangeDetail(
-        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT'])
+        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS'])
 
     status = self._GetChangeDetail()['status']
     if status in ('MERGED', 'ABANDONED'):
@@ -2510,10 +2551,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                    (self.GetIssueURL(),
                     'submitted' if status == 'MERGED' else 'abandoned'))
 
-    if gerrit_util.GceAuthenticator.is_gce():
+    # TODO(vadimsh): For some reason the chunk of code below was skipped if
+    # 'is_gce' is True. I'm just refactoring it to be 'skip if not cookies'.
+    # Apparently this check is not very important? Otherwise get_auth_email
+    # could have been added to other implementations of Authenticator.
+    cookies_auth = gerrit_util.Authenticator.get()
+    if not isinstance(cookies_auth, gerrit_util.CookiesAuthenticator):
       return
-    cookies_user = gerrit_util.CookiesAuthenticator().get_auth_email(
-        self._GetGerritHost())
+
+    cookies_user = cookies_auth.get_auth_email(self._GetGerritHost())
     if self.GetIssueOwner() == cookies_user:
       return
     logging.debug('change %s owner is %s, cookies user is %s',
@@ -3064,6 +3110,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
     assert change_desc
+    SaveDescriptionBackup(change_desc)
     commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
                                                     ref_to_push)]).splitlines()
     if len(commits) > 1:
@@ -3122,12 +3169,67 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
     try:
+      # TODO(crbug.com/881860): Remove.
+      # Clear the log after each git-cl upload run by setting mode='w'.
+      handler = logging.FileHandler(gerrit_util.GERRIT_ERR_LOG_FILE, mode='w')
+      handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+
+      GERRIT_ERR_LOGGER.addHandler(handler)
+      GERRIT_ERR_LOGGER.setLevel(logging.INFO)
+      # Don't propagate to root logger, so that logs are not printed.
+      GERRIT_ERR_LOGGER.propagate = 0
+
+      # Get interesting headers from git push, to be displayed to the user if
+      # subsequent Gerrit RPC calls fail.
+      env = os.environ.copy()
+      env['GIT_CURL_VERBOSE'] = '1'
+      class FilterHeaders(object):
+        """Filter git push headers and store them in a file.
+
+        Regular git push output is printed directly.
+        """
+
+        def __init__(self):
+          # The output from git push that we want to store in a file.
+          self._output = ''
+          # Keeps track of whether the current line is part of a request header.
+          self._on_header = False
+          # Keeps track of repeated empty lines, which mark the end of a request
+          # header.
+          self._last_line_empty = False
+
+        def __call__(self, line):
+          """Handle a single line of git push output."""
+          if not line:
+            # Two consecutive empty lines mark the end of a header.
+            if self._last_line_empty:
+              self._on_header = False
+            self._last_line_empty = True
+            return
+
+          self._last_line_empty = False
+          # A line starting with '>' marks the beggining of a request header.
+          if line[0] == '>':
+            self._on_header = True
+            GERRIT_ERR_LOGGER.info(line)
+          # Lines not starting with '*' or '<', and not part of a request header
+          # should be displayed to the user.
+          elif line[0] not in '*<' and not self._on_header:
+            print(line)
+            # Flush after every line: useful for seeing progress when running as
+            # recipe.
+            sys.stdout.flush()
+          # Filter out the cookie and authorization headers.
+          elif ('cookie: ' not in line.lower()
+                and 'authorization: ' not in line.lower()):
+            GERRIT_ERR_LOGGER.info(line)
+
+      filter_fn = FilterHeaders()
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
-          print_stdout=True,
-          # Flush after every line: useful for seeing progress when running as
-          # recipe.
-          filter_fn=lambda _: sys.stdout.flush())
+          print_stdout=False,
+          filter_fn=filter_fn,
+          env=env)
     except subprocess2.CalledProcessError:
       DieWithError('Failed to create a change. Please examine output above '
                    'for the reason of the failure.\n'
@@ -3151,7 +3253,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     reviewers = sorted(change_desc.get_reviewers())
 
     # Add cc's from the CC_LIST and --cc flag (if any).
-    if not options.private:
+    if not options.private and not options.no_autocc:
       cc = self.GetCCList().split(',')
     else:
       cc = []
@@ -4126,10 +4228,17 @@ def CMDcreds_check(parser, args):
   """Checks credentials and suggests changes."""
   _, _ = parser.parse_args(args)
 
-  if gerrit_util.GceAuthenticator.is_gce():
+  # Code below checks .gitcookies. Abort if using something else.
+  authn = gerrit_util.Authenticator.get()
+  if not isinstance(authn, gerrit_util.CookiesAuthenticator):
+    if isinstance(authn, gerrit_util.GceAuthenticator):
+      DieWithError(
+          'This command is not designed for GCE, are you on a bot?\n'
+          'If you need to run this on GCE, export SKIP_GCE_AUTH_FOR_GIT=1 '
+          'in your env.')
     DieWithError(
-        'This command is not designed for GCE, are you on a bot?\n'
-        'If you need to run this, export SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
+        'This command is not designed for bot environment. It checks '
+        '~/.gitcookies file not generally used on bots.')
 
   checker = _GitCookiesChecker()
   checker.ensure_configured_gitcookies()
@@ -4608,9 +4717,20 @@ def CMDissue(parser, args):
                        '--format=%(refname)']).splitlines()
     # Reverse issue lookup.
     issue_branch_map = {}
+
+    git_config = {}
+    for config in RunGit(['config', '--get-regexp',
+                          r'branch\..*issue']).splitlines():
+      name, _space, val = config.partition(' ')
+      git_config[name] = val
+
     for branch in branches:
-      cl = Changelist(branchref=branch)
-      issue_branch_map.setdefault(cl.GetIssue(), []).append(branch)
+      for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
+        config_key = _git_branch_config_key(ShortBranchName(branch),
+                                            cls.IssueConfigKey())
+        issue = git_config.get(config_key)
+        if issue:
+          issue_branch_map.setdefault(int(issue), []).append(branch)
     if not args:
       args = sorted(issue_branch_map.iterkeys())
     result = {}
@@ -4703,8 +4823,7 @@ def CMDcomments(parser, args):
       dct = c.__dict__.copy()
       dct['date'] = dct['date'].strftime('%Y-%m-%d %H:%M:%S.%f')
       return dct
-    with open(options.json_file, 'wb') as f:
-      json.dump(map(pre_serialize, summary), f)
+    write_json(options.json_file, map(pre_serialize, summary))
   return 0
 
 
@@ -5084,9 +5203,12 @@ def CMDupload(parser, args):
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
 
-  # TODO: remove Rietveld flags
+  parser.add_option('--no-autocc', action='store_true',
+                    help='Disables automatic addition of CC emails')
   parser.add_option('--private', action='store_true',
-                    help='set the review private (rietveld only)')
+                    help='Set the review private. This implies --no-autocc.')
+
+  # TODO: remove Rietveld flags
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
 
@@ -5809,12 +5931,15 @@ def CMDowners(parser, args):
       override_files=change.OriginalOwnersFiles()).run()
 
 
-def BuildGitDiffCmd(diff_type, upstream_commit, args):
+def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
   """Generates a diff command."""
   # Generate diff for the current branch's changes.
-  diff_cmd = ['-c', 'core.quotePath=false', 'diff',
-              '--no-ext-diff', '--no-prefix', diff_type,
-              upstream_commit, '--']
+  diff_cmd = ['-c', 'core.quotePath=false', 'diff', '--no-ext-diff']
+
+  if not allow_prefix:
+    diff_cmd += ['--no-prefix']
+
+  diff_cmd += [diff_type, upstream_commit, '--']
 
   if args:
     for arg in args:
@@ -5935,26 +6060,59 @@ def CMDformat(parser, args):
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
-  if opts.python:
+  if opts.python and python_diff_files:
     yapf_tool = gclient_utils.FindExecutable('yapf')
     if yapf_tool is None:
       DieWithError('yapf not found in PATH')
 
-    if opts.full:
-      if python_diff_files:
-        if opts.dry_run or opts.diff:
-          cmd = [yapf_tool, '--diff'] + python_diff_files
-          stdout = RunCommand(cmd, error_ok=True, cwd=top_dir)
-          if opts.diff:
-            sys.stdout.write(stdout)
-          elif len(stdout) > 0:
-            return_value = 2
-        else:
-          RunCommand([yapf_tool, '-i'] + python_diff_files, cwd=top_dir)
-    else:
-      # TODO(sbc): yapf --lines mode still has some issues.
-      # https://github.com/google/yapf/issues/154
-      DieWithError('--python currently only works with --full')
+    # If we couldn't find a yapf file we'll default to the chromium style
+    # specified in depot_tools.
+    depot_tools_path = os.path.dirname(os.path.abspath(__file__))
+    chromium_default_yapf_style = os.path.join(depot_tools_path,
+                                               YAPF_CONFIG_FILENAME)
+
+    # Note: yapf still seems to fix indentation of the entire file
+    # even if line ranges are specified.
+    # See https://github.com/google/yapf/issues/499
+    if not opts.full:
+      py_line_diffs = _ComputeDiffLineRanges(python_diff_files, upstream_commit)
+
+    # Used for caching.
+    yapf_configs = {}
+    for f in python_diff_files:
+      # Find the yapf style config for the current file, defaults to depot
+      # tools default.
+      yapf_config = _FindYapfConfigFile(
+          os.path.abspath(f), yapf_configs, top_dir,
+          chromium_default_yapf_style)
+
+      cmd = [yapf_tool, '--style', yapf_config, f]
+
+      has_formattable_lines = False
+      if not opts.full:
+        # Only run yapf over changed line ranges.
+        for diff_start, diff_len in py_line_diffs[f]:
+          diff_end = diff_start + diff_len - 1
+          # Yapf errors out if diff_end < diff_start but this
+          # is a valid line range diff for a removal.
+          if diff_end >= diff_start:
+            has_formattable_lines = True
+            cmd += ['-l', '{}-{}'.format(diff_start, diff_end)]
+        # If all line diffs were removals we have nothing to format.
+        if not has_formattable_lines:
+          continue
+
+      if opts.diff or opts.dry_run:
+        cmd += ['--diff']
+        # Will return non-zero exit code if non-empty diff.
+        stdout = RunCommand(cmd, error_ok=True, cwd=top_dir)
+        if opts.diff:
+          sys.stdout.write(stdout)
+        elif len(stdout) > 0:
+          return_value = 2
+      else:
+        cmd += ['-i']
+        RunCommand(cmd, cwd=top_dir)
 
   # Dart's formatter does not have the nice property of only operating on
   # modified chunks, so hard code full.
@@ -6108,6 +6266,7 @@ class OptionParser(optparse.OptionParser):
         level=levels[min(options.verbose, len(levels) - 1)],
         format='[%(levelname).1s%(asctime)s %(process)d %(thread)d '
                '%(filename)s] %(message)s')
+
     return options, args
 
 

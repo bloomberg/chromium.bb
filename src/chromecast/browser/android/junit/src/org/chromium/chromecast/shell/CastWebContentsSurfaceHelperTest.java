@@ -57,8 +57,8 @@ public class CastWebContentsSurfaceHelperTest {
     private static class StartParamsBuilder {
         private String mId = "0";
         private WebContents mWebContents = mock(WebContents.class);
-        private boolean mIsRemoteControlMode = false;
-        private boolean mIsTouchInputEnabled = false;
+        private boolean mIsRemoteControlMode;
+        private boolean mIsTouchInputEnabled;
 
         public StartParamsBuilder withId(String id) {
             mId = id;

@@ -100,6 +100,8 @@ Event::Event(const AtomicString& event_type,
       executed_listener_or_default_action_(false),
       prevent_default_called_on_uncancelable_event_(false),
       legacy_did_listeners_throw_flag_(false),
+      fire_only_capture_listeners_at_target_(false),
+      fire_only_non_capture_listeners_at_target_(false),
       handling_passive_(PassiveMode::kNotPassiveDefault),
       event_phase_(0),
       current_target_(nullptr),
@@ -234,6 +236,10 @@ bool Event::IsBeforeTextInsertedEvent() const {
 }
 
 bool Event::IsBeforeUnloadEvent() const {
+  return false;
+}
+
+bool Event::IsErrorEvent() const {
   return false;
 }
 

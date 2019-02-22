@@ -42,11 +42,15 @@ source_set("unit_tests") {
 
   sources = [
     "ui_devtools_unittest.cc",
+    "view_element_unittest.cc",
+    "widget_element_unittest.cc",
+    "window_element_unittest.cc",
   ]
 
   deps = [
     ":views",
     "//components/ui_devtools",
+    "//components/ui_devtools:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/aura",

@@ -9,8 +9,7 @@
 namespace android_webview {
 
 ParentCompositorDrawConstraints::ParentCompositorDrawConstraints()
-    : is_layer(false), surface_rect_empty(false) {
-}
+    : is_layer(false), surface_rect_empty(true) {}
 
 ParentCompositorDrawConstraints::ParentCompositorDrawConstraints(
     bool is_layer,

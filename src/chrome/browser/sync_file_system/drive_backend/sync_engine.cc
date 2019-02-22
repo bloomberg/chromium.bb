@@ -59,7 +59,6 @@
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -98,13 +97,11 @@ constexpr net::NetworkTrafficAnnotationTag kSyncFileSystemTrafficAnnotation =
 std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
     OAuth2TokenService* oauth2_token_service,
-    net::URLRequestContextGetter* url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner) {
   return std::unique_ptr<
       drive::DriveServiceInterface>(new drive::DriveAPIService(
-      oauth2_token_service, url_request_context_getter, url_loader_factory,
-      blocking_task_runner,
+      oauth2_token_service, url_loader_factory, blocking_task_runner,
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
       std::string(), /* custom_user_agent */
@@ -218,9 +215,6 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       SigninManagerFactory::GetForProfile(profile);
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      content::BrowserContext::GetDefaultStoragePartition(context)->
-            GetURLRequestContext();
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
@@ -229,8 +223,8 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
       GetSyncFileSystemDir(context->GetPath()), task_logger,
       notification_manager, extension_service, signin_manager, token_service,
-      request_context.get(), url_loader_factory,
-      std::make_unique<DriveServiceFactory>(), nullptr /* env_override */));
+      url_loader_factory, std::make_unique<DriveServiceFactory>(),
+      nullptr /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine;
@@ -283,8 +277,7 @@ void SyncEngine::Initialize() {
   DCHECK(drive_service_factory_);
   std::unique_ptr<drive::DriveServiceInterface> drive_service =
       drive_service_factory_->CreateDriveService(
-          token_service_, request_context_.get(), url_loader_factory_,
-          drive_task_runner_.get());
+          token_service_, url_loader_factory_, drive_task_runner_.get());
 
   device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
   DCHECK(content::ServiceManagerConnection::GetForProcess());
@@ -739,7 +732,6 @@ SyncEngine::SyncEngine(
     extensions::ExtensionServiceInterface* extension_service,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
@@ -752,7 +744,6 @@ SyncEngine::SyncEngine(
       extension_service_(extension_service),
       signin_manager_(signin_manager),
       token_service_(token_service),
-      request_context_(request_context),
       url_loader_factory_(url_loader_factory),
       drive_service_factory_(std::move(drive_service_factory)),
       remote_change_processor_(nullptr),

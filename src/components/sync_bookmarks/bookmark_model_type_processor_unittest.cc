@@ -21,6 +21,7 @@
 
 using base::ASCIIToUTF16;
 using testing::Eq;
+using testing::IsNull;
 using testing::NiceMock;
 using testing::NotNull;
 
@@ -30,7 +31,7 @@ namespace {
 
 const char kBookmarkBarTag[] = "bookmark_bar";
 const char kBookmarkBarId[] = "bookmark_bar_id";
-const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
+const char kBookmarksRootId[] = "root_id";
 const char kCacheGuid[] = "generated_id";
 
 struct BookmarkInfo {
@@ -356,6 +357,22 @@ TEST_F(BookmarkModelTypeProcessorTest,
   // carries the new encryption key name.
   EXPECT_THAT(tracker->model_type_state().encryption_key_name(),
               Eq(kEncryptionKeyName));
+}
+
+// Verifies that the processor doesn't crash if sync is stopped before receiving
+// remote updates or tracking metadata.
+TEST_F(BookmarkModelTypeProcessorTest, ShouldStopBeforeReceivingRemoteUpdates) {
+  ASSERT_THAT(processor()->GetTrackerForTest(), IsNull());
+  processor()->OnSyncStopping(syncer::CLEAR_METADATA);
+  EXPECT_THAT(processor()->GetTrackerForTest(), IsNull());
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldStopAfterReceivingRemoteUpdates) {
+  // Initialize the process to make sure the tracker has been created.
+  InitWithSyncedBookmarks({}, processor());
+  ASSERT_THAT(processor()->GetTrackerForTest(), NotNull());
+  processor()->OnSyncStopping(syncer::CLEAR_METADATA);
+  EXPECT_THAT(processor()->GetTrackerForTest(), IsNull());
 }
 
 }  // namespace

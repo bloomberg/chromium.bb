@@ -23,10 +23,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 
 class IndexedDBBackingStore;
@@ -43,21 +39,17 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
                                bool forced_close) = 0;
 
-  virtual void GetDatabaseNames(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      const url::Origin& origin,
-      const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter) = 0;
+  virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                const url::Origin& origin,
+                                const base::FilePath& data_directory) = 0;
   virtual void Open(
       const base::string16& name,
       std::unique_ptr<IndexedDBPendingConnection> connection,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const url::Origin& origin,
       const base::FilePath& data_directory) = 0;
 
   virtual void DeleteDatabase(
       const base::string16& name,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       const url::Origin& origin,
       const base::FilePath& data_directory,
@@ -78,8 +70,15 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual OriginDBs GetOpenDatabasesForOrigin(
       const url::Origin& origin) const = 0;
 
-  virtual void ForceClose(const url::Origin& origin) = 0;
+  // Close all connections to all databases within the origin. If
+  // |delete_in_memory_store| is true, references to in-memory databases will be
+  // dropped thereby allowing their deletion (otherwise they are retained for
+  // the lifetime of the factory).
+  virtual void ForceClose(const url::Origin& origin,
+                          bool delete_in_memory_store = false) = 0;
   virtual void ForceSchemaDowngrade(const url::Origin& origin) = 0;
+  virtual V2SchemaCorruptionStatus HasV2SchemaCorruption(
+      const url::Origin& origin) = 0;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   virtual void ContextDestroyed() = 0;
@@ -115,7 +114,6 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* status) = 0;
@@ -123,7 +121,6 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,

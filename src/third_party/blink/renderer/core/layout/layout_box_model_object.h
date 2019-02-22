@@ -435,6 +435,17 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void AbsoluteQuads(Vector<FloatQuad>& quads,
                      MapCoordinatesFlags mode = 0) const override;
 
+  virtual LayoutUnit OverrideContainingBlockContentWidth() const {
+    NOTREACHED();
+    return LayoutUnit(-1);
+  }
+  virtual LayoutUnit OverrideContainingBlockContentHeight() const {
+    NOTREACHED();
+    return LayoutUnit(-1);
+  }
+  virtual bool HasOverrideContainingBlockContentWidth() const { return false; }
+  virtual bool HasOverrideContainingBlockContentHeight() const { return false; }
+
  protected:
   // Compute absolute quads for |this|, but not any continuations. May only be
   // called for objects which can be or have continuations, i.e. LayoutInline or
@@ -475,11 +486,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
                                         const LayoutPoint& additional_offset,
-                                        IncludeBlockVisualOverflowOrNot) const;
+                                        NGOutlineType) const;
   void AddOutlineRectsForDescendant(const LayoutObject& descendant,
                                     Vector<LayoutRect>&,
                                     const LayoutPoint& additional_offset,
-                                    IncludeBlockVisualOverflowOrNot) const;
+                                    NGOutlineType) const;
 
   void AddLayerHitTestRects(LayerHitTestRects&,
                             const PaintLayer*,

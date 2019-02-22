@@ -22,6 +22,7 @@ class SyncEngineHostStub : public SyncEngineHost {
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
+      const std::string& session_name,
       bool success) override;
   void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;

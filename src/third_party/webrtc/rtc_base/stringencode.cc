@@ -10,9 +10,6 @@
 
 #include "rtc_base/stringencode.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "rtc_base/arraysize.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/stringutils.h"
@@ -474,6 +471,13 @@ std::string ToString(const unsigned long long int s) {
 std::string ToString(const double d) {
   char buf[32];
   const int len = std::snprintf(&buf[0], arraysize(buf), "%g", d);
+  RTC_DCHECK_LE(len, arraysize(buf));
+  return std::string(&buf[0], len);
+}
+
+std::string ToString(const long double d) {
+  char buf[32];
+  const int len = std::snprintf(&buf[0], arraysize(buf), "%Lg", d);
   RTC_DCHECK_LE(len, arraysize(buf));
   return std::string(&buf[0], len);
 }

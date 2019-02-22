@@ -21,8 +21,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.FeedbackData;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.Type;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
 
 import java.util.HashMap;

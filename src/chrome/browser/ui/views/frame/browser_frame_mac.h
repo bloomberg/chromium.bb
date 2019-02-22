@@ -26,6 +26,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
  public:
   BrowserFrameMac(BrowserFrame* browser_frame, BrowserView* browser_view);
 
+  API_AVAILABLE(macos(10.12.2))
   BrowserWindowTouchBarController* GetTouchBarController() const;
 
   // Overridden from views::NativeWidgetMac:
@@ -51,6 +52,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   // Overridden from views::NativeWidgetMac:
   NativeWidgetMacNSWindow* CreateNSWindow(
       const views::Widget::InitParams& params) override;
+  views::BridgeFactoryHost* GetBridgeFactoryHost() override;
   void OnWindowDestroying(NSWindow* window) override;
 
   // Overridden from NativeBrowserFrame:

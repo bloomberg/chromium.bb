@@ -35,12 +35,22 @@ class NET_EXPORT HttpUtil {
   // is stripped (username, password, reference).
   static std::string SpecForRequest(const GURL& url);
 
-  // Parses the value of a Content-Type header.  The resulting mime_type and
-  // charset values are normalized to lowercase.  The mime_type and charset
-  // output values are only modified if the content_type_str contains a mime
-  // type and charset value, respectively.  The boundary output value is
-  // optional and will be assigned the (unquoted) value of the boundary
-  // parameter, if any.
+  // Parses the value of a Content-Type header.  |mime_type|, |charset|, and
+  // |had_charset| output parameters must be valid pointers.  |boundary| may be
+  // nullptr.  |*mime_type| and |*charset| should be empty and |*had_charset|
+  // false when called with the first Content-Type header value in a given
+  // header list.
+  //
+  // ParseContentType() supports parsing multiple Content-Type headers in the
+  // same header list.  For this operation, subsequent calls should pass in the
+  // same |mime_type|, |charset|, and |had_charset| arguments without clearing
+  // them.
+  //
+  // The resulting mime_type and charset values are normalized to lowercase.
+  // The mime_type and charset output values are only modified if the
+  // content_type_str contains a mime type and charset value, respectively.  If
+  // |boundary| is not null, then |*boundary| will be assigned the (unquoted)
+  // value of the boundary parameter, if any.
   static void ParseContentType(const std::string& content_type_str,
                                std::string* mime_type,
                                std::string* charset,

@@ -65,7 +65,10 @@ class CORE_EXPORT SVGLayoutSupport {
 
   // Adjusts the visualRect in combination with filter, clipper and masker
   // in local coordinates.
-  static void AdjustVisualRectWithResources(const LayoutObject&, FloatRect&);
+  static void AdjustVisualRectWithResources(
+      const LayoutObject&,
+      const FloatRect& object_bounding_box,
+      FloatRect&);
 
   // Determine if the LayoutObject references a filter resource object.
   static bool HasFilterResource(const LayoutObject&);
@@ -74,13 +77,16 @@ class CORE_EXPORT SVGLayoutSupport {
   static bool PointInClippingArea(const LayoutObject&, const FloatPoint&);
 
   // Transform |pointInParent| to |object|'s user-space and check if it is
-  // within the clipping area. Returns false if the transform is singular or
-  // the point is outside the clipping area.
-  static bool TransformToUserSpaceAndCheckClipping(
+  // within the clipping area. Returns a pointer to a HitTestLocation object
+  // to use as the local location. Returns nullptr if the transform is singular
+  // or the point is outside the clipping area. The object backing
+  // the pointer is either |location_in_parent| or an emplacement of
+  // |local_storage|.
+  static const HitTestLocation* TransformToUserSpaceAndCheckClipping(
       const LayoutObject&,
       const AffineTransform& local_transform,
-      const FloatPoint& point_in_parent,
-      FloatPoint& local_point);
+      const HitTestLocation& location_in_parent,
+      base::Optional<HitTestLocation>& local_storage);
 
   static void ComputeContainerBoundingBoxes(const LayoutObject* container,
                                             FloatRect& object_bounding_box,

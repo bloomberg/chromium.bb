@@ -30,7 +30,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     unsigned long long uploaded,
     unsigned long long download_total,
     unsigned long long downloaded,
-    mojom::BackgroundFetchState state,
+    mojom::BackgroundFetchResult result,
     mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id_(developer_id),
       unique_id_(unique_id),
@@ -38,7 +38,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       uploaded_(uploaded),
       download_total_(download_total),
       downloaded_(downloaded),
-      state_(state),
+      result_(result),
       failure_reason_(failure_reason),
       observer_binding_(this) {}
 
@@ -51,7 +51,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       uploaded_(web_registration.uploaded),
       download_total_(web_registration.download_total),
       downloaded_(web_registration.downloaded),
-      state_(web_registration.state),
+      result_(web_registration.result),
       failure_reason_(web_registration.failure_reason),
       observer_binding_(this) {
   DCHECK(registration);
@@ -74,14 +74,19 @@ void BackgroundFetchRegistration::Initialize(
       ->AddRegistrationObserver(unique_id_, std::move(observer));
 }
 
-void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
-                                             uint64_t uploaded,
-                                             uint64_t download_total,
-                                             uint64_t downloaded) {
+void BackgroundFetchRegistration::OnProgress(
+    uint64_t upload_total,
+    uint64_t uploaded,
+    uint64_t download_total,
+    uint64_t downloaded,
+    mojom::BackgroundFetchResult result,
+    mojom::BackgroundFetchFailureReason failure_reason) {
   upload_total_ = upload_total;
   uploaded_ = uploaded;
   download_total_ = download_total;
   downloaded_ = downloaded;
+  result_ = result;
+  failure_reason_ = failure_reason;
 
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())
@@ -89,6 +94,10 @@ void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
 
   DCHECK(context->IsContextThread());
   DispatchEvent(*Event::Create(EventTypeNames::progress));
+}
+
+void BackgroundFetchRegistration::OnRecordsUnavailable() {
+  records_available_ = false;
 }
 
 String BackgroundFetchRegistration::id() const {
@@ -109,6 +118,10 @@ unsigned long long BackgroundFetchRegistration::downloadTotal() const {
 
 unsigned long long BackgroundFetchRegistration::downloaded() const {
   return downloaded_;
+}
+
+bool BackgroundFetchRegistration::recordsAvailable() const {
+  return records_available_;
 }
 
 const AtomicString& BackgroundFetchRegistration::InterfaceName() const {
@@ -167,29 +180,51 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     mojom::blink::QueryParamsPtr cache_query_params,
     ExceptionState& exception_state,
     bool match_all) {
+  // TODO(crbug.com/875201): Update this check once we support access to active
+  // fetches.
+  if (result_ == mojom::BackgroundFetchResult::UNSET) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kInvalidStateError,
+            "Access to records for in-progress background fetches is not yet "
+            "implemented. Please see crbug.com/875201 for more details."));
+  }
+
+  if (!records_available_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kInvalidStateError,
+            "The records associated with this background fetch are no longer "
+            "available."));
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Convert |request| to WebServiceWorkerRequest.
-  base::Optional<WebServiceWorkerRequest> request_to_match;
+  base::Optional<WebServiceWorkerRequest> optional_request;
   if (request.has_value()) {
+    WebServiceWorkerRequest request_to_match;
     if (request->IsRequest()) {
       request->GetAsRequest()->PopulateWebServiceWorkerRequest(
-          request_to_match.value());
+          request_to_match);
     } else {
       Request* new_request = Request::Create(
           script_state, request->GetAsUSVString(), exception_state);
       if (exception_state.HadException())
         return ScriptPromise();
-      new_request->PopulateWebServiceWorkerRequest(request_to_match.value());
+      new_request->PopulateWebServiceWorkerRequest(request_to_match);
     }
+    optional_request = request_to_match;
   }
 
   DCHECK(registration_);
 
   BackgroundFetchBridge::From(registration_)
       ->MatchRequests(
-          developer_id_, unique_id_, request_to_match,
+          developer_id_, unique_id_, optional_request,
           std::move(cache_query_params), match_all,
           WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
                     WrapPersistent(this), WrapPersistent(resolver), match_all));
@@ -219,6 +254,11 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   }
 
   if (!return_all) {
+    if (settled_fetches.IsEmpty()) {
+      // Nothing was matched. Resolve with `undefined`.
+      resolver->Resolve();
+      return;
+    }
     DCHECK_EQ(settled_fetches.size(), 1u);
     DCHECK_EQ(to_return.size(), 1u);
     resolver->Resolve(to_return[0]);
@@ -247,6 +287,7 @@ void BackgroundFetchRegistration::DidAbort(
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
       // Not applicable for this callback.
       break;
   }
@@ -254,14 +295,14 @@ void BackgroundFetchRegistration::DidAbort(
   NOTREACHED();
 }
 
-const String BackgroundFetchRegistration::state() const {
-  switch (state_) {
-    case mojom::BackgroundFetchState::SUCCESS:
+const String BackgroundFetchRegistration::result() const {
+  switch (result_) {
+    case mojom::BackgroundFetchResult::SUCCESS:
       return "success";
-    case mojom::BackgroundFetchState::FAILURE:
+    case mojom::BackgroundFetchResult::FAILURE:
       return "failure";
-    case mojom::BackgroundFetchState::PENDING:
-      return "pending";
+    case mojom::BackgroundFetchResult::UNSET:
+      return "";
   }
   NOTREACHED();
 }

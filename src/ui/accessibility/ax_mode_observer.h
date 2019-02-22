@@ -6,7 +6,7 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_MODE_OBSERVER_H_
 
 #include "ui/accessibility/ax_export.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace ui {
 

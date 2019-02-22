@@ -258,7 +258,7 @@ Polymer({
       historySummarySignedIn, historySummarySynced) {
     if (isSyncingHistory && !hasSyncError) {
       return historySummarySynced;
-    } else if (isSignedIn) {
+    } else if (isSignedIn && !this.isSyncPaused_) {
       return historySummarySignedIn;
     }
     return historySummary;
@@ -390,10 +390,7 @@ Polymer({
       e.preventDefault();
       if (!this.syncStatus.hasError) {
         this.syncBrowserProxy_.pauseSync();
-        return;
-      }
-
-      if (this.isSyncPaused_) {
+      } else if (this.isSyncPaused_) {
         this.syncBrowserProxy_.startSignIn();
       } else {
         // In any other error case, navigate to the sync page.
@@ -425,8 +422,8 @@ Polymer({
    * @private
    */
   computeHasOtherError_: function() {
-    return !!this.syncStatus.hasError && !this.isSyncPaused_ &&
-        !this.hasPassphraseError_;
+    return this.syncStatus !== undefined && !!this.syncStatus.hasError &&
+        !this.isSyncPaused_ && !this.hasPassphraseError_;
   },
 
   /**

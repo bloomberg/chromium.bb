@@ -441,7 +441,8 @@ void NavigationSimulator::ReadyToCommit() {
   PrepareCompleteCallbackOnHandle();
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
-        ->PrepareForCommitWithSocketAddress(socket_address_);
+        ->PrepareForCommitDeprecatedForNavigationSimulator(
+            socket_address_, is_signed_exchange_inner_response_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -571,7 +572,9 @@ void NavigationSimulator::AbortCommit() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
-void NavigationSimulator::Fail(int error_code) {
+void NavigationSimulator::FailWithResponseHeaders(
+    int error_code,
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
   CHECK_LE(state_, STARTED) << "NavigationSimulator::Fail can only be "
                                "called once, and cannot be called after "
                                "NavigationSimulator::ReadyToCommit";
@@ -582,6 +585,10 @@ void NavigationSimulator::Fail(int error_code) {
 
   if (state_ == INITIALIZATION)
     Start();
+
+  DCHECK(!handle_->GetResponseHeaders());
+  static_cast<NavigationHandleImpl*>(handle_)->set_response_headers_for_testing(
+      response_headers);
 
   state_ = FAILED;
 
@@ -601,6 +608,10 @@ void NavigationSimulator::Fail(int error_code) {
     return;
   }
   std::move(complete_closure).Run();
+}
+
+void NavigationSimulator::Fail(int error_code) {
+  FailWithResponseHeaders(error_code, nullptr);
 }
 
 void NavigationSimulator::FailComplete(int error_code) {
@@ -641,10 +652,6 @@ void NavigationSimulator::CommitErrorPage() {
   render_frame_host_->SimulateCommitProcessed(handle_->GetNavigationId(),
                                               true /* was_successful */);
 
-  GURL error_url = GURL(kUnreachableWebDataURL);
-  render_frame_host_->OnMessageReceived(FrameHostMsg_DidStartProvisionalLoad(
-      render_frame_host_->GetRoutingID(), error_url, std::vector<GURL>(),
-      base::TimeTicks::Now()));
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = handle_->pending_nav_entry_id();
   params.did_create_new_entry = DidCreateNewEntry();
@@ -687,9 +694,6 @@ void NavigationSimulator::CommitSameDocument() {
     CHECK(same_document_);
     CHECK_EQ(STARTED, state_);
   }
-
-  render_frame_host_->OnMessageReceived(
-      FrameHostMsg_DidStartLoading(render_frame_host_->GetRoutingID(), false));
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
@@ -768,6 +772,13 @@ void NavigationSimulator::SetSocketAddress(
   CHECK_LE(state_, STARTED) << "The socket address cannot be set after the "
                                "navigation has committed or failed";
   socket_address_ = socket_address;
+}
+
+void NavigationSimulator::SetIsSignedExchangeInnerResponse(
+    bool is_signed_exchange_inner_response) {
+  CHECK_LE(state_, STARTED) << "The signed exchange flag cannot be set after "
+                               "the navigation has committed or failed";
+  is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
 }
 
 void NavigationSimulator::SetInterfaceProviderRequest(
@@ -931,7 +942,8 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,
-          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+          false /* skip_service_worker */,
+          blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, url::Origin(),
@@ -955,12 +967,12 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          navigation_client_ptr.PassInterface());
+                          navigation_client_ptr.PassInterface(), nullptr);
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          nullptr);
+                          nullptr, nullptr);
   }
 
   NavigationRequest* request =

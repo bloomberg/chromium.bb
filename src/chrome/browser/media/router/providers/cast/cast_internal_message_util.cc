@@ -245,8 +245,8 @@ CastInternalMessage::CastInternalMessage(CastInternalMessage::Type type,
 
 CastInternalMessage::~CastInternalMessage() = default;
 
-blink::mojom::PresentationConnectionMessagePtr
-CreatePresentationConnectionMessage(const base::Value& message) {
+blink::mojom::PresentationConnectionMessagePtr CreatePresentationMessage(
+    const base::Value& message) {
   std::string str;
   CHECK(base::JSONWriter::Write(message, &str));
   return blink::mojom::PresentationConnectionMessage::NewMessage(str);
@@ -256,7 +256,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateReceiverActionCastMessage(
     const std::string& client_id,
     const MediaSinkInternal& sink,
     const std::string& hash_token) {
-  return CreatePresentationConnectionMessage(CreateReceiverActionMessage(
+  return CreatePresentationMessage(CreateReceiverActionMessage(
       client_id, sink, hash_token, kReceiverActionTypeCast));
 }
 
@@ -264,7 +264,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateReceiverActionStopMessage(
     const std::string& client_id,
     const MediaSinkInternal& sink,
     const std::string& hash_token) {
-  return CreatePresentationConnectionMessage(CreateReceiverActionMessage(
+  return CreatePresentationMessage(CreateReceiverActionMessage(
       client_id, sink, hash_token, kReceiverActionTypeStop));
 }
 
@@ -361,7 +361,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateNewSessionMessage(
   message.SetKey("sequenceNumber", base::Value(-1));
   message.SetKey("timeoutMillis", base::Value(0));
   message.SetKey("clientId", base::Value(client_id));
-  return CreatePresentationConnectionMessage(message);
+  return CreatePresentationMessage(message);
 }
 
 blink::mojom::PresentationConnectionMessagePtr CreateAppMessageAck(
@@ -374,7 +374,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessageAck(
   message.SetKey("sequenceNumber", base::Value(sequence_number));
   message.SetKey("timeoutMillis", base::Value(0));
   message.SetKey("clientId", base::Value(client_id));
-  return CreatePresentationConnectionMessage(message);
+  return CreatePresentationMessage(message);
 }
 
 blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
@@ -388,7 +388,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
   message.SetKey("sequenceNumber", base::Value(-1));
   message.SetKey("timeoutMillis", base::Value(0));
   message.SetKey("clientId", base::Value(client_id));
-  return CreatePresentationConnectionMessage(message);
+  return CreatePresentationMessage(message);
 }
 
 }  // namespace media_router

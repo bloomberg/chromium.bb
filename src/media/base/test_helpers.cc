@@ -161,6 +161,13 @@ VideoDecoderConfig TestVideoConfig::NormalH264(VideoCodecProfile config) {
 }
 
 // static
+VideoDecoderConfig TestVideoConfig::NormalCodecProfile(
+    VideoCodec codec,
+    VideoCodecProfile profile) {
+  return GetTestConfig(codec, profile, VIDEO_ROTATION_0, kNormalSize, false);
+}
+
+// static
 VideoDecoderConfig TestVideoConfig::NormalEncrypted(VideoCodec codec) {
   return GetTestConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN, VIDEO_ROTATION_0,
                        kNormalSize, true);

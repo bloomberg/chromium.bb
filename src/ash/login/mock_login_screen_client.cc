@@ -21,16 +21,31 @@ mojom::LoginScreenClientPtr MockLoginScreenClient::CreateInterfacePtrAndBind() {
   return ptr;
 }
 
-void MockLoginScreenClient::AuthenticateUser(
+void MockLoginScreenClient::AuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserCallback callback) {
-  AuthenticateUser_(account_id, password, authenticated_by_pin, callback);
-  if (authenticate_user_callback_storage_)
-    *authenticate_user_callback_storage_ = std::move(callback);
-  else
+    AuthenticateUserWithPasswordOrPinCallback callback) {
+  AuthenticateUserWithPasswordOrPin_(account_id, password, authenticated_by_pin,
+                                     callback);
+  if (authenticate_user_with_password_or_pin_callback_storage_) {
+    *authenticate_user_with_password_or_pin_callback_storage_ =
+        std::move(callback);
+  } else {
     std::move(callback).Run(authenticate_user_callback_result_);
+  }
+}
+
+void MockLoginScreenClient::AuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    AuthenticateUserWithExternalBinaryCallback callback) {
+  AuthenticateUserWithExternalBinary_(account_id, callback);
+  if (authenticate_user_with_external_binary_callback_storage_) {
+    *authenticate_user_with_external_binary_callback_storage_ =
+        std::move(callback);
+  } else {
+    std::move(callback).Run(authenticate_user_callback_result_);
+  }
 }
 
 std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient() {

@@ -20,7 +20,6 @@
 
 namespace ui {
 
-class DrmBuffer;
 class DrmDevice;
 
 // Wrapper around a CRTC.
@@ -64,17 +63,21 @@ class CrtcController {
   void SetCursor(uint32_t handle, const gfx::Size& size);
   void MoveCursor(const gfx::Point& location);
 
+  void OnPageFlipComplete();
+
  private:
   void DisableCursor();
 
   const scoped_refptr<DrmDevice> drm_;
 
-  uint32_t crtc_;
+  const uint32_t crtc_;
 
   // TODO(dnicoara) Add support for hardware mirroring (multiple connectors).
-  uint32_t connector_;
+  const uint32_t connector_;
 
   drmModeModeInfo mode_ = {};
+
+  scoped_refptr<DrmFramebuffer> modeset_framebuffer_;
 
   // Keeps track of the CRTC state. If a surface has been bound, then the value
   // is set to false. Otherwise it is true.

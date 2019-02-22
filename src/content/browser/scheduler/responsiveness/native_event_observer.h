@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -15,7 +16,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "ui/events/platform/platform_event_observer.h"
+#include "ui/aura/window_event_dispatcher_observer.h"
 #endif
 
 #if defined(OS_WIN)
@@ -40,7 +41,7 @@ class CONTENT_EXPORT NativeEventObserver
 #if defined(OS_MACOSX)
     : public NativeEventProcessorObserver
 #elif defined(OS_LINUX)
-    : public ui::PlatformEventObserver
+    : public aura::WindowEventDispatcherObserver
 #elif defined(OS_WIN)
     : public base::MessagePumpForUI::Observer
 #endif
@@ -73,10 +74,12 @@ class CONTENT_EXPORT NativeEventObserver
   void DidRunNativeEvent(const void* opaque_identifier,
                          base::TimeTicks creation_time) override;
 #elif defined(OS_LINUX)
-  // PlatformEventObserver overrides:
-  // Exposed for tests.
-  void WillProcessEvent(const ui::PlatformEvent& event) override;
-  void DidProcessEvent(const ui::PlatformEvent& event) override;
+  // aura::WindowEventDispatcherObserver overrides:
+  void OnWindowEventDispatcherStartedProcessing(
+      aura::WindowEventDispatcher* dispatcher,
+      const ui::Event& event) override;
+  void OnWindowEventDispatcherFinishedProcessingEvent(
+      aura::WindowEventDispatcher* dispatcher) override;
 #elif defined(OS_WIN)
   // base::MessagePumpForUI::Observer overrides:
   void WillDispatchMSG(const MSG& msg) override;
@@ -86,6 +89,14 @@ class CONTENT_EXPORT NativeEventObserver
  private:
   void RegisterObserver();
   void DeregisterObserver();
+
+#if defined(OS_LINUX)
+  struct EventInfo {
+    const void* unique_id;
+    base::TimeTicks creation_time;
+  };
+  std::vector<EventInfo> events_being_processed_;
+#endif
 
   WillRunEventCallback will_run_event_callback_;
   DidRunEventCallback did_run_event_callback_;

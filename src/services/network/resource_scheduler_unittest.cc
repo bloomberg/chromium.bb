@@ -447,6 +447,8 @@ TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
 }
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
+  base::HistogramTester histogram_tester;
+
   SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -463,6 +465,15 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low2->started());
+
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.RequestQueuingDuration.Priority" +
+          base::IntToString(net::HIGHEST),
+      1);
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.RequestQueuingDuration.Priority" +
+          base::IntToString(net::LOWEST),
+      2);
 }
 
 TEST_F(ResourceSchedulerTest, SchedulerYieldsOnSpdy) {

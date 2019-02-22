@@ -9,6 +9,8 @@ namespace enterprise.reportingPrivate {
   // finished.
   callback DoneCallback = void();
 
+  // Invoked by <code>getDeviceId</code> to return the ID.
+  callback GetDeviceIdCallback = void(DOMString id);
   interface Functions {
 
     // Uploads the status of Chrome browser to the admin console by sending
@@ -16,6 +18,10 @@ namespace enterprise.reportingPrivate {
     static void uploadChromeDesktopReport(
         object report,
         optional DoneCallback callback);
+
+    // Gets the identity of device that Chrome browser is running on. The ID is
+    // retrieved from the local device and used by the Google admin console.
+    static void getDeviceId(optional GetDeviceIdCallback callback);
   };
 
 };

@@ -148,7 +148,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(std::move(context),
@@ -243,10 +243,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   // It's for original request (A) or redirect case (B-a or B-b).
   auto job = std::make_unique<ServiceWorkerURLRequestJob>(
-      request, network_delegate, provider_host_->client_uuid(),
-      blob_storage_context_, resource_context, request_mode_, credentials_mode_,
-      redirect_mode_, integrity_, keepalive_, resource_type_,
-      request_context_type_, frame_type_, body_, this);
+      request, network_delegate, provider_host_, blob_storage_context_,
+      resource_context, request_mode_, credentials_mode_, redirect_mode_,
+      integrity_, keepalive_, resource_type_, request_context_type_,
+      frame_type_, body_, this);
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
 
   resource_context_ = resource_context;
@@ -310,7 +310,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
       std::make_unique<ServiceWorkerNavigationLoader>(
           std::move(callback), std::move(fallback_callback), this,
-          tentative_resource_request,
+          tentative_resource_request, provider_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
   resource_context_ = resource_context;
@@ -319,9 +319,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
                          tentative_resource_request.site_for_cookies);
 
   if (url_job_->ShouldFallbackToNetwork()) {
-    // We're falling back to the next NavigationLoaderInterceptor, forward
-    // the request and clear job now.
-    url_job_->FallbackToNetwork();
+    // The job already fell back to network. Clear the job now.
     ClearJob();
     return;
   }
@@ -356,6 +354,10 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   controller_info->endpoint =
       provider_host_->GetControllerServiceWorkerPtr().PassInterface();
   controller_info->client_id = provider_host_->client_uuid();
+  if (provider_host_->fetch_request_window_id()) {
+    controller_info->fetch_request_window_id =
+        base::make_optional(provider_host_->fetch_request_window_id());
+  }
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
       provider_host_->GetOrCreateServiceWorkerObjectHost(
           provider_host_->controller());
@@ -370,15 +372,15 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url,
     const GURL& site_for_cookies) {
-  DCHECK(!JobWasCanceled());
+  DCHECK(IsJobAlive());
   DCHECK(context_);
   DCHECK(provider_host_);
   tracker_ = std::make_unique<MainResourceRequestTracker>();
 
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-      url_job_.get(), "URL", url.spec());
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+      "URL", url.spec());
   // The provider host may already have set a controller in redirect case,
   // unset it now.
   provider_host_->SetControllerRegistration(
@@ -405,8 +407,8 @@ void ServiceWorkerControlleeRequestHandler::
             disallow_controller,
         blink::ServiceWorkerStatusCode status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
@@ -416,8 +418,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Status", blink::ServiceWorkerStatusToString(status));
     return;
   }
   DCHECK(registration);
@@ -429,8 +431,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "No Provider");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No Provider");
     return;
   }
   provider_host_->AddMatchingRegistration(registration.get());
@@ -442,8 +444,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "No Context");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No Context");
     return;
   }
 
@@ -456,8 +458,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "ServiceWorker is blocked");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "ServiceWorker is blocked");
     return;
   }
 
@@ -470,8 +472,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "Insecure context");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "Insecure context");
     return;
   }
 
@@ -504,9 +506,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
-        "No active version, so falling back to network");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No active version, so falling back to network");
     return;
   }
 
@@ -522,8 +523,8 @@ void ServiceWorkerControlleeRequestHandler::
                        std::move(disallow_controller)));
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "Wait until finished SW activation");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "Wait until finished SW activation");
     return;
   }
 
@@ -538,15 +539,15 @@ void ServiceWorkerControlleeRequestHandler::
         scoped_refptr<ServiceWorkerVersion> active_version,
         std::unique_ptr<ScopedDisallowSetControllerRegistration>
             disallow_controller) {
-  // The job may have been canceled before this was invoked. In that
+  // The job may have been destroyed before this was invoked. In that
   // case, |url_job_| can't be used, so return.
-  if (JobWasCanceled()) {
+  if (!IsJobAlive()) {
     tracker_->RecordDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasCancelled);
+        ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasDestroyed);
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "The job was canceled");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "The job was destroyed");
     return;
   }
 
@@ -557,9 +558,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
-        "The provider host is gone, so falling back to network");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "The provider host is gone, so falling back to network");
     return;
   }
 
@@ -588,8 +588,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info",
         "The expected active version is not ACTIVATED, so falling back to "
         "network",
         "Status",
@@ -622,8 +622,8 @@ void ServiceWorkerControlleeRequestHandler::
   }
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-      url_job_.get(), "Info",
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+      "Info",
       (is_forwarded) ? "Forwarded to the ServiceWorker"
                      : "Skipped the ServiceWorker which has no fetch handler");
 }
@@ -637,8 +637,8 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     int64_t registration_id) {
   DCHECK(force_update_started_);
 
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (!context_) {
@@ -672,8 +672,8 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     scoped_refptr<ServiceWorkerVersion> version,
     std::unique_ptr<ScopedDisallowSetControllerRegistration>
         disallow_controller) {
-  // The job may have been canceled before this was invoked.
-  if (JobWasCanceled())
+  // The job may have been destroyed before this was invoked.
+  if (!IsJobAlive())
     return;
 
   if (!context_) {
@@ -699,7 +699,7 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
-  DCHECK(!JobWasCanceled());
+  DCHECK(IsJobAlive());
   DCHECK(context_);
 
   // When this request handler was created, the provider host had a controller
@@ -776,8 +776,8 @@ void ServiceWorkerControlleeRequestHandler::ClearJob() {
   url_job_.reset();
 }
 
-bool ServiceWorkerControlleeRequestHandler::JobWasCanceled() const {
-  return !url_job_ || url_job_->WasCanceled();
+bool ServiceWorkerControlleeRequestHandler::IsJobAlive() const {
+  return url_job_ && url_job_->IsAlive();
 }
 
 }  // namespace content

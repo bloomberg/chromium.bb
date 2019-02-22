@@ -1,6 +1,10 @@
 {
   "name": "connect_unittests",
   "display_name": "Connect Unittests",
+  "options": {
+    "can_connect_to_other_services_as_any_user": true,
+    "can_connect_to_other_services_with_any_instance_name": true
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -15,7 +19,7 @@
         "connect_test_app": [
           "connect_unittests:connect_test_service",
           "connect_unittests:standalone_app",
-          "connect_unittests:user_id_test"
+          "connect_unittests:identity_test"
         ],
         "connect_test_driver": [
           "connect_unittests:client_process_test"
@@ -23,13 +27,9 @@
         "connect_test_a": [
           "connect_unittests:connect_test_service",
           "connect_unittests:standalone_app",
-          "connect_unittests:user_id_test"
+          "connect_unittests:identity_test"
         ],
-        "connect_test_singleton_app": [],
-        "service_manager": [
-          "service_manager:instance_name",
-          "service_manager:user_id"
-        ]
+        "connect_test_singleton_app": []
       }
     }
   }

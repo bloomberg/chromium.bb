@@ -5,7 +5,9 @@
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 
 #include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/io_thread.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context.h"
 
@@ -50,8 +52,8 @@ NetworkQualityEstimatorProviderImpl::~NetworkQualityEstimatorProviderImpl() {
 scoped_refptr<base::SequencedTaskRunner>
 NetworkQualityEstimatorProviderImpl::GetTaskRunner() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
+  return base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::IO});
 }
 
 void NetworkQualityEstimatorProviderImpl::PostReplyNetworkQualityEstimator(
@@ -69,7 +71,7 @@ void NetworkQualityEstimatorProviderImpl::PostReplyNetworkQualityEstimator(
   }
 
   bool task_posted =
-      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
           ->PostTask(FROM_HERE,
                      base::Bind(&GetNetworkQualityEstimatorOnIOThread,
                                 io_callback, io_thread_));

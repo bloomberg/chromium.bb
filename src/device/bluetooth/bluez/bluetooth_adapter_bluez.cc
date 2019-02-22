@@ -683,6 +683,13 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
   if (property_name == properties->mtu.name())
     NotifyDeviceMTUChanged(device_bluez, properties->mtu.value());
 
+  // We use the RSSI as a proxy for receiving an advertisement because it's
+  // usually updated whenever an advertisement is received.
+  if (property_name == properties->rssi.name() && properties->rssi.is_valid() &&
+      properties->eir.is_valid())
+    NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
+                                      properties->eir.value());
+
   if (property_name == properties->services_resolved.name() &&
       properties->services_resolved.value()) {
     device_bluez->UpdateGattServices(object_path);
@@ -1010,8 +1017,7 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
           ->GetBluetoothDeviceClient()
           ->GetDevicesForAdapter(object_path_);
 
-  for (std::vector<dbus::ObjectPath>::iterator iter = device_paths.begin();
-       iter != device_paths.end(); ++iter) {
+  for (auto iter = device_paths.begin(); iter != device_paths.end(); ++iter) {
     DeviceAdded(*iter);
   }
 }
@@ -1134,6 +1140,16 @@ void BluetoothAdapterBlueZ::NotifyDeviceMTUChanged(BluetoothDeviceBlueZ* device,
 
   for (auto& observer : observers_)
     observer.DeviceMTUChanged(this, device, mtu);
+}
+
+void BluetoothAdapterBlueZ::NotifyDeviceAdvertisementReceived(
+    BluetoothDeviceBlueZ* device,
+    int16_t rssi,
+    const std::vector<uint8_t>& eir) {
+  DCHECK(device->adapter_ == this);
+
+  for (auto& observer : observers_)
+    observer.DeviceAdvertisementReceived(this, device, rssi, eir);
 }
 
 void BluetoothAdapterBlueZ::UseProfile(

@@ -36,9 +36,7 @@ class ASH_EXPORT AssistantScreenContextController
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
   // Returns a reference to the underlying model.
-  const AssistantScreenContextModel* model() const {
-    return &assistant_screen_context_model_;
-  }
+  const AssistantScreenContextModel* model() const { return &model_; }
 
   // Adds/removes the specified screen context model |observer|.
   void AddModelObserver(AssistantScreenContextModelObserver* observer);
@@ -71,7 +69,7 @@ class ASH_EXPORT AssistantScreenContextController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  AssistantScreenContextModel assistant_screen_context_model_;
+  AssistantScreenContextModel model_;
 
   // Weak pointer factory used for screen context requests.
   base::WeakPtrFactory<AssistantScreenContextController>

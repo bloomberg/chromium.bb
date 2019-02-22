@@ -39,7 +39,7 @@ class EmbedderTest : public ::testing::Test,
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // Equivalent to UNSUPPORT_INFO::FSDK_UnSupport_Handler().
     virtual void UnsupportedHandler(int type) {}
@@ -62,6 +62,9 @@ class EmbedderTest : public ::testing::Test,
     virtual FPDF_PAGE GetPage(FPDF_FORMFILLINFO* info,
                               FPDF_DOCUMENT document,
                               int page_index);
+
+    // Equivalent to FPDF_FORMFILLINFO::FFI_DoURIAction().
+    virtual void DoURIAction(FPDF_BYTESTRING uri) {}
   };
 
   EmbedderTest();
@@ -81,8 +84,8 @@ class EmbedderTest : public ::testing::Test,
     delegate_ = delegate ? delegate : default_delegate_.get();
   }
 
-  FPDF_DOCUMENT document() { return document_; }
-  FPDF_FORMHANDLE form_handle() { return form_handle_; }
+  FPDF_DOCUMENT document() const { return document_; }
+  FPDF_FORMHANDLE form_handle() const { return form_handle_; }
 
   // Create an empty document, and its form fill environment. Returns true
   // on success or false on failure.
@@ -245,6 +248,8 @@ class EmbedderTest : public ::testing::Test,
   static FPDF_PAGE GetPageTrampoline(FPDF_FORMFILLINFO* info,
                                      FPDF_DOCUMENT document,
                                      int page_index);
+  static void DoURIActionTrampoline(FPDF_FORMFILLINFO* info,
+                                    FPDF_BYTESTRING uri);
   static int WriteBlockCallback(FPDF_FILEWRITE* pFileWrite,
                                 const void* data,
                                 unsigned long size);

@@ -119,116 +119,98 @@ void HTMLBodyElement::ParseAttribute(
   } else if (name == onafterprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::afterprint,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onbeforeprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::beforeprint,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::load,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onbeforeunloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::beforeunload,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(
+            GetDocument().GetFrame(), name, value,
+            JSEventHandler::HandlerType::kOnBeforeUnloadEventHandler));
   } else if (name == onunloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::unload,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onpagehideAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pagehide,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onpageshowAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pageshow,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onpopstateAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::popstate,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onblurAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::blur,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(
+            GetDocument().GetFrame(), name, value,
+            JSEventHandler::HandlerType::kOnErrorEventHandler));
   } else if (name == onfocusAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::focus,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (RuntimeEnabledFeatures::OrientationEventEnabled() &&
              name == onorientationchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::orientationchange,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onhashchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::hashchange,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onmessageAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::message,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onmessageerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::messageerror,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onresizeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::resize,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onscrollAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::scroll,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onselectionchangeAttr) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLBodyElementOnSelectionChangeAttribute);
     GetDocument().SetAttributeEventListener(
         EventTypeNames::selectionchange,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onstorageAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::storage,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == ononlineAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::online,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onofflineAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::offline,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == onlanguagechangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::languagechange,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else {
     HTMLElement::ParseAttribute(params);
   }

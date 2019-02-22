@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -103,8 +104,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -294,13 +293,19 @@ std::string GetManagedLoginScreenLocale() {
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+  auto* client = ChromeKeyboardControllerClient::Get();
+  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
+  client->SetKeyboardConfig(config);
 }
 
-void ResetKeyboardOverscrollOverride() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+void ResetKeyboardOverscrollBehavior() {
+  auto* client = ChromeKeyboardControllerClient::Get();
+  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+  client->SetKeyboardConfig(config);
 }
 
 // Workaround for graphical glitches with animated user avatars due to a race
@@ -369,6 +374,7 @@ bool ShouldInitializeWebUIHidden() {
 
 // static
 const int LoginDisplayHostWebUI::kShowLoginWebUIid = 0x1111;
+bool LoginDisplayHostWebUI::disable_restrictive_proxy_check_for_test_ = false;
 
 // A class to handle special menu key for keyboard driven OOBE.
 class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
@@ -445,6 +451,11 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
+  if (waiting_for_configuration_) {
+    OobeConfiguration::Get()->RemoveObserver(this);
+    waiting_for_configuration_ = false;
+  }
+
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
@@ -457,7 +468,7 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (window_manager)
     window_manager->RemoveObserver(this);
 
-  ResetKeyboardOverscrollOverride();
+  ResetKeyboardOverscrollBehavior();
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
@@ -522,7 +533,26 @@ void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {
     login_view_->SetStatusAreaVisible(visible);
 }
 
+void LoginDisplayHostWebUI::OnOobeConfigurationChanged() {
+  waiting_for_configuration_ = false;
+  OobeConfiguration::Get()->RemoveObserver(this);
+  StartWizard(first_screen_);
+}
+
 void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
+  if (!StartupUtils::IsOobeCompleted()) {
+    CHECK(OobeConfiguration::Get());
+    if (waiting_for_configuration_)
+      return;
+    if (!OobeConfiguration::Get()->CheckCompleted()) {
+      waiting_for_configuration_ = true;
+      first_screen_ = first_screen;
+      OobeConfiguration::Get()->AddAndFireObserver(this);
+      VLOG(1) << "Login WebUI >> wizard waiting for configuration check";
+      return;
+    }
+  }
+
   DisableKeyboardOverscroll();
 
   TryToPlayOobeStartupSound();
@@ -565,13 +595,15 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   else
     finalize_animation_type_ = ANIMATION_NONE;
 
-  // Observe the user switch animation and defer the deletion of itself only
-  // after the animation is finished.
-  MultiUserWindowManager* window_manager =
-      MultiUserWindowManager::GetInstance();
-  // MultiUserWindowManager instance might be nullptr in a unit test.
-  if (window_manager)
-    window_manager->AddObserver(this);
+  if (finalize_animation_type_ == ANIMATION_ADD_USER) {
+    // Observe the user switch animation and defer the deletion of itself only
+    // after the animation is finished.
+    MultiUserWindowManager* window_manager =
+        MultiUserWindowManager::GetInstance();
+    // MultiUserWindowManager instance might be nullptr in a unit test.
+    if (window_manager)
+      window_manager->AddObserver(this);
+  }
 
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
@@ -939,9 +971,10 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   if (login_window_)
     return;
 
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
+  // TODO(crbug.com/881390): Mash support for keyboard driven OOBE.
+  if (!features::IsMultiProcessMash() &&
+      system::InputDeviceSettings::ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
-    // crbug.com/405859
     focus_ring_controller_ = std::make_unique<ash::FocusRingController>();
     focus_ring_controller_->SetVisible(true);
 
@@ -978,6 +1011,9 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_view_->Init();
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
+  if (disable_restrictive_proxy_check_for_test_) {
+    DisableRestrictiveProxyCheckForTest();
+  }
 
   // For voice interaction OOBE, we do not want the animation here.
   if (!is_voice_interaction_oobe_) {
@@ -1055,10 +1091,15 @@ void LoginDisplayHostWebUI::CreateExistingUserController() {
 
 // static
 void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  default_host()
-      ->GetOobeUI()
-      ->GetGaiaScreenView()
-      ->DisableRestrictiveProxyCheckForTest();
+  if (default_host()->GetOobeUI()) {
+    default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->DisableRestrictiveProxyCheckForTest();
+    disable_restrictive_proxy_check_for_test_ = false;
+  } else {
+    disable_restrictive_proxy_check_for_test_ = true;
+  }
 }
 
 void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {

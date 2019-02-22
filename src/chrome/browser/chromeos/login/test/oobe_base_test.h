@@ -62,6 +62,12 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
 
   virtual void InitHttpsForwarders();
 
+  // If this returns true (default), the |ash::switches::kShowWebUiLogin|
+  // command-line switch is passed to force the Web Ui Login.
+  // If this returns false, the switch is omitted so the views-based login may
+  // be used.
+  virtual bool ShouldForceWebUiLogin();
+
   // Network status control functions.
   void SimulateNetworkOffline();
   void SimulateNetworkOnline();

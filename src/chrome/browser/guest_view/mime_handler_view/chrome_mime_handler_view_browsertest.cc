@@ -10,13 +10,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/guest_view/browser/guest_view_manager.cc"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
@@ -128,6 +130,26 @@ class ChromeMimeHandlerViewBrowserPluginTest
   content::WebContents* embedder_web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMimeHandlerViewBrowserPluginTest);
+};
+
+// Helper class to monitor focus on a WebContents with BrowserPlugin (guest).
+class FocusChangeWaiter {
+ public:
+  explicit FocusChangeWaiter(content::WebContents* web_contents,
+                             bool expected_focus)
+      : web_contents_(web_contents), expected_focus_(expected_focus) {}
+  ~FocusChangeWaiter() {}
+
+  void WaitForFocusChange() {
+    while (expected_focus_ !=
+           IsWebContentsBrowserPluginFocused(web_contents_)) {
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+
+ private:
+  content::WebContents* web_contents_;
+  bool expected_focus_;
 };
 
 // Flaky under MSan: https://crbug.com/837757
@@ -253,6 +275,49 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                                 guest_rect.CenterPoint());
   waiter.Wait();
   EXPECT_TRUE(aura_webview->HasFocus());
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
+                       TouchFocusesBrowserPluginInEmbedder) {
+  InitializeTestPage(embedded_test_server()->GetURL("/test_embedded.html"));
+
+  auto embedder_rect = embedder_web_contents()->GetContainerBounds();
+  auto guest_rect = guest_web_contents()->GetContainerBounds();
+
+  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
+  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
+  embedder_rect.set_x(0);
+  embedder_rect.set_y(0);
+
+  // Don't send events that need to be routed until we know the child's surface
+  // is ready for hit testing.
+  content::WaitForHitTestDataOrGuestSurfaceReady(guest_web_contents());
+
+  // 1) BrowserPlugin should not be focused at start.
+  ASSERT_FALSE(IsWebContentsBrowserPluginFocused(guest_web_contents()));
+
+  // 2) Send touch event to guest, now BrowserPlugin should get focus.
+  {
+    gfx::Point point = guest_rect.CenterPoint();
+    FocusChangeWaiter focus_waiter(guest_web_contents(), true);
+    SendRoutedTouchTapSequence(embedder_web_contents(), point);
+    SendRoutedGestureTapSequence(embedder_web_contents(), point);
+    focus_waiter.WaitForFocusChange();
+    ASSERT_TRUE(IsWebContentsBrowserPluginFocused(guest_web_contents()));
+  }
+
+  // 3) Send touch start to embedder, now BrowserPlugin should lose focus.
+  {
+    // Choose a point outside of guest (but inside the embedder).
+    gfx::Point point = guest_rect.bottom_right();
+    point += gfx::Vector2d(10, 10);
+    EXPECT_TRUE(embedder_rect.Contains(point));
+    FocusChangeWaiter focus_waiter(guest_web_contents(), false);
+    SendRoutedTouchTapSequence(embedder_web_contents(), point);
+    SendRoutedGestureTapSequence(embedder_web_contents(), point);
+    focus_waiter.WaitForFocusChange();
+    ASSERT_FALSE(IsWebContentsBrowserPluginFocused(guest_web_contents()));
+  }
 }
 #endif  // USE_AURA
 

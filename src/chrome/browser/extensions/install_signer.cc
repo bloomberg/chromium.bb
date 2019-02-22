@@ -127,7 +127,7 @@ void SetExtensionIdSet(base::DictionaryValue* dictionary,
                        const char* key,
                        const ExtensionIdSet& ids) {
   auto id_list = std::make_unique<base::ListValue>();
-  for (ExtensionIdSet::const_iterator i = ids.begin(); i != ids.end(); ++i)
+  for (auto i = ids.begin(); i != ids.end(); ++i)
     id_list->AppendString(*i);
   dictionary->Set(key, std::move(id_list));
 }
@@ -142,9 +142,7 @@ bool GetExtensionIdSet(const base::DictionaryValue& dictionary,
   const base::ListValue* id_list = NULL;
   if (!dictionary.GetList(key, &id_list))
     return false;
-  for (base::ListValue::const_iterator i = id_list->begin();
-       i != id_list->end();
-       ++i) {
+  for (auto i = id_list->begin(); i != id_list->end(); ++i) {
     std::string id;
     if (!i->GetAsString(&id)) {
       return false;
@@ -242,8 +240,7 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
     return true;
 
   std::string signed_data;
-  for (ExtensionIdSet::const_iterator i = signature.ids.begin();
-       i != signature.ids.end(); ++i)
+  for (auto i = signature.ids.begin(); i != signature.ids.end(); ++i)
     signed_data.append(*i);
 
   std::string hash_base64;
@@ -299,8 +296,9 @@ void LogRequestStartHistograms() {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   const base::Time process_creation_time =
       base::CurrentProcessInfo::CreationTime();
-  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.UptimeAtTimeOfRequest",
-                       (base::Time::Now() - process_creation_time).InSeconds());
+  UMA_HISTOGRAM_COUNTS_1M(
+      "ExtensionInstallSigner.UptimeAtTimeOfRequest",
+      (base::Time::Now() - process_creation_time).InSeconds());
 #endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 
   base::TimeDelta delta;
@@ -308,8 +306,8 @@ void LogRequestStartHistograms() {
   if (!g_last_request_time.Get().is_null())
     delta = now - g_last_request_time.Get();
   g_last_request_time.Get() = now;
-  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.SecondsSinceLastRequest",
-                       delta.InSeconds());
+  UMA_HISTOGRAM_COUNTS_1M("ExtensionInstallSigner.SecondsSinceLastRequest",
+                          delta.InSeconds());
 
   g_request_count += 1;
   UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.RequestCount",
@@ -387,7 +385,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   dictionary.SetInteger(kProtocolVersionKey, 1);
   dictionary.SetString(kHashKey, hash_base64);
   std::unique_ptr<base::ListValue> id_list(new base::ListValue);
-  for (ExtensionIdSet::const_iterator i = ids_.begin(); i != ids_.end(); ++i) {
+  for (auto i = ids_.begin(); i != ids_.end(); ++i) {
     id_list->AppendString(*i);
   }
   dictionary.Set(kIdsKey, std::move(id_list));

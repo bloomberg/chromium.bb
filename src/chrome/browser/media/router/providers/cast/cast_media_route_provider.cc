@@ -5,6 +5,10 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
+#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "url/origin.h"
@@ -12,8 +16,6 @@
 namespace media_router {
 
 namespace {
-
-static constexpr MediaRouteProviderId kProviderId = MediaRouteProviderId::CAST;
 
 // Returns a list of origins that are valid for |source_id|. An empty list
 // means all origins are valid.
@@ -38,6 +40,8 @@ CastMediaRouteProvider::CastMediaRouteProvider(
     MediaSinkServiceBase* media_sink_service,
     CastAppDiscoveryService* app_discovery_service,
     cast_channel::CastMessageHandler* message_handler,
+    service_manager::Connector* connector,
+    const std::string& hash_token,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : binding_(this),
       media_sink_service_(media_sink_service),
@@ -51,20 +55,28 @@ CastMediaRouteProvider::CastMediaRouteProvider(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CastMediaRouteProvider::Init, base::Unretained(this),
-                     std::move(request), std::move(media_router)));
+                     std::move(request), std::move(media_router),
+                     std::make_unique<DataDecoder>(connector), hash_token));
 }
 
 void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
-                                  mojom::MediaRouterPtrInfo media_router) {
+                                  mojom::MediaRouterPtrInfo media_router,
+                                  std::unique_ptr<DataDecoder> data_decoder,
+                                  const std::string& hash_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   binding_.Bind(std::move(request));
   media_router_.Bind(std::move(media_router));
 
+  activity_manager_ = std::make_unique<CastActivityManager>(
+      media_sink_service_, message_handler_, media_router_.get(),
+      std::move(data_decoder), hash_token);
+
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
   media_router_->OnSinkAvailabilityUpdated(
-      kProviderId, mojom::MediaRouter::SinkAvailability::PER_SOURCE);
+      MediaRouteProviderId::CAST,
+      mojom::MediaRouter::SinkAvailability::PER_SOURCE);
 }
 
 CastMediaRouteProvider::~CastMediaRouteProvider() {
@@ -80,10 +92,28 @@ void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
                                          base::TimeDelta timeout,
                                          bool incognito,
                                          CreateRouteCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(
-      base::nullopt, nullptr, std::string("Not implemented"),
-      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/809249): Handle mirroring routes, including
+  // mirror-to-Cast transitions.
+  const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
+  if (!sink) {
+    std::move(callback).Run(base::nullopt, nullptr,
+                            std::string("Sink not found"),
+                            RouteRequestResult::ResultCode::SINK_NOT_FOUND);
+    return;
+  }
+
+  std::unique_ptr<CastMediaSource> cast_source =
+      CastMediaSource::From(media_source);
+  if (!cast_source) {
+    std::move(callback).Run(
+        base::nullopt, nullptr, std::string("Invalid source"),
+        RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+    return;
+  }
+
+  activity_manager_->LaunchSession(*cast_source, *sink, presentation_id, origin,
+                                   tab_id, incognito, std::move(callback));
 }
 
 void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
@@ -116,26 +146,19 @@ void CastMediaRouteProvider::ConnectRouteByRouteId(
 
 void CastMediaRouteProvider::TerminateRoute(const std::string& route_id,
                                             TerminateRouteCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(
-      std::string("Not implemented"),
-      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  activity_manager_->TerminateSession(route_id, std::move(callback));
 }
 
-void CastMediaRouteProvider::SendRouteMessage(
-    const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+void CastMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
+                                              const std::string& message) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
 }
 
 void CastMediaRouteProvider::SendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
 }
 
 void CastMediaRouteProvider::StartObservingMediaSinks(
@@ -174,12 +197,14 @@ void CastMediaRouteProvider::StopObservingMediaSinks(
 
 void CastMediaRouteProvider::StartObservingMediaRoutes(
     const std::string& media_source) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  activity_manager_->AddRouteQuery(media_source);
 }
 
 void CastMediaRouteProvider::StopObservingMediaRoutes(
     const std::string& media_source) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  activity_manager_->RemoveRouteQuery(media_source);
 }
 
 void CastMediaRouteProvider::StartListeningForRouteMessages(

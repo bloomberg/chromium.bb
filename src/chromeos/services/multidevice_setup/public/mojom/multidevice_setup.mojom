@@ -78,7 +78,11 @@ enum FeatureState {
 
   // The feature has been enabled by the user, but it is still unavailable
   // because the entire Better Together suite has been disabled by the user.
-  kUnavailableSuiteDisabled
+  kUnavailableSuiteDisabled,
+
+  // The feature still requires further setup to be ready for use (e.g., Android
+  // Messages requires a separate pairing flow after unified setup).
+  kFurtherSetupRequired,
 };
 
 interface AccountStatusChangeDelegate {
@@ -87,17 +91,24 @@ interface AccountStatusChangeDelegate {
   // called if the current user has not yet set up MultiDevice features.
   OnPotentialHostExistsForNewUser();
 
+  // Callback which indicates that the account left the state of having a
+  // potential host ready for setup. Note that it is called both when a host is
+  // set and when there are simply no host devices (i.e. neither potential nor
+  // set) on the account anymore. This function is only called if the current
+  // user has not yet set up MultiDevice features and received backend
+  // confirmation.
+  OnNoLongerNewUser();
+
   // Callback which indicates that the currently-connected MultiDevice host has
   // changed. This likely means that the user has changed MultiDevice settings
   // on another device. This function is only called if the current user has
-  // already set up MultiDevice features. Note: |new_host_device_name| is
-  // expected to be a UTF-8 string.
+  // already set up MultiDevice features.
   OnConnectedHostSwitchedForExistingUser(string new_host_device_name);
 
   // Callback which indicates that a new Chromebook was added to the account of
   // the current user. This function is only called if the current user has
   // already set up MultiDevice features.
-  OnNewChromebookAddedForExistingUser();
+  OnNewChromebookAddedForExistingUser(string new_host_device_name);
 };
 
 interface HostStatusObserver {
@@ -114,8 +125,8 @@ interface FeatureStateObserver {
 };
 
 // Provides an API to the MultiDevice Setup flow. Designed to be exposed
-// primarily to the MultiDevice setup flow at chrome://multidevice-setup (normal
-// usage) as well as the ProximityAuth debug WebUI page at
+// primarily to the MultiDevice setup flow at chrome://multidevice-setup and
+// chrome://oobe (normal usage) as well as the ProximityAuth debug WebUI page at
 // chrome://proximity-auth (debugging only).
 interface MultiDeviceSetup {
   // Registers the "account status change" delegate to be used by the service.
@@ -136,16 +147,16 @@ interface MultiDeviceSetup {
   GetEligibleHostDevices() =>
       (array<chromeos.device_sync.mojom.RemoteDevice> eligible_host_devices);
 
-  // Sets the host associated with the provided public key as the host device
+  // Sets the host associated with the provided device ID as the host device
   // for this account. The provided auth token must be valid in order to prove
   // that the user is authenticated. If called when there is no current host or
   // when the current host is a different device from the one passed, this
   // function initiates a connection to the back-end and attempts to set the
   // host. When called with the same device that is already the host, this
   // function is a no-op. Returns a success boolean; this function will fail if
-  // the provided public key does not correspond to an eligible host device on
+  // the provided device ID does not correspond to an eligible host device on
   // the account, or the provided auth token is invalid.
-  SetHostDevice(string public_key, string auth_token) => (bool success);
+  SetHostDevice(string device_id, string auth_token) => (bool success);
 
   // Removes the currently-set host as the multi-device host for this account.
   // If there was no host set to begin with, this function is a no-op.
@@ -189,4 +200,13 @@ interface MultiDeviceSetup {
   // intended to be used only for debugging in the chrome://proximity-auth page.
   // During normal usage, events are triggered internally within the service.
   TriggerEventForDebugging(EventTypeForDebugging type) => (bool success);
+};
+
+// Provides an API for setting a MultiDevice host without the need to provide an
+// auth token. This interface should only be used in circumstances when the user
+// has just entered their password.
+interface PrivilegedHostDeviceSetter {
+  // Same functionality as MultiDeviceSetup's SetHostDevice() function above,
+  // except that no auth token is required.
+  SetHostDevice(string device_id) => (bool success);
 };

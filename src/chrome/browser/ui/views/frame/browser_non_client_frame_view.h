@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/views/window/non_client_view.h"
@@ -37,28 +36,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
 
-  // Returns the padding on the left, right, and bottom of the avatar icon.
-  static int GetAvatarIconPadding();
-
-  // Returns the padding on the sides of the tabstrip.
-  static int GetTabstripPadding();
-
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
-
-  const views::View* profile_indicator_icon() const {
-    return profile_indicator_icon_;
-  }
-  views::View* profile_indicator_icon() { return profile_indicator_icon_; }
 
   // Called when BrowserView creates all it's child views.
   virtual void OnBrowserViewInitViewsComplete();
 
-  // Called on Linux X11 after the browser window is maximized or restored.
-  virtual void OnMaximizedStateChanged();
-
-  // Called on Linux X11 and Mac after the browser window is fullscreened or
-  // unfullscreened.
+  // Called on Mac after the browser window is fullscreened or unfullscreened.
   virtual void OnFullscreenStateChanged();
 
   // Returns whether the caption buttons are drawn at the leading edge (i.e. the
@@ -82,7 +66,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Updates the top UI state to be hidden or shown in fullscreen according to
   // the preference's state. Currently only used on Mac.
-  virtual void UpdateFullscreenTopUI(bool is_exiting_fullscreen);
+  virtual void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen);
 
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;
@@ -96,9 +80,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // rather than having extra vertical space above the tabs.
   virtual bool IsFrameCondensed() const;
 
-  // Returns whether the content is painted with a client edge or not.
-  virtual bool HasClientEdge() const;
-
   // Returns whether the shapes of background tabs are visible against the
   // frame, given an active state of |active|.
   virtual bool HasVisibleBackgroundTabShapes(
@@ -107,9 +88,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the shapes of background tabs are visible against the frame
   // for either active or inactive windows.
   bool EverHasVisibleBackgroundTabShapes() const;
-
-  // Retrieves the icon to use in the frame to indicate an incognito window.
-  gfx::ImageSkia GetIncognitoAvatarIcon() const;
 
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
@@ -120,10 +98,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   SkColor GetToolbarTopSeparatorColor() const;
 
   // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.  If |opaque| is true, the resulting
-  // color after drawing the tab background on the frame will be returned.
+  // the activation state of the window.
   SkColor GetTabBackgroundColor(TabState state,
-                                bool opaque,
                                 ActiveState active_state = kUseCurrent) const;
 
   // Returns the tab foreground color of the for the text based on both the
@@ -142,21 +118,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Returns the profile switcher button, if this frame has any, nullptr if it
-  // doesn't.
-  views::Button* GetProfileSwitcherButton() const;
-
   // Provided for mus. Updates the client-area of the WindowTreeHostMus.
   virtual void UpdateClientArea();
 
   // Provided for mus to update the minimum window size property.
   virtual void UpdateMinimumSize();
-
-  // Distance between the leading edge of the NonClientFrameView and the tab
-  // strip.
-  // TODO: Consider refactoring and unifying tabstrip bounds calculations.
-  // https://crbug.com/820485.
-  virtual int GetTabStripLeftInset() const;
 
   // Whether the special painting mode for one tab is allowed, regardless of how
   // many tabs there are right now.
@@ -167,7 +133,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
-  void ChildPreferredSizeChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // TabStripObserver:
@@ -191,26 +156,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   gfx::ImageSkia GetFrameOverlayImage(
       ActiveState active_state = kUseCurrent) const;
 
-  // Returns the style of the profile switcher avatar button.
-  virtual AvatarButtonStyle GetAvatarButtonStyle() const = 0;
-
-  // Updates all the profile icons as necessary (profile switcher button, or the
-  // icon that indicates incognito (or a teleported window in ChromeOS)).
-  void UpdateProfileIcons();
-
-  void LayoutIncognitoButton();
-
   // views::NonClientFrameView:
   void ActivationChanged(bool active) override;
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
-
-  AvatarButtonManager* profile_switcher() { return &profile_switcher_; }
-
- private:
-  // views::NonClientFrameView:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
@@ -220,17 +169,15 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
 
+ private:
   void MaybeObserveTabstrip();
 
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.
   const ui::ThemeProvider* GetThemeProviderForProfile() const;
 
-  // Draws a taskbar icon if avatars are enabled, erases it otherwise.
+  // Draws a taskbar icon for non-guest sessions, erases it otherwise.
   void UpdateTaskbarDecoration();
-
-  // Returns true if |profile_indicator_icon_| should be shown.
-  bool ShouldShowProfileIndicatorIcon() const;
 
   // Returns the color of the given |color_id| from the theme provider or the
   // default theme properties.
@@ -241,14 +188,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
-
-  // Wrapper around the in-frame profile switcher. Might not be used on all
-  // platforms.
-  AvatarButtonManager profile_switcher_;
-
-  // On desktop, this is used to show an incognito icon. On CrOS, it's also used
-  // for teleported windows (in multi-profile mode).
-  ProfileIndicatorIcon* profile_indicator_icon_;
 
   ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
 

@@ -37,7 +37,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -306,7 +306,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   WebURLRequest request(url);
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
-  request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  request.SetRequestContext(mojom::RequestContextType::SCRIPT);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
@@ -689,7 +689,7 @@ TEST_F(WebAssociatedURLLoaderTest, AccessCheckForLocalURL) {
   KURL url = ToKURL("file://test.pdf");
 
   WebURLRequest request(url);
-  request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
+  request.SetRequestContext(mojom::RequestContextType::PLUGIN);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
@@ -716,7 +716,7 @@ TEST_F(WebAssociatedURLLoaderTest, BypassAccessCheckForLocalURL) {
   KURL url = ToKURL("file://test.pdf");
 
   WebURLRequest request(url);
-  request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
+  request.SetRequestContext(mojom::RequestContextType::PLUGIN);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 

@@ -35,8 +35,8 @@ std::vector<int32_t> GenerateReferencesDeltaTest(
     EquivalenceMap&& equivalence_map) {
   // OffsetMapper needs image sizes for forward-projection overflow check. These
   // are tested elsewhere, so just use arbitrary large value.
-  constexpr size_t kOldImageSize = 1000000;
-  constexpr size_t kNewImageSize = 1001000;
+  constexpr offset_t kOldImageSize = 1000000;
+  constexpr offset_t kNewImageSize = 1001000;
 
   ReferenceDeltaSink reference_delta_sink;
 

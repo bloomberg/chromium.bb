@@ -2,9 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Remember to increment the versions for the commands in this comment block.
+# Before creating a new CIPD package run the following to make sure the tag you
+# are adding does not already exist (otherwise you break the build):
+# cipd describe chromium/third_party/android_tools_bundletool -version "version:0.6.0-cr0"
 # To create CIPD package run the following command.
-# cipd create --pkg-def cipd.yaml -tag version:0.4.2-cr0
+# cipd create --pkg-def cipd.yaml -tag version:0.6.0-cr0
 package: chromium/third_party/android_tools_bundletool
 description: Android SDK tool to manage App Bundles
 data:
-  - file: bundletool-all-0.4.2.jar
+  - file: bundletool-all-0.6.0.jar

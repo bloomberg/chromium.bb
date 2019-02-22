@@ -34,11 +34,6 @@ void ArcPictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   // Should be a no-op on ARC. This is managed on the Android side.
 }
 
-void ArcPictureInPictureWindowControllerImpl::ClickCustomControl(
-    const std::string& control_id) {
-  // Should be a no-op on ARC. This is managed on the Android side.
-}
-
 void ArcPictureInPictureWindowControllerImpl::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& info) {
   // Should be a no-op on ARC. This is managed on the Android side.
@@ -80,6 +75,16 @@ void ArcPictureInPictureWindowControllerImpl::UpdatePlaybackState(
 bool ArcPictureInPictureWindowControllerImpl::TogglePlayPause() {
   // Should be a no-op on ARC. This is managed on the Android side.
   return false;
+}
+
+void ArcPictureInPictureWindowControllerImpl::CustomControlPressed(
+    const std::string& control_id) {
+  // Should be a no-op on ARC. This is managed on the Android side.
+}
+
+void ArcPictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
+    bool is_visible) {
+  // Should be a no-op on ARC. This is managed on the Android side.
 }
 
 }  // namespace arc

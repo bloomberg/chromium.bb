@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -448,7 +449,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   MenuManager* manager = static_cast<MenuManager*>(
       (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(),
-          &MenuManagerFactory::BuildServiceInstanceForTesting)));
+          base::BindRepeating(
+              &MenuManagerFactory::BuildServiceInstanceForTesting))));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
@@ -496,7 +498,8 @@ TEST_F(ExtensionContextMenuModelTest,
   // Create a MenuManager for adding context items.
   MenuManager* manager = static_cast<MenuManager*>(
       MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting));
+          profile(), base::BindRepeating(
+                         &MenuManagerFactory::BuildServiceInstanceForTesting)));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
@@ -698,7 +701,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
 TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // Add an extension with all urls, and withhold permission.
@@ -848,7 +852,8 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // submenu either.
   scoped_feature_list.reset();  // Need to delete the old list first.
   scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndDisableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndDisableFeature(
+      extensions_features::kRuntimeHostPermissions);
   const Extension* feature_disabled_extension = AddExtensionWithHostPermission(
       "feature_disabled_extension", manifest_keys::kBrowserAction,
       Manifest::INTERNAL, "http://www.google.com/*");
@@ -896,7 +901,8 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
 TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.
@@ -1045,19 +1051,10 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
         test_case.current_url.spec().c_str()));
 
     // Install an extension with the specified permission.
-    scoped_refptr<const Extension> extension;
-    {
-      ExtensionBuilder builder("test");
-      DictionaryBuilder content_script;
-      content_script
-          .Set("matches",
-               ListBuilder().Append(test_case.requested_pattern).Build())
-          .Set("js", ListBuilder().Append("script.js").Build());
-      builder.SetManifestKey(
-          "content_scripts",
-          ListBuilder().Append(content_script.Build()).Build());
-      extension = builder.Build();
-    }
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test")
+            .AddContentScript("script.js", {test_case.requested_pattern})
+            .Build();
     InitializeAndAddExtension(*extension);
 
     ScriptingPermissionsModifier(profile(), extension)
@@ -1120,7 +1117,8 @@ TEST_F(ExtensionContextMenuModelTest,
        TestTogglingAccessWithSpecificSitesWithUnrequestedUrl) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.
@@ -1227,7 +1225,8 @@ TEST_F(ExtensionContextMenuModelTest,
        TestTogglingAccessWithSpecificSitesWithRequestedSites) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.
@@ -1277,7 +1276,8 @@ TEST_F(ExtensionContextMenuModelTest,
 TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // Add an extension that wants access to a.com.
@@ -1377,7 +1377,9 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
   // Create a MenuManager for adding context items.
   MenuManager* manager = static_cast<MenuManager*>(
       (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting)));
+          profile(),
+          base::BindRepeating(
+              &MenuManagerFactory::BuildServiceInstanceForTesting))));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);

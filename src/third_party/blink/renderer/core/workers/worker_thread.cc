@@ -39,9 +39,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -50,6 +48,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
@@ -72,7 +71,7 @@ constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
 
 }  // namespace
 
-static Mutex& ThreadSetMutex() {
+Mutex& WorkerThread::ThreadSetMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
@@ -107,6 +106,19 @@ class WorkerThread::RefCountedWaitableEvent
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedWaitableEvent);
 };
+
+WorkerThread::ScopedDebuggerTask::ScopedDebuggerTask(WorkerThread* thread)
+    : thread_(thread) {
+  MutexLocker lock(thread_->mutex_);
+  DCHECK(thread_->IsCurrentThread());
+  thread_->debugger_task_counter_++;
+}
+
+WorkerThread::ScopedDebuggerTask::~ScopedDebuggerTask() {
+  MutexLocker lock(thread_->mutex_);
+  DCHECK(thread_->IsCurrentThread());
+  thread_->debugger_task_counter_--;
+}
 
 WorkerThread::~WorkerThread() {
   MutexLocker lock(ThreadSetMutex());
@@ -154,6 +166,7 @@ void WorkerThread::Start(
 
 void WorkerThread::EvaluateClassicScript(
     const KURL& script_url,
+    AccessControlStatus access_control_status,
     const String& source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -161,7 +174,8 @@ void WorkerThread::EvaluateClassicScript(
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
       CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url, source_code,
+                      CrossThreadUnretained(this), script_url,
+                      access_control_status, source_code,
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
@@ -261,26 +275,9 @@ bool WorkerThread::IsCurrentThread() {
   return GetWorkerBackingThread().BackingThread().IsCurrentThread();
 }
 
-void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
+InspectorTaskRunner* WorkerThread::GetInspectorTaskRunner() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
-  inspector_task_runner_->AppendTask(std::move(task));
-}
-
-void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
-  DCHECK(IsCurrentThread());
-  if (worker_inspector_controller_)
-    worker_inspector_controller_->FlushProtocolNotifications();
-  paused_in_debugger_ = true;
-  do {
-    if (!inspector_task_runner_->WaitForAndRunSingleTask())
-      break;
-    // Keep waiting until execution is resumed.
-  } while (paused_in_debugger_);
-}
-
-void WorkerThread::StopRunningDebuggerTasksOnPauseOnWorkerThread() {
-  DCHECK(IsCurrentThread());
-  paused_in_debugger_ = false;
+  return inspector_task_runner_.get();
 }
 
 WorkerOrWorkletGlobalScope* WorkerThread::GlobalScope() {
@@ -389,7 +386,7 @@ bool WorkerThread::ShouldTerminateScriptExecution() {
       // Terminating during debugger task may lead to crash due to heavy use
       // of v8 api in debugger. Any debugger task is guaranteed to finish, so
       // we can wait for the completion.
-      return !inspector_task_runner_->IsRunningTask();
+      return !debugger_task_counter_;
     case ThreadState::kReadyToShutdown:
       // Shutdown sequence will surely start soon. Don't have to schedule a
       // termination task.
@@ -473,34 +470,36 @@ void WorkerThread::InitializeOnWorkerThread(
     SetThreadState(ThreadState::kRunning);
   }
 
+  if (CheckRequestedToTerminate()) {
+    // Stop further worker tasks from running after this point. WorkerThread
+    // was requested to terminate before initialization.
+    // PerformShutdownOnWorkerThread() will be called soon.
+    PrepareForShutdownOnWorkerThread();
+    return;
+  }
+
   // It is important that no code is run on the Isolate between
   // initializing InspectorTaskRunner and pausing on start.
   // Otherwise, InspectorTaskRunner might interrupt isolate execution
   // from another thread and try to resume "pause on start" before
   // we even paused.
-  if (pause_on_start == WorkerInspectorProxy::PauseOnWorkerStart::kPause)
-    StartRunningDebuggerTasksOnPauseOnWorkerThread();
-
-  if (CheckRequestedToTerminate()) {
-    // Stop further worker tasks from running after this point. WorkerThread
-    // was requested to terminate before initialization or during running
-    // debugger tasks. PerformShutdownOnWorkerThread() will be called soon.
-    PrepareForShutdownOnWorkerThread();
-    return;
+  if (pause_on_start == WorkerInspectorProxy::PauseOnWorkerStart::kPause) {
+    WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
+    if (debugger)
+      debugger->PauseWorkerOnStart(this);
   }
 }
 
 void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     const KURL& script_url,
+    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
-  debugger->ExternalAsyncTaskStarted(stack_id);
   ToWorkerGlobalScope(GlobalScope())
-      ->EvaluateClassicScript(script_url, std::move(source_code),
-                              std::move(cached_meta_data));
-  debugger->ExternalAsyncTaskFinished(stack_id);
+      ->EvaluateClassicScriptPausable(script_url, access_control_status,
+                                      std::move(source_code),
+                                      std::move(cached_meta_data), stack_id);
 }
 
 void WorkerThread::ImportModuleScriptOnWorkerThread(
@@ -512,10 +511,10 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   ToWorkerGlobalScope(GlobalScope())
-      ->ImportModuleScript(script_url,
-                           new FetchClientSettingsObjectSnapshot(
-                               std::move(outside_settings_object)),
-                           credentials_mode);
+      ->ImportModuleScriptPausable(script_url,
+                                   new FetchClientSettingsObjectSnapshot(
+                                       std::move(outside_settings_object)),
+                                   credentials_mode);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {
@@ -528,6 +527,9 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     if (exit_code_ == ExitCode::kNotTerminated)
       SetExitCode(ExitCode::kGracefullyTerminated);
   }
+
+  if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
+    debugger->WorkerThreadDestroyed(this);
 
   GetWorkerReportingProxy().WillDestroyWorkerGlobalScope();
 
@@ -567,9 +569,6 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
 
   GlobalScope()->Dispose();
   global_scope_ = nullptr;
-
-  if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
-    debugger->WorkerThreadDestroyed(this);
 
   console_message_storage_.Clear();
 

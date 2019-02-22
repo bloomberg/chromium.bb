@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -20,8 +21,6 @@
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/extensions/webstore_inline_installer.h"
-#include "chrome/browser/extensions/webstore_inline_installer_factory.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -62,6 +61,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "url/url_constants.h"
 
 using content::NavigationController;
@@ -70,78 +70,7 @@ using content::WebContents;
 
 namespace extensions {
 
-// A helper class to watch the progress of inline installation and update the
-// renderer. Owned by the TabHelper.
-class TabHelper::InlineInstallObserver : public InstallObserver {
- public:
-  InlineInstallObserver(TabHelper* tab_helper,
-                        content::BrowserContext* browser_context,
-                        const ExtensionId& extension_id,
-                        bool observe_download_progress,
-                        bool observe_install_stage)
-      : tab_helper_(tab_helper),
-        extension_id_(extension_id),
-        observe_download_progress_(observe_download_progress),
-        observe_install_stage_(observe_install_stage),
-        install_observer_(this) {
-    DCHECK(tab_helper);
-    DCHECK(observe_download_progress || observe_install_stage);
-    InstallTracker* install_tracker =
-        InstallTrackerFactory::GetForBrowserContext(browser_context);
-    if (install_tracker)
-      install_observer_.Add(install_tracker);
-  }
-  ~InlineInstallObserver() override {}
-
- private:
-  // InstallObserver:
-  void OnBeginExtensionDownload(const ExtensionId& extension_id) override {
-    SendInstallStageChangedMessage(extension_id,
-                                   api::webstore::INSTALL_STAGE_DOWNLOADING);
-  }
-  void OnDownloadProgress(const ExtensionId& extension_id,
-                          int percent_downloaded) override {
-    if (observe_download_progress_ && extension_id == extension_id_) {
-      auto iter =
-          tab_helper_->inline_install_progress_listeners_.find(extension_id);
-      DCHECK(iter != tab_helper_->inline_install_progress_listeners_.end());
-      iter->second->InlineInstallDownloadProgress(percent_downloaded);
-    }
-  }
-  void OnBeginCrxInstall(const ExtensionId& extension_id) override {
-    SendInstallStageChangedMessage(extension_id,
-                                   api::webstore::INSTALL_STAGE_INSTALLING);
-  }
-  void OnShutdown() override { install_observer_.RemoveAll(); }
-
-  void SendInstallStageChangedMessage(const ExtensionId& extension_id,
-                                      api::webstore::InstallStage stage) {
-    if (observe_install_stage_ && extension_id == extension_id_) {
-      auto iter =
-          tab_helper_->inline_install_progress_listeners_.find(extension_id);
-      DCHECK(iter != tab_helper_->inline_install_progress_listeners_.end());
-      iter->second->InlineInstallStageChanged(stage);
-    }
-  }
-
-  // The owning TabHelper (guaranteed to be valid).
-  TabHelper* const tab_helper_;
-
-  // The id of the extension to observe.
-  ExtensionId extension_id_;
-
-  // Whether or not to observe download/install progress.
-  const bool observe_download_progress_;
-  const bool observe_install_stage_;
-
-  ScopedObserver<InstallTracker, InstallObserver> install_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(InlineInstallObserver);
-};
-
-TabHelper::~TabHelper() {
-  RemoveScriptExecutionObserver(ActivityLog::GetInstance(profile_));
-}
+TabHelper::~TabHelper() = default;
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -149,12 +78,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       extension_app_(NULL),
       pending_web_app_action_(NONE),
       last_committed_nav_entry_unique_id_(0),
-      script_executor_(
-          new ScriptExecutor(web_contents, &script_execution_observers_)),
+      script_executor_(new ScriptExecutor(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
-      webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()),
       registry_observer_(this),
-      bindings_(web_contents, this),
       image_loader_ptr_factory_(this),
       weak_ptr_factory_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
@@ -166,7 +92,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents, SessionTabHelper::IdForTab(web_contents).id(), profile_));
 
-  AddScriptExecutionObserver(ActivityLog::GetInstance(profile_));
+  ActivityLog::GetInstance(profile_)->ObserveScripts(script_executor_.get());
 
   InvokeForContentRulesRegistries([this](ContentRulesRegistry* registry) {
     registry->MonitorWebContentsForRuleEvaluation(this->web_contents());
@@ -197,15 +123,6 @@ bool TabHelper::CanCreateBookmarkApp() const {
          IsValidBookmarkAppUrl(web_contents()->GetURL());
 }
 
-void TabHelper::AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
-  script_execution_observers_.AddObserver(observer);
-}
-
-void TabHelper::RemoveScriptExecutionObserver(
-    ScriptExecutionObserver* observer) {
-  script_execution_observers_.RemoveObserver(observer);
-}
-
 void TabHelper::SetExtensionApp(const Extension* extension) {
   DCHECK(!extension || AppLaunchInfo::GetFullLaunchURL(extension).is_valid());
   if (extension_app_ == extension)
@@ -224,7 +141,7 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
 
   if (extension_app_) {
     SessionTabHelper::FromWebContents(web_contents())
-        ->SetTabExtensionAppID(extension_app_->id());
+        ->SetTabExtensionAppID(GetAppId());
   }
 }
 
@@ -234,9 +151,13 @@ void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {
     SetExtensionApp(extension);
 }
 
+ExtensionId TabHelper::GetAppId() const {
+  return extension_app_ ? extension_app_->id() : ExtensionId();
+}
+
 SkBitmap* TabHelper::GetExtensionAppIcon() {
   if (extension_app_icon_.empty())
-    return NULL;
+    return nullptr;
 
   return &extension_app_icon_;
 }
@@ -268,6 +189,14 @@ void TabHelper::InvokeForContentRulesRegistries(const Func& func) {
 void TabHelper::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
+  // Send the 'appinstalled' event and ensure any beforeinstallpromptevent
+  // cannot trigger installation again.
+  if (banners::AppBannerManagerDesktop::IsEnabled() &&
+      web_app_info.open_as_window) {
+    banners::AppBannerManagerDesktop::FromWebContents(web_contents())
+        ->OnInstall(false /* is_native app */,
+                    blink::kWebDisplayModeStandalone);
+  }
   pending_web_app_action_ = NONE;
 }
 
@@ -328,7 +257,7 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   CreateForWebContents(new_web_contents);
   TabHelper* new_helper = FromWebContents(new_web_contents);
 
-  new_helper->SetExtensionApp(extension_app());
+  new_helper->SetExtensionApp(extension_app_);
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 
@@ -375,80 +304,6 @@ void TabHelper::OnDidGetWebApplicationInfo(
     pending_web_app_action_ = NONE;
 }
 
-void TabHelper::DoInlineInstall(
-    const std::string& webstore_item_id,
-    int listeners_mask,
-    mojom::InlineInstallProgressListenerPtr install_progress_listener,
-    DoInlineInstallCallback callback) {
-  content::RenderFrameHost* host = web_contents()->GetMainFrame();
-  if (bindings_.GetCurrentTargetFrame() != host) {
-    NOTREACHED();
-    return;
-  }
-
-  GURL requestor_url(host->GetLastCommittedURL());
-  // Check that the listener is reasonable. We should never get anything other
-  // than an install stage listener, a download listener, or both.
-  // The requestor_url should also be valid, and the renderer should disallow
-  // child frames from sending the IPC.
-  if ((listeners_mask & ~(api::webstore::INSTALL_STAGE_LISTENER |
-                          api::webstore::DOWNLOAD_PROGRESS_LISTENER)) != 0 ||
-      !requestor_url.is_valid() || requestor_url == url::kAboutBlankURL) {
-    NOTREACHED();
-    return;
-  }
-
-  if (base::ContainsKey(install_callbacks_, webstore_item_id)) {
-    std::move(callback).Run(false, webstore_install::kInstallInProgressError,
-                            webstore_install::INSTALL_IN_PROGRESS);
-    return;
-  }
-
-  install_callbacks_[webstore_item_id] = std::move(callback);
-  inline_install_progress_listeners_[webstore_item_id] =
-      std::move(install_progress_listener);
-  // Inform the Webstore API that an inline install is happening, in case the
-  // page requested status updates.
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-  if (registry->disabled_extensions().Contains(webstore_item_id) &&
-      (ExtensionPrefs::Get(profile_)->GetDisableReasons(webstore_item_id) &
-       disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0) {
-    // The extension was disabled due to permissions increase. Prompt for
-    // re-enable.
-    // TODO(devlin): We should also prompt for re-enable for other reasons,
-    // like user-disabled.
-    // For clarity, explicitly end any prior reenable process.
-    extension_reenabler_.reset();
-    extension_reenabler_ = ExtensionReenabler::PromptForReenable(
-        registry->disabled_extensions().GetByID(webstore_item_id), profile_,
-        web_contents(), requestor_url,
-        base::Bind(&TabHelper::OnReenableComplete,
-                   weak_ptr_factory_.GetWeakPtr(), webstore_item_id));
-  } else {
-    // TODO(devlin): We should adddress the case of the extension already
-    // being installed and enabled.
-    bool observe_download_progress =
-        (listeners_mask & api::webstore::DOWNLOAD_PROGRESS_LISTENER) != 0;
-    bool observe_install_stage =
-        (listeners_mask & api::webstore::INSTALL_STAGE_LISTENER) != 0;
-    if (observe_install_stage || observe_download_progress) {
-      DCHECK_EQ(0u, install_observers_.count(webstore_item_id));
-      install_observers_[webstore_item_id] =
-          std::make_unique<InlineInstallObserver>(
-              this, web_contents()->GetBrowserContext(), webstore_item_id,
-              observe_download_progress, observe_install_stage);
-    }
-
-    WebstoreStandaloneInstaller::Callback callback =
-        base::Bind(&TabHelper::OnInlineInstallComplete,
-                   weak_ptr_factory_.GetWeakPtr(), webstore_item_id);
-    scoped_refptr<WebstoreInlineInstaller> installer(
-        webstore_inline_installer_factory_->CreateInstaller(
-            web_contents(), host, webstore_item_id, requestor_url, callback));
-    installer->BeginInstall();
-  }
-}
-
 void TabHelper::OnGetAppInstallState(content::RenderFrameHost* host,
                                      const GURL& requestor_url,
                                      int return_route_id,
@@ -475,10 +330,10 @@ void TabHelper::OnGetAppInstallState(content::RenderFrameHost* host,
 
 void TabHelper::OnContentScriptsExecuting(
     content::RenderFrameHost* host,
-    const ScriptExecutionObserver::ExecutingScriptsMap& executing_scripts_map,
+    const ExecutingScriptsMap& executing_scripts_map,
     const GURL& on_url) {
-  for (auto& observer : script_execution_observers_)
-    observer.OnScriptsExecuted(web_contents(), executing_scripts_map, on_url);
+  ActivityLog::GetInstance(profile_)->OnScriptsExecuted(
+      web_contents(), executing_scripts_map, on_url);
 }
 
 const Extension* TabHelper::GetExtension(const ExtensionId& extension_app_id) {
@@ -510,11 +365,6 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
   }
 }
 
-void TabHelper::SetWebstoreInlineInstallerFactoryForTests(
-    WebstoreInlineInstallerFactory* factory) {
-  webstore_inline_installer_factory_.reset(factory);
-}
-
 void TabHelper::OnImageLoaded(const gfx::Image& image) {
   if (!image.IsEmpty()) {
     extension_app_icon_ = *image.ToSkBitmap();
@@ -524,47 +374,6 @@ void TabHelper::OnImageLoaded(const gfx::Image& image) {
 
 WindowController* TabHelper::GetExtensionWindowController() const  {
   return ExtensionTabUtil::GetWindowControllerOfTab(web_contents());
-}
-
-void TabHelper::OnReenableComplete(const ExtensionId& extension_id,
-                                   ExtensionReenabler::ReenableResult result) {
-  // Map the re-enable results to webstore-install results.
-  webstore_install::Result webstore_result = webstore_install::SUCCESS;
-  std::string error;
-  switch (result) {
-    case ExtensionReenabler::REENABLE_SUCCESS:
-      break;  // already set
-    case ExtensionReenabler::USER_CANCELED:
-      webstore_result = webstore_install::USER_CANCELLED;
-      error = "User canceled install.";
-      break;
-    case ExtensionReenabler::NOT_ALLOWED:
-      webstore_result = webstore_install::NOT_PERMITTED;
-      error = "Install not permitted.";
-      break;
-    case ExtensionReenabler::ABORTED:
-      webstore_result = webstore_install::ABORTED;
-      error = "Aborted due to tab closing.";
-      break;
-  }
-
-  OnInlineInstallComplete(extension_id,
-                          result == ExtensionReenabler::REENABLE_SUCCESS, error,
-                          webstore_result);
-  // Note: ExtensionReenabler contained the callback with the curried-in
-  // |extension_id|; delete it last.
-  extension_reenabler_.reset();
-}
-
-void TabHelper::OnInlineInstallComplete(const ExtensionId& extension_id,
-                                        bool success,
-                                        const std::string& error,
-                                        webstore_install::Result result) {
-  install_observers_.erase(extension_id);
-  auto iter = install_callbacks_.find(extension_id);
-  DCHECK(iter != install_callbacks_.end());
-  std::move(iter->second).Run(success, success ? std::string() : error, result);
-  install_callbacks_.erase(iter);
 }
 
 WebContents* TabHelper::GetAssociatedWebContents() const {

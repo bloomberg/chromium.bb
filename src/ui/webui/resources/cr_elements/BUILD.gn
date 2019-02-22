@@ -22,6 +22,7 @@ group("closure_compile") {
     "cr_slider:closure_compile",
     "cr_toast:closure_compile",
     "cr_toggle:closure_compile",
+    "cr_view_manager:closure_compile",
     "policy:closure_compile",
   ]
 }

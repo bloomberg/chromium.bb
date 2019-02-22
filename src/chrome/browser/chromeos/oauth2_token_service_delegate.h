@@ -16,26 +16,32 @@
 #include "base/sequence_checker.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 class AccountTrackerService;
+class SigninErrorController;
 
 namespace chromeos {
 
 class AccountMapperUtil;
 
-class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
-                                           public AccountManager::Observer {
+class ChromeOSOAuth2TokenServiceDelegate
+    : public OAuth2TokenServiceDelegate,
+      public AccountManager::Observer,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  // Accepts non-owning pointers to |AccountTrackerService| and
-  // |AccountManager|. |AccountTrackerService| is a |KeyedService| and
-  // |AccountManager| transitively belongs to |g_browser_process| and they
-  // outlive (as they must) |this| delegate.
+  // Accepts non-owning pointers to |AccountTrackerService|, |AccountManager|
+  // and |SigninErrorController|. |AccountTrackerService| and
+  // |SigninErrorController| are |KeyedService|s. |AccountManager| transitively
+  // belongs to |g_browser_process|. They outlive (as they must) |this|
+  // delegate.
   ChromeOSOAuth2TokenServiceDelegate(
       AccountTrackerService* account_tracker_service,
-      AccountManager* account_manager);
+      AccountManager* account_manager,
+      SigninErrorController* signin_error_controller);
   ~ChromeOSOAuth2TokenServiceDelegate() override;
 
-  // OAuth2TokenServiceDelegate overrides
+  // OAuth2TokenServiceDelegate overrides.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -51,21 +57,32 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
                          const std::string& refresh_token) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  LoadCredentialsState GetLoadCredentialsState() const override;
   void RevokeCredentials(const std::string& account_id) override;
   void RevokeAllCredentials() override;
+  const net::BackoffEntry* BackoffEntry() const override;
 
-  // |AccountManager::Observer| overrides
+  // |AccountManager::Observer| overrides.
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
   void OnAccountRemoved(const AccountManager::AccountKey& account_key) override;
 
+  // |NetworkConnectionTracker::NetworkConnectionObserver| overrides.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(CrOSOAuthDelegateTest,
+                           BackOffIsTriggerredForTransientErrors);
+  FRIEND_TEST_ALL_PREFIXES(CrOSOAuthDelegateTest,
+                           BackOffIsResetOnNetworkChange);
+
+  // A utility class to keep track of |GoogleServiceAuthError|s for an account.
+  // This is used for providing account error status reports to
+  // |SigninErrorController| and for firing
+  // |OAuth2TokenService::Observer::OnAuthErrorChanged|.
+  class AccountErrorStatus;
+
   // Callback handler for |AccountManager::GetAccounts|.
   void GetAccountsCallback(
       std::vector<AccountManager::AccountKey> account_keys);
-
-  LoadCredentialsState load_credentials_state_ =
-      LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED;
 
   std::unique_ptr<AccountMapperUtil> account_mapper_util_;
 
@@ -73,11 +90,18 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   // throughout the lifetime of a user session.
   AccountManager* account_manager_;
 
+  // A non-owning pointer to |SigninErrorController|.
+  SigninErrorController* const signin_error_controller_;
+
   // A cache of AccountKeys.
   std::set<AccountManager::AccountKey> account_keys_;
 
   // A map from account id to the last seen error for that account.
-  std::map<std::string, GoogleServiceAuthError> errors_;
+  std::map<std::string, std::unique_ptr<AccountErrorStatus>> errors_;
+
+  // Used to rate-limit token fetch requests so as to not overload the server.
+  net::BackoffEntry backoff_entry_;
+  GoogleServiceAuthError backoff_error_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ChromeOSOAuth2TokenServiceDelegate> weak_factory_;

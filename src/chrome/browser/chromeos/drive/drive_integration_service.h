@@ -44,7 +44,6 @@ namespace drive {
 
 class DebugInfoCollector;
 class DownloadHandler;
-class DriveAppRegistry;
 class DriveServiceInterface;
 class EventLogger;
 class FileSystemInterface;
@@ -55,6 +54,15 @@ class FileCache;
 class ResourceMetadata;
 class ResourceMetadataStorage;
 }  // namespace internal
+
+// Mounting status. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class DriveMountStatus {
+  kSuccess = 0,
+  kUnknownFailure = 1,
+  kTemporaryUnavailable = 2,
+  kMaxValue = kTemporaryUnavailable,
+};
 
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
@@ -82,7 +90,8 @@ class DriveIntegrationServiceObserver {
 // created per-profile.
 class DriveIntegrationService : public KeyedService,
                                 public DriveNotificationObserver,
-                                public content::NotificationObserver {
+                                public content::NotificationObserver,
+                                public drivefs::DriveFsHost::MountObserver {
  public:
   class PreferenceWatcher;
   using DriveFsMojoConnectionDelegateFactory = base::RepeatingCallback<
@@ -136,6 +145,11 @@ class DriveIntegrationService : public KeyedService,
   void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
+  // MountObserver implementation.
+  void OnMounted(const base::FilePath& mount_path) override;
+  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override;
+  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override;
+
   EventLogger* event_logger() { return logger_.get(); }
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DebugInfoCollector* debug_info_collector() {
@@ -143,7 +157,6 @@ class DriveIntegrationService : public KeyedService,
   }
   FileSystemInterface* file_system() { return file_system_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
-  DriveAppRegistry* drive_app_registry() { return drive_app_registry_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache file, the local resource metadata, and
@@ -182,7 +195,7 @@ class DriveIntegrationService : public KeyedService,
   void AddDriveMountPoint();
 
   // Registers remote file system for drive mount point.
-  void AddDriveMountPointAfterMounted();
+  bool AddDriveMountPointAfterMounted();
 
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
@@ -193,8 +206,11 @@ class DriveIntegrationService : public KeyedService,
                               FileError error);
 
   // Unregisters drive mount point, and if |remount_delay| is specified
-  // then tries to add it back after that delay.
-  void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay);
+  // then tries to add it back after that delay. If |remount_delay| isn't
+  // specified, |failed_to_mount| is true and the user is offline, schedules a
+  // retry when the user is online.
+  void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay,
+                              bool failed_to_mount);
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -213,6 +229,12 @@ class DriveIntegrationService : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Migrate pinned files from the old Drive integration to DriveFS.
+  void MigratePinnedFiles();
+
+  // Pin all the files in |files_to_pin| with DriveFS.
+  void PinFiles(const std::vector<base::FilePath>& files_to_pin);
+
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
@@ -229,7 +251,6 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::FileCache, util::DestroyHelper> cache_;
   std::unique_ptr<DriveServiceInterface> drive_service_;
   std::unique_ptr<JobScheduler> scheduler_;
-  std::unique_ptr<DriveAppRegistry> drive_app_registry_;
   std::unique_ptr<internal::ResourceMetadata, util::DestroyHelper>
       resource_metadata_;
   std::unique_ptr<FileSystemInterface> file_system_;
@@ -245,6 +266,9 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<NotificationManager> notification_manager_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
+  bool remount_when_online_ = false;
+
+  base::TimeTicks mount_start_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

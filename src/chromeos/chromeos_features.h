@@ -16,13 +16,15 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
+CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesProdEndpoint;
 CHROMEOS_EXPORT extern const base::Feature kChromeVoxArcSupport;
 CHROMEOS_EXPORT extern const base::Feature kDriveFs;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
+CHROMEOS_EXPORT extern const base::Feature kImeServiceConnectable;
 CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
-
 CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;
+CHROMEOS_EXPORT extern const base::Feature kUserActivityPrediction;
 
 }  // namespace features
 

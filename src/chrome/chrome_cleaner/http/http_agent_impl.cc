@@ -254,11 +254,11 @@ class HttpResponseImpl : public HttpResponse {
   // HttpResponse implementation.
   bool GetStatusCode(uint16_t* status_code) override;
   bool GetContentLength(bool* has_content_length,
-                        size_t* content_length) override;
+                        uint32_t* content_length) override;
   bool GetContentType(bool* has_content_type,
                       base::string16* content_type) override;
   bool HasData(bool* has_data) override;
-  bool ReadData(char* buffer, size_t* count) override;
+  bool ReadData(char* buffer, uint32_t* count) override;
 
  private:
   HttpResponseImpl();
@@ -408,7 +408,7 @@ bool HttpResponseImpl::GetStatusCode(uint16_t* status_code) {
 }
 
 bool HttpResponseImpl::GetContentLength(bool* has_content_length,
-                                        size_t* content_length) {
+                                        uint32_t* content_length) {
   DCHECK(has_content_length);
   DCHECK(content_length);
 
@@ -457,7 +457,7 @@ bool HttpResponseImpl::HasData(bool* has_data) {
   return true;
 }
 
-bool HttpResponseImpl::ReadData(char* buffer, size_t* count) {
+bool HttpResponseImpl::ReadData(char* buffer, uint32_t* count) {
   DCHECK(buffer);
   DCHECK(count);
 

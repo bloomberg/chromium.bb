@@ -28,9 +28,12 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zcr_notification_shell_notification_v1_interface;
 extern const struct wl_interface zcr_notification_shell_surface_v1_interface;
 
 static const struct wl_interface *types[] = {
+	NULL,
+	&zcr_notification_shell_notification_v1_interface,
 	NULL,
 	NULL,
 	NULL,
@@ -41,8 +44,8 @@ static const struct wl_interface *types[] = {
 };
 
 static const struct wl_message zcr_notification_shell_v1_requests[] = {
-	{ "create_notification", "ssss", types + 0 },
-	{ "get_notification_surface", "nos", types + 4 },
+	{ "create_notification", "nssss", types + 1 },
+	{ "get_notification_surface", "nos", types + 6 },
 };
 
 WL_EXPORT const struct wl_interface zcr_notification_shell_v1_interface = {
@@ -60,5 +63,20 @@ WL_EXPORT const struct wl_interface zcr_notification_shell_surface_v1_interface 
 	"zcr_notification_shell_surface_v1", 1,
 	2, zcr_notification_shell_surface_v1_requests,
 	0, NULL,
+};
+
+static const struct wl_message zcr_notification_shell_notification_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+	{ "close", "", types + 0 },
+};
+
+static const struct wl_message zcr_notification_shell_notification_v1_events[] = {
+	{ "closed", "u", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_notification_shell_notification_v1_interface = {
+	"zcr_notification_shell_notification_v1", 1,
+	2, zcr_notification_shell_notification_v1_requests,
+	1, zcr_notification_shell_notification_v1_events,
 };
 

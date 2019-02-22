@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -152,42 +153,6 @@ class PrefStoreStub : public TestingPrefStore {
 MATCHER(NonEmptyConfiguration, "") {
   return arg && !arg->DictEmpty();
 }
-
-// Class that ensures that OOBE Configuration was loaded before
-// proceeding with checks.
-class OOBEConfigurationWaiter : public OobeConfiguration::Observer {
- public:
-  OOBEConfigurationWaiter() = default;
-
-  ~OOBEConfigurationWaiter() override {
-    if (callback_) {
-      OobeConfiguration::Get()->RemoveObserver(this);
-    }
-  };
-
-  // OobeConfiguration::Observer override:
-  void OnOobeConfigurationChanged() override {
-    if (OobeConfiguration::Get()->GetConfiguration().DictEmpty()) {
-      return;
-    }
-    OobeConfiguration::Get()->RemoveObserver(this);
-    std::move(callback_).Run();
-  }
-
-  // Wait until configuration is loaded.
-  bool IsConfigurationLoaded(base::OnceClosure callback) {
-    // Assume that configuration is not loaded if it is empty.
-    if (!OobeConfiguration::Get()->GetConfiguration().DictEmpty()) {
-      return true;
-    }
-    OobeConfiguration::Get()->AddObserver(this);
-    callback_ = std::move(callback);
-    return false;
-  }
-
- private:
-  base::OnceClosure callback_;
-};
 
 // Used to set up a |FakeAutoEnrollmentClientFactory| for the duration of a
 // test.
@@ -816,6 +781,42 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
   OnExit(ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE);
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+}
+
+// Tests that WizardController goes back to network selection if the user
+// declined to accept update over a cellular network.
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowErrorUpdateRejectedOverCellular) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
+  OnExit(ScreenExitCode::WELCOME_CONTINUED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  OnExit(ScreenExitCode::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(ScreenExitCode::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
+  OnExit(ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR);
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
 
@@ -2236,9 +2237,19 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
   OnExit(ScreenExitCode::EULA_ACCEPTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
+
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
+
+  base::RunLoop().RunUntilIdle();
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2418,8 +2429,9 @@ class WizardControllerDemoSetupDeviceDisabledTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupDeviceDisabledTest);
 };
 
+// Flaky https://crbug.com/894384.
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
-                       OnlineDemoSetup) {
+                       DISABLED_OnlineDemoSetup) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   WaitUntilJSIsReady();
@@ -2667,7 +2679,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(xiaoyinh): Add tests for Fingerprint Setup UI.
 
 // TODO(alemate): Add tests for Marketing Opt-In.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 48,
+
+// TODO(khorimoto): Add tests for MultiDevice Setup UI.
+
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 50,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

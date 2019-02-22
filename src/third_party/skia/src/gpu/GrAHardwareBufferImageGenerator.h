@@ -11,6 +11,8 @@
 
 #include "GrTypesPriv.h"
 
+class GrGpuResource;
+
 extern "C" {
     typedef struct AHardwareBuffer AHardwareBuffer;
 }
@@ -29,14 +31,18 @@ extern "C" {
 class GrAHardwareBufferImageGenerator : public SkImageGenerator {
 public:
     static std::unique_ptr<SkImageGenerator> Make(AHardwareBuffer*, SkAlphaType,
-                                                  sk_sp<SkColorSpace>);
+                                                  sk_sp<SkColorSpace>, GrSurfaceOrigin);
 
     ~GrAHardwareBufferImageGenerator() override;
 
     typedef void* DeleteImageCtx;
     typedef void (*DeleteImageProc)(DeleteImageCtx);
 
-    static void DeleteEGLImage(void* ctx);
+    static void DeleteGLTexture(void* ctx);
+
+#ifdef SK_VULKAN
+    static void DeleteVkImage(void* ctx);
+#endif
 
 protected:
 
@@ -48,23 +54,18 @@ protected:
 
 private:
     GrAHardwareBufferImageGenerator(const SkImageInfo&, AHardwareBuffer*, SkAlphaType,
-                                    bool isProtectedContent);
-    void makeProxy(GrContext* context);
+                                    bool isProtectedContent, uint32_t bufferFormat,
+                                    GrSurfaceOrigin surfaceOrigin);
+    sk_sp<GrTextureProxy> makeProxy(GrContext* context);
 
     void releaseTextureRef();
 
     static void ReleaseRefHelper_TextureReleaseProc(void* ctx);
 
     AHardwareBuffer* fHardwareBuffer;
-
-    // There is never a ref associated with this pointer. We rely on our atomic bookkeeping
-    // with the context ID to know when this pointer is valid and safe to use. This lets us
-    // avoid releasing a ref from another thread, or get into races during context shutdown.
-    GrTexture*           fOwnedTexture = nullptr;
-    uint32_t             fOwningContextID = SK_InvalidGenID;
-
-    sk_sp<GrTextureProxy> fCachedProxy;
-    const bool fIsProtectedContent;
+    uint32_t         fBufferFormat;
+    const bool       fIsProtectedContent;
+    GrSurfaceOrigin  fSurfaceOrigin;
 
     typedef SkImageGenerator INHERITED;
 };

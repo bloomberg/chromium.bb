@@ -7,9 +7,16 @@
 
 #include "SkSGGroup.h"
 
+#include <algorithm>
+
 namespace sksg {
 
-Group::Group() {}
+Group::Group(std::vector<sk_sp<RenderNode>> children)
+    : fChildren(std::move(children)) {
+    for (const auto& child : fChildren) {
+        this->observeInval(child);
+    }
+}
 
 Group::~Group() {
     for (const auto& child : fChildren) {
@@ -32,16 +39,11 @@ void Group::addChild(sk_sp<RenderNode> node) {
 }
 
 void Group::removeChild(const sk_sp<RenderNode>& node) {
-    int origCount = fChildren.count();
-    for (int i = 0; i < origCount; ++i) {
-        if (fChildren[i] == node) {
-            fChildren.removeShuffle(i);
-            this->unobserveInval(node);
-            break;
-        }
-    }
-    SkASSERT(fChildren.count() == origCount - 1);
+    SkDEBUGCODE(const auto origSize = fChildren.size());
+    fChildren.erase(std::remove(fChildren.begin(), fChildren.end(), node), fChildren.end());
+    SkASSERT(fChildren.size() == origSize - 1);
 
+    this->unobserveInval(node);
     this->invalidate();
 }
 
@@ -49,7 +51,7 @@ void Group::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
     // TODO: this heuristic works at the moment, but:
     //   a) it is fragile because it relies on all leaf render nodes being atomic draws
     //   b) could be improved by e.g. detecting all leaf render draws are non-overlapping
-    const auto isolate = fChildren.count() > 1;
+    const auto isolate = fChildren.size() > 1;
     const auto local_ctx = ScopedRenderContext(canvas, ctx).setIsolation(this->bounds(), isolate);
 
     for (const auto& child : fChildren) {

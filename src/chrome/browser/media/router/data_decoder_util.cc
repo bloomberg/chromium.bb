@@ -8,11 +8,6 @@
 
 namespace media_router {
 
-namespace {
-// The batch ID used by data_decoder_util functions.
-constexpr char kDataDecoderServiceBatchId[] = "media_router";
-}  // namespace
-
 DataDecoder::DataDecoder(service_manager::Connector* connector)
     : connector_(connector->Clone()) {}
 

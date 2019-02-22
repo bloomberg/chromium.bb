@@ -81,7 +81,7 @@ void FileVideoCaptureDeviceFactory::GetSupportedFormats(
 void FileVideoCaptureDeviceFactory::GetCameraLocationsAsync(
     std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
     DeviceDescriptorsCallback result_callback) {
-  base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
+  std::move(result_callback).Run(std::move(device_descriptors));
 }
 
 }  // namespace media

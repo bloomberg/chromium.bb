@@ -620,13 +620,13 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
   FrameDeadline frame_deadline(base::TimeTicks(), 4u, base::TimeDelta(), true);
   const float min_page_scale_factor = 3.5f;
+  const float top_bar_height(1234.5f);
+  const float top_bar_shown_ratio(1.0f);
 
 #if defined(OS_ANDROID)
   const float max_page_scale_factor = 4.6f;
   const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
   const bool root_overflow_y_hidden = true;
-  const float top_bar_height(1234.5f);
-  const float top_bar_shown_ratio(1.0f);
   const float bottom_bar_height(1234.5f);
   const float bottom_bar_shown_ratio(1.0f);
   Selection<gfx::SelectionBound> selection;
@@ -656,13 +656,13 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.frame_token = frame_token;
   input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
   input.min_page_scale_factor = min_page_scale_factor;
+  input.top_controls_height = top_bar_height;
+  input.top_controls_shown_ratio = top_bar_shown_ratio;
 
 #if defined(OS_ANDROID)
   input.max_page_scale_factor = max_page_scale_factor;
   input.root_layer_size = root_layer_size;
   input.root_overflow_y_hidden = root_overflow_y_hidden;
-  input.top_controls_height = top_bar_height;
-  input.top_controls_shown_ratio = top_bar_shown_ratio;
   input.bottom_controls_height = bottom_bar_height;
   input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
   input.selection = selection;
@@ -694,13 +694,13 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(begin_frame_ack_sequence_number,
             output.begin_frame_ack.sequence_number);
   EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
+  EXPECT_EQ(top_bar_height, output.top_controls_height);
+  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
 
 #if defined(OS_ANDROID)
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
   EXPECT_EQ(root_layer_size, output.root_layer_size);
   EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
-  EXPECT_EQ(top_bar_height, output.top_controls_height);
-  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
   EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
   EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
   EXPECT_EQ(selection, output.selection);
@@ -903,6 +903,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const gfx::Rect rect2(2468, 8642, 4321, 1234);
   const uint32_t color2 = 0xffffffff;
   const bool force_anti_aliasing_off = true;
+  const float backdrop_filter_quality = 1.0f;
   SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
@@ -934,7 +935,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
                            mask_uv_rect, mask_texture_size, filters_scale,
                            filters_origin, tex_coord_rect,
-                           force_anti_aliasing_off);
+                           force_anti_aliasing_off, backdrop_filter_quality);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
   const ResourceId resource_id5(1337);

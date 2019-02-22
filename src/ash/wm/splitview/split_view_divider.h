@@ -9,12 +9,14 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/wm/core/transient_window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace views {
@@ -34,7 +36,8 @@ enum class OrientationLockType;
 // to resize the left and right windows accordingly. The divider widget should
 // always placed above its observed windows to be able to receive events.
 class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
-                                    public ::wm::ActivationChangeObserver {
+                                    public ::wm::ActivationChangeObserver,
+                                    public ::wm::TransientWindowObserver {
  public:
   SplitViewDivider(SplitViewController* controller, aura::Window* root_window);
   ~SplitViewDivider() override;
@@ -74,6 +77,16 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+
+  // ::wm::TransientWindowObserver:
+  void OnTransientChildAdded(aura::Window* window,
+                             aura::Window* transient) override;
+  void OnTransientChildRemoved(aura::Window* window,
+                               aura::Window* transient) override;
 
   views::Widget* divider_widget() { return divider_widget_; }
 
@@ -100,6 +113,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   // Tracks observed windows.
   aura::Window::Windows observed_windows_;
+
+  // Tracks observed transient windows.
+  ScopedObserver<aura::Window, aura::WindowObserver>
+      transient_windows_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewDivider);
 };

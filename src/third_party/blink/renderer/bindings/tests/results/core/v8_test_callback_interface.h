@@ -21,9 +21,11 @@ class TestInterfaceEmpty;
 
 class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
  public:
-  static V8TestCallbackInterface* Create(v8::Local<v8::Object> callback_object) {
-    return new V8TestCallbackInterface(callback_object);
-  }
+  // Creates and returns a new instance. Returns nullptr when |callback_object|
+  // is an object in a remote context (e.g. cross origin window object). The
+  // call sites may want to throw a SecurityError in the case.
+  // See also crbug.com/886588
+  static V8TestCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
 
   ~V8TestCallbackInterface() override = default;
 
@@ -67,8 +69,11 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
   v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8TestCallbackInterface(v8::Local<v8::Object> callback_object)
-      : CallbackInterfaceBase(callback_object, kNotSingleOperation) {}
+  explicit V8TestCallbackInterface(
+      v8::Local<v8::Object> callback_object,
+      v8::Local<v8::Context> callback_object_creation_context)
+      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+                              kNotSingleOperation) {}
 };
 
 template <>

@@ -25,6 +25,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -421,10 +422,10 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
 }
 
 void HideHostCursor() {
-  CR_DEFINE_STATIC_LOCAL(XScopedCursor, invisible_cursor,
-                         (CreateInvisibleCursor(), gfx::GetXDisplay()));
+  static base::NoDestructor<XScopedCursor> invisible_cursor(
+      CreateInvisibleCursor(), gfx::GetXDisplay());
   XDefineCursor(gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()),
-                invisible_cursor.get());
+                invisible_cursor->get());
 }
 
 ::Cursor CreateInvisibleCursor() {

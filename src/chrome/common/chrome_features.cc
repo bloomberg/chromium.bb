@@ -80,6 +80,11 @@ const base::Feature kAsyncDns {
 #endif
 };
 
+#if defined(OS_ANDROID)
+const base::Feature kAutoFetchOnNetErrorPage{"AutoFetchOnNetErrorPage",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
@@ -115,23 +120,13 @@ const base::Feature kBookmarkApps{"BookmarkAppsMac",
 const base::Feature kBrowserHangFixesExperiment{
     "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
-// Enables or disables the browser's touch bar.
-const base::Feature kBrowserTouchBar{"BrowserTouchBar",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables redirecting users who get an interstitial when
 // accessing https://support.google.com/chrome/answer/6098869 to local
 // connection help content.
 const base::Feature kBundledConnectionHelpFeature{
-    "BundledConnectionHelp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
-// Enables or disables touch bar support for dialogs.
-const base::Feature kDialogTouchBar{"DialogTouchBar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables keyboard focus for the tab strip.
 const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -187,10 +182,6 @@ const base::Feature kContentFullscreen{"ContentFullscreen",
 const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether inactive tabs show their close buttons by default for non-touch mode.
-const base::Feature kCloseButtonsInactiveTabs{"CloseButtonsInactiveTabs",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -220,6 +211,10 @@ const base::Feature kDesktopPWAWindowing {
 // Enables or disables Desktop PWAs capturing links.
 const base::Feature kDesktopPWAsLinkCapturing{
     "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Determines whether in scope requests are always opened in the same window.
+const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{
@@ -255,8 +250,8 @@ const base::Feature kExperimentalAppBanners {
 };
 
 #if defined(OS_CHROMEOS)
-extern const base::Feature kExperimentalCrostiniUI{
-    "ExperimentalCrostiniUI", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kExperimentalCrostiniUI{"ExperimentalCrostiniUI",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
@@ -406,15 +401,8 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
 const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
 
 const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
-const char kNewNetErrorPageUIAlternateContentListAutoDownload[] =
-    "content_list_auto_download";
 const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
-const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[] =
-    "content_preview_auto_download";
 #endif  // OS_ANDROID
-
-const base::Feature kNetworkPrediction{"NetworkPrediction",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
@@ -441,7 +429,7 @@ const base::Feature kOomIntervention{"OomIntervention",
 // TODO(https://crbug.com/862774): Remove this after the feature is fully
 // launched.
 const base::Feature kOobeRecommendAppsScreen{"OobeRecommendAppsScreen",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Adds the base language code to the Language-Accept headers if at least one
@@ -453,7 +441,7 @@ const base::Feature kUseNewAcceptLanguageHeader{
 // Delegate permissions to cross-origin iframes when the feature has been
 // allowed by feature policy.
 const base::Feature kPermissionDelegation{"PermissionDelegation",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disables PostScript generation when printing to PostScript capable printers
 // and instead sends Emf files.
@@ -491,7 +479,7 @@ const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables the new Print Preview UI.
 const base::Feature kNewPrintPreview{"NewPrintPreview",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kNupPrinting{"NupPrinting",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -501,24 +489,12 @@ const base::Feature kNupPrinting{"NupPrinting",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint{
-    "RemoveUsageOfDeprecatedGaiaSigninEndpoint",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_MACOSX)
-// Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa.
-const base::Feature kShowAllDialogsWithViewsToolkit{
-    "ShowAllDialogsWithViewsToolkit", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
@@ -581,10 +557,19 @@ const base::Feature kSupervisedUserCommittedInterstitials{
     "SupervisedUserCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
+// Enables or disables sliding (showing or hiding) the top-chrome UIs with page
+// scrolls in tablet mode.
+const base::Feature kSlideTopChromeWithPageScrolls{
+    "SlideTopChromeWithPageScrolls", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Enables or disables the System Web App manager.
+const base::Feature kSystemWebApps{"SystemWebApps",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable TopSites to source and sort its site data using site engagement.
 const base::Feature kTopSitesFromSiteEngagement{
@@ -603,23 +588,11 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 // Chrome OS.
 const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables user activity prediction for power management on
-// Chrome OS.
-const base::Feature kUserActivityPrediction{"UserActivityPrediction",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 #endif
 
 // Enables using the main HTTP cache for media files as well.
 const base::Feature kUseSameCacheForMedia{"UseSameCacheForMedia",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if !defined(OS_ANDROID)
-// Enables or disables Voice Search on the local NTP.
-const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_CHROMEOS)
 // Enables support of libcups APIs from ARC
@@ -683,17 +656,17 @@ const base::Feature kShillSandboxing{"ShillSandboxing",
 // Enable showing a tab-modal dialog while a Web Authentication API request is
 // pending, to help guide the user through the flow of using their security key.
 const base::Feature kWebAuthenticationUI{"WebAuthenticationUI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.
 // Please note that a Chrome policy must also be set, for this to have effect.
 // Effectively, this is a kill-switch for the feature.
 // TODO(crbug.com/775415): Remove this kill-switch.
-extern const base::Feature kWebRtcRemoteEventLog{
-    "WebRtcRemoteEventLog", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebRtcRemoteEventLog{"WebRtcRemoteEventLog",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Compress remote-bound WebRTC event logs (if used; see kWebRtcRemoteEventLog).
-extern const base::Feature kWebRtcRemoteEventLogGzipped{
+const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 

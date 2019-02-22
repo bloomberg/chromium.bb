@@ -45,6 +45,7 @@
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/system_cookie_store_util.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -112,7 +113,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
                                                       pref_service);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
 
   chrome_http_user_agent_settings_.reset(
       new IOSChromeHttpUserAgentSettings(pref_service));
@@ -305,7 +306,7 @@ void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        GetApplicationContext()->GetLocalState());
   enable_metrics_.MoveToThread(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 }
 
 bool ChromeBrowserStateIOData::GetMetricsEnabledStateOnIOThread() const {
@@ -456,7 +457,7 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
 
   if (!context_getters->empty()) {
     if (web::WebThread::IsThreadInitialized(web::WebThread::IO)) {
-      web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                                base::Bind(&NotifyContextGettersOfShutdownOnIO,
                                           base::Passed(&context_getters)));
     }

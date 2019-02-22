@@ -64,6 +64,9 @@ ChromeVoxNextE2ETest.prototype = {
         if (evt.target.root.url != url)
           return;
 
+        if (!evt.target.root.docLoaded)
+          return;
+
         r.removeEventListener('focus', listener, true);
         r.removeEventListener('loadComplete', listener, true);
         CommandHandler.onCommand('nextObject');

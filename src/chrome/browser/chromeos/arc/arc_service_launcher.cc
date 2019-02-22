@@ -56,6 +56,7 @@
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/lock_screen/arc_lock_screen_bridge.h"
+#include "components/arc/media_session/arc_media_session_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/midis/arc_midis_bridge.h"
 #include "components/arc/net/arc_net_host_impl.h"
@@ -171,6 +172,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
+  ArcMediaSessionBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(

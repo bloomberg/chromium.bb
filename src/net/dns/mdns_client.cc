@@ -45,6 +45,9 @@ int Bind(const IPEndPoint& multicast_addr,
 
 }  // namespace
 
+const base::TimeDelta MDnsTransaction::kTransactionTimeout =
+    base::TimeDelta::FromSeconds(3);
+
 // static
 std::unique_ptr<MDnsSocketFactory> MDnsSocketFactory::CreateDefault() {
   return std::unique_ptr<MDnsSocketFactory>(new MDnsSocketFactoryImpl);

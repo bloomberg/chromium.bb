@@ -2,9 +2,15 @@
 
 use Config;
 
-print "Content-type: text/plain\n\n";
+print "Access-Control-Allow-Origin: *\n";
 
-if ($ENV{'REQUEST_METHOD'} eq "POST") {
+if ($ENV{'REQUEST_METHOD'} eq "OPTIONS") {
+    # CORS preflight
+    print "Access-Control-Allow-Headers: *\n";
+    print "\n"
+} elsif ($ENV{'REQUEST_METHOD'} eq "POST") {
+    print "Content-type: text/plain\n\n";
+
     if ($ENV{'CONTENT_LENGTH'}) {
         read(STDIN, $postData, $ENV{'CONTENT_LENGTH'}) || die "Could not get post data\n";
     } else {
@@ -82,5 +88,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST") {
         print "FAILED";
     }
 } else {
+    print "Content-type: text/plain\n\n";
     print "Wrong method: " . $ENV{'REQUEST_METHOD'} . "\n";
 }

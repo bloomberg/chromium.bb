@@ -8,29 +8,26 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
-namespace net {
-class HostResolver;
-}
-
 namespace network_hints {
 struct LookupRequest;
 
 // Simple browser-side handler for DNS prefetch requests.
-// Passes prefetch requests to the provided net::HostResolver.
 // Each renderer process requires its own filter.
 class NetworkHintsMessageFilter : public content::BrowserMessageFilter {
  public:
-  explicit NetworkHintsMessageFilter(net::HostResolver* host_resolver);
+  explicit NetworkHintsMessageFilter(int render_process_id);
 
   // content::BrowserMessageFilter implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
 
  private:
   ~NetworkHintsMessageFilter() override;
 
   void OnDnsPrefetch(const LookupRequest& lookup_request);
 
-  net::HostResolver* host_resolver_;
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHintsMessageFilter);
 };

@@ -71,8 +71,8 @@ class BASE_EXPORT SysInfo {
   // Returns a descriptive string for the current machine model or an empty
   // string if the machine model is unknown or an error occurred.
   // e.g. "MacPro1,1" on Mac, "iPhone9,3" on iOS or "Nexus 5" on Android. Only
-  // implemented on OS X, iOS, Android, and Chrome OS. This returns an empty
-  // string on other platforms.
+  // implemented on OS X, iOS, and Android. This returns an empty string on
+  // other platforms.
   static std::string HardwareModelName();
 
   struct HardwareInfo {
@@ -118,12 +118,7 @@ class BASE_EXPORT SysInfo {
   static size_t VMAllocationGranularity();
 
 #if defined(OS_CHROMEOS)
-  typedef std::map<std::string, std::string> LsbReleaseMap;
-
-  // Returns the contents of /etc/lsb-release as a map.
-  static const LsbReleaseMap& GetLsbReleaseMap();
-
-  // If |key| is present in the LsbReleaseMap, sets |value| and returns true.
+  // Set |value| and return true if LsbRelease contains information about |key|.
   static bool GetLsbReleaseValue(const std::string& key, std::string* value);
 
   // Convenience function for GetLsbReleaseValue("CHROMEOS_RELEASE_BOARD",...).

@@ -6,6 +6,12 @@ shared_library("empty_dll") {
   sources = [
     "empty_dll.cc",
   ]
+
+  configs += [
+    # This is required to prevent this target from having to be rebuilt every
+    # time, even with the source files doesn't change.
+    "//base:base_win_linker_flags",
+  ]
 }
 
 source_set("scoped_file") {
@@ -19,12 +25,25 @@ source_set("scoped_file") {
   ]
 }
 
-source_set("test_strings") {
+source_set("test_branding_header") {
   testonly = true
 
   sources = [
-    "test_strings.cc",
-    "test_strings.h",
+    "test_branding.h",
+  ]
+}
+
+source_set("test_component") {
+  testonly = true
+
+  sources = [
+    "test_component.cc",
+    "test_component.h",
+  ]
+
+  deps = [
+    "//chrome/chrome_cleaner/components:components",
+    "//chrome/chrome_cleaner/constants:uws_id",
   ]
 }
 
@@ -49,6 +68,53 @@ source_set("test_executables") {
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:common_os",
+  ]
+}
+
+source_set("test_pup_data") {
+  testonly = true
+
+  sources = [
+    "test_pup_data.cc",
+    "test_pup_data.h",
+    "test_uws_catalog.cc",
+    "test_uws_catalog.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
+    "//chrome/chrome_cleaner/pup_data:dynamic_pup",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/pup_data:test_uws",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_scoped_service_handle") {
+  testonly = true
+
+  sources = [
+    "test_scoped_service_handle.cc",
+    "test_scoped_service_handle.h",
+  ]
+
+  deps = [
+    ":test_executables",
+    ":test_strings",
+    "//base",
+    "//chrome/chrome_cleaner/os:cleaner_os",
+    "//chrome/chrome_cleaner/os:common_os",
+  ]
+}
+
+source_set("test_strings") {
+  testonly = true
+
+  sources = [
+    "test_strings.cc",
+    "test_strings.h",
   ]
 }
 
@@ -104,54 +170,6 @@ source_set("test_util") {
   ]
 }
 
-source_set("test_scoped_service_handle") {
-  testonly = true
-
-  sources = [
-    "test_scoped_service_handle.cc",
-    "test_scoped_service_handle.h",
-  ]
-
-  deps = [
-    ":test_executables",
-    ":test_strings",
-    "//base",
-    "//chrome/chrome_cleaner/os:cleaner_os",
-    "//chrome/chrome_cleaner/os:common_os",
-  ]
-}
-
-source_set("test_branding_header") {
-  # This is NOT testonly because it's used by RegistryOverrideManager, which is
-  # shipped on official builds.
-  sources = [
-    "test_branding.h",
-  ]
-}
-
-source_set("test_pup_data") {
-  testonly = true
-
-  sources = [
-    "test_pup_data.cc",
-    "test_pup_data.h",
-    "test_signatures.cc",
-    "test_uws_catalog.cc",
-    "test_uws_catalog.h",
-  ]
-
-  deps = [
-    "//base:base",
-    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
-    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
-    "//chrome/chrome_cleaner/pup_data:dynamic_pup",
-    "//chrome/chrome_cleaner/pup_data:pup_data_base",
-    "//chrome/chrome_cleaner/pup_data:pup_data_base",
-    "//chrome/chrome_cleaner/pup_data:test_uws",
-    "//testing/gtest",
-  ]
-}
-
 source_set("unittest_sources") {
   testonly = true
 
@@ -165,6 +183,7 @@ source_set("unittest_sources") {
     "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/os:common_os",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
@@ -173,7 +192,6 @@ executable("test_process") {
   testonly = true
 
   sources = [
-    "//chrome/chrome_cleaner/engines/dummy_engine_resources.cc",
     "test_process_main.cc",
   ]
 
@@ -184,13 +202,11 @@ executable("test_process") {
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//chrome/chrome_cleaner:other_executable_definitions",
+    "//chrome/chrome_cleaner/engines:dummy_resources",
     "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/pup_data:dummy_signatures",
   ]
-
-  # Default entrypoint is main, console app. Change it to wWinMain, windowed.
-  configs -= [ "//build/config/win:console" ]
-  configs += [ "//build/config/win:windowed" ]
 }
 
 executable("test_service") {

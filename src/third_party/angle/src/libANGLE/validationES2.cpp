@@ -288,19 +288,20 @@ bool IsValidCopyTextureDestinationFormatType(Context *context, GLint internalFor
 {
     if (!IsValidCopyTextureDestinationInternalFormatEnum(internalFormat))
     {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), InvalidInternalFormat);
         return false;
     }
 
     if (!ValidES3FormatCombination(GetUnsizedFormat(internalFormat), type, internalFormat))
     {
-        context->handleError(InvalidOperation()
-                             << "Invalid combination of type and internalFormat.");
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), MismatchedTypeAndFormat);
         return false;
     }
 
     const InternalFormat &internalFormatInfo = GetInternalFormatInfo(internalFormat, type);
     if (!internalFormatInfo.textureSupport(context->getClientVersion(), context->getExtensions()))
     {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), InvalidInternalFormat);
         return false;
     }
 
@@ -575,6 +576,10 @@ bool ValidateES2CopyTexImageParameters(Context *context,
             case GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE:
             case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
             case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
+            case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+            case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+            case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+            case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
                 ANGLE_VALIDATION_ERR(context, InvalidOperation(), InvalidFormat);
                 return false;
             case GL_DEPTH_COMPONENT:
@@ -1046,6 +1051,106 @@ bool ValidateMatrixMode(Context *context, GLenum matrixMode)
         return false;
     }
     return true;
+}
+
+bool ValidBlendFunc(const Context *context, GLenum val)
+{
+    const gl::Extensions &ext = context->getExtensions();
+
+    // these are always valid for src and dst.
+    switch (val)
+    {
+        case GL_ZERO:
+        case GL_ONE:
+        case GL_SRC_COLOR:
+        case GL_ONE_MINUS_SRC_COLOR:
+        case GL_DST_COLOR:
+        case GL_ONE_MINUS_DST_COLOR:
+        case GL_SRC_ALPHA:
+        case GL_ONE_MINUS_SRC_ALPHA:
+        case GL_DST_ALPHA:
+        case GL_ONE_MINUS_DST_ALPHA:
+        case GL_CONSTANT_COLOR:
+        case GL_ONE_MINUS_CONSTANT_COLOR:
+        case GL_CONSTANT_ALPHA:
+        case GL_ONE_MINUS_CONSTANT_ALPHA:
+            return true;
+
+        // EXT_blend_func_extended.
+        case GL_SRC1_COLOR_EXT:
+        case GL_SRC1_ALPHA_EXT:
+        case GL_ONE_MINUS_SRC1_COLOR_EXT:
+        case GL_ONE_MINUS_SRC1_ALPHA_EXT:
+        case GL_SRC_ALPHA_SATURATE_EXT:
+            return ext.blendFuncExtended;
+
+        default:
+            return false;
+    }
+}
+
+bool ValidSrcBlendFunc(const Context *context, GLenum val)
+{
+    if (ValidBlendFunc(context, val))
+        return true;
+
+    if (val == GL_SRC_ALPHA_SATURATE)
+        return true;
+
+    return false;
+}
+
+bool ValidDstBlendFunc(const Context *context, GLenum val)
+{
+    if (ValidBlendFunc(context, val))
+        return true;
+
+    if (val == GL_SRC_ALPHA_SATURATE)
+    {
+        if (context->getClientMajorVersion() >= 3)
+            return true;
+    }
+
+    return false;
+}
+
+void RecordBindTextureTypeError(Context *context, TextureType target)
+{
+    ASSERT(!context->getStateCache().isValidBindTextureType(target));
+
+    switch (target)
+    {
+        case TextureType::Rectangle:
+            ASSERT(!context->getExtensions().textureRectangle);
+            context->handleError(InvalidEnum()
+                                 << "Context does not support GL_ANGLE_texture_rectangle");
+            break;
+
+        case TextureType::_3D:
+        case TextureType::_2DArray:
+            ASSERT(context->getClientMajorVersion() < 3);
+            ANGLE_VALIDATION_ERR(context, InvalidEnum(), ES3Required);
+            break;
+
+        case TextureType::_2DMultisample:
+            ASSERT(context->getClientVersion() < Version(3, 1));
+            ANGLE_VALIDATION_ERR(context, InvalidEnum(), ES31Required);
+            break;
+
+        case TextureType::_2DMultisampleArray:
+            ASSERT(!context->getExtensions().textureStorageMultisample2DArray);
+            ANGLE_VALIDATION_ERR(context, InvalidEnum(), MultisampleArrayExtensionRequired);
+            break;
+
+        case TextureType::External:
+            ASSERT(!context->getExtensions().eglImageExternal &&
+                   !context->getExtensions().eglStreamConsumerExternal);
+            context->handleError(InvalidEnum() << "External texture extension not enabled");
+            break;
+
+        default:
+            ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidTextureTarget);
+    }
 }
 }  // anonymous namespace
 
@@ -2188,7 +2293,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
             return true;
 
         case GL_PROGRAM:
-            if (context->getProgram(name) == nullptr)
+            if (context->getProgramNoResolveLink(name) == nullptr)
             {
                 context->handleError(InvalidValue() << "name is not a valid program.");
                 return false;
@@ -2981,8 +3086,19 @@ bool ValidateFlushMappedBufferRangeEXT(Context *context,
 
 bool ValidateBindTexture(Context *context, TextureType target, GLuint texture)
 {
+    if (!context->getStateCache().isValidBindTextureType(target))
+    {
+        RecordBindTextureTypeError(context, target);
+        return false;
+    }
+
+    if (texture == 0)
+    {
+        return true;
+    }
+
     Texture *textureObject = context->getTexture(texture);
-    if (textureObject && textureObject->getType() != target && texture != 0)
+    if (textureObject && textureObject->getType() != target)
     {
         ANGLE_VALIDATION_ERR(context, InvalidOperation(), TypeMismatch);
         return false;
@@ -2993,57 +3109,6 @@ bool ValidateBindTexture(Context *context, TextureType target, GLuint texture)
     {
         context->handleError(InvalidOperation() << "Texture was not generated");
         return false;
-    }
-
-    switch (target)
-    {
-        case TextureType::_2D:
-        case TextureType::CubeMap:
-            break;
-
-        case TextureType::Rectangle:
-            if (!context->getExtensions().textureRectangle)
-            {
-                context->handleError(InvalidEnum()
-                                     << "Context does not support GL_ANGLE_texture_rectangle");
-                return false;
-            }
-            break;
-
-        case TextureType::_3D:
-        case TextureType::_2DArray:
-            if (context->getClientMajorVersion() < 3)
-            {
-                ANGLE_VALIDATION_ERR(context, InvalidEnum(), ES3Required);
-                return false;
-            }
-            break;
-
-        case TextureType::_2DMultisample:
-            if (context->getClientVersion() < Version(3, 1))
-            {
-                ANGLE_VALIDATION_ERR(context, InvalidEnum(), ES31Required);
-                return false;
-            }
-            break;
-        case TextureType::_2DMultisampleArray:
-            if (!context->getExtensions().textureMultisampleArray)
-            {
-                ANGLE_VALIDATION_ERR(context, InvalidEnum(), MultisampleArrayExtensionRequired);
-                return false;
-            }
-            break;
-        case TextureType::External:
-            if (!context->getExtensions().eglImageExternal &&
-                !context->getExtensions().eglStreamConsumerExternal)
-            {
-                context->handleError(InvalidEnum() << "External texture extension not enabled");
-                return false;
-            }
-            break;
-        default:
-            ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidTextureTarget);
-            return false;
     }
 
     return true;
@@ -3776,7 +3841,7 @@ bool ValidateBindFragmentInputLocationCHROMIUM(Context *context,
         return false;
     }
 
-    const auto *programObject = context->getProgram(program);
+    const auto *programObject = context->getProgramNoResolveLink(program);
     if (!programObject)
     {
         ANGLE_VALIDATION_ERR(context, InvalidOperation(), ProgramNotBound);
@@ -3811,7 +3876,7 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
         return false;
     }
 
-    const auto *programObject = context->getProgram(program);
+    const auto *programObject = context->getProgramResolveLink(program);
     if (!programObject || programObject->isFlaggedForDeletion())
     {
         ANGLE_VALIDATION_ERR(context, InvalidOperation(), ProgramDoesNotExist);
@@ -3927,7 +3992,7 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
 
     if (!IsValidCopyTextureSourceTarget(context, source->getType()))
     {
-        context->handleError(InvalidValue() << "Source texture a valid texture type.");
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), InvalidInternalFormat);
         return false;
     }
 
@@ -3985,7 +4050,6 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
 
     if (!IsValidCopyTextureDestinationFormatType(context, internalFormat, destType))
     {
-        ANGLE_VALIDATION_ERR(context, InvalidOperation(), MismatchedTypeAndFormat);
         return false;
     }
 
@@ -4452,36 +4516,18 @@ bool ValidateBindAttribLocation(Context *context, GLuint program, GLuint index, 
     return GetValidProgram(context, program) != nullptr;
 }
 
-bool ValidateBindBuffer(Context *context, BufferBinding target, GLuint buffer)
-{
-    if (!context->isValidBufferBinding(target))
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidBufferTypes);
-        return false;
-    }
-
-    if (!context->getGLState().isBindGeneratesResourceEnabled() &&
-        !context->isBufferGenerated(buffer))
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ObjectNotGenerated);
-        return false;
-    }
-
-    return true;
-}
-
 bool ValidateBindFramebuffer(Context *context, GLenum target, GLuint framebuffer)
 {
     if (!ValidFramebufferTarget(context, target))
     {
-        ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidFramebufferTarget);
+        context->validationError(GL_INVALID_ENUM, kErrorInvalidFramebufferTarget);
         return false;
     }
 
     if (!context->getGLState().isBindGeneratesResourceEnabled() &&
         !context->isFramebufferGenerated(framebuffer))
     {
-        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ObjectNotGenerated);
+        context->validationError(GL_INVALID_OPERATION, kErrorObjectNotGenerated);
         return false;
     }
 
@@ -4562,85 +4608,31 @@ bool ValidateBlendFunc(Context *context, GLenum sfactor, GLenum dfactor)
     return ValidateBlendFuncSeparate(context, sfactor, dfactor, sfactor, dfactor);
 }
 
-static bool ValidSrcBlendFunc(GLenum srcBlend)
-{
-    switch (srcBlend)
-    {
-        case GL_ZERO:
-        case GL_ONE:
-        case GL_SRC_COLOR:
-        case GL_ONE_MINUS_SRC_COLOR:
-        case GL_DST_COLOR:
-        case GL_ONE_MINUS_DST_COLOR:
-        case GL_SRC_ALPHA:
-        case GL_ONE_MINUS_SRC_ALPHA:
-        case GL_DST_ALPHA:
-        case GL_ONE_MINUS_DST_ALPHA:
-        case GL_CONSTANT_COLOR:
-        case GL_ONE_MINUS_CONSTANT_COLOR:
-        case GL_CONSTANT_ALPHA:
-        case GL_ONE_MINUS_CONSTANT_ALPHA:
-        case GL_SRC_ALPHA_SATURATE:
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-static bool ValidDstBlendFunc(GLenum dstBlend, GLint contextMajorVersion)
-{
-    switch (dstBlend)
-    {
-        case GL_ZERO:
-        case GL_ONE:
-        case GL_SRC_COLOR:
-        case GL_ONE_MINUS_SRC_COLOR:
-        case GL_DST_COLOR:
-        case GL_ONE_MINUS_DST_COLOR:
-        case GL_SRC_ALPHA:
-        case GL_ONE_MINUS_SRC_ALPHA:
-        case GL_DST_ALPHA:
-        case GL_ONE_MINUS_DST_ALPHA:
-        case GL_CONSTANT_COLOR:
-        case GL_ONE_MINUS_CONSTANT_COLOR:
-        case GL_CONSTANT_ALPHA:
-        case GL_ONE_MINUS_CONSTANT_ALPHA:
-            return true;
-
-        case GL_SRC_ALPHA_SATURATE:
-            return (contextMajorVersion >= 3);
-
-        default:
-            return false;
-    }
-}
-
 bool ValidateBlendFuncSeparate(Context *context,
                                GLenum srcRGB,
                                GLenum dstRGB,
                                GLenum srcAlpha,
                                GLenum dstAlpha)
 {
-    if (!ValidSrcBlendFunc(srcRGB))
+    if (!ValidSrcBlendFunc(context, srcRGB))
     {
         ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidBlendFunction);
         return false;
     }
 
-    if (!ValidDstBlendFunc(dstRGB, context->getClientMajorVersion()))
+    if (!ValidDstBlendFunc(context, dstRGB))
     {
         ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidBlendFunction);
         return false;
     }
 
-    if (!ValidSrcBlendFunc(srcAlpha))
+    if (!ValidSrcBlendFunc(context, srcAlpha))
     {
         ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidBlendFunction);
         return false;
     }
 
-    if (!ValidDstBlendFunc(dstAlpha, context->getClientMajorVersion()))
+    if (!ValidDstBlendFunc(context, dstAlpha))
     {
         ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidBlendFunction);
         return false;
@@ -4920,7 +4912,7 @@ bool ValidateDeleteProgram(Context *context, GLuint program)
         return false;
     }
 
-    if (!context->getProgram(program))
+    if (!context->getProgramResolveLink(program))
     {
         if (context->getShader(program))
         {
@@ -4946,7 +4938,7 @@ bool ValidateDeleteShader(Context *context, GLuint shader)
 
     if (!context->getShader(shader))
     {
-        if (context->getProgram(shader))
+        if (context->getProgramResolveLink(shader))
         {
             ANGLE_VALIDATION_ERR(context, InvalidOperation(), InvalidShaderName);
             return false;
@@ -5668,11 +5660,6 @@ bool ValidateUniform1i(Context *context, GLint location, GLint x)
     return ValidateUniform1iv(context, location, 1, &x);
 }
 
-bool ValidateUniform2f(Context *context, GLint location, GLfloat x, GLfloat y)
-{
-    return ValidateUniform(context, GL_FLOAT_VEC2, location, 1);
-}
-
 bool ValidateUniform2fv(Context *context, GLint location, GLsizei count, const GLfloat *v)
 {
     return ValidateUniform(context, GL_FLOAT_VEC2, location, count);
@@ -5821,11 +5808,6 @@ bool ValidateViewport(Context *context, GLint x, GLint y, GLsizei width, GLsizei
     }
 
     return true;
-}
-
-bool ValidateDrawArrays(Context *context, PrimitiveMode mode, GLint first, GLsizei count)
-{
-    return ValidateDrawArraysCommon(context, mode, first, count, 1);
 }
 
 bool ValidateDrawElements(Context *context,
@@ -6314,7 +6296,7 @@ bool ValidateUseProgram(Context *context, GLuint program)
 {
     if (program != 0)
     {
-        Program *programObject = context->getProgram(program);
+        Program *programObject = context->getProgramResolveLink(program);
         if (!programObject)
         {
             // ES 3.1.0 section 7.3 page 72

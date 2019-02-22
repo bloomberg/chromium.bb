@@ -29,7 +29,7 @@ ScopedCrosSettingsTestHelper::ScopedCrosSettingsTestHelper(
 }
 
 ScopedCrosSettingsTestHelper::~ScopedCrosSettingsTestHelper() {
-  RestoreProvider();
+  RestoreRealDeviceSettingsProvider();
 }
 
 std::unique_ptr<FakeOwnerSettingsService>
@@ -38,13 +38,15 @@ ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
       profile, new ownership::MockOwnerKeyUtil(), stub_settings_provider_ptr_);
 }
 
-void ScopedCrosSettingsTestHelper::ReplaceProvider(const std::string& path) {
+void ScopedCrosSettingsTestHelper::ReplaceDeviceSettingsProviderWithStub() {
   CHECK(!real_settings_provider_);
-  // Swap out the DeviceSettingsProvider with our settings provider so we can
-  // set values for the specified path.
+  // Swap out the DeviceSettingsProvider with our settings provider.
   CrosSettings* const cros_settings = CrosSettings::Get();
+
+  // TODO(olsen): This could be simplified if DeviceSettings and CrosSettings
+  // were the same thing, which they nearly are, except for 3 timezone settings.
   CrosSettingsProvider* real_settings_provider =
-      cros_settings->GetProvider(path);
+      cros_settings->GetProvider(kDeviceOwner);  // Can be any device setting.
   EXPECT_TRUE(real_settings_provider);
   real_settings_provider_ =
       cros_settings->RemoveSettingsProvider(real_settings_provider);
@@ -52,7 +54,7 @@ void ScopedCrosSettingsTestHelper::ReplaceProvider(const std::string& path) {
   cros_settings->AddSettingsProvider(std::move(stub_settings_provider_));
 }
 
-void ScopedCrosSettingsTestHelper::RestoreProvider() {
+void ScopedCrosSettingsTestHelper::RestoreRealDeviceSettingsProvider() {
   if (real_settings_provider_) {
     // Restore the real DeviceSettingsProvider.
     CrosSettings* const cros_settings = CrosSettings::Get();
@@ -61,6 +63,11 @@ void ScopedCrosSettingsTestHelper::RestoreProvider() {
     EXPECT_TRUE(stub_settings_provider_);
     cros_settings->AddSettingsProvider(std::move(real_settings_provider_));
   }
+  real_settings_provider_.reset();
+}
+
+bool ScopedCrosSettingsTestHelper::IsDeviceSettingsProviderStubbed() {
+  return !!real_settings_provider_;
 }
 
 void ScopedCrosSettingsTestHelper::SetTrustedStatus(
@@ -74,6 +81,7 @@ void ScopedCrosSettingsTestHelper::SetCurrentUserIsOwner(bool owner) {
 
 void ScopedCrosSettingsTestHelper::Set(const std::string& path,
                                        const base::Value& in_value) {
+  CHECK(IsDeviceSettingsProviderStubbed());
   stub_settings_provider_ptr_->Set(path, in_value);
 }
 
@@ -132,7 +140,8 @@ void ScopedCrosSettingsTestHelper::Initialize(bool create_settings_service) {
     test_install_attributes_.reset(new ScopedStubInstallAttributes());
     CHECK(!DeviceSettingsService::IsInitialized());
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService());
-    test_cros_settings_.reset(new ScopedTestCrosSettings());
+    test_cros_settings_.reset(
+        new ScopedTestCrosSettings(g_browser_process->local_state()));
   }
 }
 

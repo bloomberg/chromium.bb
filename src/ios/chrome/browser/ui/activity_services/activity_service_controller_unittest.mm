@@ -8,7 +8,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -28,7 +27,6 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -578,9 +576,6 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
 // Verifies that the Bookmark, Find in Page, Request Desktop/Mobile Site and
 // Read Later activities are only here for http/https pages.
 TEST_F(ActivityServiceControllerTest, HTTPActivities) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUIRefreshPhase1);
-
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
 
@@ -618,9 +613,6 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
 
 // Verifies that the Bookmark Activity is correct on bookmarked pages.
 TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUIRefreshPhase1);
-
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
 
@@ -677,9 +669,6 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
 // Verifies that the Request Desktop/Mobile activity has the correct label and
 // the correct action.
 TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUIRefreshPhase1);
-
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
 

@@ -79,6 +79,9 @@
     'bitrate_controller': {
       'filepath': 'modules/bitrate_controller/.*'
     },
+    'congestion_controller': {
+      'filepath': 'modules/congestion_controller/.*'
+    },
     'remote_bitrate_estimator': {
       'filepath': 'modules/remote_bitrate_estimator/.*'
     },
@@ -114,8 +117,7 @@
     'audio': ['solenberg@webrtc.org',
               'tina.legrand@webrtc.org'],
     'api': ['kwiberg@webrtc.org',
-            'solenberg@webrtc.org',
-            'steveanton@webrtc.org'],
+            'solenberg@webrtc.org'],
     'base': ['kwiberg@webrtc.org'],
     'call': ['mflodman@webrtc.org',
              'solenberg@webrtc.org',
@@ -167,11 +169,14 @@
                          'zhengzhonghou@agora.io'],
     'bitrate_controller': ['mflodman@webrtc.org',
                            'stefan@webrtc.org',
+                           'srte@webrtc.org',
                            'zhuangzesen@agora.io'],
+    'congestion_controller': ['srte@webrtc.org'],
     'remote_bitrate_estimator': ['mflodman@webrtc.org',
                                  'stefan@webrtc.org',
                                  'zhuangzesen@agora.io'],
     'pacing': ['mflodman@webrtc.org',
+               'srte@webrtc.org',
                'stefan@webrtc.org',
                'zhuangzesen@agora.io'],
     'rtp_rtcp': ['mflodman@webrtc.org',

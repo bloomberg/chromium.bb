@@ -18,40 +18,12 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 
-class ArcAppTest;
 class IndependentOTRProfileManagerTest;
-class SessionControllerClientTest;
 class Profile;
 
 namespace base {
 class FilePath;
 }
-
-namespace chromeos {
-class QuickUnlockPrivateUnitTest;
-}
-
-namespace extensions {
-class ExtensionGarbageCollectorChromeOSUnitTest;
-}
-
-namespace arc {
-class ArcAuthServiceTest;
-class ArcCertStoreBridgeTest;
-class ArcSessionManagerTest;
-}
-
-namespace ash {
-class MultiUserWindowManagerChromeOSTest;
-}  // namespace ash
-
-namespace policy {
-class DeviceStatusCollectorTest;
-}  // namespace policy
-
-namespace test {
-class BrowserFinderChromeOSTest;
-}  // namespace test
 
 namespace chromeos {
 
@@ -178,29 +150,27 @@ class ProfileHelper
   // Flushes all files of |profile|.
   void FlushProfile(Profile* profile);
 
+  // Associates |user| with profile with the same user_id,
+  // for GetUserByProfile() testing.
+  void SetProfileToUserMappingForTesting(user_manager::User* user);
+
+  // Enables/disables testing GetUserByProfile() by always returning
+  // primary user.
+  static void SetAlwaysReturnPrimaryUserForTesting(bool value);
+
+  // Associates |profile| with |user|, for GetProfileByUser() testing.
+  void SetUserToProfileMappingForTesting(const user_manager::User* user,
+                                         Profile* profile);
+
+  // Removes |account_id| user from |user_to_profile_for_testing_| for testing.
+  void RemoveUserFromListForTesting(const AccountId& account_id);
+
  private:
   // TODO(nkostylev): Create a test API class that will be the only one allowed
   // to access private test methods.
-  friend class CryptohomeAuthenticatorTest;
-  friend class DeviceSettingsTestBase;
-  friend class policy::DeviceStatusCollectorTest;
-  friend class ExistingUserControllerTest;
-  friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
   friend class FakeChromeUserManager;
-  friend class KioskTest;
   friend class MockUserManager;
-  friend class MultiProfileUserControllerTest;
-  friend class PrinterDetectorAppSearchEnabledTest;
   friend class ProfileHelperTest;
-  friend class ProfileListChromeOSTest;
-  friend class ash::MultiUserWindowManagerChromeOSTest;
-  friend class arc::ArcSessionManagerTest;
-  friend class arc::ArcAuthServiceTest;
-  friend class arc::ArcCertStoreBridgeTest;
-  friend class chromeos::QuickUnlockPrivateUnitTest;
-  friend class ::ArcAppTest;
-  friend class ::SessionControllerClientTest;
-  friend class ::test::BrowserFinderChromeOSTest;
   friend class ::IndependentOTRProfileManagerTest;
 
   // Called when signin profile is cleared.
@@ -217,25 +187,10 @@ class ProfileHelper
   // user_manager::UserManager::UserSessionStateObserver implementation:
   void ActiveUserHashChanged(const std::string& hash) override;
 
-  // Associates |user| with profile with the same user_id,
-  // for GetUserByProfile() testing.
-  void SetProfileToUserMappingForTesting(user_manager::User* user);
-
   // Enables/disables testing code path in GetUserByProfile() like
   // always return primary user (when always_return_primary_user_for_testing is
   // set).
   static void SetProfileToUserForTestingEnabled(bool enabled);
-
-  // Enables/disables testing GetUserByProfile() by always returning
-  // primary user.
-  static void SetAlwaysReturnPrimaryUserForTesting(bool value);
-
-  // Associates |profile| with |user|, for GetProfileByUser() testing.
-  void SetUserToProfileMappingForTesting(const user_manager::User* user,
-                                         Profile* profile);
-
-  // Removes |account_id| user from |user_to_profile_for_testing_| for testing.
-  void RemoveUserFromListForTesting(const AccountId& account_id);
 
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;

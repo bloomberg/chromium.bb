@@ -6,8 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
+#include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace viz {
@@ -55,12 +57,36 @@ void HitTestAggregator::SendHitTestData() {
                                                   hit_test_data_);
 }
 
+base::Optional<int64_t> HitTestAggregator::GetTraceIdIfUpdated(
+    const SurfaceId& surface_id) {
+  bool enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), &enabled);
+  if (!enabled)
+    return base::nullopt;
+
+  int32_t active_frame_index =
+      hit_test_manager_->GetActiveFrameIndex(surface_id);
+  int32_t& frame_index = last_active_frame_index_[surface_id];
+  if (frame_index == active_frame_index)
+    return base::nullopt;
+  frame_index = active_frame_index;
+  return ~hit_test_manager_->GetTraceId(surface_id);
+}
+
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   const HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(
           local_surface_id_lookup_delegate_, surface_id.frame_sink_id());
   if (!hit_test_region_list)
     return;
+
+  base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+  TRACE_EVENT_WITH_FLOW1(
+      TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
+      TRACE_ID_GLOBAL(trace_id.value_or(-1)),
+      trace_id ? TRACE_EVENT_FLAG_FLOW_IN : TRACE_EVENT_FLAG_NONE, "step",
+      "AggregateHitTestData(Root)");
 
   referenced_child_regions_.insert(surface_id.frame_sink_id());
 
@@ -98,30 +124,51 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
     if (referenced_child_regions_.count(region.frame_sink_id))
       return parent_index;
 
+    referenced_child_regions_.insert(region.frame_sink_id);
+
     const HitTestRegionList* hit_test_region_list =
         hit_test_manager_->GetActiveHitTestRegionList(
             local_surface_id_lookup_delegate_, region.frame_sink_id);
     if (!hit_test_region_list) {
       // Hit-test data not found with this FrameSinkId. This means that it
       // failed to find a surface corresponding to this FrameSinkId at surface
-      // aggregation time.
-      return parent_index;
-    }
+      // aggregation time. This might be because the embedded client hasn't
+      // submitted its own hit-test data yet, we are going to do async
+      // targeting for this embedded client.
+      flags |= (HitTestRegionFlags::kHitTestAsk |
+                HitTestRegionFlags::kHitTestNotActive);
+    } else {
+      // Rather than add a node in the tree for this hit_test_region_list
+      // element we can simplify the tree by merging the flags and transform
+      // into the kHitTestChildSurface element.
+      if (!hit_test_region_list->transform.IsIdentity())
+        transform.PreconcatTransform(hit_test_region_list->transform);
 
-    referenced_child_regions_.insert(region.frame_sink_id);
+      flags |= hit_test_region_list->flags;
 
-    // Rather than add a node in the tree for this hit_test_region_list
-    // element we can simplify the tree by merging the flags and transform
-    // into the kHitTestChildSurface element.
-    if (!hit_test_region_list->transform.IsIdentity())
-      transform.PreconcatTransform(hit_test_region_list->transform);
+      bool enabled;
+      TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+          TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), &enabled);
+      if (enabled) {
+        // Preconditions are already verified in GetActiveHitTestRegionList.
+        LocalSurfaceId local_surface_id =
+            local_surface_id_lookup_delegate_->GetSurfaceAtAggregation(
+                region.frame_sink_id);
+        SurfaceId surface_id(region.frame_sink_id, local_surface_id);
 
-    flags |= hit_test_region_list->flags;
+        base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+        TRACE_EVENT_WITH_FLOW1(
+            TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
+            TRACE_ID_GLOBAL(trace_id.value_or(-1)),
+            trace_id ? TRACE_EVENT_FLAG_FLOW_IN : TRACE_EVENT_FLAG_NONE, "step",
+            "AggregateHitTestData");
+      }
 
-    for (const auto& child_region : hit_test_region_list->regions) {
-      region_index = AppendRegion(region_index, child_region);
-      if (region_index >= hit_test_data_capacity_ - 1)
-        break;
+      for (const auto& child_region : hit_test_region_list->regions) {
+        region_index = AppendRegion(region_index, child_region);
+        if (region_index >= hit_test_data_capacity_ - 1)
+          break;
+      }
     }
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);

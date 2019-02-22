@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
@@ -90,7 +91,8 @@ NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
     const NGConstraintSpace& space,
-    NGInlineBreakToken* break_token)
+    const NGInlineBreakToken* break_token,
+    NGInlineChildLayoutContext* context)
     : NGLayoutAlgorithm(
           inline_node,
           ComputedStyle::CreateAnonymousStyleWithDisplay(inline_node.Style(),
@@ -100,9 +102,12 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           // lays out in visual order.
           TextDirection::kLtr,
           break_token),
+      box_states_(nullptr),
+      context_(context),
       baseline_type_(container_builder_.Style().GetFontBaseline()),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space.GetWritingMode())) {
+  DCHECK(context);
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
 }
 
@@ -112,18 +117,15 @@ NGInlineLayoutAlgorithm::~NGInlineLayoutAlgorithm() = default;
 
 NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
     const NGInlineItem& item,
-    const NGInlineItemResult& item_result) {
-  NGInlineBoxState* box = box_states_->OnOpenTag(item, item_result, line_box_);
+    const NGInlineItemResult& item_result,
+    NGInlineLayoutStateStack* box_states) const {
+  NGInlineBoxState* box = box_states->OnOpenTag(item, item_result, line_box_);
   // Compute text metrics for all inline boxes since even empty inlines
   // influence the line height, except when quirks mode and the box is empty
   // for the purpose of empty block calculation.
   // https://drafts.csswg.org/css2/visudet.html#line-height
   if (!quirks_mode_ || !item.IsEmptyItem())
     box->ComputeTextMetrics(*item.Style(), baseline_type_);
-  if (item.ShouldCreateBoxFragment()) {
-    box->SetNeedsBoxFragment(
-        box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
-  }
   return box;
 }
 
@@ -131,24 +133,40 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
 void NGInlineLayoutAlgorithm::PrepareBoxStates(
     const NGLineInfo& line_info,
     const NGInlineBreakToken* break_token) {
-  // Copy the state stack from the unfinished break token if provided. This
-  // enforces the layout inputs immutability constraint.
-  if (break_token && !break_token->UseFirstLineStyle()) {
-    box_states_ =
-        std::make_unique<NGInlineLayoutStateStack>(break_token->StateStack());
+#if DCHECK_IS_ON()
+  is_box_states_from_context_ = false;
+#endif
+
+  // Use the initial box states if no break token; i.e., a line from the start.
+  if (!break_token) {
+    box_states_ = context_->ResetBoxStates();
     return;
   }
 
-  // If we weren't provided with a break token we just create an empty state
-  // stack.
-  box_states_ = std::make_unique<NGInlineLayoutStateStack>();
+  // Check if the box states in NGChildLayoutContext is valid for this line.
+  // If the previous line was ::first-line, always rebuild because box states
+  // have ::first-line styles.
+  const Vector<NGInlineItem>& items = line_info.ItemsData().items;
+  if (!break_token->UseFirstLineStyle()) {
+    box_states_ =
+        context_->BoxStatesIfValidForItemIndex(items, break_token->ItemIndex());
+    if (box_states_) {
+#if DCHECK_IS_ON()
+      is_box_states_from_context_ = true;
+#endif
+      return;
+    }
+  }
 
-  // If the previous line uses first-line style, rebuild the box state stack
-  // because styles and metrics may be different.
-  if (!break_token)
-    return;
-  DCHECK(break_token->UseFirstLineStyle());
+  // If not, rebuild the box states for the break token.
+  box_states_ = context_->ResetBoxStates();
+  RebuildBoxStates(line_info, break_token, box_states_);
+}
 
+void NGInlineLayoutAlgorithm::RebuildBoxStates(
+    const NGLineInfo& line_info,
+    const NGInlineBreakToken* break_token,
+    NGInlineLayoutStateStack* box_states) const {
   // Compute which tags are not closed at the beginning of this line.
   const Vector<NGInlineItem>& items = line_info.ItemsData().items;
   Vector<const NGInlineItem*, 16> open_items;
@@ -161,14 +179,28 @@ void NGInlineLayoutAlgorithm::PrepareBoxStates(
   }
 
   // Create box states for tags that are not closed yet.
-  box_states_->OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
-                                 quirks_mode_);
+  box_states->OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+                                quirks_mode_);
   for (const NGInlineItem* item : open_items) {
     NGInlineItemResult item_result;
     NGLineBreaker::ComputeOpenTagResult(*item, ConstraintSpace(), &item_result);
-    HandleOpenTag(*item, item_result);
+    HandleOpenTag(*item, item_result, box_states);
   }
 }
+
+#if DCHECK_IS_ON()
+void NGInlineLayoutAlgorithm::CheckBoxStates(
+    const NGLineInfo& line_info,
+    const NGInlineBreakToken* break_token) const {
+  NGInlineLayoutStateStack rebuilt;
+  RebuildBoxStates(line_info, break_token, &rebuilt);
+  rebuilt.OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+                            quirks_mode_);
+
+  DCHECK(box_states_);
+  box_states_->CheckSame(rebuilt);
+}
+#endif
 
 void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                          NGExclusionSpace* exclusion_space) {
@@ -196,6 +228,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // The baseline is adjusted after the height of the line box is computed.
   NGInlineBoxState* box =
       box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
+#if DCHECK_IS_ON()
+  if (is_box_states_from_context_)
+    CheckBoxStates(*line_info, BreakToken());
+#endif
 
   // In order to match other browsers when list-style-type: none, pretend
   // there's an invisible marker here.
@@ -235,12 +271,8 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
-      box = HandleOpenTag(item, item_result);
+      box = HandleOpenTag(item, item_result, box_states_);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
-      if (!box->needs_box_fragment && item_result.inline_size) {
-        box->SetNeedsBoxFragment(
-            box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
-      }
       if (quirks_mode_ && box->needs_box_fragment)
         box->EnsureTextMetrics(*item.Style(), baseline_type_);
       box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
@@ -293,6 +325,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // tree structure.
   if (box_states_->HasBoxFragments())
     box_states_->CreateBoxFragments(&line_box_);
+
+  // Update item index of the box states in the context.
+  context_->SetItemIndex(line_info->ItemsData().items,
+                         line_info->EndItemIndex());
 
   const NGLineHeightMetrics& line_box_metrics =
       box_states_->LineBoxState().metrics;
@@ -352,7 +388,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
     case kZeroWidthSpaceCharacter:
       // Don't generate fragments if this is a generated (not in DOM) break
       // opportunity during the white space collapsing in NGInlineItemBuilder.
-      if (!item.GetLayoutObject())
+      if (item.IsGenerated())
         return;
       type = NGPhysicalTextFragment::kFlowControl;
       break;
@@ -613,8 +649,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 }
 
 scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
-  std::unique_ptr<NGExclusionSpace> initial_exclusion_space(
-      std::make_unique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
+  NGExclusionSpace initial_exclusion_space(ConstraintSpace().ExclusionSpace());
 
   bool is_empty_inline = Node().IsEmptyInline();
 
@@ -649,13 +684,12 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   // In order to get the correct list of layout opportunities, we need to
   // position any "leading" items (floats) within the exclusion space first.
-  unsigned handled_item_index =
-      PositionLeadingFloats(initial_exclusion_space.get());
+  unsigned handled_item_index = PositionLeadingFloats(&initial_exclusion_space);
 
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
-  const Vector<NGLayoutOpportunity> opportunities =
-      initial_exclusion_space->AllLayoutOpportunities(
+  const LayoutOpportunityVector opportunities =
+      initial_exclusion_space.AllLayoutOpportunities(
           ConstraintSpace().BfcOffset(),
           ConstraintSpace().AvailableSize().inline_size);
 
@@ -663,8 +697,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // We shouldn't have any unpositioned floats if we aren't empty.
   DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
 
-  std::unique_ptr<NGExclusionSpace> exclusion_space;
-  NGInlineBreakToken* break_token = BreakToken();
+  NGExclusionSpace exclusion_space;
+  const NGInlineBreakToken* break_token = BreakToken();
 
   LayoutUnit line_block_size;
   LayoutUnit block_delta;
@@ -694,19 +728,17 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     positioned_floats.clear();
     unpositioned_floats_.clear();
     container_builder_.Reset();
-    exclusion_space =
-        std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
+    exclusion_space = initial_exclusion_space;
 
     NGLineLayoutOpportunity line_opportunity =
         opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
                                                  line_block_size, block_delta);
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
-                               constraint_space_, &positioned_floats,
-                               &unpositioned_floats_, &container_builder_,
-                               exclusion_space.get(), handled_item_index,
-                               line_opportunity, break_token);
+    NGLineBreaker line_breaker(
+        Node(), NGLineBreakerMode::kContent, constraint_space_,
+        &positioned_floats, &unpositioned_floats_, &container_builder_,
+        &exclusion_space, handled_item_index, line_opportunity, break_token);
     line_breaker.NextLine(&line_info);
 
     // If this fragment will be larger than the inline-size of the opportunity,
@@ -734,7 +766,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     }
 
     PrepareBoxStates(line_info, break_token);
-    CreateLine(&line_info, exclusion_space.get());
+    CreateLine(&line_info, &exclusion_space);
 
     // We now can check the block-size of the fragment, and it fits within the
     // opportunity.
@@ -779,20 +811,19 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     // Success!
     positioned_floats_.AppendVector(positioned_floats);
-    container_builder_.SetBreakToken(
-        line_breaker.CreateBreakToken(line_info, std::move(box_states_)));
+    container_builder_.SetBreakToken(line_breaker.CreateBreakToken(line_info));
 
     if (is_empty_inline) {
       DCHECK_EQ(container_builder_.BlockSize(), 0);
     } else {
       // Place any remaining floats which couldn't fit on the line.
-      PositionPendingFloats(line_height, exclusion_space.get());
+      PositionPendingFloats(line_height, &exclusion_space);
 
       // A <br clear=both> will strech the line-box height, such that the
       // block-end edge will clear any floats.
       // TODO(ikilpatrick): Move this into ng_block_layout_algorithm.
       container_builder_.SetBlockSize(
-          ComputeContentSize(line_info, *exclusion_space, line_height));
+          ComputeContentSize(line_info, exclusion_space, line_height));
     }
     break;
   }
@@ -800,9 +831,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // We shouldn't have any unpositioned floats if we aren't empty.
   DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
   container_builder_.SwapPositionedFloats(&positioned_floats_);
-  container_builder_.SetExclusionSpace(
-      exclusion_space ? std::move(exclusion_space)
-                      : std::move(initial_exclusion_space));
+  container_builder_.SetExclusionSpace(std::move(exclusion_space));
   container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants(nullptr);
   return container_builder_.ToLineBoxFragment();
 }
@@ -859,9 +888,10 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
   NGBfcOffset origin_bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
                                    bfc_block_offset + content_size};
 
-  const Vector<NGPositionedFloat> positioned_floats =
+  const NGPositionedFloatVector positioned_floats =
       PositionFloats(ConstraintSpace().AvailableSize(),
                      ConstraintSpace().PercentageResolutionSize(),
+                     ConstraintSpace().ReplacedPercentageResolutionSize(),
                      origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
                      ConstraintSpace(), exclusion_space);
 

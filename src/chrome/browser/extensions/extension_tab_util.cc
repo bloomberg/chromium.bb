@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -104,7 +106,16 @@ int GetTabIdForExtensions(const WebContents* web_contents) {
   return SessionTabHelper::IdForTab(web_contents).id();
 }
 
-ExtensionTabUtil::Delegate* g_extension_tab_util_delegate = nullptr;
+std::unique_ptr<ExtensionTabUtil::Delegate>&
+GetExtensionTabUtilDelegateWrapper() {
+  static base::NoDestructor<std::unique_ptr<ExtensionTabUtil::Delegate>>
+      delegate_wrapper;
+  return *delegate_wrapper;
+}
+
+ExtensionTabUtil::Delegate* GetExtensionTabUtilDelegate() {
+  return GetExtensionTabUtilDelegateWrapper().get();
+}
 
 }  // namespace
 
@@ -465,12 +476,11 @@ ExtensionTabUtil::CreateWindowValueForExtension(
 std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
     content::WebContents* contents) {
   DCHECK(contents);
-  std::unique_ptr<api::tabs::MutedInfo> info(new api::tabs::MutedInfo);
+  auto info = std::make_unique<api::tabs::MutedInfo>();
   info->muted = contents->IsAudioMuted();
   switch (chrome::GetTabAudioMutedReason(contents)) {
     case TabMutedReason::NONE:
       break;
-    case TabMutedReason::AUDIO_INDICATOR:
     case TabMutedReason::CONTENT_SETTING:
     case TabMutedReason::CONTENT_SETTING_CHROME:
     case TabMutedReason::CONTEXT_MENU:
@@ -481,19 +491,17 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
       break;
     case TabMutedReason::EXTENSION:
       info->reason = api::tabs::MUTED_INFO_REASON_EXTENSION;
-      info->extension_id.reset(
-          new std::string(chrome::GetExtensionIdForMutedTab(contents)));
+      info->extension_id = std::make_unique<std::string>(
+          LastMuteMetadata::FromWebContents(contents)->extension_id);
+      DCHECK(!info->extension_id->empty());
       break;
   }
   return info;
 }
 
 // static
-void ExtensionTabUtil::SetPlatformDelegate(Delegate* delegate) {
-  // Allow setting it only once (also allow reset to nullptr, but then take
-  // special care to free it).
-  CHECK(!g_extension_tab_util_delegate || !delegate);
-  g_extension_tab_util_delegate = delegate;
+void ExtensionTabUtil::SetPlatformDelegate(std::unique_ptr<Delegate> delegate) {
+  GetExtensionTabUtilDelegateWrapper() = std::move(delegate);
 }
 
 // static
@@ -523,9 +531,10 @@ void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
     tab->title.reset();
     tab->fav_icon_url.reset();
   }
-  if (g_extension_tab_util_delegate)
-    g_extension_tab_util_delegate->ScrubTabForExtension(extension, contents,
+  if (GetExtensionTabUtilDelegate()) {
+    GetExtensionTabUtilDelegate()->ScrubTabForExtension(extension, contents,
                                                         tab);
+  }
 }
 
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,

@@ -104,8 +104,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     ARC_APP_PRESSED = 7,
     ARC_APP_PREFERRED_PRESSED = 8,
     PWA_APP_PRESSED = 9,
-    SIZE,
-    INVALID = SIZE,
+    INVALID = 10,
+    kMaxValue = INVALID,
   };
 
   // As for PickerAction, these define the buckets for an UMA histogram, so this
@@ -115,7 +115,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     ARC = 0,
     CHROME = 1,
     PWA = 2,
-    SIZE,
+    kMaxValue = PWA,
   };
 
   // Determines the destination of the current navigation. We know that if the

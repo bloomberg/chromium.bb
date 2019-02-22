@@ -282,7 +282,7 @@ bool AccessibleNode::GetProperty(Element* element,
   if (!node_list)
     return false;
 
-  for (size_t i = 0; i < node_list->length(); ++i) {
+  for (wtf_size_t i = 0; i < node_list->length(); ++i) {
     AccessibleNode* accessible_node = node_list->item(i);
     if (accessible_node) {
       Element* element = accessible_node->element();
@@ -1125,7 +1125,7 @@ static void SetProperty(P property,
                         T value,
                         bool is_null,
                         Vector<std::pair<P, T>>& properties) {
-  for (size_t i = 0; i < properties.size(); i++) {
+  for (wtf_size_t i = 0; i < properties.size(); i++) {
     auto& item = properties[i];
     if (item.first == property) {
       if (is_null)

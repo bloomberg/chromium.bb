@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -272,7 +274,7 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
                                            csp.Get());
     HeapVector<Member<CSPSource>> expected = helper_source_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
-    for (size_t i = 0; i < normalized.size(); i++) {
+    for (wtf_size_t i = 0; i < normalized.size(); i++) {
       Source a = {normalized[i]->scheme_,        normalized[i]->host_,
                   normalized[i]->port_,          normalized[i]->path_,
                   normalized[i]->host_wildcard_, normalized[i]->port_wildcard_};
@@ -327,7 +329,7 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSourcesSchemes) {
                                            csp.Get());
     HeapVector<Member<CSPSource>> expected = helper_source_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
-    for (size_t i = 0; i < expected.size(); i++) {
+    for (wtf_size_t i = 0; i < expected.size(); i++) {
       Source a = {expected[i]->scheme_,        expected[i]->host_,
                   expected[i]->port_,          expected[i]->path_,
                   expected[i]->host_wildcard_, expected[i]->port_wildcard_};
@@ -1039,7 +1041,6 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
        {"http://example1.com/foo/ 'nonce-xyz' 'sha512-xyz'",
         "http://example1.com/foo/ 'nonce-zyx' 'nonce-xyz' 'sha512-xyz'"},
        false},
-
   };
 
   for (const auto& test : cases) {
@@ -1332,7 +1333,7 @@ TEST_F(SourceListDirectiveTest, GetSources) {
     SourceListDirective expected_list("script-src", test.expected, csp.Get());
     HeapVector<Member<CSPSource>> expected = expected_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
-    for (size_t i = 0; i < expected.size(); i++) {
+    for (wtf_size_t i = 0; i < expected.size(); i++) {
       Source a = {expected[i]->scheme_,        expected[i]->host_,
                   expected[i]->port_,          expected[i]->path_,
                   expected[i]->host_wildcard_, expected[i]->port_wildcard_};
@@ -1375,7 +1376,7 @@ TEST_F(SourceListDirectiveTest, ParseHost) {
     const UChar* start = characters.data();
     const UChar* end = start + characters.size();
     EXPECT_EQ(test.expected,
-              SourceListDirective::ParseHost(start, end, host, disposition))
+              SourceListDirective::ParseHost(start, end, &host, &disposition))
         << "SourceListDirective::parseHost fail to parse: " << test.sources;
   }
 }

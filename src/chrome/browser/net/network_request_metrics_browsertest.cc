@@ -13,13 +13,16 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -100,7 +103,10 @@ class NetworkRequestMetricsBrowserTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<RequestType> {
  public:
-  NetworkRequestMetricsBrowserTest() {}
+  NetworkRequestMetricsBrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        predictors::kSpeculativePreconnectFeature);
+  }
   ~NetworkRequestMetricsBrowserTest() override {}
 
   // ContentBrowserTest implementation:
@@ -341,6 +347,7 @@ class NetworkRequestMetricsBrowserTest
   base::HistogramTester* histograms() { return histograms_.get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       uninteresting_main_frame_response_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>

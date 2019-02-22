@@ -23,13 +23,16 @@ class TestFullscreenController : public FullscreenController {
   // FullscreenController:
   ChromeBroadcaster* broadcaster() override;
   void SetWebStateList(WebStateList* web_state_list) override;
+  const WebStateList* GetWebStateList() const override;
+  WebStateList* GetWebStateList() override;
   void AddObserver(FullscreenControllerObserver* observer) override;
   void RemoveObserver(FullscreenControllerObserver* observer) override;
   bool IsEnabled() const override;
   void IncrementDisabledCounter() override;
   void DecrementDisabledCounter() override;
   CGFloat GetProgress() const override;
-  void ResetModel() override;
+  void EnterFullscreen() override;
+  void ExitFullscreen() override;
 
   // KeyedService:
   void Shutdown() override;

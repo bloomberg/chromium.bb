@@ -91,9 +91,21 @@ LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
 }
 
 bool LayoutInline::IsFirstLineAnonymous() const {
-  // TODO(kojii): We can add a flag, but this seems enough for now.
-  return IsAnonymous() && Parent() && Parent()->IsLayoutBlockFlow() &&
-         !PreviousSibling() && !NextSibling();
+  return false;
+}
+
+// A private class to distinguish anonymous inline box for ::first-line from
+// other inline boxes.
+class LayoutInlineForFirstLine : public LayoutInline {
+ public:
+  LayoutInlineForFirstLine(Element* element) : LayoutInline(element) {}
+  bool IsFirstLineAnonymous() const final { return true; }
+};
+
+LayoutInline* LayoutInline::CreateAnonymousForFirstLine(Document* document) {
+  LayoutInline* layout_inline = new LayoutInlineForFirstLine(nullptr);
+  layout_inline->SetDocumentForAnonymous(document);
+  return layout_inline;
 }
 
 void LayoutInline::WillBeDestroyed() {
@@ -143,7 +155,6 @@ void LayoutInline::DeleteLineBoxes() {
 
 void LayoutInline::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext());
-  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = fragment;
 }
 
@@ -671,8 +682,15 @@ void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
           EnclosingBlockFlowFragmentOf(*this)) {
     const auto& descendants =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& descendant : descendants)
-      yield(descendant.RectInContainerBox().ToLayoutRect());
+    const LayoutBlock* block_for_flipping = nullptr;
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      block_for_flipping = ContainingBlock();
+    for (const auto& descendant : descendants) {
+      LayoutRect rect = descendant.RectInContainerBox().ToLayoutRect();
+      if (UNLIKELY(block_for_flipping))
+        block_for_flipping->FlipForWritingMode(rect);
+      yield(rect);
+    }
     return;
   }
   if (!AlwaysCreateLineBoxes()) {
@@ -859,6 +877,12 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
 }
 
 LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
+  // This method is called from various places. It's mainly (only?) about
+  // calculating offsetLeft and offsetTop, though. Thus the callers seem to
+  // expect a purely physical point. This is what NG does. Legacy, on the other
+  // hand, sets the block-axis coordinate relatively to the block-start border
+  // edge, which means that offsetLeft will be wrong when writing-mode is
+  // vertical-rl.
   if (const NGPhysicalBoxFragment* box_fragment =
           EnclosingBlockFlowFragmentOf(*this)) {
     const auto& fragments =
@@ -944,12 +968,6 @@ class HitTestCulledInlinesGeneratorContext {
   HitTestCulledInlinesGeneratorContext(Region& region,
                                        const HitTestLocation& location)
       : intersected_(false), region_(region), location_(location) {}
-  void operator()(const FloatRect& rect) {
-    if (location_.Intersects(rect)) {
-      intersected_ = true;
-      region_.Unite(EnclosingIntRect(rect));
-    }
-  }
   void operator()(const LayoutRect& rect) {
     if (location_.Intersects(rect)) {
       intersected_ = true;
@@ -981,6 +999,10 @@ bool LayoutInline::HitTestCulledInline(
   Region region_result;
   HitTestCulledInlinesGeneratorContext context(region_result,
                                                adjusted_location);
+
+  // NG generates purely physical rectangles here, while legacy sets the block
+  // offset on the rectangles relatively to the block-start. NG is doing the
+  // right thing. Legacy is wrong.
   if (container_fragment) {
     DCHECK(EnclosingNGBlockFlow());
     DCHECK(container_fragment->IsDescendantOfNotSelf(
@@ -1063,7 +1085,10 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
       bounding_box.UniteIfNonZero(child.RectInContainerBox());
-    return bounding_box.ToLayoutRect();
+    LayoutRect rect = bounding_box.ToLayoutRect();
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      ContainingBlock()->FlipForWritingMode(rect);
+    return rect;
   }
 
   if (!AlwaysCreateLineBoxes()) {
@@ -1247,42 +1272,22 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   return rect;
 }
 
-LayoutRect LayoutInline::AbsoluteVisualRect() const {
+LayoutRect LayoutInline::VisualRectInDocument() const {
   if (!Continuation()) {
     LayoutRect rect = VisualOverflowRect();
     MapToVisualRectInAncestorSpace(View(), rect);
     return rect;
   }
-
+  Vector<LayoutRect> outlines;
+  AddOutlineRects(outlines, LayoutPoint(),
+                  NGOutlineType::kIncludeBlockVisualOverflow);
   FloatRect float_result;
   LinesBoundingBoxGeneratorContext context(float_result);
-
-  LayoutInline* end_continuation = InlineElementContinuation();
-  while (LayoutInline* next_continuation =
-             end_continuation->InlineElementContinuation())
-    end_continuation = next_continuation;
-
-  for (LayoutBlock* curr_block = ContainingBlock();
-       curr_block && curr_block->IsAnonymousBlock();
-       curr_block = ToLayoutBlock(curr_block->NextSibling())) {
-    bool walk_children_only = !curr_block->ChildrenInline();
-    for (LayoutObject* curr = curr_block->FirstChild(); curr;
-         curr = curr->NextSibling()) {
-      LayoutRect rect(curr->LocalVisualRect());
-      context(FloatRect(rect));
-      if (walk_children_only)
-        continue;
-      for (LayoutObject* walker = curr; walker;
-           walker = walker->NextInPreOrder(curr)) {
-        if (walker != end_continuation)
-          continue;
-        LayoutRect rect(EnclosingIntRect(float_result));
-        MapToVisualRectInAncestorSpace(View(), rect);
-        return rect;
-      }
-    }
-  }
-  return LayoutRect();
+  for (const auto& outline : outlines)
+    context(outline);
+  LayoutRect int_result(EnclosingIntRect(float_result));
+  MapToVisualRectInAncestorSpace(View(), int_result);
+  return int_result;
 }
 
 LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
@@ -1325,6 +1330,24 @@ LayoutRect LayoutInline::VisualOverflowRect() const {
     }
   }
   return overflow_rect;
+}
+
+LayoutRect LayoutInline::ReferenceBoxForClipPath() const {
+  // The spec just says to use the border box as clip-path reference box. It
+  // doesn't say what to do if there are multiple lines. Gecko uses the first
+  // fragment in that case. We'll do the same here (but correctly with respect
+  // to writing-mode - Gecko has some issues there).
+  // See crbug.com/641907
+  LayoutRect bounding_box;
+  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
+    bounding_box.SetLocation(
+        fragment->InlineOffsetToContainerBox().ToLayoutPoint());
+    bounding_box.SetSize(fragment->Size().ToLayoutSize());
+  } else if (const InlineFlowBox* flow_box = FirstLineBox()) {
+    bounding_box = flow_box->FrameRect();
+    ContainingBlock()->FlipForWritingMode(bounding_box);
+  }
+  return bounding_box;
 }
 
 bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
@@ -1477,7 +1500,10 @@ void LayoutInline::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
   if (IsInLayoutNGInlineFormattingContext()) {
+    // TODO(yosin): We should move |SetAncestorLineBoxDirty()| into
+    // |DirtyLinesFromChangedChild()| like legacy layout.
     SetAncestorLineBoxDirty();
+    NGPaintFragment::DirtyLinesFromChangedChild(child);
     return;
   }
   MutableLineBoxes()->DirtyLinesFromChangedChild(
@@ -1554,9 +1580,7 @@ LayoutSize LayoutInline::OffsetForInFlowPositionedInline(
                                               : logical_offset.TransposedSize();
 }
 
-void LayoutInline::ImageChanged(WrappedImagePtr,
-                                CanDeferInvalidation,
-                                const IntRect*) {
+void LayoutInline::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
   if (!Parent())
     return;
 
@@ -1589,7 +1613,7 @@ class AbsoluteLayoutRectsGeneratorContext {
 void LayoutInline::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   AbsoluteLayoutRectsGeneratorContext context(rects, additional_offset);
   GenerateLineBoxRects(context);
   AddOutlineRectsForChildrenAndContinuations(rects, additional_offset,
@@ -1599,7 +1623,7 @@ void LayoutInline::AddOutlineRects(
 void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   AddOutlineRectsForNormalChildren(rects, additional_offset,
                                    include_block_overflows);
   AddOutlineRectsForContinuations(rects, additional_offset,
@@ -1609,7 +1633,7 @@ void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
 void LayoutInline::AddOutlineRectsForContinuations(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   if (LayoutBoxModelObject* continuation = Continuation()) {
     if (continuation->NeedsLayout()) {
       // TODO(mstensho): Prevent this from happening. Before we can get the
@@ -1634,7 +1658,8 @@ void LayoutInline::AddOutlineRectsForContinuations(
 
 FloatRect LayoutInline::LocalBoundingBoxRectForAccessibility() const {
   Vector<LayoutRect> rects;
-  AddOutlineRects(rects, LayoutPoint(), kIncludeBlockVisualOverflow);
+  AddOutlineRects(rects, LayoutPoint(),
+                  NGOutlineType::kIncludeBlockVisualOverflow);
   return FloatRect(UnionRect(rects));
 }
 

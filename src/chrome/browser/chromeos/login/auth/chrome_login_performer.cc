@@ -101,11 +101,10 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
       !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
     wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
     if (refresh_token.empty()) {
-      wildcard_login_checker_->StartWithSigninURLLoaderFactory(
-          GetSigninURLLoaderFactory(),
-          base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
-                     weak_factory_.GetWeakPtr(), success_callback,
-                     failure_callback));
+      NOTREACHED() << "Refresh token must be present.";
+      OnlineWildcardLoginCheckCompleted(
+          success_callback, failure_callback,
+          policy::WildcardLoginChecker::RESULT_FAILED);
     } else {
       wildcard_login_checker_->StartWithRefreshToken(
           refresh_token,

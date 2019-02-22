@@ -27,6 +27,7 @@ def GetAllStorySets():
       'rasterize_and_record_micro_ct',
       'multipage_skpicture_printer_ct',
       'loading.cluster_telemetry',
+      'v8.loading.cluster_telemetry',
       'memory.cluster_telemetry',
       'skpicture_printer',
       'cros_tab_switching.typical_24',

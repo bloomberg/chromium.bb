@@ -247,11 +247,13 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
             image_element->CachedImage()->GetResponse());
       }
     }
-  } else if (!result.AbsoluteMediaURL().IsEmpty()) {
-    data.src_url = result.AbsoluteMediaURL();
+  } else if (!result.AbsoluteMediaURL().IsEmpty() ||
+             result.GetMediaStreamDescriptor()) {
+    if (!result.AbsoluteMediaURL().IsEmpty())
+      data.src_url = result.AbsoluteMediaURL();
 
-    // We know that if absoluteMediaURL() is not empty, then this
-    // is a media element.
+    // We know that if absoluteMediaURL() is not empty or element has a media
+    // stream descriptor, then this is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(result.InnerNode());
     if (IsHTMLVideoElement(*media_element)) {
       // A video element should be presented as an audio element when it has an
@@ -277,6 +279,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       data.media_flags |= WebContextMenuData::kMediaPaused;
     if (media_element->muted())
       data.media_flags |= WebContextMenuData::kMediaMuted;
+    if (media_element->SupportsLoop())
+      data.media_flags |= WebContextMenuData::kMediaCanLoop;
     if (media_element->Loop())
       data.media_flags |= WebContextMenuData::kMediaLoop;
     if (media_element->SupportsSave())
@@ -382,6 +386,15 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     WebRange range =
         selected_frame->GetInputMethodController().GetSelectionOffsets();
     data.selection_start_offset = range.StartOffset();
+    // TODO(crbug.com/850954): Remove redundant log after we identified the
+    // issue.
+    DCHECK_GE(data.selection_start_offset, 0)
+        << "Log issue against https://crbug.com/850954\n"
+        << "data.selection_start_offset: " << data.selection_start_offset
+        << "\nrange: [" << range.StartOffset() << ", " << range.EndOffset()
+        << "]\nVisibleSelection: "
+        << selected_frame->Selection()
+               .ComputeVisibleSelectionInDOMTreeDeprecated();
   }
 
   if (result.IsContentEditable()) {

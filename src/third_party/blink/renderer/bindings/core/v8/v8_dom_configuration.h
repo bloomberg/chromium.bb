@@ -348,7 +348,7 @@ class CORE_EXPORT V8DOMConfiguration final {
       v8::Local<v8::FunctionTemplate> interface_template,
       const char* interface_name,
       v8::Local<v8::FunctionTemplate> parent_interface_template,
-      size_t v8_internal_field_count);
+      uint32_t v8_internal_field_count);
 
   static v8::Local<v8::FunctionTemplate> DomClassTemplate(
       v8::Isolate*,

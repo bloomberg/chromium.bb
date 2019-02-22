@@ -311,7 +311,8 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   ~PrerenderInProcessBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpInProcessBrowserTestFixture() override;
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override;
   void TearDownInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   content::SessionStorageNamespace* GetSessionStorageNamespace() const;

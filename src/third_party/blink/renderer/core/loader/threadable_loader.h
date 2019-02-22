@@ -204,7 +204,6 @@ class CORE_EXPORT ThreadableLoader final
   // ResourceFetcher doesn't perform some part of the CORS logic since this
   // class performs it by itself.
   void LoadRequest(ResourceRequest&, ResourceLoaderOptions);
-  bool IsAllowedRedirect(network::mojom::FetchRequestMode, const KURL&) const;
 
   const SecurityOrigin* GetSecurityOrigin() const;
 
@@ -227,6 +226,7 @@ class CORE_EXPORT ThreadableLoader final
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag_ = false;
   scoped_refptr<const SecurityOrigin> security_origin_;
+  scoped_refptr<const SecurityOrigin> original_security_origin_;
 
   // Set to true when the response data is given to a data consumer handle.
   bool is_using_data_consumer_handle_;
@@ -234,7 +234,7 @@ class CORE_EXPORT ThreadableLoader final
   const bool async_;
 
   // Holds the original request context (used for sanity checks).
-  WebURLRequest::RequestContext request_context_;
+  mojom::RequestContextType request_context_;
 
   // Saved so that we can use the original value for the modes in
   // ResponseReceived() where |resource| might be a reused one (e.g. preloaded
@@ -250,6 +250,8 @@ class CORE_EXPORT ThreadableLoader final
   // handling phase.
   ResourceRequest actual_request_;
   ResourceLoaderOptions actual_options_;
+  network::mojom::FetchResponseType response_tainting_ =
+      network::mojom::FetchResponseType::kBasic;
 
   KURL initial_request_url_;
   KURL last_request_url_;
@@ -268,6 +270,7 @@ class CORE_EXPORT ThreadableLoader final
   // Holds the referrer after a redirect response was received. This referrer is
   // used to populate the HTTP Referer header when following the redirect.
   bool override_referrer_;
+  bool report_upload_progress_ = false;
   Referrer referrer_after_redirect_;
 
   bool detached_ = false;

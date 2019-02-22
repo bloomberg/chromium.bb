@@ -420,7 +420,7 @@ TEST_F(ChromeCTPolicyEnforcerTest,
     std::string cert_data;
     ASSERT_TRUE(net::x509_util::CreateSelfSignedCert(
         private_key->key(), net::x509_util::DIGEST_SHA256, "CN=test",
-        i * 10 + required_scts, start, end, &cert_data));
+        i * 10 + required_scts, start, end, {}, &cert_data));
     scoped_refptr<X509Certificate> cert(
         X509Certificate::CreateFromBytes(cert_data.data(), cert_data.size()));
     ASSERT_TRUE(cert);

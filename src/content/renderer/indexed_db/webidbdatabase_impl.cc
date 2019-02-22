@@ -48,16 +48,14 @@ namespace content {
 namespace {
 
 std::vector<IndexedDBIndexKeys> ConvertWebIndexKeys(
-    const WebVector<long long>& index_ids,
-    const WebVector<WebIDBDatabase::WebIndexKeys>& index_keys) {
-  DCHECK_EQ(index_ids.size(), index_keys.size());
+    const WebVector<blink::WebIDBIndexKeys>& index_keys) {
   std::vector<IndexedDBIndexKeys> result;
-  result.reserve(index_ids.size());
-  for (size_t i = 0, len = index_ids.size(); i < len; ++i) {
-    result.emplace_back(index_ids[i], std::vector<IndexedDBKey>());
+  result.reserve(index_keys.size());
+  for (size_t i = 0, len = index_keys.size(); i < len; ++i) {
+    result.emplace_back(index_keys[i].first, std::vector<IndexedDBKey>());
     std::vector<IndexedDBKey>& result_keys = result.back().second;
-    result_keys.reserve(index_keys[i].size());
-    for (const WebIDBKey& index_key : index_keys[i])
+    result_keys.reserve(index_keys[i].second.size());
+    for (const WebIDBKey& index_key : index_keys[i].second)
       result_keys.emplace_back(IndexedDBKeyBuilder::Build(index_key.View()));
   }
   return result;
@@ -165,15 +163,15 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
                     max_count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::Put(long long transaction_id,
-                             long long object_store_id,
-                             const blink::WebData& value,
-                             const WebVector<WebBlobInfo>& web_blob_info,
-                             WebIDBKeyView web_primary_key,
-                             blink::WebIDBPutMode put_mode,
-                             WebIDBCallbacks* callbacks,
-                             const WebVector<long long>& index_ids,
-                             WebVector<WebIndexKeys> index_keys) {
+void WebIDBDatabaseImpl::Put(
+    long long transaction_id,
+    long long object_store_id,
+    const blink::WebData& value,
+    const WebVector<WebBlobInfo>& web_blob_info,
+    WebIDBKeyView web_primary_key,
+    blink::WebIDBPutMode put_mode,
+    WebIDBCallbacks* callbacks,
+    const WebVector<blink::WebIDBIndexKeys>& index_keys) {
   IndexedDBKey key = IndexedDBKeyBuilder::Build(web_primary_key);
 
   if (value.size() + key.size_estimate() > max_put_value_size_) {
@@ -219,7 +217,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr);
   database_->Put(transaction_id, object_store_id, std::move(mojo_value), key,
-                 put_mode, ConvertWebIndexKeys(index_ids, index_keys),
+                 put_mode, ConvertWebIndexKeys(index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
@@ -227,11 +225,10 @@ void WebIDBDatabaseImpl::SetIndexKeys(
     long long transaction_id,
     long long object_store_id,
     WebIDBKeyView primary_key,
-    const WebVector<long long>& index_ids,
-    const WebVector<WebIndexKeys>& index_keys) {
+    const WebVector<blink::WebIDBIndexKeys>& index_keys) {
   database_->SetIndexKeys(transaction_id, object_store_id,
                           IndexedDBKeyBuilder::Build(primary_key),
-                          ConvertWebIndexKeys(index_ids, index_keys));
+                          ConvertWebIndexKeys(index_keys));
 }
 
 void WebIDBDatabaseImpl::SetIndexesReady(

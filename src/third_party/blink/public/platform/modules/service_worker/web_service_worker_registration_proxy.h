@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_PROXY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_PROXY_H_
 
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
 
 #include <memory>
 
@@ -21,9 +21,9 @@ class WebServiceWorkerRegistrationProxy {
   // WebServiceWorkerRegistration.installing.
   virtual void DispatchUpdateFoundEvent() = 0;
 
-  virtual void SetInstalling(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-  virtual void SetWaiting(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-  virtual void SetActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void SetInstalling(WebServiceWorkerObjectInfo) = 0;
+  virtual void SetWaiting(WebServiceWorkerObjectInfo) = 0;
+  virtual void SetActive(WebServiceWorkerObjectInfo) = 0;
 
  protected:
   virtual ~WebServiceWorkerRegistrationProxy() = default;

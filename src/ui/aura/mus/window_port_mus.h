@@ -45,7 +45,6 @@ namespace aura {
 class ClientSurfaceEmbedder;
 class PropertyConverter;
 class Window;
-class WindowPortMusTest;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
 class WindowTreeHostMus;
@@ -87,7 +86,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetCanAcceptDrops(bool can_accept_drops);
 
   // See description in mojom for details on this.
-  void SetHitTestMask(const base::Optional<gfx::Rect>& mask);
+  void SetHitTestInsets(const gfx::Insets& mouse, const gfx::Insets& touch);
 
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
@@ -106,7 +105,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::FrameSinkId GenerateFrameSinkIdFromServerId() const;
 
  private:
-  friend class WindowPortMusTest;
+  friend class WindowPortMusTestHelper;
   friend class WindowTreeClient;
   friend class WindowTreeClientPrivate;
   friend class WindowTreeHostMus;
@@ -116,7 +115,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // Changes to the underlying Window originating from the server must be done
   // in such a way that the same change is not applied back to the server. To
-  // accomplish this every changes from the server is associated with at least
+  // accomplish this every change from the server is associated with at least
   // one ServerChange. If the underlying Window ends up calling back to this
   // class and the change is expected then the change is ignored and not sent to
   // the server. For example, here's the flow when the server changes the
@@ -221,6 +220,16 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges::iterator FindChangeByTypeAndData(const ServerChangeType type,
                                                   const ServerChangeData& data);
 
+  // Called to setup state necessary for an embedding. Returns false if an
+  // embedding is not allowed in this window.
+  bool PrepareForEmbed();
+
+  // Called from OnEmbed() with the result of the embedding. |real_callback| is
+  // the callback supplied to the embed call.
+  static void OnEmbedAck(base::WeakPtr<WindowPortMus> window,
+                         ws::mojom::WindowTree::EmbedCallback real_callback,
+                         bool result);
+
   PropertyConverter* GetPropertyConverter();
 
   // WindowMus:
@@ -245,7 +254,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const gfx::Size& surface_size_in_pixels) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
       const viz::LocalSurfaceId& embedded_client_local_surface_id) override;
-  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -285,9 +293,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
+  void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
+  void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
   void UpdatePrimarySurfaceId();
-  void UpdateClientSurfaceEmbedder();
 
   WindowTreeClient* window_tree_client_;
 
@@ -300,7 +309,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges server_changes_;
 
   viz::SurfaceId primary_surface_id_;
-  viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
   // TODO(sad, fsamuel): For 'mash' mode, where the embedder is responsible for
@@ -311,8 +319,14 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   ui::CursorData cursor_;
 
+  // Set if this class calls SetEmbedFrameSinkId() on the associated window.
+  viz::FrameSinkId embed_frame_sink_id_;
+
   // See description in single place that changes the value for details.
   bool should_restack_transient_children_ = true;
+
+  // True if this window has an embedding.
+  bool has_embedding_ = false;
 
   // When a frame sink is created
   // for a local aura::Window, we need keep a weak ptr of it, so we can update

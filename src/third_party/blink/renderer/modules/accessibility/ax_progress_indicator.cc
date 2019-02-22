@@ -40,10 +40,10 @@ AXProgressIndicator* AXProgressIndicator::Create(
   return new AXProgressIndicator(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXProgressIndicator::DetermineAccessibilityRole() {
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+ax::mojom::Role AXProgressIndicator::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
-  return kProgressIndicatorRole;
+  return ax::mojom::Role::kProgressIndicator;
 }
 
 bool AXProgressIndicator::ComputeAccessibilityIsIgnored(
