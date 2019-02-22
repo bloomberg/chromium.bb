@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -51,24 +52,37 @@ using base::android::JavaRef;
 
 namespace autofill_assistant {
 
-UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
-                                         Client* client,
-                                         UiDelegate* ui_delegate)
-    : client_(client),
-      ui_delegate_(ui_delegate),
-      overlay_delegate_(this),
+namespace {
+
+// How long to leave the UI showing after AA has stopped.
+static constexpr base::TimeDelta kGracefulShutdownDelay =
+    base::TimeDelta::FromSeconds(5);
+
+}  // namespace
+
+// static
+std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
+    content::WebContents* web_contents) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
+      env, web_contents->GetJavaWebContents());
+  if (!jactivity) {
+    return nullptr;
+  }
+  return std::make_unique<UiControllerAndroid>(env, jactivity);
+}
+
+UiControllerAndroid::UiControllerAndroid(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jactivity)
+    : overlay_delegate_(this),
       header_delegate_(this),
       payment_request_delegate_(this),
       carousel_delegate_(this),
       weak_ptr_factory_(this) {
-  DCHECK(web_contents);
-  DCHECK(client);
-  DCHECK(ui_delegate);
-  JNIEnv* env = AttachCurrentThread();
   java_autofill_assistant_ui_controller_ =
-      Java_AutofillAssistantUiController_createAndStartUi(
-          env, web_contents->GetJavaWebContents(),
-          reinterpret_cast<intptr_t>(this));
+      Java_AutofillAssistantUiController_create(
+          env, jactivity, reinterpret_cast<intptr_t>(this));
 
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
@@ -81,7 +95,27 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
   // Register payment_request_delegate_ as delegate for the payment request UI.
   Java_AssistantPaymentRequestModel_setDelegate(
       env, GetPaymentRequestModel(), payment_request_delegate_.GetJavaObject());
+}
 
+void UiControllerAndroid::Attach(content::WebContents* web_contents,
+                                 Client* client,
+                                 UiDelegate* ui_delegate) {
+  DCHECK(web_contents);
+  DCHECK(client);
+  DCHECK(ui_delegate);
+
+  client_ = client;
+  ui_delegate_ = ui_delegate;
+  captured_debug_context_.clear();
+
+  JNIEnv* env = AttachCurrentThread();
+  auto java_web_contents = web_contents->GetJavaWebContents();
+  Java_AutofillAssistantUiController_setWebContents(
+      env, java_autofill_assistant_ui_controller_, java_web_contents);
+  Java_AssistantPaymentRequestModel_setWebContents(
+      env, GetPaymentRequestModel(), java_web_contents);
+  Java_AssistantOverlayModel_setWebContents(env, GetOverlayModel(),
+                                            java_web_contents);
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
@@ -96,6 +130,7 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
 
     OnStateChanged(ui_delegate->GetState());
   }
+  Java_AssistantModel_setVisible(env, GetModel(), true);
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
@@ -268,6 +303,10 @@ std::string UiControllerAndroid::GetDebugContext() {
   return captured_debug_context_;
 }
 
+void UiControllerAndroid::DestroySelf() {
+  client_->DestroyUI();
+}
+
 // Carousel related methods.
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -353,27 +392,30 @@ void UiControllerAndroid::ShowOnboarding(
       env, java_autofill_assistant_ui_controller_, on_accept);
 }
 
-void UiControllerAndroid::Destroy() {
-  Java_AutofillAssistantUiController_destroy(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_,
-      /* delayed= */ false);
-}
-
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_destroy(
-      env, java_autofill_assistant_ui_controller_,
-      /* delayed= */ ui_delegate_->GetState() ==
-          AutofillAssistantState::STOPPED);
   if (reason == Metrics::CUSTOM_TAB_CLOSED) {
     Java_AutofillAssistantUiController_scheduleCloseCustomTab(
-        env, java_autofill_assistant_ui_controller_);
+        AttachCurrentThread(), java_autofill_assistant_ui_controller_);
   }
 
   // Capture the debug context, for including into a feedback possibly sent
-  // later, after the delegate has been destroyed.
+  // later, after the delegate has been possibly destroyed.
+  DCHECK(ui_delegate_);
   captured_debug_context_ = ui_delegate_->GetDebugContext();
+  AutofillAssistantState final_state = ui_delegate_->GetState();
   ui_delegate_ = nullptr;
+
+  // Get rid of the UI, either immediately, or with a delay, to give time to
+  // users to read any message.
+  if (final_state != AutofillAssistantState::STOPPED) {
+    DestroySelf();
+  } else {
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&UiControllerAndroid::DestroySelf,
+                       weak_ptr_factory_.GetWeakPtr()),
+        kGracefulShutdownDelay);
+  }
 }
 
 // Payment request related methods.
@@ -445,12 +487,6 @@ void UiControllerAndroid::Stop(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
                                int jreason) {
   client_->Shutdown(static_cast<Metrics::DropOutReason>(jreason));
-}
-
-void UiControllerAndroid::DestroyUI(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  client_->DestroyUI();
 }
 
 void UiControllerAndroid::OnFatalError(

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.Snackbar;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 
 /**
  * A simple UNDO snackbar with a delay.
@@ -26,24 +26,25 @@ class AssistantSnackbar {
     }
 
     /** Shows the snackbar and reports the result to {@code callback}. */
-    static void show(ChromeActivity activity, String message, Callback callback) {
-        Snackbar snackBar =
-                Snackbar.make(message,
-                                new SnackbarManager.SnackbarController() {
-                                    @Override
-                                    public void onAction(Object actionData) {
-                                        callback.onDismiss(/* undo= */ true);
-                                    }
+    static SnackbarController show(ChromeActivity activity, String message, Callback callback) {
+        SnackbarController controller = new SnackbarController() {
+            @Override
+            public void onAction(Object actionData) {
+                callback.onDismiss(/* undo= */ true);
+            }
 
-                                    @Override
-                                    public void onDismissNoAction(Object actionData) {
-                                        callback.onDismiss(/* undo= */ false);
-                                    }
-                                },
-                                Snackbar.TYPE_ACTION, Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
+            @Override
+            public void onDismissNoAction(Object actionData) {
+                callback.onDismiss(/* undo= */ false);
+            }
+        };
+        Snackbar snackBar =
+                Snackbar.make(message, controller, Snackbar.TYPE_ACTION,
+                                Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
                         .setAction(activity.getString(R.string.undo), /* actionData= */ null);
         snackBar.setSingleLine(false);
         snackBar.setDuration(DELAY_MS);
         activity.getSnackbarManager().showSnackbar(snackBar);
+        return controller;
     }
 }

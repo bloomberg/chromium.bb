@@ -22,8 +22,8 @@ public class AssistantOverlayCoordinator {
         mTouchEventFilter = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.touch_event_filter);
 
-        mTouchEventFilter.init(mActivity.getFullscreenManager(),
-                mActivity.getActivityTab().getWebContents(), mActivity.getCompositorViewHolder());
+        mTouchEventFilter.init(
+                mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
 
         // Listen for changes in the state.
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.
@@ -34,6 +34,8 @@ public class AssistantOverlayCoordinator {
                 mTouchEventFilter.setTouchableArea(model.get(AssistantOverlayModel.TOUCHABLE_AREA));
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
                 mTouchEventFilter.setDelegate(model.get(AssistantOverlayModel.DELEGATE));
+            } else if (AssistantOverlayModel.WEB_CONTENTS == propertyKey) {
+                mTouchEventFilter.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
             }
         });
     }

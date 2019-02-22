@@ -112,7 +112,6 @@ public class AutofillAssistantUiTest {
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> new AssistantCoordinator(getActivity(),
-                                mCustomTabActivityTestRule.getWebContents(),
                                 mCoordinatorDelegateMock));
 
         // Bottom sheet is shown when creating the AssistantCoordinator.

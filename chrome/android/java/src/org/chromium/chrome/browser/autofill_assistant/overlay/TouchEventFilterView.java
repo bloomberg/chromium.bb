@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -212,12 +213,9 @@ public class TouchEventFilterView
     }
 
     /** Initializes dependencies. */
-    public void init(ChromeFullscreenManager fullscreenManager, WebContents webContents,
-            View compositorView) {
+    public void init(ChromeFullscreenManager fullscreenManager, View compositorView) {
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
-        mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
-        mGestureListenerManager.addListener(this);
         maybeUpdateVerticalMargins();
         mCompositorView = compositorView;
     }
@@ -229,11 +227,20 @@ public class TouchEventFilterView
             mFullscreenManager.removeListener(this);
             mFullscreenManager = null;
         }
+        setWebContents(null);
+        cleanupCurrentGestureBuffer();
+    }
+
+    /** Sets the web content to listen to for scroll events. */
+    public void setWebContents(@Nullable WebContents webContents) {
         if (mGestureListenerManager != null) {
             mGestureListenerManager.removeListener(this);
             mGestureListenerManager = null;
         }
-        cleanupCurrentGestureBuffer();
+        if (webContents != null) {
+            mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
+            mGestureListenerManager.addListener(this);
+        }
     }
 
     /**

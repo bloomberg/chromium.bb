@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayMo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other
@@ -44,9 +43,20 @@ class AssistantCoordinator {
     private final AssistantKeyboardCoordinator mKeyboardCoordinator;
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
-    private boolean mShowingSnackbar;
+    /**
+     * Returns {@code true} if an AA UI is active on the given activity.
+     *
+     * <p>Used to avoid creating duplicate coordinators views.
+     *
+     * <p>TODO(crbug.com/806868): Refactor to have AssistantCoordinator owned by the activity, so
+     * it's easy to guarantee that there will be at most one per activity.
+     */
+    static boolean isActive(ChromeActivity activity) {
+        View found = activity.findViewById(R.id.autofill_assistant);
+        return found != null && found.getParent() != null;
+    }
 
-    AssistantCoordinator(ChromeActivity activity, WebContents webContents, Delegate delegate) {
+    AssistantCoordinator(ChromeActivity activity, Delegate delegate) {
         mActivity = activity;
         mDelegate = delegate;
         mModel = new AssistantModel();
@@ -58,8 +68,7 @@ class AssistantCoordinator {
                                  .findViewById(R.id.autofill_assistant);
 
         // Instantiate child components.
-        mBottomBarCoordinator =
-                new AssistantBottomBarCoordinator(activity, webContents, mAssistantView, mModel);
+        mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
         mOverlayCoordinator =
                 new AssistantOverlayCoordinator(activity, mAssistantView, mModel.getOverlayModel());

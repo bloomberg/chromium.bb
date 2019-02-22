@@ -446,6 +446,11 @@ void Controller::MaybeSetInitialDetails() {
     SetDetails(details);
 }
 
+bool Controller::NeedsUI() const {
+  return state_ != AutofillAssistantState::INACTIVE &&
+         state_ != AutofillAssistantState::STOPPED;
+}
+
 void Controller::Start(const GURL& initialUrl,
                        const std::map<std::string, std::string>& parameters) {
   if (state_ != AutofillAssistantState::INACTIVE) {
@@ -675,8 +680,7 @@ void Controller::RenderProcessGone(base::TerminationStatus status) {
 
 void Controller::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
-  if (state_ != AutofillAssistantState::INACTIVE &&
-      state_ != AutofillAssistantState::STOPPED) {
+  if (NeedsUI()) {
     client_->ShowUI();
   }
 }

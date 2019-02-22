@@ -18,18 +18,14 @@ import org.chromium.content_public.browser.WebContents;
  * Coordinator for the Payment Request.
  */
 public class AssistantPaymentRequestCoordinator {
-    private final WebContents mWebContents;
     @Nullable
     private Runnable mOnVisibilityChanged;
     private final ViewGroup mView;
 
     private AssistantPaymentRequestDelegate mDelegate;
+    private AutofillAssistantPaymentRequest mPaymentRequest;
 
-    public AssistantPaymentRequestCoordinator(
-            Context context, WebContents webContents, AssistantPaymentRequestModel model) {
-        mWebContents = webContents;
-        assert webContents != null;
-
+    public AssistantPaymentRequestCoordinator(Context context, AssistantPaymentRequestModel model) {
         // TODO(crbug.com/806868): Remove this.
         mView = new LinearLayout(context);
         mView.addView(new View(context));
@@ -41,15 +37,10 @@ public class AssistantPaymentRequestCoordinator {
         model.addObserver((source, propertyKey) -> {
             if (AssistantPaymentRequestModel.DELEGATE == propertyKey) {
                 mDelegate = model.get(AssistantPaymentRequestModel.DELEGATE);
-            } else if (AssistantPaymentRequestModel.OPTIONS == propertyKey) {
-                AssistantPaymentRequestOptions options =
-                        model.get(AssistantPaymentRequestModel.OPTIONS);
-                if (options != null) {
-                    resetView(options);
-                    setVisible(true);
-                } else {
-                    setVisible(false);
-                }
+            } else if (AssistantPaymentRequestModel.WEB_CONTENTS == propertyKey
+                    || AssistantPaymentRequestModel.OPTIONS == propertyKey) {
+                resetView(model.get(AssistantPaymentRequestModel.WEB_CONTENTS),
+                        model.get(AssistantPaymentRequestModel.OPTIONS));
             }
         });
     }
@@ -77,13 +68,22 @@ public class AssistantPaymentRequestCoordinator {
         mOnVisibilityChanged = listener;
     }
 
-    private void resetView(AssistantPaymentRequestOptions options) {
-        AutofillAssistantPaymentRequest paymentRequest =
-                new AutofillAssistantPaymentRequest(mWebContents, options);
-        paymentRequest.show(mView.getChildAt(0), selectedPaymentInformation -> {
+    private void resetView(
+            @Nullable WebContents webContents, @Nullable AssistantPaymentRequestOptions options) {
+        if (mPaymentRequest != null) {
+            mPaymentRequest.close();
+            mPaymentRequest = null;
+        }
+        if (options == null || webContents == null) {
+            setVisible(false);
+            return;
+        }
+        mPaymentRequest = new AutofillAssistantPaymentRequest(webContents, options);
+        mPaymentRequest.show(mView.getChildAt(0), selectedPaymentInformation -> {
             if (mDelegate != null) {
                 mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
             }
         });
+        setVisible(true);
     }
 }

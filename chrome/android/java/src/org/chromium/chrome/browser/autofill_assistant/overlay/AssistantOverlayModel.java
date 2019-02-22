@@ -8,6 +8,7 @@ import android.graphics.RectF;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -26,8 +27,11 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
-        super(STATE, TOUCHABLE_AREA, DELEGATE);
+        super(STATE, TOUCHABLE_AREA, DELEGATE, WEB_CONTENTS);
     }
 
     @CalledByNative
@@ -48,5 +52,10 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantOverlayDelegate delegate) {
         set(DELEGATE, delegate);
+    }
+
+    @CalledByNative
+    private void setWebContents(WebContents webContents) {
+        set(WEB_CONTENTS, webContents);
     }
 }

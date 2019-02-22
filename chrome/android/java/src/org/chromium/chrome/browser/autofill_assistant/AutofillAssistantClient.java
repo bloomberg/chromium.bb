@@ -91,6 +91,28 @@ class AutofillAssistantClient {
         chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
     }
 
+    /**
+     * Gets rid of the UI, if there is one. Leaves Autofill Assistant running.
+     */
+    public void destroyUi() {
+        if (mNativeClientAndroid == 0) return;
+
+        nativeDestroyUI(mNativeClientAndroid);
+    }
+
+    /**
+     * Transfers ownership of the UI to an instance of Autofill Assistant running on
+     * the given tab/WebContents. Leaves Autofill Assistant running.
+     *
+     * <p>If Autofill Assistant is not running on the given WebContents, the UI is destroyed, as if
+     * {@link #destroyUi} was called.
+     */
+    public void transferUiTo(WebContents otherWebContents) {
+        if (mNativeClientAndroid == 0) return;
+
+        nativeTransferUITo(mNativeClientAndroid, otherWebContents);
+    }
+
     @CalledByNative
     private static AutofillAssistantClient create(long nativeClientAndroid) {
         return new AutofillAssistantClient(nativeClientAndroid);
@@ -233,4 +255,6 @@ class AutofillAssistantClient {
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);
+    private native void nativeDestroyUI(long nativeClientAndroid);
+    private native void nativeTransferUITo(long nativeClientAndroid, Object otherWebContents);
 }
