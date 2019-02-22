@@ -35928,6 +35928,11 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
+<enum name="MountEncryptedEncryptedFsType">
+  <int value="0" label="Dm-crypt">Dm-crypt over a sparse backing file.</int>
+  <int value="1" label="Ext4 Dircrypto">Encrypted ext4 directory.</int>
+</enum>
+
 <enum name="MountEncryptedEncryptionKeyStatus">
   <int value="0" label="unknown">Key not loaded yet.</int>
   <int value="1" label="keyfile">Key loaded from encrypted.key file.</int>
