@@ -91,6 +91,7 @@ Service::Service(const std::string& api_key,
   url::StringPieceReplacements<std::string> action_replacements;
   action_replacements.SetPathStr(kActionEndpoint);
   script_action_server_url_ = server_url.ReplaceComponents(action_replacements);
+  VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
 
 Service::~Service() {}
