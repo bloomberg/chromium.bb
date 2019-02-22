@@ -38,27 +38,27 @@ class WebXrBrowserTestBase : public XrBrowserTestBase {
   virtual void EndSessionOrFail(content::WebContents* web_contents) = 0;
 
   // Convenience function for calling XrDeviceFound with the return value of
-  // GetFirstTabWebContents.
+  // GetCurrentWebContents.
   bool XrDeviceFound();
 
   // Convenience function for calling EnterSessionWithUserGesture with the
-  // return value of GetFirstTabWebContents.
+  // return value of GetCurrentWebContents.
   void EnterSessionWithUserGesture();
 
   // Convenience function for calling EnterSessionWithUserGestureAndWait with
-  // the return value of GetFirstTabWebContents.
+  // the return value of GetCurrentWebContents.
   void EnterSessionWithUserGestureAndWait();
 
   // Convenience function for calling EnterSessionWithUserGestureOrFail with the
-  // return value of GetFirstTabWebContents.
+  // return value of GetCurrentWebContents.
   void EnterSessionWithUserGestureOrFail();
 
   // Convenience function for calling EndSession with the return value of
-  // GetFirstTabWebContents.
+  // GetCurrentWebContents.
   void EndSession();
 
   // Convenience function for calling EndSessionOrFail with the return value of
-  // GetFirstTabWebContents.
+  // GetCurrentWebContents.
   void EndSessionOrFail();
 };
 

@@ -209,12 +209,12 @@ public class VrBrowserTransitionTest {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "fullscreen",
+        DOMUtils.clickNode(mVrBrowserTestFramework.getCurrentWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         mVrBrowserTestFramework.waitOnJavaScriptStep();
 
         Assert.assertTrue("Page is not in fullscreen",
-                DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
+                DOMUtils.isFullscreen(mVrBrowserTestFramework.getCurrentWebContents()));
         VrBrowserTransitionUtils.forceExitVr();
         // The fullscreen exit from exiting VR isn't necessarily instantaneous, so give it
         // a bit of time.
@@ -223,7 +223,7 @@ public class VrBrowserTransitionTest {
                         -> {
                     try {
                         return !DOMUtils.isFullscreen(
-                                mVrBrowserTestFramework.getFirstTabWebContents());
+                                mVrBrowserTestFramework.getCurrentWebContents());
                     } catch (InterruptedException | TimeoutException e) {
                         return false;
                     }
@@ -459,7 +459,7 @@ public class VrBrowserTransitionTest {
         // Alerts block JavaScript execution until they're closed, so we can't use the normal
         // runJavaScriptOrFail, as that will time out.
         JavaScriptUtils.executeJavaScript(
-                mVrBrowserTestFramework.getFirstTabWebContents(), "alert('Please no crash')");
+                mVrBrowserTestFramework.getCurrentWebContents(), "alert('Please no crash')");
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
         VrBrowserTransitionUtils.forceExitVr();
 

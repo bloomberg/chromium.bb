@@ -167,7 +167,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(Page.PAGE_2D_2);
 
-        assertState(mVrBrowserTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
+        assertState(mVrBrowserTestFramework.getCurrentWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
 
         // Test that the navigations were added to history
@@ -189,7 +189,7 @@ public class VrBrowserNavigationTest {
         ThreadUtils.runOnUiThreadBlocking(() -> itemViews.get(0).onClick());
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
-        assertState(mWebXrVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
+        assertState(mWebXrVrTestFramework.getCurrentWebContents(), Page.PAGE_2D_2,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -222,7 +222,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(page);
 
-        assertState(framework.getFirstTabWebContents(), page, PresentationMode.NON_PRESENTING,
+        assertState(framework.getCurrentWebContents(), page, PresentationMode.NON_PRESENTING,
                 FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -252,11 +252,11 @@ public class VrBrowserNavigationTest {
     private void impl2dFullscreenToWeb(@Page int page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabWebContents());
+        enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(page);
 
-        assertState(framework.getFirstTabWebContents(), page, PresentationMode.NON_PRESENTING,
+        assertState(framework.getCurrentWebContents(), page, PresentationMode.NON_PRESENTING,
                 FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -289,7 +289,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(framework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(framework.getCurrentWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -322,7 +322,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(page);
 
-        assertState(framework.getFirstTabWebContents(), page, PresentationMode.NON_PRESENTING,
+        assertState(framework.getCurrentWebContents(), page, PresentationMode.NON_PRESENTING,
                 FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -356,7 +356,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(framework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(framework.getCurrentWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -390,7 +390,7 @@ public class VrBrowserNavigationTest {
 
         navigateTo(page);
 
-        assertState(framework.getFirstTabWebContents(), page, PresentationMode.NON_PRESENTING,
+        assertState(framework.getCurrentWebContents(), page, PresentationMode.NON_PRESENTING,
                 FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -420,11 +420,11 @@ public class VrBrowserNavigationTest {
     private void webFullscreenTo2dImpl(@Page int page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabWebContents());
+        enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(framework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(framework.getCurrentWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -454,11 +454,11 @@ public class VrBrowserNavigationTest {
     private void webFullscreenToWebImpl(@Page int page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabWebContents());
+        enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(page);
 
-        assertState(framework.getFirstTabWebContents(), page, PresentationMode.NON_PRESENTING,
+        assertState(framework.getCurrentWebContents(), page, PresentationMode.NON_PRESENTING,
                 FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -581,7 +581,7 @@ public class VrBrowserNavigationTest {
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mVrBrowserTestFramework.getFirstTabWebContents());
+        enterFullscreenOrFail(mVrBrowserTestFramework.getCurrentWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(
@@ -593,7 +593,7 @@ public class VrBrowserNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(tab, TEST_PAGE_2D_URL);
         ChromeTabUtils.waitForInteractable(tab);
 
-        assertState(mVrBrowserTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
+        assertState(mVrBrowserTestFramework.getCurrentWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
@@ -706,11 +706,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void testUrlEntryTriggersNavigationIncognito() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testUrlEntryTriggersNavigationImpl();
     }
 
@@ -748,11 +744,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void testSuggestionClickTriggersNavigationIncognito() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testSuggestionClickTriggersNavigationImpl();
     }
 

@@ -418,11 +418,11 @@ public class VrBrowserControllerInputTest {
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Enter fullscreen
-        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "fullscreen",
+        DOMUtils.clickNode(mVrBrowserTestFramework.getCurrentWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         mVrBrowserTestFramework.waitOnJavaScriptStep();
         Assert.assertTrue("Page did not enter fullscreen",
-                DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
+                DOMUtils.isFullscreen(mVrBrowserTestFramework.getCurrentWebContents()));
 
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         CriteriaHelper.pollInstrumentationThread(
@@ -430,7 +430,7 @@ public class VrBrowserControllerInputTest {
                         -> {
                     try {
                         return !DOMUtils.isFullscreen(
-                                mVrBrowserTestFramework.getFirstTabWebContents());
+                                mVrBrowserTestFramework.getCurrentWebContents());
                     } catch (InterruptedException | TimeoutException e) {
                         return false;
                     }

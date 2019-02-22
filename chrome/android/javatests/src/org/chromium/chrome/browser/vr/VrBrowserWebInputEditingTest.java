@@ -143,7 +143,7 @@ public class VrBrowserWebInputEditingTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         // Click on the <select> tag and wait for the resulting modal dialog to appear.
-        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "selectbox",
+        DOMUtils.clickNode(mVrBrowserTestFramework.getCurrentWebContents(), "selectbox",
                 false /* goThroughRootAndroidView */);
         NativeUiUtils.waitForModalDialogStatus(true /* shouldBeShown */, mVrTestRule.getActivity());
         // On fast devices such as the Vega, it's possible to send the first click before the modal
