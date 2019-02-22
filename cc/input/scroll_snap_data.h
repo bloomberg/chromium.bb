@@ -218,10 +218,13 @@ class CC_EXPORT SnapContainerData {
   // or the original scroll offset if this is the first iteration of search.
   // Returns the candidate as SnapSearchResult that includes the area's
   // |snap_offset| and its visible range on the cross axis.
+  // When |should_consider_covering| is true, the current offset can be valid if
+  // it makes a snap area cover the snapport.
   base::Optional<SnapSearchResult> FindClosestValidAreaInternal(
       SearchAxis axis,
       const SnapSelectionStrategy& strategy,
-      const SnapSearchResult& cross_axis_snap_result) const;
+      const SnapSearchResult& cross_axis_snap_result,
+      bool should_consider_covering = true) const;
 
   // A wrapper of FindClosestValidAreaInternal(). If
   // FindClosestValidAreaInternal() doesn't return a valid result when the snap
