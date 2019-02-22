@@ -269,7 +269,6 @@ static_library("grpc_core") {
     "src/src/core/lib/gpr/tmpfile_msys.cc",
     "src/src/core/lib/gpr/tmpfile_posix.cc",
     "src/src/core/lib/gpr/tmpfile_windows.cc",
-    "src/src/core/lib/gpr/wrap_memcpy.cc",
     "src/src/core/lib/gprpp/fork.cc",
     "src/src/core/lib/gprpp/thd_posix.cc",
     "src/src/core/lib/gprpp/thd_windows.cc",
