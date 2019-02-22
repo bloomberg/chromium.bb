@@ -1,0 +1,12 @@
+diff --git a/icu4c/source/common/static_unicode_sets.cpp b/icu4c/source/common/static_unicode_sets.cpp
+index 9e731f5781..5d598a0e33 100644
+--- a/icu4c/source/common/static_unicode_sets.cpp
++++ b/icu4c/source/common/static_unicode_sets.cpp
+@@ -27,6 +27,7 @@ UnicodeSet* gUnicodeSets[COUNT] = {};
+ 
+ // Save the empty instance in static memory to have well-defined behavior if a
+ // regular UnicodeSet cannot be allocated.
++alignas(UnicodeSet)
+ char gEmptyUnicodeSet[sizeof(UnicodeSet)];
+ 
+ // Whether the gEmptyUnicodeSet is initialized and ready to use.
