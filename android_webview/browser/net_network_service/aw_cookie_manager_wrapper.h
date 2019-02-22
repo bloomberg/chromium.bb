@@ -50,6 +50,8 @@ class AwCookieManagerWrapper {
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
                      DeleteCookiesCallback callback);
 
+  void GetAllCookies(GetCookieListCallback callback);
+
  private:
   // A CookieManagerPtr which is cloned from the NetworkContext's
   // CookieManagerPtr (but, lives on this thread).

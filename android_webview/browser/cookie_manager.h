@@ -113,6 +113,9 @@ class CookieManager {
                            bool* result,
                            const net::CookieList& cookies,
                            const net::CookieStatusList& excluded_cookies);
+  void HasCookiesCompleted2(base::OnceClosure complete,
+                            bool* result,
+                            const net::CookieList& cookies);
   // Determine if cookies can be set for |host|, based on its scheme. This is
   // based on net::CookieMonster::HasCookieableScheme.
   bool HasCookieableScheme(const GURL& host);

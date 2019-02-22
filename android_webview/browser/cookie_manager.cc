@@ -536,9 +536,15 @@ bool CookieManager::HasCookies() {
 // should not be needed.
 void CookieManager::HasCookiesAsyncHelper(bool* result,
                                           base::OnceClosure complete) {
-  GetCookieStore()->GetAllCookiesAsync(
-      base::BindOnce(&CookieManager::HasCookiesCompleted,
-                     base::Unretained(this), std::move(complete), result));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    GetCookieManagerWrapper()->GetAllCookies(
+        base::BindOnce(&CookieManager::HasCookiesCompleted2,
+                       base::Unretained(this), std::move(complete), result));
+  } else {
+    GetCookieStore()->GetAllCookiesAsync(
+        base::BindOnce(&CookieManager::HasCookiesCompleted,
+                       base::Unretained(this), std::move(complete), result));
+  }
 }
 
 void CookieManager::HasCookiesCompleted(
@@ -546,6 +552,13 @@ void CookieManager::HasCookiesCompleted(
     bool* result,
     const CookieList& cookies,
     const net::CookieStatusList& excluded_cookies) {
+  *result = cookies.size() != 0;
+  std::move(complete).Run();
+}
+
+void CookieManager::HasCookiesCompleted2(base::OnceClosure complete,
+                                         bool* result,
+                                         const CookieList& cookies) {
   *result = cookies.size() != 0;
   std::move(complete).Run();
 }
