@@ -101,6 +101,7 @@ enum MobileSessionCallerApp {
 
 + (instancetype)newAppStartupParametersForCommand:(NSString*)command
                                  withExternalText:(NSString*)externalText
+                                 withExternalData:(NSData*)externalData
                                         withIndex:(NSNumber*)index
                                           withURL:(NSURL*)url
                             fromSourceApplication:(NSString*)appId

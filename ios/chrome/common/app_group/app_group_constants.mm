@@ -26,10 +26,12 @@ const char kChromeAppGroupCommandTimePreference[] = "CommandTime";
 const char kChromeAppGroupCommandAppPreference[] = "SourceApp";
 const char kChromeAppGroupCommandCommandPreference[] = "Command";
 const char kChromeAppGroupCommandTextPreference[] = "Text";
+const char kChromeAppGroupCommandDataPreference[] = "Data";
 const char kChromeAppGroupCommandIndexPreference[] = "Index";
 
 const char kChromeAppGroupOpenURLCommand[] = "openurl";
 const char kChromeAppGroupSearchTextCommand[] = "searchtext";
+const char kChromeAppGroupSearchImageCommand[] = "searchimage";
 const char kChromeAppGroupVoiceSearchCommand[] = "voicesearch";
 const char kChromeAppGroupNewTabCommand[] = "newtab";
 const char kChromeAppGroupFocusOmniboxCommand[] = "focusomnibox";

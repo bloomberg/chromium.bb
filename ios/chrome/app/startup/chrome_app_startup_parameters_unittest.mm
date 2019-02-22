@@ -154,6 +154,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupVoiceSearch) {
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
       newAppStartupParametersForCommand:@"voicesearch"
                        withExternalText:nil
+                       withExternalData:nil
                               withIndex:0
                                 withURL:nil
                   fromSourceApplication:nil
@@ -170,6 +171,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupQRCode) {
   ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newAppStartupParametersForCommand:@"qrscanner"
                                                    withExternalText:nil
+                                                   withExternalData:nil
                                                           withIndex:0
                                                             withURL:nil
                                               fromSourceApplication:nil
@@ -186,6 +188,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupFocusOmbnibox) {
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
       newAppStartupParametersForCommand:@"focusomnibox"
                        withExternalText:nil
+                       withExternalData:nil
                               withIndex:0
                                 withURL:nil
                   fromSourceApplication:nil
@@ -202,6 +205,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupNewTab) {
   ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newAppStartupParametersForCommand:@"newtab"
                                                    withExternalText:nil
+                                                   withExternalData:nil
                                                           withIndex:0
                                                             withURL:nil
                                               fromSourceApplication:nil
@@ -217,7 +221,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupOpenURL) {
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
       newAppStartupParametersForCommand:@"openurl"
                        withExternalText:@"http://foo/bar"
-
+                       withExternalData:nil
                               withIndex:0
                                 withURL:nil
                   fromSourceApplication:nil
@@ -230,6 +234,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupGarbage) {
   ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newAppStartupParametersForCommand:@"garbage"
                                                    withExternalText:nil
+                                                   withExternalData:nil
                                                           withIndex:0
                                                             withURL:nil
                                               fromSourceApplication:nil

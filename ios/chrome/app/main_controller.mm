@@ -1845,6 +1845,14 @@ enum class EnterTabSwitcherSnapshotResult {
       ->LoadUrlInCurrentTab(ChromeLoadParams(params));
 }
 
+// Loads the image from startup parameters as search-by-image in the current
+// BVC.
+- (void)loadStartupImageQueryInCurrentBVC {
+  NSData* query = self.startupParameters.imageSearchData;
+
+  [self.currentBVC.dispatcher searchByImage:[UIImage imageWithData:query]];
+}
+
 #pragma mark - Preferences Management
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -2337,6 +2345,10 @@ enum class EnterTabSwitcherSnapshotResult {
     case SEARCH_TEXT:
       return ^{
         [self loadStartupQueryInCurrentBVC];
+      };
+    case SEARCH_IMAGE:
+      return ^{
+        [self loadStartupImageQueryInCurrentBVC];
       };
     default:
       return nil;
