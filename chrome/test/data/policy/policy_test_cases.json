@@ -930,6 +930,16 @@
     ]
   },
 
+  "UseKDCConstrainedDelegation": {
+    "os": ["linux", "mac", "chromeos"],
+    "test_policy": { "UseKDCConstrainedDelegation": true },
+    "pref_mappings": [
+      { "pref": "auth.use_kdc_constrained_delegation",
+        "local_state": true
+      }
+    ]
+  },
+
   "GSSAPILibraryName": {
     "os": ["linux"],
     "test_policy": { "GSSAPILibraryName": "libwhatever.so" },
