@@ -6007,3 +6007,5 @@ crbug.com/934636 http/tests/security/cross-origin-indexeddb-allowed.html [ Crash
 crbug.com/934636 virtual/feature-policy-for-sandbox/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/934636 virtual/outofblink-cors/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/934636 virtual/outofblink-cors-ns/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
+crbug.com/934768 [ Mac ] http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
+crbug.com/934768 [ Mac ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
