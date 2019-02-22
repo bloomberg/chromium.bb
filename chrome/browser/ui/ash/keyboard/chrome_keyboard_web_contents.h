@@ -44,12 +44,17 @@ class ChromeKeyboardWebContents : public content::WebContentsObserver,
  public:
   using LoadCallback = base::OnceCallback<void(const base::UnguessableToken&,
                                                const gfx::Size& size)>;
+  using UnembedCallback = base::RepeatingClosure;
 
-  // Immediately starts loading |url| in a WebContents. |callback| is called
-  // when the WebContents finishes loading.
+  // Immediately starts loading |url| in a WebContents. |load_callback| is
+  // called when the WebContents finishes loading. |unembed_callback| is only
+  // used when the content is embedded using Window Service and is called when
+  // it gets unembedded (e.g. the hosting window is closed). Note that
+  // |unembed_callback| might end up deleting this.
   ChromeKeyboardWebContents(content::BrowserContext* context,
                             const GURL& url,
-                            LoadCallback load_callback);
+                            LoadCallback load_callback,
+                            UnembedCallback unembed_callback);
   ~ChromeKeyboardWebContents() override;
 
   // Updates the keyboard URL if |url| does not match the existing url.
@@ -88,9 +93,12 @@ class ChromeKeyboardWebContents : public content::WebContentsObserver,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<ChromeKeyboardBoundsObserver> window_bounds_observer_;
 
-  // Called from DidStopLoading(). If the WindowService is running, passes a
+  // Called from DidStopLoading(). If the Window Service is running, passes a
   // token for embedding the contents, otherwise passes an empty token.
   LoadCallback load_callback_;
+
+  // Called when content is unembedded from Window Service.
+  UnembedCallback unembed_callback_;
 
   base::UnguessableToken token_;
   gfx::Size contents_size_;

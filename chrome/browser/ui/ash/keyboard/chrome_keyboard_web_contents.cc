@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_web_contents.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -133,8 +137,10 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
 ChromeKeyboardWebContents::ChromeKeyboardWebContents(
     content::BrowserContext* context,
     const GURL& url,
-    LoadCallback load_callback)
-    : load_callback_(std::move(load_callback)) {
+    LoadCallback load_callback,
+    UnembedCallback unembed_callback)
+    : load_callback_(std::move(load_callback)),
+      unembed_callback_(std::move(unembed_callback)) {
   VLOG(1) << "ChromeKeyboardWebContents: " << url;
   DCHECK(context);
   content::WebContents::CreateParams web_contents_params(
@@ -232,6 +238,7 @@ void ChromeKeyboardWebContents::DidStopLoading() {
     return;
   remote_view_provider_ = std::make_unique<views::RemoteViewProvider>(
       web_contents_->GetNativeView());
+  remote_view_provider_->SetCallbacks(base::NullCallback(), unembed_callback_);
   remote_view_provider_->GetEmbedToken(
       base::BindOnce(&ChromeKeyboardWebContents::OnGotEmbedToken,
                      weak_ptr_factory_.GetWeakPtr()));
