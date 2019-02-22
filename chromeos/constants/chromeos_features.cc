@@ -80,7 +80,7 @@ const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
 // Defined here rather than in //chrome alongside other related features so that
 // PowerPolicyController can check it.
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables ML service inferencing (instead of TFNative inferencing)
 // for the Smart Dim feature on Chrome OS.

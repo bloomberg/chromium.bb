@@ -146,25 +146,6 @@ TEST_F(SmartDimModelImplTest, ShouldDim) {
   EXPECT_TRUE(callback_done);
 }
 
-TEST_F(SmartDimModelImplTest, ModelError) {
-  // Model parameter is undefined, which would trigger a model error.
-  bool callback_done = false;
-  smart_dim_model_.RequestDimDecision(
-      features_, base::BindOnce(
-                     [](bool* callback_done,
-                        UserActivityEvent::ModelPrediction prediction) {
-                       EXPECT_EQ(
-                           UserActivityEvent::ModelPrediction::MODEL_ERROR,
-                           prediction.response());
-                       EXPECT_FALSE(prediction.has_decision_threshold());
-                       EXPECT_FALSE(prediction.has_inactivity_score());
-                       *callback_done = true;
-                     },
-                     &callback_done));
-  scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(callback_done);
-}
-
 // Check that CancelableCallback ensures a callback doesn't execute twice, in
 // case two RequestDimDecision() calls were made before any callback ran.
 TEST_F(SmartDimModelImplTest, CheckCancelableCallback) {
