@@ -4,16 +4,23 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,10 +37,12 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "url/gurl.h"
 
 namespace {
 constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
 constexpr char kTestImageRelease[] = "testimage-channel";
+constexpr char kDriveFSPrefix[] = "drivefs-";
 }  // namespace
 
 namespace arc {
@@ -95,6 +104,49 @@ void GetFileSizeOnIOThread(scoped_refptr<storage::FileSystemContext> context,
                                      base::BindOnce(std::move(callback), size));
           },
           base::Passed(&callback)));
+}
+
+// Decodes a percent-encoded URL to the drivefs path in the filesystem.
+base::FilePath GetDriveFSPathFromURL(Profile* const profile, const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If DriveFS is not mounted, return an empty base::FilePath().
+  if (!drive::util::GetIntegrationServiceByProfile(profile) ||
+      !drive::util::GetIntegrationServiceByProfile(profile)->GetDriveFsHost()) {
+    return base::FilePath();
+  }
+  base::FilePath virtual_path = chromeos::ExternalFileURLToVirtualPath(url);
+  std::vector<base::FilePath::StringType> virtual_path_components;
+  virtual_path.GetComponents(&virtual_path_components);
+
+  // If the path is not DriveFS prefixed, then it might be FSP/MTP.
+  if (virtual_path_components.empty() ||
+      !base::StartsWith(virtual_path_components[0], kDriveFSPrefix,
+                        base::CompareCase::SENSITIVE)) {
+    return base::FilePath();
+  }
+
+  // Construct the path.
+  base::FilePath drivefs_path =
+      drive::util::GetIntegrationServiceByProfile(profile)->GetMountPointPath();
+  DCHECK(!drivefs_path.empty());
+  for (size_t i = 1; i < virtual_path_components.size(); i++) {
+    drivefs_path = drivefs_path.Append(virtual_path_components[i]);
+  }
+  return drivefs_path;
+}
+
+// TODO(risan): Write test.
+// Open DriveFS file from the fuse filesystem.
+mojo::ScopedHandle OpenDriveFSFileToRead(const base::FilePath& fs_path) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  // Open the file and wrap the fd to be returned through mojo.
+  base::ScopedFD fd(HANDLE_EINTR(
+      open(fs_path.value().c_str(), O_RDONLY | O_CLOEXEC | O_NOFOLLOW)));
+  if (!fd.is_valid()) {
+    PLOG(WARNING) << "Invalid FD for fs_path: " << fs_path;
+    return mojo::ScopedHandle();
+  }
+  return mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
 }
 
 // Factory of ArcFileSystemBridge.
@@ -241,10 +293,23 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  GetFileSize(
-      url, base::BindOnce(&ArcFileSystemBridge::OpenFileToReadAfterGetFileSize,
-                          weak_ptr_factory_.GetWeakPtr(), url_decoded,
-                          std::move(callback)));
+
+  // TODO(risan): Remove the fallback path in M75+ after DriveFS is always
+  // enabled.
+  base::FilePath fs_path = GetDriveFSPathFromURL(profile_, url_decoded);
+  // If either DriveFS is not enabled/not mounted, or the URL doesn't represent
+  // drivefs file (e.g., FSP, MTP), use VirtualFileProvider instead.
+  if (fs_path.empty()) {
+    GetFileSize(url, base::BindOnce(
+                         &ArcFileSystemBridge::OpenFileToReadAfterGetFileSize,
+                         weak_ptr_factory_.GetWeakPtr(), url_decoded,
+                         std::move(callback)));
+    return;
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&OpenDriveFSFileToRead, fs_path), std::move(callback));
 }
 
 void ArcFileSystemBridge::SelectFiles(mojom::SelectFilesRequestPtr request,
