@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_list_box.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_list_box_option.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_media_controls.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_media_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
@@ -331,6 +332,10 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
        (IsHTMLUListElement(node) || IsHTMLOListElement(node) ||
         IsHTMLDListElement(node))))
     return AXList::Create(layout_object, *this);
+
+  // media element
+  if (node && node->IsMediaElement())
+    return AccessibilityMediaElement::Create(layout_object, *this);
 
   // media controls
   // TODO(836549): Remove for the rest of the controls.

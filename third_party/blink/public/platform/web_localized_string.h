@@ -61,6 +61,7 @@ struct WebLocalizedString {
     kAXMediaOverflowButtonHelp,
     kAXMediaPauseButton,
     kAXMediaPlayButton,
+    kAXMediaPlaybackError,
     kAXMediaShowClosedCaptionsMenuButton,
     kAXMediaTimeRemainingDisplay,
     kAXMediaTimeRemainingDisplayHelp,
