@@ -9,6 +9,7 @@ source_set("fakes") {
   deps = [
     "//base",
     "//ios/web/public/download",
+    "//ios/web/public/find_in_page",
     "//ios/web/test:test_constants",
     "//ios/web/web_state:navigation_context",
     "//ios/web/web_state:web_frame",
@@ -35,6 +36,8 @@ source_set("fakes") {
     "fake_download_controller_delegate.mm",
     "fake_download_task.h",
     "fake_download_task.mm",
+    "fake_find_in_page_manager_delegate.h",
+    "fake_find_in_page_manager_delegate.mm",
     "fake_navigation_context.h",
     "fake_navigation_context.mm",
     "fake_web_frame.cc",

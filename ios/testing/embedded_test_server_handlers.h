@@ -26,6 +26,10 @@ extern const char kTestDownloadMimeType[];
 std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
     const net::test_server::HttpRequest& request);
 
+// Returns a page with contetns of URL request query.
+std::unique_ptr<net::test_server::HttpResponse> HandlePageWithContents(
+    const net::test_server::HttpRequest& request);
+
 // Returns a page with content of URL request query if |responds_with_content|
 // is true. Closes the socket otherwise. Can be used to simulate the state where
 // there is no internet connection.
