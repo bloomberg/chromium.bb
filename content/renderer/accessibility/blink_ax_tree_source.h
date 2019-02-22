@@ -129,6 +129,9 @@ class BlinkAXTreeSource
       const std::string& value,
       uint32_t max_len = kMaxStringAttributeLength) const;
 
+  void AddImageAnnotations(blink::WebAXObject node,
+                           AXContentNodeData* out_data) const;
+
   RenderFrameImpl* render_frame_;
 
   ui::AXMode accessibility_mode_;

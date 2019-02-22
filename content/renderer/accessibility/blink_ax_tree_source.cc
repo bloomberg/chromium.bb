@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -878,24 +880,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                            static_cast<int32_t>(src.SortDirection()));
     }
-  }
 
-  if (accessibility_mode_.has_mode(ui::AXMode::kLabelImages) &&
-      dst->role == ax::mojom::Role::kImage) {
-    DCHECK(image_annotator_);
-    if (image_annotator_->HasAnnotationInCache(src)) {
-      dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
-                              image_annotator_->GetImageAnnotation(src));
-      dst->SetImageAnnotationStatus(
-          ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
-    } else if (image_annotator_->HasImageInCache(src)) {
-      dst->SetImageAnnotationStatus(
-          ax::mojom::ImageAnnotationStatus::kAnnotationPending);
-    } else if (!image_annotator_->HasImageInCache(src)) {
-      image_annotator_->OnImageAdded(src);
-      dst->SetImageAnnotationStatus(
-          ax::mojom::ImageAnnotationStatus::kAnnotationPending);
-    }
+    if (dst->role == ax::mojom::Role::kImage)
+      AddImageAnnotations(src, dst);
   }
 
   // The majority of the rest of this code computes attributes needed for
@@ -1048,6 +1035,44 @@ void BlinkAXTreeSource::TruncateAndAddStringAttribute(
     dst->AddStringAttribute(attribute, truncated);
   } else {
     dst->AddStringAttribute(attribute, value);
+  }
+}
+
+void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
+                                            AXContentNodeData* dst) const {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalAccessibilityLabels))
+    return;
+
+  // Reject images that are explicitly empty, or that have a name already.
+  //
+  // In the future, we may annotate some images that have a name
+  // if we think we can add additional useful information.
+  if (dst->GetNameFrom() == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
+      dst->HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
+    return;
+  }
+
+  if (!image_annotator_) {
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+    return;
+  }
+
+  if (image_annotator_->HasAnnotationInCache(src)) {
+    dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                            image_annotator_->GetImageAnnotation(src));
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
+  } else if (image_annotator_->HasImageInCache(src)) {
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kAnnotationPending);
+  } else if (!image_annotator_->HasImageInCache(src)) {
+    image_annotator_->OnImageAdded(src);
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kAnnotationPending);
   }
 }
 
