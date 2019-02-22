@@ -330,30 +330,8 @@ class NET_EXPORT HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
 
-  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
-  // callers should prefer CreateRequest() if it works for their needs.
-  //
-  // Resolves the given hostname (or IP address literal), filling out the
-  // |addresses| object upon success.  The |info.port| parameter will be set as
-  // the sin(6)_port field of the sockaddr_in{6} struct.  Returns OK if
-  // successful or an error code upon failure.  Returns
-  // ERR_NAME_NOT_RESOLVED if hostname is invalid, or if it is an
-  // incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6
-  // literal).
-  //
-  // If the operation cannot be completed synchronously, ERR_IO_PENDING will
-  // be returned and the real result code will be passed to the completion
-  // callback.  Otherwise the result code is returned immediately from this
-  // call.
-  //
-  // [out_req] must be owned by a caller. If the request is not completed
-  // synchronously, it will be filled with a handle to the request. It must be
-  // completed before the HostResolver itself is destroyed.
-  //
-  // Requests can be cancelled any time by deletion of the [out_req]. Deleting
-  // |out_req| will cancel the request, and cause |callback| not to be invoked.
-  //
-  // Profiling information for the request is saved to |net_log| if non-NULL.
+  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
+  // deleted.
   //
   // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
@@ -364,16 +342,8 @@ class NET_EXPORT HostResolver {
                       std::unique_ptr<Request>* out_req,
                       const NetLogWithSource& net_log) = 0;
 
-  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
-  // callers should prefer CreateRequest() if it works for their needs. Calling
-  // CreateRequest() with
-  // |parameters.source = HostResolverSource::LOCAL_ONLY| should provide
-  // capabilities equivalent to ResolveFromCache().
-  //
-  // Resolves the given hostname (or IP address literal) out of cache or HOSTS
-  // file (if enabled) only. This is guaranteed to complete synchronously.
-  // This acts like |Resolve()| if the hostname is IP literal, or cached value
-  // or HOSTS entry exists. Otherwise, ERR_DNS_CACHE_MISS is returned.
+  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
+  // deleted.
   //
   // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
@@ -381,16 +351,8 @@ class NET_EXPORT HostResolver {
                                AddressList* addresses,
                                const NetLogWithSource& net_log) = 0;
 
-  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
-  // callers should prefer CreateRequest() if it works for their needs. Calling
-  // CreateRequest() with
-  // |parameters.source = HostResolverSource::LOCAL_ONLY| and
-  // |parameters.cache_usage = ResolveHostParameters::CacheUsage::STALE_ALLOWED|
-  // should provide capabilities equivalent to ResolveStaleFromCache()
-  //
-  // Like |ResolveFromCache()|, but can return a stale result if the
-  // implementation supports it. Fills in |*stale_info| if a response is
-  // returned to indicate how stale (or not) it is.
+  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
+  // deleted.
   //
   // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
