@@ -30,7 +30,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
 #include "device/base/features.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -159,20 +159,18 @@ std::string BuildGetCallWithParameters(const GetParameters& parameters) {
 
 // Helper class that executes the given |closure| the very last moment before
 // the next navigation commits in a given WebContents.
-class ClosureExecutorBeforeNavigationCommit
-    : public DidCommitProvisionalLoadInterceptor {
+class ClosureExecutorBeforeNavigationCommit : public FrameHostInterceptor {
  public:
   ClosureExecutorBeforeNavigationCommit(WebContents* web_contents,
                                         base::OnceClosure closure)
-      : DidCommitProvisionalLoadInterceptor(web_contents),
-        closure_(std::move(closure)) {}
+      : FrameHostInterceptor(web_contents), closure_(std::move(closure)) {}
   ~ClosureExecutorBeforeNavigationCommit() override = default;
 
  protected:
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     if (closure_)
       std::move(closure_).Run();

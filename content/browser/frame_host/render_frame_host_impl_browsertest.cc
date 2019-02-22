@@ -36,7 +36,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1354,11 +1354,10 @@ namespace {
 // Allows injecting a fake, test-provided |interface_provider_request| into
 // DidCommitProvisionalLoad messages in a given |web_contents| instead of the
 // real one coming from the renderer process.
-class ScopedFakeInterfaceProviderRequestInjector
-    : public DidCommitProvisionalLoadInterceptor {
+class ScopedFakeInterfaceProviderRequestInjector : public FrameHostInterceptor {
  public:
   explicit ScopedFakeInterfaceProviderRequestInjector(WebContents* web_contents)
-      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+      : FrameHostInterceptor(web_contents) {}
   ~ScopedFakeInterfaceProviderRequestInjector() override = default;
 
   // Sets the fake InterfaceProvider |request| to inject into the next incoming
@@ -1379,13 +1378,13 @@ class ScopedFakeInterfaceProviderRequestInjector
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     url_of_last_commit_ = params->url;
-    if (interface_params) {
+    if (*interface_params) {
       original_request_of_last_commit_ =
-          std::move(interface_params->interface_provider_request);
-      interface_params->interface_provider_request =
+          std::move((*interface_params)->interface_provider_request);
+      (*interface_params)->interface_provider_request =
           std::move(next_fake_request_);
     }
     return true;

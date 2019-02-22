@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
+
+#include <utility>
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
@@ -14,11 +16,10 @@ namespace content {
 
 // Responsible for intercepting DidCommitProvisionalLoad's being disptached to
 // a given RenderFrameHostImpl.
-class DidCommitProvisionalLoadInterceptor::FrameAgent
+class FrameHostInterceptor::FrameAgent
     : public mojom::FrameHostInterceptorForTesting {
  public:
-  FrameAgent(DidCommitProvisionalLoadInterceptor* interceptor,
-             RenderFrameHost* rfh)
+  FrameAgent(FrameHostInterceptor* interceptor, RenderFrameHost* rfh)
       : interceptor_(interceptor),
         rfhi_(static_cast<RenderFrameHostImpl*>(rfh)),
         impl_(binding().SwapImplForTesting(this)) {}
@@ -37,19 +38,37 @@ class DidCommitProvisionalLoadInterceptor::FrameAgent
 
   // mojom::FrameHostInterceptorForTesting:
   FrameHost* GetForwardingInterface() override { return impl_; }
+
   void DidCommitProvisionalLoad(
       std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override {
     if (interceptor_->WillDispatchDidCommitProvisionalLoad(rfhi_, params.get(),
-                                                           interface_params)) {
+                                                           &interface_params)) {
       GetForwardingInterface()->DidCommitProvisionalLoad(
           std::move(params), std::move(interface_params));
     }
   }
 
+  void BeginNavigation(
+      const CommonNavigationParams& common_params,
+      mojom::BeginNavigationParamsPtr begin_params,
+      blink::mojom::BlobURLTokenPtr blob_url_token,
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      blink::mojom::NavigationInitiatorPtr navigation_initiator) override {
+    CommonNavigationParams overrideable_common_params = common_params;
+    if (interceptor_->WillDispatchBeginNavigation(
+            rfhi_, &overrideable_common_params, &begin_params, &blob_url_token,
+            &navigation_client, &navigation_initiator)) {
+      GetForwardingInterface()->BeginNavigation(
+          overrideable_common_params, std::move(begin_params),
+          std::move(blob_url_token), std::move(navigation_client),
+          std::move(navigation_initiator));
+    }
+  }
+
  private:
-  DidCommitProvisionalLoadInterceptor* interceptor_;
+  FrameHostInterceptor* interceptor_;
 
   RenderFrameHostImpl* rfhi_;
   mojom::FrameHost* impl_;
@@ -57,8 +76,7 @@ class DidCommitProvisionalLoadInterceptor::FrameAgent
   DISALLOW_COPY_AND_ASSIGN(FrameAgent);
 };
 
-DidCommitProvisionalLoadInterceptor::DidCommitProvisionalLoadInterceptor(
-    WebContents* web_contents)
+FrameHostInterceptor::FrameHostInterceptor(WebContents* web_contents)
     : WebContentsObserver(web_contents) {
   for (auto* rfh : web_contents->GetAllFrames()) {
     if (rfh->IsRenderFrameLive())
@@ -66,10 +84,26 @@ DidCommitProvisionalLoadInterceptor::DidCommitProvisionalLoadInterceptor(
   }
 }
 
-DidCommitProvisionalLoadInterceptor::~DidCommitProvisionalLoadInterceptor() =
-    default;
+FrameHostInterceptor::~FrameHostInterceptor() = default;
 
-void DidCommitProvisionalLoadInterceptor::RenderFrameCreated(
+bool FrameHostInterceptor::WillDispatchDidCommitProvisionalLoad(
+    RenderFrameHost* render_frame_host,
+    ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params) {
+  return true;
+}
+
+bool FrameHostInterceptor::WillDispatchBeginNavigation(
+    RenderFrameHost* render_frame_host,
+    CommonNavigationParams* common_params,
+    mojom::BeginNavigationParamsPtr* begin_params,
+    blink::mojom::BlobURLTokenPtr* blob_url_token,
+    mojom::NavigationClientAssociatedPtrInfo* navigation_client,
+    blink::mojom::NavigationInitiatorPtr* navigation_initiator) {
+  return true;
+}
+
+void FrameHostInterceptor::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   bool did_insert;
   std::tie(std::ignore, did_insert) = frame_agents_.emplace(
@@ -77,7 +111,7 @@ void DidCommitProvisionalLoadInterceptor::RenderFrameCreated(
   DCHECK(did_insert);
 }
 
-void DidCommitProvisionalLoadInterceptor::RenderFrameDeleted(
+void FrameHostInterceptor::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   bool did_remove = !!frame_agents_.erase(render_frame_host);
   DCHECK(did_remove);

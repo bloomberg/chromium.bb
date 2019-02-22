@@ -433,7 +433,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
-    request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
+    request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
     frame->Client()->DownloadURL(request,
                                  DownloadCrossOriginRedirects::kNavigate);
     return;

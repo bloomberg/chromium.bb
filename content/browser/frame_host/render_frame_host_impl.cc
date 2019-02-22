@@ -1349,7 +1349,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!render_frame_created_)
     return false;
 
-  // Crash reports trigerred by IPC messages for this frame should be associated
+  // Crash reports triggered by IPC messages for this frame should be associated
   // with its URL.
   // TODO(lukasza): Also call SetActiveURL for mojo messages dispatched to
   // either the FrameHost interface or to interfaces bound by this frame.
@@ -3808,27 +3808,10 @@ void RenderFrameHostImpl::BeginNavigation(
   DCHECK(IsPerNavigationMojoInterfaceEnabled() == navigation_client.is_valid());
 
   CommonNavigationParams validated_params = common_params;
-  GetProcess()->FilterURL(false, &validated_params.url);
-  if (!validated_params.base_url_for_data_url.is_empty()) {
-    // Kills the process. http://crbug.com/726142
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED);
+  if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &validated_params))
     return;
-  }
 
   GetProcess()->FilterURL(true, &begin_params->searchable_form_url);
-
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRequestBody(
-          GetSiteInstance(), validated_params.post_data)) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::ILLEGAL_UPLOAD_PARAMS);
-    return;
-  }
-
-  if (validated_params.url.SchemeIs(kChromeErrorScheme)) {
-    mojo::ReportBadMessage("Renderer cannot request error page URLs directly");
-    return;
-  }
 
   // If the request was for a blob URL, but the validated URL is no longer a
   // blob URL, reset the blob_url_token to prevent hitting the ReportBadMessage
