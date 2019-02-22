@@ -108,7 +108,11 @@ class URLPattern {
 
   URLPattern();
   URLPattern(const URLPattern& other);
+  URLPattern(URLPattern&& other);
   ~URLPattern();
+
+  URLPattern& operator=(const URLPattern& other);
+  URLPattern& operator=(URLPattern&& other);
 
   bool operator<(const URLPattern& other) const;
   bool operator>(const URLPattern& other) const;
