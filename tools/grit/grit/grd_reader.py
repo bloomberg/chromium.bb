@@ -88,7 +88,7 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
       partname = os.path.join(self.dir, partnode.GetInputPath())
       # Check the GRDP file exists.
       if not os.path.exists(partname):
-        raise exception.FileNotFound()
+        raise exception.FileNotFound(partname)
       # Exceptions propagate to the handler in grd_reader.Parse().
       oldsource = self.source
       try:
@@ -110,7 +110,8 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
         self.stack[-1].AppendContent(content)
 
   def ignorableWhitespace(self, whitespace):
-    # TODO(joi)  This is not supported by expat.  Should use a different XML parser?
+    # TODO(joi): This is not supported by expat. Should use a different XML
+    # parser?
     pass
 
 
