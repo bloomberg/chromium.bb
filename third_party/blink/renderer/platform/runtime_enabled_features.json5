@@ -571,15 +571,6 @@
       status: "experimental",
     },
     {
-      name: "FullscreenOptions",
-      status: "stable",
-    },
-    {
-      name: "FullscreenUnprefixed",
-      settable_from_internals: true,
-      status: "stable",
-    },
-    {
       name: "GamepadButtonAxisEvents",
       status: "experimental",
     },

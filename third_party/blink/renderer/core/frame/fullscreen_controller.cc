@@ -172,8 +172,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   DCHECK(state_ == State::kInitial);
   blink::WebFullscreenOptions blink_options;
   // Only clone options if the feature is enabled.
-  if (RuntimeEnabledFeatures::FullscreenOptionsEnabled())
-    blink_options.prefers_navigation_bar = options->navigationUI() != "hide";
+  blink_options.prefers_navigation_bar = options->navigationUI() != "hide";
   GetWebFrameClient(frame).EnterFullscreen(blink_options);
 
   state_ = State::kEnteringFullscreen;
