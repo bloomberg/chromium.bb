@@ -1179,6 +1179,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_wilco_dtc_allowed()) {
+    const em::DeviceWilcoDTCAllowedProto& container(
+        policy.device_wilco_dtc_allowed());
+    if (container.has_device_wilco_dtc_allowed()) {
+      policies->Set(
+          key::kDeviceWilcoDTCAllowed, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.device_wilco_dtc_allowed()),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

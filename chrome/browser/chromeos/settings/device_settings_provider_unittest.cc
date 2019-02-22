@@ -274,6 +274,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
+  // Helper routine that sets the device DeviceWilcoDTCAllowed policy.
+  void SetDeviceWilcoDTCAllowedSetting(bool device_wilco_dtc_allowed) {
+    em::DeviceWilcoDTCAllowedProto* const proto =
+        device_policy_.payload().mutable_device_wilco_dtc_allowed();
+    proto->set_device_wilco_dtc_allowed(device_wilco_dtc_allowed);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -714,6 +722,17 @@ TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
     base::Value expected_value(PolicyProto::ALWAYS);
     VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
   }
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceWilcoDTCAllowedSetting) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceWilcoDTCAllowed, nullptr);
+
+  SetDeviceWilcoDTCAllowedSetting(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kDeviceWilcoDTCAllowed));
+
+  SetDeviceWilcoDTCAllowedSetting(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kDeviceWilcoDTCAllowed));
 }
 
 }  // namespace chromeos
