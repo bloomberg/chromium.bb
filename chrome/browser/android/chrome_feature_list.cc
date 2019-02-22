@@ -156,6 +156,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSoleIntegration,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
+    &kTabGroupsAndroid,
     &kTabGridLayoutAndroid,
     &kTabReparenting,
     &kTabSwitcherOnReturn,
@@ -446,6 +447,9 @@ const base::Feature kSpannableInlineAutocomplete{
 
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTabGroupsAndroid{"TabGroupsAndroid",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
