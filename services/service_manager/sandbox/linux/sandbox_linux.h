@@ -198,7 +198,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
 #if BUILDFLAG(USING_SANITIZER)
   __sanitizer_sandbox_arguments* sanitizer_args() const {
     return sanitizer_args_.get();
-  };
+  }
 #endif
 
   // A BrokerProcess is a helper that is started before the sandbox is engaged,
