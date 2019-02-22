@@ -37,9 +37,6 @@ namespace {
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 
-// Window properties.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false)
-
 // AssistantContainerClientView ------------------------------------------------
 
 // AssistantContainerClientView is the client view for AssistantContainerView
@@ -130,7 +127,7 @@ class AssistantContainerEventTargeter : public aura::WindowTargeter {
   // aura::WindowTargeter:
   bool SubtreeShouldBeExploredForEvent(aura::Window* window,
                                        const ui::LocatedEvent& event) override {
-    if (window->GetProperty(kOnlyAllowMouseClickEvents)) {
+    if (window->GetProperty(assistant::ui::kOnlyAllowMouseClickEvents)) {
       if (event.type() != ui::ET_MOUSE_PRESSED &&
           event.type() != ui::ET_MOUSE_RELEASED) {
         return false;
@@ -271,11 +268,6 @@ AssistantContainerView::AssistantContainerView(AssistantViewDelegate* delegate)
 
 AssistantContainerView::~AssistantContainerView() {
   delegate_->RemoveUiModelObserver(this);
-}
-
-// static
-void AssistantContainerView::OnlyAllowMouseClickEvents(aura::Window* window) {
-  window->SetProperty(kOnlyAllowMouseClickEvents, true);
 }
 
 const char* AssistantContainerView::GetClassName() const {

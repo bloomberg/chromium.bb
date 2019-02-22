@@ -5,11 +5,14 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 
 #include "base/no_destructor.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/font_list.h"
 
 namespace ash {
 namespace assistant {
 namespace ui {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false)
 
 const gfx::FontList& GetDefaultFontList() {
   static const base::NoDestructor<gfx::FontList> font_list("Google Sans, 12px");

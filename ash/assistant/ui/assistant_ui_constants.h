@@ -5,7 +5,9 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_UI_CONSTANTS_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_UI_CONSTANTS_H_
 
+#include "base/component_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/color_palette.h"
 
 namespace gfx {
@@ -32,7 +34,14 @@ constexpr SkColor kTextColorSecondary = gfx::kGoogleGrey700;
 namespace assistant {
 namespace ui {
 
+// Window property to instruct the event targeter for the Assistant window to
+// only allow mouse click events to reach the specified |window|. All other
+// events will not be explored by |window|'s subtree for handling.
+COMPONENT_EXPORT(ASSISTANT_UI_CONSTANTS)
+extern const aura::WindowProperty<bool>* const kOnlyAllowMouseClickEvents;
+
 // Returns the default font list for Assistant UI.
+COMPONENT_EXPORT(ASSISTANT_UI_CONSTANTS)
 const gfx::FontList& GetDefaultFontList();
 
 }  // namespace ui

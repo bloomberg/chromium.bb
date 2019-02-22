@@ -15,6 +15,7 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -157,6 +158,14 @@ class AppListEventTargeter : public aura::WindowTargeter {
       if (event.type() != ui::ET_MOUSE_MOVED)
         return false;
     }
+
+    if (window->GetProperty(ash::assistant::ui::kOnlyAllowMouseClickEvents)) {
+      if (event.type() != ui::ET_MOUSE_PRESSED &&
+          event.type() != ui::ET_MOUSE_RELEASED) {
+        return false;
+      }
+    }
+
     return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
   }
 

@@ -8,7 +8,9 @@
 
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_container_view.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -80,7 +82,7 @@ void AssistantCardElementView::AddedToWidget() {
   // vertically. As such, we need to prevent the Assistant card window from
   // receiving events it doesn't need. It needs mouse click events for
   // handling links.
-  AssistantContainerView::OnlyAllowMouseClickEvents(window);
+  window->SetProperty(ash::assistant::ui::kOnlyAllowMouseClickEvents, true);
 }
 
 void AssistantCardElementView::ChildPreferredSizeChanged(views::View* child) {
