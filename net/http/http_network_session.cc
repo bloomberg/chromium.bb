@@ -119,6 +119,8 @@ HttpNetworkSession::Params::Params()
       quic_goaway_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
+      quic_retransmittable_on_wire_timeout_milliseconds(
+          kDefaultRetransmittableOnWireTimeoutMillisecs),
       quic_max_time_before_crypto_handshake_seconds(
           quic::kMaxTimeForCryptoHandshakeSecs),
       quic_max_idle_time_before_crypto_handshake_seconds(
@@ -223,6 +225,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.mark_quic_broken_when_network_blackholes,
           params.quic_idle_connection_timeout_seconds,
           params.quic_reduced_ping_timeout_seconds,
+          params.quic_retransmittable_on_wire_timeout_milliseconds,
           params.quic_max_time_before_crypto_handshake_seconds,
           params.quic_max_idle_time_before_crypto_handshake_seconds,
           params.quic_migrate_sessions_on_network_change_v2,
@@ -386,6 +389,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_migrate_sessions_on_network_change_v2);
   dict->SetBoolean("migrate_sessions_early_v2",
                    params_.quic_migrate_sessions_early_v2);
+  dict->SetInteger("retransmittable_on_wire_timeout_milliseconds",
+                   params_.quic_retransmittable_on_wire_timeout_milliseconds);
   dict->SetBoolean("retry_on_alternate_network_before_handshake",
                    params_.quic_retry_on_alternate_network_before_handshake);
   dict->SetInteger("idle_session_migration_period_seconds",

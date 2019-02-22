@@ -125,6 +125,8 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_go_away_on_path_degrading);
   EXPECT_FALSE(params_.quic_allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_EQ(net::kDefaultRetransmittableOnWireTimeoutMillisecs,
+            params_.quic_retransmittable_on_wire_timeout_milliseconds);
 
   net::HttpNetworkSession::Params default_params;
   EXPECT_EQ(default_params.quic_supported_versions,
@@ -219,6 +221,18 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_goaway_sessions_on_ip_change);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicRetransmittableOnWireTimeoutMillisecondsFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["retransmittable_on_wire_timeout_milliseconds"] = "1000";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(1000, params_.quic_retransmittable_on_wire_timeout_milliseconds);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

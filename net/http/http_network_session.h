@@ -175,6 +175,9 @@ class NET_EXPORT HttpNetworkSession {
     // Specifies the reduced ping timeout subsequent connections should use when
     // a connection was timed out with open streams.
     int quic_reduced_ping_timeout_seconds;
+    // Maximum time that a session can have no retransmittable packets on the
+    // wire.
+    int quic_retransmittable_on_wire_timeout_milliseconds;
     // Maximum time the session can be alive before crypto handshake is
     // finished.
     int quic_max_time_before_crypto_handshake_seconds;

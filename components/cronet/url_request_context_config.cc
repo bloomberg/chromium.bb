@@ -66,6 +66,8 @@ const char kQuicGoAwaySessionsOnIpChange[] = "goaway_sessions_on_ip_change";
 const char kQuicAllowServerMigration[] = "allow_server_migration";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
+const char kQuicRetransmittableOnWireTimeoutMilliseconds[] =
+    "retransmittable_on_wire_timeout_milliseconds";
 const char kQuicIdleSessionMigrationPeriodSeconds[] =
     "idle_session_migration_period_seconds";
 const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
@@ -477,6 +479,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_migrate_sessions_early_v2)) {
         session_params->quic_migrate_sessions_early_v2 =
             quic_migrate_sessions_early_v2;
+      }
+
+      int quic_retransmittable_on_wire_timeout_milliseconds = 0;
+      if (quic_args->GetInteger(
+              kQuicRetransmittableOnWireTimeoutMilliseconds,
+              &quic_retransmittable_on_wire_timeout_milliseconds)) {
+        session_params->quic_retransmittable_on_wire_timeout_milliseconds =
+            quic_retransmittable_on_wire_timeout_milliseconds;
       }
 
       bool quic_retry_on_alternate_network_before_handshake = false;

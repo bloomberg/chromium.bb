@@ -135,6 +135,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           goaway_sessions_on_ip_change,
           mark_quic_broken_when_network_blackholes,
           kIdleConnectionTimeoutSeconds, quic::kPingTimeoutSecs,
+          kDefaultRetransmittableOnWireTimeoutMillisecs,
           quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
           migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
           retry_on_alternate_network_before_handshake,

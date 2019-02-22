@@ -83,6 +83,12 @@ const int kIdleConnectionTimeoutSeconds = 30;
 // Sessions can migrate if they have been idle for less than this period.
 const int kDefaultIdleSessionMigrationPeriodSeconds = 30;
 
+// The maximum time allowed to have no retransmittable packets on the wire
+// (after sending the first retransmittable packet) if
+// |migrate_session_early_v2_| is true. PING frames will be sent as needed to
+// enforce this.
+const int64_t kDefaultRetransmittableOnWireTimeoutMillisecs = 100;
+
 // The default maximum time QUIC session could be on non-default network before
 // migrate back to default network.
 const int64_t kMaxTimeOnNonDefaultNetworkSecs = 128;
@@ -250,6 +256,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
+      int retransmittable_on_wire_timeout_milliseconds_,
       int max_time_before_crypto_handshake_seconds,
       int max_idle_time_before_crypto_handshake_seconds,
       bool migrate_sessions_on_network_change_v2,
@@ -526,6 +533,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // PING timeout for connections.
   quic::QuicTime::Delta ping_timeout_;
   quic::QuicTime::Delta reduced_ping_timeout_;
+
+  // Timeout for how long the wire can have no retransmittable packets.
+  quic::QuicTime::Delta retransmittable_on_wire_timeout_;
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then
