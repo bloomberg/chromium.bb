@@ -7,8 +7,8 @@
 
 from __future__ import print_function
 
-from chromite.lib.api import dependency
 from chromite.lib import cros_test_lib
+from chromite.service import dependency
 
 
 class DependencyTests(cros_test_lib.TestCase):

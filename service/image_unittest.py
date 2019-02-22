@@ -13,7 +13,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
-from chromite.lib.api import image
+from chromite.service import image
 
 
 class BuildImageTest(cros_test_lib.RunCommandTestCase):

@@ -12,8 +12,8 @@ graphs mapping from portage packages to the dependency source.
 from __future__ import print_function
 
 from chromite.api.gen import depgraph_pb2
-from chromite.lib.api import dependency
 from chromite.lib import portage_util
+from chromite.service import dependency
 
 from google.protobuf import json_format
 
@@ -23,7 +23,7 @@ def CreateDepGraphProtoFromJsonMap(json_map):
 
   Args:
     json_map: the json object that stores the portage package. This is
-      generated from chromite.lib.api.dependency.GetBuildDependency()
+      generated from chromite.lib.service.dependency.GetBuildDependency()
   """
   graph = depgraph_pb2.DepGraph()
   graph.build_target.name = json_map['target_board']

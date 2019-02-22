@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-from chromite.api.service import board_build_dependency
+from chromite.api.controller import board_build_dependency
 from chromite.lib import cros_test_lib
 
 

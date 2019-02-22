@@ -12,7 +12,7 @@ import importlib
 from google.protobuf import json_format
 from google.protobuf import symbol_database
 
-from chromite.api import service
+from chromite.api import controller
 from chromite.api.gen import build_api_pb2
 from chromite.api.gen import depgraph_pb2
 from chromite.api.gen import image_pb2
@@ -36,21 +36,21 @@ class UnknownServiceError(Error):
   """Error raised when the requested service has not been registered."""
 
 
-class ServiceModuleNotDefinedError(Error):
-  """Error class for when no module is defined for a service."""
+class ControllerModuleNotDefinedError(Error):
+  """Error class for when no controller is defined for a service."""
 
 
-class ServiceModuleNotFoundError(Error):
-  """Error raised when the service cannot be imported."""
+class ServiceControllerNotFoundError(Error):
+  """Error raised when the service's controller cannot be imported."""
 
 
 # API Method Errors.
 class UnknownMethodError(Error):
-  """The requested service exists but does not have the requested method."""
+  """The service is defined in the proto but the method is not."""
 
 
 class MethodNotFoundError(Error):
-  """Error raised when the method cannot be found in the service module."""
+  """The method's implementation cannot be found in the service's controller."""
 
 
 def GetParser():
@@ -126,7 +126,7 @@ class Router(object):
       module_name = svc.GetOptions().Extensions[self._service_options].module
 
       if not module_name:
-        raise ServiceModuleNotDefinedError(
+        raise ControllerModuleNotDefinedError(
             'The module must be defined in the service definition: %s.%s' %
             (proto_module, service_name))
 
@@ -232,9 +232,9 @@ class Router(object):
       ServiceModuleNotFoundError when the service module cannot be imported.
     """
     try:
-      module = importlib.import_module(service.IMPORT_PATTERN % module_name)
+      module = importlib.import_module(controller.IMPORT_PATTERN % module_name)
     except ImportError as e:
-      raise ServiceModuleNotFoundError(e.message)
+      raise ServiceControllerNotFoundError(e.message)
     try:
       return getattr(module, method_name)
     except AttributeError as e:

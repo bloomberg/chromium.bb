@@ -15,7 +15,7 @@ import os
 from chromite.api.gen import image_pb2
 from chromite.lib import constants
 from chromite.lib import image_lib
-from chromite.lib.api import image
+from chromite.service import image
 
 # The image.proto ImageType enum ids.
 _BASE_ID = image_pb2.Image.BASE

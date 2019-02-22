@@ -11,11 +11,11 @@ import mock
 import os
 
 from chromite.api.gen import image_pb2
-from chromite.api.service import image as image_service
+from chromite.api.controller import image as image_controller
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.lib.api import image as image_lib
+from chromite.service import image as image_service
 
 
 class CreateTest(cros_test_lib.MockTestCase):
@@ -27,24 +27,24 @@ class CreateTest(cros_test_lib.MockTestCase):
     output_proto = image_pb2.CreateImageResult()
 
     # No board should cause it to fail.
-    with self.assertRaises(image_service.InvalidArgumentError):
-      image_service.Create(input_proto, output_proto)
+    with self.assertRaises(image_controller.InvalidArgumentError):
+      image_controller.Create(input_proto, output_proto)
 
   def testImageTypeHandling(self):
     """Test the image type handling."""
-    build_patch = self.PatchObject(image_lib, 'Build', return_value=False)
+    build_patch = self.PatchObject(image_service, 'Build', return_value=False)
     input_proto = image_pb2.CreateImageRequest()
     input_proto.build_target.name = 'board'
     output_proto = image_pb2.CreateImageResult()
 
     # Should default to the base image.
-    image_service.Create(input_proto, output_proto)
+    image_controller.Create(input_proto, output_proto)
     build_patch.assert_called_with(images=[constants.IMAGE_TYPE_BASE],
                                    board=u'board', config=mock.ANY)
 
     # Should be using a value that's provided.
     input_proto.image_types.append(image_pb2.Image.DEV)
-    image_service.Create(input_proto, output_proto)
+    image_controller.Create(input_proto, output_proto)
     build_patch.assert_called_with(images=[constants.IMAGE_TYPE_DEV],
                                    board=u'board', config=mock.ANY)
 
@@ -52,9 +52,10 @@ class CreateTest(cros_test_lib.MockTestCase):
     input_proto.image_types.append(image_pb2.Image.TEST)
     expected_images = [constants.IMAGE_TYPE_BASE, constants.IMAGE_TYPE_DEV,
                        constants.IMAGE_TYPE_TEST]
-    image_service.Create(input_proto, output_proto)
+    image_controller.Create(input_proto, output_proto)
     build_patch.assert_called_with(images=expected_images, board=u'board',
                                    config=mock.ANY)
+
 
 class ImageTest(cros_test_lib.MockTempDirTestCase):
   """Image service tests."""
@@ -69,32 +70,32 @@ class ImageTest(cros_test_lib.MockTempDirTestCase):
 
   def testTestArgumentValidation(self):
     """Test function argument validation tests."""
-    self.PatchObject(image_lib, 'Test', return_value=True)
+    self.PatchObject(image_service, 'Test', return_value=True)
     input_proto = image_pb2.TestImageRequest()
     output_proto = image_pb2.TestImageResult()
 
     # Nothing provided.
-    with self.assertRaises(image_service.InvalidArgumentError):
-      image_service.Test(input_proto, output_proto)
+    with self.assertRaises(image_controller.InvalidArgumentError):
+      image_controller.Test(input_proto, output_proto)
 
     # Just one argument.
     input_proto.build_target.name = self.board
-    with self.assertRaises(image_service.InvalidArgumentError):
-      image_service.Test(input_proto, output_proto)
+    with self.assertRaises(image_controller.InvalidArgumentError):
+      image_controller.Test(input_proto, output_proto)
 
     # Two arguments provided.
     input_proto.result.directory = self.result_directory
-    with self.assertRaises(image_service.InvalidArgumentError):
-      image_service.Test(input_proto, output_proto)
+    with self.assertRaises(image_controller.InvalidArgumentError):
+      image_controller.Test(input_proto, output_proto)
 
     # Invalid image path.
     input_proto.image.path = '/invalid/image/path'
-    with self.assertRaises(image_service.InvalidArgumentError):
-      image_service.Test(input_proto, output_proto)
+    with self.assertRaises(image_controller.InvalidArgumentError):
+      image_controller.Test(input_proto, output_proto)
 
     # All valid arguments.
     input_proto.image.path = self.image_path
-    image_service.Test(input_proto, output_proto)
+    image_controller.Test(input_proto, output_proto)
 
   def testTestOutputHandling(self):
     """Test function output tests."""
@@ -104,10 +105,10 @@ class ImageTest(cros_test_lib.MockTempDirTestCase):
     input_proto.result.directory = self.result_directory
     output_proto = image_pb2.TestImageResult()
 
-    self.PatchObject(image_lib, 'Test', return_value=True)
-    image_service.Test(input_proto, output_proto)
+    self.PatchObject(image_service, 'Test', return_value=True)
+    image_controller.Test(input_proto, output_proto)
     self.assertTrue(output_proto.success)
 
-    self.PatchObject(image_lib, 'Test', return_value=False)
-    image_service.Test(input_proto, output_proto)
+    self.PatchObject(image_service, 'Test', return_value=False)
+    image_controller.Test(input_proto, output_proto)
     self.assertFalse(output_proto.success)

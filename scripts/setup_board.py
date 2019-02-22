@@ -14,7 +14,7 @@ headers, gcc-libs).
 from __future__ import print_function
 
 from chromite.lib import commandline
-from chromite.lib.api import setup_board
+from chromite.service import setup_board
 
 
 def GetParser():

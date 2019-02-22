@@ -13,6 +13,9 @@ Chromite was intended to be the unified codebase for anything related to buildin
 ## Directory Overview
 You can use [Code Search](https://cs.corp.google.com/) to lookup things in Chromite or ChromeOS in general. You can add a ChromeOS filter to only show files from CrOS repositories by going to [CS Settings](https://cs.corp.google.com/settings/) and adding a new Saved query: “`package:^chromeos`” named “chromeos”.
 
+### `chromite/api`
+The Chromite API for the CI system. The API exposes a subset of the chromite functionality that needs to be strictly maintained as much as possible.
+
 ### `chromite/cbuildbot`
 CBuildBot is the collection of entire code that runs on both the parent and the child build machines. It kicks off the individual stages in a particular build. It is a configurable bot that builds ChromeOS. More details on CBuildBot can be found in [this tech talk](https://drive.google.com/a/google.com/file/d/0BwPS_JpKyELWR2k0Z3JSWUhPSEE/view) ([slides](https://docs.google.com/presentation/d/1nUZFCAADgPp48SmrAFZVV_ngR27BdhKjL32nyu_hbOo/edit#slide=id.i0)).
 
@@ -27,6 +30,9 @@ Code here is expected to be imported whenever necessary throughout Chromite.
 
 ### `chromite/scripts`
 Unlike lib, code in scripts will not and should not be imported anywhere. Instead they are executed as required in the build process. Each executable is linked to either `wrapper.py` or `virtualenv_wrapper.py`. Some of these links are in `chromite/bin`. The wrapper figures out the directory of the executable script and the `$PYTHONPATH`. Finally, it invokes the correct Python installation by moving up the directory structure to find which git repo is making the call.
+
+### `chromite/service`
+These files act as the centralized business logic for processes, utilizing lib for the implementation details. Any process that's implemented in chromite should generally have an entry point somewhere in a service such that it can be called from a script, the API, or anywhere else in lib where the process may be useful.
 
 ### `chromite/third_party`
 This folder contains all the third_party python libraries required by Chromite. You need a very strong reason to add any library to the current list. Please confirm with the owners beforehand.

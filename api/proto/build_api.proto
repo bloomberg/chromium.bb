@@ -13,7 +13,7 @@ enum ChrootAssertion {
 
 // Custom Service options.
 message BuildApiServiceOptions {
-  // The name of the module implementing the service.
+  // The name of the controller module implementing the service.
   required string module = 1;
   // Assert any methods in the service are run inside/outside the chroot when
   // specified, unless overridden by the method config.

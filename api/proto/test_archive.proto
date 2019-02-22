@@ -31,7 +31,7 @@ message CreateArchiveResponse {
 
 // Service to create a variety of autotest archives.
 service ArchiveService {
-  // The module implementing the service.
+  // The controller implementing the service.
   option (service_options) = {
     module: "autotest_archive",
   };

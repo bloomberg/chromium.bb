@@ -12,7 +12,7 @@ This service handles the creation of those archives.
 from __future__ import print_function
 
 from chromite.lib import cros_build_lib
-from chromite.lib.api import test_archive
+from chromite.service import test_archive
 
 
 def CreateHwTestArchives(input_proto, output_proto):
