@@ -38,12 +38,12 @@
         unicode-bidi: isolate;
       }
 
-      #collapseChild .data-unit {
-        padding-inline-start: 1ch;
-      }
-
       .list-frame {
         padding-inline-end: 0;
+      }
+
+      .spacing {
+        padding-inline-start: 1ch;
       }
     </style>
     <div id="collapseParent" focus-row-container>
@@ -117,12 +117,17 @@
                         hidden$="[[!scheme_(siteGroup, index)]]">
                       [[scheme_(siteGroup, index)]]
                     </span>
+                    <!--Define a spacing span so that when the direction is rtl,
+                     the spacing is still showing correctly. This is because the
+                     data-unit class is set to be ltr so the padding will be in
+                     wrong place if we put padding in that span.-->
+                    <span class="spacing" hidden$="[[!item.usage]]"></span>
                     <span class="secondary data-unit" hidden$="[[!item.usage]]">
                       [[originUsagesItem_(originUsages_.*, index)]]
                     </span>
-                    <span class="secondary data-unit"
-                        hidden$="[[!item.numCookies]]">
-                      &middot; [[originCookiesItem_(cookiesNum_.*, index)]]
+                    <span class="secondary" hidden$="[[!item.numCookies]]">
+                        &nbsp;&middot;
+                        [[originCookiesItem_(cookiesNum_.*, index)]]
                     </span>
                   </div>
                   <paper-icon-button-light class="subpage-arrow">
