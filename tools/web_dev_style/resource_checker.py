@@ -15,9 +15,13 @@ class ResourceChecker(object):
     self.output_api = output_api
     self.file_filter = file_filter
 
+  def DeprecatedMojoBindingsCheck(self, line_number, line):
+    return regex_check.RegexCheck(self.input_api.re, line_number, line,
+        '(mojo_bindings\.js)', 'Please use mojo_bindings_lite.js in new code')
+
   def DisallowIncludeCheck(self, msg, line_number, line):
     return regex_check.RegexCheck(self.input_api.re, line_number, line,
-              '^\s*(?:\/[\*\/])?\s*(<include)\s*src=', msg)
+        '^\s*(?:\/[\*\/])?\s*(<include)\s*src=', msg)
 
   # This is intentionally not included in RunChecks(). It's an optional check
   # that can be used from a PRESUBMIT.py in a directory that does not wish to
@@ -30,13 +34,17 @@ class ResourceChecker(object):
 
   def SelfClosingIncludeCheck(self, line_number, line):
     return regex_check.RegexCheck(self.input_api.re, line_number, line,
-        "(</include>|<include.*/>)", "Closing <include> tags is unnecessary.")
+        '(</include>|<include.*/>)', 'Closing <include> tags is unnecessary.')
 
   def RunChecks(self):
-    return self._RunCheckOnAffectedFiles(
-        self.SelfClosingIncludeCheck, 'Found resources style issues in %s')
+    msg = 'Found resources style issues in %s'
+    # TODO(crbug.com/931798): is_error for Mojo check when -lite is majority?
+    return self._RunCheckOnAffectedFiles(self.DeprecatedMojoBindingsCheck,
+        msg, only_changed_lines=True) + \
+        self._RunCheckOnAffectedFiles(self.SelfClosingIncludeCheck, msg)
 
-  def _RunCheckOnAffectedFiles(self, check, msg_template, is_error=False):
+  def _RunCheckOnAffectedFiles(self, check, msg_template, is_error=False,
+                               only_changed_lines=False):
     """Check for violations of the Chromium web development style guide. See
        https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/web.md
     """
@@ -46,8 +54,11 @@ class ResourceChecker(object):
                                                  include_deletes=False)
     for f in affected_files:
       errors = []
-
-      for line_number, line in enumerate(f.NewContents(), start=1):
+      if only_changed_lines:
+        contents = f.ChangedContents()
+      else:
+        contents = enumerate(f.NewContents(), start=1)
+      for line_number, line in contents:
         error = check(line_number, line)
         if error:
           errors.append(error)
