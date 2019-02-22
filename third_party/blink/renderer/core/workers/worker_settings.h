@@ -8,10 +8,13 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class CORE_EXPORT WorkerSettings {
+  USING_FAST_MALLOC(WorkerSettings);
+
  public:
   explicit WorkerSettings(Settings*);
   static std::unique_ptr<WorkerSettings> Copy(WorkerSettings*);
