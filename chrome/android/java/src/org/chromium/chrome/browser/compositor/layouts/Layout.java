@@ -43,6 +43,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     /**
      * The orientation of the device.
      */
+    @IntDef({Orientation.UNSET, Orientation.PORTRAIT, Orientation.LANDSCAPE})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface Orientation {
         int UNSET = 0;
         int PORTRAIT = 1;
@@ -84,7 +86,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     private Context mContext;
 
     /** The current {@link Orientation} of the layout. */
-    private int mCurrentOrientation;
+    private @Orientation int mCurrentOrientation;
 
     // Tabs
     protected TabModelSelector mTabModelSelector;
@@ -308,7 +310,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     public final void sizeChanged(RectF visibleViewportPx, RectF screenViewportPx,
             float topBrowserControlsHeightPx, float bottomBrowserControlsHeightPx,
-            int orientation) {
+            @Orientation int orientation) {
         // 1. Pull out this Layout's width and height properties based on the viewport.
         float width = screenViewportPx.width() / mDpToPx;
         float height = screenViewportPx.height() / mDpToPx;
@@ -347,7 +349,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param height      The new height in dp.
      * @param orientation The new orientation.
      */
-    protected void notifySizeChanged(float width, float height, int orientation) { }
+    protected void notifySizeChanged(float width, float height, @Orientation int orientation) {}
 
     /**
      * Notify the a title has changed.
@@ -529,7 +531,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return The orientation of the screen (portrait or landscape). Values are defined by
      *         {@link Orientation}.
      */
-    public int getOrientation() {
+    public @Orientation int getOrientation() {
         return mCurrentOrientation;
     }
 

@@ -131,7 +131,8 @@ public abstract class StackAnimation {
      */
     public static StackAnimation createAnimationFactory(Stack stack, float width, float height,
             float topBrowserControlsHeight, float borderFramePaddingTop,
-            float borderFramePaddingTopOpaque, float borderFramePaddingLeft, int orientation) {
+            float borderFramePaddingTopOpaque, float borderFramePaddingLeft,
+            @Orientation int orientation) {
         StackAnimation factory = null;
         switch (orientation) {
             case Orientation.LANDSCAPE:

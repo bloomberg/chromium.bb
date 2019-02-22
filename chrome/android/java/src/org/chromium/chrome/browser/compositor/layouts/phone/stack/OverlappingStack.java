@@ -624,7 +624,7 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
-    protected void updateCurrentMode(int orientation) {
+    protected void updateCurrentMode(@Orientation int orientation) {
         setWarpState(true, false);
         super.updateCurrentMode(orientation);
     }

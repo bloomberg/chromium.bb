@@ -362,7 +362,7 @@ public class StackTab implements ChromeAnimation.Animatable {
      * @param orientation The orientation to choose to get the size.
      * @return            The size of the content along the provided orientation.
      */
-    public float getSizeInScrollDirection(int orientation) {
+    public float getSizeInScrollDirection(@Orientation int orientation) {
         if (orientation == Orientation.PORTRAIT) {
             return mLayoutTab.getScaledContentHeight();
         } else {
