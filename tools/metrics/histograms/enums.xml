@@ -15509,6 +15509,7 @@ Called by update_net_error_codes.py.-->
   <int value="525" label="PrintingAllowedPinModes"/>
   <int value="526" label="PrintingPinDefault"/>
   <int value="527" label="VoiceInteractionContextEnabled"/>
+  <int value="528" label="UseKDCConstrainedDelegation"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

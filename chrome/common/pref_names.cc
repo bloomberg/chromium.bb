@@ -1695,6 +1695,13 @@ const char kAuthAndroidNegotiateAccountType[] =
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected. If
+// true kAuthNegotiateDelegateWhitelist value is ignored.
+const char kUseKDCConstrainedDelegation[] =
+    "auth.use_kdc_constrained_delegation";
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 #if defined(OS_POSIX)
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";

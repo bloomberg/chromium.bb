@@ -475,6 +475,10 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
   registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
                                std::string());
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kUseKDCConstrainedDelegation, false);
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 #if defined(OS_POSIX)
   registry->RegisterBooleanPref(
       prefs::kNtlmV2Enabled,

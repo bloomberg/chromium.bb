@@ -684,6 +684,10 @@ extern const char kGSSAPILibraryName[];
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kAllowCrossOriginAuthPrompt[];
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+extern const char kUseKDCConstrainedDelegation[];
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 #if defined(OS_POSIX)
 extern const char kNtlmV2Enabled[];
 #endif  // defined(OS_POSIX)

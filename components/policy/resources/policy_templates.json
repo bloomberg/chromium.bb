@@ -396,6 +396,7 @@
         'EnableAuthNegotiatePort',
         'AuthServerWhitelist',
         'AuthNegotiateDelegateWhitelist',
+        'UseKDCConstrainedDelegation',
         'GSSAPILibraryName',
         'AuthAndroidNegotiateAccountType',
         'AllowCrossOriginAuthPrompt',
@@ -3277,7 +3278,28 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.
+
+          This policy is ignored if the 'UseKDCConstrainedDelegation' policy is true.''',
+    },
+    {
+      'name': 'UseKDCConstrainedDelegation',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.linux:74-','chrome.mac:74-','chrome_os:74-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 528,
+      'caption': '''Use KDC constrained delegation''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether OK-AS-DELEGATE flag from KDC is respected or whether 'AuthNegotiateDelegateWhitelist' is used to constrain delegation of Kerberos tickets.
+
+          If this policy is true, HTTP authentication respects constrained delegation settings on the KDC. 'AuthNegotiateDelegateWhitelist' policy is ignored in that case. Please see https://tools.ietf.org/html/rfc5896.html for more information.
+
+          If this policy is not set or set to false, constrained delegation settings from KDC are ignored and 'AuthNegotiateDelegateWhitelist' policy is respected.''',
     },
     {
       'name': 'GSSAPILibraryName',
@@ -14962,5 +14984,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  527
+  'highest_id_currently_used':  528
 }
