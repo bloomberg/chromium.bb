@@ -50,9 +50,8 @@ PrefetchURLLoader::PrefetchURLLoader(
           std::move(signed_exchange_prefetch_metric_recorder)) {
   DCHECK(network_loader_factory_);
 
-  if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-          url::Origin::Create(resource_request_.url))) {
-    // Set the SignedExchange accept header only for the limited origins.
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
+    // Set the SignedExchange accept header.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
     resource_request_.headers.SetHeader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
@@ -85,25 +84,9 @@ void PrefetchURLLoader::FollowRedirect(
     return;
   }
 
-  net::HttpRequestHeaders modified_request_headers_for_accept;
-  if (signed_exchange_utils::NeedToCheckRedirectedURLForAcceptHeader()) {
-    // Currently we send the SignedExchange accept header only for the limited
-    // origins when SignedHTTPExchangeOriginTrial feature is enabled without
-    // SignedHTTPExchange feature. So need to update the accept header by
-    // checking the new URL when redirected.
-    if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-            url::Origin::Create(resource_request_.url))) {
-      modified_request_headers_for_accept.SetHeader(
-          network::kAcceptHeader,
-          kSignedExchangeEnabledAcceptHeaderForPrefetch);
-    } else {
-      modified_request_headers_for_accept.SetHeader(
-          network::kAcceptHeader, network::kDefaultAcceptHeader);
-    }
-  }
-
   DCHECK(loader_);
-  loader_->FollowRedirect(removed_headers, modified_request_headers_for_accept,
+  loader_->FollowRedirect(removed_headers,
+                          net::HttpRequestHeaders() /* modified_headers */,
                           base::nullopt);
 }
 

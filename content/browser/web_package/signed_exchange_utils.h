@@ -8,16 +8,11 @@
 #include <string>
 
 #include "base/optional.h"
-#include "content/browser/web_package/origins_list.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace network {
 struct ResourceResponseHead;
@@ -47,23 +42,11 @@ void ReportErrorAndTraceEvent(
     base::Optional<SignedExchangeError::FieldIndexPair> error_field =
         base::nullopt);
 
-// Returns true when SignedHTTPExchange feature is NOT enabled and
-// SignedHTTPExchangeOriginTrial and SignedHTTPExchangeAcceptHeader features are
-// enabled.
-bool NeedToCheckRedirectedURLForAcceptHeader();
-
-// Returns true if Accept headers should be sent with
-// "application/signed-exchange".
-CONTENT_EXPORT bool ShouldAdvertiseAcceptHeader(const url::Origin& origin);
-
-// Returns true when SignedHTTPExchange feature or SignedHTTPExchangeOriginTrial
-// feature is enabled.
-bool IsSignedExchangeHandlingEnabled();
+// Returns true when SignedHTTPExchange feature is enabled.
+CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled();
 
 // Returns true when the response should be handled as a signed exchange by
-// checking the mime type and the feature flags. When SignedHTTPExchange feature
-// is not enabled and SignedHTTPExchangeOriginTrial feature is enabled, this
-// method also checks the Origin Trial header.
+// checking the mime type and the feature flags.
 bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
     const network::ResourceResponseHead& head);
