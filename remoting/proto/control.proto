@@ -85,6 +85,9 @@ message ExtensionMessage {
 }
 
 message VideoTrackLayout {
+  // Unique display identifier.
+  optional int32 id = 8;
+
   // Name of the video track.
   optional string track_name = 1;
 

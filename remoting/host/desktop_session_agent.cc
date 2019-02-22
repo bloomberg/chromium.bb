@@ -386,6 +386,7 @@ void DesktopSessionAgent::OnCaptureResult(
     protocol::VideoLayout layout;
     for (auto display : desktop_display_info_->displays()) {
       protocol::VideoTrackLayout* track = layout.add_video_track();
+      track->set_id(display.id);
       track->set_position_x(display.x);
       track->set_position_y(display.y);
       track->set_width(display.width);

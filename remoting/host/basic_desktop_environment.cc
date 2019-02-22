@@ -90,8 +90,8 @@ std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<DesktopCapturerProxy> result(
-      new DesktopCapturerProxy(video_capture_task_runner_));
+  std::unique_ptr<DesktopCapturerProxy> result(new DesktopCapturerProxy(
+      video_capture_task_runner_, client_session_control_));
   result->CreateCapturer(desktop_capture_options());
   return std::move(result);
 }
@@ -102,12 +102,14 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     ui::SystemInputInjectorFactory* system_input_injector_factory,
+    base::WeakPtr<ClientSessionControl> client_session_control,
     const DesktopEnvironmentOptions& options)
     : caller_task_runner_(caller_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner),
       system_input_injector_factory_(system_input_injector_factory),
+      client_session_control_(client_session_control),
       options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 #if defined(USE_X11)

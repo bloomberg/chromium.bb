@@ -22,7 +22,8 @@ bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
     for (size_t display = 0; display < displays_.size(); display++) {
       DisplayGeometry this_display = displays_[display];
       DisplayGeometry other_display = other.displays_[display];
-      if (this_display.x != other_display.x ||
+      if (this_display.id != other_display.id ||
+          this_display.x != other_display.x ||
           this_display.y != other_display.y ||
           this_display.width != other_display.width ||
           this_display.height != other_display.height ||
@@ -80,6 +81,7 @@ void DesktopDisplayInfo::AddDisplayFrom(protocol::VideoTrackLayout track) {
   displays_.push_back(*display);
 }
 
+#if !defined(OS_MACOSX)
 void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
   displays_.clear();
 
@@ -87,6 +89,7 @@ void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
   BOOL enum_result = TRUE;
   for (int device_index = 0;; ++device_index) {
     DisplayGeometry info;
+    info.id = device_index;
 
     DISPLAY_DEVICE device = {};
     device.cb = sizeof(device);
@@ -118,7 +121,8 @@ void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
     info.bpp = devmode.dmBitsPerPel;
     displays_.push_back(info);
   }
-#endif
+#endif  // OS_WIN
 }
+#endif  // !OS_MACOSX
 
 }  // namespace remoting

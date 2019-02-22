@@ -550,17 +550,22 @@ void ClientSession::OnDesktopDisplayChanged(
   for (int display_id = 0; display_id < displays->video_track_size();
        display_id++) {
     protocol::VideoTrackLayout track = displays->video_track(display_id);
-    int x = track.position_x();
-    int y = track.position_y();
-    min_x = std::min(x, min_x);
-    min_y = std::min(y, min_y);
-    max_x = std::max(x + track.width(), max_x);
-    max_y = std::max(y + track.height(), max_y);
-
     if (dpi_x == 0)
       dpi_x = track.x_dpi();
     if (dpi_y == 0)
       dpi_y = track.y_dpi();
+
+    // The WebRTC desktop only includes displays that match the main display's
+    // DPI. Here, we filter out non-matching displays so that our desktop
+    // geometry matches what WebRTC can handle.
+    if (dpi_x == track.x_dpi() && dpi_y == track.y_dpi()) {
+      int x = track.position_x();
+      int y = track.position_y();
+      min_x = std::min(x, min_x);
+      min_y = std::min(y, min_y);
+      max_x = std::max(x + track.width(), max_x);
+      max_y = std::max(y + track.height(), max_y);
+    }
   }
 
   // Calc desktop scaled geometry (in DIPs)

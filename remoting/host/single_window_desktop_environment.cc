@@ -85,6 +85,7 @@ SingleWindowDesktopEnvironment::SingleWindowDesktopEnvironment(
                               input_task_runner,
                               ui_task_runner,
                               system_input_injector_factory,
+                              client_session_control,
                               options),
       window_id_(window_id) {}
 
