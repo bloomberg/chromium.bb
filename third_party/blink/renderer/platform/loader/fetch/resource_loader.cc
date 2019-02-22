@@ -48,6 +48,8 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
@@ -63,7 +65,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/network/network_instrumentation.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -78,6 +79,22 @@
 namespace blink {
 
 namespace {
+
+enum RequestOutcome { kSuccess, kFail };
+
+std::unique_ptr<TracedValue> EndResourceLoadData(RequestOutcome outcome) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  switch (outcome) {
+    case RequestOutcome::kSuccess:
+      value->SetString("outcome", "Success");
+      break;
+    case RequestOutcome::kFail:
+      value->SetString("outcome", "Fail");
+      break;
+  }
+
+  return value;
+}
 
 bool IsThrottlableRequestContext(mojom::RequestContextType context) {
   // Requests that could run long should not be throttled as they
@@ -1081,9 +1098,11 @@ void ResourceLoader::DidReceiveTransferSizeUpdate(int transfer_size_diff) {
 }
 
 void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
-  network_instrumentation::EndResourceLoad(
-      resource_->Identifier(),
-      network_instrumentation::RequestOutcome::kSuccess);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
+      TRACE_ID_WITH_SCOPE("BlinkResourceID",
+                          TRACE_ID_LOCAL(resource_->Identifier())),
+      "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
       resource_.Get(), TimeTicks(),
@@ -1122,9 +1141,11 @@ void ResourceLoader::DidFinishLoading(
   has_seen_end_of_body_ = false;
   deferred_finish_loading_info_ = base::nullopt;
 
-  network_instrumentation::EndResourceLoad(
-      resource_->Identifier(),
-      network_instrumentation::RequestOutcome::kSuccess);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
+      TRACE_ID_WITH_SCOPE("BlinkResourceID",
+                          TRACE_ID_LOCAL(resource_->Identifier())),
+      "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
       resource_.Get(), finish_time, ResourceFetcher::kDidFinishLoading,
@@ -1182,8 +1203,11 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   has_seen_end_of_body_ = false;
   deferred_finish_loading_info_ = base::nullopt;
 
-  network_instrumentation::EndResourceLoad(
-      resource_->Identifier(), network_instrumentation::RequestOutcome::kFail);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
+      TRACE_ID_WITH_SCOPE("BlinkResourceID",
+                          TRACE_ID_LOCAL(resource_->Identifier())),
+      "endData", EndResourceLoadData(RequestOutcome::kFail));
 
   fetcher_->HandleLoaderError(resource_.Get(), error,
                               inflight_keepalive_bytes_);
