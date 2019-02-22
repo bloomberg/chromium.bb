@@ -58,8 +58,8 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
                     if f.LocalPath().startswith(public_folder) and \
                             not f.LocalPath() in allow_blink_files:
                         error_list = public_blink_mojom_errors
-                    elif match.group(1) not in ('-blink', '-blink-forward'):
-                        # Neither -shared.h, -blink.h nor -blink-forward.h.
+                    elif match.group(1) not in ('-blink', '-blink-forward', '-blink-test-utils'):
+                        # Neither -shared.h, -blink.h, -blink-forward.h nor -blink-test-utils.h.
                         error_list = non_blink_mojom_errors
 
             if error_list is not None:
