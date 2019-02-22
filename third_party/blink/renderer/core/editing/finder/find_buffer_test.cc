@@ -610,4 +610,18 @@ TEST_F(FindBufferTest, DisplayContents) {
   EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results->front());
 }
 
+TEST_F(FindBufferTest, WBRTest) {
+  SetBodyContent("fi<wbr>nd and fin<wbr>d");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("find", 0);
+  ASSERT_EQ(2u, results->CountForTesting());
+}
+
+TEST_F(FindBufferTest, InputTest) {
+  SetBodyContent("fi<input type='text'>nd and fin<input type='text'>d");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("find", 0);
+  ASSERT_EQ(0u, results->CountForTesting());
+}
+
 }  // namespace blink
