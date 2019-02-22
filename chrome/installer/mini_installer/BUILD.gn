@@ -278,6 +278,9 @@ template("generate_mini_installer") {
     #      dependency on //buildtools/third_party/libc++ in builds that set
     #      use_custom_libcxx=true.
     #
+    # The net result is similar to linking with /NODEFAULTLIB, but more precise
+    # as it just excludes the CRT.
+    #
     # But in asan builds we need to link against the asan runtime library, which
     # in turn depends on the standard library and relies on it to run
     # initializers.

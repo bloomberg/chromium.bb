@@ -14,7 +14,8 @@
 //   BasicRuntimeChecks="0"
 //   BufferSecurityCheck="false" compiler: /GS-
 //   EntryPointSymbol="MainEntryPoint" linker: /ENTRY
-//   IgnoreAllDefaultLibraries="true" linker: /NODEFAULTLIB
+//       /ENTRY also stops the CRT from being pulled in and does this more
+//       precisely than /NODEFAULTLIB
 //   OptimizeForWindows98="1" linker: /OPT:NOWIN98
 //   linker: /SAFESEH:NO
 
