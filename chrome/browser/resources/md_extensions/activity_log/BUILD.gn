@@ -8,13 +8,13 @@ js_type_check("closure_compile") {
   deps = [
     ":activity_log",
     ":activity_log_history",
-    ":activity_log_item",
+    ":activity_log_history_item",
     ":activity_log_stream",
     ":activity_log_stream_item",
   ]
 }
 
-js_library("activity_log_item") {
+js_library("activity_log_history_item") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
@@ -23,7 +23,7 @@ js_library("activity_log_item") {
 
 js_library("activity_log_history") {
   deps = [
-    ":activity_log_item",
+    ":activity_log_history_item",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/activity_log_private.js" ]

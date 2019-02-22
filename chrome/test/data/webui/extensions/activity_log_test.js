@@ -103,7 +103,7 @@ suite('ExtensionsActivityLogTest', function() {
 
           const activityLogItems =
               activityLogHistory.shadowRoot.querySelectorAll(
-                  'activity-log-item');
+                  'activity-log-history-item');
 
           // Since we searched for an API call, we expect only one match as
           // activity log entries are grouped by their API call.
@@ -127,7 +127,7 @@ suite('ExtensionsActivityLogTest', function() {
 
           expectEquals(
               activityLogHistory.shadowRoot
-                  .querySelectorAll('activity-log-item')
+                  .querySelectorAll('activity-log-history-item')
                   .length,
               0);
 
@@ -143,7 +143,7 @@ suite('ExtensionsActivityLogTest', function() {
 
           const activityLogItems =
               activityLogHistory.shadowRoot.querySelectorAll(
-                  'activity-log-item');
+                  'activity-log-history-item');
           expectEquals(activityLogItems.length, 2);
         });
   });
@@ -163,7 +163,7 @@ suite('ExtensionsActivityLogTest', function() {
           testVisible('#activity-list', false);
           expectEquals(
               activityLogHistory.shadowRoot
-                  .querySelectorAll('activity-log-item')
+                  .querySelectorAll('activity-log-history-item')
                   .length,
               0);
         });

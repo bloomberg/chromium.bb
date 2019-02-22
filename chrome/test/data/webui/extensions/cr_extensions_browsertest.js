@@ -239,7 +239,7 @@ TEST_F('CrExtensionsActivityLogHistoryTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Item Tests
 
-CrExtensionsActivityLogItemTest = class extends CrExtensionsBrowserTest {
+CrExtensionsActivityLogHistoryItemTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log_item.html';
@@ -247,12 +247,12 @@ CrExtensionsActivityLogItemTest = class extends CrExtensionsBrowserTest {
 
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'activity_log_item_test.js',
+      'activity_log_history_item_test.js',
     ]);
   }
 };
 
-TEST_F('CrExtensionsActivityLogItemTest', 'All', () => {
+TEST_F('CrExtensionsActivityLogHistoryItemTest', 'All', () => {
   mocha.run();
 });
 

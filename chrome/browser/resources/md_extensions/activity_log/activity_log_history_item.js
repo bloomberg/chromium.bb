@@ -26,10 +26,8 @@ cr.define('extensions', function() {
    */
   let PageUrlItem;
 
-  // TODO(kelvinjiang): Replace |activity_log_item| with
-  // |activity_log_history_item|.
-  const ActivityLogItem = Polymer({
-    is: 'activity-log-item',
+  const ActivityLogHistoryItem = Polymer({
+    is: 'activity-log-history-item',
 
     properties: {
       /**
@@ -105,7 +103,7 @@ cr.define('extensions', function() {
   });
 
   return {
-    ActivityLogItem: ActivityLogItem,
+    ActivityLogHistoryItem: ActivityLogHistoryItem,
     ActivityGroup: ActivityGroup,
   };
 });

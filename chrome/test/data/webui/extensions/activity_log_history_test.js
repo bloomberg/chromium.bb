@@ -148,8 +148,8 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('#loading-activities', false);
       testVisible('#activity-list', true);
 
-      const activityLogItems =
-          activityLogHistory.shadowRoot.querySelectorAll('activity-log-item');
+      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
+          'activity-log-history-item');
       expectEquals(activityLogItems.length, 2);
 
       // Test the order of the activity log items here. This test is in this
@@ -171,8 +171,8 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     return setupActivityLogHistory().then(() => {
       Polymer.dom.flush();
-      const activityLogItems =
-          activityLogHistory.shadowRoot.querySelectorAll('activity-log-item');
+      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
+          'activity-log-history-item');
 
       // One activity should be shown for each content script name.
       expectEquals(activityLogItems.length, 2);
@@ -189,8 +189,8 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     return setupActivityLogHistory().then(() => {
       Polymer.dom.flush();
-      const activityLogItems =
-          activityLogHistory.shadowRoot.querySelectorAll('activity-log-item');
+      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
+          'activity-log-history-item');
 
       // First activity should be split into two groups as it has two actions
       // recorded in the other.webRequest object. We display the names of these
@@ -223,7 +223,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
           Polymer.dom.flush();
           const activityLogItems =
               activityLogHistory.shadowRoot.querySelectorAll(
-                  'activity-log-item');
+                  'activity-log-history-item');
 
           expectEquals(activityLogItems.length, 2);
           proxyDelegate.resetResolver('getExtensionActivityLog');
@@ -238,7 +238,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
                 expectEquals(
                     1,
                     activityLogHistory.shadowRoot
-                        .querySelectorAll('activity-log-item')
+                        .querySelectorAll('activity-log-history-item')
                         .length);
               });
         });
@@ -255,7 +255,8 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('#loading-activities', false);
       testVisible('#activity-list', false);
       expectEquals(
-          activityLogHistory.shadowRoot.querySelectorAll('activity-log-item')
+          activityLogHistory.shadowRoot
+              .querySelectorAll('activity-log-history-item')
               .length,
           0);
     });

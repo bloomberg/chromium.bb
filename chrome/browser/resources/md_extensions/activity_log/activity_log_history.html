@@ -2,7 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
-<link rel="import" href="activity_log_item.html">
+<link rel="import" href="activity_log_history_item.html">
 <link rel="import" href="../shared_style.html">
 
 <dom-module id="activity-log-history">
@@ -21,8 +21,8 @@
     <div id="activity-list"
         hidden$="[[!shouldShowActivities_(pageState_, activityData_)]]">
       <template is="dom-repeat" items="[[activityData_]]">
-        <activity-log-item data="[[item]]">
-        </activity-log-item>
+        <activity-log-history-item data="[[item]]">
+        </activity-log-history-item>
       </template>
     </div>
   </template>
