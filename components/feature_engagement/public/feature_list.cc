@@ -37,6 +37,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHHomepageTileFeature,
     &kIPHNewTabPageButtonFeature,
     &kIPHPreviewsOmniboxUIFeature,
+    &kIPHTabGroupsQuicklyComparePagesFeature,
+    &kIPHTabGroupsTapToSeeAnotherTabFeature,
+    &kIPHTabGroupsYourTabsAreTogetherFeature,
     &kIPHTranslateMenuButtonFeature,
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)

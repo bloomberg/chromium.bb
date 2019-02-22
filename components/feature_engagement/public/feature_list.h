@@ -76,6 +76,12 @@ DEFINE_VARIATION_PARAM(kIPHHomePageButtonFeature, "IPH_HomePageButton");
 DEFINE_VARIATION_PARAM(kIPHHomepageTileFeature, "IPH_HomepageTile");
 DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageButton");
 DEFINE_VARIATION_PARAM(kIPHPreviewsOmniboxUIFeature, "IPH_PreviewsOmniboxUI");
+DEFINE_VARIATION_PARAM(kIPHTabGroupsQuicklyComparePagesFeature,
+                       "IPH_IPH_TabGroupsQuicklyComparePages");
+DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
+                       "IPH_TabGroupsTapToSeeAnotherTab");
+DEFINE_VARIATION_PARAM(kIPHTabGroupsYourTabsAreTogetherFeature,
+                       "IPH_TabGroupsYourTabsTogether");
 DEFINE_VARIATION_PARAM(kIPHTranslateMenuButtonFeature,
                        "IPH_TranslateMenuButton");
 #endif  // defined(OS_ANDROID)
@@ -122,6 +128,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHHomepageTileFeature),
         VARIATION_ENTRY(kIPHNewTabPageButtonFeature),
         VARIATION_ENTRY(kIPHPreviewsOmniboxUIFeature),
+        VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
+        VARIATION_ENTRY(kIPHTabGroupsTapToSeeAnotherTabFeature),
+        VARIATION_ENTRY(kIPHTabGroupsYourTabsAreTogetherFeature),
         VARIATION_ENTRY(kIPHTranslateMenuButtonFeature),
 #elif BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
         VARIATION_ENTRY(kIPHBookmarkFeature),

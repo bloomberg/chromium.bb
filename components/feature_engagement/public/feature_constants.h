@@ -41,6 +41,9 @@ extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
 extern const base::Feature kIPHNewTabPageButtonFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
+extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
+extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
+extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 #endif  // defined(OS_ANDROID)
 
