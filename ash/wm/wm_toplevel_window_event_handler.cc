@@ -20,6 +20,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/views/widget/widget.h"
@@ -49,9 +50,31 @@ aura::Window* GetTargetForClientAreaGesture(ui::GestureEvent* event,
     return nullptr;
 
   aura::Window* toplevel = widget->GetNativeWindow();
-  if (!toplevel->GetProperty(
-          aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
-    return nullptr;
+  if (features::IsUsingWindowService()) {
+    if (!toplevel->GetProperty(
+            aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
+      return nullptr;
+    }
+  } else {
+    // Classic Ash: duplicate the logic from
+    // MakeGestureDraggableInImmersiveMode since there's no clear place during
+    // Widget init to hook that in.
+    if (!Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled()) {
+      return nullptr;
+    }
+    wm::WindowState* window_state = wm::GetWindowState(toplevel);
+    if (!window_state ||
+        (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+         !window_state->IsSnapped())) {
+      return nullptr;
+    }
+
+    if (toplevel->GetProperty(aura::client::kAppType) ==
+        static_cast<int>(AppType::BROWSER)) {
+      return nullptr;
+    }
   }
 
   if (event->details().scroll_y_hint() < 0)
