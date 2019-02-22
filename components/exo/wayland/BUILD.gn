@@ -57,6 +57,8 @@ source_set("wayland") {
     "wl_shm.h",
     "wl_subcompositor.cc",
     "wl_subcompositor.h",
+    "wp_viewporter.cc",
+    "wp_viewporter.h",
     "zcr_vsync_feedback.cc",
     "zcr_vsync_feedback.h",
   ]
