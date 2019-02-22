@@ -681,15 +681,23 @@ bool Property<std::map<std::string, std::vector<uint8_t>>>::PopValueFromReader(
       return false;
 
     std::string key;
-    MessageReader value_varient_reader(nullptr);
-    if (!entry_reader.PopString(&key) ||
-        !entry_reader.PopVariant(&value_varient_reader))
+    if (!entry_reader.PopString(&key))
       return false;
 
     const uint8_t* bytes = nullptr;
     size_t length = 0;
-    if (!value_varient_reader.PopArrayOfBytes(&bytes, &length))
-      return false;
+
+    if (entry_reader.GetDataType() == Message::VARIANT) {
+      // Make BlueZ happy since it wraps the array of bytes with a variant.
+      MessageReader value_variant_reader(nullptr);
+      if (!entry_reader.PopVariant(&value_variant_reader))
+        return false;
+      if (!value_variant_reader.PopArrayOfBytes(&bytes, &length))
+        return false;
+    } else {
+      if (!entry_reader.PopArrayOfBytes(&bytes, &length))
+        return false;
+    }
 
     value_[key].assign(bytes, bytes + length);
   }
@@ -745,15 +753,23 @@ bool Property<std::map<uint16_t, std::vector<uint8_t>>>::PopValueFromReader(
       return false;
 
     uint16_t key;
-    MessageReader value_varient_reader(nullptr);
-    if (!entry_reader.PopUint16(&key) ||
-        !entry_reader.PopVariant(&value_varient_reader))
+    if (!entry_reader.PopUint16(&key))
       return false;
 
     const uint8_t* bytes = nullptr;
     size_t length = 0;
-    if (!value_varient_reader.PopArrayOfBytes(&bytes, &length))
-      return false;
+
+    if (entry_reader.GetDataType() == Message::VARIANT) {
+      // Make BlueZ happy since it wraps the array of bytes with a variant.
+      MessageReader value_variant_reader(nullptr);
+      if (!entry_reader.PopVariant(&value_variant_reader))
+        return false;
+      if (!value_variant_reader.PopArrayOfBytes(&bytes, &length))
+        return false;
+    } else {
+      if (!entry_reader.PopArrayOfBytes(&bytes, &length))
+        return false;
+    }
 
     value_[key].assign(bytes, bytes + length);
   }
