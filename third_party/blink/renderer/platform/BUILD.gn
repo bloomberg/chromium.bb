@@ -1363,8 +1363,6 @@ jumbo_component("platform") {
     "transforms/translate_transform_operation.h",
     "uuid.cc",
     "uuid.h",
-    "waitable_event.cc",
-    "waitable_event.h",
     "web_gesture_event.cc",
     "web_icon_sizes_parser.cc",
     "web_mouse_event.cc",
