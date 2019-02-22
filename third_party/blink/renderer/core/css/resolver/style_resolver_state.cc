@@ -94,15 +94,27 @@ scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
   return std::move(style_);
 }
 
-CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
-  float em = ParentStyle()->SpecifiedFontSize();
+CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
+    const ComputedStyle* font_style) const {
+  float em = font_style->SpecifiedFontSize();
   float rem = RootElementStyle() ? RootElementStyle()->SpecifiedFontSize() : 1;
+  // TODO(fs): Since 'ch' and 'ex' are still accessed directly from the font,
+  // they will still have zoom applied.
   CSSToLengthConversionData::FontSizes font_sizes(em, rem,
-                                                  &ParentStyle()->GetFont());
+                                                  &font_style->GetFont());
   CSSToLengthConversionData::ViewportSize viewport_size(
       GetDocument().GetLayoutView());
 
   return CSSToLengthConversionData(Style(), font_sizes, viewport_size, 1);
+}
+
+CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
+  return UnzoomedLengthConversionData(ParentStyle());
+}
+
+CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData()
+    const {
+  return UnzoomedLengthConversionData(Style());
 }
 
 void StyleResolverState::SetParentStyle(
