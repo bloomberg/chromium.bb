@@ -819,6 +819,38 @@ def _ResolveThinArchivePaths(raw_symbols, thin_archives):
         symbol.object_path = ar.CreateThinObjectPath(archive_path, subpath)
 
 
+def _DeduceObjectPathForSwitchTables(raw_symbols, object_paths_by_name):
+  strip_num_suffix_regexp = re.compile(r'\s+\(\.\d+\)$')
+  num_switch_tables = 0
+  num_unassigned = 0
+  num_deduced = 0
+  num_arbitrations = 0
+  for s in raw_symbols:
+    if s.full_name.startswith('Switch table for '):
+      num_switch_tables += 1
+      # Strip 'Switch table for ' prefix.
+      name = s.full_name[17:]
+      # Strip, e.g., ' (.123)' suffix.
+      name = re.sub(strip_num_suffix_regexp, '', name)
+      object_paths = object_paths_by_name.get(name, None)
+      if not s.object_path:
+        if object_paths is None:
+          num_unassigned += 1
+        else:
+          num_deduced += 1
+          # If ambiguity arises, arbitrate by taking the first.
+          s.object_path = object_paths[0]
+          if len(object_paths) > 1:
+            num_arbitrations += 1
+      else:
+        assert object_paths and s.object_path in object_paths
+  if num_switch_tables > 0:
+    logging.info(
+        'Found %d switch tables: Deduced %d object paths with ' +
+        '%d arbitrations. %d remain unassigned.', num_switch_tables,
+        num_deduced, num_arbitrations, num_unassigned)
+
+
 def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
                   outdir_context=None, linker_name=None):
   """Adds ELF section sizes and symbols."""
@@ -901,6 +933,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
           'Fetched path information for %d symbols from %d files',
           len(object_paths_by_name),
           len(outdir_context.elf_object_paths) + len(missed_object_paths))
+      _DeduceObjectPathForSwitchTables(raw_symbols, object_paths_by_name)
       # For aliases, this provides path information where there wasn't any.
       logging.info('Creating aliases for symbols shared by multiple paths')
       raw_symbols = _AssignNmAliasPathsAndCreatePathAliases(

@@ -5,6 +5,7 @@
 """Utilities for demangling C++ symbols."""
 
 import collections
+import itertools
 import logging
 import re
 import subprocess
@@ -33,33 +34,50 @@ def StripLlvmPromotedGlobalNames(name):
   return _PROMOTED_GLOBAL_NAME_RAW_PATTERN.sub('', name)
 
 
-def _IsLowerHex(s):
-  return _LOWER_HEX_PATTERN.match(s) is not None
+def _CanDemangle(name):
+  return name.startswith('_Z') or name.startswith('.Lswitch.table._Z')
 
 
-def _StripHashSuffix(names):
-  """Iterates |names| and strips suffixes that represent hash.
+def _ExtractDemanglablePart(names):
+  """For each name in |names|, yields the part that can be demangled."""
 
-  Some mangled symbols end with '$' followed by 32 lower-case hex digits. These
-  interfere with demangling by c++filt. This function is an adaptor for iterable
-  |name| to detect and strip these hash suffixes.
-  """
+  def _IsLowerHex(s):
+    return _LOWER_HEX_PATTERN.match(s) is not None
+
   for name in names:
+    # Strip prefixes before '_Z', e.g., '.Lswitch.table.'.
+    pos = name.find('_Z')
+    if pos > 0:
+      name = name[pos:]
+
+    # Some mangled symbols end with '$' followed by 32 lower-case hex digits.
+    # These interfere with demangling by c++filt. This function is an adaptor
+    # for iterable |name| to detect and strip these hash suffixes.
     if len(name) > 33 and name[-33] == '$' and _IsLowerHex(name[-32:]):
       yield name[:-33]
     else:
       yield name
 
 
+def _PostProcessDemangledSymbol(old_name, new_name):
+  new_name = StripLlvmPromotedGlobalNames(new_name)
+  if old_name.startswith('.Lswitch.table.'):
+    new_name = 'Switch table for ' + new_name  # Becomes ... [Switch table].
+  return new_name
+
+
 def _DemangleNames(names, tool_prefix):
   """Uses c++filt to demangle a list of names."""
   proc = subprocess.Popen([path_util.GetCppFiltPath(tool_prefix)],
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  stdout = proc.communicate('\n'.join(_StripHashSuffix(names)))[0]
+  stdout = proc.communicate('\n'.join(_ExtractDemanglablePart(names)))[0]
   assert proc.returncode == 0
-  ret = [StripLlvmPromotedGlobalNames(line) for line in stdout.splitlines()]
+  ret = [
+      _PostProcessDemangledSymbol(old_name, new_name)
+      for (old_name, new_name) in itertools.izip(names, stdout.splitlines())
+  ]
   if logging.getLogger().isEnabledFor(logging.INFO):
-    fail_count = sum(1 for s in ret if s.startswith('_Z'))
+    fail_count = sum(1 for s in ret if _CanDemangle(s))
     if fail_count:
       logging.info('* Failed to demangle %d/%d items', fail_count, len(ret))
   return ret
@@ -67,12 +85,12 @@ def _DemangleNames(names, tool_prefix):
 
 def DemangleRemainingSymbols(raw_symbols, tool_prefix):
   """Demangles any symbols that need it."""
-  to_process = [s for s in raw_symbols if s.full_name.startswith('_Z')]
+  to_process = [s for s in raw_symbols if _CanDemangle(s.full_name)]
   if not to_process:
     return
 
   logging.info('Demangling %d symbols', len(to_process))
-  names = _DemangleNames((s.full_name for s in to_process), tool_prefix)
+  names = _DemangleNames([s.full_name for s in to_process], tool_prefix)
   for i, name in enumerate(names):
     to_process[i].full_name = name
 
@@ -84,7 +102,7 @@ def DemangleSetsInDicts(key_to_names, tool_prefix):
   """
   all_names = []
   for names in key_to_names.itervalues():
-    all_names.extend(n for n in names if n.startswith('_Z'))
+    all_names.extend(n for n in names if _CanDemangle(n))
   if not all_names:
     return key_to_names
 
@@ -92,7 +110,7 @@ def DemangleSetsInDicts(key_to_names, tool_prefix):
   it = iter(_DemangleNames(all_names, tool_prefix))
   ret = {}
   for key, names in key_to_names.iteritems():
-    ret[key] = set(next(it) if n.startswith('_Z') else n for n in names)
+    ret[key] = set(next(it) if _CanDemangle(n) else n for n in names)
   assert(next(it, None) is None)
   return ret
 
@@ -103,7 +121,7 @@ def DemangleKeysAndMergeLists(name_to_list, tool_prefix):
   Keys may demangle to a common name. When this happens, the corresponding lists
   are merged in arbitrary order.
   """
-  keys = [key for key in name_to_list if key.startswith('_Z')]
+  keys = [key for key in name_to_list if _CanDemangle(key)]
   if not keys:
     return name_to_list
 
@@ -111,7 +129,7 @@ def DemangleKeysAndMergeLists(name_to_list, tool_prefix):
   key_iter = iter(_DemangleNames(keys, tool_prefix))
   ret = collections.defaultdict(list)
   for key, val in name_to_list.iteritems():
-    ret[next(key_iter) if key.startswith('_Z') else key] += val
+    ret[next(key_iter) if _CanDemangle(key) else key] += val
   assert(next(key_iter, None) is None)
   logging.info('* %d keys become %d keys' % (len(name_to_list), len(ret)))
   return ret
