@@ -208,11 +208,11 @@ size_t V4L2BuffersList::size() const {
 
 // Module-private class that let users query/write V4L2 buffer information.
 // It also makes some private V4L2Queue methods available to this module only.
-class V4L2BufferQueueProxy {
+class V4L2BufferRefBase {
  public:
-  V4L2BufferQueueProxy(const struct v4l2_buffer* v4l2_buffer,
-                       base::WeakPtr<V4L2Queue> queue);
-  ~V4L2BufferQueueProxy();
+  V4L2BufferRefBase(const struct v4l2_buffer* v4l2_buffer,
+                    base::WeakPtr<V4L2Queue> queue);
+  ~V4L2BufferRefBase();
 
   bool QueueBuffer();
   void* GetPlaneMapping(const size_t plane);
@@ -237,12 +237,11 @@ class V4L2BufferQueueProxy {
   bool queued = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(V4L2BufferQueueProxy);
+  DISALLOW_COPY_AND_ASSIGN(V4L2BufferRefBase);
 };
 
-V4L2BufferQueueProxy::V4L2BufferQueueProxy(
-    const struct v4l2_buffer* v4l2_buffer,
-    base::WeakPtr<V4L2Queue> queue)
+V4L2BufferRefBase::V4L2BufferRefBase(const struct v4l2_buffer* v4l2_buffer,
+                                     base::WeakPtr<V4L2Queue> queue)
     : queue_(std::move(queue)), return_to_(queue_->free_buffers_) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer->type));
@@ -255,7 +254,7 @@ V4L2BufferQueueProxy::V4L2BufferQueueProxy(
   v4l2_buffer_.m.planes = v4l2_planes_;
 }
 
-V4L2BufferQueueProxy::~V4L2BufferQueueProxy() {
+V4L2BufferRefBase::~V4L2BufferRefBase() {
   // We are the last reference and are only accessing the thread-safe
   // return_to_, so we are safe to call from any sequence.
   // If we have been queued, then the queue is our owner so we don't need to
@@ -264,7 +263,7 @@ V4L2BufferQueueProxy::~V4L2BufferQueueProxy() {
     return_to_->ReturnBuffer(BufferId());
 }
 
-bool V4L2BufferQueueProxy::QueueBuffer() {
+bool V4L2BufferRefBase::QueueBuffer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!queue_)
@@ -275,7 +274,7 @@ bool V4L2BufferQueueProxy::QueueBuffer() {
   return queued;
 }
 
-void* V4L2BufferQueueProxy::GetPlaneMapping(const size_t plane) {
+void* V4L2BufferRefBase::GetPlaneMapping(const size_t plane) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!queue_)
@@ -292,8 +291,8 @@ V4L2WritableBufferRef::V4L2WritableBufferRef() {
 V4L2WritableBufferRef::V4L2WritableBufferRef(
     const struct v4l2_buffer* v4l2_buffer,
     base::WeakPtr<V4L2Queue> queue)
-    : buffer_data_(std::make_unique<V4L2BufferQueueProxy>(v4l2_buffer,
-                                                          std::move(queue))) {
+    : buffer_data_(
+          std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
@@ -493,8 +492,8 @@ size_t V4L2WritableBufferRef::BufferId() const {
 
 V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
                                        base::WeakPtr<V4L2Queue> queue)
-    : buffer_data_(std::make_unique<V4L2BufferQueueProxy>(v4l2_buffer,
-                                                          std::move(queue))) {
+    : buffer_data_(
+          std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
