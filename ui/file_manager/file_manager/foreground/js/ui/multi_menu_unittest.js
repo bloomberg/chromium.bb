@@ -20,11 +20,13 @@ function setUp() {
     '<style>',
     '  cr-menu {',
     '    position: fixed;',
+    '    padding: 8px;',
     '  }',
     '  cr-menu-item {',
     '    width: 10px;',
     '    height: 10px;',
     '    display: block;',
+    '    background-color: blue;',
     '  }',
     '</style>',
     '<command id="default-task">',
@@ -39,6 +41,7 @@ function setUp() {
     'sub-menu="#sub-menu" hidden></cr-menu-item>',
     '</cr-menu>',
     '<cr-menu id="sub-menu" hidden>',
+    '  <cr-menu-item class="custom-appearance"></cr-menu-item>',
     '  <cr-menu-item class="custom-appearance"></cr-menu-item>',
     '</cr-menu>',
   ].join('');
@@ -189,4 +192,44 @@ function testClickOutsideVisibleMenuAndSubMenu() {
   menubutton.dispatchEvent(event);
   assertTrue(topMenu.hasAttribute('hidden'));
   assertTrue(subMenu.hasAttribute('hidden'));
+}
+
+/**
+ * Tests that shrinking the window height will limit
+ * the height of the sub-menu.
+ */
+function testShrinkWindowSizesSubMenu() {
+  testSelectHostMenuItemAndCallShowSubMenu();
+  const subMenuPosition = subMenu.getBoundingClientRect();
+  // Reduce window innerHeight so sub-menu won't fit.
+  window.innerHeight = subMenuPosition.bottom - 10;
+  // Call the internal hide method, then re-show it
+  // to force the resizing behavior.
+  menubutton.hideSubMenu_();
+  menubutton.showSubMenu();
+  const shrunkPosition = subMenu.getBoundingClientRect();
+  assertTrue(shrunkPosition.bottom < window.innerHeight);
+}
+
+/**
+ * Tests that growing the window height will increase
+ * the height of the sub-menu.
+ */
+function testGrowWindowSizesSubMenu() {
+  // Remember the full size of the sub-menu
+  testSelectHostMenuItemAndCallShowSubMenu();
+  const subMenuPosition = subMenu.getBoundingClientRect();
+  // Make sure the sub-menu has been reduced in height.
+  testShrinkWindowSizesSubMenu();
+  // Make the window taller than the sub-menu plus padding.
+  window.innerHeight = subMenuPosition.bottom + 20;
+  // Call the internal hide method, then re-show it
+  // to force the resizing behavior.
+  menubutton.hideSubMenu_();
+  menubutton.showSubMenu();
+  const grownPosition = subMenu.getBoundingClientRect();
+  // Test that the height of the sub-menu is the same as
+  // the height at the start of this test (before we
+  // deliberately shrank it).
+  assertTrue(grownPosition.bottom === subMenuPosition.bottom);
 }

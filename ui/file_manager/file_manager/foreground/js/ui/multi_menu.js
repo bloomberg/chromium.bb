@@ -130,9 +130,13 @@ cr.define('cr.ui', function() {
       style.top = itemRect.top + 'px';
       // Size the subMenu to fit inside the height of the viewport
       const menuEndGap = 18;  // padding on cr.menu + 2px
+      // Always set the maximum height so that expanding the window
+      // allows the menu height to grow crbug/934207
+      style.maxHeight = (viewportHeight - itemRect.top - menuEndGap) + 'px';
       if ((itemRect.top + childRect.height + menuEndGap) > viewportHeight) {
-        style.maxHeight = (viewportHeight - itemRect.top - menuEndGap) + 'px';
         style.overflowY = 'scroll';
+      } else {
+        style.overflowY = 'auto';
       }
     },
 
