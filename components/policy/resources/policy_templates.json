@@ -957,6 +957,15 @@
       ]
     },
     {
+      'name': 'GoogleAssistant',
+      'type': 'group',
+      'caption': '''Google Assistant''',
+      'desc': '''Controls settings for Google Assistant.''',
+      'policies': [
+        'VoiceInteractionContextEnabled',
+      ]
+    },
+    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -14770,6 +14779,24 @@
 
       If this policy is not set, networking code may run out of the browser process depending on field trials of the NetworkService experiment.''',
     },
+    {
+      'name': 'VoiceInteractionContextEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:74-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 527,
+      'caption': '''"Allow Google Assistant to access screen context"''',
+      'desc': '''This policy gives Google Assistant permission to access screen context and send the info to server.
+      If the policy is enabled, Google Assistant will be allowed to access screen context.
+      If the policy is disabled, Google Assistant will not be allowed to access screen context.
+      If not set, users can decide whether to allow Google Assistant to access screen context or not''',
+    },
   ],
 
   'messages': {
@@ -14935,5 +14962,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  526
+  'highest_id_currently_used':  527
 }
