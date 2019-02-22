@@ -4227,6 +4227,12 @@
     "pref_mappings": [{ "pref": "certificate_management_allowed" }]
   },
 
+  "VoiceInteractionContextEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "VoiceInteractionContextEnabled": true },
+    "pref_mappings": [{ "pref": "settings.voice_interaction.context.enabled" }]
+  },
+
   "DeviceRebootOnUserSignout": {
     "os": ["chromeos"],
     "test_policy": {

@@ -15508,6 +15508,7 @@ Called by update_net_error_codes.py.-->
   <int value="524" label="BrowserSwitcherDelay"/>
   <int value="525" label="PrintingAllowedPinModes"/>
   <int value="526" label="PrintingPinDefault"/>
+  <int value="527" label="VoiceInteractionContextEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
