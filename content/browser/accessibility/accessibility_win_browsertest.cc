@@ -98,7 +98,8 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   void SetUpSampleParagraphInScrollableEditable(
       Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
-
+  BrowserAccessibility* FindNode(ax::mojom::Role role, const std::string& name);
+  BrowserAccessibilityManager* GetManager();
   static Microsoft::WRL::ComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
       VARIANT* var);
@@ -123,7 +124,9 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpSampleParagraphHelper(
       Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text);
-
+  BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
+                                          ax::mojom::Role role,
+                                          const std::string& name);
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
 };
 
@@ -474,6 +477,35 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
   ASSERT_HRESULT_SUCCEEDED(paragraph.CopyTo(accessible_text->GetAddressOf()));
 }
 
+BrowserAccessibility* AccessibilityWinBrowserTest::FindNode(
+    ax::mojom::Role role,
+    const std::string& name) {
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  CHECK(root);
+  return FindNodeInSubtree(*root, role, name);
+}
+
+BrowserAccessibilityManager* AccessibilityWinBrowserTest::GetManager() {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  return web_contents->GetRootBrowserAccessibilityManager();
+}
+
+BrowserAccessibility* AccessibilityWinBrowserTest::FindNodeInSubtree(
+    BrowserAccessibility& node,
+    ax::mojom::Role role,
+    const std::string& name) {
+  if (node.GetRole() == role &&
+      node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
+    return &node;
+  for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
+    BrowserAccessibility* result =
+        FindNodeInSubtree(*node.PlatformGetChild(i), role, name);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
 // Static helpers ------------------------------------------------
 
 Microsoft::WRL::ComPtr<IAccessible>
@@ -3140,6 +3172,140 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Ensure that we get the native focus event on that input element.
   win_event_waiter.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <div aria-label='not'>
+            not scrollable
+          </div>
+          <div style='width:10px; overflow:scroll' aria-label='x'>
+              scrollable in x
+            </div>
+          <div style='height:10px; overflow:scroll' aria-label='y'>
+            scrollable in y
+          </div>
+          <div style='width:10px; height:10px; overflow:scroll' aria-label='xy'>
+            scrollable in x and y
+          </div>
+        </body>
+      </html>
+    )HTML");
+
+  struct ScrollTestData {
+    std::string node_name;
+    bool can_scroll_horizontal;
+    bool can_scroll_vertical;
+    double size_horizontal;
+    double size_vertical;
+  };
+  double error = 0.01f;
+  std::vector<ScrollTestData> all_expected = {{"not", false, false, 0, 0},
+                                              {"x", true, false, 12.65, 0},
+                                              {"y", false, true, 0, 28.57},
+                                              {"xy", true, true, 12.65, 9.34}};
+  for (auto& expected : all_expected) {
+    BrowserAccessibility* browser_accessibility =
+        FindNode(ax::mojom::Role::kGenericContainer, expected.node_name);
+    EXPECT_NE(browser_accessibility, nullptr);
+
+    BrowserAccessibilityComWin* browser_accessibility_com_win =
+        ToBrowserAccessibilityWin(browser_accessibility)->GetCOM();
+    CComPtr<IScrollProvider> scroll_provider;
+
+    EXPECT_HRESULT_SUCCEEDED(browser_accessibility_com_win->GetPatternProvider(
+        UIA_ScrollPatternId, reinterpret_cast<IUnknown**>(&scroll_provider)));
+
+    if (expected.can_scroll_vertical || expected.can_scroll_horizontal) {
+      ASSERT_NE(nullptr, scroll_provider);
+
+      BOOL can_scroll_horizontal;
+      EXPECT_HRESULT_SUCCEEDED(
+          scroll_provider->get_HorizontallyScrollable(&can_scroll_horizontal));
+      ASSERT_EQ(expected.can_scroll_horizontal, can_scroll_horizontal);
+      if (expected.can_scroll_horizontal) {
+        double size_horizontal;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_HorizontalViewSize(&size_horizontal));
+        EXPECT_NEAR(expected.size_horizontal, size_horizontal, error);
+
+        double x_before;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_HorizontalScrollPercent(&x_before));
+        EXPECT_NEAR(0, x_before, error);
+
+        AccessibilityNotificationWaiter waiter(
+            shell()->web_contents(), ui::kAXModeComplete,
+            ax::mojom::Event::kScrollPositionChanged);
+
+        EXPECT_HRESULT_SUCCEEDED(scroll_provider->Scroll(
+            ScrollAmount_SmallIncrement, ScrollAmount_NoAmount));
+        waiter.WaitForNotification();
+
+        double x_after;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_HorizontalScrollPercent(&x_after));
+        EXPECT_GT(x_after, x_before);
+
+        AccessibilityNotificationWaiter waiter2(
+            shell()->web_contents(), ui::kAXModeComplete,
+            ax::mojom::Event::kScrollPositionChanged);
+
+        EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(0.0, 0.0));
+        waiter2.WaitForNotification();
+
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_HorizontalScrollPercent(&x_after));
+        EXPECT_NEAR(0, x_after, error);
+      }
+
+      BOOL can_scroll_vertical;
+      EXPECT_HRESULT_SUCCEEDED(
+          scroll_provider->get_VerticallyScrollable(&can_scroll_vertical));
+      ASSERT_EQ(expected.can_scroll_vertical, can_scroll_vertical);
+      if (expected.can_scroll_vertical) {
+        double size_vertical;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_VerticalViewSize(&size_vertical));
+        EXPECT_NEAR(expected.size_vertical, size_vertical, error);
+
+        double y_before;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_VerticalScrollPercent(&y_before));
+        EXPECT_NEAR(0, y_before, error);
+
+        AccessibilityNotificationWaiter waiter(
+            shell()->web_contents(), ui::kAXModeComplete,
+            ax::mojom::Event::kScrollPositionChanged);
+
+        EXPECT_HRESULT_SUCCEEDED(scroll_provider->Scroll(
+            ScrollAmount_NoAmount, ScrollAmount_SmallIncrement));
+        waiter.WaitForNotification();
+
+        double y_after;
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_VerticalScrollPercent(&y_after));
+        EXPECT_GT(y_after, y_before);
+
+        AccessibilityNotificationWaiter waiter2(
+            shell()->web_contents(), ui::kAXModeComplete,
+            ax::mojom::Event::kScrollPositionChanged);
+
+        EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(0.0, 0.0));
+        waiter2.WaitForNotification();
+
+        EXPECT_HRESULT_SUCCEEDED(
+            scroll_provider->get_VerticalScrollPercent(&y_after));
+        EXPECT_NEAR(0, y_after, error);
+      }
+    } else {
+      EXPECT_EQ(nullptr, scroll_provider);
+    }
+  }
 }
 
 }  // namespace content
