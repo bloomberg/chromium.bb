@@ -1482,7 +1482,6 @@ def _CreateSwarmingArgs(build, suite, board, priority,
   swarming_timeout = swarming_timeout * 60 + _SWARMING_ADDITIONAL_TIMEOUT
 
   priority_num = None
-  service_account_json = topology.topology.get(topology.SERVICE_ACCOUNT_KEY)
   if run_skylab:
     swarming_server = topology.topology.get(
         topology.CHROME_SWARMING_PROXY_HOST_KEY)
@@ -1517,7 +1516,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
       'hard_timeout_secs': swarming_timeout,
       'expiration_secs': _SWARMING_EXPIRATION,
       'tags': tags,
-      'service_account_json': service_account_json,
+      'service_account_json': constants.CHROMEOS_SERVICE_ACCOUNT,
   }
 
 
