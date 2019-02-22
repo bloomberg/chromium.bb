@@ -41,8 +41,18 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,
-                                         ULOC_CANADA_FRENCH};
+  // String literals used in some cases in the array because their
+  // constant equivalents don't exist in:
+  // third_party/icu/source/common/unicode/uloc.h
+  const std::string kAllowedLocales[] = {ULOC_CANADA,
+                                         ULOC_CANADA_FRENCH,
+                                         ULOC_FRENCH,
+                                         ULOC_UK,
+                                         ULOC_US,
+                                         "da_DK",
+                                         "nl_NL",
+                                         "no_NO"
+                                         "sv_SE"};
 
   const PrefService* prefs = profile->GetPrefs();
   std::string pref_locale =
