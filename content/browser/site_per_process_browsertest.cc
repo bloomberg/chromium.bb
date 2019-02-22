@@ -10660,9 +10660,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
   ASSERT_EQ(1u, root->child_count());
   FrameTreeNode* child_node = root->child_at(0);
 
-  // Add a *slow* & passive touch event handler in the child. It needs to be
-  // passive to ensure TouchStart doesn't get acked until after the touch
-  // handler completes.
+  // Add a *slow* & non-passive touch event handler in the child. It needs to
+  // be non-passive to ensure TouchStart doesn't get acked until after the
+  // touch handler completes.
   EXPECT_TRUE(ExecuteScript(child_node,
                             "touch_event_count = 0;\
        function touch_handler(ev) {\
@@ -10738,11 +10738,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
       std::make_unique<SyntheticTapGesture>(root_tap_params);
 
   // Queue both GestureTaps, child first.
-  root_host->QueueSyntheticGesture(
-      std::move(child_tap_gesture),
-      base::BindOnce([](SyntheticGesture::Result result) {
-        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
-      }));
+  // Note that we want the SyntheticGestureController to start sending the
+  // root tap gesture as soon as it's finished sending the events for the
+  // child tap gesture, otherwise it would wait for the acks from the child
+  // before starting the root gesture which defeats the purpose of this test.
+  root_host->QueueSyntheticGestureCompleteImmediately(
+      std::move(child_tap_gesture));
   root_host->QueueSyntheticGesture(
       std::move(root_tap_gesture),
       base::BindOnce([](SyntheticGesture::Result result) {
