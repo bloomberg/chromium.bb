@@ -66,18 +66,19 @@ class HeadlessProtocolBrowserTest
 
  private:
   // HeadlessWebContentsObserver implementation.
-  void DevToolsTargetReady() override {
-    HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady();
+  void RunDevTooledTest() override {
+    browser_devtools_client_->SetRawProtocolListener(this);
     devtools_client_->GetRuntime()->GetExperimental()->AddObserver(this);
     devtools_client_->GetRuntime()->Enable();
     devtools_client_->GetRuntime()->GetExperimental()->AddBinding(
         headless::runtime::AddBindingParams::Builder()
             .SetName("sendProtocolMessage")
-            .Build());
-    browser_devtools_client_->SetRawProtocolListener(this);
+            .Build(),
+        base::BindOnce(&HeadlessProtocolBrowserTest::BindingCreated,
+                       base::Unretained(this)));
   }
 
-  void RunDevTooledTest() override {
+  void BindingCreated(std::unique_ptr<headless::runtime::AddBindingResult>) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath src_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
