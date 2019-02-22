@@ -634,17 +634,6 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/androidx': {
-      'packages': [
-          {
-              'package': 'chromium/third_party/androidx',
-              'version': 'Z2TKYlinmuC0HUW4ulv89ataKxbXJDsnPYgylLVzuBEC',
-          },
-      ],
-      'condition': 'checkout_android',
-      'dep_type': 'cipd',
-  },
-
   'src/third_party/angle':
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
@@ -1361,6 +1350,61 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/android_arch_lifecycle_runtime',
               'version': 'version:1.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_annotation_annotation': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_annotation_annotation',
+              'version': 'version:1.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_lifecycle_lifecycle_common': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_common',
+              'version': 'version:2.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_test_core': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_test_core',
+              'version': 'version:1.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_test_ext_junit': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_test_ext_junit',
+              'version': 'version:1.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_test_monitor': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_test_monitor',
+              'version': 'version:1.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',
