@@ -11,7 +11,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -68,19 +67,12 @@ class SystemMonitor {
     struct MetricRefreshFrequencies {
       SamplingFrequency free_phys_memory_mb_frequency =
           SamplingFrequency::kNoSampling;
-
-      SamplingFrequency disk_idle_time_percent_frequency =
-          SamplingFrequency::kNoSampling;
     };
 
     ~SystemObserver() override = default;
 
     // Reports the amount of free physical memory, in MB.
     virtual void OnFreePhysicalMemoryMbSample(int free_phys_memory_mb);
-
-    // Reports the disk idle time during the last observation interval, in
-    // percent (between 0.0 and 1.0).
-    virtual void OnDiskIdleTimePercent(float disk_idle_time_percent);
   };
   using ObserverToFrequenciesMap =
       base::flat_map<SystemObserver*, SystemObserver::MetricRefreshFrequencies>;
@@ -101,11 +93,6 @@ class SystemMonitor {
     return refresh_timer_;
   }
 
-  void SetMetricEvaluatorsHelperForTesting(
-      std::unique_ptr<MetricEvaluatorsHelper> helper) {
-    metric_evaluators_helper_.reset(helper.release());
-  }
-
  protected:
   friend class SystemMonitorTest;
 
@@ -114,7 +101,6 @@ class SystemMonitor {
    public:
     enum class Type : size_t {
       kFreeMemoryMb,
-      kDiskIdleTimePercent,
       kMax,
     };
 
@@ -281,10 +267,6 @@ class MetricEvaluatorsHelper {
 
   // Returns the free physical memory, in megabytes.
   virtual base::Optional<int> GetFreePhysicalMemoryMb() = 0;
-
-  // Return the disk idle time, in percentage of time since the last call to
-  // this function (returns nullopt on the first call).
-  virtual base::Optional<float> GetDiskIdleTimePercent() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelper);

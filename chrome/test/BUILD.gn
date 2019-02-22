@@ -4424,7 +4424,6 @@ test("unit_tests") {
     sources += [
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
-      "../browser/performance_monitor/wmi_refresher_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
     deps += [
