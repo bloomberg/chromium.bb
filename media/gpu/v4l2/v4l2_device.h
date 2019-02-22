@@ -45,6 +45,7 @@ namespace media {
 
 class V4L2Queue;
 class V4L2BufferQueueProxy;
+class V4L2BuffersList;
 
 // A unique reference to a buffer for clients to prepare and submit.
 //
@@ -131,8 +132,14 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
 // Clients use this class to query the buffer state and content, and are
 // guaranteed that the buffer will not be reused until all references are
 // destroyed.
+// All methods of this class must be called from the same sequence, but
+// instances of V4L2ReadableBuffer objects can be destroyed from any sequence.
+// They can even outlive the V4L2 buffers they originate from. This flexibility
+// is required because V4L2ReadableBufferRefs can be embedded into VideoFrames,
+// which are then passed to other threads and not necessarily destroyed before
+// the V4L2Queue buffers are freed.
 class MEDIA_GPU_EXPORT V4L2ReadableBuffer
-    : public base::RefCounted<V4L2ReadableBuffer> {
+    : public base::RefCountedThreadSafe<V4L2ReadableBuffer> {
  public:
   // Returns whether the V4L2_BUF_FLAG_LAST flag is set for this buffer.
   bool IsLast() const;
@@ -149,16 +156,17 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   size_t BufferId() const;
 
  private:
+  friend class V4L2BufferRefFactory;
+  friend class base::RefCountedThreadSafe<V4L2ReadableBuffer>;
+
   ~V4L2ReadableBuffer();
 
   V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
                      scoped_refptr<V4L2Queue> queue);
-  friend class V4L2BufferRefFactory;
 
   std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  friend class base::RefCounted<V4L2ReadableBuffer>;
   DISALLOW_COPY_AND_ASSIGN(V4L2ReadableBuffer);
 };
 
@@ -256,8 +264,6 @@ class MEDIA_GPU_EXPORT V4L2Queue
  private:
   ~V4L2Queue();
 
-  // Called when clients lose their reference to a buffer.
-  void ReturnBuffer(size_t buffer_id);
   // Called when clients request a buffer to be queued.
   bool QueueBuffer(struct v4l2_buffer* v4l2_buffer);
 
@@ -270,7 +276,7 @@ class MEDIA_GPU_EXPORT V4L2Queue
 
   // Buffers that are available for client to get and submit.
   // Buffers in this list are not referenced by anyone else than ourselves.
-  std::set<size_t> free_buffers_;
+  scoped_refptr<V4L2BuffersList> free_buffers_;
   // Buffers that have been queued by the client, and not dequeued yet.
   std::set<size_t> queued_buffers_;
 
