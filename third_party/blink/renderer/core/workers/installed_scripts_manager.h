@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -17,10 +18,14 @@ namespace blink {
 // InstalledScriptsManager provides the scripts of workers that have been
 // installed. Currently it is only used for installed service workers.
 class InstalledScriptsManager {
+  USING_FAST_MALLOC(InstalledScriptsManager);
+
  public:
   InstalledScriptsManager() = default;
 
   class CORE_EXPORT ScriptData {
+    USING_FAST_MALLOC(ScriptData);
+
    public:
     ScriptData() = default;
     ScriptData(const KURL& script_url,
