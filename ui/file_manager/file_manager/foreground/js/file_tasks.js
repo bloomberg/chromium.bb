@@ -687,10 +687,9 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
               'Error sharing with linux to execute: ' +
               chrome.runtime.lastError.message);
         }
-        // Register paths as shared, and now we are ready to execute.
-        entriesToShare.forEach((entry) => {
-          this.crostini_.registerSharedPath(entry);
-        });
+        // crbug.com/925973.  Do not register non-persisted shared paths since
+        // we can't be sure at any time that the VM has not restarted and they
+        // are still shared.
         callback();
       });
 };

@@ -636,6 +636,8 @@ function testMaybeShareCrostiniOrShowDialog() {
   expect(
       '2 entries, not shared, same dir', [notShared1, notShared2], true, '',
       '');
+  // Non-persistent shares should not be registered.
+  assertFalse(crostini.isPathShared(notShared1));
 
   expect(
       '2 entries, not shared, different dir', [notShared1, otherNotShared],
