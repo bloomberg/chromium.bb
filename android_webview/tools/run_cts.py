@@ -43,7 +43,7 @@ _ARCH_SPECIFIC_CTS_INFO = ["filename", "unzip_dir", "_origin"]
 
 _CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
 
-_SDK_PLATFORM_DICT = {
+SDK_PLATFORM_DICT = {
     version_codes.LOLLIPOP: 'L',
     version_codes.LOLLIPOP_MR1: 'L',
     version_codes.MARSHMALLOW: 'M',
@@ -73,8 +73,8 @@ FILE_FILTER_OPT = '--test-launcher-filter-file'
 TEST_FILTER_OPT = '--test-filter'
 ISOLATED_FILTER_OPT = '--isolated-script-test-filter'
 
-def GetCtsInfo(arch, platform, item):
-  """Gets contents of CTS Info for arch and platform.
+def GetCtsInfo(arch, cts_release, item):
+  """Gets contents of CTS Info for arch and cts_release.
 
   See _WEBVIEW_CTS_GCS_PATH_FILE
   """
@@ -82,17 +82,17 @@ def GetCtsInfo(arch, platform, item):
     cts_gcs_path_info = json.load(f)
   try:
     if item in _ARCH_SPECIFIC_CTS_INFO:
-      return cts_gcs_path_info[platform]['arch'][arch][item]
+      return cts_gcs_path_info[cts_release]['arch'][arch][item]
     else:
-      return cts_gcs_path_info[platform][item]
+      return cts_gcs_path_info[cts_release][item]
   except KeyError:
     raise Exception('No %s info available for arch:%s, android:%s' %
-                    (item, arch, platform))
+                    (item, arch, cts_release))
 
 
-def GetCTSModuleNames(arch, platform):
-  """Gets the module apk name of the arch and platform"""
-  test_runs = GetCtsInfo(arch, platform, 'test_runs')
+def GetCTSModuleNames(arch, cts_release):
+  """Gets the module apk name of the arch and cts_release"""
+  test_runs = GetCtsInfo(arch, cts_release, 'test_runs')
   return [os.path.basename(r['apk']) for r in test_runs]
 
 
@@ -179,20 +179,20 @@ def MergeTestResults(existing_results_json, additional_results_json):
             "Can't merge results field %s that is not a list or dict" % v)
 
 
-def ExtractCTSZip(args, arch):
-  """Extract the CTS tests for args.platform.
+def ExtractCTSZip(args, arch, cts_release):
+  """Extract the CTS tests for cts_release.
 
   Extract the CTS zip file from _CTS_ARCHIVE_DIR to
   apk_dir if specified, or a new temporary directory if not.
   Returns following tuple (local_cts_dir, base_cts_dir, delete_cts_dir):
-    local_cts_dir - CTS extraction location for current arch and platform
+    local_cts_dir - CTS extraction location for current arch and cts_release
     base_cts_dir - Root directory for all the arches and platforms
     delete_cts_dir - Set if the base_cts_dir was created as a temporary
     directory
   """
   base_cts_dir = None
   delete_cts_dir = False
-  relative_cts_zip_path = GetCtsInfo(arch, args.platform, 'filename')
+  relative_cts_zip_path = GetCtsInfo(arch, cts_release, 'filename')
 
   if args.apk_dir:
     base_cts_dir = args.apk_dir
@@ -202,7 +202,7 @@ def ExtractCTSZip(args, arch):
 
   cts_zip_path = os.path.join(_CTS_ARCHIVE_DIR, relative_cts_zip_path)
   local_cts_dir = os.path.join(base_cts_dir,
-                               GetCtsInfo(arch, args.platform,
+                               GetCtsInfo(arch, cts_release,
                                           'unzip_dir')
                               )
   zf = zipfile.ZipFile(cts_zip_path, 'r')
@@ -210,21 +210,22 @@ def ExtractCTSZip(args, arch):
   return (local_cts_dir, base_cts_dir, delete_cts_dir)
 
 
-def RunAllCTSTests(args, arch, test_runner_args):
+def RunAllCTSTests(args, arch, cts_release, test_runner_args):
   """Run CTS tests downloaded from _CTS_BUCKET.
 
   Downloads CTS tests from bucket, runs them for the
-  specified platform+arch, then creates a single
+  specified cts_release+arch, then creates a single
   results json file (if specified)
   Returns 0 if all tests passed, otherwise
   returns the failure code of the last failing
   test.
   """
-  local_cts_dir, base_cts_dir, delete_cts_dir = ExtractCTSZip(args, arch)
+  local_cts_dir, base_cts_dir, delete_cts_dir = ExtractCTSZip(args, arch,
+                                                              cts_release)
   cts_result = 0
   json_results_file = args.json_results_file
   try:
-    cts_test_runs = GetCtsInfo(arch, args.platform, 'test_runs')
+    cts_test_runs = GetCtsInfo(arch, cts_release, 'test_runs')
     cts_results_json = {}
     for cts_test_run in cts_test_runs:
       iteration_cts_result = 0
@@ -259,13 +260,38 @@ def RunAllCTSTests(args, arch, test_runner_args):
   return cts_result
 
 
-def DeterminePlatform(device):
-  """Determines the platform based on the Android SDK level
+def DetermineCtsRelease(device):
+  """Determines the CTS release based on the Android SDK level
 
-  Returns the first letter of the platform in uppercase
-  if platform is found, otherwise returns None
+  Args:
+    device: The DeviceUtils instance
+  Returns:
+    The first letter of the cts_release in uppercase.
+  Raises:
+    Exception: if we don't have the CTS tests for the device platform saved in
+      CIPD already.
   """
-  return _SDK_PLATFORM_DICT.get(device.build_version_sdk)
+  cts_release = SDK_PLATFORM_DICT.get(device.build_version_sdk)
+  if not cts_release:
+    # Check if we're above the supported version range.
+    max_supported_sdk = max(SDK_PLATFORM_DICT.keys())
+    if device.build_version_sdk > max_supported_sdk:
+      raise Exception("We don't have tests for API level {api_level}, try "
+                      "running the {release} tests with `--cts-release "
+                      "{release}`".format(
+                          api_level=device.build_version_sdk,
+                          release=SDK_PLATFORM_DICT.get(max_supported_sdk),
+                      ))
+    # Otherwise, we must be below the supported version range.
+    min_supported_sdk = min(SDK_PLATFORM_DICT.keys())
+    raise Exception("We don't support running CTS tests on platforms less "
+                    "than {release} as the WebView is not updatable".format(
+                        release=SDK_PLATFORM_DICT.get(min_supported_sdk),
+                    ))
+  logging.info(('Using test APKs from CTS release=%s because '
+                'build.version.sdk=%s'),
+               cts_release, device.build_version_sdk)
+  return cts_release
 
 
 def DetermineArch(device):
@@ -298,12 +324,16 @@ def main():
       help=('Architecture to for CTS tests. Will auto-determine based on '
             'the device ro.product.cpu.abi property.'))
   parser.add_argument(
+      '--cts-release',
+      # TODO(aluo): --platform is deprecated (the meaning is unclear).
       '--platform',
-      choices=['L', 'M', 'N', 'O'],
+      choices=sorted(set(SDK_PLATFORM_DICT.values())),
       required=False,
       default=None,
-      help='Android platform version for CTS tests. '
-           'Will auto-determine based on SDK level by default.')
+      help='Which CTS release to use for the run. This should generally be <= '
+           'device OS level (otherwise, the newer tests will fail). If '
+           'unspecified, the script will auto-determine the release based on '
+           'device OS level.')
   parser.add_argument(
       '--skip-expected-failures',
       action='store_true',
@@ -344,13 +374,8 @@ def main():
                     len(devices), device.serial)
   test_runner_args.extend(['-d', device.serial])
 
-  if args.platform is None:
-    args.platform = DeterminePlatform(device)
-    if args.platform is None:
-      raise Exception('Could not auto-determine device platform, '
-                      'please specifiy --platform')
-
-  arch = args.arch if args.arch else DetermineArch(device)
+  arch = args.arch or DetermineArch(device)
+  cts_release = args.cts_release or DetermineCtsRelease(device)
 
   if (args.test_filter_file or args.test_filter
       or args.isolated_script_test_filter):
@@ -364,13 +389,13 @@ def main():
     if not args.module_apk:
       args.module_apk = 'CtsWebkitTestCases.apk'
 
-  platform_modules = GetCTSModuleNames(arch, args.platform)
+  platform_modules = GetCTSModuleNames(arch, cts_release)
   if args.module_apk and args.module_apk not in platform_modules:
-    raise Exception('--module-apk for arch==' + arch + 'and platform=='
-                    + args.platform + ' must be one of: '
+    raise Exception('--module-apk for arch==' + arch + 'and cts_release=='
+                    + cts_release + ' must be one of: '
                     + ', '.join(platform_modules))
 
-  return RunAllCTSTests(args, arch, test_runner_args)
+  return RunAllCTSTests(args, arch, cts_release, test_runner_args)
 
 
 if __name__ == '__main__':

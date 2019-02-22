@@ -14,6 +14,7 @@ sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
 import devil_chromium  # pylint: disable=import-error, unused-import
 from devil.android.ndk import abis  # pylint: disable=import-error
+from devil.android.sdk import version_codes  # pylint: disable=import-error
 
 class _RunCtsTest(unittest.TestCase):
   """Unittests for the run_cts module.
@@ -45,6 +46,38 @@ class _RunCtsTest(unittest.TestCase):
     device = mock.Mock(product_cpu_abi='madeup-abi')
     with self.assertRaises(Exception) as _:
       run_cts.DetermineArch(device)
+
+  def testDetermineCtsRelease_marshmallow(self):
+    logging_mock = mock.Mock()
+    logging.info = logging_mock
+    device = mock.Mock(build_version_sdk=version_codes.MARSHMALLOW)
+    self.assertEqual(run_cts.DetermineCtsRelease(device), 'M')
+    # We should log a message to explain how we auto-determined the CTS release.
+    # We don't assert the message itself, since that's rather strict.
+    logging_mock.assert_called()
+
+  def testDetermineCtsRelease_tooLow(self):
+    device = mock.Mock(build_version_sdk=version_codes.KITKAT)
+    with self.assertRaises(Exception) as cm:
+      run_cts.DetermineCtsRelease(device)
+    message = str(cm.exception)
+    self.assertIn('not updatable', message)
+
+  def testDetermineCtsRelease_tooHigh(self):
+    device = mock.Mock(build_version_sdk=version_codes.OREO)
+    # Mock this out with a couple version codes to check that the logic is
+    # correct, without making assumptions about what version_codes we may
+    # support in the future.
+    mock_sdk_platform_dict = {
+        version_codes.MARSHMALLOW: 'min fake release',
+        version_codes.NOUGAT: 'max fake release',
+    }
+    run_cts.SDK_PLATFORM_DICT = mock_sdk_platform_dict
+    with self.assertRaises(Exception) as cm:
+      run_cts.DetermineCtsRelease(device)
+    message = str(cm.exception)
+    self.assertIn('--cts-release max fake release', message,
+                  msg='Should recommend the highest supported CTS release')
 
   def testNoFilter_SkipExpectedFailures(self):
     mock_args = self._getArgsMock(skip_expected_failures=True)
