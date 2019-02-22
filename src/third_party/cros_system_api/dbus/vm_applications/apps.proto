@@ -1,0 +1,80 @@
+// Copyright 2018 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+
+package vm_tools.apps;
+
+// Corresponds to a .desktop file from the Desktop Entry Spec:
+// https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
+message App {
+  // A "localestring". Entries with a locale should set the |locale| field to
+  // the value inside the [] and the default entry should leave it empty. The
+  // browser is responsible for mapping this to something it can use.
+  message LocaleString {
+    message Entry {
+      string locale = 1;
+      string value = 2;
+    }
+    repeated Entry values = 1;
+  }
+
+  string desktop_file_id = 1;
+
+  // These fields map directly to keys from the Desktop Entry spec.
+  LocaleString name = 2;
+  LocaleString comment = 3;
+  repeated string mime_types = 4;
+  bool no_display = 5;
+  string startup_wm_class = 6;
+  bool startup_notify = 7;
+
+  // If set, the package_id of the installed package that owns this .desktop
+  // file. If not set, the .desktop file is not owned by an installed package.
+  string package_id = 8;
+}
+
+message ApplicationList {
+  repeated App apps = 1;
+
+  string vm_name = 2;
+  string container_name = 3;
+
+  // The owner of the vm and container.
+  string owner_id = 4;
+}
+
+// Used by the container to request that the host launches a new Terminal
+// application.
+message TerminalParams {
+  // Extra parameters to use when launching a terminal application that allow
+  // executing a command inside the terminal.
+  repeated string params = 1;
+
+  // Name of the VM to launch the terminal in.
+  string vm_name = 2;
+
+  // Name of the container within the VM to launch the terminal in.
+  string container_name = 3;
+
+  // The owner of the VM and container.
+  string owner_id = 4;
+}
+
+// MIME type mapping information internal to the container.
+message MimeTypes {
+  // MIME type mappings with file extension as the key without a period prefix
+  // and MIME type as the value.
+  map<string, string> mime_type_mappings = 1;
+
+  // Name of the VM this came from.
+  string vm_name = 2;
+
+  // Name of the container this came from.
+  string container_name = 3;
+
+  // The owner of the VM and container.
+  string owner_id = 4;
+}
