@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/profiles/incognito_window_count_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -161,21 +160,15 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
-  if (IsIncognitoCounterActive()) {
-    if (!IncognitoWindowCountView::IsShowing()) {
-      IncognitoWindowCountView::ShowBubble(
-          this, browser_,
-          BrowserList::GetIncognitoSessionsActiveForProfile(profile_));
-    }
-  } else {
-    // TODO(https://crbug.com/896235): Call IncognitoWindowCountView::ShowBubble
-    // from this ShowAvatarBubbleFromAvatarButton.
-    browser_->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-        signin::ManageAccountsParams(),
-        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-        event.IsKeyEvent());
-  }
+  if (IsIncognito() && !IsIncognitoCounterActive())
+    return;
+
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      IsIncognito() ? BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO
+                    : BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      event.IsKeyEvent());
 }
 
 void AvatarToolbarButton::OnThemeChanged() {
@@ -258,8 +251,12 @@ bool AvatarToolbarButton::IsIncognito() const {
 }
 
 bool AvatarToolbarButton::IsIncognitoCounterActive() const {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   return IsIncognito() &&
          base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {

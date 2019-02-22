@@ -25,6 +25,8 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_GAIA_REAUTH,
   // Shows a view for confirming account removal.
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
+  // Shows a view for incognito that displays the number of incognito windows.
+  BUBBLE_VIEW_MODE_INCOGNITO,
 };
 
 }  // namespace profiles
