@@ -64,6 +64,9 @@ class BASE_EXPORT ModuleCache {
   ModuleCache();
   ~ModuleCache();
 
+  // Gets the module containing |address| or an invalid module if |address| is
+  // not within a module. The returned module remains owned by and has the same
+  // lifetime as the ModuleCache object.
   const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
@@ -84,8 +87,13 @@ class BASE_EXPORT ModuleCache {
 #endif
 
 #if defined(OS_WIN)
+  const Module* GetModuleForHandle(HMODULE module_handle);
   static std::unique_ptr<Module> CreateModuleForHandle(HMODULE module_handle);
   friend class NativeStackSamplerWin;
+
+  // The module objects, indexed by the module handle.
+  // TODO(wittman): Merge this state into modules_cache_map_ and remove
+  std::map<HMODULE, std::unique_ptr<Module>> win_module_cache_;
 #endif
 
   std::map<uintptr_t, std::unique_ptr<Module>> modules_cache_map_;
