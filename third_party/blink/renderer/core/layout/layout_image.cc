@@ -240,6 +240,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
 }
 
 void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
+  LayoutObject::ImageNotifyFinished(new_image);
   if (!image_resource_)
     return;
 

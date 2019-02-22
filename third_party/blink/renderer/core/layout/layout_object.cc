@@ -3815,6 +3815,11 @@ void LayoutObject::ImageChanged(ImageResourceContent* image,
   ImageChanged(static_cast<WrappedImagePtr>(image), defer);
 }
 
+void LayoutObject::ImageNotifyFinished(ImageResourceContent*) {
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->ImageLoaded(this);
+}
+
 Element* LayoutObject::OffsetParent(const Element* base) const {
   if (IsDocumentElement() || IsBody())
     return nullptr;

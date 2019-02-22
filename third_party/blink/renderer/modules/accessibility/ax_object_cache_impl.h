@@ -85,6 +85,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ListboxActiveIndexChanged(HTMLSelectElement*) override;
   void LocationChanged(LayoutObject*) override;
   void RadiobuttonRemovedFromGroup(HTMLInputElement*) override;
+  void ImageLoaded(LayoutObject*) override;
 
   void Remove(AccessibleNode*) override;
   void Remove(LayoutObject*) override;
