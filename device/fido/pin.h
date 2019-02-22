@@ -66,6 +66,8 @@ struct KeyAgreementRequest {
 struct KeyAgreementResponse {
   static base::Optional<KeyAgreementResponse> Parse(
       base::span<const uint8_t> buffer);
+  static base::Optional<KeyAgreementResponse> ParseFromCOSE(
+      const cbor::Value::MapValue& cose_key);
 
   // x and y contain the big-endian coordinates of a P-256 point. It is ensured
   // that this is a valid point on the curve.
