@@ -33,11 +33,11 @@ class MockHandler final : public WebRTCDataChannelHandler {
   }
   WebString Label() override { return WebString(""); }
   bool Ordered() const override { return true; }
-  unsigned short MaxRetransmitTime() const override { return 0; }
-  unsigned short MaxRetransmits() const override { return 0; }
+  uint16_t MaxRetransmitTime() const override { return 0; }
+  uint16_t MaxRetransmits() const override { return 0; }
   WebString Protocol() const override { return WebString(""); }
   bool Negotiated() const override { return false; }
-  unsigned short Id() const override { return 0; }
+  uint16_t Id() const override { return 0; }
 
   WebRTCDataChannelHandlerClient::ReadyState GetState() const override {
     return state_;

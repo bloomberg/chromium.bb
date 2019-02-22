@@ -192,12 +192,12 @@ bool RtcDataChannelHandler::Ordered() const {
   return channel()->ordered();
 }
 
-unsigned short RtcDataChannelHandler::MaxRetransmitTime() const {
+uint16_t RtcDataChannelHandler::MaxRetransmitTime() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return channel()->maxRetransmitTime();
 }
 
-unsigned short RtcDataChannelHandler::MaxRetransmits() const {
+uint16_t RtcDataChannelHandler::MaxRetransmits() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return channel()->maxRetransmits();
 }
@@ -212,7 +212,7 @@ bool RtcDataChannelHandler::Negotiated() const {
   return channel()->negotiated();
 }
 
-unsigned short RtcDataChannelHandler::Id() const {
+uint16_t RtcDataChannelHandler::Id() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return channel()->id();
 }
