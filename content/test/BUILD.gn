@@ -648,6 +648,7 @@ static_library("web_test_support") {
   deps = [
     ":test_support",
     "//cc",
+    "//components/viz/service",
     "//components/viz/test:test_support",
     "//content/browser:for_content_tests",
     "//content/child:for_content_tests",

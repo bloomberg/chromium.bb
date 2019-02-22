@@ -33,6 +33,9 @@ class TestLayerTreeFrameSinkClient {
  public:
   virtual ~TestLayerTreeFrameSinkClient() {}
 
+  virtual std::unique_ptr<SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurface() = 0;
+
   // This passes the ContextProvider being used by LayerTreeHostImpl which
   // can be used for the OutputSurface optionally.
   virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(

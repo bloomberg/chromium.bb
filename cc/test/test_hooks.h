@@ -17,6 +17,7 @@ struct PresentationFeedback;
 namespace viz {
 class CompositorFrame;
 class OutputSurface;
+class SkiaOutputSurface;
 }
 
 namespace cc {
@@ -133,6 +134,8 @@ class TestHooks : public AnimationDelegate {
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.
   virtual void RequestNewLayerTreeFrameSink() = 0;
+  virtual std::unique_ptr<viz::SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurfaceOnThread() = 0;
   virtual std::unique_ptr<viz::OutputSurface>
   CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) = 0;
