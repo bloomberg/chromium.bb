@@ -243,6 +243,10 @@ void ContentBrowserClientImpl::RegisterInProcessServices(
     services->insert(std::make_pair(chrome::mojom::kServiceName, info));
 }
 
+void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)
+{
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
