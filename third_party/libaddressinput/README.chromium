@@ -1,8 +1,8 @@
 Name: libaddressinput
 URL: https://github.com/googlei18n/libaddressinput
 Version: 0
-Date: 10 November 2014
-Revision: 4d18a0d4be9add0dc479e7b939ed8d39f6ec0d73
+Date: 21 February 2019
+Revision: 81e7ead903f5b71a326e0584f4325f106c804df1
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
