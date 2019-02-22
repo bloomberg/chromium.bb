@@ -16,11 +16,45 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Folder items are created by the Ash process and their existence is
+// communicated to chrome via the AppListClient. Therefore, crostini has an
+// observer that listens for the creation of its folder, and updates the
+// properties accordingly.
+class CrostiniAppModelBuilder::CrostiniFolderObserver
+    : public AppListModelUpdaterObserver {
+ public:
+  explicit CrostiniFolderObserver(CrostiniAppModelBuilder* parent)
+      : parent_(parent) {}
+
+  ~CrostiniFolderObserver() override = default;
+
+  void OnAppListItemAdded(ChromeAppListItem* item) override {
+    if (item->id() != crostini::kCrostiniFolderId)
+      return;
+    // Persistence is not recorded by the sync, so we always set it.
+    item->SetIsPersistent(true);
+
+    // Either the name and position will be in the sync, or we set them
+    // manually.
+    if (parent_->GetSyncItem(crostini::kCrostiniFolderId))
+      return;
+    item->SetName(
+        l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
+    item->SetDefaultPositionIfApplicable(parent_->model_updater());
+  }
+
+ private:
+  CrostiniAppModelBuilder* parent_;
+};
+
 CrostiniAppModelBuilder::CrostiniAppModelBuilder(
     AppListControllerDelegate* controller)
     : AppListModelBuilder(controller, CrostiniAppItem::kItemType) {}
 
 CrostiniAppModelBuilder::~CrostiniAppModelBuilder() {
+  if (crostini_folder_observer_) {
+    model_updater()->RemoveObserver(crostini_folder_observer_.get());
+  }
   // We don't need to remove ourself from the registry's observer list as these
   // are both KeyedServices (this class lives on AppListSyncableService).
 }
@@ -40,6 +74,13 @@ void CrostiniAppModelBuilder::BuildModel() {
       crostini::prefs::kCrostiniEnabled,
       base::BindRepeating(&CrostiniAppModelBuilder::OnCrostiniEnabledChanged,
                           base::Unretained(this)));
+
+  // We register an observer against the model_updater in order to track
+  // creation and deletion of the crostini folder.
+  if (model_updater()) {
+    crostini_folder_observer_ = std::make_unique<CrostiniFolderObserver>(this);
+    model_updater()->AddObserver(crostini_folder_observer_.get());
+  }
 }
 
 void CrostiniAppModelBuilder::InsertCrostiniAppItem(
@@ -56,7 +97,6 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
   if (registration.NoDisplay())
     return;
 
-  MaybeCreateRootFolder();
   InsertApp(std::make_unique<CrostiniAppItem>(profile(), model_updater(),
                                               GetSyncItem(app_id), app_id,
                                               registration.Name()));
@@ -119,22 +159,4 @@ void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
   } else {
     RemoveApp(crostini::kCrostiniTerminalId, unsynced_change);
   }
-}
-
-void CrostiniAppModelBuilder::MaybeCreateRootFolder() {
-  // If a sync item exists for the root folder, then it has been created
-  // already.
-  const app_list::AppListSyncableService::SyncItem* sync_item =
-      GetSyncItem(crostini::kCrostiniFolderId);
-  if (sync_item)
-    return;
-
-  std::unique_ptr<ChromeAppListItem> crositini_folder =
-      std::make_unique<ChromeAppListItem>(
-          profile(), crostini::kCrostiniFolderId, model_updater());
-  crositini_folder->SetChromeIsFolder(true);
-  crositini_folder->SetName(
-      l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
-  crositini_folder->SetDefaultPositionIfApplicable(model_updater());
-  InsertApp(std::move(crositini_folder));
 }
