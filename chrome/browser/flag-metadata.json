@@ -1663,8 +1663,9 @@
   },
   {
     "name": "enable-show-autofill-signatures",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kolos" ],
+    // Used for debugging and QA by the autofill team for the indefinite future.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-signed-http-exchange",
