@@ -57,7 +57,7 @@ Polymer({
     }
 
     app_management.BrowserProxy.getInstance().handler.setPinned(
-        this.app_.id, assert(newPinnedValue));
+        this.app_.id, newPinnedValue);
   },
 
   /**

@@ -1,0 +1,25 @@
+{# Note that goog.provide is understood by the Closure Compiler even if the
+   Closure base library is unavailable. See https://crbug.com/898692 #}
+goog.provide('{{module.namespace}}.{{struct.name}}');
+
+{% if struct.packed.packed_fields %}
+/**
+ * @typedef { {
+{%- for packed_field in struct.packed.packed_fields %}
+ *   {{packed_field.field.name}}: {{packed_field.field.kind|lite_closure_field_type}},
+{%-  endfor %}
+ * } }
+ */
+{% else %}
+/** @typedef {Object} */
+{% endif %}
+{{module.namespace}}.{{struct.name}};
+
+{#--- Enum definitions #}
+{% for enum in struct.enums %}
+/** @enum {number} */
+{{module.namespace}}.{{struct.name}}.{{enum.name}} = {};
+{%-   for field in enum.fields %}
+{{module.namespace}}.{{struct.name}}.{{enum.name}}.{{field.name}};
+{%-   endfor %}
+{%- endfor %}
