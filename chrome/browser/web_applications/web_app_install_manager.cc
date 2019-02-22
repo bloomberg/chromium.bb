@@ -190,6 +190,14 @@ void WebAppInstallManager::OnDialogCompleted(
 
   WebApplicationInfo web_app_info_copy = *web_app_info;
 
+  DCHECK(install_source_ != kNoInstallSource);
+
+  // This metric is recorded regardless of the installation result.
+  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
+      for_installable_site == ForInstallableSite::kYes) {
+    InstallableMetrics::TrackInstallEvent(install_source_);
+  }
+
   install_finalizer_->FinalizeInstall(
       web_app_info_copy,
       base::BindOnce(&WebAppInstallManager::OnInstallFinalized,
@@ -198,15 +206,6 @@ void WebAppInstallManager::OnDialogCompleted(
 
   // Check that the finalizer hasn't called OnInstallFinalized synchronously:
   DCHECK(install_callback_);
-  DCHECK(install_source_ != kNoInstallSource);
-
-  // In BookmarkAppHelper this tracking happens right after
-  // crx_installer_->InstallWebApp call (not in FinishInstallation).
-  // TODO(loyso): Consider to shift this recording to OnInstallFinalized.
-  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
-      for_installable_site == ForInstallableSite::kYes) {
-    InstallableMetrics::TrackInstallEvent(install_source_);
-  }
 }
 
 void WebAppInstallManager::OnInstallFinalized(
