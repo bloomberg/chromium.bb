@@ -56,7 +56,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
-      "https://chromium.googlesource.com/v8/v8@refs/changes/56/123456/7",
+      "https://chromium.googlesource.com/v8/v8@refs/heads/experimental/feature:refs/changes/56/123456/7",
       "--revision",
       "src@HEAD",
       "--revision",

@@ -56,7 +56,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
-      "https://chromium.googlesource.com/chromium/src@refs/changes/56/123456/7",
+      "https://chromium.googlesource.com/chromium/src@refs/heads/master:refs/changes/56/123456/7",
       "--revision",
       "src@HEAD",
       "--disable-syntax-validation"
