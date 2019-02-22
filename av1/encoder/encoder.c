@@ -4423,14 +4423,6 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     end_timing(cpi, av1_encode_frame_time);
 #endif
 
-    // Update some stats from cyclic refresh, and check if we should not update
-    // golden reference, for 1 pass CBR.
-    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
-        cm->current_frame.frame_type != KEY_FRAME &&
-        (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == AOM_CBR)) {
-      av1_cyclic_refresh_check_golden_update(cpi);
-    }
-
     aom_clear_system_state();
 
     // Dummy pack of the bitstream using up to date stats to get an
