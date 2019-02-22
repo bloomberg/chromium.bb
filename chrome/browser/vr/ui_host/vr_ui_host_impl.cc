@@ -7,6 +7,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -75,6 +76,27 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   if (permission_request_manager_) {
     permission_request_manager_->RemoveObserver(this);
     permission_request_manager_ = nullptr;
+  }
+
+  if (web_contents_ != contents) {
+    if (web_contents_) {
+      auto* metrics_helper =
+          SessionMetricsHelper::FromWebContents(web_contents_);
+      metrics_helper->SetWebVREnabled(false);
+      metrics_helper->SetVRActive(false);
+    }
+    if (contents) {
+      auto* metrics_helper =
+          SessionMetricsHelper::FromWebContents(web_contents_);
+      if (!metrics_helper) {
+        metrics_helper = SessionMetricsHelper::CreateForWebContents(
+            contents, Mode::kWebXrVrPresentation);
+      } else {
+        metrics_helper->SetWebVREnabled(true);
+        metrics_helper->SetVRActive(true);
+      }
+      metrics_helper->RecordVrStartAction(VrStartAction::kPresentationRequest);
+    }
   }
 
   if (web_contents_)
