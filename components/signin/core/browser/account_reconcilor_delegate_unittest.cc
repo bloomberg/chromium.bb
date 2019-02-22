@@ -45,6 +45,8 @@ static const AccountReconcilorDelegateTestParam kReorderParams[] = {
    // Cookie was lost.
    { "A",              "",             'A',         "A"              },
    { "ABCD",           "",             'A',         "ABCD"           },
+   // B kept in place.
+   { "ADB",            "CB",           'A',         "ABD"            },
    // ACEG kept in place.
    { "ABCDEFGH",       "ACEG",         'A',         "ACEGBDFH"       },
    // C kept in place, but not B.
