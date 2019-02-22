@@ -64,11 +64,6 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   bool TryResolveUrl(const SmbUrl& url, std::string* updated_url) const;
 
  private:
-  // Handles the response from discovering hosts in the network.
-  void OnHostsDiscovered(HostDiscoveryResponse discovery_callback,
-                         bool success,
-                         const HostMap& hosts);
-
   // Handles the response from finding hosts in the network.
   void OnHostsFound(bool success, const HostMap& hosts);
 
@@ -95,6 +90,9 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
 
   // Inserts |shares_callback| to |share_callbacks_|.
   void InsertShareCallback(GatherSharesInNetworkResponse shares_callback);
+
+  // Inserts |discovery_callback| to |discovery_callbacks_|.
+  void InsertDiscoveryCallback(HostDiscoveryResponse discovery_callback);
 
   NetworkScanner scanner_;
 
