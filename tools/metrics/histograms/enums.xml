@@ -49225,6 +49225,9 @@ Called by update_net_trust_anchors.py.-->
     Entries that are read before a write to that entry has finished when read
     and write request interleave.
   </int>
+  <int value="7" label="WriteFailure">
+    Entries that could not be written, usually because they're too big.
+  </int>
 </enum>
 
 <enum name="SiteIsolatedCodeCacheWASMBehaviour">
@@ -49242,6 +49245,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="IncompleteEntry">
     Entries that are read before a write to that entry has finished when read
     and write request interleave.
+  </int>
+  <int value="7" label="WriteFailure">
+    Entries that could not be written, usually because they're too big.
   </int>
 </enum>
 
