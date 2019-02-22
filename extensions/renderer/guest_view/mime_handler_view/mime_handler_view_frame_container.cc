@@ -11,6 +11,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -18,15 +19,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
-
-namespace {
-
-bool IsSupportedMimeType(const std::string& mime_type) {
-  return mime_type == "text/pdf" || mime_type == "application/pdf" ||
-         mime_type == "text/csv";
-}
-
-}  // namespace
 
 class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
     : public content::RenderFrameObserver {
@@ -54,6 +46,13 @@ void MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::OnDestruct() {
   container_->OnDestroyFrameContainer(container_->element_instance_id_);
 }
 
+// static.
+bool MimeHandlerViewFrameContainer::IsSupportedMimeType(
+    const std::string& mime_type) {
+  return mime_type == "text/pdf" || mime_type == "application/pdf" ||
+         mime_type == "text/csv";
+}
+
 // static
 bool MimeHandlerViewFrameContainer::Create(
     const blink::WebElement& plugin_element,
@@ -77,6 +76,16 @@ bool MimeHandlerViewFrameContainer::Create(
                                            element_instance_id);
 }
 
+// static
+void MimeHandlerViewFrameContainer::CreateWithFrame(
+    blink::WebLocalFrame* web_frame,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const std::string& view_id) {
+  new MimeHandlerViewFrameContainer(web_frame, resource_url, mime_type,
+                                    view_id);
+}
+
 MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
@@ -92,23 +101,27 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
       element_instance_id_(element_instance_id),
       render_frame_lifetime_observer_(
           new RenderFrameLifetimeObserver(GetEmbedderRenderFrame(), this)) {
-  is_embedded_ = IsEmbedded();
-  if (is_embedded_) {
-    SendResourceRequest();
-  } else {
-    // TODO(ekaramad): Currently the full page version gets the same treatment
-    // as the embedded version of MimeHandlerViewFrameContainer; they both send
-    // a request for the resource. The full page version however should not as
-    // there is already an intercepted stream for the navigation. Change the
-    // logic here to a) IsEmbedded() return false for full page, b) the current
-    // intercepted stream is used and no new URLRequest is sent for the
-    // resource, and c) ensure creation of MimeHandlerViewFrameContainer does
-    // not lead to its destruction right away or the Create() method above would
-    // incorrectly return |true|. Note that currently calling
-    // CreateMimeHandlerViewGuestIfNecessary() could lead to the destruction of
-    // |this| when |plugin_element| does not have a content frame.
-    NOTREACHED();
-  }
+  is_embedded_ = true;
+  SendResourceRequest();
+}
+
+MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
+    blink::WebLocalFrame* web_local_frame,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const std::string& view_id)
+    : MimeHandlerViewContainerBase(
+          content::RenderFrame::FromWebFrame(
+              web_local_frame->Parent()->ToWebLocalFrame()),
+          content::WebPluginInfo(),
+          mime_type,
+          resource_url),
+      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()) {
+  is_embedded_ = false;
+  view_id_ = view_id;
+  plugin_frame_routing_id_ =
+      content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID();
+  MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary();
 }
 
 MimeHandlerViewFrameContainer::~MimeHandlerViewFrameContainer() {}
@@ -149,7 +162,10 @@ gfx::Size MimeHandlerViewFrameContainer::GetElementSize() const {
 }
 
 blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
-  return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
+  if (is_embedded_)
+    return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
+
+  return GetEmbedderRenderFrame()->GetWebFrame()->FirstChild();
 }
 
 // mime_handler::BeforeUnloadControl implementation.
@@ -157,15 +173,6 @@ void MimeHandlerViewFrameContainer::SetShowBeforeUnloadDialog(
     bool show_dialog,
     SetShowBeforeUnloadDialogCallback callback) {
   // TODO(ekaramad): Implement.
-}
-
-bool MimeHandlerViewFrameContainer::IsEmbedded() const {
-  // TODO(ekaramad): This is currently sending a request regardless of whether
-  // or not this embed is due to frame navigation to resource. For such cases,
-  // the renderer has already started a resource request and we should not send
-  // twice. Find a way to get the intercepted stream and avoid sending an extra
-  // request here.
-  return true;
 }
 
 }  // namespace extensions

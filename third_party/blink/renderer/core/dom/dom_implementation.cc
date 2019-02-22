@@ -258,8 +258,10 @@ Document* DOMImplementation::createDocument(const String& type,
   // We do not want QuickTime to take over all image types, obviously.
   if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return PluginDocument::Create(
-        init, plugin_data->PluginBackgroundColorForMimeType(type));
+    return RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()
+               ? HTMLDocument::Create(init)
+               : PluginDocument::Create(
+                     init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   // multipart/x-mixed-replace is only supported for images.
   if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||

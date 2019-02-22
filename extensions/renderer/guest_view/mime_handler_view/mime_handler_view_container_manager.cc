@@ -30,7 +30,8 @@ void MimeHandlerViewContainerManager::BindRequest(
 }
 
 MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
-    int32_t routing_id) {}
+    int32_t routing_id)
+    : render_frame_routing_id_(routing_id) {}
 
 MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 
@@ -39,6 +40,16 @@ void MimeHandlerViewContainerManager::CreateFrameContainer(
     const std::string& mime_type,
     const std::string& view_id) {
   // TODO(ekaramad): Implement (https://crbug.com/659750).
+  auto* render_frame =
+      content::RenderFrame::FromRoutingID(render_frame_routing_id_);
+  if (!render_frame)
+    return;
+  DCHECK(MimeHandlerViewFrameContainer::IsSupportedMimeType(mime_type));
+  auto* child = render_frame->GetWebFrame()->FirstChild();
+  if (!child || child->IsWebRemoteFrame())
+    return;
+  MimeHandlerViewFrameContainer::CreateWithFrame(
+      child->ToWebLocalFrame(), resource_url, mime_type, view_id);
 }
 
 }  // namespace extensions
