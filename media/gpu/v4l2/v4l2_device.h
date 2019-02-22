@@ -118,7 +118,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   bool DoQueue() &&;
 
   V4L2WritableBufferRef(const struct v4l2_buffer* v4l2_buffer,
-                        scoped_refptr<V4L2Queue> queue);
+                        base::WeakPtr<V4L2Queue> queue);
   friend class V4L2BufferRefFactory;
 
   std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
@@ -162,7 +162,7 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   ~V4L2ReadableBuffer();
 
   V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
-                     scoped_refptr<V4L2Queue> queue);
+                     base::WeakPtr<V4L2Queue> queue);
 
   std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
 
@@ -283,6 +283,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   scoped_refptr<V4L2Device> device_;
   // Callback to call in this queue's destructor.
   base::OnceClosure destroy_cb_;
+
+  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
 
   V4L2Queue(scoped_refptr<V4L2Device> dev,
             enum v4l2_buf_type type,
