@@ -129,14 +129,14 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   DCHECK(!controller_->GetBoundMessagePump() ||
          main_thread_only().task_execution_stack.empty());
 
-  // TODO(altimin): restore default task runner automatically when
-  // ThreadController is destroyed.
-  controller_->RestoreDefaultTaskRunner();
-
   for (internal::TaskQueueImpl* queue : main_thread_only().active_queues) {
     main_thread_only().selector.RemoveQueue(queue);
     queue->UnregisterTaskQueue();
   }
+
+  // TODO(altimin): restore default task runner automatically when
+  // ThreadController is destroyed.
+  controller_->RestoreDefaultTaskRunner();
 
   main_thread_only().active_queues.clear();
   main_thread_only().queues_to_gracefully_shutdown.clear();
