@@ -54,7 +54,7 @@ HRESULT QueryIAccessibleText(IAccessible* accessible,
       service_provider->QueryService(IID_IAccessibleText, accessible_text) : hr;
 }
 
-std::string BstrToUTF8(BSTR bstr) {
+std::string BstrToPrettyUTF8(BSTR bstr) {
   base::string16 str16(bstr, SysStringLen(bstr));
 
   // IAccessibleText returns the text you get by appending all static text
@@ -331,15 +331,17 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
 
   log += base::StringPrintf(" role=%s", RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
-    log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
+    log +=
+        base::StringPrintf(" name=\"%s\"", BstrToPrettyUTF8(name_bstr).c_str());
   if (value_bstr.Length() > 0) {
     bool is_document =
         role.type() == VT_I4 && ROLE_SYSTEM_DOCUMENT == V_I4(role.ptr());
     // Don't show actual document value, which is a URL, in order to avoid
     // machine-based differences in tests.
-    log += is_document ? " value~=[doc-url]"
-                       : base::StringPrintf(" value=\"%s\"",
-                                            BstrToUTF8(value_bstr).c_str());
+    log += is_document
+               ? " value~=[doc-url]"
+               : base::StringPrintf(" value=\"%s\"",
+                                    BstrToPrettyUTF8(value_bstr).c_str());
   }
   log += " ";
   log += base::UTF16ToUTF8(IAccessibleStateToString(ia_state));
@@ -368,7 +370,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       IA2TextSegment old_text;
       if (SUCCEEDED(accessible_text->get_oldText(&old_text))) {
         log += base::StringPrintf(" old_text={'%s' start=%ld end=%ld}",
-                                  BstrToUTF8(old_text.text).c_str(),
+                                  BstrToPrettyUTF8(old_text.text).c_str(),
                                   old_text.start, old_text.end);
       }
     }
@@ -376,7 +378,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       IA2TextSegment new_text;
       if (SUCCEEDED(accessible_text->get_newText(&new_text))) {
         log += base::StringPrintf(" new_text={'%s' start=%ld end=%ld}",
-                                  BstrToUTF8(new_text.text).c_str(),
+                                  BstrToPrettyUTF8(new_text.text).c_str(),
                                   new_text.start, new_text.end);
       }
     }
