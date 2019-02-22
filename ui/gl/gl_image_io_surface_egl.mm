@@ -190,21 +190,23 @@ bool GLImageIOSurfaceEGL::CopyTexImage(unsigned target) {
   EGLSurface y_surface = EGL_NO_SURFACE;
   EGLSurface uv_surface = EGL_NO_SURFACE;
 
+  EGLSurface* y_surface_ptr = &y_surface;
+  EGLSurface* uv_surface_ptr = &uv_surface;
   glGetIntegerv(target_getter, &rgb_texture);
   base::ScopedClosureRunner destroy_resources_runner(
       base::BindOnce(base::RetainBlock(^{
-        if (y_surface != EGL_NO_SURFACE) {
+        if (*y_surface_ptr != EGL_NO_SURFACE) {
           EGLBoolean result =
-              eglReleaseTexImage(display_, y_surface, EGL_BACK_BUFFER);
+              eglReleaseTexImage(display_, *y_surface_ptr, EGL_BACK_BUFFER);
           DCHECK(result == EGL_TRUE);
-          result = eglDestroySurface(display_, y_surface);
+          result = eglDestroySurface(display_, *y_surface_ptr);
           DCHECK(result == EGL_TRUE);
         }
-        if (uv_surface != EGL_NO_SURFACE) {
+        if (*uv_surface_ptr != EGL_NO_SURFACE) {
           EGLBoolean result =
-              eglReleaseTexImage(display_, uv_surface, EGL_BACK_BUFFER);
+              eglReleaseTexImage(display_, *uv_surface_ptr, EGL_BACK_BUFFER);
           DCHECK(result == EGL_TRUE);
-          result = eglDestroySurface(display_, uv_surface);
+          result = eglDestroySurface(display_, *uv_surface_ptr);
           DCHECK(result == EGL_TRUE);
         }
         glBindTexture(target, rgb_texture);
