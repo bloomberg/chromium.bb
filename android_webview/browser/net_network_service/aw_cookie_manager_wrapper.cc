@@ -41,4 +41,12 @@ void AwCookieManagerWrapper::SetCanonicalCookie(
                                       std::move(callback));
 }
 
+void AwCookieManagerWrapper::DeleteCookies(
+    network::mojom::CookieDeletionFilterPtr filter,
+    DeleteCookiesCallback callback) {
+  // TODO(ntfschr): handle the case where content layer isn't initialized yet
+  // (http://crbug.com/933461).
+  cookie_manager_->DeleteCookies(std::move(filter), std::move(callback));
+}
+
 }  // namespace android_webview

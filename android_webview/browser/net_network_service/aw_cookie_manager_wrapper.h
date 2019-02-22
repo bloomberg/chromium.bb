@@ -28,6 +28,8 @@ class AwCookieManagerWrapper {
       network::mojom::CookieManager::GetCookieListCallback;
   using SetCanonicalCookieCallback =
       network::mojom::CookieManager::SetCanonicalCookieCallback;
+  using DeleteCookiesCallback =
+      network::mojom::CookieManager::DeleteCookiesCallback;
 
   // Called when content layer starts up, to pass in a NetworkContextPtr for us
   // to use for Cookies APIs.
@@ -44,6 +46,9 @@ class AwCookieManagerWrapper {
                           bool secure_source,
                           bool modify_http_only,
                           SetCanonicalCookieCallback);
+
+  void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
+                     DeleteCookiesCallback callback);
 
  private:
   // A CookieManagerPtr which is cloned from the NetworkContext's

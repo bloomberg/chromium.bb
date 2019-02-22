@@ -44,6 +44,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/url_constants.h"
 
 using base::FilePath;
@@ -460,9 +461,19 @@ void CookieManager::RemoveSessionCookiesSync() {
 
 void CookieManager::RemoveSessionCookiesHelper(
     base::RepeatingCallback<void(bool)> callback) {
-  GetCookieStore()->DeleteSessionCookiesAsync(
-      base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                     base::Unretained(this), callback));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto match_session_cookies = network::mojom::CookieDeletionFilter::New();
+    match_session_cookies->session_control =
+        network::mojom::CookieDeletionSessionControl::SESSION_COOKIES;
+    GetCookieManagerWrapper()->DeleteCookies(
+        std::move(match_session_cookies),
+        base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                       base::Unretained(this), callback));
+  } else {
+    GetCookieStore()->DeleteSessionCookiesAsync(
+        base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                       base::Unretained(this), callback));
+  }
 }
 
 void CookieManager::RemoveCookiesCompleted(
@@ -486,9 +497,18 @@ void CookieManager::RemoveAllCookiesSync() {
 
 void CookieManager::RemoveAllCookiesHelper(
     const base::RepeatingCallback<void(bool)> callback) {
-  GetCookieStore()->DeleteAllAsync(
-      base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                     base::Unretained(this), callback));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // An empty filter matches all cookies.
+    auto match_all_cookies = network::mojom::CookieDeletionFilter::New();
+    GetCookieManagerWrapper()->DeleteCookies(
+        std::move(match_all_cookies),
+        base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                       base::Unretained(this), callback));
+  } else {
+    GetCookieStore()->DeleteAllAsync(
+        base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                       base::Unretained(this), callback));
+  }
 }
 
 void CookieManager::RemoveExpiredCookies() {
