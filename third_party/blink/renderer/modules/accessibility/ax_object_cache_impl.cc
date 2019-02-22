@@ -962,6 +962,14 @@ void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
   ToAXRadioInput(first_obj)->RequestUpdateToNextNode(true);
 }
 
+void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
+  AXObject* obj = GetOrCreate(layout_object);
+  if (!obj)
+    return;
+
+  MarkAXObjectDirty(obj, false);
+}
+
 void AXObjectCacheImpl::HandleLayoutComplete(LayoutObject* layout_object) {
   if (!layout_object)
     return;
