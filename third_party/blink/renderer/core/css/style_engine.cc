@@ -511,6 +511,15 @@ const ActiveStyleSheetVector StyleEngine::ActiveStyleSheetsForInspector() {
   return active_style_sheets;
 }
 
+void StyleEngine::ShadowRootInsertedToDocument(ShadowRoot& shadow_root) {
+  DCHECK(shadow_root.isConnected());
+  if (GetDocument().IsDetached() || !shadow_root.HasAdoptedStyleSheets())
+    return;
+  EnsureStyleSheetCollectionFor(shadow_root);
+  SetNeedsActiveStyleUpdate(shadow_root);
+  active_tree_scopes_.insert(&shadow_root);
+}
+
 void StyleEngine::ShadowRootRemovedFromDocument(ShadowRoot* shadow_root) {
   style_sheet_collection_map_.erase(shadow_root);
   active_tree_scopes_.erase(shadow_root);
@@ -671,9 +680,9 @@ void StyleEngine::MarkTreeScopeDirty(TreeScope& scope) {
     return;
   }
 
-  TreeScopeStyleSheetCollection& collection =
-      EnsureStyleSheetCollectionFor(scope);
-  collection.MarkSheetListDirty();
+  TreeScopeStyleSheetCollection* collection = StyleSheetCollectionFor(scope);
+  DCHECK(collection);
+  collection->MarkSheetListDirty();
   dirty_tree_scopes_.insert(&scope);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
