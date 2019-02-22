@@ -378,8 +378,16 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 // Tests that when ARC requests account info for a non-managed account, via
 // |RequestAccountInfoDeprecated| API, Chrome supplies the info configured in
 // SetAccountAndProfile() method.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_SuccessfulBackgroundFetchViaDeprecatedApi \
+  DISABLED_SuccessfulBackgroundFetchViaDeprecatedApi
+#else
+#define MAYBE_SuccessfulBackgroundFetchViaDeprecatedApi \
+  SuccessfulBackgroundFetchViaDeprecatedApi
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       SuccessfulBackgroundFetchViaDeprecatedApi) {
+                       MAYBE_SuccessfulBackgroundFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
                                         GetFakeAuthTokenResponse());
@@ -400,7 +408,13 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 
 // Tests that when ARC requests account info for a non-managed account,
 // Chrome supplies the info configured in SetAccountAndProfile() method.
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_SuccessfulBackgroundFetch DISABLED_SuccessfulBackgroundFetch
+#else
+#define MAYBE_SuccessfulBackgroundFetch SuccessfulBackgroundFetch
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, MAYBE_SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
                                         GetFakeAuthTokenResponse());
@@ -419,8 +433,16 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ReAuthenticatePrimaryAccountSucceeds \
+  DISABLED_ReAuthenticatePrimaryAccountSucceeds
+#else
+#define MAYBE_ReAuthenticatePrimaryAccountSucceeds \
+  ReAuthenticatePrimaryAccountSucceeds
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       ReAuthenticatePrimaryAccountSucceeds) {
+                       MAYBE_ReAuthenticatePrimaryAccountSucceeds) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
                                         GetFakeAuthTokenResponse());
@@ -439,8 +461,17 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ReAuthenticatePrimaryAccountFailsForInvalidAccount \
+  DISABLED_ReAuthenticatePrimaryAccountFailsForInvalidAccount
+#else
+#define MAYBE_ReAuthenticatePrimaryAccountFailsForInvalidAccount \
+  ReAuthenticatePrimaryAccountFailsForInvalidAccount
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
+IN_PROC_BROWSER_TEST_F(
+    ArcAuthServiceTest,
+    MAYBE_ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
                                         std::string() /* response */,
@@ -455,7 +486,16 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
             auth_instance().sign_in_status());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_FetchSecondaryAccountInfoSucceeds \
+  DISABLED_FetchSecondaryAccountInfoSucceeds
+#else
+#define MAYBE_FetchSecondaryAccountInfoSucceeds \
+  FetchSecondaryAccountInfoSucceeds
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       MAYBE_FetchSecondaryAccountInfoSucceeds) {
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
@@ -477,8 +517,16 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_FetchSecondaryAccountInfoFailsForInvalidAccounts \
+  DISABLED_FetchSecondaryAccountInfoFailsForInvalidAccounts
+#else
+#define MAYBE_FetchSecondaryAccountInfoFailsForInvalidAccounts \
+  FetchSecondaryAccountInfoFailsForInvalidAccounts
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       FetchSecondaryAccountInfoFailsForInvalidAccounts) {
+                       MAYBE_FetchSecondaryAccountInfoFailsForInvalidAccounts) {
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
@@ -496,7 +544,13 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
             auth_instance().sign_in_status());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_FetchGoogleAccountsFromArc DISABLED_FetchGoogleAccountsFromArc
+#else
+#define MAYBE_FetchGoogleAccountsFromArc FetchGoogleAccountsFromArc
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, MAYBE_FetchGoogleAccountsFromArc) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
 
   EXPECT_FALSE(arc_google_accounts_callback_called());
@@ -509,8 +563,17 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
   EXPECT_EQ(kFakeGaiaId, arc_google_accounts()[0]->gaia_id);
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       FetchGoogleAccountsFromArcWorksAcrossConnectionResets) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_FetchGoogleAccountsFromArcWorksAcrossConnectionResets \
+  DISABLED_FetchGoogleAccountsFromArcWorksAcrossConnectionResets
+#else
+#define MAYBE_FetchGoogleAccountsFromArcWorksAcrossConnectionResets \
+  FetchGoogleAccountsFromArcWorksAcrossConnectionResets
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
+IN_PROC_BROWSER_TEST_F(
+    ArcAuthServiceTest,
+    MAYBE_FetchGoogleAccountsFromArcWorksAcrossConnectionResets) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
 
   // Close the connection.
@@ -556,8 +619,16 @@ class ArcAuthServiceAccountManagerTest : public ArcAuthServiceTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceAccountManagerTest);
 };
 
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_UnAuthenticatedAccountsAreNotPropagated \
+  DISABLED_UnAuthenticatedAccountsAreNotPropagated
+#else
+#define MAYBE_UnAuthenticatedAccountsAreNotPropagated \
+  UnAuthenticatedAccountsAreNotPropagated
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
-                       UnAuthenticatedAccountsAreNotPropagated) {
+                       MAYBE_UnAuthenticatedAccountsAreNotPropagated) {
   const AccountInfo account_info = SetupGaiaAccount(kSecondaryAccountEmail);
 
   const int initial_num_calls = auth_instance().num_account_upserted_calls();
@@ -568,8 +639,14 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   EXPECT_EQ(initial_num_calls, auth_instance().num_account_upserted_calls());
 }
 
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_AccountUpdatesArePropagated DISABLED_AccountUpdatesArePropagated
+#else
+#define MAYBE_AccountUpdatesArePropagated AccountUpdatesArePropagated
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
-                       AccountUpdatesArePropagated) {
+                       MAYBE_AccountUpdatesArePropagated) {
   AccountInfo account_info = SetupGaiaAccount(kSecondaryAccountEmail);
 
   SetInvalidRefreshTokenForAccount(account_info.account_id);
@@ -584,8 +661,14 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   EXPECT_EQ(kSecondaryAccountEmail, auth_instance().last_upserted_account());
 }
 
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_AccountRemovalsArePropagated DISABLED_AccountRemovalsArePropagated
+#else
+#define MAYBE_AccountRemovalsArePropagated AccountRemovalsArePropagated
+#endif
+// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
-                       AccountRemovalsArePropagated) {
+                       MAYBE_AccountRemovalsArePropagated) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
 
