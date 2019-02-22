@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_safe_browsing_ui_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/aw_safe_browsing_blocking_page.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_blocking_page.h"
 #include "android_webview/common/aw_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"

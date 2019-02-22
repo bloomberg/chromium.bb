@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_url_checker_delegate_impl.h"
+#include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/aw_safe_browsing_ui_manager.h"
-#include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/database_manager.h"

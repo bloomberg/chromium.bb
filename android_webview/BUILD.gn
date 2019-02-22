@@ -97,13 +97,13 @@ java_cpp_enum("android_webview_java_enums_srcjar") {
 
 java_cpp_enum("aw_error_ui") {
   sources = [
-    "browser/aw_safe_browsing_blocking_page.h",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
   ]
 }
 
 java_cpp_enum("aw_safe_browsing_action") {
   sources = [
-    "browser/aw_url_checker_delegate_impl.h",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
   ]
 }
 
@@ -579,22 +579,12 @@ source_set("common") {
     "browser/aw_renderer_priority.h",
     "browser/aw_resource_context.cc",
     "browser/aw_resource_context.h",
-    "browser/aw_safe_browsing_blocking_page.cc",
-    "browser/aw_safe_browsing_blocking_page.h",
-    "browser/aw_safe_browsing_resource_throttle.cc",
-    "browser/aw_safe_browsing_resource_throttle.h",
-    "browser/aw_safe_browsing_ui_manager.cc",
-    "browser/aw_safe_browsing_ui_manager.h",
-    "browser/aw_safe_browsing_whitelist_manager.cc",
-    "browser/aw_safe_browsing_whitelist_manager.h",
     "browser/aw_settings.cc",
     "browser/aw_settings.h",
     "browser/aw_speech_recognition_manager_delegate.cc",
     "browser/aw_speech_recognition_manager_delegate.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
-    "browser/aw_url_checker_delegate_impl.cc",
-    "browser/aw_url_checker_delegate_impl.h",
     "browser/aw_url_loader_throttle.cc",
     "browser/aw_url_loader_throttle.h",
     "browser/aw_variations_seed_bridge.cc",
@@ -692,6 +682,16 @@ source_set("common") {
     "browser/renderer_host/aw_render_view_host_ext.h",
     "browser/renderer_host/aw_resource_dispatcher_host_delegate.cc",
     "browser/renderer_host/aw_resource_dispatcher_host_delegate.h",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.cc",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
+    "browser/safe_browsing/aw_safe_browsing_resource_throttle.cc",
+    "browser/safe_browsing/aw_safe_browsing_resource_throttle.h",
+    "browser/safe_browsing/aw_safe_browsing_ui_manager.cc",
+    "browser/safe_browsing/aw_safe_browsing_ui_manager.h",
+    "browser/safe_browsing/aw_safe_browsing_whitelist_manager.cc",
+    "browser/safe_browsing/aw_safe_browsing_whitelist_manager.h",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.cc",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
     "browser/scoped_app_gl_state_restore.cc",
     "browser/scoped_app_gl_state_restore.h",
     "browser/state_serializer.cc",

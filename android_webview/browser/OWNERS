@@ -1,5 +1,3 @@
-per-file aw_safe_browsing*=ntfschr@chromium.org
-
 per-file aw_content_utility_overlay_manifest.cc=set noparent
 per-file aw_content_utility_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file aw_content_renderer_overlay_manifest.cc=set noparent
