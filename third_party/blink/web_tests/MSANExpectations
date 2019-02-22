@@ -239,3 +239,6 @@ crbug.com/856601 [ Linux ] virtual/disabled-service-worker-servicification/exter
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/idlharness.any.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/unified-autoplay/external/wpt/feature-policy/idlharness.window.html [ Pass Timeout ]
+
+# Sheriff 2019-02-22
+crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout ]
