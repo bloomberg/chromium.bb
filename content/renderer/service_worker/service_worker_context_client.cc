@@ -349,13 +349,7 @@ ServiceWorkerContextClient::~ServiceWorkerContextClient() {
   // TODO(crbug.com/907311): Remove this instrumentation after we identified
   // the cause of crash.
   if (report_debug_log_ && context_) {
-    std::string log;
-    for (const auto& entry : debug_log_) {
-      log += entry + " ";
-    }
-    DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 1024);
-    CHECK(false) << "Destructing ServiceWorkerContextClient without calling "
-                    "WillDestroyWorkerContext()";
+    CrashWithDebugLog("DTOR");
   }
 }
 
@@ -429,6 +423,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // Initialize pending callback maps. This needs to be freed on the
   // same thread before the worker context goes away in
   // willDestroyWorkerContext.
+  if (context_) {
+    CrashWithDebugLog("WCS");
+    return;
+  }
   context_ = std::make_unique<WorkerContextData>(this);
 
   CHECK(pending_service_worker_request_.is_pending());
@@ -777,6 +775,10 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
     int event_id,
     blink::mojom::ServiceWorkerEventStatus status) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  if (!context_) {
+    CrashWithDebugLog("DHFE");
+    return;
+  }
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
@@ -1034,6 +1036,10 @@ void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  if (!context_) {
+    CrashWithDebugLog("DOQFE");
+    return;
+  }
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerContextClient::DispatchOrQueueFetchEvent", "url",
                params->request->url.spec(), "queued",
@@ -1464,6 +1470,10 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  if (!context_) {
+    CrashWithDebugLog("DFE");
+    return;
+  }
   int event_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->fetch_event_callbacks));
   context_->fetch_event_callbacks.emplace(event_id, std::move(callback));
@@ -1680,6 +1690,17 @@ void ServiceWorkerContextClient::RecordDebugLog(const char* message) {
   debug_log_.emplace_back(message);
   if (debug_log_.size() > kMaxDebugLogSize)
     debug_log_.pop_front();
+}
+
+void ServiceWorkerContextClient::CrashWithDebugLog(const std::string& reason) {
+  base::AutoLock lock(debug_log_lock_);
+  std::string log;
+  for (const auto& entry : debug_log_) {
+    log += entry + " ";
+  }
+  DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 1024);
+  DEBUG_ALIAS_FOR_CSTR(reason_log, reason.c_str(), 32);
+  CHECK(false);
 }
 
 }  // namespace content
