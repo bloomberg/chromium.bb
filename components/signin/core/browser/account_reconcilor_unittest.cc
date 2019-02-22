@@ -47,12 +47,6 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-using FakeSigninManagerForTesting = FakeSigninManagerBase;
-#else
-using FakeSigninManagerForTesting = FakeSigninManager;
-#endif
-
 // An AccountReconcilorDelegate that records all calls (Spy pattern).
 class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
  public:
@@ -609,11 +603,7 @@ class AccountReconcilorTestTable
 
 #if !defined(OS_CHROMEOS)
 
-// This method requires the use of the |TestSigninClient| to be created from the
-// |ChromeSigninClientFactory| because it overrides the |GoogleSigninSucceeded|
-// method with an empty implementation. On MacOS, the normal implementation
-// causes the try_bots to time out.
-TEST_P(AccountReconcilorMirrorEndpointParamTest, SigninManagerRegistration) {
+TEST_P(AccountReconcilorMirrorEndpointParamTest, IdentityManagerRegistration) {
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
   ASSERT_FALSE(reconcilor->IsRegisteredWithIdentityManager());
@@ -627,10 +617,6 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, SigninManagerRegistration) {
   ASSERT_FALSE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
-// This method requires the use of the |TestSigninClient| to be created from the
-// |ChromeSigninClientFactory| because it overrides the |GoogleSigninSucceeded|
-// method with an empty implementation. On MacOS, the normal implementation
-// causes the try_bots to time out.
 TEST_P(AccountReconcilorMirrorEndpointParamTest, Reauth) {
   const std::string email = "user@gmail.com";
   AccountInfo account_info = ConnectProfileToAccount(email);
@@ -698,7 +684,8 @@ const std::vector<AccountReconcilorTestTableParam> kDiceParams = {
     // The syntax is:
     // - Tokens:
     //   A, B, C: Accounts for which we have a token in Chrome.
-    //   *: The next account is the main Chrome account (i.e. in SigninManager).
+    //   *: The next account is the main Chrome account (i.e. in
+    //   IdentityManager).
     //   x: The next account has a token error.
     // - API calls:
     //   U: Multilogin with mode UPDATE
@@ -1102,7 +1089,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceTokenServiceRegistration) {
   ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   // Reconcilor should not logout all accounts from the cookies when
-  // SigninManager signs out.
+  // the primary account is cleared in IdentityManager.
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
   EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(::testing::_))
       .Times(0);
@@ -1635,7 +1622,8 @@ const std::vector<AccountReconcilorTestTableParam> kMirrorParams = {
     // The syntax is:
     // - Tokens:
     //   A, B, C: Accounts for which we have a token in Chrome.
-    //   *: The next account is the main Chrome account (i.e. in SigninManager).
+    //   *: The next account is the main Chrome account (i.e. in
+    //   IdentityManager).
     //   x: The next account has a token error.
     // - Cookies:
     //   A, B, C: Accounts in the Gaia cookie (returned by ListAccounts).
@@ -2201,8 +2189,8 @@ TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
 }
 
 #if !defined(OS_CHROMEOS)
-// This test does not run on ChromeOS because it calls
-// FakeSigninManagerForTesting::SignOut() which doesn't exist for ChromeOS.
+// This test does not run on ChromeOS because it clears the primary account,
+// which is not a flow that exists on ChromeOS.
 
 TEST_P(AccountReconcilorMirrorEndpointParamTest,
        SignoutAfterErrorDoesNotRecordUma) {
