@@ -30,6 +30,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -98,6 +99,8 @@ class XMLHttpRequestProgressEventThrottle final
   // ProgressEvent dispatching. This class represents such a deferred
   // "progress" ProgressEvent.
   class DeferredEvent {
+    DISALLOW_NEW();
+
    public:
     DeferredEvent();
     void Set(bool length_computable,
