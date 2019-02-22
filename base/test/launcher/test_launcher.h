@@ -52,9 +52,14 @@ class TestLauncherDelegate {
   // must put the result in |output| and return true on success.
   virtual bool GetTests(std::vector<TestIdentifier>* output) = 0;
 
-  // Called before a test is considered for running. If it returns false,
-  // the test is not run. If it returns true, the test will be run provided
-  // it is part of the current shard.
+  // Called before a test is considered for running. This method must return
+  // true if either the delegate or the TestLauncher will run the test.
+  virtual bool WillRunTest(const std::string& test_case_name,
+                           const std::string& test_name) = 0;
+
+  // Called before a test is considered for running. This method must return
+  // true if the TestLauncher is expected to run the test, provided it is part
+  // of the current shard.
   virtual bool ShouldRunTest(const std::string& test_case_name,
                              const std::string& test_name) = 0;
 

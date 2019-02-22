@@ -233,6 +233,10 @@ void TestResultsTracker::AddTestLocation(const std::string& test_name,
   test_locations_.insert(std::make_pair(test_name, CodeLocation(file, line)));
 }
 
+void TestResultsTracker::AddTestPlaceholder(const std::string& test_name) {
+  test_placeholders_.push_back(test_name);
+}
+
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(iteration_, 0);
@@ -259,10 +263,8 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
 void TestResultsTracker::GeneratePlaceholderIteration() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We use test_locations_ since that only includes tests that will be run in
-  // this shard.
-  for (auto& it : test_locations_) {
-    std::string test_name = TestNameWithoutDisabledPrefix(it.first);
+  for (auto& full_test_name : test_placeholders_) {
+    std::string test_name = TestNameWithoutDisabledPrefix(full_test_name);
 
     // Ignore disabled tests.
     if (disabled_tests_.find(test_name) != disabled_tests_.end())
@@ -274,9 +276,9 @@ void TestResultsTracker::GeneratePlaceholderIteration() {
 
     // There shouldn't be any existing results when we generate placeholder
     // results.
-    DCHECK(per_iteration_data_[iteration_]
-               .results[test_name]
-               .test_results.empty());
+    DCHECK(
+        per_iteration_data_[iteration_].results[test_name].test_results.empty())
+        << test_name;
     per_iteration_data_[iteration_].results[test_name].test_results.push_back(
         test_result);
   }
