@@ -50,9 +50,6 @@ namespace mozilla_security_manager {
 // Based on nsNSSCertificate::GetWindowTitle.
 std::string GetCertTitle(CERTCertificate* cert);
 
-// Based on nsNSSCertificate::GetTokenName.
-std::string GetCertTokenName(CERTCertificate* cert);
-
 }  // namespace mozilla_security_manager
 
 #endif  // CHROME_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSNSSCERTIFICATE_H_
