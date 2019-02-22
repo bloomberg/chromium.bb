@@ -103,8 +103,8 @@ class CONTENT_EXPORT IndexedDBDatabase
                          int64_t object_store_id,
                          const base::string16& new_name);
 
-  // TODO(dmurph): Remove this method and have transactions be directly
-  // scheduled using the lock manager.
+  // Returns a pointer to a newly created transaction. The object is owned
+  // by the connection.
   void RegisterAndScheduleTransaction(IndexedDBTransaction* transaction);
   void Close(IndexedDBConnection* connection, bool forced);
   void ForceClose();
@@ -136,9 +136,7 @@ class CONTENT_EXPORT IndexedDBDatabase
     return lock_manager_;
   }
 
-  void TransactionCreated();
-  void TransactionFinished(blink::mojom::IDBTransactionMode mode,
-                           bool committed);
+  void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
 
   void AbortAllTransactionsForConnections();
 
