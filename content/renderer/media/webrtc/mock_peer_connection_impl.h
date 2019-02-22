@@ -38,7 +38,7 @@ class FakeRtpSender : public webrtc::RtpSenderInterface {
   std::vector<std::string> stream_ids() const override;
   std::vector<webrtc::RtpEncodingParameters> init_send_encodings()
       const override;
-  webrtc::RtpParameters GetParameters() override;
+  webrtc::RtpParameters GetParameters() const override;
   webrtc::RTCError SetParameters(
       const webrtc::RtpParameters& parameters) override;
   rtc::scoped_refptr<webrtc::DtmfSenderInterface> GetDtmfSender()

@@ -154,7 +154,7 @@ std::vector<webrtc::RtpEncodingParameters> FakeRtpSender::init_send_encodings()
   return {};
 }
 
-webrtc::RtpParameters FakeRtpSender::GetParameters() {
+webrtc::RtpParameters FakeRtpSender::GetParameters() const {
   NOTIMPLEMENTED();
   return webrtc::RtpParameters();
 }
