@@ -188,14 +188,14 @@ def _ParseManifestAttributes(apk_path):
   return sdk_version, skip_extract_lib
 
 
-def _NormalizeLanguagePaks(translations, normalized_apk_size, factor):
+def _NormalizeLanguagePaks(translations, factor):
   english_pak = translations.FindByPattern(r'.*/en[-_][Uu][Ss]\.l?pak')
   num_translations = translations.GetNumEntries()
+  ret = 0
   if english_pak:
-    normalized_apk_size -= translations.ComputeZippedSize()
-    normalized_apk_size += int(
-        english_pak.compress_size * num_translations * factor)
-  return normalized_apk_size
+    ret -= translations.ComputeZippedSize()
+    ret += int(english_pak.compress_size * num_translations * factor)
+  return ret
 
 
 def _NormalizeResourcesArsc(apk_path, num_arsc_files, num_translations,
@@ -297,7 +297,7 @@ class _FileGroup(object):
     return self.ComputeExtractedSize() + self.ComputeZippedSize()
 
 
-def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
+def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   """Analyse APK to determine size contributions of different file classes."""
   file_groups = []
 
@@ -334,8 +334,10 @@ def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
   # Will need to update multipliers once apk obfuscation is enabled.
   # E.g. with obfuscation, the 4.04 changes to 4.46.
   speed_profile_dex_multiplier = 1.17
-  is_shared_apk = sdk_version >= 24 and (
-      'Monochrome' in apk_filename or 'WebView' in apk_filename)
+  orig_filename = apks_path or apk_filename
+  is_monochrome = 'Monochrome' in orig_filename
+  is_webview = 'WebView' in orig_filename
+  is_shared_apk = sdk_version >= 24 and (is_monochrome or is_webview)
   if sdk_version < 21:
     # JellyBean & KitKat
     dex_multiplier = 1.16
@@ -388,6 +390,13 @@ def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
     else:
       unknown.AddZipInfo(member)
 
+  if apks_path:
+    # We're mostly focused on size of Chrome for non-English locales, so assume
+    # Hindi (arbitrarily chosen) locale split is installed.
+    with zipfile.ZipFile(apks_path) as z:
+      hindi_apk_info = z.getinfo('splits/base-hi.apk')
+      total_apk_size += hindi_apk_info.file_size
+
   total_install_size = total_apk_size
   total_install_size_android_go = total_apk_size
   zip_overhead = total_apk_size
@@ -416,6 +425,9 @@ def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
       total_install_size_android_go += extracted_size
       report_func('InstallBreakdownGo', group.name + ' size',
                   actual_size + extracted_size, 'bytes')
+    elif group is translations and apks_path:
+      # Assume Hindi rather than English (accounted for above in total_apk_size)
+      total_install_size_android_go += actual_size
     else:
       total_install_size_android_go += extracted_size
 
@@ -474,7 +486,13 @@ def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
   # Normalized dex size: size within the zip + size on disk for Android Go
   # devices (which ~= uncompressed dex size).
   normalized_apk_size += java_code.ComputeUncompressedSize()
-  if not is_bundle:
+  if apks_path:
+    # Locale normalization not needed when measuring only one locale.
+    # E.g. a change that adds 300 chars of unstranslated strings would cause the
+    # metric to be off by only 390 bytes (assuming a multiplier of 2.3 for
+    # Hindi).
+    pass
+  else:
     # Avoid noise caused when strings change and translations haven't yet been
     # updated.
     num_translations = translations.GetNumEntries()
@@ -483,11 +501,9 @@ def _DoApkAnalysis(apk_filename, is_bundle, tool_prefix, out_dir, report_func):
     if num_translations > 1:
       # Multipliers found by looking at MonochromePublic.apk and seeing how much
       # smaller en-US.pak is relative to the average locale.pak.
-      normalized_apk_size = _NormalizeLanguagePaks(translations,
-                                                   normalized_apk_size, 1.17)
+      normalized_apk_size += _NormalizeLanguagePaks(translations, 1.17)
     if num_stored_translations > 1:
-      normalized_apk_size = _NormalizeLanguagePaks(stored_translations,
-                                                   normalized_apk_size, 1.43)
+      normalized_apk_size += _NormalizeLanguagePaks(stored_translations, 1.43)
     if num_translations + num_stored_translations > 1:
       if num_translations == 0:
         # WebView stores all locale paks uncompressed.
@@ -624,8 +640,8 @@ def _Analyze(apk_path, chartjson, args):
     perf_tests_results_helper.ReportPerfResult(chartjson, *args)
 
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
-  is_bundle = args.input.endswith('.apks')
-  _DoApkAnalysis(apk_path, is_bundle, tool_prefix, out_dir, report_func)
+  apks_path = args.input if args.input.endswith('.apks') else None
+  _DoApkAnalysis(apk_path, apks_path, tool_prefix, out_dir, report_func)
   _DoDexAnalysis(apk_path, report_func)
   if args.estimate_patch_size:
     _PrintPatchSizeEstimate(apk_path, args.reference_apk_builder,
@@ -679,7 +695,14 @@ def main():
   elif args.input.endswith('.apks'):
     with tempfile.NamedTemporaryFile(suffix='.apk') as f:
       with zipfile.ZipFile(args.input) as z:
-        f.write(z.read('splits/base-master.apk'))
+        # Currently bundletool is creating two apks when .apks is created
+        # without specifying an sdkVersion. Always measure the one with an
+        # uncompressed shared library.
+        try:
+          info = z.getinfo('splits/base-master_2.apk')
+        except KeyError:
+          info = z.getinfo('splits/base-master.apk')
+        f.write(z.read(info))
         f.flush()
       _Analyze(f.name, chartjson, args)
   else:
