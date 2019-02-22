@@ -44,7 +44,7 @@
 namespace media {
 
 class V4L2Queue;
-class V4L2BufferQueueProxy;
+class V4L2BufferRefBase;
 class V4L2BuffersList;
 
 // A unique reference to a buffer for clients to prepare and submit.
@@ -121,7 +121,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
                         base::WeakPtr<V4L2Queue> queue);
   friend class V4L2BufferRefFactory;
 
-  std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
+  std::unique_ptr<V4L2BufferRefBase> buffer_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(V4L2WritableBufferRef);
@@ -164,7 +164,7 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
                      base::WeakPtr<V4L2Queue> queue);
 
-  std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
+  std::unique_ptr<V4L2BufferRefBase> buffer_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(V4L2ReadableBuffer);
@@ -290,7 +290,7 @@ class MEDIA_GPU_EXPORT V4L2Queue
             enum v4l2_buf_type type,
             base::OnceClosure destroy_cb);
   friend class V4L2QueueFactory;
-  friend class V4L2BufferQueueProxy;
+  friend class V4L2BufferRefBase;
   friend class base::RefCountedThreadSafe<V4L2Queue>;
 
   SEQUENCE_CHECKER(sequence_checker_);
