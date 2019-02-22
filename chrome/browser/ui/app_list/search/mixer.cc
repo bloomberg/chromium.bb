@@ -122,9 +122,9 @@ void Mixer::MixAndPublish(size_t num_max_results) {
     for (auto& result : results) {
       RankingItemType type = RankingItemTypeFromSearchResult(*result.result);
       const auto& rank_it = ranks.find(std::to_string(static_cast<int>(type)));
-      // The ranker only contains entries trained with types
-      // |RankingItemType::kFile| and |RankingItemType::kOmnibox|. This means
-      // scores for apps and answer cards will be unchanged.
+      // The ranker only contains entries trained with types relating to files
+      // or the omnibox. This means scores for apps, app shortcuts, and answer
+      // cards will be unchanged.
       if (rank_it != ranks.end())
         // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
         // result of tweaking does not put the score above 3.0, as that may
@@ -189,7 +189,12 @@ void Mixer::Train(const std::string& id, RankingItemType type) {
   if (!ranker_)
     return;
 
-  if (type == RankingItemType::kFile || type == RankingItemType::kOmnibox) {
+  if (type == RankingItemType::kFile ||
+      type == RankingItemType::kOmniboxGeneric ||
+      type == RankingItemType::kOmniboxBookmark ||
+      type == RankingItemType::kOmniboxDocument ||
+      type == RankingItemType::kOmniboxHistory ||
+      type == RankingItemType::kOmniboxSearch) {
     ranker_->Record(std::to_string(static_cast<int>(type)));
   }
 }
