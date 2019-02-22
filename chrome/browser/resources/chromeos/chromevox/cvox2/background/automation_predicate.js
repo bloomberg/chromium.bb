@@ -480,7 +480,13 @@ AutomationPredicate.checkable = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.clickable = AutomationPredicate.match({
-  anyPredicate: [AutomationPredicate.button, AutomationPredicate.link],
+  anyPredicate: [
+    AutomationPredicate.button, AutomationPredicate.link,
+    (node) => {
+      return node.defaultActionVerb ==
+          chrome.automation.DefaultActionVerb.CLICK;
+    }
+  ],
   anyAttribute: {clickable: true}
 });
 
