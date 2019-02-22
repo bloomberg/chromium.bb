@@ -56,11 +56,12 @@ bool DataURL::Parse(const GURL& url,
 
   bool base64_encoded = false;
   for (; iter != meta_data.cend(); ++iter) {
-    if (!base64_encoded && *iter == kBase64Tag) {
+    if (!base64_encoded &&
+        base::EqualsCaseInsensitiveASCII(*iter, kBase64Tag)) {
       base64_encoded = true;
     } else if (charset->empty() &&
                base::StartsWith(*iter, kCharsetTag,
-                                base::CompareCase::SENSITIVE)) {
+                                base::CompareCase::INSENSITIVE_ASCII)) {
       *charset = std::string(iter->substr(kCharsetTag.size()));
       // The grammar for charset is not specially defined in RFC2045 and
       // RFC2397. It just needs to be a token.
