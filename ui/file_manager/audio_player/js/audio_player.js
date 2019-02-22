@@ -686,7 +686,7 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
  * initializeAudioPlayer: loads the audio player.
  */
 function initializeAudioPlayer() {
-  AudioPlayer.load();
+  window.HTMLImports.whenReady(AudioPlayer.load);
 }
 
 if (document.readyState === 'loading') {
