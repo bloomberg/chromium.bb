@@ -633,6 +633,12 @@ below:
       <message name="IDS_AX_IMAGE_ANNOTATION_PROCESS_FAILED" desc="Accessibility message spoken out loud to screen reader users that the browser was not able to get a description for an image.">
         Unable to get a description.
       </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT" desc="Accessibility message spoken out loud to screen reader users when reading text that was automatically extracted from an image, for an example the word 'stop' could be extracted from a photo of a stop sign. Because automatic text extraction sometimes contains errors it is important that the language used indicates some uncertainty - it may say 'stop' or it appears to say 'stop', not it definitely says 'stop'.">
+        Appears to say: <ph name="OCR_TEXT">$1<ex>Stop</ex></ph>
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_DESCRIPTION_CONTEXT" desc="Accessibility message spoken out loud to screen reader users when reading a computer-generated description of an image, for example a photo of the president at a press conference might be described as 'A person at a podium'. Because automatic image description is sometimes incorrect, it is important that the langauge used indicates some uncertainty - it may be a person, it appears to be a person, not it definitely is a person.">
+        Appears to be: <ph name="DESCRIPTION">$1<ex>A person at a podium</ex></ph>
+      </message>
 
       <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
         AM/PM

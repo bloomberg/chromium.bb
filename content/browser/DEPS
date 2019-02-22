@@ -28,7 +28,6 @@ include_rules = [
   "+components/viz",
   "+components/cbor",
 
-  "+content/app/strings/grit",  # For generated headers
   "+content/public/app",
   "+content/public/browser",
   "+device/base/synchronization",

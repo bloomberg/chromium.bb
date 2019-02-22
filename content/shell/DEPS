@@ -9,7 +9,6 @@ include_rules = [
 
   # The content_shell is the canonical sample embedder, so it only uses
   # content's public API.
-  "+content/app/strings/grit",  # For generated headers
   "+content/public",
 
   "+services/network/ignore_errors_cert_verifier.h",
