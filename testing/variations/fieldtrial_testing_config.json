@@ -5395,7 +5395,7 @@
             ]
         }
     ],
-    "VizHitTestDrawQuad": [
+    "VizHitTest": [
         {
             "platforms": [
                 "android",
@@ -5406,8 +5406,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "VizHitTestSurfaceLayer",
                     "enable_features": [
+                        "VizHitTestSurfaceLayer"
+                    ],
+                    "disable_features": [
                         "VizHitTestDrawQuad"
                     ]
                 }
