@@ -566,6 +566,7 @@ test("ios_web_inttests") {
     "//ios/web:resources_grit",
     "//ios/web/download:download_inttests",
     "//ios/web/navigation:core",
+    "//ios/web/public/find_in_page",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
@@ -585,6 +586,7 @@ test("ios_web_inttests") {
   ]
   sources = [
     "browser_state_web_view_partition_inttest.mm",
+    "find_in_page/find_in_page_manager_inttest.mm",
     "navigation/history_state_operations_inttest.mm",
     "navigation/window_location_inttest.mm",
     "public/test/http_server_inttest.mm",
