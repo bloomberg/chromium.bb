@@ -239,6 +239,15 @@ std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
   return stream.str();
 }
 
+std::ostream& operator<<(std::ostream& os, const StackTrace& s) {
+#if !defined(__UCLIBC__) & !defined(_AIX)
+  s.OutputToStream(&os);
+#else
+  os << "StackTrace::OutputToStream not implemented.";
+#endif
+  return os;
+}
+
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
 size_t TraceStackFramePointers(const void** out_trace,
