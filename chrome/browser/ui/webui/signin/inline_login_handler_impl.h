@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
@@ -33,8 +32,7 @@ class Browser;
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
 // CrOS migrates to the same webview approach as desktop Chrome, much of the
 // code in this class should move to its base class |InlineLoginHandler|.
-class InlineLoginHandlerImpl : public InlineLoginHandler,
-                               public content::WebContentsObserver {
+class InlineLoginHandlerImpl : public InlineLoginHandler {
  public:
   InlineLoginHandlerImpl();
   ~InlineLoginHandlerImpl() override;
@@ -47,10 +45,9 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   }
 
   Browser* GetDesktopBrowser();
-  void SyncStarterCallback(bool sync_setup_success);
-  // Closes the current tab and shows the account management view of the avatar
-  // bubble if |show_account_management| is true.
-  void CloseTab(bool show_account_management);
+  void SyncSetupFailed();
+  // Closes the current tab.
+  void CloseTab();
   void HandleLoginError(const std::string& error_msg,
                         const base::string16& email);
 
@@ -124,10 +121,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                                   Profile* profile,
                                   Profile::CreateStatus status);
 
-  // content::WebContentsObserver implementation:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
   // True if the user has navigated to untrusted domains during the signin
   // process.
   bool confirm_untrusted_signin_;
@@ -179,9 +172,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
 
   // Creates the sync starter.  Virtual for tests. Call to exchange oauth code
   // for tokens.
-  virtual void CreateSyncStarter(Browser* browser,
-                                 const GURL& current_url,
-                                 const std::string& refresh_token);
+  virtual void CreateSyncStarter(const std::string& refresh_token);
 
   GaiaAuthFetcher gaia_auth_fetcher_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;

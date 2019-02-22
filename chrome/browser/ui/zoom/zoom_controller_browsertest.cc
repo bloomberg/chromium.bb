@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, NavigationResetsManualMode) {
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
                        SettingsZoomAfterSigninWorks) {
   GURL signin_url(std::string(chrome::kChromeUIChromeSigninURL)
-                      .append("?access_point=0&reason=0"));
+                      .append("?access_point=0&reason=5"));
   // We open the signin page in a new tab so that the ZoomController is
   // created against the HostZoomMap of the special StoragePartition that
   // backs the signin page. When we subsequently navigate away from the
