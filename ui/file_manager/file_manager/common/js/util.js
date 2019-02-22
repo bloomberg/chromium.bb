@@ -1502,3 +1502,33 @@ util.isMyFilesVolumeEnabled = () => {
   return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
       loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 };
+
+/**
+ * Used for logs and debugging. It tries to tell what type is the entry, its
+ * path and URL.
+ *
+ * @param {Entry|FilesAppEntry} entry
+ * @return {string}
+ */
+util.entryDebugString = (entry) => {
+  if (entry === null) {
+    return 'entry is null';
+  }
+  if (entry === undefined) {
+    return 'entry is undefined';
+  }
+  let typeName = '';
+  if (entry.constructor && entry.constructor.name) {
+    typeName = entry.constructor.name;
+  } else {
+    typeName = Object.prototype.toString.call(entry);
+  }
+  let entryDescription = '(' + typeName + ') ';
+  if (entry.fullPath) {
+    entryDescription = entryDescription + entry.fullPath + ' ';
+  }
+  if (entry.toURL) {
+    entryDescription = entryDescription + entry.toURL();
+  }
+  return entryDescription;
+};

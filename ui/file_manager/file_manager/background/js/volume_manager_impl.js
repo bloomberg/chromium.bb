@@ -130,9 +130,9 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
 VolumeManagerImpl.prototype.initialize_ = function(callback) {
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
-  console.debug('Requesting volume list.');
+  console.warn('Requesting volume list.');
   chrome.fileManagerPrivate.getVolumeMetadataList(volumeMetadataList => {
-    console.debug(
+    console.warn(
         'Volume list fetched with: ' + volumeMetadataList.length + ' items.');
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList. crbug.com/330061.
@@ -142,15 +142,15 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
       // Create VolumeInfo for each volume.
       Promise.all(
           volumeMetadataList.map(volumeMetadata => {
-            console.debug(
+            console.warn(
                 'Initializing volume: ' + volumeMetadata.volumeId);
             return this.addVolumeMetadata_(volumeMetadata).then(
                 volumeInfo => {
-                  console.debug('Initialized volume: ' + volumeInfo.volumeId);
+                  console.warn('Initialized volume: ' + volumeInfo.volumeId);
                 });
           }))
           .then(() => {
-            console.debug('Initialized all volumes.');
+            console.warn('Initialized all volumes.');
             // Call the callback of the initialize function.
             callback();
             // Call the callback of AsyncQueue. Maybe it invokes callbacks
@@ -219,7 +219,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         if (event.status === 'success') {
           this.volumeInfoList.remove(event.volumeMetadata.volumeId);
         }
-        console.debug('unmounted volume: ' + volumeId);
+        console.warn('unmounted volume: ' + volumeId);
         callback();
         break;
     }
