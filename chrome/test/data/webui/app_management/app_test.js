@@ -9,7 +9,7 @@ suite('<app-management-app>', function() {
 
   setup(function() {
     app = document.createElement('app-management-app');
-    document.body.appendChild(app);
+    replaceBody(app);
   });
 
   test('loads', async function() {
