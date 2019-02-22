@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -29,17 +29,23 @@ class ThreadSafeScriptContainerTest : public ::testing::Test {
         reader_thread_(Platform::Current()->CreateThread(
             ThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadNameForTest("reader_thread"))),
+        writer_waiter_(std::make_unique<base::WaitableEvent>(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)),
+        reader_waiter_(std::make_unique<base::WaitableEvent>(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)),
         container_(base::MakeRefCounted<ThreadSafeScriptContainer>()) {}
 
  protected:
-  WaitableEvent* AddOnWriterThread(
+  base::WaitableEvent* AddOnWriterThread(
       ThreadSafeScriptContainer::RawScriptData** out_data) {
     PostCrossThreadTask(
         *writer_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
                ThreadSafeScriptContainer::RawScriptData** out_data,
-               WaitableEvent* waiter) {
+               base::WaitableEvent* waiter) {
               auto data = ThreadSafeScriptContainer::RawScriptData::Create(
                   String::FromUTF8("utf-8") /* encoding */,
                   Vector<Vector<char>>() /* script_text */,
@@ -49,74 +55,74 @@ class ThreadSafeScriptContainerTest : public ::testing::Test {
               waiter->Signal();
             },
             container_, CrossThreadUnretained(out_data),
-            CrossThreadUnretained(&writer_waiter_)));
-    return &writer_waiter_;
+            CrossThreadUnretained(writer_waiter_.get())));
+    return writer_waiter_.get();
   }
 
-  WaitableEvent* OnAllDataAddedOnWriterThread() {
+  base::WaitableEvent* OnAllDataAddedOnWriterThread() {
     PostCrossThreadTask(
         *writer_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
-               WaitableEvent* waiter) {
+               base::WaitableEvent* waiter) {
               container->OnAllDataAddedOnIOThread();
               waiter->Signal();
             },
-            container_, CrossThreadUnretained(&writer_waiter_)));
-    return &writer_waiter_;
+            container_, CrossThreadUnretained(writer_waiter_.get())));
+    return writer_waiter_.get();
   }
 
-  WaitableEvent* GetStatusOnReaderThread(ScriptStatus* out_status) {
+  base::WaitableEvent* GetStatusOnReaderThread(ScriptStatus* out_status) {
     PostCrossThreadTask(
         *reader_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
-               ScriptStatus* out_status, WaitableEvent* waiter) {
+               ScriptStatus* out_status, base::WaitableEvent* waiter) {
               *out_status = container->GetStatusOnWorkerThread(KURL(kKeyUrl));
               waiter->Signal();
             },
             container_, CrossThreadUnretained(out_status),
-            CrossThreadUnretained(&reader_waiter_)));
-    return &reader_waiter_;
+            CrossThreadUnretained(reader_waiter_.get())));
+    return reader_waiter_.get();
   }
 
-  WaitableEvent* WaitOnReaderThread(bool* out_exists) {
+  base::WaitableEvent* WaitOnReaderThread(bool* out_exists) {
     PostCrossThreadTask(
         *reader_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
-               bool* out_exists, WaitableEvent* waiter) {
+               bool* out_exists, base::WaitableEvent* waiter) {
               *out_exists = container->WaitOnWorkerThread(KURL(kKeyUrl));
               waiter->Signal();
             },
             container_, CrossThreadUnretained(out_exists),
-            CrossThreadUnretained(&reader_waiter_)));
-    return &reader_waiter_;
+            CrossThreadUnretained(reader_waiter_.get())));
+    return reader_waiter_.get();
   }
 
-  WaitableEvent* TakeOnReaderThread(
+  base::WaitableEvent* TakeOnReaderThread(
       ThreadSafeScriptContainer::RawScriptData** out_data) {
     PostCrossThreadTask(
         *reader_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
                ThreadSafeScriptContainer::RawScriptData** out_data,
-               WaitableEvent* waiter) {
+               base::WaitableEvent* waiter) {
               auto data = container->TakeOnWorkerThread(KURL(kKeyUrl));
               *out_data = data.get();
               waiter->Signal();
             },
             container_, CrossThreadUnretained(out_data),
-            CrossThreadUnretained(&reader_waiter_)));
-    return &reader_waiter_;
+            CrossThreadUnretained(reader_waiter_.get())));
+    return reader_waiter_.get();
   }
 
  private:
   std::unique_ptr<Thread> writer_thread_;
   std::unique_ptr<Thread> reader_thread_;
 
-  WaitableEvent writer_waiter_;
-  WaitableEvent reader_waiter_;
+  std::unique_ptr<base::WaitableEvent> writer_waiter_;
+  std::unique_ptr<base::WaitableEvent> reader_waiter_;
 
   scoped_refptr<ThreadSafeScriptContainer> container_;
 };
@@ -131,10 +137,10 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   ThreadSafeScriptContainer::RawScriptData* added_data;
   {
     bool result = false;
-    WaitableEvent* pending_wait = WaitOnReaderThread(&result);
+    base::WaitableEvent* pending_wait = WaitOnReaderThread(&result);
     // This should not be signaled until data is added.
     EXPECT_FALSE(pending_wait->IsSignaled());
-    WaitableEvent* pending_write = AddOnWriterThread(&added_data);
+    base::WaitableEvent* pending_write = AddOnWriterThread(&added_data);
     pending_wait->Wait();
     pending_write->Wait();
     EXPECT_TRUE(result);
@@ -196,10 +202,11 @@ TEST_F(ThreadSafeScriptContainerTest, WaitNonExistingKey) {
 
   {
     bool result = true;
-    WaitableEvent* pending_wait = WaitOnReaderThread(&result);
+    base::WaitableEvent* pending_wait = WaitOnReaderThread(&result);
     // This should not be signaled until OnAllDataAdded is called.
     EXPECT_FALSE(pending_wait->IsSignaled());
-    WaitableEvent* pending_on_all_data_added = OnAllDataAddedOnWriterThread();
+    base::WaitableEvent* pending_on_all_data_added =
+        OnAllDataAddedOnWriterThread();
     pending_wait->Wait();
     pending_on_all_data_added->Wait();
     // Aborted wait should return false.
