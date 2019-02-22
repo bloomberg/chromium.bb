@@ -27,6 +27,10 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 // Necessary to declare this class as a friend.
 namespace arc {
 class ArcTermsOfServiceDefaultNegotiatorTest;
@@ -423,6 +427,22 @@ class IdentityManager : public SigninManagerBase::Observer,
   // NOTE: In normal usage, this method SHOULD NOT be called.
   // TODO(https://crbug.com/930094): Eliminate the need to expose this.
   void LegacyReloadAccountsFromSystem();
+#endif
+
+#if defined(OS_ANDROID)
+  // Returns a pointer to the AccountTrackerService Java instance associated
+  // with this object.
+  // TODO(https://crbug.com/934688): Eliminate this method once
+  // AccountTrackerService.java has no more client usage.
+  base::android::ScopedJavaLocalRef<jobject>
+  LegacyGetAccountTrackerServiceJavaObject();
+
+  // Returns a pointer to the OAuth2TokenService Java instance associated
+  // with this object.
+  // TODO(https://crbug.com/934688): Eliminate this method once
+  // OAuth2TokenService.java has no more client usage.
+  base::android::ScopedJavaLocalRef<jobject>
+  LegacyGetOAuth2TokenServiceJavaObject();
 #endif
 
   // Methods to register or remove observers.
