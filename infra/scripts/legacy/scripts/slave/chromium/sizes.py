@@ -92,6 +92,12 @@ def main_mac(options, args, results_collector):
   build_dir = build_directory.GetBuildOutputDirectory(SRC_DIR)
   target_dir = os.path.join(build_dir, options.target)
 
+  """Set DEVELOPER_DIR to the hermetic Xcode.app so 'size' will work."""
+  if not 'DEVELOPER_DIR' in os.environ:
+    xcode_path = os.path.join(SRC_DIR, 'build', 'mac_files', 'Xcode.app');
+    if os.path.exists(xcode_path):
+      os.environ['DEVELOPER_DIR'] = xcode_path
+
   result = 0
   # Work with either build type.
   base_names = ('Chromium', 'Google Chrome')
