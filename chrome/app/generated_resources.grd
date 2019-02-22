@@ -4740,7 +4740,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           The alternative browser could not be opened
         </message>
         <message name="IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE" desc="Shown while waiting for an alternative browser to open, with a countdown timer">
-          Opening in alternative browser in <ph name="COUNTDOWN_SECONDS">$1</ph> seconds
+          Opening in alternative browser in <ph name="COUNTDOWN_SECONDS">$1<ex>5</ex></ph> seconds
         </message>
         <message name="IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR" desc="Generic error message when we don't know why we failed to open the alternative browser">
           <ph name="URL">$1<ex>ftp://example.com/</ex></ph> could not be open in an alternative browser. Please contact your system administrator.
