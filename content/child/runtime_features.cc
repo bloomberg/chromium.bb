@@ -335,12 +335,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
 
-  // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
-  // since the feature should have been enabled when it is set to experimental
-  WebRuntimeFeatures::EnableWebAuthGetTransports(
-      base::FeatureList::IsEnabled(features::kWebAuthGetTransports) ||
-      enable_experimental_web_platform_features);
-
   WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",
                                     "replace_server_placeholders") != "false");
