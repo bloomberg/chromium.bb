@@ -21673,6 +21673,7 @@ Called by update_net_error_codes.py.-->
   <int value="2792" label="ClientHintsUAModel"/>
   <int value="2793" label="AnimationFrameCancelledWithinFrame"/>
   <int value="2794" label="SchedulingIsInputPending"/>
+  <int value="2795" label="V8StringNormalize"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
