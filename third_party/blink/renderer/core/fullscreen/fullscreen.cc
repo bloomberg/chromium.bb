@@ -501,7 +501,7 @@ Element* Fullscreen::FullscreenElementFrom(Document& document) {
 // https://fullscreen.spec.whatwg.org/#fullscreen-element
 Element* Fullscreen::FullscreenElementForBindingFrom(TreeScope& scope) {
   Element* element = FullscreenElementFrom(scope.GetDocument());
-  if (!element || !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
+  if (!element)
     return element;
 
   // TODO(kochi): Once V0 code is removed, we can use the same logic for

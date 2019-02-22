@@ -444,9 +444,6 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
   if (match == pseudo_type_map_end || match->string != name.GetString())
     return CSSSelector::kPseudoUnknown;
 
-  if (match->type == CSSSelector::kPseudoFullscreen &&
-      !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
-    return CSSSelector::kPseudoUnknown;
   if (match->type == CSSSelector::kPseudoFocusVisible &&
       !RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
     return CSSSelector::kPseudoUnknown;

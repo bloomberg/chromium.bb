@@ -24,13 +24,13 @@
 [
     ImplementedAs=DocumentFullscreen
 ] partial interface Document {
-    [LenientSetter, RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
-    [LenientSetter, Unscopable, RuntimeEnabled=FullscreenUnprefixed, ImplementedAs=fullscreenElement] readonly attribute boolean fullscreen;
+    [LenientSetter] readonly attribute boolean fullscreenEnabled;
+    [LenientSetter, Unscopable, ImplementedAs=fullscreenElement] readonly attribute boolean fullscreen;
 
-    [CallWith=ScriptState, RuntimeEnabled=FullscreenUnprefixed] Promise<void> exitFullscreen();
+    [CallWith=ScriptState] Promise<void> exitFullscreen();
 
-    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
-    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
+    attribute EventHandler onfullscreenchange;
+    attribute EventHandler onfullscreenerror;
 
     // Mozilla version
     [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=fullscreenElement] readonly attribute boolean webkitIsFullScreen;
