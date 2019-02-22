@@ -31,7 +31,7 @@ js_library("database_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_externs",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -41,7 +41,7 @@ js_library("discards_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_externs",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:util",
@@ -50,8 +50,8 @@ js_library("discards_tab") {
 
 js_library("graph_tab") {
   deps = [
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
-    "//services/resource_coordinator/public/mojom:mojom_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_externs",
+    "//services/resource_coordinator/public/mojom:mojom_js_externs",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -59,7 +59,7 @@ js_library("graph_tab") {
 
 js_library("graph_doc") {
   deps = [
-    "//services/resource_coordinator/public/mojom:mojom_js_library_for_compile",
+    "//services/resource_coordinator/public/mojom:mojom_js_externs",
   ]
 
   externs_list = [ "../../../../third_party/d3/src/externs.js" ]

@@ -34,7 +34,7 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
-    "//chrome/browser/ui/webui/downloads:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/downloads:mojo_bindings_js_externs",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "externs.js" ]
