@@ -1047,8 +1047,10 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
 // correct when using tabs with web pages.
+//
+// Disabled since it's flaky. https://crbug.com/934900
 IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
-                       VerifySiteInstanceCountInBrowsingInstance) {
+                       DISABLED_VerifySiteInstanceCountInBrowsingInstance) {
   // Page with 14 nested oopifs across 9 sites (a.com through i.com).
   GURL abcdefghi_url = embedded_test_server()->GetURL(
       "a.com",
