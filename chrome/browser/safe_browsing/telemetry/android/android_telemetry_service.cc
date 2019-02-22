@@ -152,9 +152,15 @@ void AndroidTelemetryService::OnDownloadUpdated(download::DownloadItem* item) {
   if (item->GetState() == download::DownloadItem::COMPLETE) {
     // Download completed. Send report.
     MaybeSendApkDownloadReport(item);
+    // No longer interested in this |DownloadItem| since the report has been
+    // sent so remove the observer.
+    item->RemoveObserver(this);
   } else if (item->GetState() == download::DownloadItem::CANCELLED) {
     RecordApkDownloadTelemetryOutcome(
         ApkDownloadTelemetryOutcome::NOT_SENT_DOWNLOAD_CANCELLED);
+    // No longer interested in this |DownloadItem| since the download did not
+    // complete so remove the observer.
+    item->RemoveObserver(this);
   }
 }
 
