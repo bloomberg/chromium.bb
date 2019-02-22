@@ -683,9 +683,6 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     }
 
     if (handler_) {
-      // |handler_| can become null after this call.
-      handler_->OnSignalingChange(states.signaling_state);
-
       // Process the rest of the state changes differently depending on SDP
       // semantics.
       if (sdp_semantics_ == webrtc::SdpSemantics::kPlanB) {
@@ -694,6 +691,9 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kUnifiedPlan);
         ProcessStateChangesUnifiedPlan(std::move(states));
       }
+
+      // |handler_| can become null after this call.
+      handler_->OnSignalingChange(states.signaling_state);
 
       if (tracker_ && handler_) {
         tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
