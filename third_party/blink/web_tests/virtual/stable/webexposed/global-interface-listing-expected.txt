@@ -223,6 +223,7 @@ interface AuthenticatorAttestationResponse : AuthenticatorResponse
     attribute @@toStringTag
     getter attestationObject
     method constructor
+    method getTransports
 interface AuthenticatorResponse
     attribute @@toStringTag
     getter clientDataJSON

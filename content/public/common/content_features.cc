@@ -575,11 +575,6 @@ const base::Feature kWebAuthCable {
 #endif
 };
 
-// Controls whether AuthenticatorAttestationResponse contains a getTransports
-// member to return the set of transports supported by an authenticator.
-const base::Feature kWebAuthGetTransports{"WebAuthenticationGetTransports",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
