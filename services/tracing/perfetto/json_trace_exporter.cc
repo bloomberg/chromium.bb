@@ -375,7 +375,7 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   std::string out;
   out.reserve(kReserveCapacity);
 
-  if (!has_output_json_preamble_) {
+  if (label_filter_.empty() && !has_output_json_preamble_) {
     out = "{\"traceEvents\":[";
     has_output_json_preamble_ = true;
   }
@@ -397,25 +397,27 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
 
     auto& bundle = packet.chrome_events();
 
-    std::unordered_map<int, std::string> string_table;
-    for (auto& string_table_entry : bundle.string_table()) {
-      string_table[string_table_entry.index()] = string_table_entry.value();
-    }
-
-    for (auto& event : bundle.trace_events()) {
-      if (out.size() > kTraceEventBufferSizeInBytes) {
-        json_callback_.Run(out, nullptr, true);
-        out.clear();
+    if (label_filter_.empty() || label_filter_ == "traceEvents") {
+      std::unordered_map<int, std::string> string_table;
+      for (auto& string_table_entry : bundle.string_table()) {
+        string_table[string_table_entry.index()] = string_table_entry.value();
       }
 
-      if (has_output_first_event_) {
-        out += ",\n";
-      } else {
-        has_output_first_event_ = true;
-      }
+      for (auto& event : bundle.trace_events()) {
+        if (out.size() > kTraceEventBufferSizeInBytes) {
+          json_callback_.Run(out, nullptr, true);
+          out.clear();
+        }
 
-      OutputJSONFromTraceEventProto(event, string_table,
-                                    argument_filter_predicate_, &out);
+        if (has_output_first_event_) {
+          out += ",\n";
+        } else {
+          has_output_first_event_ = true;
+        }
+
+        OutputJSONFromTraceEventProto(event, string_table,
+                                      argument_filter_predicate_, &out);
+      }
     }
 
     for (auto& metadata : bundle.metadata()) {
@@ -465,10 +467,13 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   }
 
   if (!has_more) {
-    out += "]";
+    if (label_filter_.empty()) {
+      out += "]";
+    }
 
-    if (!legacy_system_ftrace_output_.empty() ||
-        !legacy_system_trace_events_.empty()) {
+    if ((label_filter_.empty() || label_filter_ == "systemTraceEvents") &&
+        (!legacy_system_ftrace_output_.empty() ||
+         !legacy_system_trace_events_.empty())) {
       // Should only have system events (e.g. ETW) or system ftrace output.
       DCHECK(legacy_system_ftrace_output_.empty() ||
              legacy_system_trace_events_.empty());
@@ -483,14 +488,16 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
       }
     }
 
-    if (!metadata_->empty()) {
-      out += ",\"metadata\":";
-      std::string json_value;
-      base::JSONWriter::Write(*metadata_, &json_value);
-      out += json_value;
-    }
+    if (label_filter_.empty()) {
+      if (!metadata_->empty()) {
+        out += ",\"metadata\":";
+        std::string json_value;
+        base::JSONWriter::Write(*metadata_, &json_value);
+        out += json_value;
+      }
 
-    out += "}";
+      out += "}";
+    }
   }
 
   json_callback_.Run(out, metadata_.get(), has_more);

@@ -101,9 +101,11 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
   }
 
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
+                    const std::string& agent_label,
                     StopAndFlushCallback callback) {
     stream_ = std::move(stream);
     stop_and_flush_callback_ = std::move(callback);
+    json_trace_exporter_->set_label_filter(agent_label);
     consumer_endpoint_->DisableTracing();
   }
 
@@ -281,6 +283,7 @@ void PerfettoTracingCoordinator::StopAndFlush(
 
 void PerfettoTracingCoordinator::StopAndFlushInternal(
     mojo::ScopedDataPipeProducerHandle stream,
+    const std::string& agent_label,
     StopAndFlushCallback callback) {
   if (start_tracing_callback_) {
     // We received a |StopAndFlush| command before receiving |StartTracing| acks
@@ -289,13 +292,14 @@ void PerfettoTracingCoordinator::StopAndFlushInternal(
         FROM_HERE,
         base::BindOnce(&PerfettoTracingCoordinator::StopAndFlushInternal,
                        weak_factory_.GetWeakPtr(), std::move(stream),
-                       std::move(callback)),
+                       agent_label, std::move(callback)),
         base::TimeDelta::FromMilliseconds(
             mojom::kStopTracingRetryTimeMilliseconds));
     return;
   }
 
-  tracing_session_->StopAndFlush(std::move(stream), std::move(callback));
+  tracing_session_->StopAndFlush(std::move(stream), agent_label,
+                                 std::move(callback));
 }
 
 void PerfettoTracingCoordinator::StopAndFlushAgent(
@@ -306,7 +310,7 @@ void PerfettoTracingCoordinator::StopAndFlushAgent(
   DCHECK(tracing_session_);
 
   ClearConnectedPIDs();
-  StopAndFlushInternal(std::move(stream), std::move(callback));
+  StopAndFlushInternal(std::move(stream), agent_label, std::move(callback));
 }
 
 void PerfettoTracingCoordinator::IsTracing(IsTracingCallback callback) {
