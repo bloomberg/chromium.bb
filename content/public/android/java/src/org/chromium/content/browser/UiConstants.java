@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 
@@ -12,7 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
  * Platform-provided UI constants.
  */
 public class UiConstants {
-    private static final String TAG = "UiConstants";
     private static final String UI_CONSTANTS_INTERNAL =
             "org.chromium.content.browser.UiConstantsInternal";
     private static UiConstants sInstance;
@@ -24,7 +22,6 @@ public class UiConstants {
             sInstance = (UiConstants) Class.forName(UI_CONSTANTS_INTERNAL).newInstance();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException e) {
-            Log.w(TAG, "Could not summon UiConstantsInternal", e);
             sInstance = new UiConstants();
         }
         return sInstance;
