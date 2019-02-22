@@ -333,6 +333,7 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 void OverlayWindowViews::SetUpViews() {
   GetRootView()->SetPaintToLayer(ui::LAYER_TEXTURED);
   GetRootView()->layer()->set_name("RootView");
+  GetRootView()->layer()->SetMasksToBounds(true);
 
   // views::View that is displayed when video is hidden. ----------------------
   // Adding an extra pixel to width/height makes sure controls background cover
