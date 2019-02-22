@@ -522,25 +522,51 @@ TEST_F(ThreadTest, FlushForTesting) {
   a.FlushForTesting();
 }
 
-TEST_F(ThreadTest, ProvidedMessageLoopBase) {
-  Thread thread("ProvidedMessageLoopBase");
-  std::unique_ptr<base::sequence_manager::internal::SequenceManagerImpl>
-      sequence_manager =
-          base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
-              base::sequence_manager::SequenceManager::Settings());
-  scoped_refptr<base::sequence_manager::TaskQueue> task_queue =
-      sequence_manager
-          ->CreateTaskQueueWithType<base::sequence_manager::TaskQueue>(
-              base::sequence_manager::TaskQueue::Spec("default_tq"));
-  sequence_manager->SetTaskRunner(task_queue->task_runner());
+namespace {
 
+class SequenceManagerTaskEnvironment : public Thread::TaskEnvironment {
+ public:
+  SequenceManagerTaskEnvironment()
+      : sequence_manager_(
+            base::sequence_manager::CreateUnboundSequenceManager()),
+        task_queue_(
+            sequence_manager_
+                ->CreateTaskQueueWithType<base::sequence_manager::TaskQueue>(
+                    base::sequence_manager::TaskQueue::Spec("default_tq"))) {
+    sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
+  }
+
+  ~SequenceManagerTaskEnvironment() override {}
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override {
+    return task_queue_->task_runner();
+  }
+
+  void BindToCurrentThread(base::TimerSlack timer_slack) override {
+    sequence_manager_->BindToMessagePump(
+        base::MessageLoop::CreateMessagePumpForType(
+            base::MessageLoop::TYPE_DEFAULT));
+    sequence_manager_->SetTimerSlack(timer_slack);
+  }
+
+ private:
+  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
+  scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(SequenceManagerTaskEnvironment);
+};
+
+}  // namespace
+
+TEST_F(ThreadTest, ProvidedTaskEnvironment) {
+  Thread thread("TaskEnvironment");
   base::Thread::Options options;
-  options.message_loop_base = sequence_manager.release();
+  options.task_environment = new SequenceManagerTaskEnvironment();
   thread.StartWithOptions(options);
 
   base::WaitableEvent event;
 
-  task_queue->task_runner()->PostTask(
+  options.task_environment->GetDefaultTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   event.Wait();

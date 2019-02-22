@@ -27,13 +27,6 @@
 
 namespace base {
 
-class ThreadForTest : public Thread {
- public:
-  ThreadForTest() : Thread("test") {}
-
-  using Thread::message_loop_base;
-};
-
 class ScheduleWorkTest : public testing::Test {
  public:
   ScheduleWorkTest() : counter_(0) {}
@@ -85,8 +78,16 @@ class ScheduleWorkTest : public testing::Test {
     } else
 #endif
     {
-      target_.reset(new ThreadForTest());
-      target_->StartWithOptions(Thread::Options(target_type, 0u));
+      target_.reset(new Thread("test"));
+
+      Thread::Options options(target_type, 0u);
+
+      std::unique_ptr<MessageLoop> message_loop =
+          MessageLoop::CreateUnbound(target_type);
+      message_loop_ = message_loop.get();
+      options.task_environment =
+          new internal::MessageLoopTaskEnvironment(std::move(message_loop));
+      target_->StartWithOptions(options);
 
       // Without this, it's possible for the scheduling threads to start and run
       // before the target thread. In this case, the scheduling threads will
@@ -179,11 +180,12 @@ class ScheduleWorkTest : public testing::Test {
     if (java_thread_)
       return java_thread_->message_loop()->GetMessageLoopBase();
 #endif
-    return target_->message_loop_base();
+    return message_loop_->GetMessageLoopBase();
   }
 
  private:
-  std::unique_ptr<ThreadForTest> target_;
+  std::unique_ptr<Thread> target_;
+  MessageLoop* message_loop_;
 #if defined(OS_ANDROID)
   std::unique_ptr<android::JavaHandlerThread> java_thread_;
 #endif

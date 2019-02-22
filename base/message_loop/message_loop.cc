@@ -168,6 +168,12 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(Type type) {
   return WrapUnique(new MessageLoop(type, nullptr));
 }
 
+// static
+std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
+    std::unique_ptr<MessagePump> custom_pump) {
+  return WrapUnique(new MessageLoop(TYPE_CUSTOM, std::move(custom_pump)));
+}
+
 MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
     : backend_(sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
           sequence_manager::SequenceManager::Settings{.message_loop_type =
