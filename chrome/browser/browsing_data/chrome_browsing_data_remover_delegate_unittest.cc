@@ -283,7 +283,7 @@ class RemoveCookieTester {
     auto cookie = net::CanonicalCookie::Create(
         kOrigin1, "A=1", base::Time::Now(), net::CookieOptions());
     cookie_manager_->SetCanonicalCookie(
-        *cookie, /*secure_source=*/false, /*modify_http_only=*/false,
+        *cookie, "http", /*modify_http_only=*/false,
         base::BindLambdaForTesting([&](bool result) {
           EXPECT_TRUE(result);
           run_loop.Quit();

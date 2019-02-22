@@ -62,7 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                      const net::CookieOptions& cookie_options,
                      GetCookieListCallback callback) override;
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          bool secure_source,
+                          const std::string& source_scheme,
                           bool modify_http_only,
                           SetCanonicalCookieCallback callback) override;
   void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,

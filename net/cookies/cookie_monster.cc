@@ -419,7 +419,7 @@ void CookieMonster::SetAllCookiesAsync(const CookieList& list,
 
 void CookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
-    bool secure_source,
+    std::string source_scheme,
     bool modify_http_only,
     SetCookiesCallback callback) {
   DCHECK(cookie->IsCanonical());
@@ -431,7 +431,7 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-          std::move(cookie), secure_source, modify_http_only,
+          std::move(cookie), std::move(source_scheme), modify_http_only,
           std::move(callback)),
       domain);
 }
@@ -728,8 +728,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   }
 
   DCHECK(cc);
-  SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
-                     !options.exclude_httponly(), std::move(callback));
+  SetCanonicalCookie(std::move(cc), url.scheme(), !options.exclude_httponly(),
+                     std::move(callback));
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
@@ -1202,11 +1202,13 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 }
 
 void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
-                                       bool secure_source,
+                                       std::string source_scheme,
                                        bool modify_http_only,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  std::string scheme_lower = base::ToLowerASCII(source_scheme);
+  bool secure_source = GURL::SchemeIsCryptographic(scheme_lower);
   if ((cc->IsSecure() && !secure_source)) {
     MaybeRunCookieCallback(
         std::move(callback),
@@ -1218,6 +1220,13 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     MaybeRunCookieCallback(
         std::move(callback),
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
+    return;
+  }
+
+  if (!IsCookieableScheme(scheme_lower)) {
+    MaybeRunCookieCallback(
+        std::move(callback),
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
     return;
   }
 
