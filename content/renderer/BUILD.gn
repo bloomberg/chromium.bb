@@ -612,6 +612,7 @@ target(link_target_type, "renderer") {
     "//components/viz/common",
     "//components/viz/service",
     "//content:resources",
+    "//content/app/strings:strings_grit",
     "//content/child",
     "//content/common",
     "//content/common:buildflags",

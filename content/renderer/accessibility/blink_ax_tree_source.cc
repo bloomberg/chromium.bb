@@ -886,8 +886,15 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     if (image_annotator_->HasAnnotationInCache(src)) {
       dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
                               image_annotator_->GetImageAnnotation(src));
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
+    } else if (image_annotator_->HasImageInCache(src)) {
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kAnnotationPending);
     } else if (!image_annotator_->HasImageInCache(src)) {
       image_annotator_->OnImageAdded(src);
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kAnnotationPending);
     }
   }
 

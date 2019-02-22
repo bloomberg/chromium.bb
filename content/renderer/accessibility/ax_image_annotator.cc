@@ -6,6 +6,10 @@
 
 #include "base/base64.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/app/strings/grit/content_strings.h"
+#include "content/public/common/content_client.h"
 #include "content/renderer/render_frame_impl.h"
 #include "crypto/sha2.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -177,9 +181,16 @@ void AXImageAnnotator::OnImageAnnotated(
     DLOG(WARNING) << "Unrecognized image annotation result.";
     return;
   }
-  // TODO(nektar): Add message to explain that the annotation is a best guess,
-  // e.g. "appears to be".
-  image_annotations_.at(image.AxID()).set_annotation(result->get_ocr_text());
+
+  if (result->get_ocr_text().empty())
+    return;
+
+  auto contextualized_string = GetContentClient()->GetLocalizedString(
+      IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT,
+      base::UTF8ToUTF16(result->get_ocr_text()));
+
+  image_annotations_.at(image.AxID())
+      .set_annotation(base::UTF16ToUTF8(contextualized_string));
   render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
 }
 

@@ -5,6 +5,7 @@ include_rules = [
   # directories in content/ so we disallow all of them.
   "-content",
   "+content/app/resources/grit/content_resources.h",
+  "+content/app/strings/grit",  # For generated headers
   "+content/common",
   "+content/grit",
   "+content/public/common",

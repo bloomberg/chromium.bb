@@ -660,6 +660,12 @@ base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
+base::string16 ChromeContentClient::GetLocalizedString(
+    int message_id,
+    const base::string16& replacement) const {
+  return l10n_util::GetStringFUTF16(message_id, replacement);
+}
+
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
