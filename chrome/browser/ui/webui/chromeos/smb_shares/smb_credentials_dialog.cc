@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -35,18 +36,30 @@ void AddSmbCredentialsDialogStrings(content::WebUIDataSource* html_source) {
   }
 }
 
+std::string GetDialogId(int32_t mount_id) {
+  return chrome::kChromeUISmbCredentialsURL + base::NumberToString(mount_id);
+}
+
 }  // namespace
 
 // static
 void SmbCredentialsDialog::Show(int32_t mount_id,
                                 const std::string& share_path) {
+  // If an SmbCredentialsDialog is already opened for |mount_id|, focus that
+  // dialog rather than opening a second one.
+  auto* instance = SystemWebDialogDelegate::FindInstance(GetDialogId(mount_id));
+  if (instance) {
+    instance->Focus();
+    return;
+  }
+
   SmbCredentialsDialog* dialog = new SmbCredentialsDialog(mount_id, share_path);
   dialog->ShowSystemDialog();
 }
 
 SmbCredentialsDialog::SmbCredentialsDialog(int32_t mount_id,
                                            const std::string& share_path)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUISmbCredentialsURL),
+    : SystemWebDialogDelegate(GURL(GetDialogId(mount_id)),
                               base::string16() /* title */),
       mount_id_(mount_id),
       share_path_(share_path) {}
