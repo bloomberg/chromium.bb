@@ -942,6 +942,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCancelResponse(int request_id);
   void DidReceiveTransferSizeUpdate(int request_id, int received_data_length);
 
+  // Used in tests to override DocumentInterfaceBroker's methods
+  void SetDocumentInterfaceBrokerForTesting(
+      blink::mojom::DocumentInterfaceBrokerPtr test_broker);
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 

@@ -35,6 +35,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/frame_host_test_interface.mojom.h"
+#include "content/test/test_document_interface_broker.h"
 #include "content/test/test_render_frame.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -66,6 +67,8 @@ constexpr int32_t kEmbeddedSubframeRouteId = 23;
 const char kParentFrameHTML[] = "Parent frame <iframe name='frame'></iframe>";
 
 const char kAutoplayTestOrigin[] = "https://www.google.com";
+
+constexpr char kGetNameTestResponse[] = "TestName";
 
 }  // namespace
 
@@ -701,6 +704,87 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
   }
 }
 
+// Used to annotate the source of an interface request.
+struct SourceAnnotation {
+  // The URL of the active document in the frame, at the time the interface was
+  // requested by the RenderFrame.
+  GURL document_url;
+
+  // The RenderFrameObserver event in response to which the interface is
+  // requested by the RenderFrame.
+  std::string render_frame_event;
+
+  bool operator==(const SourceAnnotation& rhs) const {
+    return document_url == rhs.document_url &&
+           render_frame_event == rhs.render_frame_event;
+  }
+};
+
+// TODO(crbug.com/718652): this is a blink version of the FrameHostTestInterface
+// implementation. The non-blink one will be removed when all clients are
+// converted to use DocumentInterfaceBroker.
+class BlinkFrameHostTestInterfaceImpl
+    : public blink::mojom::FrameHostTestInterface {
+ public:
+  BlinkFrameHostTestInterfaceImpl() : binding_(this) {}
+  ~BlinkFrameHostTestInterfaceImpl() override {}
+
+  void BindAndFlush(blink::mojom::FrameHostTestInterfaceRequest request) {
+    binding_.Bind(std::move(request));
+    binding_.WaitForIncomingMethodCall();
+  }
+
+  const base::Optional<SourceAnnotation>& ping_source() const {
+    return ping_source_;
+  }
+
+ protected:
+  // blink::mojom::FrameHostTestInterface
+  void Ping(const GURL& url, const std::string& event) override {
+    ping_source_ = SourceAnnotation{url, event};
+  }
+  void GetName(GetNameCallback callback) override {
+    std::move(callback).Run(kGetNameTestResponse);
+  }
+
+ private:
+  mojo::Binding<blink::mojom::FrameHostTestInterface> binding_;
+  base::Optional<SourceAnnotation> ping_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkFrameHostTestInterfaceImpl);
+};
+
+class FrameHostTestDocumentInterfaceBroker
+    : public TestDocumentInterfaceBroker {
+ public:
+  FrameHostTestDocumentInterfaceBroker(
+      blink::mojom::DocumentInterfaceBroker* document_interface_broker,
+      blink::mojom::DocumentInterfaceBrokerRequest request)
+      : TestDocumentInterfaceBroker(document_interface_broker,
+                                    std::move(request)) {}
+
+  void GetFrameHostTestInterface(
+      blink::mojom::FrameHostTestInterfaceRequest request) override {
+    BlinkFrameHostTestInterfaceImpl impl;
+    impl.BindAndFlush(std::move(request));
+  }
+};
+
+TEST_F(RenderFrameImplTest, TestDocumentInterfaceBrokerOverride) {
+  blink::mojom::DocumentInterfaceBrokerPtr doc;
+  FrameHostTestDocumentInterfaceBroker frame_interface_broker(
+      frame()->GetDocumentInterfaceBroker(), mojo::MakeRequest(&doc));
+  frame()->SetDocumentInterfaceBrokerForTesting(std::move(doc));
+
+  blink::mojom::FrameHostTestInterfacePtr frame_test;
+  frame()->GetDocumentInterfaceBroker()->GetFrameHostTestInterface(
+      mojo::MakeRequest(&frame_test));
+  frame_test->GetName(base::BindOnce([](const std::string& result) {
+    EXPECT_EQ(result, kGetNameTestResponse);
+  }));
+  frame_interface_broker.Flush();
+}
+
 // RenderFrameRemoteInterfacesTest ------------------------------------
 
 namespace {
@@ -788,26 +872,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
   DISALLOW_COPY_AND_ASSIGN(TestSimpleDocumentInterfaceBrokerImpl);
 };
 
-// Used to annotate the source of an interface request.
-struct SourceAnnotation {
-  // The URL of the active document in the frame, at the time the interface was
-  // requested by the RenderFrame.
-  GURL document_url;
-
-  // The RenderFrameObserver event in response to which the interface is
-  // requested by the RenderFrame.
-  std::string render_frame_event;
-
-  bool operator==(const SourceAnnotation& rhs) const {
-    return document_url == rhs.document_url &&
-           render_frame_event == rhs.render_frame_event;
-  }
-};
-
-std::ostream& operator<<(std::ostream& os, const SourceAnnotation& a) {
-  return os << "[" << a.document_url << ", " << a.render_frame_event << "]";
-}
-
 class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
  public:
   FrameHostTestInterfaceImpl() : binding_(this) {}
@@ -832,38 +896,6 @@ class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
   base::Optional<SourceAnnotation> ping_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameHostTestInterfaceImpl);
-};
-
-// TODO(crbug.com/718652): this is a blink version of the FrameHostTestInterface
-// implementation. The non-blink one will be removed when all clients are
-// converted to use DocumentInterfaceBroker.
-class BlinkFrameHostTestInterfaceImpl
-    : public blink::mojom::FrameHostTestInterface {
- public:
-  BlinkFrameHostTestInterfaceImpl() : binding_(this) {}
-  ~BlinkFrameHostTestInterfaceImpl() override {}
-
-  void BindAndFlush(blink::mojom::FrameHostTestInterfaceRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.WaitForIncomingMethodCall();
-  }
-
-  const base::Optional<SourceAnnotation>& ping_source() const {
-    return ping_source_;
-  }
-
- protected:
-  // blink::mojom::FrameHostTestInterface
-  void Ping(const GURL& url, const std::string& event) override {
-    ping_source_ = SourceAnnotation{url, event};
-  }
-  void GetName(GetNameCallback callback) override {}
-
- private:
-  mojo::Binding<blink::mojom::FrameHostTestInterface> binding_;
-  base::Optional<SourceAnnotation> ping_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlinkFrameHostTestInterfaceImpl);
 };
 
 // RenderFrameObserver that issues FrameHostTestInterface interface requests
