@@ -16,15 +16,12 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
 class Window;
-}
-
-namespace gfx {
-class Rect;
 }
 
 namespace ui {
@@ -66,14 +63,14 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // Calculates and returns an optimal scale ratio. This is only taking into
   // account |size.height()| as the width can vary.
-  static float GetItemScale(const gfx::Size& source,
-                            const gfx::Size& target,
+  static float GetItemScale(const gfx::SizeF& source,
+                            const gfx::SizeF& target,
                             int top_view_inset,
                             int title_height);
 
   // Returns the transform turning |src_rect| into |dst_rect|.
-  static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
-                                            const gfx::Rect& dst_rect);
+  static gfx::Transform GetTransformForRect(const gfx::RectF& src_rect,
+                                            const gfx::RectF& dst_rect);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
@@ -102,7 +99,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // Returns transformed bounds of the overview window. See
   // OverviewUtil::GetTransformedBounds for more details.
-  gfx::Rect GetTransformedBounds() const;
+  gfx::RectF GetTransformedBounds() const;
 
   // Returns the kTopViewInset property of |window_| unless there are transient
   // ancestors, in which case returns 0.
@@ -132,16 +129,18 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // tall in the original window getting replaced by a window caption that is
   // |title_height| tall in the transformed window. If |type_| is not normal,
   // write |overview_bounds_|, which would differ than the return bounds.
-  gfx::Rect ShrinkRectToFitPreservingAspectRatio(const gfx::Rect& rect,
-                                                 const gfx::Rect& bounds,
-                                                 int top_view_inset,
-                                                 int title_height);
+  gfx::RectF ShrinkRectToFitPreservingAspectRatio(const gfx::RectF& rect,
+                                                  const gfx::RectF& bounds,
+                                                  int top_view_inset,
+                                                  int title_height);
 
   aura::Window* window() const { return window_; }
 
   GridWindowFillMode type() const { return type_; }
 
-  base::Optional<gfx::Rect> overview_bounds() const { return overview_bounds_; }
+  base::Optional<gfx::RectF> overview_bounds() const {
+    return overview_bounds_;
+  }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
@@ -219,7 +218,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // Empty if window is of type normal. Contains the bounds the overview item
   // should be if the window is too wide or too tall.
-  base::Optional<gfx::Rect> overview_bounds_;
+  base::Optional<gfx::RectF> overview_bounds_;
 
   // A widget that holds the content for the minimized window.
   std::unique_ptr<views::Widget> minimized_widget_;

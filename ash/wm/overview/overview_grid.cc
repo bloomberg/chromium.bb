@@ -502,7 +502,7 @@ void OverviewGrid::PositionWindows(
   if (window_list_.empty())
     return;
 
-  std::vector<gfx::Rect> rects = GetWindowRects(ignored_item);
+  std::vector<gfx::RectF> rects = GetWindowRects(ignored_item);
 
   // Position the windows centering the left-aligned rows vertically. Do not
   // position |ignored_item| if it is not nullptr and matches a item in
@@ -546,7 +546,7 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
   bool recreate_selection_widget = false;
   bool out_of_bounds = false;
   bool changed_selection_index = false;
-  gfx::Rect old_bounds;
+  gfx::RectF old_bounds;
   if (SelectedWindow()) {
     old_bounds = SelectedWindow()->target_bounds();
     // Make the old selected window header non-transparent first.
@@ -1080,11 +1080,11 @@ void OverviewGrid::StartNudge(OverviewItem* item) {
 
   // Get the bounds of the windows currently, and the bounds if |item| were to
   // be removed.
-  std::vector<gfx::Rect> src_rects;
+  std::vector<gfx::RectF> src_rects;
   for (const auto& window_item : window_list_)
     src_rects.push_back(window_item->target_bounds());
 
-  std::vector<gfx::Rect> dst_rects = GetWindowRects(item);
+  std::vector<gfx::RectF> dst_rects = GetWindowRects(item);
 
   // Get the index of |item|.
   size_t index =
@@ -1101,10 +1101,10 @@ void OverviewGrid::StartNudge(OverviewItem* item) {
   // should not be used. The item at |index| is marked with a 0. The heights of
   // items are all set to the same value so a new row is determined if the y
   // value has changed from the previous item.
-  auto get_rows = [](const std::vector<gfx::Rect>& bounds_list, size_t index) {
+  auto get_rows = [](const std::vector<gfx::RectF>& bounds_list, size_t index) {
     std::vector<int> row_numbers;
     int current_row = 1;
-    int last_y = 0;
+    float last_y = 0;
     for (size_t i = 0; i < bounds_list.size(); ++i) {
       if (i == index) {
         row_numbers.push_back(0);
@@ -1204,8 +1204,8 @@ void OverviewGrid::UpdateNudge(OverviewItem* item, double value) {
     OverviewItem* nudged_item = window_list_[data.index].get();
     double nudge_param = value * value / 30.0;
     nudge_param = base::ClampToRange(nudge_param, 0.0, 1.0);
-    gfx::Rect bounds =
-        gfx::Tween::RectValueBetween(nudge_param, data.src, data.dst);
+    gfx::RectF bounds =
+        gfx::Tween::RectFValueBetween(nudge_param, data.src, data.dst);
     nudged_item->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
   }
 }
@@ -1243,19 +1243,18 @@ void OverviewGrid::UpdateYPositionAndOpacity(
   shield_window->layer()->SetOpacity(opacity);
 
   // Apply the same translation and opacity change to the windows in the grid.
-  for (const auto& window_item : window_list_) {
+  for (const auto& window_item : window_list_)
     window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
-  }
 }
 
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
     const gfx::Point& location_in_screen) {
   // Find the overview item that contains |location_in_screen|.
-  auto iter =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   [&location_in_screen](std::unique_ptr<OverviewItem>& item) {
-                     return item->target_bounds().Contains(location_in_screen);
-                   });
+  auto iter = std::find_if(
+      window_list_.begin(), window_list_.end(),
+      [&location_in_screen](std::unique_ptr<OverviewItem>& item) {
+        return item->target_bounds().Contains(gfx::PointF(location_in_screen));
+      });
 
   return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
@@ -1302,7 +1301,8 @@ void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
       kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
       /*stack_on_top=*/true, /*accept_events=*/false);
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
-  gfx::Rect target_bounds = SelectedWindow()->target_bounds();
+  gfx::Rect target_bounds =
+      gfx::ToEnclosedRect(SelectedWindow()->target_bounds());
   ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
   gfx::Vector2d fade_out_direction =
       GetSlideVectorForFadeIn(direction, target_bounds);
@@ -1360,7 +1360,7 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
 }
 
 void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
-  gfx::Rect bounds = SelectedWindow()->target_bounds();
+  gfx::Rect bounds = gfx::ToEnclosingRect(SelectedWindow()->target_bounds());
   ::wm::ConvertRectFromScreen(root_window_, &bounds);
   if (animate) {
     ScopedOverviewAnimationSettings settings(
@@ -1388,7 +1388,7 @@ void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
   }
 }
 
-std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
+std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     OverviewItem* ignored_item) {
   gfx::Rect total_bounds = bounds_;
 
@@ -1404,7 +1404,7 @@ std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
       kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
   total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
                      std::max(0, vertical_inset - kWindowMargin));
-  std::vector<gfx::Rect> rects;
+  std::vector<gfx::RectF> rects;
 
   // Keep track of the lowest coordinate.
   int max_bottom = total_bounds.y();
@@ -1428,8 +1428,7 @@ std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
   // true and the rows are balanced by repeatedly squeezing the widest row to
   // cause windows to overflow to the subsequent rows.
   int low_height = 2 * kWindowMargin;
-  int high_height =
-      std::max(low_height, static_cast<int>(total_bounds.height() + 1));
+  int high_height = std::max(low_height, total_bounds.height() + 1);
   int height = 0.5 * (low_height + high_height);
   bool height_fixed = false;
 
@@ -1498,7 +1497,7 @@ std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
         ignored_item, &rects, &max_bottom, &min_right, &max_right);
   }
 
-  gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
+  gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
   for (size_t i = 0; i < rects.size(); ++i)
     rects[i] += offset;
   return rects;
@@ -1507,7 +1506,7 @@ std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
 bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
                                           int height,
                                           OverviewItem* ignored_item,
-                                          std::vector<gfx::Rect>* out_rects,
+                                          std::vector<gfx::RectF>* out_rects,
                                           int* out_max_bottom,
                                           int* out_min_right,
                                           int* out_max_right) {
@@ -1539,7 +1538,7 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
       continue;
     }
 
-    const gfx::Rect target_bounds = window->GetTargetBoundsInScreen();
+    const gfx::RectF target_bounds = window->GetTargetBoundsInScreen();
     int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() *
                                               window->GetItemScale(item_size)) +
                                 2 * kWindowMargin);
@@ -1582,10 +1581,10 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     }
 
     // Position the current rect.
-    (*out_rects)[i].SetRect(left, top, width, height);
+    (*out_rects)[i] = gfx::RectF(gfx::Rect(left, top, width, height));
 
     // Increment horizontal position using sanitized positive |width()|.
-    left += (*out_rects)[i].width();
+    left += gfx::ToRoundedInt((*out_rects)[i].width());
 
     if (++i == out_rects->size()) {
       // Update the narrowest and widest row width for the last row.
@@ -1652,8 +1651,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     if (old_bounds != new_bounds) {
       // It's for smoother animation.
       gfx::Transform transform =
-          ScopedOverviewTransformWindow::GetTransformForRect(new_bounds,
-                                                             old_bounds);
+          ScopedOverviewTransformWindow::GetTransformForRect(
+              gfx::RectF(new_bounds), gfx::RectF(old_bounds));
       dragged_window->SetTransform(transform);
     }
     dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);

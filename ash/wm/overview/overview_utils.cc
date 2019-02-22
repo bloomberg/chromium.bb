@@ -228,9 +228,9 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   return widget;
 }
 
-gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
-                               int top_inset) {
-  gfx::Rect bounds;
+gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
+                                int top_inset) {
+  gfx::RectF bounds;
   for (auto* window : wm::GetTransientTreeIterator(transformed_window)) {
     // Ignore other window types when computing bounding box of overview target
     // item.
@@ -240,7 +240,7 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
     }
     gfx::RectF window_bounds(window->GetTargetBounds());
     gfx::Transform new_transform =
-        TransformAboutPivot(gfx::Point(window_bounds.x(), window_bounds.y()),
+        TransformAboutPivot(gfx::ToRoundedPoint(window_bounds.origin()),
                             window->layer()->GetTargetTransform());
     new_transform.TransformRect(&window_bounds);
 
@@ -251,17 +251,16 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
       gfx::RectF header_bounds(window_bounds);
       header_bounds.set_height(top_inset);
       new_transform.TransformRect(&header_bounds);
-      window_bounds.Inset(0, gfx::ToCeiledInt(header_bounds.height()), 0, 0);
+      window_bounds.Inset(0, header_bounds.height(), 0, 0);
     }
-    gfx::Rect enclosing_bounds = ToEnclosingRect(window_bounds);
-    ::wm::ConvertRectToScreen(window->parent(), &enclosing_bounds);
-    bounds.Union(enclosing_bounds);
+    ::wm::TranslateRectToScreen(window->parent(), &window_bounds);
+    bounds.Union(window_bounds);
   }
   return bounds;
 }
 
-gfx::Rect GetTargetBoundsInScreen(aura::Window* window) {
-  gfx::Rect bounds;
+gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
+  gfx::RectF bounds;
   for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
     // Ignore other window types when computing bounding box of overview target
     // item.
@@ -269,19 +268,19 @@ gfx::Rect GetTargetBoundsInScreen(aura::Window* window) {
         window_iter->type() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;
     }
-    gfx::Rect target_bounds = window_iter->GetTargetBounds();
-    ::wm::ConvertRectToScreen(window_iter->parent(), &target_bounds);
+    gfx::RectF target_bounds(window_iter->GetTargetBounds());
+    ::wm::TranslateRectToScreen(window_iter->parent(), &target_bounds);
     bounds.Union(target_bounds);
   }
   return bounds;
 }
 
 void SetTransform(aura::Window* window, const gfx::Transform& transform) {
-  gfx::Point target_origin(GetTargetBoundsInScreen(window).origin());
+  gfx::PointF target_origin(GetTargetBoundsInScreen(window).origin());
   for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
     aura::Window* parent_window = window_iter->parent();
-    gfx::Rect original_bounds(window_iter->GetTargetBounds());
-    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
+    gfx::RectF original_bounds(window_iter->GetTargetBounds());
+    ::wm::TranslateRectToScreen(parent_window, &original_bounds);
     gfx::Transform new_transform =
         TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
                                        target_origin.y() - original_bounds.y()),

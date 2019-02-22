@@ -87,7 +87,8 @@ TEST_F(WmToplevelWindowEventHandlerTest,
           non_dragged_window_->GetRootWindow());
   OverviewItem* item =
       current_grid->GetOverviewItemContaining(non_dragged_window_.get());
-  GetEventGenerator()->GestureTapAt(item->GetTransformedBounds().CenterPoint());
+  GetEventGenerator()->GestureTapAt(
+      gfx::ToRoundedPoint(item->GetTransformedBounds().CenterPoint()));
 
   // Overview mode is no longer active and |non_dragged_window_| is not in the
   // overview grid after tapping it in overview grid.

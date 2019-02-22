@@ -31,7 +31,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
@@ -189,23 +188,23 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
 }
 
 // static
-float ScopedOverviewTransformWindow::GetItemScale(const gfx::Size& source,
-                                                  const gfx::Size& target,
+float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
+                                                  const gfx::SizeF& target,
                                                   int top_view_inset,
                                                   int title_height) {
-  return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
+  return std::min(2.0f, (target.height() - title_height) /
                             (source.height() - top_view_inset));
 }
 
 // static
 gfx::Transform ScopedOverviewTransformWindow::GetTransformForRect(
-    const gfx::Rect& src_rect,
-    const gfx::Rect& dst_rect) {
+    const gfx::RectF& src_rect,
+    const gfx::RectF& dst_rect) {
   DCHECK(!src_rect.IsEmpty());
   gfx::Transform transform;
   transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
-  transform.Scale(static_cast<float>(dst_rect.width()) / src_rect.width(),
-                  static_cast<float>(dst_rect.height()) / src_rect.height());
+  transform.Scale(dst_rect.width() / src_rect.width(),
+                  dst_rect.height() / src_rect.height());
   return transform;
 }
 
@@ -289,7 +288,7 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
   return minimized_widget_->GetNativeWindow()->Contains(target);
 }
 
-gfx::Rect ScopedOverviewTransformWindow::GetTransformedBounds() const {
+gfx::RectF ScopedOverviewTransformWindow::GetTransformedBounds() const {
   return ::ash::GetTransformedBounds(GetOverviewWindow(), GetTopInset());
 }
 
@@ -332,24 +331,22 @@ void ScopedOverviewTransformWindow::UpdateMirrorWindowForMinimizedState() {
   }
 }
 
-gfx::Rect ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
-    const gfx::Rect& rect,
-    const gfx::Rect& bounds,
+gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
+    const gfx::RectF& rect,
+    const gfx::RectF& bounds,
     int top_view_inset,
     int title_height) {
   DCHECK(!rect.IsEmpty());
   DCHECK_LE(top_view_inset, rect.height());
   const float scale =
       GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
-  const int horizontal_offset = gfx::ToFlooredInt(
-      0.5 * (bounds.width() - gfx::ToFlooredInt(scale * rect.width())));
-  const int width = bounds.width() - 2 * horizontal_offset;
-  const int vertical_offset =
-      title_height - gfx::ToCeiledInt(scale * top_view_inset);
-  const int height = std::min(gfx::ToCeiledInt(scale * rect.height()),
-                              bounds.height() - vertical_offset);
-  gfx::Rect new_bounds(bounds.x() + horizontal_offset,
-                       bounds.y() + vertical_offset, width, height);
+  const float horizontal_offset = 0.5 * (bounds.width() - scale * rect.width());
+  const float width = bounds.width() - 2.f * horizontal_offset;
+  const float vertical_offset = title_height - scale * top_view_inset;
+  const float height =
+      std::min(scale * rect.height(), bounds.height() - vertical_offset);
+  gfx::RectF new_bounds(bounds.x() + horizontal_offset,
+                        bounds.y() + vertical_offset, width, height);
 
   switch (type()) {
     case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
@@ -360,16 +357,14 @@ gfx::Rect ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
       const bool is_pillar =
           type() ==
           ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
-      gfx::Rect src = rect;
+      gfx::RectF src = rect;
       new_bounds = bounds;
       src.Inset(0, top_view_inset, 0, 0);
       new_bounds.Inset(0, title_height, 0, 0);
-      float scale = is_pillar ? static_cast<float>(new_bounds.height()) /
-                                    static_cast<float>(src.height())
-                              : static_cast<float>(new_bounds.width()) /
-                                    static_cast<float>(src.width());
-      gfx::Size size(is_pillar ? src.width() * scale : new_bounds.width(),
-                     is_pillar ? new_bounds.height() : src.height() * scale);
+      float scale = is_pillar ? new_bounds.height() / src.height()
+                              : new_bounds.width() / src.width();
+      gfx::SizeF size(is_pillar ? src.width() * scale : new_bounds.width(),
+                      is_pillar ? new_bounds.height() : src.height() * scale);
       new_bounds.ClampToCenteredSize(size);
 
       // Extend |new_bounds| in the vertical direction to account for the header

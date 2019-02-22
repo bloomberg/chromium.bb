@@ -14,6 +14,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ui {
@@ -81,15 +82,15 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Returns the union of the original target bounds of all transformed windows
   // managed by |this| item, i.e. all regular (normal or panel transient
   // descendants of the window returned by GetWindow()).
-  gfx::Rect GetTargetBoundsInScreen() const;
+  gfx::RectF GetTargetBoundsInScreen() const;
 
   // Returns the transformed bound of |transform_window_|.
-  gfx::Rect GetTransformedBounds() const;
+  gfx::RectF GetTransformedBounds() const;
 
   // Sets the bounds of this overview item to |target_bounds| in the
   // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.
-  void SetBounds(const gfx::Rect& target_bounds,
+  void SetBounds(const gfx::RectF& target_bounds,
                  OverviewAnimationType animation_type);
 
   // Activates or deactivates selection depending on |selected|.
@@ -138,7 +139,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Increases the bounds of the dragged item.
   void ScaleUpSelectedItem(OverviewAnimationType animation_type);
 
-  const gfx::Rect& target_bounds() const { return target_bounds_; }
+  const gfx::RectF& target_bounds() const { return target_bounds_; }
 
   // Shift the window item up and then animates it to its original spot. Used
   // to transition from the home launcher.
@@ -156,11 +157,11 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   void UpdateItemContentViewForMinimizedWindow();
 
   // Handle the mouse/gesture event and facilitate dragging the item.
-  void HandlePressEvent(const gfx::Point& location_in_screen);
-  void HandleReleaseEvent(const gfx::Point& location_in_screen);
-  void HandleDragEvent(const gfx::Point& location_in_screen);
-  void HandleLongPressEvent(const gfx::Point& location_in_screen);
-  void HandleFlingStartEvent(const gfx::Point& location_in_screen,
+  void HandlePressEvent(const gfx::PointF& location_in_screen);
+  void HandleReleaseEvent(const gfx::PointF& location_in_screen);
+  void HandleDragEvent(const gfx::PointF& location_in_screen);
+  void HandleLongPressEvent(const gfx::PointF& location_in_screen);
+  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
                              float velocity_x,
                              float velocity_y);
   void ActivateDraggedWindow();
@@ -244,7 +245,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // Sets the bounds of this overview item to |target_bounds| in |root_window_|.
   // The bounds change will be animated as specified by |animation_type|.
-  void SetItemBounds(const gfx::Rect& target_bounds,
+  void SetItemBounds(const gfx::RectF& target_bounds,
                      OverviewAnimationType animation_type);
 
   // Creates the window label.
@@ -273,7 +274,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   ScopedOverviewTransformWindow transform_window_;
 
   // The target bounds this overview item is fit within.
-  gfx::Rect target_bounds_;
+  gfx::RectF target_bounds_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from
   // the bounds update when calling ::wm::RecreateWindowLayers to copy

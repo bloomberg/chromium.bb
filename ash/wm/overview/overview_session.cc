@@ -448,7 +448,7 @@ void OverviewSession::RemoveOverviewItem(OverviewItem* item, bool reposition) {
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
-                                   const gfx::Point& location_in_screen) {
+                                   const gfx::PointF& location_in_screen) {
   window_drag_controller_ =
       std::make_unique<OverviewWindowDragController>(this);
   window_drag_controller_->InitiateDrag(item, location_in_screen);
@@ -458,14 +458,14 @@ void OverviewSession::InitiateDrag(OverviewItem* item,
 }
 
 void OverviewSession::Drag(OverviewItem* item,
-                           const gfx::Point& location_in_screen) {
+                           const gfx::PointF& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->Drag(location_in_screen);
 }
 
 void OverviewSession::CompleteDrag(OverviewItem* item,
-                                   const gfx::Point& location_in_screen) {
+                                   const gfx::PointF& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->CompleteDrag(location_in_screen);
@@ -475,12 +475,12 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
 }
 
 void OverviewSession::StartSplitViewDragMode(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   window_drag_controller_->StartSplitViewDragMode(location_in_screen);
 }
 
 void OverviewSession::Fling(OverviewItem* item,
-                            const gfx::Point& location_in_screen,
+                            const gfx::PointF& location_in_screen,
                             float velocity_x,
                             float velocity_y) {
   // Its possible a fling event is not paired with a tap down event. Ignore

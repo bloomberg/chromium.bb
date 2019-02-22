@@ -1346,8 +1346,8 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
     const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
         window, (window == left_window_) ? LEFT : RIGHT);
     const gfx::Transform starting_transform =
-        ScopedOverviewTransformWindow::GetTransformForRect(snapped_bounds,
-                                                           item_bounds);
+        ScopedOverviewTransformWindow::GetTransformForRect(
+            gfx::RectF(snapped_bounds), gfx::RectF(item_bounds));
     SetTransformWithAnimation(window, starting_transform, gfx::Transform());
   }
 }
@@ -1434,7 +1434,8 @@ void SplitViewController::SetTransformWithAnimation(
     aura::Window* window,
     const gfx::Transform& start_transform,
     const gfx::Transform& target_transform) {
-  gfx::Point target_origin(GetTargetBoundsInScreen(window).origin());
+  gfx::Point target_origin =
+      gfx::ToRoundedPoint(GetTargetBoundsInScreen(window).origin());
   for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
     // Adjust |start_transform| and |target_transform| for the transient child.
     aura::Window* parent_window = window_iter->parent();
@@ -1484,7 +1485,7 @@ void SplitViewController::UpdateSnappingWindowTransformedBounds(
     aura::Window* window) {
   if (!window->layer()->GetTargetTransform().IsIdentity()) {
     snapping_window_transformed_bounds_map_[window] =
-        GetTransformedBounds(window, /*top_inset=*/0);
+        gfx::ToEnclosedRect(GetTransformedBounds(window, /*top_inset=*/0));
   }
 }
 
