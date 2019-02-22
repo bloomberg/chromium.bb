@@ -16,6 +16,10 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
+#endif
+
 namespace identity {
 
 namespace {
@@ -314,6 +318,21 @@ void IdentityManager::LegacyAddAccountFromSystem(
 void IdentityManager::LegacyReloadAccountsFromSystem() {
   token_service_->GetDelegate()->ReloadAccountsFromSystem(
       GetPrimaryAccountId());
+}
+#endif
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
+  return account_tracker_service_->GetJavaObject();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
+  OAuth2TokenServiceDelegateAndroid* delegate =
+      static_cast<OAuth2TokenServiceDelegateAndroid*>(
+          token_service_->GetDelegate());
+  return delegate->GetJavaObject();
 }
 #endif
 
