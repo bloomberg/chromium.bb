@@ -427,24 +427,22 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
   win::ScopedHandle thread_handle_;
 
+  ModuleCache* module_cache_;
+
   NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
-
-  // The module objects, indexed by the module handle.
-  std::map<HMODULE, ModuleCache::Module> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
 
 NativeStackSamplerWin::NativeStackSamplerWin(
     win::ScopedHandle thread_handle,
-    // Ignored for now, until we can switch the internal module cache to use
-    // this one.
     ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_handle_(thread_handle.Take()),
+      module_cache_(module_cache),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
@@ -452,7 +450,6 @@ NativeStackSamplerWin::NativeStackSamplerWin(
 NativeStackSamplerWin::~NativeStackSamplerWin() {}
 
 void NativeStackSamplerWin::ProfileRecordingStarting() {
-  module_cache_.clear();
 }
 
 std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
@@ -489,26 +486,8 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
   frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
-    auto frame_ip = reinterpret_cast<uintptr_t>(frame.instruction_pointer);
-
-    HMODULE module_handle = frame.module.Get();
-    if (!module_handle) {
-      frames.emplace_back(frame_ip, ModuleCache::Module());
-      continue;
-    }
-
-    auto loc = module_cache_.find(module_handle);
-    if (loc != module_cache_.end()) {
-      frames.emplace_back(frame_ip, loc->second);
-      continue;
-    }
-
-    ModuleCache::Module module =
-        ModuleCache::CreateModuleForHandle(module_handle);
-    if (module.is_valid)
-      module_cache_.insert(std::make_pair(module_handle, module));
-
-    frames.emplace_back(frame_ip, std::move(module));
+    frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
+                        module_cache_->GetModuleForHandle(frame.module.Get()));
   }
 
   return frames;

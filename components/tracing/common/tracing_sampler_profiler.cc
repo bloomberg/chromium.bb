@@ -110,12 +110,12 @@ class TracingProfileBuilder
       if (frame_name.empty())
         frame_name = "Unknown";
 #else
-      module_name = frame.module.filename.BaseName().MaybeAsASCII();
+      module_name = frame.module->filename.BaseName().MaybeAsASCII();
       frame_name = GetFrameNameFromOffsetAddr(frame.instruction_pointer -
-                                              frame.module.base_address);
+                                              frame.module->base_address);
 #endif
       base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
-                          module_name.c_str(), frame.module.id.c_str());
+                          module_name.c_str(), frame.module->id.c_str());
     }
 
     TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),

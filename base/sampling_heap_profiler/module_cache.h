@@ -6,6 +6,7 @@
 #define BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,9 @@ class BASE_EXPORT ModuleCache {
            size_t size);
     ~Module();
 
+    Module(const Module&) = delete;
+    Module& operator=(const Module&) = delete;
+
     // Points to the base address of the module.
     uintptr_t base_address;
 
@@ -60,7 +64,10 @@ class BASE_EXPORT ModuleCache {
   ModuleCache();
   ~ModuleCache();
 
-  const Module& GetModuleForAddress(uintptr_t address);
+  // Gets the module containing |address| or an invalid module if |address| is
+  // not within a module. The returned module remains owned by and has the same
+  // lifetime as the ModuleCache object.
+  const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
  private:
@@ -69,7 +76,7 @@ class BASE_EXPORT ModuleCache {
 
   // Creates a Module object for the specified memory address. If the address
   // does not belong to a module returns an invalid module.
-  static Module CreateModuleForAddress(uintptr_t address);
+  static std::unique_ptr<Module> CreateModuleForAddress(uintptr_t address);
   friend class NativeStackSamplerMac;
 
 #if defined(OS_MACOSX)
@@ -80,11 +87,16 @@ class BASE_EXPORT ModuleCache {
 #endif
 
 #if defined(OS_WIN)
-  static Module CreateModuleForHandle(HMODULE module_handle);
+  const Module* GetModuleForHandle(HMODULE module_handle);
+  static std::unique_ptr<Module> CreateModuleForHandle(HMODULE module_handle);
   friend class NativeStackSamplerWin;
+
+  // The module objects, indexed by the module handle.
+  // TODO(wittman): Merge this state into modules_cache_map_ and remove
+  std::map<HMODULE, std::unique_ptr<Module>> win_module_cache_;
 #endif
 
-  std::map<uintptr_t, Module> modules_cache_map_;
+  std::map<uintptr_t, std::unique_ptr<Module>> modules_cache_map_;
 };
 
 }  // namespace base

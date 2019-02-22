@@ -50,8 +50,8 @@ const int kNullProfilerId = -1;
 // StackSamplingProfiler::Frame -------------------------------------
 
 StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
-                                    ModuleCache::Module module)
-    : instruction_pointer(instruction_pointer), module(std::move(module)) {}
+                                    const ModuleCache::Module* module)
+    : instruction_pointer(instruction_pointer), module(module) {}
 
 StackSamplingProfiler::Frame::~Frame() = default;
 
