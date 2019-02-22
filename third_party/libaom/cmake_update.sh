@@ -127,6 +127,7 @@ cp config/aom_version.h "${CFG}/config/"
 
 reset_dirs linux/ia32
 gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms} \
+  -DCONFIG_PIC=1 \
   -DAOM_RTCD_FLAGS=--require-mmx;--require-sse;--require-sse2"
 
 reset_dirs linux/x64
