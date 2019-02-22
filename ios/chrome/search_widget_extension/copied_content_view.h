@@ -13,6 +13,7 @@ typedef NS_ENUM(NSInteger, CopiedContentType) {
   CopiedContentTypeNone,
   CopiedContentTypeURL,
   CopiedContentTypeString,
+  CopiedContentTypeImage,
 };
 
 // View to show and allow opening of the copied URL. Shows a button with the

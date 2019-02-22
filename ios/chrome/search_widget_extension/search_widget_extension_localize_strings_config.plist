@@ -22,6 +22,7 @@
 				<string>IDS_IOS_NO_COPIED_CONTENT_MESSAGE</string>
 				<string>IDS_IOS_OPEN_COPIED_LINK</string>
 				<string>IDS_IOS_OPEN_COPIED_TEXT</string>
+				<string>IDS_IOS_OPEN_COPIED_IMAGE</string>
 			</array>
 		</dict>
 		<dict>

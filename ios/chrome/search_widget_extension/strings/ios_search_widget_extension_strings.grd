@@ -148,11 +148,14 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_NO_COPIED_CONTENT_MESSAGE" desc="Label in the widget extension for the message shown in the copied link section when there is no copied content.">
         Content you copy will appear here.
       </message>
-      <message name="IDS_IOS_OPEN_COPIED_LINK" desc="Label in the widget extension for the title of the copied content section when there is a copied link displayed.">
+      <message name="IDS_IOS_OPEN_COPIED_LINK" desc="If a user has a URL on their clipboard, this string will appear as an option on the Chrome iOS widget. The user can select this option to visit the URL. This string is a complete sentence. If necessary for your language, you can translate as 'Visit Link That You Copied.'" meaning="Maximum characters: 27">
         Visit Link You Copied
       </message>
-      <message name="IDS_IOS_OPEN_COPIED_TEXT" desc="Label in the widget extension for the title of the copied content section when there is copied text displayed.">
+      <message name="IDS_IOS_OPEN_COPIED_TEXT" desc="If a user has some text on their clipboard, this string will appear as an option on the Chrome iOS widget. The user can select this option to search Google for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.'" meaning="Maximum characters: 27">
         Search for Text You Copied
+      </message>
+      <message name="IDS_IOS_OPEN_COPIED_IMAGE" desc="If a user has some text on their clipboard, this string will appear as an option on the Chrome iOS widget. The user can select this option to search Google for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.'" meaning="Maximum characters: 27">
+        Search for Image You Copied
       </message>
     </messages>
   </release>

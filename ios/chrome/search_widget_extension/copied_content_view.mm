@@ -181,6 +181,10 @@ const CGFloat kURLButtonMargin = 10;
       contentText = self.copiedText;
       break;
     }
+    case CopiedContentTypeImage: {
+      titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_IMAGE", nil);
+      break;
+    }
   }
   self.openCopiedContentTitleLabel.text = titleText;
   self.copiedContentLabel.text = contentText;

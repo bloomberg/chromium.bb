@@ -17,6 +17,7 @@ enum NTPTabOpeningPostOpeningAction {
   FOCUS_OMNIBOX,
   NTP_TAB_OPENING_POST_OPENING_ACTION_COUNT,
   SEARCH_TEXT,
+  SEARCH_IMAGE,
 };
 
 class GURL;
@@ -51,6 +52,8 @@ class GURL;
 @property(nonatomic, readwrite, assign) BOOL completePaymentRequest;
 // Text query that should be executed on startup.
 @property(nonatomic, readwrite, copy) NSString* textQuery;
+// Data for UIImage for image query that should be executed on startup.
+@property(nonatomic, readwrite, strong) NSData* imageSearchData;
 
 - (instancetype)init NS_UNAVAILABLE;
 
