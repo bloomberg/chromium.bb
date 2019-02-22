@@ -71,7 +71,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
@@ -103,8 +102,6 @@
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
-#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -307,6 +304,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #endif
 
 using content::BrowserThread;
@@ -5197,17 +5195,6 @@ class MediaRouterActionPolicyTest : public PolicyTest {
                  std::make_unique<base::Value>(enable), nullptr);
     provider_.UpdateChromePolicy(policies);
   }
-
- protected:
-  bool HasMediaRouterActionAtInit() const {
-    const std::set<std::string>& component_ids =
-        ToolbarActionsModel::Get(browser()->profile())
-            ->component_actions_factory()
-            ->GetInitialComponentIds();
-
-    return base::ContainsKey(
-        component_ids, ComponentToolbarActionsFactory::kMediaRouterActionId);
-  }
 };
 
 using MediaRouterActionEnabledPolicyTest = MediaRouterActionPolicyTest<true>;
@@ -5217,14 +5204,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterActionEnabledPolicyTest,
                        MediaRouterActionEnabled) {
   EXPECT_TRUE(
       MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
-  EXPECT_TRUE(HasMediaRouterActionAtInit());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterActionDisabledPolicyTest,
                        MediaRouterActionDisabled) {
   EXPECT_FALSE(
       MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
-  EXPECT_FALSE(HasMediaRouterActionAtInit());
 }
 
 class MediaRouterCastAllowAllIPsPolicyTest

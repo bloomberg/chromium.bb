@@ -33,7 +33,7 @@ std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
   }
 
   std::unique_ptr<MediaRouterContextualMenu> context_menu =
-      MediaRouterContextualMenu::CreateForToolbar(
+      MediaRouterContextualMenu::Create(
           browser,
           MediaRouterUIService::Get(browser->profile())->action_controller());
   return std::make_unique<CastToolbarButton>(

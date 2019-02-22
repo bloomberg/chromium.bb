@@ -3566,7 +3566,6 @@ test("unit_tests") {
       "../browser/ui/media_router/query_result_manager_unittest.cc",
       "../browser/ui/passwords/manage_passwords_ui_controller_unittest.cc",
       "../browser/ui/toolbar/media_router_action_controller_unittest.cc",
-      "../browser/ui/toolbar/media_router_action_unittest.cc",
       "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.h",

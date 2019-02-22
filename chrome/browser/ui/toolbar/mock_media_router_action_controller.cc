@@ -10,6 +10,6 @@ MockMediaRouterActionController::MockMediaRouterActionController(
     Profile* profile)
     : MediaRouterActionController(
           profile,
-          media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
-          nullptr) {}
-MockMediaRouterActionController::~MockMediaRouterActionController() {}
+          media_router::MediaRouterFactory::GetApiForBrowserContext(profile)) {}
+
+MockMediaRouterActionController::~MockMediaRouterActionController() = default;

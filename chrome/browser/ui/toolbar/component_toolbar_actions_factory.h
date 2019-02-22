@@ -18,12 +18,10 @@ class ToolbarActionViewController;
 
 // The registry for all component toolbar actions. Component toolbar actions
 // are actions that live in the toolbar (like extension actions), but are for
-// components of Chrome, such as Media Router.
+// components of Chrome.
+// TODO(crbug.com/934464): Delete this class.
 class ComponentToolbarActionsFactory {
  public:
-  // Extension and component action IDs.
-  static const char kMediaRouterActionId[];
-
   explicit ComponentToolbarActionsFactory(Profile* profile);
   virtual ~ComponentToolbarActionsFactory();
 

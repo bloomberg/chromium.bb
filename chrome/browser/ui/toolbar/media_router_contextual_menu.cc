@@ -21,13 +21,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/cloud_services_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
@@ -37,33 +36,21 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 // static
-std::unique_ptr<MediaRouterContextualMenu>
-MediaRouterContextualMenu::CreateForToolbar(Browser* browser,
-                                            Observer* observer) {
+std::unique_ptr<MediaRouterContextualMenu> MediaRouterContextualMenu::Create(
+    Browser* browser,
+    Observer* observer) {
   return std::make_unique<MediaRouterContextualMenu>(
-      browser, true,
-      MediaRouterActionController::IsActionShownByPolicy(browser->profile()),
-      observer);
-}
-
-// static
-std::unique_ptr<MediaRouterContextualMenu>
-MediaRouterContextualMenu::CreateForOverflowMenu(Browser* browser,
-                                                 Observer* observer) {
-  return std::make_unique<MediaRouterContextualMenu>(
-      browser, false,
+      browser,
       MediaRouterActionController::IsActionShownByPolicy(browser->profile()),
       observer);
 }
 
 MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
-                                                     bool is_action_in_toolbar,
                                                      bool shown_by_policy,
                                                      Observer* observer)
-    : observer_(observer),
-      browser_(browser),
-      menu_model_(std::make_unique<ui::SimpleMenuModel>(this)),
-      is_action_in_toolbar_(is_action_in_toolbar) {
+    : browser_(browser),
+      observer_(observer),
+      menu_model_(std::make_unique<ui::SimpleMenuModel>(this)) {
   menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
                                    IDS_MEDIA_ROUTER_ABOUT);
   menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
@@ -82,14 +69,8 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
         IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
         IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
   }
-  if (media_router::ShouldUseViewsDialog()) {
-    menu_model_->AddCheckItemWithStringId(
-        IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
-        IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
-  } else {
-    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR,
-                                     GetChangeVisibilityTextId());
-  }
+  menu_model_->AddCheckItemWithStringId(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
+                                        IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
   if (!browser_->profile()->IsOffTheRecord()) {
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_->AddCheckItemWithStringId(
@@ -132,11 +113,6 @@ bool MediaRouterContextualMenu::IsCommandIdChecked(int command_id) const {
 }
 
 bool MediaRouterContextualMenu::IsCommandIdEnabled(int command_id) const {
-  // If the action is in the ephemeral state, disable the menu item for moving
-  // it between the toolbar and the overflow menu, since the preference would
-  // not persist.
-  if (command_id == IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR)
-    return GetAlwaysShowActionPref();
   return command_id != IDC_MEDIA_ROUTER_SHOWN_BY_POLICY;
 }
 
@@ -180,12 +156,6 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       break;
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
       ReportIssue();
-      break;
-    case IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR:
-      ToolbarActionsModel::Get(browser_->profile())
-          ->SetActionVisibility(
-              ComponentToolbarActionsFactory::kMediaRouterActionId,
-              !is_action_in_toolbar_);
       break;
     case IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING:
       ToggleMediaRemoting();
@@ -235,9 +205,4 @@ void MediaRouterContextualMenu::ReportIssue() {
       std::string(url::kStandardSchemeSeparator) +
       request_manager->media_route_provider_extension_id() + "/feedback.html");
   ShowSingletonTab(browser_, GURL(feedback_url));
-}
-
-int MediaRouterContextualMenu::GetChangeVisibilityTextId() {
-  return is_action_in_toolbar_ ? IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU
-                               : IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
 }
