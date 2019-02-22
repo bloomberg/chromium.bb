@@ -105,7 +105,6 @@ public class HomeButton extends ChromeImageButton
         mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
             public void onObservingDifferentTab(Tab tab) {
-                if (tab == null) return;
                 updateButtonEnabledState();
             }
 
@@ -126,6 +125,10 @@ public class HomeButton extends ChromeImageButton
 
     private boolean isActiveTabNTP() {
         if (mActivityTabProvider == null) return false;
-        return NewTabPage.isNTPUrl(mActivityTabProvider.getActivityTab().getUrl());
+
+        final Tab tab = mActivityTabProvider.getActivityTab();
+        if (tab == null) return false;
+
+        return NewTabPage.isNTPUrl(tab.getUrl());
     }
 }
