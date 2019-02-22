@@ -44,7 +44,8 @@ class UpdateWprTest(unittest.TestCase):
     mock.patch('os.path.exists', return_value=True).start()
 
     self.wpr_updater = update_wpr.WprUpdater(argparse.Namespace(
-      story='<story>', device_id=None, repeat=1, binary=None))
+      story='<story>', device_id=None, repeat=1, binary=None, bug_id=None,
+      reviewers=['someone@chromium.org']))
 
   def tearDown(self):
     mock.patch.stopall()
@@ -55,12 +56,16 @@ class UpdateWprTest(unittest.TestCase):
       'live',
       '-s', 'foo:bar:story:2019',
       '-d', 'H2345234FC33',
-      '--binary', '<binary>'
+      '--binary', '<binary>',
+      '-b', '1234',
+      '-r', 'test_user1@chromium.org',
+      '-r', 'test_user2@chromium.org',
     ])
     self.assertListEqual(wpr_updater_cls.mock_calls, [
       mock.call(argparse.Namespace(
         binary='<binary>', command='live', device_id='H2345234FC33',
-        repeat=1, story='foo:bar:story:2019')),
+        repeat=1, story='foo:bar:story:2019', bug_id='1234',
+        reviewers=['test_user1@chromium.org', 'test_user2@chromium.org'])),
       mock.call().LiveRun(),
       mock.call().Cleanup(),
     ])
@@ -203,6 +208,20 @@ class UpdateWprTest(unittest.TestCase):
       mock.call(['upload_to_google_storage.py',
                  '--bucket=chrome-partner-telemetry', '<archive>']),
       mock.call(['git', 'add', '<archive>.sha1'])
+    ])
+
+  def testUploadCL(self):
+    self._run.return_value = 42
+    self.assertEqual(self.wpr_updater.UploadCL(), 42)
+    self.assertListEqual(self._run.mock_calls, [
+      mock.call([
+        'git', 'commit', '-a', '-m', 'Add <story> system health story\n\n'
+        'This CL was created automatically with tools/perf/update_wpr script'
+      ]),
+      mock.call([
+        'git', 'cl', 'upload', '--reviewers', 'someone@chromium.org',
+        '--force', '--message-file', '/tmp/dir/commit_message.tmp'
+      ], ok_fail=True),
     ])
 
 
