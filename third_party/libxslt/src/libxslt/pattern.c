@@ -113,6 +113,7 @@ struct _xsltCompMatch {
     xmlNsPtr *nsList;		/* the namespaces in scope */
     int nsNr;			/* the number of namespaces in scope */
     xsltStepOpPtr steps;        /* ops for computation */
+    int novar;                  /* doesn't contain variables */
 };
 
 typedef struct _xsltParserContext xsltParserContext;
@@ -594,7 +595,8 @@ xsltTestCompMatchDirect(xsltTransformContextPtr ctxt, xsltCompMatchPtr comp,
 	}
 	ix = 0;
 
-	if ((parent == NULL) || (node->doc == NULL) || isRVT)
+	if ((parent == NULL) || (node->doc == NULL) || isRVT ||
+            (comp->novar == 0))
 	    nocache = 1;
 
 	if (nocache == 0) {
@@ -1970,6 +1972,7 @@ xsltCompilePatternInternal(const xmlChar *pattern, xmlDocPtr doc,
 		j++;
 	}
 	element->nsNr = j;
+        element->novar = novar;
 
 
 #ifdef WITH_XSLT_DEBUG_PATTERN

@@ -587,8 +587,8 @@ static char *resultFilename(const char *filename, const char *out,
       suffixbuff[0]='_';
 #endif
 
-    snprintf(res, 499, "%s%s%s", out, base, suffixbuff);
-    res[499] = 0;
+    if (snprintf(res, 499, "%s%s%s", out, base, suffixbuff) >= 499)
+        res[499] = 0;
     return(strdup(res));
 }
 
@@ -2501,13 +2501,17 @@ xpathDocTest(const char *filename,
 	return(-1);
     }
 
-    snprintf(pattern, 499, "./test/XPath/tests/%s*", baseFilename(filename));
-    pattern[499] = 0;
+    res = snprintf(pattern, 499, "./test/XPath/tests/%s*",
+            baseFilename(filename));
+    if (res >= 499)
+        pattern[499] = 0;
     globbuf.gl_offs = 0;
     glob(pattern, GLOB_DOOFFS, NULL, &globbuf);
     for (i = 0;i < globbuf.gl_pathc;i++) {
-        snprintf(result, 499, "result/XPath/tests/%s",
+        res = snprintf(result, 499, "result/XPath/tests/%s",
 	         baseFilename(globbuf.gl_pathv[i]));
+        if (res >= 499)
+            result[499] = 0;
 	res = xpathCommonTest(globbuf.gl_pathv[i], &result[0], 0, 0);
 	if (res != 0)
 	    ret = res;
@@ -2549,13 +2553,17 @@ xptrDocTest(const char *filename,
 	return(-1);
     }
 
-    snprintf(pattern, 499, "./test/XPath/xptr/%s*", baseFilename(filename));
-    pattern[499] = 0;
+    res = snprintf(pattern, 499, "./test/XPath/xptr/%s*",
+            baseFilename(filename));
+    if (res >= 499)
+        pattern[499] = 0;
     globbuf.gl_offs = 0;
     glob(pattern, GLOB_DOOFFS, NULL, &globbuf);
     for (i = 0;i < globbuf.gl_pathc;i++) {
-        snprintf(result, 499, "result/XPath/xptr/%s",
+        res = snprintf(result, 499, "result/XPath/xptr/%s",
 	         baseFilename(globbuf.gl_pathv[i]));
+        if (res >= 499)
+            result[499] = 0;
 	res = xpathCommonTest(globbuf.gl_pathv[i], &result[0], 1, 0);
 	if (res != 0)
 	    ret = res;
@@ -3011,10 +3019,7 @@ schemasOneTest(const char *sch,
     }
 
     ctxt = xmlSchemaNewValidCtxt(schemas);
-    xmlSchemaSetValidErrors(ctxt,
-         (xmlSchemaValidityErrorFunc) testErrorHandler,
-         (xmlSchemaValidityWarningFunc) testErrorHandler,
-	 ctxt);
+    xmlSchemaSetValidErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
     validResult = xmlSchemaValidateDoc(ctxt, doc);
     if (validResult == 0) {
 	fprintf(schemasOutput, "%s validates\n", filename);
@@ -3079,10 +3084,7 @@ schemasTest(const char *filename,
 
     /* first compile the schemas if possible */
     ctxt = xmlSchemaNewParserCtxt(filename);
-    xmlSchemaSetParserErrors(ctxt,
-         (xmlSchemaValidityErrorFunc) testErrorHandler,
-         (xmlSchemaValidityWarningFunc) testErrorHandler,
-	 ctxt);
+    xmlSchemaSetParserErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
     schemas = xmlSchemaParse(ctxt);
     xmlSchemaFreeParserCtxt(ctxt);
 
@@ -3104,8 +3106,8 @@ schemasTest(const char *filename,
     memcpy(prefix, base, len);
     prefix[len] = 0;
 
-    snprintf(pattern, 499, "./test/schemas/%s_?.xml", prefix);
-    pattern[499] = 0;
+    if (snprintf(pattern, 499, "./test/schemas/%s_?.xml", prefix) >= 499)
+        pattern[499] = 0;
 
     if (base[len] == '_') {
         len += 2;
@@ -3123,12 +3125,14 @@ schemasTest(const char *filename,
 	len = strlen(base2);
 	if ((len > 6) && (base2[len - 6] == '_')) {
 	    count = base2[len - 5];
-	    snprintf(result, 499, "result/schemas/%s_%c",
+	    ret = snprintf(result, 499, "result/schemas/%s_%c",
 		     prefix, count);
-	    result[499] = 0;
-	    snprintf(err, 499, "result/schemas/%s_%c.err",
+            if (ret >= 499)
+	        result[499] = 0;
+	    ret = snprintf(err, 499, "result/schemas/%s_%c.err",
 		     prefix, count);
-	    err[499] = 0;
+            if (ret >= 499)
+	        err[499] = 0;
 	} else {
 	    fprintf(stderr, "don't know how to process %s\n", instance);
 	    continue;
@@ -3186,10 +3190,7 @@ rngOneTest(const char *sch,
     }
 
     ctxt = xmlRelaxNGNewValidCtxt(schemas);
-    xmlRelaxNGSetValidErrors(ctxt,
-         (xmlRelaxNGValidityErrorFunc) testErrorHandler,
-         (xmlRelaxNGValidityWarningFunc) testErrorHandler,
-	 ctxt);
+    xmlRelaxNGSetValidErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
     ret = xmlRelaxNGValidateDoc(ctxt, doc);
     if (ret == 0) {
 	testErrorHandler(NULL, "%s validates\n", filename);
@@ -3256,10 +3257,7 @@ rngTest(const char *filename,
 
     /* first compile the schemas if possible */
     ctxt = xmlRelaxNGNewParserCtxt(filename);
-    xmlRelaxNGSetParserErrors(ctxt,
-         (xmlRelaxNGValidityErrorFunc) testErrorHandler,
-         (xmlRelaxNGValidityWarningFunc) testErrorHandler,
-	 ctxt);
+    xmlRelaxNGSetParserErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
     schemas = xmlRelaxNGParse(ctxt);
     xmlRelaxNGFreeParserCtxt(ctxt);
 
@@ -3275,8 +3273,8 @@ rngTest(const char *filename,
     memcpy(prefix, base, len);
     prefix[len] = 0;
 
-    snprintf(pattern, 499, "./test/relaxng/%s_?.xml", prefix);
-    pattern[499] = 0;
+    if (snprintf(pattern, 499, "./test/relaxng/%s_?.xml", prefix) >= 499)
+        pattern[499] = 0;
 
     globbuf.gl_offs = 0;
     glob(pattern, GLOB_DOOFFS, NULL, &globbuf);
@@ -3288,12 +3286,14 @@ rngTest(const char *filename,
 	len = strlen(base2);
 	if ((len > 6) && (base2[len - 6] == '_')) {
 	    count = base2[len - 5];
-	    snprintf(result, 499, "result/relaxng/%s_%c",
+	    res = snprintf(result, 499, "result/relaxng/%s_%c",
 		     prefix, count);
-	    result[499] = 0;
-	    snprintf(err, 499, "result/relaxng/%s_%c.err",
+            if (res >= 499)
+	        result[499] = 0;
+	    res = snprintf(err, 499, "result/relaxng/%s_%c.err",
 		     prefix, count);
-	    err[499] = 0;
+            if (res >= 499)
+	        err[499] = 0;
 	} else {
 	    fprintf(stderr, "don't know how to process %s\n", instance);
 	    continue;
@@ -3301,7 +3301,7 @@ rngTest(const char *filename,
 	if (schemas == NULL) {
 	} else {
 	    nb_tests++;
-	    ret = rngOneTest(filename, instance, result, err,
+	    res = rngOneTest(filename, instance, result, err,
 	                         options, schemas);
 	    if (res != 0)
 		ret = res;
@@ -3364,8 +3364,8 @@ rngStreamTest(const char *filename,
         (!strcmp(prefix, "tutor8_2")))
 	disable_err = 1;
 
-    snprintf(pattern, 499, "./test/relaxng/%s_?.xml", prefix);
-    pattern[499] = 0;
+    if (snprintf(pattern, 499, "./test/relaxng/%s_?.xml", prefix) >= 499)
+        pattern[499] = 0;
 
     globbuf.gl_offs = 0;
     glob(pattern, GLOB_DOOFFS, NULL, &globbuf);
@@ -3377,12 +3377,14 @@ rngStreamTest(const char *filename,
 	len = strlen(base2);
 	if ((len > 6) && (base2[len - 6] == '_')) {
 	    count = base2[len - 5];
-	    snprintf(result, 499, "result/relaxng/%s_%c",
+	    ret = snprintf(result, 499, "result/relaxng/%s_%c",
 		     prefix, count);
-	    result[499] = 0;
-	    snprintf(err, 499, "result/relaxng/%s_%c.err",
+            if (ret >= 499)
+	        result[499] = 0;
+	    ret = snprintf(err, 499, "result/relaxng/%s_%c.err",
 		     prefix, count);
-	    err[499] = 0;
+            if (ret >= 499)
+	        err[499] = 0;
 	} else {
 	    fprintf(stderr, "don't know how to process %s\n", instance);
 	    continue;
@@ -3507,8 +3509,8 @@ patternTest(const char *filename,
     len -= 4;
     memcpy(xml, filename, len);
     xml[len] = 0;
-    snprintf(result, 499, "result/pattern/%s", baseFilename(xml));
-    result[499] = 0;
+    if (snprintf(result, 499, "result/pattern/%s", baseFilename(xml)) >= 499)
+        result[499] = 0;
     memcpy(xml + len, ".xml", 5);
 
     if (!checkTestFile(xml) && !update_results) {
@@ -3885,17 +3887,20 @@ c14nCommonTest(const char *filename, int with_comments, int mode,
     memcpy(prefix, base, len);
     prefix[len] = 0;
 
-    snprintf(buf, 499, "result/c14n/%s/%s", subdir,prefix);
+    if (snprintf(buf, 499, "result/c14n/%s/%s", subdir, prefix) >= 499)
+        buf[499] = 0;
     if (!checkTestFile(buf) && !update_results) {
         fprintf(stderr, "Missing result file %s", buf);
 	return(-1);
     }
     result = strdup(buf);
-    snprintf(buf, 499, "test/c14n/%s/%s.xpath", subdir,prefix);
+    if (snprintf(buf, 499, "test/c14n/%s/%s.xpath", subdir, prefix) >= 499)
+        buf[499] = 0;
     if (checkTestFile(buf)) {
 	xpath = strdup(buf);
     }
-    snprintf(buf, 499, "test/c14n/%s/%s.ns", subdir,prefix);
+    if (snprintf(buf, 499, "test/c14n/%s/%s.ns", subdir, prefix) >= 499)
+        buf[499] = 0;
     if (checkTestFile(buf)) {
 	ns = strdup(buf);
     }
@@ -4413,9 +4418,10 @@ launchTests(testDescPtr tst) {
     char *result;
     char *error;
     int mem;
-    xmlCharEncodingHandlerPtr ebcdicHandler;
+    xmlCharEncodingHandlerPtr ebcdicHandler, eucJpHandler;
 
     ebcdicHandler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EBCDIC);
+    eucJpHandler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EUC_JP);
 
     if (tst == NULL) return(-1);
     if (tst->in != NULL) {
@@ -4426,8 +4432,10 @@ launchTests(testDescPtr tst) {
 	for (i = 0;i < globbuf.gl_pathc;i++) {
 	    if (!checkTestFile(globbuf.gl_pathv[i]))
 	        continue;
-            if ((ebcdicHandler == NULL) &&
-                (strstr(globbuf.gl_pathv[i], "ebcdic") != NULL))
+            if (((ebcdicHandler == NULL) &&
+                 (strstr(globbuf.gl_pathv[i], "ebcdic") != NULL)) ||
+                ((eucJpHandler == NULL) &&
+                 (strstr(globbuf.gl_pathv[i], "icu_parse_test") != NULL)))
                 continue;
 	    if (tst->suffix != NULL) {
 		result = resultFilename(globbuf.gl_pathv[i], tst->out,
@@ -4496,6 +4504,7 @@ launchTests(testDescPtr tst) {
     }
 
     xmlCharEncCloseFunc(ebcdicHandler);
+    xmlCharEncCloseFunc(eucJpHandler);
 
     return(err);
 }

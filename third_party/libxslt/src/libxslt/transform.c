@@ -2301,6 +2301,11 @@ xsltReleaseLocalRVTs(xsltTransformContextPtr ctxt, xmlDocPtr base)
     if (cur->prev != NULL)
         xsltTransformError(ctxt, NULL, NULL, "localRVT not head of list\n");
 
+    /* Reset localRVT early because some RVTs might be registered again. */
+    ctxt->localRVT = base;
+    if (base != NULL)
+        base->prev = NULL;
+
     do {
         tmp = cur;
         cur = (xmlDocPtr) cur->next;
@@ -2308,16 +2313,19 @@ xsltReleaseLocalRVTs(xsltTransformContextPtr ctxt, xmlDocPtr base)
             xsltReleaseRVT(ctxt, tmp);
         } else if (tmp->psvi == XSLT_RVT_GLOBAL) {
             xsltRegisterPersistRVT(ctxt, tmp);
-        } else if (tmp->psvi != XSLT_RVT_FUNC_RESULT) {
+        } else if (tmp->psvi == XSLT_RVT_FUNC_RESULT) {
+            /*
+             * This will either register the RVT again or move it to the
+             * context variable.
+             */
+            xsltRegisterLocalRVT(ctxt, tmp);
+            tmp->psvi = XSLT_RVT_FUNC_RESULT;
+        } else {
             xmlGenericError(xmlGenericErrorContext,
                     "xsltReleaseLocalRVTs: Unexpected RVT flag %p\n",
                     tmp->psvi);
         }
     } while (cur != base);
-
-    if (base != NULL)
-        base->prev = NULL;
-    ctxt->localRVT = base;
 }
 
 /**
@@ -6003,6 +6011,13 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
         res->encoding = xmlStrdup(encoding);
     variables = style->variables;
 
+    ctxt->node = (xmlNodePtr) doc;
+    ctxt->output = res;
+
+    ctxt->xpathCtxt->contextSize = 1;
+    ctxt->xpathCtxt->proximityPosition = 1;
+    ctxt->xpathCtxt->node = NULL; /* TODO: Set the context node here? */
+
     /*
      * Start the evaluation, evaluate the params, the stylesheets globals
      * and start by processing the top node.
@@ -6012,7 +6027,6 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
     /*
     * Evaluate global params and user-provided params.
     */
-    ctxt->node = (xmlNodePtr) doc;
     if (ctxt->globalVars == NULL)
 	ctxt->globalVars = xmlHashCreate(20);
     if (params != NULL) {
@@ -6027,14 +6041,9 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
     /* Clean up any unused RVTs. */
     xsltReleaseLocalRVTs(ctxt, NULL);
 
-    ctxt->node = (xmlNodePtr) doc;
-    ctxt->output = res;
     ctxt->insert = (xmlNodePtr) res;
     ctxt->varsBase = ctxt->varsNr - 1;
 
-    ctxt->xpathCtxt->contextSize = 1;
-    ctxt->xpathCtxt->proximityPosition = 1;
-    ctxt->xpathCtxt->node = NULL; /* TODO: Set the context node here? */
     /*
     * Start processing the source tree -----------------------------------
     */
