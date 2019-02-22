@@ -52,6 +52,7 @@ class PerfettoTracingCoordinator : public Coordinator {
   void OnClientConnectionError() override;
   void OnNewAgentConnected(AgentRegistry::AgentEntry* agent_entry);
   void StopAndFlushInternal(mojo::ScopedDataPipeProducerHandle stream,
+                            const std::string& agent_label,
                             StopAndFlushCallback callback);
 
   mojo::Binding<mojom::Coordinator> binding_;

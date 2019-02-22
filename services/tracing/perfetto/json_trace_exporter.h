@@ -59,6 +59,10 @@ class JSONTraceExporter {
     argument_filter_predicate_ = predicate;
   }
 
+  void set_label_filter(const std::string& label_filter) {
+    label_filter_ = label_filter;
+  }
+
  private:
   OnTraceEventJSONCallback json_callback_;
   bool has_output_json_preamble_ = false;
@@ -66,6 +70,7 @@ class JSONTraceExporter {
   std::unique_ptr<base::DictionaryValue> metadata_;
   std::string legacy_system_ftrace_output_;
   std::string legacy_system_trace_events_;
+  std::string label_filter_;
 
   ArgumentFilterPredicate argument_filter_predicate_;
 
