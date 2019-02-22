@@ -904,7 +904,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (tab != null) mTabCache.put(tabId, tab);
     }
 
-    private int getOrientation() {
+    private @Orientation int getOrientation() {
         return mHost.getWidth() > mHost.getHeight() ? Orientation.LANDSCAPE : Orientation.PORTRAIT;
     }
 

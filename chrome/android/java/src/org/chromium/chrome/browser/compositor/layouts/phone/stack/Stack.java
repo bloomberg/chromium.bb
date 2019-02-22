@@ -213,7 +213,7 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     private int mReferenceOrderIndex = -1;
 
     // Orientation Variables
-    protected int mCurrentMode = Orientation.PORTRAIT;
+    protected @Orientation int mCurrentMode = Orientation.PORTRAIT;
 
     // Animation Variables
     protected @OverviewAnimationType int mOverviewAnimationType = OverviewAnimationType.NONE;
@@ -1165,7 +1165,7 @@ public abstract class Stack implements ChromeAnimation.Animatable {
      * @param height      The new height of the layout.
      * @param orientation The new orientation of the layout.
      */
-    public void notifySizeChanged(float width, float height, int orientation) {
+    public void notifySizeChanged(float width, float height, @Orientation int orientation) {
         updateCurrentMode(orientation);
 
         // Changing the orientation can change which side of the tab we want to show the close
@@ -1941,7 +1941,7 @@ public abstract class Stack implements ChromeAnimation.Animatable {
         return 1.f - Math.abs(t);
     }
 
-    protected void updateCurrentMode(int orientation) {
+    protected void updateCurrentMode(@Orientation int orientation) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
             mCurrentMode = Orientation.LANDSCAPE;
         } else {

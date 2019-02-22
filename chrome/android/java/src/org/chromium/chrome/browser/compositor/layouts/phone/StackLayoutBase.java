@@ -186,7 +186,7 @@ public abstract class StackLayoutBase extends Layout {
 
     private float mWidth;
     private float mHeight;
-    private int mOrientation;
+    private @Orientation int mOrientation;
 
     // Pre-allocated temporary arrays that store id of visible tabs.
     // They can be used to call populatePriorityVisibilityList.
@@ -892,7 +892,7 @@ public abstract class StackLayoutBase extends Layout {
     }
 
     @Override
-    public void notifySizeChanged(float width, float height, int orientation) {
+    public void notifySizeChanged(float width, float height, @Orientation int orientation) {
         mWidth = width;
         mHeight = height;
         mOrientation = orientation;
