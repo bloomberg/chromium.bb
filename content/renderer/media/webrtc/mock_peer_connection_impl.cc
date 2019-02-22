@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -240,7 +241,7 @@ FakeRtpTransceiver::FakeRtpTransceiver(
     : media_type_(media_type),
       sender_(std::move(sender)),
       receiver_(std::move(receiver)),
-      mid_(ToAbslOptional(mid)),
+      mid_(ToAbslOptional(std::move(mid))),
       stopped_(stopped),
       direction_(direction),
       current_direction_(ToAbslOptional(current_direction)) {}
