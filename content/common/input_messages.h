@@ -150,6 +150,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
   IPC_STRUCT_TRAITS_MEMBER(rotation_angle_)
   IPC_STRUCT_TRAITS_MEMBER(force_)
   IPC_STRUCT_TRAITS_MEMBER(timestamp_)
+  IPC_STRUCT_TRAITS_MEMBER(duration_)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)

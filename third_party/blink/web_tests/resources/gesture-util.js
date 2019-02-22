@@ -338,7 +338,7 @@ function touchTapOn(xPosition, yPosition) {
 
 function doubleTapAt(xPosition, yPosition) {
   // This comes from config constants in gesture_detector.cc.
-  const DOUBLE_TAP_MINIMUM_DURATION_S = 0.04;
+  const DOUBLE_TAP_MINIMUM_DURATION_MS = 40;
 
   return new Promise(function(resolve, reject) {
     if (!window.chrome || !chrome.gpuBenchmarking) {
@@ -351,7 +351,7 @@ function doubleTapAt(xPosition, yPosition) {
       actions: [
         { name: 'pointerDown', x: xPosition, y: yPosition },
         { name: 'pointerUp' },
-        { name: 'pause', duration: DOUBLE_TAP_MINIMUM_DURATION_S },
+        { name: 'pause', duration: DOUBLE_TAP_MINIMUM_DURATION_MS },
         { name: 'pointerDown', x: xPosition, y: yPosition },
         { name: 'pointerUp' }
       ]

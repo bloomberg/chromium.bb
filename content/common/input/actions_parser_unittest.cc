@@ -69,6 +69,55 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequence) {
   EXPECT_EQ(1U, action_list_params.params[0][1].pointer_id());
 }
 
+TEST(ActionsParserTest, ParseTouchPointerActionSequenceWithPause) {
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+      R"( [{"type": "pointer",
+            "actions": [{"type": "pointerDown", "x": 3, "y": 5},
+                        {"type": "pointerMove", "x": 30, "y": 30},
+                        {"type": "pointerUp" }],
+            "parameters": {"pointerType": "touch"},
+            "id": "pointer1"},
+           {"type":"none",
+            "actions":[{"type":"pause"},
+                       {"type":"pause","duration":50},
+                       {"type":"pause"}],
+            "id":"0"}] )");
+
+  ActionsParser actions_parser(value.get());
+  EXPECT_TRUE(actions_parser.ParsePointerActionSequence());
+  SyntheticPointerActionListParams action_list_params =
+      actions_parser.gesture_params();
+  EXPECT_EQ(SyntheticGestureParams::TOUCH_INPUT,
+            action_list_params.gesture_source_type);
+  EXPECT_EQ(5U, action_list_params.params.size());
+  EXPECT_EQ(2U, action_list_params.params[0].size());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::PRESS,
+            action_list_params.params[0][0].pointer_action_type());
+  EXPECT_EQ(gfx::PointF(3, 5), action_list_params.params[0][0].position());
+  EXPECT_EQ(0U, action_list_params.params[0][0].pointer_id());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[0][1].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::MOVE,
+            action_list_params.params[1][0].pointer_action_type());
+  EXPECT_EQ(gfx::PointF(30, 30), action_list_params.params[1][0].position());
+  EXPECT_EQ(0U, action_list_params.params[1][0].pointer_id());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[1][1].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[2][0].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[2][1].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[3][0].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[3][1].pointer_action_type());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::RELEASE,
+            action_list_params.params[4][0].pointer_action_type());
+  EXPECT_EQ(0U, action_list_params.params[4][0].pointer_id());
+  EXPECT_EQ(SyntheticPointerActionParams::PointerActionType::IDLE,
+            action_list_params.params[4][1].pointer_action_type());
+}
+
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceIdNotString) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
@@ -179,7 +228,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiActionsType) {
 
   ActionsParser actions_parser(value.get());
   EXPECT_FALSE(actions_parser.ParsePointerActionSequence());
-  EXPECT_EQ("we only support action sequence type of pointer",
+  EXPECT_EQ("we do not support action sequence type of key",
             actions_parser.error_message());
 }
 

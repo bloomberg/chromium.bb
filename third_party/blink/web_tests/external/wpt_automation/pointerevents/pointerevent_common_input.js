@@ -311,7 +311,7 @@ function twoPointerDragInTarget(pointerType, targetSelector, direction) {
             { name: 'pointerDown', x: xPosition1, y: yPosition1 },
             { name: 'pointerMove', x: xPosition2, y: yPosition2 },
             { name: 'pointerMove', x: xPosition3, y: yPosition3 },
-            { name: 'pause', duration: 0.1 },
+            { name: 'pause', duration: 100 },
             { name: 'pointerUp' }
         ]},
         {source: pointerType,
@@ -319,7 +319,7 @@ function twoPointerDragInTarget(pointerType, targetSelector, direction) {
             { name: 'pointerDown', x: xPosition1 + boundaryOffset, y: yPosition1 },
             { name: 'pointerMove', x: xPosition2 + boundaryOffset, y: yPosition2 },
             { name: 'pointerMove', x: xPosition3 + boundaryOffset, y: yPosition3 },
-            { name: 'pause', duration: 0.1 },
+            { name: 'pause', duration: 100 },
             { name: 'pointerUp' }
         ]}], resolve);
     } else {
@@ -365,7 +365,7 @@ function pointerDragInTarget(pointerType, targetSelector, direction) {
               { name: 'pointerDown', x: xPosition1, y: yPosition1 },
               { name: 'pointerMove', x: xPosition2, y: yPosition2 },
               { name: 'pointerMove', x: xPosition3, y: yPosition3 },
-              { name: 'pause', duration: 0.1 },
+              { name: 'pause', duration: 100 },
               { name: 'pointerUp' }
           ]}], resolve);
       });

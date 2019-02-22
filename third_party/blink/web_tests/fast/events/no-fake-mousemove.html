@@ -48,7 +48,7 @@ function testNoMouseMoveActions() {
             [{source: "mouse",
               actions: [
                 { name: "pointerMove", x: x, y: y },
-                { name: 'pause', duration: 1 }]}];
+                { name: 'pause', duration: 1000 }]}];
         chrome.gpuBenchmarking.pointerActionSequence(pointerActions, callbackValidMouseMove);
     }
 }
