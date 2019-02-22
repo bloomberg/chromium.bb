@@ -1,0 +1,7 @@
+include_rules = [
+  "-android_webview",
+  "-android_webview/browser",
+  "+android_webview/browser/gfx",
+  "+android_webview/public/browser",
+]
+

@@ -8,9 +8,9 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
-#include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/command_line_helper.h"
-#include "android_webview/browser/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/browser_view_renderer.h"
+#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"

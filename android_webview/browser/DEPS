@@ -4,7 +4,6 @@ include_rules = [
   "+android_webview/common",
   "+android_webview/grit",
   "+android_webview/jni",
-  "+android_webview/public/browser",
   "+cc",
   "+components/autofill/android",
   "+components/autofill/content/browser",
