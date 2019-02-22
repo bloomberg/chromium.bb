@@ -30,29 +30,29 @@ ModuleCache::Module::~Module() = default;
 ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
-const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
+const ModuleCache::Module& ModuleCache::GetModuleForAddress(uintptr_t address) {
   static NoDestructor<Module> invalid_module;
   auto it = modules_cache_map_.upper_bound(address);
   if (it != modules_cache_map_.begin()) {
     DCHECK(!modules_cache_map_.empty());
     --it;
-    const Module* module = it->second.get();
-    if (address < module->base_address + module->size)
+    Module& module = it->second;
+    if (address < module.base_address + module.size)
       return module;
   }
 
-  std::unique_ptr<Module> module = CreateModuleForAddress(address);
-  if (!module->is_valid)
-    return invalid_module.get();
-  return modules_cache_map_.emplace(module->base_address, std::move(module))
-      .first->second.get();
+  auto module = CreateModuleForAddress(address);
+  if (!module.is_valid)
+    return *invalid_module;
+  return modules_cache_map_.emplace(module.base_address, std::move(module))
+      .first->second;
 }
 
 std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
   std::vector<const Module*> result;
   result.reserve(modules_cache_map_.size());
   for (const auto& it : modules_cache_map_)
-    result.push_back(it.second.get());
+    result.push_back(&it.second);
   return result;
 }
 

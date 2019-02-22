@@ -557,7 +557,7 @@ std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
   for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module->filename.AsUTF8Unsafe().c_str());
+        frame.module.filename.AsUTF8Unsafe().c_str());
   }
   return output;
 }
@@ -756,7 +756,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
 
   // Check that all the modules are valid.
   for (const auto& frame : frames)
-    EXPECT_TRUE(frame.module->is_valid);
+    EXPECT_TRUE(frame.module.is_valid);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
