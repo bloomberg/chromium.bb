@@ -3413,6 +3413,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_ScrollPatternId:
+      if (IsScrollable()) {
+        AddRef();
+        *result = static_cast<IScrollProvider*>(this);
+      }
       break;
 
     case UIA_ScrollItemPatternId:
