@@ -45,9 +45,8 @@ class MEDIA_EXPORT VideoFrameLayout {
     bool operator==(const Plane& rhs) const;
     bool operator!=(const Plane& rhs) const;
 
-    // Strides of a plane, typically greater or equal to the
-    // width of the surface divided by the horizontal sampling period. Note that
-    // strides can be negative if the image layout is bottom-up.
+    // Strides in bytes of a plane. Note that stride can be negative if the
+    // image layout is bottom-up.
     int32_t stride = 0;
 
     // Offset of a plane, which stands for the offset of a start point of a
