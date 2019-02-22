@@ -125,7 +125,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
   // That combined with wrappers (owned and kept alive by RemoteFrame) keeping
   // persistent strong references to RemoteDOMWindow will prevent the GCing
   // of all these objects. Break the cycle by notifying of detachment.
-  ToRemoteDOMWindow(dom_window_)->FrameDetached();
+  To<RemoteDOMWindow>(dom_window_.Get())->FrameDetached();
   if (cc_layer_)
     SetCcLayer(nullptr, false, false);
 }

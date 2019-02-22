@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
+#include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
@@ -488,7 +489,7 @@ int Internals::getResourcePriority(const String& url, Document* document) {
 }
 
 bool Internals::doesWindowHaveUrlFragment(DOMWindow* window) {
-  if (window->IsRemoteDOMWindow())
+  if (IsA<RemoteDOMWindow>(window))
     return false;
   return ToLocalFrame(window->GetFrame())
       ->GetDocument()
