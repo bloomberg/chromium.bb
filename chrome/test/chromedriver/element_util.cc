@@ -120,8 +120,8 @@ Status VerifyElementClickable(
   if (!is_clickable) {
     std::string message;
     if (!dict->GetString("message", &message))
-      message = "element is not clickable";
-    return Status(kUnknownError, message);
+      message = "element click intercepted";
+    return Status(kElementClickIntercepted, message);
   }
   return Status(kOk);
 }

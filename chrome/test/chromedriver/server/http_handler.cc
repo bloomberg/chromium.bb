@@ -994,6 +994,9 @@ HttpHandler::PrepareStandardResponse(
       response.reset(new net::HttpServerResponseInfo(net::HTTP_OK));
       break;
     // error codes
+    case kElementClickIntercepted:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+      break;
     case kElementNotInteractable:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;

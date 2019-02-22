@@ -33,6 +33,7 @@ enum StatusCode {
   kElementNotInteractable = 60,
   kInvalidArgument = 61,
   kNoSuchCookie = 62,
+  kElementClickIntercepted = 64,
   kUnsupportedOperation = 405,
   // Chrome-specific status codes.
   kChromeNotReachable = 100,
