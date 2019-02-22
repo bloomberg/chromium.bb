@@ -4003,7 +4003,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Assistant Triggered Checkout
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Google Assistant in Chrome.">
-        By continuing, you agree that Chrome will send data from Chrome Autofill, the site’s URL and its content to Google to provide this service. You also agree that Chrome will send personal data you selected to the website via Chrome Autofill. \n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill.  <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
+        Chrome will send the site’s URL and content to Google. Your email and credit card type from Chrome Autofill will also be sent to Google to provide this service. Visit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn&#xA0;more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout
