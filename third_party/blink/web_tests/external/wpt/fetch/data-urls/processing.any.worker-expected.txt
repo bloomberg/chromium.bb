@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 71 tests; 46 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 71 tests; 49 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup.
 PASS "data://test/,X"
 FAIL "data://test:test/,X" assert_unreached: Should have rejected: undefined Reached unreachable code
@@ -19,11 +19,11 @@ PASS "data:text/plain;,X"
 FAIL "data:;x=x;charset=x,X" assert_equals: expected "text/plain;x=x;charset=x" but got "text/plain;charset=x"
 FAIL "data:;x=x,X" assert_equals: expected "text/plain;x=x" but got "text/plain;charset=US-ASCII"
 PASS "data:text/plain;charset=windows-1252,%C2%B1"
-FAIL "data:text/plain;Charset=UTF-8,%C2%B1" assert_equals: expected "text/plain;charset=UTF-8" but got "text/plain"
+PASS "data:text/plain;Charset=UTF-8,%C2%B1"
 PASS "data:image/gif,%C2%B1"
 PASS "data:IMAGE/gif,%C2%B1"
 FAIL "data:IMAGE/gif;hi=x,%C2%B1" assert_equals: expected "image/gif;hi=x" but got "image/gif"
-FAIL "data:IMAGE/gif;CHARSET=x,%C2%B1" assert_equals: expected "image/gif;charset=x" but got "image/gif"
+PASS "data:IMAGE/gif;CHARSET=x,%C2%B1"
 PASS "data: ,%FF"
 PASS "data:%20,%FF"
 PASS "data:\f,%FF"
@@ -60,7 +60,7 @@ FAIL "data:;base64;,WA" assert_array_equals: lengths differ, expected 2 got 1
 PASS "data:;base64 ,WA"
 PASS "data:;base64   ,WA"
 FAIL "data:;base 64,WA" assert_equals: expected "text/plain" but got "text/plain;charset=US-ASCII"
-FAIL "data:;BASe64,WA" assert_array_equals: lengths differ, expected 1 got 2
+PASS "data:;BASe64,WA"
 FAIL "data:;%62ase64,WA" assert_equals: expected "text/plain" but got "text/plain;charset=US-ASCII"
 PASS "data:%3Bbase64,WA"
 PASS "data:;charset=x,X"
@@ -70,6 +70,6 @@ FAIL "data:;charset= x,X" promise_test: Unhandled rejection with value: object "
 FAIL "data:;charset=,X" promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
 FAIL "data:;charset,X" assert_equals: expected "text/plain" but got "text/plain;charset=US-ASCII"
 FAIL "data:;charset=\"x\",X" promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
-FAIL "data:;CHARSET=\"X\",X" assert_equals: expected "text/plain;charset=X" but got "text/plain;charset=US-ASCII"
+FAIL "data:;CHARSET=\"X\",X" promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
 Harness: the test ran to completion.
 
