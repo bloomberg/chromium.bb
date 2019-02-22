@@ -211,7 +211,7 @@ size_t V4L2BuffersList::size() const {
 class V4L2BufferQueueProxy {
  public:
   V4L2BufferQueueProxy(const struct v4l2_buffer* v4l2_buffer,
-                       scoped_refptr<V4L2Queue> queue);
+                       base::WeakPtr<V4L2Queue> queue);
   ~V4L2BufferQueueProxy();
 
   bool QueueBuffer();
@@ -227,8 +227,11 @@ class V4L2BufferQueueProxy {
  private:
   size_t BufferId() const { return v4l2_buffer_.index; }
 
-  // The queue must be kept alive as long as the reference to the buffer exists.
-  scoped_refptr<V4L2Queue> queue_;
+  // A weak pointer to the queue this buffer belongs to. Will remain valid as
+  // long as the underlying V4L2 buffer is valid too.
+  // This can only be accessed from the sequence protected by sequence_checker_.
+  // Thread-safe methods (like ~V4L2BufferRefBase) must *never* access this.
+  base::WeakPtr<V4L2Queue> queue_;
   // Where to return this buffer if it goes out of scope without being queued.
   scoped_refptr<V4L2BuffersList> return_to_;
   bool queued = false;
@@ -239,7 +242,7 @@ class V4L2BufferQueueProxy {
 
 V4L2BufferQueueProxy::V4L2BufferQueueProxy(
     const struct v4l2_buffer* v4l2_buffer,
-    scoped_refptr<V4L2Queue> queue)
+    base::WeakPtr<V4L2Queue> queue)
     : queue_(std::move(queue)), return_to_(queue_->free_buffers_) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer->type));
@@ -264,6 +267,9 @@ V4L2BufferQueueProxy::~V4L2BufferQueueProxy() {
 bool V4L2BufferQueueProxy::QueueBuffer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!queue_)
+    return false;
+
   queued = queue_->QueueBuffer(&v4l2_buffer_);
 
   return queued;
@@ -271,6 +277,9 @@ bool V4L2BufferQueueProxy::QueueBuffer() {
 
 void* V4L2BufferQueueProxy::GetPlaneMapping(const size_t plane) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!queue_)
+    return nullptr;
 
   return queue_->buffers_[BufferId()]->GetPlaneMapping(plane);
 }
@@ -282,7 +291,7 @@ V4L2WritableBufferRef::V4L2WritableBufferRef() {
 
 V4L2WritableBufferRef::V4L2WritableBufferRef(
     const struct v4l2_buffer* v4l2_buffer,
-    scoped_refptr<V4L2Queue> queue)
+    base::WeakPtr<V4L2Queue> queue)
     : buffer_data_(std::make_unique<V4L2BufferQueueProxy>(v4l2_buffer,
                                                           std::move(queue))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -483,7 +492,7 @@ size_t V4L2WritableBufferRef::BufferId() const {
 }
 
 V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
-                                       scoped_refptr<V4L2Queue> queue)
+                                       base::WeakPtr<V4L2Queue> queue)
     : buffer_data_(std::make_unique<V4L2BufferQueueProxy>(v4l2_buffer,
                                                           std::move(queue))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -542,13 +551,13 @@ class V4L2BufferRefFactory {
  public:
   static V4L2WritableBufferRef CreateWritableRef(
       const struct v4l2_buffer* v4l2_buffer,
-      scoped_refptr<V4L2Queue> queue) {
+      base::WeakPtr<V4L2Queue> queue) {
     return V4L2WritableBufferRef(v4l2_buffer, std::move(queue));
   }
 
   static V4L2ReadableBufferRef CreateReadableRef(
       const struct v4l2_buffer* v4l2_buffer,
-      scoped_refptr<V4L2Queue> queue) {
+      base::WeakPtr<V4L2Queue> queue) {
     return new V4L2ReadableBuffer(v4l2_buffer, std::move(queue));
   }
 };
@@ -556,7 +565,10 @@ class V4L2BufferRefFactory {
 V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
                      base::OnceClosure destroy_cb)
-    : type_(type), device_(dev), destroy_cb_(std::move(destroy_cb)) {
+    : type_(type),
+      device_(dev),
+      destroy_cb_(std::move(destroy_cb)),
+      weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
@@ -661,6 +673,7 @@ bool V4L2Queue::DeallocateBuffers() {
   if (buffers_.size() == 0)
     return true;
 
+  weak_this_factory_.InvalidateWeakPtrs();
   buffers_.clear();
   free_buffers_ = nullptr;
 
@@ -708,7 +721,8 @@ V4L2WritableBufferRef V4L2Queue::GetFreeBuffer() {
     return V4L2WritableBufferRef();
 
   return V4L2BufferRefFactory::CreateWritableRef(
-      buffers_[buffer_id.value()]->v4l2_buffer(), this);
+      buffers_[buffer_id.value()]->v4l2_buffer(),
+      weak_this_factory_.GetWeakPtr());
 }
 
 bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
@@ -767,8 +781,9 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   queued_buffers_.erase(*it);
 
   DCHECK(free_buffers_);
-  return std::make_pair(
-      true, V4L2BufferRefFactory::CreateReadableRef(&v4l2_buffer, this));
+  return std::make_pair(true,
+                        V4L2BufferRefFactory::CreateReadableRef(
+                            &v4l2_buffer, weak_this_factory_.GetWeakPtr()));
 }
 
 bool V4L2Queue::IsStreaming() const {
