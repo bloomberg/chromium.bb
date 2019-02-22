@@ -9,6 +9,8 @@ jumbo_static_library("content") {
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
     "content_payment_request_delegate.h",
+    "initialization_task.cc",
+    "initialization_task.h",
     "payment_request.cc",
     "payment_request.h",
     "payment_request_converter.cc",

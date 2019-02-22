@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/autofill/core/browser/address_normalizer.h"
+#include "components/payments/content/initialization_task.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
@@ -39,7 +40,8 @@ class ServiceWorkerPaymentInstrument;
 // what the merchant has specified, as input into the "is ready to pay"
 // computation.
 class PaymentRequestState : public PaymentResponseHelper::Delegate,
-                            public PaymentRequestSpec::Observer {
+                            public PaymentRequestSpec::Observer,
+                            public InitializationTask {
  public:
   // Any class call add itself as Observer via AddObserver() and receive
   // notification about the state changing.
@@ -218,6 +220,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   bool IsPaymentAppInvoked() const;
 
   autofill::AddressNormalizer* GetAddressNormalizer();
+
+  // InitializationTask:
+  bool IsInitialized() const override;
 
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,

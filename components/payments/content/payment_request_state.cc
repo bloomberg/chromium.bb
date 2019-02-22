@@ -453,6 +453,10 @@ autofill::AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
   return payment_request_delegate_->GetAddressNormalizer();
 }
 
+bool PaymentRequestState::IsInitialized() const {
+  return get_all_instruments_finished_;
+}
+
 void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();
@@ -556,6 +560,7 @@ void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {
 void PaymentRequestState::NotifyOnGetAllPaymentInstrumentsFinished() {
   for (auto& observer : observers_)
     observer.OnGetAllPaymentInstrumentsFinished();
+  NotifyInitialized();
 }
 
 void PaymentRequestState::NotifyOnSelectedInformationChanged() {
