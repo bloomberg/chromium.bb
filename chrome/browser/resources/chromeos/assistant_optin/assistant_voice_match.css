@@ -11,6 +11,10 @@
   padding-bottom: 36px;
 }
 
+#no-dsp-message {
+  padding-top: 16px;
+}
+
 #footer-text {
   color: #757575;
 }

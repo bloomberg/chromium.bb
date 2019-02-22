@@ -102,5 +102,8 @@ Polymer({
    */
   onShow: function() {
     this.$['agree-button'].focus();
+    if (loadTimeData.getBoolean('hotwordDspAvailable')) {
+      this.$['no-dsp-message'].hidden = true;
+    }
   },
 });

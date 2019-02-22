@@ -71,6 +71,8 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
                IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
   builder->Add("assistantVoiceMatchTitle", IDS_ASSISTANT_VOICE_MATCH_TITLE);
   builder->Add("assistantVoiceMatchMessage", IDS_ASSISTANT_VOICE_MATCH_MESSAGE);
+  builder->Add("assistantVoiceMatchNoDspMessage",
+               IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE);
   builder->Add("assistantVoiceMatchRecording",
                IDS_ASSISTANT_VOICE_MATCH_RECORDING);
   builder->Add("assistantVoiceMatchCompleted",
