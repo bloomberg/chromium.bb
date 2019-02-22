@@ -28,8 +28,9 @@ extern "C" int WINAPI wWinMain(HINSTANCE /* instance */,
 }
 #endif
 
-// We don't link with the CRT so we have to implement CRT functions that the
-// compiler generates calls to.
+// We don't link with the CRT (this is enforced through use of the /ENTRY linker
+// flag) so we have to implement CRT functions that the compiler generates calls
+// to.
 
 // VC Express editions don't come with the memset CRT obj file and linking to
 // the obj files between versions becomes a bit problematic. Therefore,
