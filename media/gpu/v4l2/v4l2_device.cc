@@ -160,14 +160,10 @@ class V4L2BufferQueueProxy {
  public:
   V4L2BufferQueueProxy(const struct v4l2_buffer* v4l2_buffer,
                        scoped_refptr<V4L2Queue> queue);
-
-  void ReturnBuffer() { queue_->ReturnBuffer(BufferId()); }
-
+  ~V4L2BufferQueueProxy();
+  void ReturnBuffer();
   bool QueueBuffer();
-
-  void* GetPlaneMapping(const size_t plane) {
-    return queue_->buffers_[BufferId()]->GetPlaneMapping(plane);
-  }
+  void* GetPlaneMapping(const size_t plane);
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
@@ -182,6 +178,7 @@ class V4L2BufferQueueProxy {
   // The queue must be kept alive as long as the reference to the buffer exists.
   scoped_refptr<V4L2Queue> queue_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(V4L2BufferQueueProxy);
 };
 
@@ -189,6 +186,7 @@ V4L2BufferQueueProxy::V4L2BufferQueueProxy(
     const struct v4l2_buffer* v4l2_buffer,
     scoped_refptr<V4L2Queue> queue)
     : queue_(std::move(queue)) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer->type));
   DCHECK_LE(v4l2_buffer->length, base::size(v4l2_planes_));
 
@@ -198,7 +196,19 @@ V4L2BufferQueueProxy::V4L2BufferQueueProxy(
   v4l2_buffer_.m.planes = v4l2_planes_;
 }
 
+V4L2BufferQueueProxy::~V4L2BufferQueueProxy() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void V4L2BufferQueueProxy::ReturnBuffer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  queue_->ReturnBuffer(BufferId());
+}
+
 bool V4L2BufferQueueProxy::QueueBuffer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   bool queued = queue_->QueueBuffer(&v4l2_buffer_);
 
   // If an error occurred during queueing, then the buffer must be made
@@ -207,6 +217,12 @@ bool V4L2BufferQueueProxy::QueueBuffer() {
     ReturnBuffer();
 
   return queued;
+}
+
+void* V4L2BufferQueueProxy::GetPlaneMapping(const size_t plane) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return queue_->buffers_[BufferId()]->GetPlaneMapping(plane);
 }
 
 V4L2WritableBufferRef::V4L2WritableBufferRef() {
