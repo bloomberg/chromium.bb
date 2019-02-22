@@ -161,7 +161,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const CookieOptions& options,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                               bool secure_source,
+                               std::string source_scheme,
                                bool modify_http_only,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
@@ -364,7 +364,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // |modify_http_only| indicates if this setting operation is allowed
   // to affect http_only cookies.
   void SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
-                          bool secure_source,
+                          std::string source_scheme,
                           bool can_modify_httponly,
                           SetCookiesCallback callback);
 

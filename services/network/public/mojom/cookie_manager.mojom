@@ -181,12 +181,13 @@ interface CookieManager {
   GetCookieList(url.mojom.Url url, CookieOptions cookie_options) =>
       (array<CanonicalCookie> cookies);
 
-  // Set a cookie.  |secure_source| indicates whether existing secure
+  // Set a cookie.  |source_scheme| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a
-  // non-secure source).  |modify_http_only| indicates whether http_only
+  // non-secure source), and whether the scheme is permitted to use cookies in
+  // the first place.  |modify_http_only| indicates whether http_only
   // cookies may be overwritten.
   SetCanonicalCookie(
-      CanonicalCookie cookie, bool secure_source, bool modify_http_only) =>
+      CanonicalCookie cookie, string source_scheme, bool modify_http_only) =>
       (bool success);
 
   // Delete a cookie. Returns true if a cookie was deleted.

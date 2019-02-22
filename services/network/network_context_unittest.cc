@@ -2037,7 +2037,7 @@ TEST_F(NetworkContextTest, CookieManager) {
                            base::Time(), base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_LOW),
-      true, true, base::BindOnce(&SetCookieCallback, &run_loop1, &result));
+      "https", true, base::BindOnce(&SetCookieCallback, &run_loop1, &result));
   run_loop1.Run();
   EXPECT_TRUE(result);
 

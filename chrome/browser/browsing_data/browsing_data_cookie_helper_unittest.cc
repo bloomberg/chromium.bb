@@ -112,38 +112,34 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
   void CreateCookiesForTest() {
     auto cookie1 =
-        net::CanonicalCookie::Create(GURL("http://www.google.com"), "A=1",
+        net::CanonicalCookie::Create(GURL("https://www.google.com"), "A=1",
                                      base::Time::Now(), net::CookieOptions());
-    auto cookie2 =
-        net::CanonicalCookie::Create(GURL("http://www.gmail.google.com"), "B=1",
-                                     base::Time::Now(), net::CookieOptions());
+    auto cookie2 = net::CanonicalCookie::Create(
+        GURL("https://www.gmail.google.com"), "B=1", base::Time::Now(),
+        net::CookieOptions());
 
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
-    cookie_manager->SetCanonicalCookie(*cookie1, true /* secure_source */,
-                                       false /* modify_http_only */,
-                                       base::DoNothing());
-    cookie_manager->SetCanonicalCookie(*cookie2, true /* secure_source */,
-                                       false /* modify_http_only */,
-                                       base::DoNothing());
+    cookie_manager->SetCanonicalCookie(
+        *cookie1, "https", false /* modify_http_only */, base::DoNothing());
+    cookie_manager->SetCanonicalCookie(
+        *cookie2, "https", false /* modify_http_only */, base::DoNothing());
   }
 
   void CreateCookiesForDomainCookieTest() {
     auto cookie1 =
-        net::CanonicalCookie::Create(GURL("http://www.google.com"), "A=1",
+        net::CanonicalCookie::Create(GURL("https://www.google.com"), "A=1",
                                      base::Time::Now(), net::CookieOptions());
     auto cookie2 = net::CanonicalCookie::Create(
-        GURL("http://www.google.com"), "A=2; Domain=.www.google.com ",
+        GURL("https://www.google.com"), "A=2; Domain=.www.google.com ",
         base::Time::Now(), net::CookieOptions());
 
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
-    cookie_manager->SetCanonicalCookie(*cookie1, true /* secure_source */,
-                                       false /* modify_http_only */,
-                                       base::DoNothing());
-    cookie_manager->SetCanonicalCookie(*cookie2, true /* secure_source */,
-                                       false /* modify_http_only */,
-                                       base::DoNothing());
+    cookie_manager->SetCanonicalCookie(
+        *cookie1, "https", false /* modify_http_only */, base::DoNothing());
+    cookie_manager->SetCanonicalCookie(
+        *cookie2, "https", false /* modify_http_only */, base::DoNothing());
   }
 
   void FetchCallback(const net::CookieList& cookies) {

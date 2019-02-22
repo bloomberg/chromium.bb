@@ -70,7 +70,7 @@ bool SetGaiaCookieForProfile(Profile* profile) {
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
   cookie_manager->SetCanonicalCookie(
-      cookie, true, true,
+      cookie, google_url.scheme(), true,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
   loop.Run();
   return success;

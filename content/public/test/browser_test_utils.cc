@@ -1785,7 +1785,7 @@ bool SetCookie(BrowserContext* browser_context,
   DCHECK(cc.get());
 
   cookie_manager->SetCanonicalCookie(
-      *cc.get(), true /* secure_source */, true /* modify_http_only */,
+      *cc.get(), url.scheme(), true /* modify_http_only */,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop, bool success) {
             *result = success;

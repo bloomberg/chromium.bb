@@ -187,21 +187,21 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           kSAMLIdPCookieDomainWithWildcard, std::string(), base::Time(),
           base::Time(), base::Time(), true, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-      true /*secure_source*/, true /*modify_http_only*/, base::DoNothing());
+      "https", true /*modify_http_only*/, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-      true /*secure_source*/, true /*modify_http_only*/, base::DoNothing());
+      "https", true /*modify_http_only*/, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kGAIACookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-      true /*secure_source*/, true /*modify_http_only*/, base::DoNothing());
+      "https", true /*modify_http_only*/, base::DoNothing());
 }
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(
