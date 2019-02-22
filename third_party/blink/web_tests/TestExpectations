@@ -3197,6 +3197,7 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/media-source/mediasource-detach.html 
 crbug.com/626703 [ Retina ] external/wpt/media-source/mediasource-detach.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/pause.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/eventOrder.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Failure ]

@@ -174,6 +174,20 @@ int MouseButtonToButtons(MouseButton button) {
   }
 }
 
+int KeyToKeyModifiers(std::string key) {
+  if (key == "Shift") {
+    return kShiftKeyModifierMask;
+  } else if (key == "Control") {
+    return kControlKeyModifierMask;
+  } else if (key == "Alt") {
+    return kAltKeyModifierMask;
+  } else if (key == "Meta") {
+    return kMetaKeyModifierMask;
+  } else {
+    return 0;
+  }
+}
+
 PointerType StringToPointerType(std::string pointer_type) {
   CHECK(pointer_type == "pen" || pointer_type == "mouse");
   if (pointer_type == "pen")
@@ -1386,7 +1400,29 @@ Status ExecutePerformActions(Session* session,
       std::max({longest_mouse_list_size, longest_touch_list_size,
                 longest_key_list_size, tick_durations.size()});
   std::map<std::string, gfx::Point> element_center_point;
+  int key_modifiers = 0;
   for (size_t i = 0; i < max_list_length; i++) {
+    std::list<KeyEvent> dispatch_key_events;
+    for (size_t j = 0; j < key_events_list.size(); j++) {
+      if (i < key_events_list[j].size() &&
+          key_events_list[j][i].type != kPauseEventType) {
+        const KeyEvent& event = key_events_list[j][i];
+        dispatch_key_events.push_back(event);
+        if (event.type == kKeyDownEventType) {
+          session->input_cancel_list.emplace_back(key_input_states[j], nullptr,
+                                                  nullptr, &event);
+          key_modifiers |= KeyToKeyModifiers(event.key);
+        } else if (event.type == kKeyUpEventType) {
+          key_modifiers &= ~KeyToKeyModifiers(event.key);
+        }
+      }
+    }
+    if (dispatch_key_events.size() > 0) {
+      Status status = web_view->DispatchKeyEvents(dispatch_key_events);
+      if (status.IsError())
+        return status;
+    }
+
     std::list<MouseEvent> dispatch_mouse_events;
     for (size_t j = 0; j < mouse_events_list.size(); j++) {
       if (i < mouse_events_list[j].size() &&
@@ -1405,6 +1441,7 @@ Status ExecutePerformActions(Session* session,
           event.x += element_center_point[event.element_id].x();
           event.y += element_center_point[event.element_id].y();
         }
+        event.modifiers = key_modifiers;
         dispatch_mouse_events.push_back(event);
       }
     }
@@ -1442,23 +1479,6 @@ Status ExecutePerformActions(Session* session,
         return status;
     }
 
-    std::list<KeyEvent> dispatch_key_events;
-    for (size_t j = 0; j < key_events_list.size(); j++) {
-      if (i < key_events_list[j].size() &&
-          key_events_list[j][i].type != kPauseEventType) {
-        const KeyEvent& event = key_events_list[j][i];
-        dispatch_key_events.push_back(event);
-        if (event.type == kKeyDownEventType) {
-          session->input_cancel_list.emplace_back(key_input_states[j], nullptr,
-                                                  nullptr, &event);
-        }
-      }
-    }
-    if (dispatch_key_events.size() > 0) {
-      Status status = web_view->DispatchKeyEvents(dispatch_key_events);
-      if (status.IsError())
-        return status;
-    }
     if (i < tick_durations.size() && tick_durations[i] > 0) {
       base::PlatformThread::Sleep(
           base::TimeDelta::FromMilliseconds(tick_durations[i]));
