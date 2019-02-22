@@ -483,15 +483,24 @@ void ShelfWidget::set_default_last_focusable_child(
       default_last_focusable_child);
 }
 
+void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
+  // This is only ever called during an active session.
+  if (!shelf_view_->visible())
+    return;
+  views::View* to_focus = shelf_view_->FindFirstOrLastFocusableChild(last);
+
+  Shell::Get()->focus_cycler()->FocusWidget(to_focus->GetWidget());
+  to_focus->GetFocusManager()->SetFocusedView(to_focus);
+}
+
 void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   if (active) {
     // Do not focus the default element if the widget activation came from the
-    // overflow bubble focus cycling. The setter of
-    // |activated_from_overflow_bubble_| should handle focusing the correct
-    // view.
-    if (activated_from_overflow_bubble_) {
-      activated_from_overflow_bubble_ = false;
+    // another widget's focus cycling. The setter of
+    // |activated_from_other_widget_| should handle focusing the correct view.
+    if (activated_from_other_widget_) {
+      activated_from_other_widget_ = false;
       return;
     }
     delegate_view_->SetPaneFocusAndFocusDefault();

@@ -54,6 +54,10 @@ bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
+void ShelfButton::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  shelf_view_->OnShelfButtonAboutToRequestFocusFromTabTraversal(this, reverse);
+}
+
 // Do not remove this function to avoid unnecessary ChromeVox announcement
 // triggered by Button::GetAccessibleNodeData. (See https://crbug.com/932200)
 void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {

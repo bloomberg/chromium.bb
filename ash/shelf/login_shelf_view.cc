@@ -430,13 +430,11 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     }
   } else {
     // Focus goes to status area.
-    Shelf::ForWindow(GetWidget()->GetNativeWindow())
-        ->GetStatusAreaWidget()
-        ->status_area_widget_delegate()
+    StatusAreaWidget* status_area_widget =
+        Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
+    status_area_widget->status_area_widget_delegate()
         ->set_default_last_focusable_child(reverse);
-    Shell::Get()->focus_cycler()->FocusWidget(
-        Shelf::ForWindow(GetWidget()->GetNativeWindow())
-            ->GetStatusAreaWidget());
+    Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
   }
 }
 
