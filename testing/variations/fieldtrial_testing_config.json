@@ -5579,7 +5579,7 @@
             ]
         }
     ],
-    "WebRTC-Audio-OpusMinPacketLossRate": [
+    "WebRTC-Audio-NewOpusPacketLossRateOptimization": [
         {
             "platforms": [
                 "windows",
@@ -5589,7 +5589,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
+                    "name": "Enabled-0-20-1"
                 }
             ]
         }
