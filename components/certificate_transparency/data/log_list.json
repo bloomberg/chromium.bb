@@ -264,6 +264,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec.ct.googleapis.com"
   },
   {
@@ -274,6 +275,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec-vega.ct.googleapis.com"
   },
   {
@@ -284,6 +286,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec-sirius.ct.googleapis.com"
   },
   {
