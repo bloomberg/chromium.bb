@@ -815,10 +815,6 @@ void BridgedNativeWidgetImpl::OnWindowWillClose() {
 
 void BridgedNativeWidgetImpl::OnFullscreenTransitionStart(
     bool target_fullscreen_state) {
-  // Note: This can fail for fullscreen changes started externally, but a user
-  // shouldn't be able to do that if the window is invisible to begin with.
-  DCHECK(window_visible_);
-
   DCHECK_NE(target_fullscreen_state, target_fullscreen_state_);
   target_fullscreen_state_ = target_fullscreen_state;
   in_fullscreen_transition_ = true;
