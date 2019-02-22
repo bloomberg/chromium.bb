@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 namespace scheduler {
@@ -27,7 +27,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   WorkerThreadSchedulerForTest(
       std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       WorkerSchedulerProxy* proxy,
-      WaitableEvent* throtting_state_changed)
+      base::WaitableEvent* throtting_state_changed)
       : WorkerThreadScheduler(WebThreadType::kTestThread,
                               std::move(manager),
                               proxy),
@@ -43,13 +43,13 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   using WorkerThreadScheduler::lifecycle_state;
 
  private:
-  WaitableEvent* throtting_state_changed_;
+  base::WaitableEvent* throtting_state_changed_;
 };
 
 class WorkerThreadForTest : public WorkerThread {
  public:
   WorkerThreadForTest(FrameScheduler* frame_scheduler,
-                      WaitableEvent* throtting_state_changed)
+                      base::WaitableEvent* throtting_state_changed)
       : WorkerThread(ThreadCreationParams(WebThreadType::kTestThread)
                          .SetFrameOrWorkerScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
@@ -90,14 +90,14 @@ class WorkerThreadForTest : public WorkerThread {
   WorkerThreadSchedulerForTest* GetWorkerScheduler() { return scheduler_; }
 
  private:
-  WaitableEvent* throtting_state_changed_;             // NOT OWNED
+  base::WaitableEvent* throtting_state_changed_;       // NOT OWNED
   WorkerThreadSchedulerForTest* scheduler_ = nullptr;  // NOT OWNED
   std::unique_ptr<WorkerScheduler> worker_scheduler_ = nullptr;
 };
 
 std::unique_ptr<WorkerThreadForTest> CreateWorkerThread(
     FrameScheduler* frame_scheduler,
-    WaitableEvent* throtting_state_changed) {
+    base::WaitableEvent* throtting_state_changed) {
   auto thread = std::make_unique<WorkerThreadForTest>(frame_scheduler,
                                                       throtting_state_changed);
   thread->Init();
@@ -144,7 +144,9 @@ class WorkerSchedulerProxyTest : public testing::Test {
 };
 
 TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
-  WaitableEvent throtting_state_changed;
+  base::WaitableEvent throtting_state_changed(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
@@ -174,7 +176,9 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
 // Tests below check that no crashes occur during different shutdown sequences.
 
 TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
-  WaitableEvent throtting_state_changed;
+  base::WaitableEvent throtting_state_changed(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
@@ -195,7 +199,9 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
 }
 
 TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
-  WaitableEvent throtting_state_changed;
+  base::WaitableEvent throtting_state_changed(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
