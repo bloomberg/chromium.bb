@@ -35,7 +35,7 @@ class CastTestLauncherDelegate : public content::TestLauncherDelegate {
 
  protected:
   content::ContentMainDelegate* CreateContentMainDelegate() override {
-    return new CastMainDelegate(0, nullptr);
+    return new CastMainDelegate();
   }
 
  private:

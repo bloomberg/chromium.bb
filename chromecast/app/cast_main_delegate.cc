@@ -10,15 +10,14 @@
 
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
-#include "base/strings/string_tokenizer.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -45,10 +44,6 @@
 #include "services/service_manager/sandbox/switches.h"
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_FUCHSIA)
-#include "base/base_paths_fuchsia.h"
-#endif
-
 namespace {
 
 #if defined(OS_LINUX)
@@ -63,43 +58,12 @@ chromecast::CastCrashReporterClient* GetCastCrashReporter() {
 const int kMaxCrashFiles = 10;
 #endif  // defined(OS_ANDROID)
 
-base::FilePath GetDefaultCommandLineFile() {
-#if defined(OS_FUCHSIA)
-  base::FilePath command_line_dir;
-  base::PathService::Get(base::DIR_APP_DATA, &command_line_dir);
-  return command_line_dir.Append("cast/castagent-command-line");
-#else
-  return base::FilePath();
-#endif
-}
-
 }  // namespace
 
 namespace chromecast {
 namespace shell {
 
-CastMainDelegate::CastMainDelegate(int argc, const char** argv)
-    : CastMainDelegate(argc, argv, GetDefaultCommandLineFile()) {}
-
-CastMainDelegate::CastMainDelegate(int argc,
-                                   const char** argv,
-                                   base::FilePath command_line_path)
-    : argv_(argv, argv + argc) {
-#if defined(OS_FUCHSIA)
-  // Read the command-line from the filesystem.
-  std::string command_line_str;
-  if (base::ReadFileToString(command_line_path, &command_line_str)) {
-    LOG(INFO) << "Appending command-line args from " << command_line_path;
-    base::StringTokenizer tokenizer(command_line_str, "\n");
-    while (tokenizer.GetNext())
-      argv_strs_.push_back(tokenizer.token());
-    for (int i = 0; i < static_cast<int>(argv_strs_.size()); ++i)
-      argv_.push_back(argv_strs_[i].c_str());
-  } else {
-    LOG(INFO) << "Unable to read command-line args from " << command_line_path;
-  }
-#endif  // defined(OS_FUCHSIA)
-}
+CastMainDelegate::CastMainDelegate() {}
 
 CastMainDelegate::~CastMainDelegate() {}
 
