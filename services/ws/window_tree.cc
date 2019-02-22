@@ -2163,9 +2163,19 @@ void WindowTree::CancelDragDrop(Id window_id) {
   // Clear |pending_drag_source_window_id_| to cancel posted drag loop task.
   pending_drag_source_window_id_ = kInvalidTransportId;
 
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window) {
+    DVLOG(1) << "CancelDragDrop failed (no window)";
+    return;
+  }
+
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "CancelDragDrop failed (access denied)";
+    return;
+  }
+
   // Cancel the current drag loop if it is running.
-  window_service_->delegate()->CancelDragLoop(
-      GetWindowByTransportId(window_id));
+  window_service_->delegate()->CancelDragLoop(window);
 }
 
 void WindowTree::ObserveTopmostWindow(mojom::MoveLoopSource source,
