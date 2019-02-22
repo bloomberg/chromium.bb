@@ -29,6 +29,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -51,7 +52,10 @@ class Page;
 class WebMouseEvent;
 
 class CORE_EXPORT DragController final
-    : public GarbageCollected<DragController> {
+    : public GarbageCollected<DragController>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(DragController);
+
  public:
   static DragController* Create(Page*);
 
@@ -89,7 +93,10 @@ class CORE_EXPORT DragController final
   // to the visual viewport.
   static FloatRect ClippedSelection(const LocalFrame&);
 
-  void Trace(blink::Visitor*);
+  // ContextLifecycleObserver.
+  void ContextDestroyed(ExecutionContext*) final;
+
+  void Trace(blink::Visitor*) final;
 
  private:
   DispatchEventResult DispatchTextInputEventFor(LocalFrame*, DragData*);

@@ -141,7 +141,8 @@ static DataTransfer* CreateDraggingDataTransfer(DataTransferAccessPolicy policy,
 }
 
 DragController::DragController(Page* page)
-    : page_(page),
+    : ContextLifecycleObserver(nullptr),
+      page_(page),
       document_under_mouse_(nullptr),
       drag_initiator_(nullptr),
       file_input_element_under_mouse_(nullptr),
@@ -1302,6 +1303,7 @@ void DragController::DoSystemDrag(DragImage* image,
                                   bool for_link) {
   did_initiate_drag_ = true;
   drag_initiator_ = frame->GetDocument();
+  SetContext(drag_initiator_);
 
   // TODO(pdr): |drag_location| and |event_pos| should be passed in as
   // FloatPoints and we should calculate these adjusted values in floating
@@ -1358,12 +1360,17 @@ DragState& DragController::GetDragState() {
   return *drag_state_;
 }
 
+void DragController::ContextDestroyed(ExecutionContext*) {
+  drag_state_ = nullptr;
+}
+
 void DragController::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(document_under_mouse_);
   visitor->Trace(drag_initiator_);
   visitor->Trace(drag_state_);
   visitor->Trace(file_input_element_under_mouse_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
