@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
+#include "components/payments/content/initialization_task.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
@@ -46,7 +47,7 @@ enum class BackNavigationType {
 class PaymentRequestDialogView : public views::DialogDelegateView,
                                  public PaymentRequestDialog,
                                  public PaymentRequestSpec::Observer,
-                                 public PaymentRequestState::Observer {
+                                 public InitializationTask::Observer {
  public:
   class ObserverForTest {
    public:
@@ -119,9 +120,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
   void OnSpecUpdated() override;
 
-  // PaymentRequestState::Observer:
-  void OnGetAllPaymentInstrumentsFinished() override;
-  void OnSelectedInformationChanged() override {}
+  // InitializationTask::Observer:
+  void OnInitialized(InitializationTask* initialization_task) override;
 
   void Pay();
   void GoBack();
@@ -210,6 +210,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // Used when the dialog is being closed to avoid re-entrancy into the
   // controller_map_.
   bool being_closed_;
+
+  // The number of initialization tasks that are not yet initialized.
+  size_t number_of_initialization_tasks_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDialogView);
 };

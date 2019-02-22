@@ -79,10 +79,13 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   AddChildView(view_stack_.get());
 
   SetupSpinnerOverlay();
-  // Show spinner when getting all payment instruments. The spinner will be
-  // hidden in OnGetAllPaymentInstrumentsFinished.
-  if (!request->state()->is_get_all_instruments_finished()) {
-    request->state()->AddObserver(this);
+
+  if (!request->state()->IsInitialized()) {
+    request->state()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
+  if (number_of_initialization_tasks_ > 0) {
     ShowProcessingSpinner();
   } else if (observer_for_testing_) {
     // When testing, signal that the processing spinner events have passed, even
@@ -233,18 +236,18 @@ void PaymentRequestDialogView::OnSpecUpdated() {
     observer_for_testing_->OnSpecDoneUpdating();
 }
 
-void PaymentRequestDialogView::OnGetAllPaymentInstrumentsFinished() {
+void PaymentRequestDialogView::OnInitialized(
+    InitializationTask* initialization_task) {
+  initialization_task->RemoveInitializationObserver(this);
+  if (--number_of_initialization_tasks_ > 0)
+    return;
+
   HideProcessingSpinner();
+
   if (request_->state()->are_requested_methods_supported()) {
     request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_) {
-      // The OnGetAllPaymentInstrumentsFinished() method is called if the
-      // payment instruments were retrieved asynchronously. This method hides
-      // the "Processing" spinner, so the UI is now ready for interaction. Any
-      // test that opens UI can now interact with it. The OnDialogOpened() call
-      // notifies the tests of this event.
+    if (observer_for_testing_)
       observer_for_testing_->OnDialogOpened();
-    }
   }
 }
 
@@ -419,16 +422,14 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
                             request_->spec(), request_->state(), this),
                         &controller_map_),
                     /* animate = */ false);
-  if (request_->state()->is_get_all_instruments_finished() &&
-      request_->state()->are_requested_methods_supported()) {
+
+  if (number_of_initialization_tasks_ > 0)
+    return;
+
+  if (request_->state()->are_requested_methods_supported()) {
     request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_) {
-      // The is_get_all_instruments_finished() method returns true if all
-      // payment instruments were retrieved synchronously. Any test that opens
-      // UI can now interact with it. The OnDialogOpened() call notifies the
-      // tests of this event.
+    if (observer_for_testing_)
       observer_for_testing_->OnDialogOpened();
-    }
   }
 }
 
