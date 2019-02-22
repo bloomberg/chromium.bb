@@ -288,7 +288,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   shared_image.reset();
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 
-  if (!use_passthrough()) {
+  if (!use_passthrough() &&
+      context_state_->feature_info()->feature_flags().ext_texture_rg) {
     // Create a R-8 image texture, and check that the internal_format is that of
     // the image (GL_RGBA for TextureImageFactory). This only matters for the
     // validating decoder.
