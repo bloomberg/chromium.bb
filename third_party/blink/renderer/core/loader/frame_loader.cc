@@ -164,11 +164,10 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
           : mojom::FetchCacheMode::kValidateCache;
   if (!document_loader_ || !document_loader_->GetHistoryItem())
     return ResourceRequest();
+
   ResourceRequest request =
       document_loader_->GetHistoryItem()->GenerateResourceRequest(cache_mode);
-
-  // Set requestor origin to be the current URL's origin.
-  request.SetRequestorOrigin(SecurityOrigin::Create(request.Url()));
+  request.SetRequestorOrigin(frame_->GetSecurityContext()->GetSecurityOrigin());
 
   // ClientRedirectPolicy is an indication that this load was triggered by some
   // direct interaction with the page. If this reload is not a client redirect,

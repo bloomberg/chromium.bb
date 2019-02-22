@@ -15,6 +15,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
@@ -82,6 +83,7 @@ bool VerifyDownloadUrlParams(
   if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
     return false;
 
+  // Verification succeeded.
   return true;
 }
 
@@ -128,6 +130,49 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
   if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
     return false;
 
+  // Verification succeeded.
+  return true;
+}
+
+bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
+                                       CommonNavigationParams* common_params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(site_instance);
+  DCHECK(common_params);
+  RenderProcessHost* process = site_instance->GetProcess();
+  int process_id = process->GetID();
+
+  // Verify (and possibly rewrite) |url|.
+  process->FilterURL(false, &common_params->url);
+  if (common_params->url.SchemeIs(kChromeErrorScheme)) {
+    mojo::ReportBadMessage("Renderer cannot request error page URLs directly");
+    return false;
+  }
+
+  // Verify |resource_request_body|.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanReadRequestBody(site_instance, common_params->post_data)) {
+    bad_message::ReceivedBadMessage(process,
+                                    bad_message::ILLEGAL_UPLOAD_PARAMS);
+    return false;
+  }
+
+  // Verify |initiator_origin|.
+  if (common_params->initiator_origin.has_value() &&
+      !VerifyInitiatorOrigin(process_id,
+                             common_params->initiator_origin.value())) {
+    return false;
+  }
+
+  // Verify |base_url_for_data_url|.
+  if (!common_params->base_url_for_data_url.is_empty()) {
+    // Kills the process. http://crbug.com/726142
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED);
+    return false;
+  }
+
+  // Verification succeeded.
   return true;
 }
 

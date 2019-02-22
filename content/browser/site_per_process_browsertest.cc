@@ -103,7 +103,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
@@ -529,17 +529,18 @@ bool CheckIntersectsViewport(bool expected, FrameTreeNode* node) {
 // and re-layout in the same way since children might be in a different origin.
 void LayoutNonRecursiveForTestingViewportIntersection(
     WebContents* web_contents) {
-  static const char* script =
-      "function relayoutNonRecursiveForTestingViewportIntersection() {\
-        var width = window.innerWidth;\
-        var height = window.innerHeight * 0.75;\
-        for (var i = 0; i < window.frames.length; i++) {\
-          child = document.getElementById(\"child-\" + i);\
-          child.width = width;\
-          child.height = height;\
-        }\
-      }\
-      relayoutNonRecursiveForTestingViewportIntersection();";
+  static const char* script = R"(
+      function relayoutNonRecursiveForTestingViewportIntersection() {
+        var width = window.innerWidth;
+        var height = window.innerHeight * 0.75;
+        for (var i = 0; i < window.frames.length; i++) {
+          child = document.getElementById("child-" + i);
+          child.width = width;
+          child.height = height;
+        }
+      }
+      relayoutNonRecursiveForTestingViewportIntersection();
+  )";
   EXPECT_TRUE(ExecuteScript(web_contents, script));
 }
 
@@ -11409,7 +11410,7 @@ namespace {
 // to |deferred_url| after receiving FrameNavigationControl::CommitNavigation;
 // whereas there is a fast cross-site navigation taking place in the same
 // frame which starts second but finishes first.
-class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
+class CommitMessageOrderReverser : public FrameHostInterceptor {
  public:
   using DidStartDeferringCommitCallback =
       base::OnceCallback<void(RenderFrameHost*)>;
@@ -11418,7 +11419,7 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
       WebContents* web_contents,
       const GURL& deferred_url,
       DidStartDeferringCommitCallback deferred_url_triggered_action)
-      : DidCommitProvisionalLoadInterceptor(web_contents),
+      : FrameHostInterceptor(web_contents),
         deferred_url_(deferred_url),
         deferred_url_triggered_action_(
             std::move(deferred_url_triggered_action)) {}
@@ -11430,7 +11431,7 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     // The DidCommitProvisionalLoad message is dispatched once this method
     // returns, so to defer committing the the navigation to |deferred_url_|,
@@ -12309,10 +12310,10 @@ namespace {
 
 // Helper class to intercept DidCommitProvisionalLoad messages and inject a
 // call to close the current tab right before them.
-class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
+class ClosePageBeforeCommitHelper : public FrameHostInterceptor {
  public:
   explicit ClosePageBeforeCommitHelper(WebContents* web_contents)
-      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+      : FrameHostInterceptor(web_contents) {}
 
   void Wait() {
     run_loop_.reset(new base::RunLoop());
@@ -12321,11 +12322,11 @@ class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
   }
 
  private:
-  // DidCommitProvisionalLoadInterceptor:
+  // FrameHostInterceptor:
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         render_frame_host->GetRenderViewHost());

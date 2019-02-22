@@ -48,6 +48,20 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
                          scoped_refptr<network::SharedURLLoaderFactory>*
                              out_blob_url_loader_factory);
 
+// Verifies that CommonNavigationParams are valid and can be accessed by the
+// renderer process associated with |site_instance|.
+//
+// Returns true if the CommonNavigationParams are valid.  As a side-effect of
+// the verification parts of |common_params| will be rewritten (e.g. some
+// URLs will be filtered).
+//
+// Terminates the renderer the process associated with |site_instance| and
+// returns false if the CommonNavigationParams are invalid.
+//
+// This function has to be called on the UI thread.
+bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
+                                       CommonNavigationParams* common_params);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_IPC_UTILS_H_

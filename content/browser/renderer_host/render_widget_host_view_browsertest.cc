@@ -30,7 +30,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -142,21 +142,19 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
 // Helps to ensure that a navigation is committed after a compositor frame was
 // submitted by the renderer, but before corresponding ACK is sent back.
-class CommitBeforeSwapAckSentHelper
-    : public DidCommitProvisionalLoadInterceptor {
+class CommitBeforeSwapAckSentHelper : public FrameHostInterceptor {
  public:
   explicit CommitBeforeSwapAckSentHelper(
       WebContents* web_contents,
       RenderFrameSubmissionObserver* frame_observer)
-      : DidCommitProvisionalLoadInterceptor(web_contents),
-        frame_observer_(frame_observer) {}
+      : FrameHostInterceptor(web_contents), frame_observer_(frame_observer) {}
 
  private:
-  // DidCommitProvisionalLoadInterceptor:
+  // FrameHostInterceptor:
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     frame_observer_->WaitForAnyFrameSubmission();

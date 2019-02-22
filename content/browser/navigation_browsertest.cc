@@ -50,7 +50,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/frame_host_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -65,11 +65,10 @@ namespace content {
 
 namespace {
 
-class InterceptAndCancelDidCommitProvisionalLoad
-    : public DidCommitProvisionalLoadInterceptor {
+class InterceptAndCancelDidCommitProvisionalLoad : public FrameHostInterceptor {
  public:
   explicit InterceptAndCancelDidCommitProvisionalLoad(WebContents* web_contents)
-      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+      : FrameHostInterceptor(web_contents) {}
   ~InterceptAndCancelDidCommitProvisionalLoad() override {}
 
   void Wait(size_t number_of_messages) {
@@ -103,15 +102,15 @@ class InterceptAndCancelDidCommitProvisionalLoad
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     intercepted_messages_.push_back(*params);
     intercepted_requests_.push_back(
-        std::move(interface_params->interface_provider_request));
-    intercepted_broker_content_requests_.push_back(
-        std::move(interface_params->document_interface_broker_content_request));
-    intercepted_broker_blink_requests_.push_back(
-        std::move(interface_params->document_interface_broker_blink_request));
+        std::move((*interface_params)->interface_provider_request));
+    intercepted_broker_content_requests_.push_back(std::move(
+        (*interface_params)->document_interface_broker_content_request));
+    intercepted_broker_blink_requests_.push_back(std::move(
+        (*interface_params)->document_interface_broker_blink_request));
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -133,7 +132,7 @@ class InterceptAndCancelDidCommitProvisionalLoad
 // to check these events happen and happen in the expected right order.
 class NavigationRecorder : public WebContentsObserver {
  public:
-  NavigationRecorder(WebContents* web_contents)
+  explicit NavigationRecorder(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
   // WebContentsObserver implementation.
@@ -1338,7 +1337,7 @@ namespace {
 // returns the appropriate value when the Previews are set.
 class PreviewsStateContentBrowserClient : public ContentBrowserClient {
  public:
-  PreviewsStateContentBrowserClient(const GURL& main_frame_url)
+  explicit PreviewsStateContentBrowserClient(const GURL& main_frame_url)
       : main_frame_url_(main_frame_url),
         main_frame_url_seen_(false),
         previews_state_(PREVIEWS_OFF),

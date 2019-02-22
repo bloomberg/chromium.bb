@@ -4,17 +4,21 @@
 
 #include "content/public/test/content_browser_test_utils.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -30,6 +34,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
@@ -175,6 +180,47 @@ void ShellAddedObserver::ShellCreated(Shell* shell) {
   shell_ = shell;
   if (runner_.get())
     runner_->QuitClosure().Run();
+}
+
+void IsolateOriginsForTesting(
+    net::test_server::EmbeddedTestServer* embedded_test_server,
+    WebContents* web_contents,
+    std::vector<std::string> hostnames_to_isolate) {
+  std::vector<url::Origin> origins_to_isolate;
+  for (const std::string& hostname : hostnames_to_isolate) {
+    origins_to_isolate.push_back(
+        url::Origin::Create(GURL(std::string("http://") + hostname + "/")));
+  }
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddIsolatedOrigins(origins_to_isolate);
+
+  // Force a BrowsingInstance swap by navigating cross-site (the newly
+  // isolated origin only affects *future* BrowsingInstances).
+  scoped_refptr<SiteInstanceImpl> old_site_instance;
+  scoped_refptr<SiteInstanceImpl> new_site_instance;
+  do {
+    old_site_instance = static_cast<SiteInstanceImpl*>(
+        web_contents->GetMainFrame()->GetSiteInstance());
+    std::string cross_site_hostname = base::GenerateGUID() + ".com";
+    EXPECT_TRUE(NavigateToURL(
+        web_contents,
+        embedded_test_server->GetURL(cross_site_hostname, "/title1.html")));
+    new_site_instance = static_cast<SiteInstanceImpl*>(
+        web_contents->GetMainFrame()->GetSiteInstance());
+
+    // The navigation might need to be repeated until we actually swap the
+    // SiteInstance (no swap might happen when navigating away from the initial,
+    // empty frame).
+  } while (new_site_instance.get() == old_site_instance.get());
+  EXPECT_FALSE(
+      new_site_instance->IsRelatedSiteInstance(old_site_instance.get()));
+  for (const url::Origin& origin : origins_to_isolate) {
+    EXPECT_FALSE(policy->IsIsolatedOrigin(
+        old_site_instance->GetIsolationContext(), origin));
+    EXPECT_TRUE(policy->IsIsolatedOrigin(
+        new_site_instance->GetIsolationContext(), origin));
+  }
 }
 
 }  // namespace content
