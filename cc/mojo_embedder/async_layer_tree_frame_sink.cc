@@ -245,12 +245,22 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     last_submitted_device_scale_factor_ = frame.device_scale_factor();
     last_submitted_size_in_pixels_ = frame.size_in_pixels();
 
+    // These traces are split into two due to the incoming flow using
+    // TRACE_ID_LOCAL, and the outgoing flow using TRACE_ID_GLOBAL. This is
+    // needed to ensure the incoming flow is not messed up. The outgoing flow is
+    // going to a different process.
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Submission.Flow",
+        TRACE_ID_LOCAL(local_surface_id_.submission_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN, "step", "SubmitCompositorFrame", "surface_id",
+        local_surface_id_.ToString());
     TRACE_EVENT_WITH_FLOW2(
         TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
         "LocalSurfaceId.Submission.Flow",
         TRACE_ID_GLOBAL(local_surface_id_.submission_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "SubmitCompositorFrame", "surface_id", local_surface_id_.ToString());
+        TRACE_EVENT_FLAG_FLOW_OUT, "step", "SubmitCompositorFrame",
+        "surface_id", local_surface_id_.ToString());
   }
 
   // The trace_id is negated in order to keep the Graphics.Pipeline and

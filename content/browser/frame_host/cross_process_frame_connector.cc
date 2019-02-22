@@ -333,6 +333,17 @@ void CrossProcessFrameConnector::UnlockMouse() {
 void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
     const viz::FrameSinkId& frame_sink_id,
     const FrameVisualProperties& visual_properties) {
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "CrossProcessFrameConnector::OnSynchronizeVisualProperties Receive "
+      "Message",
+      TRACE_ID_GLOBAL(
+          visual_properties.local_surface_id_allocation.local_surface_id()
+              .submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_IN, "message",
+      "FrameHostMsg_SynchronizeVisualProperties", "new_local_surface_id",
+      visual_properties.local_surface_id_allocation.local_surface_id()
+          .ToString());
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
   if ((last_received_local_frame_size_ != visual_properties.local_frame_size ||

@@ -1342,11 +1342,22 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
   DCHECK_EQ(local_surface_id_from_parent.is_valid(),
             local_surface_id_allocation_from_parent.IsValid());
 
+  // These traces are split into two due to the usage of TRACE_ID_GLOBAL for the
+  // incoming flow (it comes from a different process), and TRACE_ID_LOCAL for
+  // the outgoing flow. The outgoing flow uses local to ensure that it doesn't
+  // flow into the wrong trace in different process.
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Submission.Flow",
       TRACE_ID_GLOBAL(local_surface_id_from_parent.submission_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      TRACE_EVENT_FLAG_FLOW_IN, "step", "SetLocalSurfaceAllocationIdFromParent",
+      "local_surface_id_allocation",
+      local_surface_id_allocation_from_parent.ToString());
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "LocalSurfaceId.Submission.Flow",
+      TRACE_ID_LOCAL(local_surface_id_from_parent.submission_trace_id()),
+      TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SetLocalSurfaceAllocationIdFromParent", "local_surface_id_allocation",
       local_surface_id_allocation_from_parent.ToString());
   // Always update the cached state of the viz::LocalSurfaceId to reflect the

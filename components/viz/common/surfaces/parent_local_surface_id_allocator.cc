@@ -45,9 +45,19 @@ bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
     // than the one provided by the child, then the merged LocalSurfaceId
     // is actually a new LocalSurfaceId and so we report its allocation time
     // as now.
+    TRACE_EVENT2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "ParentLocalSurfaceIdAllocator::UpdateFromChild New Allocation",
+        "current", current_local_surface_id_allocation_.ToString(), "child",
+        child_local_surface_id_allocation.ToString());
     current_local_surface_id_allocation_.allocation_time_ =
         tick_clock_->NowTicks();
   } else {
+    TRACE_EVENT2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "ParentLocalSurfaceIdAllocator::UpdateFromChild Synchronization",
+        "current", current_local_surface_id_allocation_.ToString(), "child",
+        child_local_surface_id_allocation.ToString());
     current_local_surface_id_allocation_.allocation_time_ =
         child_local_surface_id_allocation.allocation_time();
   }
