@@ -95,6 +95,10 @@ Polymer({
    * @param {string} newRouteId
    */
   onRouteChanged_: function(newRouteId) {
+    if (!this.instance_) {
+      return;
+    }
+
     const newSelectedChild = this.children_[newRouteId];
     assert(
         newSelectedChild,

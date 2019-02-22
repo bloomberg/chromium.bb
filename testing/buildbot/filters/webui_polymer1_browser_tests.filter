@@ -1,11 +1,5 @@
 # crbug.com/738611: Need to test all of WebUI with Polymer 1 while the migration
 # is still ongoing.
-#
-# The following test does not work with Polymer 1. It should be fixed to pass
-# when run with --disable-features=WebUIPolymer2 (and with optimize_webui =
-# true and false), removed from this blacklist, and added to the list below.
--AppManagementAppTest.*
-
 # For practical reasons, we don't run all browser_tests with the WebUIPolymer2
 # flag disabled. Only the tests matching below are executed. It is possible that
 # some tests that might be affected by the flag are not in the list below.
@@ -13,6 +7,13 @@
 # prevent future regressions.
 
 ActiveDirectoryJoinTest.*
+AppManagementAppTest.*
+AppManagementDomSwitchTest.*
+AppManagementMainViewTest.*
+AppManagementMetadataViewTest.*
+AppManagementReducersTest.*
+AppManagementRouterTest.*
+AppManagementPwaPermissionViewTest.*
 AudioPlayerBrowserTest.*
 AutofillBrowserTest.*
 BluetoothInternalsTest.*
