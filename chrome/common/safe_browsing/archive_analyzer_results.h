@@ -33,6 +33,8 @@ struct ArchiveAnalyzerResults {
       ClientDownloadRequest_DetachedCodeSignature>
       detached_code_signatures;
 #endif  // OS_MACOSX
+  int file_count;
+  int directory_count;
   ArchiveAnalyzerResults();
   ArchiveAnalyzerResults(const ArchiveAnalyzerResults& other);
   ~ArchiveAnalyzerResults();

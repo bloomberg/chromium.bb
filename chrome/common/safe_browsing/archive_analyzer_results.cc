@@ -81,7 +81,11 @@ void AnalyzeContainedBinary(
 }  // namespace
 
 ArchiveAnalyzerResults::ArchiveAnalyzerResults()
-    : success(false), has_executable(false), has_archive(false) {}
+    : success(false),
+      has_executable(false),
+      has_archive(false),
+      file_count(0),
+      directory_count(0) {}
 
 ArchiveAnalyzerResults::ArchiveAnalyzerResults(
     const ArchiveAnalyzerResults& other) = default;

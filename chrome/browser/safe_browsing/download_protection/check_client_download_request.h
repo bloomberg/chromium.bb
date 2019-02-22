@@ -134,6 +134,8 @@ class CheckClientDownloadRequest : public download::DownloadItem::Observer {
   bool is_extended_reporting_;
   bool is_incognito_;
   bool is_under_advanced_protection_;
+  int file_count_;
+  int directory_count_;
 
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
 

@@ -445,6 +445,8 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
   signature_info_ = results.signature_info;
   image_headers_.reset(new ClientDownloadRequest_ImageHeaders());
   *image_headers_ = results.image_headers;
+  file_count_ = results.file_count;
+  directory_count_ = results.directory_count;
 
 #if defined(OS_MACOSX)
   if (!results.disk_image_signature.empty())
@@ -700,6 +702,8 @@ void CheckClientDownloadRequest::SendRequest() {
     request->set_allocated_image_headers(image_headers_.release());
   if (!archived_binaries_.empty())
     request->mutable_archived_binary()->Swap(&archived_binaries_);
+  request->set_archive_file_count(file_count_);
+  request->set_archive_directory_count(directory_count_);
   if (!request->SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);
     return;
