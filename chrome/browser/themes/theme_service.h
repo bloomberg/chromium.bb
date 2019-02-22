@@ -267,6 +267,9 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   void BuildFromExtension(const extensions::Extension* extension,
                           bool new_theme);
 
+  // Builds a theme from a given |color|.
+  void BuildFromColor(SkColor color);
+
   // Callback when |pack| has finished or failed building.
   void OnThemeBuiltFromExtension(const extensions::ExtensionId& extension_id,
                                  scoped_refptr<BrowserThemePack> pack,
