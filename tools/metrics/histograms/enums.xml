@@ -57543,6 +57543,8 @@ Full version information for the fingerprint enum values:
   <int value="997" label="IO_PENDING"/>
   <int value="998" label="NOACCESS"/>
   <int value="999" label="SWAPERROR"/>
+  <int value="1784" label="INVALID_USER_BUFFER"/>
+  <int value="1816" label="NOT_ENOUGH_QUOTA"/>
 </enum>
 
 <enum name="WinJumplistCategory">

@@ -1130,7 +1130,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   int32_t ntstatus = 0;
   DWORD lzma_result = UnPackArchive(uncompressed_archive, unpack_path, NULL,
                                     &unpack_status, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus,
+  RecordUnPackMetrics(unpack_status, ntstatus, lzma_result,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
   if (lzma_result) {
     installer_state.WriteInstallerResult(
