@@ -54,6 +54,7 @@ class OverflowButton;
 class ScopedRootWindowForNewWindows;
 class Shelf;
 class ShelfAppButton;
+class ShelfButton;
 class ShelfModel;
 struct ShelfItem;
 class ShelfMenuModelAdapter;
@@ -264,7 +265,20 @@ class ASH_EXPORT ShelfView : public views::View,
   const std::vector<aura::Window*> GetOpenWindowsForShelfView(
       views::View* view);
 
+  // The three methods below return the first or last focusable child of the
+  // set including both the main shelf and the overflow shelf it it's showing.
+  // - The first focusable child is either the app list button, or the back
+  //   button in tablet mode.
+  // - The last focusable child can be either 1) the last app icon on the main
+  //   shelf if there aren't enough apps to overflow, 2) the overflow button
+  //   if it's visible but the overflow bubble isn't showing, or 3) the last
+  //   app icon in the overflow bubble if it's showing.
   views::View* FindFirstOrLastFocusableChild(bool last);
+  views::View* FindFirstFocusableChild();
+  views::View* FindLastFocusableChild();
+
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -292,6 +306,9 @@ class ASH_EXPORT ShelfView : public views::View,
   //     small resolution screen, the overflow bubble can show the app list
   //     button.
   bool is_overflow_mode() const { return overflow_mode_; }
+  bool is_showing_overflow_bubble() const {
+    return overflow_bubble_ && overflow_bubble_->IsShowing();
+  }
 
   int first_visible_index() const { return first_visible_index_; }
   int last_visible_index() const { return last_visible_index_; }

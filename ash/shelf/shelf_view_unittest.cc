@@ -90,6 +90,16 @@ int64_t GetPrimaryDisplayId() {
   return display::Screen::GetScreen()->GetPrimaryDisplay().id();
 }
 
+void ExpectFocused(views::View* view) {
+  EXPECT_TRUE(view->GetWidget()->IsActive());
+  EXPECT_TRUE(view->Contains(view->GetFocusManager()->GetFocusedView()));
+}
+
+void ExpectNotFocused(views::View* view) {
+  EXPECT_FALSE(view->GetWidget()->IsActive());
+  EXPECT_FALSE(view->Contains(view->GetFocusManager()->GetFocusedView()));
+}
+
 class TestShelfObserver : public ShelfObserver {
  public:
   explicit TestShelfObserver(Shelf* shelf) : shelf_(shelf) {
@@ -3450,8 +3460,13 @@ class ShelfViewFocusTest : public ShelfViewTest {
     AddAppShortcut();
     AddAppShortcut();
 
-    // Focus the shelf.
     Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+    gfx::NativeWindow window = shelf->shelf_widget()->GetNativeWindow();
+    status_area_ = RootWindowController::ForWindow(window)
+                       ->GetStatusAreaWidget()
+                       ->GetContentsView();
+
+    // Focus the shelf.
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
   }
 
@@ -3465,6 +3480,9 @@ class ShelfViewFocusTest : public ShelfViewTest {
     generator.PressKey(ui::KeyboardCode::VKEY_TAB,
                        ui::EventFlags::EF_SHIFT_DOWN);
   }
+
+ protected:
+  views::View* status_area_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);
@@ -3496,19 +3514,16 @@ TEST_F(ShelfViewFocusTest, ForwardCycling) {
   DoTab();
   DoTab();
   EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
-
-  // The last element is currently focused so pressing tab once should advance
-  // focus to the first element.
-  DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
 
 // Tests that the expected views have focus when cycling backwards through shelf
 // items with shift tab.
 TEST_F(ShelfViewFocusTest, BackwardCycling) {
-  // The first element is currently focused so pressing shift tab once should
-  // advance focus to the last element.
-  DoShiftTab();
+  // The first element is currently focused. Let's advance to the last element
+  // first.
+  DoTab();
+  DoTab();
+  DoTab();
   EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
 
   // Pressing shift tab once should advance focus to the previous element.
@@ -3524,6 +3539,41 @@ TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
   AddButtonsUntilOverflow();
   test_api_->ShowOverflowBubble();
   EXPECT_TRUE(::wm::IsActiveWindow(window.get()));
+}
+
+// Verifies that focus moves as expected between the shelf and the status area.
+TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
+  // The first element of the shelf is focused at start.
+
+  // Focus the next few elements.
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(3)->HasFocus());
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+
+  // This is the last element. Tabbing once more should go into the status
+  // area.
+  DoTab();
+  ExpectNotFocused(shelf_view_);
+  ExpectFocused(status_area_);
+
+  // Shift-tab: we should be back at the last element in the shelf.
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+  ExpectNotFocused(status_area_);
+
+  // Go into the status area again.
+  DoTab();
+  ExpectNotFocused(shelf_view_);
+  ExpectFocused(status_area_);
+
+  // And keep going forward, now we should be cycling back to the first shelf
+  // element.
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  ExpectNotFocused(status_area_);
 }
 
 class ShelfViewOverflowFocusTest : public ShelfViewFocusTest {
@@ -3598,16 +3648,13 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCycling) {
   // Focus the overflow button.
   DoTab();
   EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
-
-  DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
 
 // Tests that when cycling through the items with shift tab, the items in the
 // overflow shelf are ignored because it is not visible.
 TEST_F(ShelfViewOverflowFocusTest, BackwardCycling) {
-  DoShiftTab();
-  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+  while (!test_api_->overflow_button()->HasFocus())
+    DoTab();
 
   DoShiftTab();
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
@@ -3634,20 +3681,6 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
   const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
   EXPECT_TRUE(overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf)
                   ->HasFocus());
-
-  // Focus the last item on the overflow shelf.
-  test_api_->overflow_bubble()
-      ->bubble_view()
-      ->GetWidget()
-      ->GetFocusManager()
-      ->SetFocusedView(overflow_shelf_test_api_->GetViewAt(
-          overflow_shelf_test_api_->GetLastVisibleIndex()));
-
-  // Tests that after pressing tab once more, the main shelf widget now is
-  // active, and the first item on the main shelf has focus.
-  DoTab();
-  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
 
 // Tests that backwards cycling through elements with shift tab works as
@@ -3655,23 +3688,11 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
 TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   OpenOverflow();
 
-  // Tests that after pressing shift tab once, the overflow shelf bubble is
-  // active and the last item on the overflow shelf has focus.
-  DoShiftTab();
-  EXPECT_TRUE(
-      test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive());
-  const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
-  EXPECT_TRUE(overflow_shelf_test_api_
-                  ->GetViewAt(overflow_shelf_test_api_->GetLastVisibleIndex())
-                  ->HasFocus());
-
   // Focus the first item on the overflow shelf.
-  test_api_->overflow_bubble()
-      ->bubble_view()
-      ->GetWidget()
-      ->GetFocusManager()
-      ->SetFocusedView(
-          overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf));
+  while (!test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive())
+    DoTab();
+  EXPECT_FALSE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_FALSE(test_api_->overflow_button()->HasFocus());
 
   // Tests that after pressing shift tab once, the main shelf is active and
   // the overflow button has focus.
@@ -3682,6 +3703,62 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   // One more shift tab and the last item on the main shelf has focus.
   DoShiftTab();
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
+}
+
+// Verifies that focus moves as expected between the shelf and the status area
+// when the overflow bubble is showing.
+TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
+  OpenOverflow();
+  const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
+
+  // We start with the first shelf item focused. Shift-tab should focus the
+  // status area.
+  DoShiftTab();
+  ExpectNotFocused(shelf_view_);
+  ExpectFocused(status_area_);
+
+  // Focus the shelf again.
+  DoTab();
+  ExpectFocused(shelf_view_);
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  ExpectNotFocused(status_area_);
+
+  // Now advance to the last item on the main shelf.
+  while (!test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus())
+    DoTab();
+  ExpectNotFocused(status_area_);
+
+  // Focus the overflow button
+  DoTab();
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+
+  // Tab into the overflow bubble.
+  DoTab();
+  EXPECT_TRUE(overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf)
+                  ->HasFocus());
+
+  // Back onto the overflow button itself.
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+
+  // Now advance until we get to the status area.
+  while (!status_area_->GetWidget()->IsActive())
+    DoTab();
+
+  // Go back once, we should be in the overflow bubble again.
+  DoShiftTab();
+  ExpectNotFocused(status_area_);
+  ExpectFocused(test_api_->overflow_bubble()->bubble_view());
+
+  // Go into the status area again.
+  DoTab();
+  ExpectFocused(status_area_);
+
+  // Now advance until the status area isn't focused anymore.
+  while (status_area_->GetWidget()->IsActive())
+    DoTab();
+  // This should have brought focus to the first element on the shelf.
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
 
 }  // namespace ash

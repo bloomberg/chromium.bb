@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/focus_cycler.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -33,6 +34,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -204,7 +206,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       new_index = 0;
 
     if (new_index >= overflow_cutoff)
-      shelf_view_->shelf_widget()->set_activated_from_overflow_bubble(true);
+      shelf_view_->shelf_widget()->set_activated_from_other_widget(true);
     return focusable_views[new_index];
   }
 
@@ -816,13 +818,44 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
   return open_windows;
 }
 
+views::View* ShelfView::FindFirstFocusableChild() {
+  if (is_overflow_mode())
+    return main_shelf()->FindFirstFocusableChild();
+  return view_model_->view_at(first_visible_index());
+}
+
+views::View* ShelfView::FindLastFocusableChild() {
+  if (is_showing_overflow_bubble())
+    return overflow_shelf()->FindLastFocusableChild();
+  return overflow_button_->visible()
+             ? overflow_button_
+             : view_model_->view_at(last_visible_index());
+}
+
 views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
-  if (last) {
-    return overflow_button_->visible()
-               ? overflow_button_
-               : view_model_->view_at(last_visible_index());
-  } else {
-    return view_model_->view_at(first_visible_index());
+  return last ? FindLastFocusableChild() : FindFirstFocusableChild();
+}
+
+void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {
+  if (is_overflow_mode()) {
+    main_shelf()->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
+                                                                   reverse);
+    return;
+  }
+
+  // The logic here seems backwards, but is actually correct. For instance if
+  // the ShelfView's internal focus cycling logic attemmpts to focus the first
+  // child (e.g. app list button) after hitting Tab, we intercept that and
+  // instead, advance through to the status area.
+  if ((reverse && button == FindLastFocusableChild()) ||
+      (!reverse && button == FindFirstFocusableChild())) {
+    StatusAreaWidget* status_area_widget =
+        Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
+    status_area_widget->status_area_widget_delegate()
+        ->set_default_last_focusable_child(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
   }
 }
 
