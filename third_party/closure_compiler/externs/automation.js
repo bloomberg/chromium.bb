@@ -594,6 +594,13 @@ chrome.automation.AutomationNode.prototype.name;
 chrome.automation.AutomationNode.prototype.nameFrom;
 
 /**
+ * The image annotation for image nodes, which may be a human-readable string that is the contextualized annotation or a status string related to annotations.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-imageAnnotation
+ */
+chrome.automation.AutomationNode.prototype.imageAnnotation;
+
+/**
  * The value for this node: for example the <code>value</code> attribute of an <code>&lt;input&gt; element.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-value

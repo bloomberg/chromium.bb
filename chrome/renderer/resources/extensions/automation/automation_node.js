@@ -293,6 +293,14 @@ var GetNameFrom = natives.GetNameFrom;
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {?string} The image annotation status, which may
+ *     include the annotation itself if completed successfully.
+ */
+var GetImageAnnotation = natives.GetImageAnnotation;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @return {boolean}
  */
 var GetBold = natives.GetBold;
@@ -553,6 +561,10 @@ AutomationNodeImpl.prototype = {
 
   get nameFrom() {
     return GetNameFrom(this.treeID, this.id);
+  },
+
+  get imageAnnotation() {
+    return GetImageAnnotation(this.treeID, this.id);
   },
 
   get bold() {
@@ -1555,6 +1567,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'restriction',
         'state',
         'location',
+        'imageAnnotationStatus',
         'indexInParent',
         'lineStartOffsets',
         'root',

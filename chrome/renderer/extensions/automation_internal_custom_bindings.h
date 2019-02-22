@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_AUTOMATION_INTERNAL_CUSTOM_BINDINGS_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -199,6 +200,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   void UpdateOverallTreeChangeObserverFilter();
 
   void SendChildTreeIDEvent(ui::AXTreeID child_tree_id);
+
+  std::string GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const;
 
   std::map<ui::AXTreeID, std::unique_ptr<AutomationAXTreeWrapper>>
       tree_id_to_tree_wrapper_map_;

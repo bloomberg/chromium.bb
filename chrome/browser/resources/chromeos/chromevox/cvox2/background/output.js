@@ -451,7 +451,8 @@ Output.RULES = {
           $restriction $description`
     },
     image: {
-      speak: `$if($name, $name, $urlFilename)
+      speak: `$if($name, $name,
+          $if($imageAnnotation, $imageAnnotation, $urlFilename))
           $value $state $role $description`,
     },
     inlineTextBox: {speak: `$name=`},
