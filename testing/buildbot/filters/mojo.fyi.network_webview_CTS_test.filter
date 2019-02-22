@@ -27,4 +27,4 @@
 -android.webkit.cts.WebViewSslTest.testSecureServerRequiringClientCertDoesCancelRequest
 -android.webkit.cts.WebViewTest.testSetDownloadListener
 -com.android.cts.webkit.WebViewDeviceSideStartupTest.testCookieManagerBlockingUiThread
--com.android.cts.webkit.WebViewDeviceSideStartupTest.testStrictModeNotViolatedOnStartup
+
