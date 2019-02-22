@@ -66,7 +66,7 @@ static void EnsureAtkObjectHasAttributeWithValue(
 
     if (0 == strcmp(attribute_name, attribute->name)) {
       // Ensure that we only see this attribute once.
-      ASSERT_FALSE(saw_attribute);
+      ASSERT_FALSE(saw_attribute) << attribute_name;
 
       EXPECT_STREQ(attribute_value, attribute->value);
       saw_attribute = true;
@@ -86,7 +86,7 @@ static void EnsureAtkObjectDoesNotHaveAttribute(
   AtkAttributeSet* current = attributes;
   while (current) {
     AtkAttribute* attribute = static_cast<AtkAttribute*>(current->data);
-    ASSERT_NE(0, strcmp(attribute_name, attribute->name)) << attribute_name;
+    ASSERT_STRNE(attribute_name, attribute->name) << attribute_name;
     current = current->next;
   }
   atk_attribute_set_free(attributes);
@@ -578,7 +578,6 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectBoolAttributes) {
 TEST_F(AXPlatformNodeAuraLinuxTest, DISABLED_TestAtkObjectIntAttributes) {
   AXNodeData root_data;
   root_data.id = 1;
-
   Init(root_data);
 
   AXNode* root_node = GetRootNode();
