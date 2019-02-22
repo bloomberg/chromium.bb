@@ -277,6 +277,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
 Coordinator::Coordinator(AgentRegistry* agent_registry,
                          const base::RepeatingClosure& on_disconnect_callback)
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      agent_registry_(agent_registry),
       on_disconnect_callback_(std::move(on_disconnect_callback)),
       binding_(this),
       // USER_VISIBLE because the task posted from StopAndFlushInternal() is
@@ -287,7 +288,6 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
       backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
            base::WithBaseSyncPrimitives()})),
-      agent_registry_(agent_registry),
       weak_ptr_factory_(this) {
   DCHECK(agent_registry_);
 }

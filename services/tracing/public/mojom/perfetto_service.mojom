@@ -4,6 +4,7 @@
 
 module tracing.mojom;
 
+const string kPerfettoProducerName = "org.chromium.perfetto_producer";
 const string kTraceEventDataSourceName = "org.chromium.trace_event";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
 const string kSystemTraceDataSourceName = "org.chromium.trace_system";
