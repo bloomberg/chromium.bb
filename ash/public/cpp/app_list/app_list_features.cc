@@ -38,7 +38,9 @@ const base::Feature kEnableEmbeddedAssistantUI{
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
-  return base::FeatureList::IsEnabled(kEnableAnswerCard);
+  // Do not show answer card if the embedded Assistant UI is enabled.
+  return base::FeatureList::IsEnabled(kEnableAnswerCard) &&
+         !IsEmbeddedAssistantUIEnabled();
 }
 
 bool IsAppShortcutSearchEnabled() {
