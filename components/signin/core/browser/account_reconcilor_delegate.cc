@@ -100,10 +100,14 @@ AccountReconcilorDelegate::ReorderChromeAccountsForReconcile(
   if (first_account_it == ordered_accounts.end()) {
     // The first account was not already in the cookies, add it in the first
     // empty spot, or at the end if there is no available spot.
-    first_account_it = ordered_accounts.insert(
-        std::find(ordered_accounts.begin(), ordered_accounts.end(),
-                  std::string()),
-        first_account);
+    first_account_it = std::find(ordered_accounts.begin(),
+                                 ordered_accounts.end(), std::string());
+    if (first_account_it == ordered_accounts.end()) {
+      first_account_it =
+          ordered_accounts.insert(first_account_it, first_account);
+    } else {
+      *first_account_it = first_account;
+    }
     chrome_accounts_set.erase(first_account);
   }
   std::iter_swap(ordered_accounts.begin(), first_account_it);
