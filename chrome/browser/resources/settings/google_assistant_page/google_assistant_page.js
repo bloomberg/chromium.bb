@@ -13,6 +13,28 @@ const DspHotwordState = {
 };
 
 /**
+ * Indicates user's activity control consent status.
+ *
+ * Note: This should be kept in sync with ash::mojom::ConsentStatus in
+ * ash/public/interfaces/voice_interaction_controller.mojom
+ * @enum {number}
+ */
+const ConsentStatus = {
+  // The status is unknown.
+  kUnknown: 0,
+
+  // The user accepted activity control access.
+  kActivityControlAccepted: 1,
+
+  // The user is not authorized to give consent.
+  kUnauthorized: 2,
+
+  // The user's consent information is not found. This is typically the case
+  // when consent from the user has never been requested.
+  kNotFound: 3,
+};
+
+/**
  * @fileoverview 'settings-google-assistant-page' is the settings page
  * containing Google Assistant settings.
  */
@@ -83,6 +105,8 @@ Polymer({
   observers: [
     'onPrefsChanged_(prefs.settings.voice_interaction.hotword.enabled.value)',
     'onPrefsChanged_(prefs.settings.voice_interaction.hotword.always_on.value)',
+    `onPrefsChanged_(
+      prefs.settings.voice_interaction.activity_control.consent_status.value)`,
   ],
 
   /** @private {?settings.GoogleAssistantBrowserProxy} */
@@ -153,8 +177,9 @@ Polymer({
     this.shouldShowVoiceMatchSettings_ =
         loadTimeData.getBoolean('voiceMatchEnabled') &&
         this.getPref('settings.voice_interaction.hotword.enabled.value') &&
-        this.getPref(
-            'settings.voice_interaction.activity_control.accepted.value');
+        (this.getPref(
+          'settings.voice_interaction.activity_control.consent_status.value') ==
+            ConsentStatus.kActivityControlAccepted);
   },
 
   /** @private */
