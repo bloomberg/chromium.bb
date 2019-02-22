@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
-#include "chrome/test/base/view_event_test_base.h"
+#include "chrome/browser/ui/views/test/view_event_test_base.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/menu/menu_runner.h"
 

@@ -4972,9 +4972,6 @@ if (!is_android) {
       "base/interactive_ui_tests_main.cc",
       "base/save_desktop_snapshot_win.cc",
       "base/save_desktop_snapshot_win.h",
-      "base/view_event_test_platform_part.h",
-      "base/view_event_test_platform_part_chromeos.cc",
-      "base/view_event_test_platform_part_default.cc",
       "ppapi/ppapi_interactive_browsertest.cc",
     ]
 
@@ -5117,13 +5114,16 @@ if (!is_android) {
         "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h",
+        "../browser/ui/views/test/view_event_test_base.cc",
+        "../browser/ui/views/test/view_event_test_base.h",
+        "../browser/ui/views/test/view_event_test_platform_part.h",
+        "../browser/ui/views/test/view_event_test_platform_part_chromeos.cc",
+        "../browser/ui/views/test/view_event_test_platform_part_default.cc",
         "../browser/ui/views/toolbar/toolbar_action_view_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_button_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "base/interactive_test_utils_views.cc",
-        "base/view_event_test_base.cc",
-        "base/view_event_test_base.h",
       ]
       deps += [
         "//ui/views",
@@ -5164,7 +5164,7 @@ if (!is_android) {
         "../browser/ui/signin_view_controller_interactive_uitest.cc",
 
         # Use only the _chromeos version on Ash / Chrome OS.
-        "base/view_event_test_platform_part_default.cc",
+        "../browser/ui/views/test/view_event_test_platform_part_default.cc",
       ]
     } else {  # ! is_chromeos
       # Non-ChromeOS notifications tests.

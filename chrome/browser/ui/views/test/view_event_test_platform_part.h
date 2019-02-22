@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_VIEW_EVENT_TEST_PLATFORM_PART_H_
-#define CHROME_TEST_BASE_VIEW_EVENT_TEST_PLATFORM_PART_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_PLATFORM_PART_H_
+#define CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_PLATFORM_PART_H_
 
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
@@ -11,7 +11,7 @@
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
-}
+}  // namespace ui
 
 // A helper class owned by tests that performs platform specific initialization.
 // ViewEventTestPlatformPart behaves a bit like views::ViewsTestHelper, but on
@@ -38,4 +38,4 @@ class ViewEventTestPlatformPart {
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPart);
 };
 
-#endif  // CHROME_TEST_BASE_VIEW_EVENT_TEST_PLATFORM_PART_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_PLATFORM_PART_H_

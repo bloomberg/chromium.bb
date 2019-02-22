@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/test/view_event_test_platform_part.h"
+
 #include <memory>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/test/base/view_event_test_platform_part.h"
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
