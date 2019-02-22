@@ -59,6 +59,7 @@
     'remove_from': [
       # chromium.linux
       'Fuchsia x64',
+      'fuchsia-fyi-x64-dbg',  # https://crbug.com/934582
     ],
   },
   'blink_heap_unittests': {

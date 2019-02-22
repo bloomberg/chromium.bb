@@ -4157,17 +4157,6 @@
             }
           ]
         },
-        "test": "blink_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1"
-            }
-          ]
-        },
         "test": "blink_heap_unittests"
       },
       {
