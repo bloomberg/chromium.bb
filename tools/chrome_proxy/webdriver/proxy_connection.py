@@ -5,7 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
-from decorators import ChromeVersionEqualOrAfterM
+from decorators import ChromeVersionBetweenInclusiveM
 from emulation_server import BlackHoleHandler
 from emulation_server import InvalidTLSHandler
 from emulation_server import TCPResetHandler
@@ -13,7 +13,7 @@ from emulation_server import TLSResetHandler
 
 class ProxyConnection(IntegrationTest):
 
-  @ChromeVersionEqualOrAfterM(63)
+  @ChromeVersionBetweenInclusiveM(63, 72)
   def testTLSInjectionAfterHandshake(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -37,7 +37,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
-  @ChromeVersionEqualOrAfterM(63)
+  @ChromeVersionBetweenInclusiveM(63, 72)
   def testTCPReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -62,7 +62,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
-  @ChromeVersionEqualOrAfterM(63)
+  @ChromeVersionBetweenInclusiveM(63, 72)
   def testTLSReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -85,7 +85,7 @@ class ProxyConnection(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-  @ChromeVersionEqualOrAfterM(66)
+  @ChromeVersionBetweenInclusiveM(66, 71)
   def testTCPBlackhole(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
