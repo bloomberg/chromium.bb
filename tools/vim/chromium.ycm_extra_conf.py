@@ -296,13 +296,6 @@ def GetClangOptionsFromNinjaForFilename(chrome_root, filename):
   # Chromium's includes are relative to that.
   additional_flags = ['-I' + os.path.join(chrome_root)]
 
-  # Fix missing system headers. For details, see
-  # <https://github.com/Valloric/YouCompleteMe/issues/303>
-  clang_root = os.path.join(
-    chrome_root, 'third_party/llvm-build/Release+Asserts')
-  additional_flags += ['-isystem', os.path.join(clang_root, 'include')]
-  additional_flags += ['-isystem', os.path.join(clang_root, 'include/c++/v1')]
-
   # Version of Clang used to compile Chromium can be newer then version of
   # libclang that YCM uses for completion. So it's possible that YCM's libclang
   # doesn't know about some used warning options, which causes compilation
