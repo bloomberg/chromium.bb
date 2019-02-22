@@ -88,7 +88,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
               base::Time::Now() /* last_access_time */, true /* secure */,
               false /* http_only */, net::CookieSameSite::STRICT_MODE,
               net::COOKIE_PRIORITY_DEFAULT),
-          "https", false /* modify_http_only */,
+          true /* secure_source */, false /* modify_http_only */,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::
                              OnSetRememberDeviceByDefaultCookieResult,
                          weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
@@ -275,7 +275,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
               base::Time::Now() /* last_access_time */, true /* secure */,
               false /* http_only */, net::CookieSameSite::STRICT_MODE,
               net::COOKIE_PRIORITY_DEFAULT),
-          "https", false /* modify_http_only */,
+          true /* secure_source */, false /* modify_http_only */,
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
               weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));

@@ -14,7 +14,7 @@ TestCookieManager::~TestCookieManager() = default;
 
 void TestCookieManager::SetCanonicalCookie(
     const net::CanonicalCookie& cookie,
-    const std::string& source_scheme,
+    bool secure_source,
     bool modify_http_only,
     SetCanonicalCookieCallback callback) {
   std::move(callback).Run(false);

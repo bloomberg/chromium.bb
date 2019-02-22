@@ -249,10 +249,9 @@ class COMPONENT_EXPORT(URL) GURL {
   // is minimally trustworthy. For that, see Chromium's |IsOriginSecure| for a
   // higher-level and more complete semantics. See that function's documentation
   // for more detail.
-  bool SchemeIsCryptographic() const;
-
-  // As above, but static. Parameter should be lower-case ASCII.
-  static bool SchemeIsCryptographic(base::StringPiece lower_ascii_scheme);
+  bool SchemeIsCryptographic() const {
+    return SchemeIs(url::kHttpsScheme) || SchemeIs(url::kWssScheme);
+  }
 
   // Returns true if the scheme is "blob".
   bool SchemeIsBlob() const {

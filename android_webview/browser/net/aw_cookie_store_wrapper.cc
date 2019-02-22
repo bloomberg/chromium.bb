@@ -27,12 +27,11 @@ void SetCookieWithOptionsAsyncOnCookieThread(
 
 void SetCanonicalCookieAsyncOnCookieThread(
     std::unique_ptr<net::CanonicalCookie> cookie,
-    std::string source_scheme,
+    bool secure_source,
     bool modify_http_only,
     net::CookieStore::SetCookiesCallback callback) {
   GetCookieStore()->SetCanonicalCookieAsync(
-      std::move(cookie), std::move(source_scheme), modify_http_only,
-      std::move(callback));
+      std::move(cookie), secure_source, modify_http_only, std::move(callback));
 }
 
 void GetCookieListWithOptionsAsyncOnCookieThread(
@@ -103,13 +102,13 @@ void AwCookieStoreWrapper::SetCookieWithOptionsAsync(
 
 void AwCookieStoreWrapper::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,
-    std::string source_scheme,
+    bool secure_source,
     bool modify_http_only,
     SetCookiesCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &SetCanonicalCookieAsyncOnCookieThread, std::move(cookie),
-      std::move(source_scheme), modify_http_only,
+      &SetCanonicalCookieAsyncOnCookieThread, std::move(cookie), secure_source,
+      modify_http_only,
       CreateWrappedCallback<net::CanonicalCookie::CookieInclusionStatus>(
           std::move(callback))));
 }

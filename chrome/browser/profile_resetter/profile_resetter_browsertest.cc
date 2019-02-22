@@ -93,7 +93,7 @@ void RemoveCookieTester::AddCookie(const std::string& host,
                            base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_MEDIUM),
-      "http", true /* modify_http_only */,
+      false /* secure_source */, true /* modify_http_only */,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();
