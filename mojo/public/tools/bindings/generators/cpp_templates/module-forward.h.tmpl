@@ -72,6 +72,25 @@ namespace {{variant}} {
 {%-   endfor %}
 {%- endif %}
 
+{%- if variant %}
+{%-   for namespace in namespaces_as_array %}
+namespace {{namespace}} {
+{%-   endfor %}
+
+{%- from "enum_macros.tmpl" import enum_forward%}
+{%- for enum in all_enums %}
+{%-   if enum|is_native_only_kind %}
+using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
+{%-   else %}
+{{enum_forward(enum)}}
+{%-   endif %}
+{%- endfor %}
+
+{%-   for namespace in namespaces_as_array %}
+}  // namespace {{namespace}}
+{%-   endfor %}
+{%- endif %}
+
 {{namespace_begin()}}
 
 {#- These are non-variant header only. #}
