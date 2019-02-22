@@ -726,13 +726,6 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     // only after the initial value from the server is received. The server
     // expects that if a LocalSurfaceIdAllocation is supplied, it must be valid.
     local_surface_id_allocation.reset();
-  } else if (window->window_mus_type() != WindowMusType::TOP_LEVEL) {
-    // |window_tree_host| may be null if this is called during creation of
-    // the window associated with the WindowTreeHostMus, or if there is an
-    // embedding.
-    WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
-    if (window_tree_host && window_tree_host->window() == window->GetWindow())
-      window_tree_host->compositor()->OnChildResizing();
   }
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
