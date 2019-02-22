@@ -115,7 +115,7 @@ CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
 bool CSPSource::HostMatches(const String& host) const {
   bool match;
 
-  bool equal_hosts = host_ == host;
+  bool equal_hosts = EqualIgnoringASCIICase(host_, host);
   if (host_wildcard_ == kHasWildcard) {
     if (host_.IsEmpty()) {
       // host-part = "*"
