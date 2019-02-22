@@ -87,7 +87,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
         TaskInfo taskInfo = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(taskInfo);
 
-        assertEquals(ONE_DAY_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowEndTimeMs());
+        assertEquals(ONE_DAY_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowStartTimeMs());
     }
 
     @Test
@@ -120,7 +120,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
                 .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
 
         TaskInfo taskInfo = mTaskInfo.getValue();
-        assertEquals(ONE_DAY_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowEndTimeMs());
+        assertEquals(ONE_DAY_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowStartTimeMs());
 
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
                 /* shouldLaunch= */ true,
@@ -129,7 +129,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
                 .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
 
         taskInfo = mTaskInfo.getValue();
-        assertEquals(ONE_WEEK_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowEndTimeMs());
+        assertEquals(ONE_WEEK_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowStartTimeMs());
     }
 
     @Test

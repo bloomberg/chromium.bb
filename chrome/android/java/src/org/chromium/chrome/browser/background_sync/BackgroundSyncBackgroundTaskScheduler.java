@@ -71,13 +71,14 @@ public class BackgroundSyncBackgroundTaskScheduler {
         Bundle taskExtras = new Bundle();
         taskExtras.putLong(SOONEST_EXPECTED_WAKETIME, System.currentTimeMillis() + minDelayMs);
 
-        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.BACKGROUND_SYNC_ONE_SHOT_JOB_ID,
-                                            BackgroundSyncBackgroundTask.class, minDelayMs)
-                                    .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
-                                    .setUpdateCurrent(true)
-                                    .setIsPersisted(true)
-                                    .setExtras(taskExtras)
-                                    .build();
+        TaskInfo taskInfo =
+                TaskInfo.createOneOffTask(TaskIds.BACKGROUND_SYNC_ONE_SHOT_JOB_ID,
+                                BackgroundSyncBackgroundTask.class, minDelayMs, Integer.MAX_VALUE)
+                        .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
+                        .setUpdateCurrent(true)
+                        .setIsPersisted(true)
+                        .setExtras(taskExtras)
+                        .build();
         // This will overwrite any existing task with this ID.
         return BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 ContextUtils.getApplicationContext(), taskInfo);
