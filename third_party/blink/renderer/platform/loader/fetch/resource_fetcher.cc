@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/network/network_instrumentation.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/probe/platform_probes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -253,6 +252,32 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
   }
   return !host.IsEmpty() &&
          stale_while_revalidate_allow_hosts->Find(host) != kNotFound;
+}
+
+std::unique_ptr<TracedValue> UrlForTraceEvent(const KURL& url) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetString("url", url.GetString());
+  return value;
+}
+
+std::unique_ptr<TracedValue> BeginResourceLoadData(
+    const blink::ResourceRequest& request) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetString("url", request.Url().GetString());
+  return value;
+}
+
+std::unique_ptr<TracedValue> EndResourceLoadFailData() {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetString("outcome", "Fail");
+  return value;
+}
+
+std::unique_ptr<TracedValue> ResourcePrioritySetData(
+    blink::ResourceLoadPriority priority) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetInteger("priority", static_cast<int>(priority));
+  return value;
 }
 
 }  // namespace
@@ -585,12 +610,6 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
       false);
 }
 
-static std::unique_ptr<TracedValue> UrlForTraceEvent(const KURL& url) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("url", url.GetString());
-  return value;
-}
-
 Resource* ResourceFetcher::ResourceForStaticData(
     const FetchParameters& params,
     const ResourceFactory& factory) {
@@ -815,8 +834,10 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   Context().AddAdditionalRequestHeaders(resource_request);
 
-  network_instrumentation::ResourcePrioritySet(identifier,
-                                               resource_request.Priority());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+      TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
+      TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
+      "data", ResourcePrioritySetData(resource_request.Priority()));
 
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
@@ -871,8 +892,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            ResourceClient* client) {
   unsigned long identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
-  network_instrumentation::ScopedResourceLoadTracker
-      scoped_resource_load_tracker(identifier, resource_request);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
+      TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
+      "beginData", BeginResourceLoadData(resource_request));
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
@@ -1040,9 +1063,12 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
 
-  if (resource->Identifier() == identifier &&
-      (resource->StillNeedsLoad() || resource->IsLoading())) {
-    scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
+  if (resource->Identifier() != identifier ||
+      (!resource->StillNeedsLoad() && !resource->IsLoading())) {
+    TRACE_EVENT_NESTABLE_ASYNC_END1(
+        TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
+        TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
+        "endData", EndResourceLoadFailData());
   }
 
   return resource;
@@ -1933,8 +1959,11 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
 
     resource->DidChangePriority(resource_load_priority,
                                 resource_priority.intra_priority_value);
-    network_instrumentation::ResourcePrioritySet(resource->Identifier(),
-                                                 resource_load_priority);
+    TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+        TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
+        TRACE_ID_WITH_SCOPE("BlinkResourceID",
+                            TRACE_ID_LOCAL(resource->Identifier())),
+        "data", ResourcePrioritySetData(resource_load_priority));
     Context().DispatchDidChangeResourcePriority(
         resource->Identifier(), resource_load_priority,
         resource_priority.intra_priority_value);

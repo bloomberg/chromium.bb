@@ -49,8 +49,6 @@ blink_platform_sources("network") {
     "mime/mime_type_registry.h",
     "network_hints.cc",
     "network_hints.h",
-    "network_instrumentation.cc",
-    "network_instrumentation.h",
     "network_log.h",
     "network_state_notifier.cc",
     "network_state_notifier.h",
