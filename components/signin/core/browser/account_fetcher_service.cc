@@ -116,8 +116,11 @@ void AccountFetcherService::OnNetworkInitialized() {
 }
 
 void AccountFetcherService::EnableNetworkFetchesForTest() {
-  OnNetworkInitialized();
-  OnRefreshTokensLoaded();
+  if (!network_initialized_)
+    OnNetworkInitialized();
+
+  if (!refresh_tokens_loaded_)
+    OnRefreshTokensLoaded();
 }
 
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {

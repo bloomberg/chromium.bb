@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
@@ -46,7 +45,6 @@
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -467,15 +465,6 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                                      &test_url_loader_factory_));
-
-    // Ensure that AccountFetcherService is (1) created at all and (2) created
-    // early enough for it to observe the Profile initialization process and
-    // loading of tokens by PO2TS. Explicitly forcing this setup (which happens
-    // naturally in production) is necessary for the flow of
-    // AccountTrackerService having accounts removed when tokens are revoked
-    // with PO2TS to work as expected in this testing context.
-    AccountFetcherServiceFactory::GetInstance()->GetForProfile(
-        Profile::FromBrowserContext(context));
   }
 
   void SetUpOnMainThread() override {
@@ -484,18 +473,10 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
 
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, ProfileOAuth2TokenService does not fire
-    // OnRefreshTokensLoaded() in text contexts. However, AccountFetcherService
-    // must receive this call in order to forward later
-    // OnRefreshToken{Available, Revoked} callbacks on to AccountTrackerService
-    // as expected. Hence, we make that call explicitly here.
-    // TODO(blundell): Hide this detail when converting this code to interact
-    // with IdentityTestEnvironment.
-    AccountFetcherServiceFactory::GetInstance()
-        ->GetForProfile(profile())
-        ->OnRefreshTokensLoaded();
-#endif
+    // This test requires these callbacks to be fired on account
+    // update/removal.
+    identity_test_env()
+        ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
   }
 
   void TearDownOnMainThread() override {
