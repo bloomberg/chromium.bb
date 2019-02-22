@@ -258,6 +258,8 @@ def main(args=None):
     git.freeze()  # just in case there are any local changes.
 
   skipped, branch_tree = git.get_branch_tree()
+  if opts.branches:
+    skipped = set(skipped).intersection(set(opts.branches))
   for branch in skipped:
     print 'Skipping %s: No upstream specified' % branch
 
