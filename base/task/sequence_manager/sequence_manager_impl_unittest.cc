@@ -3920,6 +3920,21 @@ TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
   EXPECT_TRUE(run);
 }
 
+TEST_P(SequenceManagerTest, DestructorPostsViaTaskRunnerHandleDuringShutdown) {
+  scoped_refptr<TestTaskQueue> task_queue = CreateTaskQueue();
+  bool run = false;
+  task_queue->task_runner()->PostTask(
+      FROM_HERE, RunOnDestruction(BindLambdaForTesting([&]() {
+        ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(&NopTask));
+        run = true;
+      })));
+
+  // Should not DCHECK when ThreadTaskRunnerHandle::Get() is invoked.
+  DestroySequenceManager();
+  EXPECT_TRUE(run);
+}
+
 TEST_P(SequenceManagerTest, CreateUnboundSequenceManagerWhichIsNeverBound) {
   // This should not crash.
   CreateUnboundSequenceManager();
