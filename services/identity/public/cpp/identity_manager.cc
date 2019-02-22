@@ -488,6 +488,15 @@ void IdentityManager::OnAccessTokenRequested(
   }
 }
 
+void IdentityManager::OnFetchAccessTokenComplete(const std::string& account_id,
+                                                 const std::string& consumer_id,
+                                                 const ScopeSet& scopes,
+                                                 GoogleServiceAuthError error,
+                                                 base::Time expiration_time) {
+  for (auto& observer : diagnostics_observer_list_)
+    observer.OnAccessTokenRequestCompleted(account_id, error, scopes);
+}
+
 void IdentityManager::OnAccessTokenRemoved(const std::string& account_id,
                                            const ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_)

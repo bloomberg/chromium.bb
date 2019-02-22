@@ -230,6 +230,11 @@ class TestIdentityManagerDiagnosticsObserver
     on_access_token_requested_callback_ = std::move(callback);
   }
 
+  void set_on_access_token_request_completed_callback(
+      base::OnceClosure callback) {
+    on_access_token_request_completed_callback_ = std::move(callback);
+  }
+
   const std::string& token_requestor_account_id() {
     return token_requestor_account_id_;
   }
@@ -244,6 +249,15 @@ class TestIdentityManagerDiagnosticsObserver
   }
   const identity::ScopeSet& token_remover_scopes() {
     return token_remover_scopes_;
+  }
+  const std::string& on_access_token_request_completed_account_id() {
+    return access_token_request_completed_account_id_;
+  }
+  const identity::ScopeSet& on_access_token_request_completed_scopes() {
+    return access_token_request_completed_scopes_;
+  }
+  const GoogleServiceAuthError& on_access_token_request_completed_error() {
+    return access_token_request_completed_error_;
   }
 
  private:
@@ -265,13 +279,28 @@ class TestIdentityManagerDiagnosticsObserver
     token_remover_scopes_ = scopes;
   }
 
+  void OnAccessTokenRequestCompleted(const std::string& account_id,
+                                     GoogleServiceAuthError error,
+                                     const ScopeSet& scopes) override {
+    access_token_request_completed_account_id_ = account_id;
+    access_token_request_completed_scopes_ = scopes;
+    access_token_request_completed_error_ = error;
+
+    if (on_access_token_request_completed_callback_)
+      std::move(on_access_token_request_completed_callback_).Run();
+  }
+
   IdentityManager* identity_manager_;
   base::OnceClosure on_access_token_requested_callback_;
+  base::OnceClosure on_access_token_request_completed_callback_;
   std::string token_requestor_account_id_;
   std::string token_requestor_consumer_id_;
   std::string token_remover_account_id_;
   identity::ScopeSet token_requestor_scopes_;
   identity::ScopeSet token_remover_scopes_;
+  std::string access_token_request_completed_account_id_;
+  identity::ScopeSet access_token_request_completed_scopes_;
+  GoogleServiceAuthError access_token_request_completed_error_;
 };
 
 }  // namespace
@@ -1280,6 +1309,92 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
       identity_manager_diagnostics_observer()->token_requestor_consumer_id());
   EXPECT_EQ(scopes,
             identity_manager_diagnostics_observer()->token_requestor_scopes());
+}
+
+TEST_F(IdentityManagerTest,
+       ObserveAccessTokenRequestCompletionWithoutRefreshToken) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
+
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
+  // Account has no refresh token.
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop.Run();
+
+  EXPECT_TRUE(token_fetcher);
+  EXPECT_EQ(GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP),
+            identity_manager_diagnostics_observer()
+                ->on_access_token_request_completed_error());
+}
+
+TEST_F(IdentityManagerTest,
+       ObserveAccessTokenRequestCompletionWithRefreshToken) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
+
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->set_auto_post_fetch_response_on_message_loop(true);
+
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
+  // This should result in a request for an access token without an error.
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop.Run();
+
+  EXPECT_TRUE(token_fetcher);
+  EXPECT_EQ(account_id, identity_manager_diagnostics_observer()
+                            ->on_access_token_request_completed_account_id());
+  EXPECT_EQ(scopes, identity_manager_diagnostics_observer()
+                        ->on_access_token_request_completed_scopes());
+  EXPECT_EQ(GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+            identity_manager_diagnostics_observer()
+                ->on_access_token_request_completed_error());
+}
+
+TEST_F(IdentityManagerTest,
+       ObserveAccessTokenRequestCompletionAfterRevokingRefreshToken) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
+
+  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
+  std::string account_id2 =
+      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
+  // This should result in a request for an access token.
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          account_id2, "dummy_consumer 2", scopes, std::move(callback),
+          AccessTokenFetcher::Mode::kImmediate);
+
+  // Revoke the refresh token result cancelling access token request.
+  token_service()->RevokeCredentials(account_id2);
+
+  run_loop.Run();
+
+  EXPECT_TRUE(token_fetcher);
+  EXPECT_EQ(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+            identity_manager_diagnostics_observer()
+                ->on_access_token_request_completed_error());
 }
 
 TEST_F(IdentityManagerTest, GetAccountsCookieMutator) {
