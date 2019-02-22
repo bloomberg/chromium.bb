@@ -174,7 +174,13 @@ def symbolize_snippets_in_json(cmd, env):
 
 
 def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
-  """ Run command and stream its stdout/stderr to the console & |stdoutfile|.
+  """Run command and stream its stdout/stderr to the console & |stdoutfile|.
+
+  Also forward_signals to obey
+  https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+
+  Returns:
+    integer returncode of the subprocess.
   """
   print('Running %r in %r (env: %r)' % (argv, cwd, env))
   assert stdoutfile
@@ -185,11 +191,51 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
     forward_signals([process])
     while process.poll() is None:
       sys.stdout.write(reader.read())
+      # This sleep is needed for signal propagation. See the
+      # wait_with_signals() docstring.
       time.sleep(0.1)
     # Read the remaining.
     sys.stdout.write(reader.read())
     print('Command %r returned exit code %d' % (argv, process.returncode))
     return process.returncode
+
+
+def run_command(argv, env=None, cwd=None, log=True):
+  """Run command and stream its stdout/stderr both to stdout.
+
+  Also forward_signals to obey
+  https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+
+  Returns:
+    integer returncode of the subprocess.
+  """
+  if log:
+    print('Running %r in %r (env: %r)' % (argv, cwd, env))
+  process = subprocess.Popen(argv, env=env, cwd=cwd, stderr=subprocess.STDOUT)
+  forward_signals([process])
+  return wait_with_signals(process)
+
+
+def wait_with_signals(process):
+  """A version of process.wait() that works cross-platform.
+
+  This version properly surfaces the SIGBREAK signal.
+
+  From reading the subprocess.py source code, it seems we need to explicitly
+  call time.sleep(). The reason is that subprocess.Popen.wait() on Windows
+  directly calls WaitForSingleObject(), but only time.sleep() properly surface
+  the SIGBREAK signal.
+
+  Refs:
+  https://github.com/python/cpython/blob/v2.7.15/Lib/subprocess.py#L692
+  https://github.com/python/cpython/blob/v2.7.15/Modules/timemodule.c#L1084
+
+  Returns:
+    returncode of the process.
+  """
+  while process.poll() is None:
+    time.sleep(0.1)
+  return process.returncode
 
 
 def forward_signals(procs):
@@ -286,15 +332,13 @@ def run_executable(cmd, env, stdoutfile=None):
           env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
       forward_signals([p1, p2])
-      p1.wait()
-      p2.wait()
+      wait_with_signals(p1)
+      wait_with_signals(p2)
       # Also feed the out-of-band JSON output to the symbolizer script.
       symbolize_snippets_in_json(cmd, env)
       return p1.returncode
     else:
-      p = subprocess.Popen(cmd, env=env)
-      forward_signals([p])
-      return p.wait()
+      return run_command(cmd, env=env, log=False)
   except OSError:
     print >> sys.stderr, 'Failed to start %s' % cmd
     raise
