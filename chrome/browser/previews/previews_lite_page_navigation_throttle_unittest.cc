@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -14,7 +13,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/http/http_util.h"
@@ -99,14 +97,11 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
   };
 
   for (const TestCase& test_case : kTestCases) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        data_reduction_proxy::switches::kDataReductionProxyExperiment,
-        test_case.experiment);
-
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews,
-        {{"previews_host", test_case.previews_host}});
+        {{"previews_host", test_case.previews_host},
+         {"lite_page_preview_experiment", test_case.experiment}});
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                   GURL(test_case.original_url)),
