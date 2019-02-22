@@ -1206,10 +1206,10 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (!launcher_delegate_->ShouldRunTest(test_id.test_case_name,
-                                           test_id.test_name)) {
+    bool will_run_test = launcher_delegate_->WillRunTest(test_id.test_case_name,
+                                                         test_id.test_name);
+    if (!will_run_test)
       continue;
-    }
 
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count_++;
@@ -1245,14 +1245,33 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (Hash(test_name) % total_shards_ != static_cast<uint32_t>(shard_index_))
+    // Tests with the name XYZ will cause tests with the name PRE_XYZ to run. We
+    // should bucket all of these tests together.
+    std::string test_name_to_bucket = test_name;
+    size_t index_of_first_period = test_name_to_bucket.find(".");
+    if (index_of_first_period == std::string::npos)
+      index_of_first_period = 0;
+    base::ReplaceSubstringsAfterOffset(&test_name_to_bucket,
+                                       index_of_first_period, "PRE_", "");
+
+    if (Hash(test_name_to_bucket) % total_shards_ !=
+        static_cast<uint32_t>(shard_index_)) {
       continue;
+    }
 
     // Report test locations after applying all filters, so that we report test
     // locations only for those tests that were run as part of this shard.
     results_tracker_.AddTestLocation(test_name, test_id.file, test_id.line);
 
-    test_names.push_back(test_name);
+    bool should_run_test = launcher_delegate_->ShouldRunTest(
+        test_id.test_case_name, test_id.test_name);
+    if (should_run_test) {
+      // Only a subset of tests that are run require placeholders -- namely,
+      // those that will output results.
+      results_tracker_.AddTestPlaceholder(test_name);
+
+      test_names.push_back(test_name);
+    }
   }
 
   if (shuffle_) {
