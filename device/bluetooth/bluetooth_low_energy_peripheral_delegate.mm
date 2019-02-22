@@ -25,11 +25,11 @@ class BluetoothLowEnergyPeripheralBridge {
 
   void DidDiscoverPrimaryServices(NSError* error) {
     device_mac_->DidDiscoverPrimaryServices(error);
-  };
+  }
 
   void DidDiscoverCharacteristics(CBService* service, NSError* error) {
     device_mac_->DidDiscoverCharacteristics(service, error);
-  };
+  }
 
   void DidUpdateValue(CBCharacteristic* characteristic, NSError* error) {
     device_mac_->DidUpdateValue(characteristic, error);

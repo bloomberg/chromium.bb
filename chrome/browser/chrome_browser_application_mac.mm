@@ -31,7 +31,7 @@ void RegisterBrowserCrApp() {
   // will not be a BrowserCrApplication, but will instead be an NSApplication.
   // This is undesirable and we must enforce that this doesn't happen.
   CHECK([NSApp isKindOfClass:[BrowserCrApplication class]]);
-};
+}
 
 void Terminate() {
   [NSApp terminate:nil];

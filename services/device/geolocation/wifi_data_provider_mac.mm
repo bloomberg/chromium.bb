@@ -110,7 +110,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   // one interface did not fail.
   return interface_error_count == 0 ||
          [supported_interfaces count] > interface_error_count;
-};
+}
 
 // The time periods, in milliseconds, between successive polls of the wifi data.
 const int kDefaultPollingInterval = 120000;                // 2 mins

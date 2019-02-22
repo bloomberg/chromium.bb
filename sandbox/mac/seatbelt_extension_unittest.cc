@@ -134,7 +134,7 @@ MULTIPROCESS_TEST_MAIN(FileReadAccess) {
   PCHECK(fd.get() > 0);
 
   return 0;
-};
+}
 
 }  // namespace
 }  // namespace sandbox

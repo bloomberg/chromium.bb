@@ -286,7 +286,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
   DetachDevice(&manager, device);
   devices = monitor_->GetAllAvailableStorages();
   ASSERT_EQ(0U, devices.size());
-};
+}
 
 TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
   ImageCaptureDeviceManager manager;

@@ -38,7 +38,7 @@ class BluetoothTestMac::ScopedMockCentralManager {
   }
 
   // Returns MockCentralManager instance.
-  MockCentralManager* get() { return mock_central_manager_; };
+  MockCentralManager* get() { return mock_central_manager_; }
 
  private:
   scoped_nsobject<MockCentralManager> mock_central_manager_;
