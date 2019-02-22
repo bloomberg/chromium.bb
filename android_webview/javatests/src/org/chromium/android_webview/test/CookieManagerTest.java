@@ -299,10 +299,9 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testSetCookieCallback() throws Throwable {
+    public void testSetCookieCallback_goodUrl() throws Throwable {
         final String url = "http://www.example.com";
         final String cookie = "name=test";
-        final String brokenUrl = "foo";
 
         final TestCallback<Boolean> callback = new TestCallback<Boolean>();
         int callCount = callback.getOnResultHelper().getCallCount();
@@ -311,13 +310,23 @@ public class CookieManagerTest {
         callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertTrue(callback.getValue());
         Assert.assertEquals(cookie, mCookieManager.getCookie(url));
+    }
 
-        callCount = callback.getOnResultHelper().getCallCount();
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testSetCookieCallback_badUrl() throws Throwable {
+        final String cookie = "name=test";
+        final String brokenUrl = "foo";
+
+        final TestCallback<Boolean> callback = new TestCallback<Boolean>();
+        int callCount = callback.getOnResultHelper().getCallCount();
 
         setCookieOnUiThread(brokenUrl, cookie, callback);
         callback.getOnResultHelper().waitForCallback(callCount);
-        Assert.assertFalse(callback.getValue());
-        Assert.assertEquals(null, mCookieManager.getCookie(brokenUrl));
+        Assert.assertFalse("Cookie should not be set for bad URLs", callback.getValue());
+        Assert.assertNull("getCookie should be null if cookie hasn't been set",
+                mCookieManager.getCookie(brokenUrl));
     }
 
     @Test
@@ -333,6 +342,7 @@ public class CookieManagerTest {
         mCookieManager.setCookie(url, cookie, null);
 
         AwActivityTestRule.pollInstrumentationThread(() -> mCookieManager.hasCookies());
+        Assert.assertEquals(cookie, mCookieManager.getCookie(url));
     }
 
     @Test

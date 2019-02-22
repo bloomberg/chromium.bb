@@ -26,8 +26,19 @@ void AwCookieManagerWrapper::GetCookieList(
     const net::CookieOptions& cookie_options,
     GetCookieListCallback callback) {
   // TODO(ntfschr): handle the case where content layer isn't initialized yet
-  // (http://crbug.com/902641).
+  // (http://crbug.com/933461).
   cookie_manager_->GetCookieList(url, cookie_options, std::move(callback));
+}
+
+void AwCookieManagerWrapper::SetCanonicalCookie(
+    const net::CanonicalCookie& cc,
+    bool secure_source,
+    bool modify_http_only,
+    SetCanonicalCookieCallback callback) {
+  // TODO(ntfschr): handle the case where content layer isn't initialized yet
+  // (http://crbug.com/933461).
+  cookie_manager_->SetCanonicalCookie(cc, secure_source, modify_http_only,
+                                      std::move(callback));
 }
 
 }  // namespace android_webview

@@ -11,9 +11,6 @@
 
 namespace android_webview {
 
-using GetCookieListCallback =
-    base::OnceCallback<void(const std::vector<net::CanonicalCookie>&)>;
-
 // AwCookieManagerWrapper is a thin wrapper around
 // network::mojom::CookieManager. This lives on the CookieStore TaskRunner. This
 // class's main responsibility is to support the CookieManager APIs before it
@@ -24,16 +21,29 @@ class AwCookieManagerWrapper {
   AwCookieManagerWrapper();
   ~AwCookieManagerWrapper();
 
+  // We redefine these type aliases for consistency and readability. These are
+  // originally defined by generated mojo code in
+  // out/<folder>/gen/services/network/public/mojom/cookie_manager.mojom.h.
+  using GetCookieListCallback =
+      network::mojom::CookieManager::GetCookieListCallback;
+  using SetCanonicalCookieCallback =
+      network::mojom::CookieManager::SetCanonicalCookieCallback;
+
   // Called when content layer starts up, to pass in a NetworkContextPtr for us
   // to use for Cookies APIs.
   void SetMojoCookieManager(
       network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
   // Thin wrappers around network::mojom::CookieManager APIs.
-  // TODO(ntfschr): implement the other APIs we need (http://crbug.com/902641).
+  // TODO(ntfschr): implement the other APIs we need (http://crbug.com/933462).
   void GetCookieList(const GURL& url,
                      const net::CookieOptions& cookie_options,
                      GetCookieListCallback callback);
+
+  void SetCanonicalCookie(const net::CanonicalCookie& cc,
+                          bool secure_source,
+                          bool modify_http_only,
+                          SetCanonicalCookieCallback);
 
  private:
   // A CookieManagerPtr which is cloned from the NetworkContext's
