@@ -27,8 +27,8 @@
         <!-- ContentDescription is set in Java code. -->
         <ImageView
             tools:ignore="ContentDescription"
-            android:id="@+id/chart_icon"
-            android:src="@drawable/data_reduction_main_menu_icon"
+            android:id="@+id/icon"
+            android:src="@drawable/preview_pin_round"
             android:layout_width="@dimen/data_reduction_main_menu_icon_width"
             android:layout_height="match_parent"
             android:layout_gravity="start|center_vertical" />

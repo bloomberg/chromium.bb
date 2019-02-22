@@ -5,10 +5,6 @@
 package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
@@ -46,7 +42,7 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
 
         TextView itemText = (TextView) findViewById(R.id.menu_item_text);
         TextView itemSummary = (TextView) findViewById(R.id.menu_item_summary);
-        ImageView icon = (ImageView) findViewById(R.id.chart_icon);
+        ImageView icon = (ImageView) findViewById(R.id.icon);
         icon.setContentDescription(getContext().getString(
                 DataReductionBrandingResourceProvider.getDataSaverBrandedString(
                         R.string.data_reduction_title)));
@@ -78,11 +74,6 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
             int textColorLink = ApiCompatibilityUtils.getColor(
                     getContext().getResources(), R.color.default_text_color_link);
             itemText.setTextColor(textColorLink);
-
-            // Reset the icon to blue.
-            LayerDrawable layers = (LayerDrawable) icon.getDrawable();
-            Drawable chart = layers.findDrawableByLayerId(R.id.main_menu_chart);
-            chart.setColorFilter(null);
         } else {
             DataReductionProxyUma.dataReductionProxyUIAction(
                     DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);
@@ -90,13 +81,6 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
             itemText.setText(DataReductionBrandingResourceProvider.getDataSaverBrandedString(
                     R.string.data_reduction_title));
             itemSummary.setText(R.string.text_off);
-
-            // Make the icon grey.
-            LayerDrawable layers = (LayerDrawable) icon.getDrawable();
-            Drawable chart = layers.findDrawableByLayerId(R.id.main_menu_chart);
-            ColorMatrix matrix = new ColorMatrix();
-            matrix.setSaturation(0);
-            chart.setColorFilter(new ColorMatrixColorFilter(matrix));
         }
 
         setOnClickListener(this);
