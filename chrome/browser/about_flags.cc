@@ -3005,6 +3005,20 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueSearchLoopAndSearchQuery)},
 
+    {"omnibox-ui-blue-titles-and-gray-urls-on-page-suggestions",
+     flag_descriptions::kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName,
+     flag_descriptions::
+         kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions)},
+
+    {"omnibox-ui-blue-titles-on-page-suggestions",
+     flag_descriptions::kOmniboxUIBlueTitlesOnPageSuggestionsName,
+     flag_descriptions::kOmniboxUIBlueTitlesOnPageSuggestionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueTitlesOnPageSuggestions)},
+
     {"omnibox-ui-use-generic-search-engine-icon",
      flag_descriptions::kOmniboxUIUseGenericSearchEngineIconName,
      flag_descriptions::kOmniboxUIUseGenericSearchEngineIconDescription,
