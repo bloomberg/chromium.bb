@@ -116,7 +116,7 @@ class StrikeDatabase : public KeyedService {
       std::unique_ptr<std::map<std::string, StrikeData>> entries);
 
   // Updates the StrikeData for |key| in the cache and ProtoDatabase to have
-  // |num_stikes|, and the current time as timestamp.
+  // |num_strikes|, and the current time as timestamp.
   void SetStrikeData(const std::string key, int num_strikes);
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
