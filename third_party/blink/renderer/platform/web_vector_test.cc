@@ -49,13 +49,13 @@ TEST(WebVectorTest, Iterators) {
     EXPECT_EQ(input[i], output[i]);
 }
 
-TEST(WebVectorTest, IsEmpty) {
+TEST(WebVectorTest, Empty) {
   WebVector<int> vector;
-  ASSERT_TRUE(vector.IsEmpty());
+  ASSERT_TRUE(vector.empty());
   int value = 1;
   vector.Assign(&value, 1);
   ASSERT_EQ(1u, vector.size());
-  ASSERT_FALSE(vector.IsEmpty());
+  ASSERT_FALSE(vector.empty());
 }
 
 TEST(WebVectorTest, Swap) {

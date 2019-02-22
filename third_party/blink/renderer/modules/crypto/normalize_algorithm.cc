@@ -346,7 +346,7 @@ bool GetBigInteger(const Dictionary& raw,
   if (!GetUint8Array(raw, property_name, bytes, context, error))
     return false;
 
-  if (bytes.IsEmpty()) {
+  if (bytes.empty()) {
     // Empty BigIntegers represent 0 according to the spec
     bytes = WebVector<uint8_t>(static_cast<size_t>(1u));
     DCHECK_EQ(0u, bytes[0]);

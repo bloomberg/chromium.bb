@@ -25,7 +25,7 @@ class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
 
  private:
   void Completed(const WebVector<v8::Local<v8::Value>>& values) override {
-    if (!values.IsEmpty() && !values[0].IsEmpty() && values[0]->IsString()) {
+    if (!values.empty() && !values[0].IsEmpty() && values[0]->IsString()) {
       result_ = ToCoreString(v8::Local<v8::String>::Cast(values[0]));
     }
   }

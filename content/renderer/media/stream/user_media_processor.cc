@@ -82,7 +82,7 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
   *stream_type = blink::MEDIA_NO_SERVICE;
 
   std::string source_constraint =
-      constraints.Basic().media_stream_source.Exact().IsEmpty()
+      constraints.Basic().media_stream_source.Exact().empty()
           ? std::string()
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
@@ -117,7 +117,7 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
   *stream_type = blink::MEDIA_NO_SERVICE;
 
   std::string source_constraint =
-      constraints.Basic().media_stream_source.Exact().IsEmpty()
+      constraints.Basic().media_stream_source.Exact().empty()
           ? std::string()
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
