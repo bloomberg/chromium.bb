@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -78,8 +77,11 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   int StartEventWithCustomTimeout(
       base::OnceCallback<void(int /* event_id */)> abort_callback,
       base::TimeDelta timeout);
-  void CrashBecauseNoEvent(int event_id, const base::Location& from_here);
-  void EndEvent(int event_id, const base::Location& from_here);
+
+  void EndEvent(int event_id);
+
+  // Returns true if |event_id| was started and hasn't ended.
+  bool HasEvent(int event_id) const;
 
   // Creates a StayAwakeToken to ensure that the idle timer won't be triggered
   // while any of these are alive.

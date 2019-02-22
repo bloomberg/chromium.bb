@@ -372,6 +372,11 @@ class ServiceWorkerContextClientTest : public testing::Test {
     return context_client;
   }
 
+  ServiceWorkerTimeoutTimer* GetTimeoutTimer(
+      ServiceWorkerContextClient* context_client) {
+    return context_client->GetTimeoutTimerForTesting();
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
     return task_runner_;
   }
@@ -613,6 +618,28 @@ TEST_F(ServiceWorkerContextClientTest, TaskInServiceWorker) {
                                ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
   EXPECT_TRUE(context_client->RequestedTermination());
+}
+
+// Tests timing out a task created by WillStartTask().
+TEST_F(ServiceWorkerContextClientTest, AbortedTaskInServiceWorker) {
+  EnableServicification();
+  ContextClientPipes pipes;
+  MockWebServiceWorkerContextProxy mock_proxy;
+  ServiceWorkerContextClient* context_client =
+      CreateIdleContextClient(&pipes, &mock_proxy);
+
+  // Make a task that times out.
+  int task_id = context_client->WillStartTask();
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kEventTimeout +
+                               ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+
+  // The event should have been aborted.
+  ServiceWorkerTimeoutTimer* timeout_timer = GetTimeoutTimer(context_client);
+  EXPECT_FALSE(timeout_timer->HasEvent(task_id));
+
+  // Calling DidEndTask() shouldn't crash.
+  context_client->DidEndTask(task_id);
 }
 
 }  // namespace content
