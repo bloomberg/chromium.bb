@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
@@ -4119,8 +4118,7 @@ void LayoutBox::ComputeInlineStaticDistance(
     Length& logical_right,
     const LayoutBox* child,
     const LayoutBoxModelObject* container_block,
-    LayoutUnit container_logical_width,
-    const NGBoxFragmentBuilder* fragment_builder) {
+    LayoutUnit container_logical_width) {
   if (!logical_left.IsAuto() || !logical_right.IsAuto())
     return;
 
@@ -4151,11 +4149,7 @@ void LayoutBox::ComputeInlineStaticDistance(
     for (LayoutObject* curr = child->Parent(); curr && curr != container_block;
          curr = curr->Container()) {
       if (curr->IsBox()) {
-        static_position +=
-            (fragment_builder &&
-             fragment_builder->GetLayoutObject() == curr->Parent())
-                ? fragment_builder->GetChildOffset(curr).inline_offset
-                : ToLayoutBox(curr)->LogicalLeft();
+        static_position += ToLayoutBox(curr)->LogicalLeft();
         if (ToLayoutBox(curr)->IsInFlowPositioned())
           static_position +=
               ToLayoutBox(curr)->OffsetForInFlowPosition().Width();
@@ -4190,11 +4184,7 @@ void LayoutBox::ComputeInlineStaticDistance(
         if (curr == enclosing_box)
           static_position -= enclosing_box->LogicalWidth();
         if (curr != container_block) {
-          static_position -=
-              (fragment_builder &&
-               fragment_builder->GetLayoutObject() == curr->Parent())
-                  ? fragment_builder->GetChildOffset(curr).inline_offset
-                  : ToLayoutBox(curr)->LogicalLeft();
+          static_position -= ToLayoutBox(curr)->LogicalLeft();
           if (ToLayoutBox(curr)->IsInFlowPositioned())
             static_position -=
                 ToLayoutBox(curr)->OffsetForInFlowPosition().Width();
@@ -4609,8 +4599,7 @@ void LayoutBox::ComputeBlockStaticDistance(
     Length& logical_top,
     Length& logical_bottom,
     const LayoutBox* child,
-    const LayoutBoxModelObject* container_block,
-    const NGBoxFragmentBuilder* fragment_builder) {
+    const LayoutBoxModelObject* container_block) {
   if (!logical_top.IsAuto() || !logical_bottom.IsAuto())
     return;
 
@@ -4622,11 +4611,7 @@ void LayoutBox::ComputeBlockStaticDistance(
     if (!curr->IsBox() || curr->IsTableRow())
       continue;
     const LayoutBox& box = *ToLayoutBox(curr);
-    static_logical_top +=
-        (fragment_builder &&
-         fragment_builder->GetLayoutObject() == box.Parent())
-            ? fragment_builder->GetChildOffset(&box).block_offset
-            : box.LogicalTop();
+    static_logical_top += box.LogicalTop();
     if (box.IsInFlowPositioned())
       static_logical_top += box.OffsetForInFlowPosition().Height();
     if (!box.IsLayoutFlowThread())
