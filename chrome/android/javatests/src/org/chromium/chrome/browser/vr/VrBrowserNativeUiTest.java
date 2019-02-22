@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.SystemClock;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -527,5 +528,69 @@ public class VrBrowserNativeUiTest {
 
     private String generateRenderTestIdentifier(String name, boolean incognito) {
         return name + (incognito ? "_incognito" : "") + "_browser_ui";
+    }
+
+    /**
+     * Tests that highlighting suggestions looks correct and that clicking just outside of the
+     * suggestion doesn't trigger its onclick. Regression test for https://crbug.com/799593.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testSuggestionHovering()
+            throws InterruptedException, TimeoutException, IOException {
+        // Input some text to get suggestions.
+        NativeUiUtils.enableMockedKeyboard();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
+                () -> { NativeUiUtils.inputString("chrome://"); });
+
+        // We need to crop the image before comparing to avoid the blinking cursor in the omnibox.
+        // So, crop roughly around the suggestion box. This tends to chop off the bottom half of
+        // the bottom suggestion on larger devices, but that's preferable to accidentally getting
+        // the omnibox in the image, and should still be sufficient to catch the intended issues
+        // (hover states, clicks actually registering).
+        final RectF cropBounds = new RectF(0.1f, 0.4f, 0.6f, 0.625f);
+
+        // There should be three suggestions, so hover the top then the middle one to ensure that
+        // the hover effect properly moves between the two.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, 0.3f));
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_hovering_top", cropBounds, mRenderTestRule);
+        NativeUiUtils.hoverElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF());
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_hovering_middle", cropBounds, mRenderTestRule);
+
+        // Ensure that the hover effect disappears when slightly to the right of the suggestion and
+        // that clicking doesn't do anything.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.51f, 0.0f));
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_clicking_right", cropBounds, mRenderTestRule);
+        // Again on the left side.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF());
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.SUGGESTION_BOX, new PointF(-0.51f, 0.0f));
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_clicking_left", cropBounds, mRenderTestRule);
+        // Again above the top suggestion.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, 0.3f));
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, 0.51f));
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_clicking_top", cropBounds, mRenderTestRule);
+        // Again below the bottom suggestion.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, -0.3f));
+        // For some reason, we have to aim slightly more offset than in other directions in order
+        // to not actually hit the suggestion (probably due to the way we calculate where to click
+        // not taking into account where the controller is, so hit testing can produce a slightly
+        // different result).
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, -0.55f));
+        RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "suggestion_clicking_bottom", cropBounds, mRenderTestRule);
     }
 }
