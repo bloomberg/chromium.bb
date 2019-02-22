@@ -686,7 +686,7 @@
             ]
         }
     ],
-    "AutofillLocalCardMigrationWithFeedback": [
+    "AutofillLocalCardMigration": [
         {
             "platforms": [
                 "chromeos",
@@ -696,9 +696,26 @@
             ],
             "experiments": [
                 {
-                    "name": "EnableLocalCardMigrationWithFeedback",
+                    "name": "EnableLocalCardMigration",
                     "enable_features": [
-                        "AutofillCreditCardLocalCardMigration",
+                        "AutofillCreditCardLocalCardMigration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillLocalCardMigrationShowFeedback": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableLocalCardMigrationShowFeedback",
+                    "enable_features": [
                         "AutofillLocalCardMigrationShowFeedback"
                     ]
                 }
