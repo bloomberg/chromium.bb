@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/tracing/perfetto/producer_host.h"
@@ -15,12 +17,6 @@
 #include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace tracing {
-
-namespace {
-
-const char kPerfettoProducerName[] = "org.chromium.perfetto_producer";
-
-}  // namespace
 
 // static
 PerfettoService* PerfettoService::GetInstance() {
@@ -44,16 +40,19 @@ perfetto::TracingService* PerfettoService::GetService() const {
   return service_.get();
 }
 
-void PerfettoService::BindRequest(mojom::PerfettoServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void PerfettoService::BindRequest(mojom::PerfettoServiceRequest request,
+                                  uint32_t pid) {
+  bindings_.AddBinding(this, std::move(request), pid);
 }
 
 void PerfettoService::ConnectToProducerHost(
     mojom::ProducerClientPtr producer_client,
     mojom::ProducerHostRequest producer_host_request) {
   auto new_producer = std::make_unique<ProducerHost>();
+  uint32_t producer_pid = bindings_.dispatch_context();
   new_producer->Initialize(std::move(producer_client), service_.get(),
-                           kPerfettoProducerName);
+                           base::StrCat({mojom::kPerfettoProducerName, ".",
+                                         base::NumberToString(producer_pid)}));
   producer_bindings_.AddBinding(std::move(new_producer),
                                 std::move(producer_host_request));
 }

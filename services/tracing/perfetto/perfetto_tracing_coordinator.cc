@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -58,8 +60,15 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     // blocked by the sandboxed and isn't needed for Chrome regardless.
     trace_config.set_disable_clock_snapshotting(true);
 
-    auto* trace_event_config =
-        trace_config.add_data_sources()->mutable_config();
+    auto* trace_event_data_source = trace_config.add_data_sources();
+    for (auto& enabled_pid : chrome_trace_config_obj.process_filter_config()
+                                 .included_process_ids()) {
+      *trace_event_data_source->add_producer_name_filter() =
+          base::StrCat({mojom::kPerfettoProducerName, ".",
+                        base::NumberToString(enabled_pid)});
+    }
+
+    auto* trace_event_config = trace_event_data_source->mutable_config();
     trace_event_config->set_name(mojom::kTraceEventDataSourceName);
     trace_event_config->set_target_buffer(0);
     auto* chrome_config = trace_event_config->mutable_chrome_config();
@@ -200,11 +209,6 @@ PerfettoTracingCoordinator::PerfettoTracingCoordinator(
       binding_(this),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-
-  agent_registry->SetAgentInitializationCallback(
-      base::BindRepeating(&PerfettoTracingCoordinator::OnNewAgentConnected,
-                          weak_factory_.GetWeakPtr()),
-      false /* call_on_new_agents_only */);
 }
 
 PerfettoTracingCoordinator::~PerfettoTracingCoordinator() {
@@ -235,11 +239,19 @@ void PerfettoTracingCoordinator::StartTracing(const std::string& config,
       config, base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
                              weak_factory_.GetWeakPtr()));
 
+  agent_registry_->SetAgentInitializationCallback(
+      base::BindRepeating(&PerfettoTracingCoordinator::PingAgent,
+                          weak_factory_.GetWeakPtr()),
+      false /* call_on_new_agents_only */);
+
   SetStartTracingCallback(std::move(callback));
 }
 
-void PerfettoTracingCoordinator::OnNewAgentConnected(
+void PerfettoTracingCoordinator::PingAgent(
     AgentRegistry::AgentEntry* agent_entry) {
+  if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
+    return;
+
   // TODO(oysteine): While we're still using the Agent
   // system as a fallback when using Perfetto, rather than
   // the browser directly using a Consumer interface, we have to
@@ -258,7 +270,7 @@ void PerfettoTracingCoordinator::OnNewAgentConnected(
         DCHECK(removed);
 
         if (coordinator) {
-          coordinator->RemoveExpectedPID(agent_entry->pid());
+          coordinator->CallStartTracingCallbackIfNeeded();
         }
       },
       weak_factory_.GetWeakPtr(), base::Unretained(agent_entry));
@@ -267,6 +279,7 @@ void PerfettoTracingCoordinator::OnNewAgentConnected(
                                     base::BindOnce(closure, 0, 0));
 
   agent_entry->agent()->RequestBufferStatus(closure);
+  RemoveExpectedPID(agent_entry->pid());
 }
 
 void PerfettoTracingCoordinator::OnTracingOverCallback() {
@@ -298,6 +311,8 @@ void PerfettoTracingCoordinator::StopAndFlushInternal(
     return;
   }
 
+  agent_registry_->SetAgentInitializationCallback(
+      base::DoNothing(), true /* call_on_new_agents_only */);
   tracing_session_->StopAndFlush(std::move(stream), agent_label,
                                  std::move(callback));
 }

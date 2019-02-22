@@ -32,7 +32,7 @@ class PerfettoService : public mojom::PerfettoService {
 
   static PerfettoService* GetInstance();
 
-  void BindRequest(mojom::PerfettoServiceRequest request);
+  void BindRequest(mojom::PerfettoServiceRequest request, uint32_t pid);
 
   // mojom::PerfettoService implementation.
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
@@ -46,7 +46,7 @@ class PerfettoService : public mojom::PerfettoService {
 
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
-  mojo::BindingSet<mojom::PerfettoService> bindings_;
+  mojo::BindingSet<mojom::PerfettoService, uint32_t> bindings_;
   mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoService);

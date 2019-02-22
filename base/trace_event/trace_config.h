@@ -105,6 +105,9 @@ class BASE_EXPORT TraceConfig {
     void ToDict(DictionaryValue*) const;
 
     bool IsEnabled(base::ProcessId) const;
+    const std::unordered_set<base::ProcessId>& included_process_ids() const {
+      return included_process_ids_;
+    }
 
     bool operator==(const ProcessFilterConfig& other) const {
       return included_process_ids_ == other.included_process_ids_;
