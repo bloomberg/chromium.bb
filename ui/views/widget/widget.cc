@@ -804,6 +804,9 @@ void Widget::RunShellDrag(View* view,
   dragged_view_ = view;
   OnDragWillStart();
 
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDragWillStart(this);
+
   WidgetDeletionObserver widget_deletion_observer(this);
   native_widget_->RunShellDrag(view, data, location, operation, source);
 
@@ -818,6 +821,9 @@ void Widget::RunShellDrag(View* view,
     view->OnDragDone();
   }
   OnDragComplete();
+
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDragComplete(this);
 }
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
