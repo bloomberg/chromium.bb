@@ -8,6 +8,10 @@
 #include "components/previews/core/previews_decider.h"
 #include "content/public/common/previews_state.h"
 
+namespace content {
+class NavigationHandle;
+}
+
 namespace previews {
 
 // Returns whether |previews_state| has any enabled previews.
@@ -19,13 +23,16 @@ bool HasEnabledPreviews(content::PreviewsState previews_state);
 // definitions for content::PreviewsState.
 // |is_reload| is used to eliminate certain preview types, and |previews_data|
 // is populated with relevant information.
+// TODO(ryansturm): |navigation_handle| has all of the other information, so
+// remove extra arguments. https://crbug.com/934400
 content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
     bool is_redirect,
     bool is_data_saver_user,
-    previews::PreviewsDecider* previews_decider);
+    previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle);
 
 // Returns an updated PreviewsState given |previews_state| that has already
 // been updated wrt server previews. This should be called at Navigation Commit

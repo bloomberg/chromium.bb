@@ -5349,7 +5349,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
   previews_state |= previews::DetermineAllowedClientPreviewsState(
       previews_data, current_navigation_url, is_reload, is_redirect,
       data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-      previews_decider_impl);
+      previews_decider_impl, navigation_handle);
 
   if (previews_state & content::PREVIEWS_OFF) {
     previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);
