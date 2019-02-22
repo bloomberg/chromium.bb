@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/web_engine_browser_test.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "fuchsia/engine/browser/webrunner_browser_context.h"
-#include "fuchsia/engine/browser/webrunner_browser_main_parts.h"
-#include "fuchsia/engine/browser/webrunner_content_browser_client.h"
-#include "fuchsia/engine/webrunner_main_delegate.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
+#include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
+#include "fuchsia/engine/browser/web_engine_content_browser_client.h"
+#include "fuchsia/engine/web_engine_main_delegate.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
 namespace cr_fuchsia {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_WEBRUNNER_NET_LOG_H_
-#define FUCHSIA_ENGINE_BROWSER_WEBRUNNER_NET_LOG_H_
+#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_
+#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_
 
 #include <memory>
 
@@ -29,4 +29,4 @@ class WebRunnerNetLog : public net::NetLog {
   DISALLOW_COPY_AND_ASSIGN(WebRunnerNetLog);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_WEBRUNNER_NET_LOG_H_
+#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_

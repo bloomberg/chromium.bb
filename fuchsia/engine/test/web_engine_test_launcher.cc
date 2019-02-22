@@ -10,8 +10,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
 #include "fuchsia/engine/common.h"
-#include "fuchsia/engine/test/webrunner_browser_test.h"
-#include "fuchsia/engine/webrunner_main_delegate.h"
+#include "fuchsia/engine/test/web_engine_browser_test.h"
+#include "fuchsia/engine/web_engine_main_delegate.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/ozone/public/ozone_switches.h"
 

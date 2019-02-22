@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/webrunner_content_browser_client.h"
+#include "fuchsia/engine/browser/web_engine_content_browser_client.h"
 
 #include <utility>
 
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
+#include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
-#include "fuchsia/engine/browser/webrunner_browser_context.h"
-#include "fuchsia/engine/browser/webrunner_browser_main_parts.h"
 
 WebRunnerContentBrowserClient::WebRunnerContentBrowserClient(
     zx::channel context_channel)

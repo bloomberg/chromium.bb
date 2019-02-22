@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/webrunner_browser_main_parts.h"
+#include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 
 #include <utility>
 
@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "content/public/browser/render_frame_host.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/webrunner_browser_context.h"
-#include "fuchsia/engine/browser/webrunner_screen.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
+#include "fuchsia/engine/browser/web_engine_screen.h"
 #include "fuchsia/engine/common.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"

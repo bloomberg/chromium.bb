@@ -8,7 +8,7 @@
 #include "content/public/app/content_main.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/context_provider_main.h"
-#include "fuchsia/engine/webrunner_main_delegate.h"
+#include "fuchsia/engine/web_engine_main_delegate.h"
 #include "services/service_manager/embedder/switches.h"
 
 int main(int argc, const char** argv) {

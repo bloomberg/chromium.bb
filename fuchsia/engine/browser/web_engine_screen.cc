@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/webrunner_screen.h"
+#include "fuchsia/engine/browser/web_engine_screen.h"
 
 #include "ui/display/display.h"
 

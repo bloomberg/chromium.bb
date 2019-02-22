@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_WEBRUNNER_MAIN_DELEGATE_H_
-#define FUCHSIA_ENGINE_WEBRUNNER_MAIN_DELEGATE_H_
+#ifndef FUCHSIA_ENGINE_WEB_ENGINE_MAIN_DELEGATE_H_
+#define FUCHSIA_ENGINE_WEB_ENGINE_MAIN_DELEGATE_H_
 
 #include <lib/zx/channel.h>
 #include <memory>
@@ -51,4 +51,4 @@ class WEB_ENGINE_EXPORT WebRunnerMainDelegate
   DISALLOW_COPY_AND_ASSIGN(WebRunnerMainDelegate);
 };
 
-#endif  // FUCHSIA_ENGINE_WEBRUNNER_MAIN_DELEGATE_H_
+#endif  // FUCHSIA_ENGINE_WEB_ENGINE_MAIN_DELEGATE_H_
