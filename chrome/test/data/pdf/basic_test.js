@@ -45,7 +45,7 @@ var tests = [
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.
-    toolbar.$.buttons.children[1].focus();
+    toolbar.$['rotate-right'].focus();
     chrome.test.assertFalse(shouldIgnoreKeyEvents(toolbar));
 
     chrome.test.assertFalse(
