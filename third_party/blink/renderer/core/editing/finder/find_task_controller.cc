@@ -301,8 +301,4 @@ void FindTaskController::Trace(Visitor* visitor) {
   visitor->Trace(resume_finding_from_range_);
 }
 
-void FindTaskController::ResetLastFindRequestCompletedWithNoMatches() {
-  last_find_request_completed_with_no_matches_ = false;
-}
-
 }  // namespace blink

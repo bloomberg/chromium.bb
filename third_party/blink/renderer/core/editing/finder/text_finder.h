@@ -240,6 +240,10 @@ class CORE_EXPORT TextFinder final
   // Keeps track of whether there is an scoping effort ongoing in the frame.
   bool scoping_in_progress_;
 
+  // Keeps track of whether the last find request completed its scoping effort
+  // without finding any matches in this frame.
+  bool last_find_request_completed_with_no_matches_;
+
   // Determines if the rects in the find-in-page matches cache of this frame
   // are invalid and should be recomputed.
   bool find_match_rects_are_valid_;
