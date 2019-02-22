@@ -3091,42 +3091,29 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
 
 class PerfTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver perf."""
-  def setUp(self):
-    self.assertTrue(_REFERENCE_CHROMEDRIVER is not None,
-                    'must supply a reference-chromedriver arg')
 
   def _RunDriverPerfTest(self, name, test_func):
-    """Runs a perf test comparing a reference and new ChromeDriver server.
+    """Runs a perf test ChromeDriver server.
 
     Args:
       name: The name of the perf test.
       test_func: Called with the server url to perform the test action. Must
                  return the time elapsed.
     """
-    class Results(object):
-      ref = []
-      new = []
+    result = []
 
-    ref_server = server.Server(_REFERENCE_CHROMEDRIVER)
-    results = Results()
-    result_url_pairs = zip([results.new, results.ref],
-                           [_CHROMEDRIVER_SERVER_URL, ref_server.GetUrl()])
     for iteration in range(10):
-      for result, url in result_url_pairs:
-        result += [test_func(url)]
-      # Reverse the order for the next run.
-      result_url_pairs = result_url_pairs[::-1]
+      result += [test_func(_CHROMEDRIVER_SERVER_URL)]
 
-    def PrintResult(build, result):
+    def PrintResult(result):
       mean = sum(result) / len(result)
       avg_dev = sum([abs(sample - mean) for sample in result]) / len(result)
-      print 'perf result', build, name, mean, avg_dev, result
-      util.AddBuildStepText('%s %s: %.3f+-%.3f' % (
-          build, name, mean, avg_dev))
+      print 'perf result', name, mean, avg_dev, result
+      util.AddBuildStepText('%s: %.3f+-%.3f' % (
+          name, mean, avg_dev))
 
     # Discard first result, which may be off due to cold start.
-    PrintResult('new', results.new[1:])
-    PrintResult('ref', results.ref[1:])
+    PrintResult(result[1:])
 
   def testSessionStartTime(self):
     def Run(url):
@@ -3248,9 +3235,6 @@ if __name__ == '__main__':
       help="Don't truncate long strings in the log so that the log can be "
           "replayed.")
   parser.add_option(
-      '', '--reference-chromedriver',
-      help='Path to the reference chromedriver server')
-  parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
       '', '--filter', type='string', default='',
@@ -3298,9 +3282,6 @@ if __name__ == '__main__':
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 
-  global _REFERENCE_CHROMEDRIVER
-  _REFERENCE_CHROMEDRIVER = util.GetAbsolutePathOfUserPath(
-      options.reference_chromedriver)
 
   global _CHROME_BINARY
   if options.chrome:

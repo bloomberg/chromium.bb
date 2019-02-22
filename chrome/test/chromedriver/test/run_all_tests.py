@@ -27,7 +27,6 @@ from pylib import constants
 
 def _GenerateTestCommand(script,
                          chromedriver,
-                         ref_chromedriver=None,
                          chrome=None,
                          android_package=None,
                          verbose=False):
@@ -39,8 +38,6 @@ def _GenerateTestCommand(script,
       '--chromedriver=%s' % chromedriver,
       '--log-path=%s' % log_path,
   ]
-  if ref_chromedriver:
-    cmd.append('--reference-chromedriver=' + ref_chromedriver)
 
   if chrome:
     cmd.append('--chrome=' + chrome)
@@ -73,14 +70,13 @@ def RunReplayTests(chromedriver, chrome):
   return code
 
 
-def RunPythonTests(chromedriver, ref_chromedriver,
+def RunPythonTests(chromedriver,
                    chrome=None,
                    android_package=None):
   util.MarkBuildStepStart('python_tests')
   code = util.RunCommand(
       _GenerateTestCommand('run_py_tests.py',
                            chromedriver,
-                           ref_chromedriver=ref_chromedriver,
                            chrome=chrome,
                            android_package=android_package))
   if code:
@@ -95,7 +91,6 @@ def RunJavaTests(chromedriver, chrome=None,
   code = util.RunCommand(
       _GenerateTestCommand('run_java_tests.py',
                            chromedriver,
-                           ref_chromedriver=None,
                            chrome=chrome,
                            android_package=android_package,
                            verbose=verbose))
@@ -168,11 +163,6 @@ def main():
   platform_name = util.GetPlatformName()
   if util.IsLinux() and util.Is64Bit():
     platform_name += '64'
-  ref_chromedriver = os.path.join(
-      chrome_paths.GetSrc(),
-      'chrome', 'test', 'chromedriver', 'third_party', 'java_tests',
-      'reference_builds',
-      'chromedriver_%s%s' % (platform_name, exe_postfix))
 
   if options.android_packages:
     os.environ['PATH'] += os.pathsep + os.path.join(
@@ -180,7 +170,6 @@ def main():
     code = 0
     for package in options.android_packages.split(','):
       code1 = RunPythonTests(chromedriver,
-                             ref_chromedriver,
                              chrome_version_name=package,
                              android_package=package)
       code2 = RunJavaTests(chromedriver,
@@ -198,7 +187,6 @@ def main():
     if not chrome_path:
       code = 1
     code1 = RunPythonTests(chromedriver,
-                           ref_chromedriver,
                            chrome=chrome_path)
     code2 = RunJavaTests(chromedriver,
                          verbose=True,
