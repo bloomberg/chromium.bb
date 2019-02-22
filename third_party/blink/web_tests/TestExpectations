@@ -1553,7 +1553,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.h
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/orthogonal-writing-modes-and-intrinsic-sizing.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-keep-scrollpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
