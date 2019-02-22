@@ -17,10 +17,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
 
@@ -97,6 +99,7 @@ public class DownloadMediaParserTest {
     @LargeTest
     @Feature({"Download"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     /**
      * Verify metadata and thumbnail can be retrieved correctly from h264 video file.
      * @throws InterruptedException
