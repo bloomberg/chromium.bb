@@ -432,7 +432,7 @@ TEST(PropertyTestStatic, SerializeNetAddressArray) {
   EXPECT_EQ(test_list, ip_list.value());
 }
 
-TEST(PropertyTestStatic, ReadWriteStringToByteVectorMap) {
+TEST(PropertyTestStatic, ReadWriteStringToByteVectorMapVariantWrapped) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   MessageWriter variant_writer(nullptr);
@@ -469,6 +469,39 @@ TEST(PropertyTestStatic, ReadWriteStringToByteVectorMap) {
     EXPECT_EQ(values[i], test_property.value().at(keys[i]));
 }
 
+TEST(PropertyTestStatic, ReadWriteStringToByteVectorMap) {
+  std::unique_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter variant_writer(nullptr);
+  MessageWriter dict_writer(nullptr);
+
+  writer.OpenVariant("a{say}", &variant_writer);
+  variant_writer.OpenArray("{say}", &dict_writer);
+
+  const char* keys[] = {"One", "Two", "Three", "Four"};
+  const std::vector<uint8_t> values[] = {{1}, {1, 2}, {1, 2, 3}, {1, 2, 3, 4}};
+  for (unsigned i = 0; i < base::size(keys); ++i) {
+    MessageWriter entry_writer(nullptr);
+    dict_writer.OpenDictEntry(&entry_writer);
+
+    entry_writer.AppendString(keys[i]);
+    entry_writer.AppendArrayOfBytes(values[i].data(), values[i].size());
+
+    dict_writer.CloseContainer(&entry_writer);
+  }
+
+  variant_writer.CloseContainer(&dict_writer);
+  writer.CloseContainer(&variant_writer);
+
+  MessageReader reader(message.get());
+  Property<std::map<std::string, std::vector<uint8_t>>> test_property;
+  EXPECT_TRUE(test_property.PopValueFromReader(&reader));
+
+  ASSERT_EQ(base::size(keys), test_property.value().size());
+  for (unsigned i = 0; i < base::size(keys); ++i)
+    EXPECT_EQ(values[i], test_property.value().at(keys[i]));
+}
+
 TEST(PropertyTestStatic, SerializeStringToByteVectorMap) {
   std::map<std::string, std::vector<uint8_t>> test_map;
   test_map["Hi"] = {1, 2, 3};
@@ -487,7 +520,7 @@ TEST(PropertyTestStatic, SerializeStringToByteVectorMap) {
   EXPECT_EQ(test_map, test_property.value());
 }
 
-TEST(PropertyTestStatic, ReadWriteUInt16ToByteVectorMap) {
+TEST(PropertyTestStatic, ReadWriteUInt16ToByteVectorMapVariantWrapped) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   MessageWriter variant_writer(nullptr);
@@ -508,6 +541,39 @@ TEST(PropertyTestStatic, ReadWriteUInt16ToByteVectorMap) {
     entry_writer.OpenVariant("ay", &value_varient_writer);
     value_varient_writer.AppendArrayOfBytes(values[i].data(), values[i].size());
     entry_writer.CloseContainer(&value_varient_writer);
+
+    dict_writer.CloseContainer(&entry_writer);
+  }
+
+  variant_writer.CloseContainer(&dict_writer);
+  writer.CloseContainer(&variant_writer);
+
+  MessageReader reader(message.get());
+  Property<std::map<uint16_t, std::vector<uint8_t>>> test_property;
+  EXPECT_TRUE(test_property.PopValueFromReader(&reader));
+
+  ASSERT_EQ(base::size(keys), test_property.value().size());
+  for (unsigned i = 0; i < base::size(keys); ++i)
+    EXPECT_EQ(values[i], test_property.value().at(keys[i]));
+}
+
+TEST(PropertyTestStatic, ReadWriteUInt16ToByteVectorMap) {
+  std::unique_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter variant_writer(nullptr);
+  MessageWriter dict_writer(nullptr);
+
+  writer.OpenVariant("a{qay}", &variant_writer);
+  variant_writer.OpenArray("{qay}", &dict_writer);
+
+  const uint16_t keys[] = {11, 12, 13, 14};
+  const std::vector<uint8_t> values[] = {{1}, {1, 2}, {1, 2, 3}, {1, 2, 3, 4}};
+  for (unsigned i = 0; i < base::size(keys); ++i) {
+    MessageWriter entry_writer(nullptr);
+    dict_writer.OpenDictEntry(&entry_writer);
+
+    entry_writer.AppendUint16(keys[i]);
+    entry_writer.AppendArrayOfBytes(values[i].data(), values[i].size());
 
     dict_writer.CloseContainer(&entry_writer);
   }
