@@ -76,8 +76,6 @@ class CORE_EXPORT FindTaskController final
 
   void Trace(Visitor* visitor);
 
-  void ResetLastFindRequestCompletedWithNoMatches();
-
  private:
   void RequestIdleFindTask(int identifier,
                            const WebString& search_text,
