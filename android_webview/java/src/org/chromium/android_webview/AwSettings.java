@@ -112,7 +112,7 @@ public class AwSettings {
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     private boolean mCSSHexAlphaColorEnabled;
     private boolean mScrollTopLeftInteropEnabled;
-    private boolean mShouldSuppressErrorPage;
+    private boolean mWillSuppressErrorPage;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;
@@ -1257,31 +1257,31 @@ public class AwSettings {
     }
 
     @CalledByNative
-    private boolean getShouldSuppressErrorPageLocked() {
+    private boolean getWillSuppressErrorPageLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mShouldSuppressErrorPage;
+        return mWillSuppressErrorPage;
     }
 
-    public boolean getShouldSuppressErrorPage() {
+    public boolean getWillSuppressErrorPage() {
         synchronized (mAwSettingsLock) {
-            return getShouldSuppressErrorPageLocked();
+            return getWillSuppressErrorPageLocked();
         }
     }
 
-    public void setShouldSuppressErrorPage(boolean suppressed) {
+    public void setWillSuppressErrorPage(boolean suppressed) {
         synchronized (mAwSettingsLock) {
-            if (mShouldSuppressErrorPage == suppressed) return;
+            if (mWillSuppressErrorPage == suppressed) return;
 
-            mShouldSuppressErrorPage = suppressed;
-            updateShouldSuppressErrorStateLocked();
+            mWillSuppressErrorPage = suppressed;
+            updateWillSuppressErrorStateLocked();
         }
     }
 
-    private void updateShouldSuppressErrorStateLocked() {
+    private void updateWillSuppressErrorStateLocked() {
         mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
             assert Thread.holdsLock(mAwSettingsLock);
             assert mNativeAwSettings != 0;
-            nativeUpdateShouldSuppressErrorStateLocked(mNativeAwSettings);
+            nativeUpdateWillSuppressErrorStateLocked(mNativeAwSettings);
         });
     }
 
@@ -1851,5 +1851,5 @@ public class AwSettings {
 
     private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
 
-    private native void nativeUpdateShouldSuppressErrorStateLocked(long nativeAwSettings);
+    private native void nativeUpdateWillSuppressErrorStateLocked(long nativeAwSettings);
 }

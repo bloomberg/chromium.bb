@@ -201,7 +201,7 @@ bool AwContentRendererClient::ShouldSuppressErrorPage(
   if (render_frame_ext == nullptr)
     return false;
 
-  return render_frame_ext->GetShouldSuppressErrorPage();
+  return render_frame_ext->GetWillSuppressErrorPage();
 }
 
 void AwContentRendererClient::PrepareErrorPage(

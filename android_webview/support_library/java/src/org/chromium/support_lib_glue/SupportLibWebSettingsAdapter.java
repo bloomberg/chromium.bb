@@ -48,12 +48,12 @@ class SupportLibWebSettingsAdapter implements WebSettingsBoundaryInterface {
     }
 
     @Override
-    public boolean getShouldSuppressErrorPage() {
-        return mAwSettings.getShouldSuppressErrorPage();
+    public boolean getWillSuppressErrorPage() {
+        return mAwSettings.getWillSuppressErrorPage();
     }
 
     @Override
-    public void setShouldSuppressErrorPage(boolean suppressed) {
-        mAwSettings.setShouldSuppressErrorPage(suppressed);
+    public void setWillSuppressErrorPage(boolean suppressed) {
+        mAwSettings.setWillSuppressErrorPage(suppressed);
     }
 }
