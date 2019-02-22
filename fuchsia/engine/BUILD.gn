@@ -123,22 +123,22 @@ component("web_engine_core") {
     "browser/frame_impl.h",
     "browser/message_port_impl.cc",
     "browser/message_port_impl.h",
+    "browser/web_engine_browser_context.cc",
+    "browser/web_engine_browser_context.h",
+    "browser/web_engine_browser_main.cc",
+    "browser/web_engine_browser_main.h",
+    "browser/web_engine_browser_main_parts.cc",
+    "browser/web_engine_browser_main_parts.h",
+    "browser/web_engine_content_browser_client.cc",
+    "browser/web_engine_content_browser_client.h",
     "browser/web_engine_devtools_manager_delegate.cc",
     "browser/web_engine_devtools_manager_delegate.h",
-    "browser/webrunner_browser_context.cc",
-    "browser/webrunner_browser_context.h",
-    "browser/webrunner_browser_main.cc",
-    "browser/webrunner_browser_main.h",
-    "browser/webrunner_browser_main_parts.cc",
-    "browser/webrunner_browser_main_parts.h",
-    "browser/webrunner_content_browser_client.cc",
-    "browser/webrunner_content_browser_client.h",
-    "browser/webrunner_net_log.cc",
-    "browser/webrunner_net_log.h",
-    "browser/webrunner_screen.cc",
-    "browser/webrunner_screen.h",
-    "browser/webrunner_url_request_context_getter.cc",
-    "browser/webrunner_url_request_context_getter.h",
+    "browser/web_engine_net_log.cc",
+    "browser/web_engine_net_log.h",
+    "browser/web_engine_screen.cc",
+    "browser/web_engine_screen.h",
+    "browser/web_engine_url_request_context_getter.cc",
+    "browser/web_engine_url_request_context_getter.h",
     "common.cc",
     "common.h",
     "context_provider_impl.cc",
@@ -147,13 +147,13 @@ component("web_engine_core") {
     "context_provider_main.h",
     "renderer/on_load_script_injector.cc",
     "renderer/on_load_script_injector.h",
-    "renderer/webrunner_content_renderer_client.cc",
-    "renderer/webrunner_content_renderer_client.h",
+    "renderer/web_engine_content_renderer_client.cc",
+    "renderer/web_engine_content_renderer_client.h",
+    "web_engine_content_client.cc",
+    "web_engine_content_client.h",
     "web_engine_export.h",
-    "webrunner_content_client.cc",
-    "webrunner_content_client.h",
-    "webrunner_main_delegate.cc",
-    "webrunner_main_delegate.h",
+    "web_engine_main_delegate.cc",
+    "web_engine_main_delegate.h",
   ]
   visibility = [ ":*" ]
 }
@@ -166,7 +166,7 @@ executable("web_engine_exe") {
     "//services/service_manager/embedder:embedder_switches",
   ]
   sources = [
-    "webrunner_main.cc",
+    "web_engine_main.cc",
   ]
   visibility = [ ":*" ]
 }
@@ -190,9 +190,9 @@ fuchsia_package_runner("web_engine_runner") {
 source_set("browsertest_core") {
   testonly = true
   sources = [
-    "test/webrunner_browser_test.cc",
-    "test/webrunner_browser_test.h",
-    "test/webrunner_test_launcher.cc",
+    "test/web_engine_browser_test.cc",
+    "test/web_engine_browser_test.h",
+    "test/web_engine_test_launcher.cc",
   ]
   deps = [
     ":web_engine_core",

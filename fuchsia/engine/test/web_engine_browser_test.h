@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_TEST_WEBRUNNER_BROWSER_TEST_H_
-#define FUCHSIA_ENGINE_TEST_WEBRUNNER_BROWSER_TEST_H_
+#ifndef FUCHSIA_ENGINE_TEST_WEB_ENGINE_BROWSER_TEST_H_
+#define FUCHSIA_ENGINE_TEST_WEB_ENGINE_BROWSER_TEST_H_
 
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
@@ -66,4 +66,4 @@ class WebRunnerBrowserTest : public content::BrowserTestBase {
 }  // namespace test
 }  // namespace cr_fuchsia
 
-#endif  // FUCHSIA_ENGINE_TEST_WEBRUNNER_BROWSER_TEST_H_
+#endif  // FUCHSIA_ENGINE_TEST_WEB_ENGINE_BROWSER_TEST_H_

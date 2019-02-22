@@ -18,7 +18,7 @@
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/test_common.h"
-#include "fuchsia/engine/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/url_request/url_request_context.h"

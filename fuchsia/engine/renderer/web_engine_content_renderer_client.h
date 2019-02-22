@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_RENDERER_WEBRUNNER_CONTENT_RENDERER_CLIENT_H_
-#define FUCHSIA_ENGINE_RENDERER_WEBRUNNER_CONTENT_RENDERER_CLIENT_H_
+#ifndef FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_CONTENT_RENDERER_CLIENT_H_
+#define FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_CONTENT_RENDERER_CLIENT_H_
 
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -20,4 +20,4 @@ class WebRunnerContentRendererClient : public content::ContentRendererClient {
   DISALLOW_COPY_AND_ASSIGN(WebRunnerContentRendererClient);
 };
 
-#endif  // FUCHSIA_ENGINE_RENDERER_WEBRUNNER_CONTENT_RENDERER_CLIENT_H_
+#endif  // FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_CONTENT_RENDERER_CLIENT_H_

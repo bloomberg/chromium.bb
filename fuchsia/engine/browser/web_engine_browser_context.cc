@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/webrunner_browser_context.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
 
 #include <memory>
 #include <utility>
@@ -16,8 +16,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
-#include "fuchsia/engine/browser/webrunner_net_log.h"
-#include "fuchsia/engine/browser/webrunner_url_request_context_getter.h"
+#include "fuchsia/engine/browser/web_engine_net_log.h"
+#include "fuchsia/engine/browser/web_engine_url_request_context_getter.h"
 #include "fuchsia/engine/common.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/network_switches.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_H_
-#define FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_H_
+#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_H_
+#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_H_
 
 #include <memory>
 
@@ -13,4 +13,4 @@ struct MainFunctionParams;
 
 int WebRunnerBrowserMain(const content::MainFunctionParams& parameters);
 
-#endif  // FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_H_
+#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_H_

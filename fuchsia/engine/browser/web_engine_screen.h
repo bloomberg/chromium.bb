@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_WEBRUNNER_SCREEN_H_
-#define FUCHSIA_ENGINE_BROWSER_WEBRUNNER_SCREEN_H_
+#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_SCREEN_H_
+#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_SCREEN_H_
 
 #include "base/macros.h"
 
@@ -19,4 +19,4 @@ class DISPLAY_EXPORT WebRunnerScreen : public display::ScreenBase {
   DISALLOW_COPY_AND_ASSIGN(WebRunnerScreen);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_WEBRUNNER_SCREEN_H_
+#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_SCREEN_H_

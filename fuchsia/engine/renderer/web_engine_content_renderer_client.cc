@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/renderer/webrunner_content_renderer_client.h"
+#include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame.h"

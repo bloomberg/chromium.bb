@@ -16,7 +16,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/test/test_common.h"
-#include "fuchsia/engine/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"

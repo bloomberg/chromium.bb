@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/webrunner_browser_main.h"
+#include "fuchsia/engine/browser/web_engine_browser_main.h"
 
 #include <memory>
 

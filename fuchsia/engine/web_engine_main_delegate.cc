@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/webrunner_main_delegate.h"
+#include "fuchsia/engine/web_engine_main_delegate.h"
 
 #include <utility>
 
@@ -10,16 +10,16 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
-#include "fuchsia/engine/browser/webrunner_browser_main.h"
-#include "fuchsia/engine/browser/webrunner_content_browser_client.h"
+#include "fuchsia/engine/browser/web_engine_browser_main.h"
+#include "fuchsia/engine/browser/web_engine_content_browser_client.h"
 #include "fuchsia/engine/common.h"
-#include "fuchsia/engine/renderer/webrunner_content_renderer_client.h"
-#include "fuchsia/engine/webrunner_content_client.h"
+#include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
+#include "fuchsia/engine/web_engine_content_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
-WebRunnerMainDelegate* g_current_webrunner_main_delegate = nullptr;
+WebRunnerMainDelegate* g_current_web_runner_main_delegate = nullptr;
 
 void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   base::FilePath log_filename;
@@ -52,12 +52,12 @@ void InitializeResourceBundle() {
 
 // static
 WebRunnerMainDelegate* WebRunnerMainDelegate::GetInstanceForTest() {
-  return g_current_webrunner_main_delegate;
+  return g_current_web_runner_main_delegate;
 }
 
 WebRunnerMainDelegate::WebRunnerMainDelegate(zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {
-  g_current_webrunner_main_delegate = this;
+  g_current_web_runner_main_delegate = this;
 }
 
 WebRunnerMainDelegate::~WebRunnerMainDelegate() = default;

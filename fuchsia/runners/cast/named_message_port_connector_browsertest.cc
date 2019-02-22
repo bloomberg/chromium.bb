@@ -15,7 +15,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/test/test_common.h"
-#include "fuchsia/engine/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"

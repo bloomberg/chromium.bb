@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_PARTS_H_
-#define FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_PARTS_H_
+#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_
+#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_
 
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/webrunner_browser_context.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace display {
@@ -47,4 +47,4 @@ class WebRunnerBrowserMainParts : public content::BrowserMainParts {
   DISALLOW_COPY_AND_ASSIGN(WebRunnerBrowserMainParts);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_WEBRUNNER_BROWSER_MAIN_PARTS_H_
+#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_
