@@ -275,16 +275,13 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
   // |profile| has to be a signed-in profile with IdentityManager already
   // created. Otherwise, just crash to collect stack.
   DCHECK(identity_manager);
-  const AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  const CoreAccountInfo account_info =
+      identity_manager->GetPrimaryAccountInfo();
   // A regular signed-in (i.e., non-login) profile should always have an email.
   // TODO(crbug.com/857494): Enable this DCHECK once all browser tests create
   // correctly signed in profiles.
   // DCHECK(!account_info.email.empty());
-  return account_info.email.empty()
-             ? EmptyAccountId()
-             : AccountId::FromUserEmailGaiaId(
-                   gaia::CanonicalizeEmail(account_info.email),
-                   account_info.gaia);
+  return AccountIdFromAccountInfo(account_info);
 }
 
 void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
