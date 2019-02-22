@@ -211,6 +211,9 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmLicenseKey[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceRebootOnUserSignout[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceWilcoDTCAllowed[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

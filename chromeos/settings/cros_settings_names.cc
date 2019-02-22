@@ -368,4 +368,8 @@ const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
 // out.
 const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
 
+// A boolean pref that indicates whether running wilco diagnostics and telemetry
+// controller on Chrome OS is allowed.
+const char kDeviceWilcoDTCAllowed[] = "cros.device.wilco_dtc_allowed";
+
 }  // namespace chromeos
