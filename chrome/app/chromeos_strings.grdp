@@ -3133,16 +3133,21 @@
     Access your Assistant with Voice Match
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for Assistant voice match screen.">
-    Your Assistant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
+    Voice Match lets you access your Assistant directly by using your voice.
+    <ph name="BR">&lt;br&gt;</ph>
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Keep in mind:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access your Assistant, too. You can remove Voice Match permission later by turning it off in Assistant Settings.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE" desc="Message without DSP support for Assistant voice match screen.">
+    To save battery, “Ok Google” is on only when your device is connected to a power source. To make changes, go to Settings.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
-    Teach the Assistant to recognize your voice
+    Teach your Assistant to recognize your voice
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
     Ok Google is all set
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for Assistant voice match screen.">
-    Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or delete voice activity in your Google activity controls.
+    Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or retrain voice activity in Assistant Settings.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
     Say "Ok Google"

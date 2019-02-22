@@ -16,7 +16,11 @@
           <img id="logo" src="assistant_logo.png">
           <div id="intro-container">
             <div class="title" i18n-content="assistantVoiceMatchTitle"></div>
-            <div class="content" i18n-content="assistantVoiceMatchMessage">
+            <div class="content"
+                i18n-values=".innerHTML:assistantVoiceMatchMessage">
+            </div>
+            <div class="content" id="no-dsp-message"
+                i18n-content="assistantVoiceMatchNoDspMessage">
             </div>
             <div id="voice-match-video">
               <video muted autoplay loop>
