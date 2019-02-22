@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_cert_verifier_browser_test.h"
+#include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -55,9 +56,6 @@
 namespace content {
 
 namespace {
-
-const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
-const uint64_t kSignatureHeaderExpires = 1520837600;  // 2018-03-12T06:53:20Z
 
 constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
     "application/signed-exchange;v=b3;q=0.9,*/*;q=0.8";
@@ -113,60 +111,26 @@ class SignedExchangeRequestHandlerBrowserTestBase
   }
 
   void SetUp() override {
-    SignedExchangeHandler::SetVerificationTimeForTesting(
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromSeconds(kSignatureHeaderDate));
+    sxg_test_helper_.SetUp();
     feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
     CertVerifierBrowserTest::SetUp();
   }
 
   void TearDownOnMainThread() override {
-    interceptor_.reset();
-    SignedExchangeHandler::SetVerificationTimeForTesting(
-        base::Optional<base::Time>());
+    sxg_test_helper_.TearDownOnMainThread();
   }
 
  protected:
-  static scoped_refptr<net::X509Certificate> LoadCertificate(
-      const std::string& cert_file) {
-    base::ScopedAllowBlockingForTesting allow_io;
-    base::FilePath dir_path;
-    base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
-    dir_path = dir_path.AppendASCII("sxg");
-
-    return net::CreateCertificateChainFromFile(
-        dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  }
-
   void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      if (!interceptor_) {
-        interceptor_ = std::make_unique<
-            URLLoaderInterceptor>(base::BindRepeating(
-            &SignedExchangeRequestHandlerBrowserTestBase::OnInterceptCallback,
-            base::Unretained(this)));
-      }
-      interceptor_data_path_map_[url] = data_path;
-    } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&InstallMockInterceptors, url, data_path));
-    }
+    sxg_test_helper_.InstallUrlInterceptor(url, data_path);
   }
 
   void InstallMockCert() {
-    // Make the MockCertVerifier treat the certificate
-    // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-    scoped_refptr<net::X509Certificate> original_cert =
-        LoadCertificate("prime256v1-sha256.public.pem");
-    net::CertVerifyResult dummy_result;
-    dummy_result.verified_cert = original_cert;
-    dummy_result.cert_status = net::OK;
-    dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-    dummy_result.ocsp_result.revocation_status =
-        net::OCSPRevocationStatus::GOOD;
-    mock_cert_verifier()->AddResultForCertAndHost(
-        original_cert, "test.example.org", dummy_result, net::OK);
+    sxg_test_helper_.InstallMockCert(mock_cert_verifier());
+  }
+
+  void InstallMockCertChainInterceptor() {
+    sxg_test_helper_.InstallMockCertChainInterceptor();
   }
 
   void TriggerPrefetch(const GURL& url, bool expect_success) {
@@ -182,26 +146,8 @@ class SignedExchangeRequestHandlerBrowserTestBase
   const base::HistogramTester histogram_tester_;
 
  private:
-  static void InstallMockInterceptors(const GURL& url,
-                                      const std::string& data_path) {
-    base::FilePath root_path;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-                 root_path.AppendASCII(data_path)));
-  }
-
-  bool OnInterceptCallback(URLLoaderInterceptor::RequestParams* params) {
-    const auto it = interceptor_data_path_map_.find(params->url_request.url);
-    if (it == interceptor_data_path_map_.end())
-      return false;
-    URLLoaderInterceptor::WriteResponse(it->second, params->client.get());
-    return true;
-  }
-
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<URLLoaderInterceptor> interceptor_;
-  std::map<GURL, std::string> interceptor_data_path_map_;
+  SignedExchangeBrowserTestHelper sxg_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTestBase);
 };
@@ -229,10 +175,8 @@ class SignedExchangeRequestHandlerBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -264,7 +208,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
       net::X509Certificate::CalculateFingerprint256(
           entry->GetSSL().certificate->cert_buffer());
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
+      SignedExchangeBrowserTestHelper::LoadCertificate();
   const net::SHA256HashValue original_fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
@@ -314,12 +258,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        InvalidContentType) {
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -342,11 +284,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
   SignedExchangeHandler::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1));
+      base::TimeDelta::FromSeconds(
+          SignedExchangeBrowserTestHelper::kSignatureHeaderExpires + 1));
 
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCertChainInterceptor();
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
   InstallMockCert();
@@ -525,9 +466,7 @@ class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
                        Basic) {
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCertChainInterceptor();
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
 
@@ -596,10 +535,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   // SW-scope: https://test.example.org/test/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   const GURL install_sw_url =
       GURL("https://test.example.org/test/publisher-service-worker.html");
@@ -633,10 +570,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   // SW-scope: http://127.0.0.1:PORT/sxg/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -665,10 +600,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   // SW-scope: https://test.example.org/scope/
   // SXG physical URL: https://test.example.org/scope/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   InstallUrlInterceptor(GURL("https://test.example.org/scope/test.sxg"),
                         "content/test/data/sxg/test.example.org_test.sxg");
@@ -703,10 +636,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
                        RegisterServiceWorkerFromSignedExchange) {
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   InstallUrlInterceptor(
       GURL("https://test.example.org/test/publisher-service-worker.js"),

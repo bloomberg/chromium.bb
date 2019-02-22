@@ -133,6 +133,8 @@ jumbo_static_library("test_support") {
     "../public/test/scoped_overscroll_modes.h",
     "../public/test/service_worker_test_helpers.cc",
     "../public/test/service_worker_test_helpers.h",
+    "../public/test/signed_exchange_browser_test_helper.cc",
+    "../public/test/signed_exchange_browser_test_helper.h",
     "../public/test/simple_url_loader_test_helper.cc",
     "../public/test/simple_url_loader_test_helper.h",
     "../public/test/slow_download_http_response.cc",
