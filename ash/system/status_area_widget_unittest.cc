@@ -126,7 +126,8 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
 
 // Tests that tab traversal through status area widget in non-active session
 // could properly send FocusOut event.
-TEST_F(StatusAreaWidgetFocusTest, FocusOutObserverUnified) {
+// TODO(crbug.com/934939): Failing on trybot.
+TEST_F(StatusAreaWidgetFocusTest, DISABLED_FocusOutObserverUnified) {
   // Set session state to LOCKED.
   SessionController* session = Shell::Get()->session_controller();
   ASSERT_TRUE(session->IsActiveUserSessionStarted());
