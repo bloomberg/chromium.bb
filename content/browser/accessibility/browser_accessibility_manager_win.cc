@@ -227,6 +227,8 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() {
+  if (!BrowserAccessibilityManager::CanFireEvents())
+    return false;
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
   if (!root_delegate)
     return false;

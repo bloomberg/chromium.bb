@@ -108,9 +108,9 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
     ui::AXTreeID ax_tree_id) {
-  AXTreeIDMap* ax_tree_id_map = g_ax_tree_id_map.Pointer();
-  auto iter = ax_tree_id_map->find(ax_tree_id);
-  return iter == ax_tree_id_map->end() ? nullptr : iter->second;
+  AXTreeIDMap& ax_tree_id_map = g_ax_tree_id_map.Get();
+  AXTreeIDMap::iterator iter = ax_tree_id_map.find(ax_tree_id);
+  return iter == ax_tree_id_map.end() ? nullptr : iter->second;
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(

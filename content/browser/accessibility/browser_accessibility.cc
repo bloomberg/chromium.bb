@@ -76,6 +76,8 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
 }
 
 bool BrowserAccessibility::CanFireEvents() const {
+  if (!instance_active())
+    return false;
   // Allow events unless this object would be trimmed away.
   return !PlatformIsChildOfLeaf();
 }
