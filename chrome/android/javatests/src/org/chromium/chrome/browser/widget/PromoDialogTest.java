@@ -249,7 +249,7 @@ public class PromoDialogTest {
     public void testBasic_HeaderBehavior_WithIllustration() throws Exception {
         // With an illustration, the header View is part of the scrollable content.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.data_reduction_main_menu_chart;
+        dialogParams.drawableResource = R.drawable.preview_pin_round;
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
 
