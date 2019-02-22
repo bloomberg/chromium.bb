@@ -36,9 +36,6 @@ namespace metrics {
 
 namespace {
 
-const base::Feature kBackgroundIndependentMetrics = {
-    "BackgoundIndependentMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // These structures provide values used to define how files are opened and
 // accessed. It obviates the need for multiple code-paths within several of
 // the methods.
@@ -779,23 +776,15 @@ void FileMetricsProvider::ProvideIndependentMetrics(
   SourceInfo* source_ptr = source.get();
   DCHECK(source->allocator);
 
-  if (base::FeatureList::IsEnabled(kBackgroundIndependentMetrics)) {
-    // Do the actual work as a background task.
-    base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
-        base::BindOnce(
-            &FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner,
-            source_ptr, system_profile_proto, snapshot_manager),
-        base::BindOnce(&FileMetricsProvider::ProvideIndependentMetricsCleanup,
-                       weak_factory_.GetWeakPtr(), std::move(done_callback),
-                       std::move(source)));
-  } else {
-    // Do the actual work now, inline (for performance comparisons).
-    bool success = ProvideIndependentMetricsOnTaskRunner(
-        source_ptr, system_profile_proto, snapshot_manager);
-    ProvideIndependentMetricsCleanup(std::move(done_callback),
-                                     std::move(source), success);
-  }
+  // Do the actual work as a background task.
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner,
+          source_ptr, system_profile_proto, snapshot_manager),
+      base::BindOnce(&FileMetricsProvider::ProvideIndependentMetricsCleanup,
+                     weak_factory_.GetWeakPtr(), std::move(done_callback),
+                     std::move(source)));
 }
 
 void FileMetricsProvider::ProvideIndependentMetricsCleanup(
