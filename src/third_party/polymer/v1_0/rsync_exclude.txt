@@ -1,0 +1,42 @@
+.bower.json
+build.log
+build.sh
+BUILD.gn
+*/demo/
+demo*.html
+*/demos/
+docs.html
+.eslintrc.json
+*gen-tsd.json
+.github
+.gitignore
+hero.svg
+index.html
+*.js.map
+*.md
+metadata.html
+package.json
+package-lock.json
+*/test/
+*/tests/
+.travis.yml
+*.d.ts
+*wct.conf.json
+
+# app-layout specific
+*/patterns/
+*/site/
+*/templates/
+
+# This is downloaded even though it's unused due to http://crbug.com/843701#c1
+# paper-radio-button
+paper-radio-button/
+
+# paper-spinner
+paper-spinner/paper-spinner.html
+
+# paper-styles
+paper-styles/classes/global.html
+paper-styles/element-styles/paper-item-styles.html
+paper-styles/paper-styles-classes.html
+paper-styles/paper-styles.html

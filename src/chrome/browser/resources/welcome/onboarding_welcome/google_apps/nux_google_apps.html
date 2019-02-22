@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<meta charset="utf-8">
+<title>$i18n{headerText}</title>
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://welcome/apps/apps_chooser.html">
+<link rel="import" href="chrome://welcome/apps/nux_google_apps_proxy.html">
+
+<dom-module id="nux-google-apps">
+  <template>
+    <style include="paper-button-style">
+      body {
+        margin: 0;
+      }
+
+      .apps-ask {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 120px;
+        width: fit-content;
+      }
+
+      .chrome-logo {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/google_apps_1x.png) 1x,
+            url(chrome://welcome/apps/google_apps_2x.png) 2x);
+        height: 38px;
+        margin-bottom: 16px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 42px;
+      }
+
+      h1 {
+        color: var(--cr-primary-text-color);
+        font-size: 24px;
+        font-weight: 500;
+        margin-bottom: 48px;
+        opacity: .8;
+        text-align: center;
+      }
+
+      apps-chooser {
+        color: var(--cr-primary-text-color);
+        font-size: 14px;
+        margin-bottom: 48px;
+      }
+
+      .button-bar {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+
+    <div class="apps-ask">
+      <div class="chrome-logo"></div>
+      <h1>$i18n{googleAppsDescription}</h1>
+
+      <apps-chooser id="appChooser" has-apps-selected="{{hasAppsSelected_}}">
+      </apps-chooser>
+
+      <div class="button-bar">
+        <paper-button on-click="onNoThanksClicked_">
+          $i18n{noThanks}
+        </paper-button>
+        <paper-button class="action-button" disabled$="[[!hasAppsSelected_]]"
+            on-click="onGetStartedClicked_">$i18n{getStarted}</paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="apps/nux_google_apps.js"></script>
+</dom-module>
+
+<nux-google-apps></nux-google-apps>
+<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+
+</html>

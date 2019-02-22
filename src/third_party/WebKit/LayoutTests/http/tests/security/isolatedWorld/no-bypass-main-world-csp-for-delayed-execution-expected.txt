@@ -1,0 +1,9 @@
+ALERT: PASS: Case 3 was not blocked by a CSP.
+CONSOLE MESSAGE: line 1: EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ALERT: PASS: Case 2 was blocked by a CSP.
+ALERT: PASS: Case 1 was not evaluated in main world.
+ALERT: PASS: Case 1 was evaluated in isolated world.
+Test a script that bypasses the main world's CSP to see if its *content* bypasses the main world as well (it should not).
+
+

@@ -1,0 +1,25 @@
+<html> 
+    <head>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <button id="test" onclick="popup()" style="display:none"></button>
+        <div id="console"></div>
+        <script> 
+            var win;
+            function popup() {
+                win = window.open("about:blank", "blank");
+                assert_equals(win, null);
+            }
+
+            if (window.testRunner) {
+                testRunner.setCanOpenWindows();
+                testRunner.setPopupBlockingEnabled(true);
+                testRunner.setCloseRemainingWindowsWhenComplete(true);
+            }
+
+            test(() => document.getElementById("test").click(), 'Fake button click');
+        </script> 
+    </body> 
+</html>

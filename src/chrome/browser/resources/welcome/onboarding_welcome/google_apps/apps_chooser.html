@@ -1,0 +1,62 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://welcome/shared/chooser_shared_css.html">
+
+<dom-module id="apps-chooser">
+  <template>
+    <style include="chooser-shared-css">
+      .gmail {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/gmail_1x.png) 1x,
+            url(chrome://welcome/apps/gmail_2x.png) 2x);
+      }
+
+      .youtube {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/youtube_1x.png) 1x,
+            url(chrome://welcome/apps/youtube_2x.png) 2x);
+      }
+
+      .maps {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/maps_1x.png) 1x,
+            url(chrome://welcome/apps/maps_2x.png) 2x);
+      }
+
+      .translate {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/translate_1x.png) 1x,
+            url(chrome://welcome/apps/translate_2x.png) 2x);
+      }
+
+      .news {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/news_1x.png) 1x,
+            url(chrome://welcome/apps/news_2x.png) 2x);
+      }
+
+      .chrome-store {
+        content: -webkit-image-set(
+            url(chrome://welcome/apps/chrome_store_1x.png) 1x,
+            url(chrome://welcome/apps/chrome_store_2x.png) 2x);
+      }
+    </style>
+
+    <template is="dom-repeat" items="[[appList]]">
+      <button active$="[[item.selected]]"
+          on-click="onAppClick_" on-pointerdown="onAppPointerDown_"
+          on-keyup="onAppKeyUp_" class="option">
+        <div class="option-icon-shadow">
+          <div class$="[[item.icon]] option-icon"></div>
+        </div>
+        <div class="option-name">[[item.name]]</div>
+        <iron-icon icon="cr:check"></iron-icon>
+      </button>
+    </template>
+  </template>
+  <script src="apps_chooser.js"></script>
+</dom-module>

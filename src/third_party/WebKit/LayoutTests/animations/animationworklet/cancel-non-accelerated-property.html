@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<style>
+#target {
+  width: 100px;
+  height: 100px;
+  background-color: #0f0;
+}
+</style>
+
+<div id="target"></div>
+
+<script id="simple_animate" type="text/worklet">
+registerAnimator("test_animator", class {
+  animate(currentTime, effect) {
+    effect.localTime = 1000;
+  }
+});
+</script>
+
+<script src="resources/animation-worklet-tests.js"></script>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+
+runInAnimationWorklet(
+  document.getElementById('simple_animate').textContent
+).then(_ => {
+  const effect = new KeyframeEffect(
+      document.getElementById("target"),
+      [
+        { background: '#0f0' },
+        { background: '#00f' },
+      ],
+      {
+        duration: 2000,
+        iteration: Infinity
+      }
+  );
+
+  const animation = new WorkletAnimation('test_animator', effect);
+  animation.play();
+
+  waitTwoAnimationFrames( _ => {
+    animation.cancel();
+    if (window.testRunner) {
+      waitTwoAnimationFrames( _ => {
+        console.log('background-color for the first target is: ' +
+            getComputedStyle(document.getElementById('target')).backgroundColor);
+        testRunner.notifyDone();
+      });
+    }
+  });
+});
+</script>

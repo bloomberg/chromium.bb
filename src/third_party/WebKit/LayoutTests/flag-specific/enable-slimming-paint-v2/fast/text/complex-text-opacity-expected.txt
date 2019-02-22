@@ -1,0 +1,143 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 419x19
+          text run at (0,0) width 419: "Pixel test for complex text rendering with opacity (Chromium bug "
+        LayoutInline {A} at (0,0) size 32x19 [color=#0000EE]
+          LayoutText {#text} at (419,0) size 32x19
+            text run at (419,0) width 32: "8768"
+        LayoutText {#text} at (451,0) size 9x19
+          text run at (451,0) width 9: ")."
+      LayoutBlockFlow {P} at (0,36) size 784x0
+      LayoutBlockFlow {DIV} at (0,36) size 784x46
+        LayoutInline {SPAN} at (0,0) size 45x29
+          LayoutText {#text} at (0,7) size 45x29
+            text run at (0,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+        LayoutText {#text} at (45,7) size 6x29
+          text run at (45,7) width 6: " "
+        LayoutText {#text} at (96,7) size 6x29
+          text run at (96,7) width 6: " "
+        LayoutText {#text} at (147,7) size 6x29
+          text run at (147,7) width 6: " "
+        LayoutText {#text} at (198,7) size 6x29
+          text run at (198,7) width 6: " "
+        LayoutText {#text} at (249,7) size 6x29
+          text run at (249,7) width 6: " "
+        LayoutText {#text} at (300,7) size 6x29
+          text run at (300,7) width 6: " "
+        LayoutText {#text} at (351,7) size 6x29
+          text run at (351,7) width 6: " "
+        LayoutText {#text} at (402,7) size 6x29
+          text run at (402,7) width 6: " "
+        LayoutText {#text} at (453,7) size 6x29
+          text run at (453,7) width 6: " "
+        LayoutText {#text} at (504,7) size 6x29
+          text run at (504,7) width 6: " "
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,82) size 784x60
+        LayoutInline {SPAN} at (0,0) size 71x29
+          LayoutText {#text} at (693,0) size 71x29
+            text run at (693,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+        LayoutText {#text} at (687,0) size 6x29
+          text run at (687,0) width 6 RTL: " "
+        LayoutText {#text} at (610,0) size 6x29
+          text run at (610,0) width 6 RTL: " "
+        LayoutText {#text} at (533,0) size 6x29
+          text run at (533,0) width 6 RTL: " "
+        LayoutText {#text} at (456,0) size 6x29
+          text run at (456,0) width 6 RTL: " "
+        LayoutText {#text} at (379,0) size 6x29
+          text run at (379,0) width 6 RTL: " "
+        LayoutText {#text} at (302,0) size 6x29
+          text run at (302,0) width 6 RTL: " "
+        LayoutText {#text} at (225,0) size 6x29
+          text run at (225,0) width 6 RTL: " "
+        LayoutText {#text} at (148,0) size 6x29
+          text run at (148,0) width 6 RTL: " "
+        LayoutText {#text} at (71,0) size 6x29
+          text run at (71,0) width 6 RTL: " "
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (51,7) size 45x29
+      text run at (51,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (102,7) size 45x29
+      text run at (102,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (153,7) size 45x29
+      text run at (153,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (204,7) size 45x29
+      text run at (204,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (255,7) size 45x29
+      text run at (255,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (306,7) size 45x29
+      text run at (306,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (357,7) size 45x29
+      text run at (357,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (408,7) size 45x29
+      text run at (408,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (459,7) size 45x29
+      text run at (459,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,44) size 45x29 transparent
+  LayoutInline {SPAN} at (0,0) size 45x29
+    LayoutText {#text} at (510,7) size 45x29
+      text run at (510,7) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (616,0) size 71x29
+      text run at (616,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (539,0) size 71x29
+      text run at (539,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (462,0) size 71x29
+      text run at (462,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (385,0) size 71x29
+      text run at (385,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (308,0) size 71x29
+      text run at (308,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (231,0) size 71x29
+      text run at (231,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (154,0) size 71x29
+      text run at (154,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (77,0) size 71x29
+      text run at (77,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (0,0) size 71x29
+      text run at (0,0) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"
+layer at (8,90) size 71x29 transparent
+  LayoutInline {SPAN} at (0,0) size 71x29
+    LayoutText {#text} at (0,30) size 71x29
+      text run at (0,30) width 71 RTL: "\x{64A}\x{624}\x{644}\x{645}\x{646}\x{64A}"

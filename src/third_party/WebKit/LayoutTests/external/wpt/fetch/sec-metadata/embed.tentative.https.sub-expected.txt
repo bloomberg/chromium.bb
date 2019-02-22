@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Same-Origin embed assert_equals: cause expected (undefined) undefined but got (string) "forced"
+FAIL Same-Site embed assert_equals: cause expected (undefined) undefined but got (string) "forced"
+FAIL Cross-Site embed assert_equals: cause expected (undefined) undefined but got (string) "forced"
+Harness: the test ran to completion.
+

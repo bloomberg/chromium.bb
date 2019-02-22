@@ -1,0 +1,52 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.autocomplete-results-table {
+  margin-bottom: 1.5em;
+}
+
+.autocomplete-results-table th {
+  background-color: #C0C0C0;
+}
+
+.autocomplete-results-table td {
+  background-color: #F0F0F0;
+}
+
+.group-separator {
+  display: block;
+  text-decoration: underline;
+}
+
+.check-mark,
+.x-mark {
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: 0;
+}
+
+.check-mark {
+  background-image: url(../../../../ui/webui/resources/images/check_circle_green.svg);
+}
+
+.x-mark {
+  background-image: url(../../../../ui/webui/resources/images/cancel_red.svg);
+}
+
+p {
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 1em;
+}
+
+.table-header {
+  white-space: nowrap;
+}
+
+.additional-info-property,
+.additional-info-value {
+  white-space: nowrap;
+}

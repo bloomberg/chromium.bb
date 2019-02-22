@@ -1,0 +1,15 @@
+Checks tool bar items for scripts
+Set timer for test function.
+Script execution paused.
+Items for foo.js:
+
+Line 1, Column 1
+
+foo.js:16
+Items for test.js:
+
+Line 1, Column 1
+
+foo.js:13
+Script execution resumed.
+

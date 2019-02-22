@@ -1,0 +1,18 @@
+{
+  "comments": [
+    "UIRefresh tests for iPhone simulator."
+  ],
+  "xcode build version": "10a254a",
+  "gn_args": [
+    "goma_dir=\"$(goma_dir)\"",
+    "additional_target_cpus=[\"x86\"]",
+    "is_component_build=false",
+    "is_debug=true",
+    "symbol_level=1",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_goma=true"
+  ],
+  "tests": [
+  ]
+}

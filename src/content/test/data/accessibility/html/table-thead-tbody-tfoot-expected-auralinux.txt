@@ -1,0 +1,22 @@
+[document web] name='Table example - thead, tbody, tfoot'
+++[table]
+++++[table row]
+++++++[column header] name='Sum'
+++++++++[text] name='Sum'
+++++++[column header] name='Subtraction'
+++++++++[text] name='Subtraction'
+++++[table row]
+++++++[table cell] name='10'
+++++++++[text] name='10'
+++++++[table cell] name='7'
+++++++++[text] name='7'
+++++[table row]
+++++++[table cell] name='2'
+++++++++[text] name='2'
+++++++[table cell] name='4'
+++++++++[text] name='4'
+++++[table row]
+++++++[table cell] name='12'
+++++++++[text] name='12'
+++++++[table cell] name='3'
+++++++++[text] name='3'

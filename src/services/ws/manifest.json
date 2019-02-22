@@ -1,0 +1,70 @@
+{
+  "name": "ui",
+  "sandbox_type": "none",
+  "display_name": "UI Service",
+  "options" : {
+    "instance_sharing" : "singleton"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        // A collection of interfaces needed by a generic client of mus.
+        // Additional interfaces may be requested a-la-carte.
+        // NOTE: when adding a new interface chances are you will want to add it
+        // to window_manager as well.
+        "app": [
+          "discardable_memory.mojom.DiscardableSharedMemoryManager",
+          "ui.mojom.ClipboardHost",
+          "ws.mojom.Gpu",
+          "ws.mojom.IMEDriver",
+          "ws.mojom.InputDeviceServer",
+          "ws.mojom.WindowTreeFactory"
+        ],
+        "arc_manager" : [
+          "ws.mojom.Arc"
+        ],
+        // Interfaces provided by mus-gpu for mus-ws.
+        "ozone": [
+          "ui.ozone.mojom.DeviceCursor",
+          "ui.ozone.mojom.DrmDevice"
+        ],
+        "test": [
+          "ws.mojom.EventInjector",
+          "ws.mojom.WindowServerTest"
+        ],
+        "discardable_memory": [
+          "discardable_memory.mojom.DiscardableSharedMemoryManager"
+        ],
+        "gpu_client": [
+          "ws.mojom.Gpu"
+        ],
+        "ime_registrar": [
+          "ws.mojom.IMERegistrar"
+        ],
+        "input_device_controller": [
+          "ws.mojom.InputDeviceController"
+        ],
+        "privileged": [
+          // Injecting events is security-sensitive.
+          "ws.mojom.EventInjector",
+          "ws.mojom.RemotingEventInjector"
+        ],
+        "window_manager": [
+          "discardable_memory.mojom.DiscardableSharedMemoryManager",
+          "ws.mojom.EventInjector",
+          "ws.mojom.Gpu",
+          "ws.mojom.IMEDriver",
+          "ws.mojom.InputDeviceController",
+          "ws.mojom.InputDeviceServer",
+          "ws.mojom.UserActivityMonitor"
+        ]
+      },
+      "requires": {
+        "*": [ "app" ],
+        "catalog": [ "directory" ],
+        "ui": [ "ozone" ],
+        "viz": [ "viz_host" ]
+      }
+    }
+  }
+}

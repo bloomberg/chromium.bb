@@ -1,0 +1,61 @@
+# These tests currently fail with SingleProcessMash enabled.
+# Bug: crbug.com/874089
+
+
+# CopyOutputRequests not allowed. https://crbug.com/877172
+-AuraWindowVideoCaptureDeviceBrowserTest.DeliversRefreshFramesUponRequest
+-AuraWindowVideoCaptureDeviceBrowserTest.ErrorsOutWhenWindowIsDestroyed
+-AuraWindowVideoCaptureDeviceBrowserTestP.CapturesContentChanges/0
+-AuraWindowVideoCaptureDeviceBrowserTestP.CapturesContentChanges/1
+-AuraWindowVideoCaptureDeviceBrowserTest.SuspendsAndResumes
+-CaptureScreenshotTest.CaptureScreenshot
+-CaptureScreenshotTest.CaptureScreenshotJpeg
+-CaptureScreenshotTest.SetDefaultBackgroundColorOverride
+-CaptureScreenshotTest.TransparentScreenshots
+-CompositedScrollingBrowserTest.Scroll3DTransformedScroller
+
+
+# DCHECK(!event->IsPointerEvent()) fail. https://crbug.com/884342
+-MouseLatencyBrowserTest.CoalescedMouseWheelsCorrectlyTerminated
+
+
+# InputEventAckWaiter::Wait() times out, or fails. https://crbug.com/884360
+# Leaving examples of the bug.
+# -SitePerProcessHighDPIHitTestBrowserTest.CursorUpdateReceivedFromCrossSiteIframe/1
+# -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest/1
+# -SitePerProcessInternalsHitTestBrowserTest.NestedLocalNonFastScrollableDivCoordsAreLocal/3
+# -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest/1
+-SitePerProcessBrowserTouchActionTest.*
+-SitePerProcessEmulatedTouchBrowserTest.*
+-SitePerProcessGestureHitTestBrowserTest.*
+-SitePerProcessHighDPIHitTestBrowserTest.*
+-SitePerProcessHitTestBrowserTest.*
+-SitePerProcessInternalsHitTestBrowserTest.*
+-SitePerProcessMouseWheelHitTestBrowserTest.*
+-SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.*
+-TouchAccessibilityBrowserTest.*
+-TouchSelectionForCrossProcessFramesTests/*
+
+
+# Hit test fails. https://crbug.com/884366
+-PointerLockBrowserTest.PointerLockEventRouting
+-PointerLockBrowserTest.PointerLockWheelEventRouting
+-SitePerProcessHitTestBrowserTest.*
+-SitePerProcessHitTestDataGenerationBrowserTest.*
+
+
+# ShowWidgetMessageFilter::Wait() times out. https://crbug.com/884369
+# Leaving an example of the bug.
+# -SitePerProcessHitTestBrowserTest.PopupMenuTest/1
+
+
+# https://crbug.com/888156
+-NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
+
+
+# https://crbug.com/889301
+-SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
+
+
+# Flaky. https://crbug.com/889878
+-SyntheticKeyEventTest.KeyboardEventAck

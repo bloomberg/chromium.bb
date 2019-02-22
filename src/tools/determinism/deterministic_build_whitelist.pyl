@@ -1,0 +1,272 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This is a .pyl, or "Python Literal", file. You can treat it just like a
+# .json file, with the following exceptions:
+# * all keys must be quoted (use single quotes, please);
+# * comments are allowed, using '#' syntax; and
+# * trailing commas are allowed.
+#
+# List of files that are known to be _not_ deterministic. This is a "temporary"
+# workaround to find regression on the deterministic builders.
+#
+# PNaCl general bug: https://crbug.com/429358
+#
+# TODO(sebmarchand): Remove this once all the files are deterministic.
+{
+  # https://crbug.com/383340
+  'android': [
+  ],
+
+  # https://crbug.com/330263
+  'linux': [
+    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
+
+    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
+    'remoting-webapp.v2.zip',
+
+    'zucchini_apply_fuzzer_seed_corpus.zip',
+
+    'browser_tests.isolated',
+
+    'mr_extension',
+    'mr_extension/release',
+  ],
+
+  'linux_component': [
+   # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
+
+    'app_shell_unittests.isolated',
+    'blink_heap_unittests.isolated',
+    'chrome_app_unittests.isolated',
+    'chromedriver_py_tests.isolated',
+    'components_browsertests.isolated',
+    'components_perftests.isolated',
+    'components_unittests.isolated',
+    'content_browsertests.isolated',
+    'content_shell_crash_test.isolated',
+    'content_unittests.isolated',
+    'extensions_browsertests.isolated',
+    'extensions_unittests.isolated',
+    'gin_unittests.isolated',
+    'headless_browsertests.isolated',
+    'headless_unittests.isolated',
+    'interactive_ui_tests.isolated',
+    'media_blink_unittests.isolated',
+    'performance_browser_tests.isolated',
+    'performance_test_suite.isolated',
+    'performance_webview_test_suite.isolated',
+    'services_unittests.isolated',
+    'sync_integration_tests.isolated',
+    'telemetry_gpu_integration_test.isolated',
+    'telemetry_perf_unittests.isolated',
+    'telemetry_unittests.isolated',
+    'unit_tests.isolated',
+    'vr_common_perftests.isolated',
+    'vr_common_unittests.isolated',
+    'vr_pixeltests.isolated',
+    'webkit_layout_tests.isolated',
+    'webkit_layout_tests_exparchive.isolated',
+    'webkit_unit_tests.isolated',
+  ],
+
+  # https://crbug.com/330262
+  'mac': [
+    'accelerated_widget_mac_unittests',
+    'accessibility_unittests',
+    'angle_end2end_tests',
+    'angle_unittests',
+    'App Shell',
+    'app_shell_unittests',
+    'ar_sample_test_driver',
+    'audio_unittests',
+    'base_unittests',
+    'blink_heap_unittests',
+    'blink_platform_perftests',
+    'blink_platform_unittests',
+    'bluetooth_metrics_hash',
+    'browser_tests',
+    'cacheinvalidation_unittests',
+    'capture_unittests',
+    'cast_benchmarks',
+    'cast_receiver_app',
+    'cast_sender_app',
+    'cast_simulator',
+    'cast_unittests',
+    'cc_perftests',
+    'cc_unittests',
+    'chrome_app_unittests',
+    'chromedriver',
+    'chromedriver_tests',
+    'chromedriver_unittests',
+    'chromoting_test_driver',
+    'command_buffer_gles2_tests',
+    'components_browsertests',
+    'components_perftests',
+    'components_unittests',
+    'compositor_unittests',
+    'content_browsertests',
+    'content_perftests',
+    'content_unittests',
+    'courgette_unittests',
+    'crashpad_handler',
+    'crypto_unittests',
+    'device_unittests',
+    'display_compositor_benchmark',
+    'display_unittests',
+    'events_unittests',
+    'extensions_browsertests',
+    'extensions_unittests',
+    'ffmpeg_regression_tests',
+    'filesystem_service_unittests',
+    'filter_fuzz_stub',
+    'gcm_unit_tests',
+    'generate_barcode_video',
+    'generate_timecode_audio',
+    'gfx_unittests',
+    'gin_unittests',
+    'gles2_conform_support',
+    'gles2_conform_test',
+    'gl_tests',
+    'gl_unittests',
+    'gn_unittests',
+    'google_apis_unittests',
+    'gpu_ipc_service_unittests',
+    'gpu_perftests',
+    'gpu_unittests',
+    'interactive_ui_tests',
+    'ipc_fuzzer',
+    'ipc_fuzzer_replay',
+    'ipc_message_dump.so',
+    'ipc_message_list',
+    'ipc_message_util',
+    'ipc_tests',
+    'it2me_standalone_host_main',
+    'jingle_unittests',
+    'khronos_glcts_test',
+    'latency_unittests',
+    'leveldb_service_unittests',
+    'libaddressinput_unittests',
+    'libapp_shell_framework.dylib',
+    'libcommand_buffer_gles2.dylib',
+    'libmedia_library.dylib',
+    'libphonenumber_unittests',
+    'mac_installer_unittests',
+    'macviews_interactive_ui_tests',
+    'media_blink_unittests',
+    'media_service_unittests',
+    'media_mojo_unittests',
+    'media_perftests',
+    'media_pipeline_integration_unittests',
+    'media_unittests',
+    'message_center_unittests',
+    'midi_unittests',
+    'mojo_unittests',
+    'nacl_loader_unittests',
+    'native_theme_unittests',
+    'net_unittests',
+    'performance_browser_tests',
+    'ppapi_perftests',
+    'ppapi_unittests',
+    'printing_unittests',
+    'proximity_auth_unittests',
+    'remoting_perftests',
+    'remoting_start_host',
+    'remoting_unittests',
+    'sandbox_mac_unittests',
+    'service_manager_unittests',
+    'shell_dialogs_unittests',
+    'skia_unittests',
+    'snapshot_unittests',
+    'sql_unittests',
+    'storage_unittests',
+    'sync_client',
+    'sync_integration_tests',
+    'sync_listen_notifications',
+    'sync_performance_tests',
+    'sync_unit_tests',
+    'udp_proxy',
+    'ui_base_unittests',
+    'ui_touch_selection_unittests',
+    'unit_tests',
+    'url_ipc_unittests',
+    'url_unittests',
+    'video_encode_accelerator_unittest',
+    'views_examples_exe',
+    'views_examples_with_content_exe',
+    'views_unittests',
+    'viz_benchmark',
+    'webkit_unit_tests',
+    'wtf_unittests',
+
+    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
+  ],
+
+  # https://crbug.com/330260
+  'win': [
+    # These two targets force symbol_level to be at least 1, they will work
+    # once we've figured out the PDB aging field.
+    'crashpad_snapshot_test_image_reader.exe',
+    'crashpad_snapshot_test_image_reader_module.dll',
+
+    # TODO(thakis): Figure out what's up with these two.
+    'mini_installer.exe',
+    'previous_version_mini_installer.exe',
+
+    # These probably have mtimes in the zip headers and the scripts creating
+    # them probably should use build_utils.ZipDir() instead.
+    'mini_installer_tests.zip',
+    'policy_templates.zip',
+
+    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
+    'remoting-me2me-host-win.zip',
+    'remoting-webapp.v2.zip',
+
+    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
+
+    # TODO(thakis): Figure out what's up with these two.
+    'ppapi_nacl_tests_pnacl_newlib_x32.nexe',
+    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
+
+
+    'app_shell_unittests.isolated',
+    'blink_heap_unittests.isolated',
+    'browser_tests.isolated',
+    'chrome_app_unittests.isolated',
+    'chrome_elf_import_unittests.isolated',
+    'chromedriver_py_tests.isolated',
+    'components_browsertests.isolated',
+    'components_perftests.isolated',
+    'components_unittests.isolated',
+    'content_browsertests.isolated',
+    'content_shell_crash_test.isolated',
+    'content_unittests.isolated',
+    'crashpad_tests.isolated',
+    'extensions_browsertests.isolated',
+    'extensions_unittests.isolated',
+    'gin_unittests.isolated',
+    'headless_browsertests.isolated',
+    'interactive_ui_tests.isolated',
+    'media_blink_unittests.isolated',
+    'mini_installer_tests.isolated',
+    'performance_browser_tests.isolated',
+    'performance_test_suite.isolated',
+    'performance_webview_test_suite.isolated',
+    'services_unittests.isolated',
+    'sync_integration_tests.isolated',
+    'telemetry_gpu_integration_test.isolated',
+    'telemetry_perf_unittests.isolated',
+    'telemetry_unittests.isolated',
+    'unit_tests.isolated',
+    'vr_common_perftests.isolated',
+    'vr_common_unittests.isolated',
+    'vr_pixeltests.isolated',
+    'webkit_layout_tests.isolated',
+    'webkit_layout_tests_exparchive.isolated',
+    'webkit_unit_tests.isolated',
+  ],
+}

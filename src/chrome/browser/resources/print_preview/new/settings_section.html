@@ -1,0 +1,72 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="print_preview_shared_css.html">
+
+<dom-module id="print-preview-settings-section">
+  <template>
+    <style include="print-preview-shared cr-shared-style">
+      :host {
+        display: flex;
+        padding: 0 20px;
+        --policy-icon-padding: 4px;
+        --policy-icon-size: 20px;
+      }
+
+      ::slotted([slot=controls]),
+      ::slotted([slot=title]),
+      iron-icon {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 38px;
+      }
+
+      ::slotted([slot=controls]) {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      ::slotted([slot=title]) {
+        color: var(--google-grey-900);
+        flex: none;
+        font-size: 1em;
+        line-height: calc(20/13 * 1em);
+        padding-inline-end: var(--policy-icon-padding);
+        width: calc(75px - var(--policy-icon-padding));
+        word-break: break-word;
+      }
+
+      :host([managed]:not([show-policy-on-end])) ::slotted([slot=title]) {
+        width: calc(75px - var(--policy-icon-size)
+                    - var(--policy-icon-padding));
+      }
+
+      :host([managed][show-policy-on-end]) ::slotted([slot=controls]) {
+        padding-inline-end: var(--policy-icon-padding);
+      }
+
+      iron-icon {
+        fill: var(--google-grey-refresh-700);
+        flex: 0;
+        min-width: var(--policy-icon-size);
+      }
+    </style>
+    <slot name="title"></slot>
+    <template is="dom-if" if="[[showStartIcon_(showPolicyOnEnd, managed)]]">
+      <iron-icon hidden$="[[!managed]]" icon="print-preview:business"
+          alt="" aria-label="$i18n{managedOption}">
+      </iron-icon>
+    </template>
+    <slot name="controls"></slot>
+    <template is="dom-if" if="[[showEndIcon_(showPolicyOnEnd, managed)]]">
+      <iron-icon hidden$="[[!managed]]" icon="print-preview:business"
+          alt="" aria-label="$i18n{managedOption}">
+      </iron-icon>
+    </template>
+  </template>
+  <script src="settings_section.js"></script>
+</dom-module>

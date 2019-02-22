@@ -1,0 +1,12 @@
+include_rules = [
+  "+components/sync/base",
+  "+components/sync/engine",
+  "+components/sync/js",
+  "+components/sync/model",
+  "+components/sync/protocol",
+  "+components/sync/syncable",
+  "+components/sync/test",
+  "+services/network/public",
+  "+services/network/test",
+  "+third_party/protobuf",
+]

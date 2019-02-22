@@ -1,0 +1,10 @@
+{
+  "name": "service_manager_unittest_shared_instance_across_users",
+  "display_name": "Service Manager Unittest: Shared instance across users",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": { }
+  }
+}

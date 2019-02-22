@@ -1,0 +1,1429 @@
+{
+  // http://dev.chromium.org/blink/runtime-enabled-features
+  //
+  // This list is used to generate runtime_enabled_features.h/cc which contains
+  // a class that stores static enablers for all experimental features.
+
+  parameters: {
+    // Each feature can be assigned a "status":
+    // * status=stable: Enable this in all Blink configurations. We are
+    //   committed to these APIs indefinitely.
+    // * status=experimental: In-progress features, Web Developers might play
+    //   with, but are not on by default in stable.
+    // * status=test: Enabled in ContentShell for testing, otherwise off.
+    // Features without a status are not enabled anywhere by default.
+    //
+    // "stable" features listed here should be rare, as anything which we've
+    // shipped stable can have its runtime flag removed soon after.
+    status: {
+      valid_values: ["stable", "experimental", "test"],
+    },
+
+    // "implied_by" or "depends_on" specifies relationship to other features:
+    // * implied_by: ["feature1","feature2",...]
+    //   The feature is automatically enabled if any implied_by features is
+    //   enabled;
+    // * depends_on: ["feature1","feature2",...]
+    //   The feature is enabled only if all depends_on features are enabled.
+    // Only one of "implied_by" and "depends_on" can be specified.
+    implied_by: {
+      default: [],
+      valid_type: "list",
+    },
+    depends_on: {
+      default: [],
+      valid_type: "list",
+    },
+
+    // origin_trial_feature_name: "FEATURE_NAME" is used to integrate the
+    // feature with the Origin Trials framework. The framework allows the
+    // feature to be enabled at runtime on a per-page basis through a signed
+    // token for the corresponding feature name. Declaring the
+    // origin_trial_feature_name will cause a static method to be generated in
+    // origin_trials.h/cpp. This static method allows the feature implementation
+    // to check if it is enabled for the current context.
+    origin_trial_feature_name: {
+    },
+    origin_trial_os: {
+      default: [],
+      valid_type: "list",
+    },
+
+    // settable_from_internals specifies whether a feature can be set from
+    // internals.runtimeFlags, with the default being false.
+    settable_from_internals: {
+      valid_type: "bool",
+    },
+
+    // Set to true to have customised {feature}Enabled() method implementation.
+    custom: {
+      valid_type: "bool",
+    },
+
+    // Feature policy IDL extended attribute (see crrev.com/2247923004).
+    feature_policy: {
+    },
+  },
+
+  data: [
+    {
+      name: "Accelerated2dCanvas",
+      settable_from_internals: true,
+      status: "stable",
+    },
+    {
+      name: "AccessibilityObjectModel",
+      status: "experimental",
+    },
+    {
+      name: "AdTagging",
+      status: "test",
+    },
+    {
+      name: "AllowActivationDelegationAttr",
+    },
+    {
+      name: "AllowContentInitiatedDataUrlNavigations",
+      status: "stable",
+    },
+    {
+      name: "AnimationWorklet",
+      origin_trial_feature_name: "AnimationWorklet",
+      status: "experimental",
+    },
+    {
+      name: "AsyncClipboard",
+      status: "experimental",
+    },
+    {
+      name: "AudioOutputDevices",
+      status: "stable",
+    },
+    {
+      name: "AudioVideoTracks",
+      status: "experimental",
+    },
+    {
+      name: "AutomationControlled",
+      settable_from_internals: true,
+    },
+    {
+      // Flag set by the media::kAutoplayIgnoreWebAudio feature flag.
+      name: "AutoplayIgnoresWebAudio",
+      settable_from_internals: true,
+    },
+    {
+      name: "BackgroundFetch",
+      origin_trial_feature_name: "BackgroundFetch",
+      status: "experimental",
+    },
+    {
+      name: "BackgroundVideoTrackOptimization",
+      status: "stable",
+    },
+    {
+      name: "Badging",
+      status: "test",
+    },
+    {
+      name: "BlinkGenPropertyTrees",
+    },
+    {
+      name: "BlinkRuntimeCallStats",
+    },
+    {
+      name: "BloatedRendererDetection",
+      status: "experimental",
+    },
+    {
+      // Detects bloated renderers even if the uptime is small.
+      // Useful for local testing, not intended for production.
+      name: "BloatedRendererDetectionSkipUptimeCheck",
+    },
+    {
+      name: "BlockCredentialedSubresources",
+      status: "stable",
+    },
+    {
+      name: "BlockingDownloadsInSandbox",
+    },
+    {
+      name: "BlockMetaSetCookie",
+      status: "stable"
+    },
+    {
+      name: "CacheInlineScriptCode"
+    },
+    {
+      name: "CacheStorageAddAllRejectsDuplicates",
+      status: "experimental",
+    },
+    {
+      name: "CacheStyleSheetWithMediaQueries",
+      status: "experimental",
+    },
+    {
+      name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
+      status: "stable",
+    },
+    {
+      name: "Canvas2dContextLostRestored",
+      status: "experimental",
+    },
+    {
+      name: "Canvas2dFixedRenderingMode",
+      status: "test",
+    },
+    {
+      name: "Canvas2dImageChromium",
+    },
+    {
+      name: "Canvas2dScrollPathIntoView",
+      status: "experimental",
+    },
+    {
+      name: "CanvasColorManagement",
+      status: "experimental",
+    },
+    {
+      name: "CanvasHitRegion",
+      status: "experimental",
+    },
+    {
+      name: "CanvasImageSmoothing",
+      status: "experimental",
+    },
+    {
+      name: "ClickRetargetting",
+      status: "experimental",
+    },
+    {
+      name: "ClientPlaceholdersForServerLoFi",
+    },
+    {
+      name: "CompositedSelectionUpdate",
+    },
+    {
+      name: "CompositeOpaqueFixedPosition",
+      settable_from_internals: true,
+      status: "experimental",
+    },
+    {
+      name: "CompositorTouchAction",
+      status: "test",
+    },
+    {
+      name: "ComputedAccessibilityInfo",
+      status: "experimental",
+    },
+    {
+      name: "ConstructableStylesheets",
+      status: "experimental",
+    },
+    {
+      name: "ContextMenu",
+      status: "experimental",
+    },
+    {
+      name: "CookieStore",
+      origin_trial_feature_name: "CookieStore",
+      status: "experimental",
+    },
+    {
+      name: "CorsRFC1918",
+    },
+    {
+      name: "CSS3Text",
+      status: "experimental",
+    },
+    {
+      name: "CSSAdditiveAnimations",
+      depends_on: ["StackedCSSPropertyAnimations"],
+      status: "experimental",
+    },
+    {
+      name: "CSSBackdropFilter",
+      status: "experimental",
+    },
+    {
+      name: "CSSEnvironmentVariables",
+      status: "stable",
+    },
+    {
+      name: "CSSFocusVisible",
+      status: "experimental",
+    },
+    {
+      name: "CSSFontSizeAdjust",
+      status: "experimental",
+    },
+    {
+      name: "CSSFragmentIdentifiers"
+    },
+    {
+      name: "CSSHexAlphaColor",
+      status: "stable",
+    },
+    {
+      name: "CSSInBodyDoesNotBlockPaint",
+      status: "stable",
+    },
+    {
+      name: "CSSIndependentTransformProperties",
+      status: "experimental",
+    },
+    {
+      name: "CSSLayoutAPI",
+      status: "experimental",
+    },
+    {
+      name: "CSSLogical",
+      status: "experimental",
+      settable_from_internals: true,
+    },
+    {
+      name: "CSSMaskSourceType",
+      status: "experimental",
+    },
+    {
+      name: "CSSMatches",
+      status: "experimental",
+    },
+    {
+      name: "CSSOffsetPathRay",
+      status: "experimental",
+    },
+    {
+      name: "CSSOffsetPathRayContain",
+      status: "experimental",
+    },
+    {
+      name: "CSSOffsetPositionAnchor",
+      status: "experimental",
+    },
+    {
+      name: "CSSOMSmoothScroll",
+      status: "stable",
+    },
+    // Do not ship CSSPaintAPIArguments without shipping CSSVariables2 first.
+    //
+    // CSSPaintAPIArguments depends on parts of the the 'CSS Properties and
+    // Values API Level 1', specification (section 'Supported syntax strings').
+    // That specification is implemented behind the runtime enabled feature
+    // CSSVariables2.
+    {
+      name: "CSSPaintAPIArguments",
+      status: "experimental",
+    },
+    {
+      name: "CSSPartPseudoElement",
+      status: "experimental",
+    },
+    {
+      name: "CSSPseudoIS",
+      status: "experimental",
+    },
+    {
+      name: "CSSScrollSnapPoints",
+      status: "stable",
+    },
+    {
+      name: "CSSSnapSize",
+      status: "experimental",
+    },
+    {
+      name: "CSSVariables2",
+      status: "experimental",
+    },
+    {
+      name: "CSSViewport",
+      status: "experimental",
+    },
+    {
+      name: "CustomElementDefaultStyle",
+      status: "experimental",
+    },
+    // Introduced this flag as stable so web developers can test their sites
+    // without native Custom Elements v0 support.
+    {
+      name: "CustomElementsV0",
+      status: "stable",
+    },
+    {
+      name: "CustomUserTiming",
+    },
+    {
+      name: "Database",
+      status: "stable",
+    },
+    {
+      name: "DecodeToYUV",
+      status: "experimental",
+    },
+    {
+      name: "DeprecationReporting",
+      status: "stable",
+    },
+    {
+      name: "DesktopCaptureDisableLocalEchoControl",
+      status: "experimental",
+    },
+    {
+      name: "DisableHardwareNoiseSuppression",
+      origin_trial_feature_name: "DisableHardwareNoiseSuppression",
+      status: "experimental",
+    },
+    {
+      name: "DisplayCutoutAPI",
+      settable_from_internals: true,
+    },
+    {
+      name: "DisplayLocking",
+    },
+    {
+      name: "DisplayNoneIFrameCreatesNoLayoutObject",
+      status: "stable",
+    },
+    {
+      name: "DocumentCookie",
+    },
+    {
+      name: "DocumentDomain",
+    },
+    {
+      name: "DocumentWrite",
+    },
+    {
+      // http://crbug.com/707656 content editable in LayoutNG.
+      name: "EditingNG",
+    },
+    {
+      // https://crbug.com/879270
+      name: "ElementTiming",
+      status: "test",
+    },
+    {
+      name: "EncodingStreams",
+      status: "stable",
+    },
+    {
+      name: "EncryptedMediaEncryptionSchemeQuery",
+      status: "test",
+    },
+    {
+      name: "EncryptedMediaHdcpPolicyCheck",
+      origin_trial_feature_name: "EncryptedMediaHdcpPolicyCheck",
+      status: "experimental",
+    },
+    {
+      name: "EncryptedMediaPersistentUsageRecordSession",
+      status: "test",
+    },
+    {
+      name: "EventTiming",
+      origin_trial_feature_name: "EventTiming",
+      status: "experimental",
+    },
+    {
+      name: "ExecCommandInJavaScript",
+      status: "test",
+    },
+    {
+      name: "ExpensiveBackgroundTimerThrottling",
+      status: "stable",
+    },
+    {
+      name: "ExperimentalContentSecurityPolicyFeatures",
+      status: "experimental",
+    },
+    {
+      name: "ExperimentalHardwareEchoCancellation",
+      origin_trial_feature_name: "ExperimentalHardwareEchoCancellation2",
+      status: "experimental",
+    },
+    // Enables a set of features intended to help improve web developer
+    // productivity, by restricting the use of potentially problematic web-
+    // platform behaviors, as well as adding new high-level APIs for common
+    // development patterns.
+    {
+      name: "ExperimentalProductivityFeatures",
+      status: "experimental"
+    },
+    {
+      // Enables the attribute performance.shouldYield in windows. This
+      // attribute indicates that the frame should pause its current task so
+      // that the browser can perform some high priority work. See
+      // https://crbug.com/836310.
+      name: "ExperimentalShouldYield",
+      status: "experimental"
+    },
+    {
+      name: "ExperimentalV8Extras",
+      status: "experimental",
+    },
+    {
+      name: "ExtendedTextMetrics",
+      status: "experimental",
+    },
+    {
+      name: "ExtraWebGLVideoTextureMetadata",
+    },
+    {
+      name: "FastMobileScrolling",
+    },
+    {
+      name: "FeaturePolicyJavaScriptInterface",
+      origin_trial_feature_name: "FeaturePolicyJSAPI",
+      status: "experimental"
+    },
+    {
+      name: "FeaturePolicyReporting",
+      status: "experimental"
+    },
+    {
+      name: "FeaturePolicyVibrateFeature"
+    },
+    {
+      name: "FileSystem",
+      status: "stable",
+    },
+    {
+      name: "FontCacheScaling",
+      status: "test",
+    },
+    {
+      name: "FontSrcLocalMatching",
+      // No status, as the web platform runtime enabled feature is controlled by
+      // a Chromium level feature.
+    },
+    // For simulating Android's overlay fullscreen video in layout tests on Linux.
+    {
+      name: "ForceOverlayFullscreenVideo",
+    },
+    {
+      name: "ForceTallerSelectPopup",
+    },
+    {
+      name: "FormDataEvent",
+      status: "experimental",
+    },
+    {
+      name: "FractionalMouseEvent",
+    },
+    {
+      name: "FractionalMouseTypePointerEvent",
+      status: "stable",
+    },
+    {
+      name: "FractionalScrollOffsets",
+    },
+    {
+      name: "FramebustingNeedsSameOriginOrUserGesture",
+      settable_from_internals: true,
+      status: "stable",
+    },
+    {
+      name: "FramesTimingFunction",
+      status: "experimental",
+    },
+    {
+      name: "FullscreenOptions",
+      status: "stable",
+    },
+    {
+      name: "FullscreenUnprefixed",
+      settable_from_internals: true,
+      status: "stable",
+    },
+    {
+      name: "GamepadButtonAxisEvents",
+      status: "experimental",
+    },
+    {
+      name: "GamepadExtensions",
+      origin_trial_feature_name: "WebVR1.1M62",
+      status: "experimental",
+    },
+    {
+      name: "GamepadVibration",
+      status: "experimental",
+    },
+    {
+      name: "GetDisplayMedia",
+      status: "experimental",
+    },
+    {
+      name: "HeapCompaction",
+      status: "stable",
+    },
+    {
+      name: "HeapIncrementalMarking",
+      status: "stable",
+    },
+    {
+      name: "HeapIncrementalMarkingStress"
+    },
+    {
+      name: "HeapUnifiedGarbageCollection",
+    },
+    // Only exposed when a translation engine is available
+    // and experimental features are enabled.
+    {
+      name: "HrefTranslate",
+    },
+    // https://crbug.com/766694 for testing disabling the feature.
+    {
+      name: "HTMLImports",
+      status: "stable",
+    },
+    // https://crbug.com/523952 for testing disabling the feature.
+    {
+      name: "HTMLImportsStyleApplication",
+      status: "stable",
+    },
+    {
+      name: "IDBObserver",
+      status: "experimental",
+    },
+    {
+      name: "IdleTimeColdModeSpellChecking",
+      status: "stable",
+    },
+    {
+      name: "ImageOrientation",
+      status: "test",
+    },
+    {
+      name: "ImplicitRootScroller",
+      status: "experimental",
+      settable_from_internals: true,
+    },
+    {
+      name: "InertAttribute",
+      status: "experimental",
+    },
+    {
+      name: "InputMultipleFieldsUI",
+      status: "stable",
+    },
+    {
+      name: "InstalledApp",
+      origin_trial_feature_name: "InstalledApp",
+      status: "experimental",
+    },
+    {
+      name: "IntersectionObserverV2",
+    },
+    {
+      name: "InterventionReporting",
+      status: "stable",
+    },
+    {
+      name: "InvisibleDOM",
+      status: "experimental",
+    },
+    {
+      name: "IsolatedCodeCache",
+      status: "experimental",
+    },
+    {
+      // Tracks "jank" from layout objects changing their visual location
+      // between animation frames (see crbug.com/581518).
+      name: "JankTracking",
+      implied_by: ["LayoutJankAPI"],
+      status: "experimental",
+    },
+    {
+      name: "KeyboardMap",
+      status: "stable",
+    },
+    {
+      name: "LangAttributeAwareFormControlUI",
+    },
+    {
+      name: "LayeredAPI",
+      implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      // Exposes layout jank fractions to Javascript. See explainer:
+      // http://bit.ly/lsm-explainer.
+      name: "LayoutJankAPI",
+      status: "test",
+    },
+    {
+      name: "LayoutNG",
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "EditingNG"],
+    },
+    {
+      name: "LayoutNGBlockFragmentation",
+    },
+    {
+      name: "LayoutNGFieldset",
+    },
+    {
+      name: "LayoutNGFlexBox",
+    },
+    {
+      name: "LayoutNGFragmentCaching",
+      implied_by: ["LayoutNG"],
+    },
+    {
+      name: "LazyFrameLoading",
+    },
+    {
+      name: "LazyFrameVisibleLoadTimeMetrics",
+    },
+    {
+      name: "LazyImageLoading",
+    },
+    {
+      name: "LazyImageVisibleLoadTimeMetrics",
+    },
+    {
+      name: "LazyInitializeMediaControls",
+      // This is enabled by features::kLazyInitializeMediaControls.
+    },
+    {
+      name: "LongTaskV2",
+    },
+    {
+      name: "LowLatencyCanvas",
+      origin_trial_feature_name: "LowLatencyCanvas",
+      status: "experimental",
+    },
+    {
+      name:"ManualSlotting",
+      status:"experimental",
+    },
+    {
+      name: "MediaCapabilities",
+      origin_trial_feature_name: "MediaCapabilities",
+      status: "stable",
+    },
+    {
+      name: "MediaCapabilitiesEncodingInfo",
+      status: "experimental",
+    },
+    {
+      name: "MediaCapture",
+    },
+    {
+      name: "MediaCaptureDepth",
+      status: "experimental",
+    },
+    {
+      name: "MediaCaptureDepthVideoKind",
+      status: "experimental",
+    },
+    // Set to reflect the MediaCastOverlayButton feature.
+    {
+      name: "MediaCastOverlayButton",
+    },
+    {
+      name: "MediaControlsExpandGesture"
+    },
+    {
+      name: "MediaControlsOverlayPlayButton",
+      settable_from_internals: true,
+    },
+    {
+      name: "MediaDocumentDownloadButton",
+    },
+    // Set to reflect the kMediaEngagementBypassAutoplayPolicies feature.
+    {
+      name: "MediaEngagementBypassAutoplayPolicies",
+    },
+    {
+      name: "MediaQueryShape",
+      status: "experimental",
+    },
+    // MediaSession is enabled by default on Android only.
+    // TODO(rbyers): Add parameter to specify platform.
+    {
+      name: "MediaSession",
+      status: "test",
+    },
+    {
+      name: "MediaSourceExperimental",
+      status: "experimental",
+    },
+    {
+      name: "MediaSourceNewAbortAndDuration",
+      status: "experimental",
+    },
+    {
+      name: "MediaStreamTrackContentHint",
+      status: "stable",
+    },
+    // This is enabled by default on Windows only. The only part that's
+    // "experimental" is the support on other platforms.
+    {
+      name: "MiddleClickAutoscroll",
+      status: "test",
+    },
+    {
+      name: "MobileLayoutTheme",
+    },
+    {
+      name: "ModernMediaControls",
+    },
+    {
+      name: "ModuleDedicatedWorker",
+      status: "experimental",
+    },
+    {
+      name: "ModulePreload",
+      status: "stable",
+    },
+    {
+      name: "ModuleServiceWorker",
+      status: "test",
+    },
+    {
+      name: "MojoJS",
+      status: "test",
+    },
+    // MojoJSTest is used exclusively in testing environments, whereas MojoJS
+    // may also be used elsewhere.
+    {
+      name: "MojoJSTest",
+      status: "test",
+    },
+    {
+      name: "NavigatorContentUtils",
+    },
+    {
+      name: "NavigatorDeviceMemory",
+      status: "stable",
+    },
+    {
+      name: "NestedWorkers",
+      status: "stable",
+    },
+    {
+      name: "NetInfoDownlinkHeader",
+      status: "stable",
+    },
+    {
+      name: "NetInfoDownlinkMax",
+      status: "stable",
+    },
+    {
+      name: "NetInfoEffectiveTypeHeader",
+      status: "stable",
+    },
+    {
+      name: "NetInfoRttHeader",
+      status: "stable",
+    },
+    {
+      name: "NetworkService",
+    },
+    // Not a web exposed feature, enabled from the command line.
+    {
+      name: "NewRemotePlaybackPipeline",
+    },
+    {
+      name: "NoHoverAfterLayoutChange",
+      settable_from_internals: true,
+    },
+    {
+      name: "NoHoverDuringScroll",
+      settable_from_internals: true,
+    },
+    {
+      name: "NoIdleEncodingForLayoutTests",
+      status: "test",
+    },
+    {
+      name: "NotificationConstructor",
+      status: "stable",
+    },
+    // NotificationContentImage is not available in all platforms
+    {
+      name: "NotificationContentImage",
+      status: "test",
+    },
+    {
+      name: "NotificationInlineReplies",
+      status: "stable",
+    },
+    {
+      name: "Notifications",
+      status: "stable",
+    },
+    {
+      name: "NullableDocumentDomain",
+      status: "experimental",
+    },
+    {
+      name: "OffMainThreadCSSPaint",
+    },
+    {
+      name: "OffMainThreadWebSocket",
+    },
+    {
+      name: "OffscreenCanvas",
+      status: "stable",
+    },
+    {
+      name: "OffscreenCanvasCommit",
+      status: "experimental",
+    },
+    {
+      name: "OffscreenCanvasText",
+      status: "stable",
+    },
+    {
+      name: "OnDeviceChange",
+      status: "stable",
+    },
+    {
+      name: "OrientationEvent",
+    },
+    {
+      name: "OriginTrials",
+      status: "stable",
+    },
+    // Define a sample API for testing integration with the Origin Trials
+    // Framework. The sample API is used in both unit and layout tests for the
+    // Origin Trials Framework. Do not change this flag to stable, as it exists
+    // solely to generate code used by the sample API implementation.
+    {
+      name: "OriginTrialsSampleAPI",
+      origin_trial_feature_name: "Frobulate",
+    },
+    // Define a sample API for testing integration with the Origin Trials
+    // Framework. The sample API is used in both unit and layout tests for the
+    // Origin Trials Framework. Do not change this flag to stable, as it exists
+    // solely to generate code used by the sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIImplied",
+      origin_trial_feature_name: "FrobulateImplied",
+      implied_by: ["OriginTrialsSampleAPI"],
+    },
+    {
+      name: "OutOfBlinkCORS",
+    },
+    {
+      name: "OverflowIconsForMediaControls",
+    },
+    {
+      name: "OverlayScrollbars",
+      settable_from_internals: true,
+    },
+    {
+      name: "PageLifecycle",
+      status: "stable",
+    },
+    {
+      name: "PagePopup",
+      status: "stable",
+    },
+    // Compute touch action rects in paint instead of ScrollingCoordinator.
+    {
+      name: "PaintTouchActionRects",
+    },
+    // PaintTracking enables the Largest Text Paint metric, Last Text Paint
+    // metric, Largest Image Paint metric and Last Image Paint metric.
+    // See also: https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
+    {
+      name: "PaintTracking",
+    },
+    {
+      name: "PaintUnderInvalidationChecking",
+      settable_from_internals: true,
+    },
+    {
+      name: "PassiveDocumentEventListeners",
+      status: "stable",
+    },
+    {
+      name: "PassiveDocumentWheelEventListeners",
+    },
+    {
+      name: "PassPaintVisualRectToCompositor",
+    },
+    {
+      name: "PaymentApp",
+      status: "experimental",
+    },
+    {
+      name: "PaymentMethodChangeEvent",
+      status: "experimental",
+    },
+    // PaymentRequest is enabled by default on Android
+    {
+      name: "PaymentRequest",
+      status: "experimental",
+    },
+    {
+      name: "PaymentRetry",
+      status: "experimental",
+    },
+    {
+      name: "PerformanceNavigationTiming2",
+      status: "stable",
+    },
+    {
+      name: "PermissionDelegation",
+      status: "test",
+    },
+    {
+      name: "Permissions",
+      status: "stable",
+    },
+    {
+      name: "PermissionsRequestRevoke",
+      status: "experimental",
+    },
+    {
+      name: "PictureInPicture",
+      settable_from_internals: true,
+    },
+    // Picture-in-Picture API is disabled by default on Android.
+    {
+      name: "PictureInPictureAPI",
+      status: "stable",
+    },
+    {
+      name: "PictureInPictureControl",
+      status: "experimental",
+    },
+    {
+      name: "PointerRawMove",
+      status: "experimental",
+    },
+    {
+      name: "Portals",
+      status: "test",
+    },
+    {
+      name: "PostMessageOptions",
+      status: "stable",
+    },
+    {
+      name: "PreciseMemoryInfo",
+    },
+    // This feature is deprecated and we are evangelizing affected sites.
+    // See https://crbug.com/346236 for current status.
+    {
+      name: "PrefixedVideoFullscreen",
+      status: "stable",
+    },
+    {
+      name: "PreloadDefaultIsMetadata",
+      status: "stable",
+    },
+    {
+      name: "PreloadImageSrcSet",
+      status: "experimental",
+    },
+    {
+      name: "Presentation",
+      status: "stable",
+    },
+    {
+      name: "PrintBrowser",
+    },
+    {
+      name: "PriorityHints",
+      status: "experimental",
+    },
+    {
+      name: "PushMessaging",
+      status: "stable",
+    },
+    {
+      name: "PWAFullCodeCache"
+    },
+    {
+      name: "RasterInducingScroll",
+      status: "experimental",
+    },
+    {
+      name: "ReducedReferrerGranularity",
+    },
+    {
+      name: "RemotePlayback",
+      status: "stable",
+    },
+    // Whether or not the Remote Playback API backend is implemented.
+    // Not web-exposed, set per platform. For LayoutTests, disabled by
+    // default.
+    {
+      name: "RemotePlaybackBackend",
+      settable_from_internals: true,
+    },
+    {
+      name: "RenderingPipelineThrottling",
+      status: "stable",
+    },
+    {
+      name: "ReportingObserver",
+      implied_by: ["DeprecationReporting", "InterventionReporting"],
+      status: "stable",
+    },
+    {
+      name: "RequireCSSExtensionForFile",
+      status: "stable",
+    },
+    {
+      name: "ResourceLoadScheduler",
+      status: "experimental",
+    },
+    {
+      name: "RestrictAppCacheToSecureContexts",
+      status: "stable",
+    },
+    // Enables the use of the RTCIceTransport with extensions.
+    {
+      name: "RTCIceTransportExtension",
+      status: "test",
+    },
+    {
+      name: "RtcPeerConnectionId",
+      origin_trial_feature_name: "RtcPeerConnectionId",
+      status: "experimental",
+    },
+    // Enables the use of the RTCQuicTransport object.
+    {
+      name: "RTCQuicTransport",
+      status: "test",
+    },
+    {
+      name: "RTCRtpSenderParameters",
+      status: "stable",
+    },
+    // Enables the use of |RTCConfiguration::sdpSemantics| to override the
+    // default SDP semantics at RTCPeerConnection construction.
+    {
+      name: "RTCUnifiedPlan",
+      status: "stable",
+    },
+    // Overrides the default SDP semantics to be Unified Plan at
+    // RTCPeerConnection construction (unless otherwise specified).
+    {
+      name: "RTCUnifiedPlanByDefault",
+    },
+    {
+      name: "ScheduledScriptStreaming",
+    },
+    {
+      name: "ScriptedSpeech",
+      status: "stable",
+    },
+    // Serialize and restore scroll anchors.
+    {
+      name: "ScrollAnchorSerialization",
+      status: "test",
+    },
+    {
+      name: "ScrollCustomization",
+    },
+    // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
+    // as per the spec, matching other Web engines.
+    {
+      name: "ScrollTopLeftInterop",
+      status: "stable",
+    },
+    {
+      name: "SecMetadata",
+      status: "experimental"
+    },
+    {
+      name: "SendBeaconThrowForBlobWithNonSimpleType",
+      status: "stable",
+    },
+    {
+      name: "SendMouseEventsDisabledFormControls",
+      status: "experimental",
+    },
+    {
+      name: "Sensor",
+      status: "stable",
+    },
+    {
+      name: "SensorExtraClasses",
+      depends_on: ["Sensor"],
+      status: "experimental",
+    },
+    {
+      name: "Serial",
+      status: "experimental",
+    },
+    {
+      name: "ServiceWorkerScriptFullCodeCache",
+    },
+    {
+      name: "SetRootScroller",
+      status: "experimental",
+    },
+    // Introduced this flag as stable so web developers can test their sites
+    // without native Shadow DOM v0 support
+    {
+      name: "ShadowDOMV0",
+      status: "stable",
+    },
+    {
+      name: "ShadowPiercingDescendantCombinator",
+      status: "experimental",
+    },
+    {
+      name: "ShapeDetection",
+      origin_trial_feature_name: "ShapeDetection",
+      status: "experimental",
+    },
+    {
+      name: "SharedArrayBuffer",
+      status: "stable",
+    },
+    {
+      name: "SharedWorker",
+      status: "stable",
+    },
+    {
+      name: "SignatureBasedIntegrity",
+      origin_trial_feature_name: "SignatureBasedIntegrity",
+      status: "experimental",
+    },
+    {
+      name: "SignedHTTPExchange",
+    },
+    {
+      name: "SlimmingPaintV2",
+    },
+    {
+      name: "SMIL",
+      status: "stable",
+    },
+    {
+      name: "SmoothScrollJSIntervention",
+      status: "stable",
+    },
+    // Used as argument in attribute of stable-release functions/interfaces
+    // where a runtime-enabled feature name is required for correct IDL syntax.
+    // This is a global flag; do not change its status.
+    {
+      name: "StableBlinkFeatures",
+      status: "stable",
+    },
+    {
+      name: "StackedCSSPropertyAnimations",
+      status: "experimental",
+    },
+    {
+      name: "StaleWhileRevalidate",
+      origin_trial_feature_name: "StaleWhileRevalidate",
+      status: "experimental",
+    },
+    {
+      name: "TextUnderlinePositionLeftRight",
+      status: "stable",
+    },
+    {
+      name: "TimerThrottlingForBackgroundTabs",
+      status: "stable",
+    },
+    {
+      name: "TimerThrottlingForHiddenFrames",
+      status: "stable",
+    },
+    // Many websites disable mouse support when touch APIs are available.  We'd
+    // like to enable this always but can't until more websites fix this bug.
+    // Chromium sets this conditionally (eg. based on the presence of a
+    // touchscreen) in ApplyWebPreferences. "Touch events" themselves are always
+    // enabled since they're a feature always supported by Chrome.
+    {
+      name: "TouchEventFeatureDetection",
+      origin_trial_feature_name: "ForceTouchEventFeatureDetectionForInspector",
+      status: "stable",
+    },
+    // This is set conditionally in SetRuntimeFeaturesDefaultsAndUpdateFromArgs
+    // and will eventually go away when the touchpad/wheel scroll latching is
+    // enabled on all platforms (http://crbug.com/526463).
+    {
+      name: "TouchpadAndWheelScrollLatching",
+    },
+    // When enabled, tracks the number of times each LayoutBlock
+    // goes through layout. For testing purposes only.
+    {
+      name: "TrackLayoutPassesPerBlock",
+    },
+    {
+      name: "TrustedDOMTypes",
+      status: "experimental",
+    },
+    {
+      name: "TrustedEventsDefaultAction",
+      status: "stable",
+    },
+    {
+      name: "UnclosedFormControlIsInvalid",
+      status: "experimental",
+    },
+    {
+      name: "UnifiedTouchAdjustment",
+      status: "stable",
+    },
+    {
+      name: "UserActivationAPI",
+      status: "experimental",
+    },
+    {
+      name: "UserActivationV2",
+    },
+    {
+      name: "V8ContextSnapshot",
+      status: "test",
+    },
+    {
+      name: "V8IdleTasks",
+    },
+    {
+      name: "VideoFullscreenDetection",
+    },
+    {
+      name: "VideoFullscreenOrientationLock",
+    },
+    {
+      name: "VideoRotateToFullscreen",
+    },
+    {
+      name: "VisibilityCollapseColumn",
+    },
+    {
+      name: "WakeLock",
+      status: "experimental",
+    },
+    {
+      name: "WakeLockNavigator",
+      status: "experimental",
+    },
+    {
+      name: "WebAnimationsAPI",
+      status: "experimental",
+      implied_by: ['AnimationWorklet']
+    },
+    {
+      name: "WebAnimationsSVG",
+      status: "experimental",
+    },
+    {
+      name: "WebAssemblyThreads",
+      origin_trial_feature_name: "WebAssemblyThreads",
+      status: "experimental",
+    },
+    {
+      name: "WebAuth",
+      status: "experimental",
+    },
+    {
+      name: "WebAuthGetTransports",
+      status: "experimental",
+    },
+    // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
+    {
+      name: "WebBluetooth",
+      status: "experimental",
+    },
+    {
+      name: "WebFontsCacheAwareTimeoutAdaptation",
+      status: "experimental",
+    },
+    {
+      name: "WebGL2ComputeContext",
+      status: "experimental",
+    },
+    {
+      name: "WebGLDraftExtensions",
+      status: "experimental",
+    },
+    {
+      name: "WebGLImageChromium",
+    },
+    // WebGPU adds a large attack surface area to the GPU process and allows
+    // running arbitrary programs on the GPU (compute shaders), which may
+    // perform arbitrary read/writes of GPU memory if not properly sandboxed.
+    // That's why it is marked as "test" and not enabled as part of the
+    // --enable-experimental-web-platform-features flag.
+    {
+      name: "WebGPU",
+      status: "test",
+    },
+    {
+      name: "WebLocksAPI",
+      status: "stable",
+    },
+    {
+      name: "WebNFC",
+      status: "experimental",
+    },
+    // WebShare is enabled by default on Android.
+    {
+      name: "WebShare",
+      status: "experimental",
+    },
+    {
+      name: "WebUSB",
+      status: "stable",
+    },
+    {
+      name: "WebUSBOnDedicatedWorkers",
+      status: "stable",
+      depends_on: ["WebUSB"],
+    },
+    {
+      name: "WebVR",
+      origin_trial_feature_name: "WebVR1.1M62",
+      status: "experimental",
+    },
+    {
+      name: "WebVTTRegions",
+      status: "experimental",
+    },
+    {
+      name: "WebXR",
+      origin_trial_feature_name: "WebXRDeviceM69",
+      status: "experimental",
+    },
+    // Subset of the GamepadExtensions wanted for WebXR, which expose VR controller
+    // functionality as Gamepads.
+    {
+      name: "WebXRGamepadSupport",
+      origin_trial_feature_name: "WebXRGamepadSupport",
+      // This feature is a strict subset of GamepadExtensions.
+      implied_by: ["GamepadExtensions"],
+      status: "experimental",
+    },
+    {
+      name: "WebXRHitTest",
+      status: "experimental"
+    },
+    {
+      name: "WorkerNosniffBlock",
+      status: "stable",
+    },
+    {
+      name: "WorkerNosniffWarn",
+      status: "stable",
+      implied_by: ["WorkerNosniffBlock"],
+    },
+    {
+      name: "WorkerTaskQueue",
+      status: "experimental"
+    },
+    {
+      name: "WorkStealingInScriptRunner",
+      status: "experimental",
+    },
+    {
+      name: "WritableFiles",
+      status: "experimental",
+    },
+    {
+      name: "XSLT",
+      status: "stable",
+    },
+  ],
+}
