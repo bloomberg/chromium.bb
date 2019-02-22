@@ -18,13 +18,7 @@ promise_test(async t => {
       Mojo.getDocumentInterfaceBrokerHandle());
 
   const testInterfaceProxyBeforeOverride = new blink.mojom.FrameHostTestInterfaceProxy;
-  console.log("proxy" + typeof(testInterfaceProxyBeforeOverride));
   brokerProxy.getFrameHostTestInterface(testInterfaceProxyBeforeOverride.$.createRequest());
-
-  // Verify that RenderFrameHostImpl's implementation gets called without an override
-  testInterfaceProxyBeforeOverride.getName().then(reply => {
-    assert_equals(reply.name, 'RenderFrameHostImpl');
-  });
 
   setDocumentInterfaceBrokerOverrides({ getFrameHostTestInterface: request => {
     frameHostTestImpl.bindHandle(request.handle);
@@ -33,10 +27,13 @@ promise_test(async t => {
   const testInterfaceProxyAfterOverride = new blink.mojom.FrameHostTestInterfaceProxy;
   brokerProxy.getFrameHostTestInterface(testInterfaceProxyAfterOverride.$.createRequest());
 
+  // Verify that RenderFrameHostImpl's implementation gets called without an override
+  let reply = await testInterfaceProxyBeforeOverride.getName();
+  assert_equals(reply.name, 'RenderFrameHostImpl');
+
   // Verify that the test implementation gets called after the override
-  return testInterfaceProxyAfterOverride.getName().then(reply => {
-    assert_equals(reply.name, 'TestFrameHostTestImpl');
-  });
+  reply = await testInterfaceProxyAfterOverride.getName();
+  assert_equals(reply.name, 'TestFrameHostTestImpl');
 },
 'Appropriate DocumentInterfaceBroker implementations are called before and after overriding');
 
