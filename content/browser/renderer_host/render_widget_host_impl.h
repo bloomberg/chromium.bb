@@ -440,6 +440,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void QueueSyntheticGesture(
       std::unique_ptr<SyntheticGesture> synthetic_gesture,
       base::OnceCallback<void(SyntheticGesture::Result)> on_complete);
+  void QueueSyntheticGestureCompleteImmediately(
+      std::unique_ptr<SyntheticGesture> synthetic_gesture);
 
   void CancelUpdateTextDirection();
 
@@ -941,6 +943,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // already exists; calling this function will not force creation of a
   // TouchEmulator.
   TouchEmulator* GetExistingTouchEmulator();
+
+  void CreateSyntheticGestureControllerIfNecessary();
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

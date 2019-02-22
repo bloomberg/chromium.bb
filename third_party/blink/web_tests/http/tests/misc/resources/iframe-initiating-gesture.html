@@ -13,12 +13,6 @@ body {
 
 <script>
 
-// TODO(931723): Synthetic gesture completion callbacks are broken over OOPIFs.
-// We'll wait for a scroll event to work around this.
-var didScroll = new Promise((resolve) => {
-  document.addEventListener('scroll', resolve, { once: true });
-});
-
 window.addEventListener('message', async (e) => {
   var framePosition = e.data.framePosition;
   var x = framePosition.x + window.innerWidth / 2;
@@ -29,7 +23,6 @@ window.addEventListener('message', async (e) => {
   try {
     await smoothScroll(
         100, x, y, GestureSourceType.DEFAULT_INPUT, 'down', SPEED_INSTANT);
-    await didScroll;
     var scrollYAfter = window.scrollY;
     e.source.postMessage((scrollYAfter > scrollYBefore) ? 'pass' : 'fail', '*');
   } catch (error) {

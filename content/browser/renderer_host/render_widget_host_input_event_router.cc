@@ -232,6 +232,10 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
   ProcessAckedTouchEvents();
 }
 
+bool RenderWidgetHostInputEventRouter::HasEventsPendingDispatch() const {
+  return event_targeter_->HasEventsPendingDispatch();
+}
+
 size_t RenderWidgetHostInputEventRouter::TouchEventAckQueueLengthForTesting()
     const {
   return touch_event_ack_queue_->length_for_testing();

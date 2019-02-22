@@ -166,6 +166,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void ShowContextMenuAtPoint(const gfx::Point& point,
                               const ui::MenuSourceType source_type) override;
 
+  bool HasEventsPendingDispatch() const;
+
   size_t TouchEventAckQueueLengthForTesting() const;
 
  private:

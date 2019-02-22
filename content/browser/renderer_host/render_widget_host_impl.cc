@@ -1616,17 +1616,30 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     result_tracker_weak_ptr->PrepareForAsync();
 }
 
-void RenderWidgetHostImpl::QueueSyntheticGesture(
-    std::unique_ptr<SyntheticGesture> synthetic_gesture,
-    base::OnceCallback<void(SyntheticGesture::Result)> on_complete) {
+void RenderWidgetHostImpl::CreateSyntheticGestureControllerIfNecessary() {
   if (!synthetic_gesture_controller_ && view_) {
     synthetic_gesture_controller_ =
         std::make_unique<SyntheticGestureController>(
             this, view_->CreateSyntheticGestureTarget());
   }
+}
+
+void RenderWidgetHostImpl::QueueSyntheticGesture(
+    std::unique_ptr<SyntheticGesture> synthetic_gesture,
+    base::OnceCallback<void(SyntheticGesture::Result)> on_complete) {
+  CreateSyntheticGestureControllerIfNecessary();
   if (synthetic_gesture_controller_) {
     synthetic_gesture_controller_->QueueSyntheticGesture(
         std::move(synthetic_gesture), std::move(on_complete));
+  }
+}
+
+void RenderWidgetHostImpl::QueueSyntheticGestureCompleteImmediately(
+    std::unique_ptr<SyntheticGesture> synthetic_gesture) {
+  CreateSyntheticGestureControllerIfNecessary();
+  if (synthetic_gesture_controller_) {
+    synthetic_gesture_controller_->QueueSyntheticGestureCompleteImmediately(
+        std::move(synthetic_gesture));
   }
 }
 
@@ -2999,7 +3012,24 @@ void RenderWidgetHostImpl::RegisterRenderFrameMetadataObserver(
 }
 
 bool RenderWidgetHostImpl::HasGestureStopped() {
-  return !input_router_->HasPendingEvents();
+  if (delegate_ && delegate_->GetInputEventRouter() &&
+      delegate_->GetInputEventRouter()->HasEventsPendingDispatch()) {
+    return false;
+  }
+
+  if (input_router_->HasPendingEvents())
+    return false;
+
+  std::unique_ptr<RenderWidgetHostIterator> child_widgets(
+      GetEmbeddedRenderWidgetHosts());
+  while (RenderWidgetHost* child = child_widgets->GetNextHost()) {
+    auto* child_impl = static_cast<RenderWidgetHostImpl*>(child);
+    if (!child_impl->HasGestureStopped()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
