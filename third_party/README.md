@@ -1,6 +1,6 @@
 # Third-Party Dependencies
 
-The Open Screen library includes its dependencies as submodules in the source
+The Open Screen library includes its dependencies as DEPS in the source
 tree under the `//third_party/` directory.  They are structured as follows:
 
 ```
@@ -13,33 +13,29 @@ tree under the `//third_party/` directory.  They are structured as follows:
 
 ## Adding a new dependency
 
-When adding a new dependency to the project, you should first create a submodule
-under `//third_party/` with its source.  For example, let's say we want to add a
-new library called `alpha`.
+When adding a new dependency to the project, you should first add an entry
+to the DEPS file. For example, let's say we want to add a
+new library called `alpha`. Opening up DEPS, you would add
 
-``` bash
-  git submodule add https://repo.com/path/to/alpha.git third_party/alpha/src
-  git commit
+``` python
+  deps = {
+    ...
+    'src/third_party/alpha/src': 'https://repo.com/path/to/alpha.git'
+        + '@' + '<revision>'
 ```
 
 Then you need to add a BUILD.gn file for it under `//third_party/alpha`,
 assuming it doesn't already provide its own BUILD.gn.
 
+Finally, add a new entry for the "src" directory of your dependency to
+the //third_party/.gitignore.
+
 ## Roll a dependency to a new version
 
 Rolling a dependency forward (or to any different version really) consists of
 two steps:
-  1. Put HEAD of the submodule repository at the desired commit (make sure this
-     public before pushing the version-bump change).
-  1. `git add` the submodule path and commit.
-
-Once again, assume we have a dependency called `alpha` which we want to update:
-``` bash
-  cd third_party/alpha/src
-  # pull new changes e.g. git pull origin master
-  git add third_party/alpha/src
-  git commit
-```
+  1. Update the revision string for the dependency in the DEPS file.
+  1. `git add` the DEPS file and commit, then run gclient sync.
 
 Of course, you should also make sure that the new change is still compatible
 with the rest of the project, including any adapter files under

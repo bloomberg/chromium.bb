@@ -4,6 +4,34 @@ This library implements the Open Screen Protocol.  Information about the
 protocol can be found in the Open Screen [GitHub
 repository](https://github.com/webscreens/openscreenprotocol).
 
+## Getting the code
+
+### Depot Tools
+
+Openscreen dependencies are managed using gclient, from the depot_tools repo.
+To get gclient, run the following command in your terminal:
+```bash
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+```
+Then add the depot_tools folder to your PATH environment variable.
+
+For more setup information on depot_tools, see:
+https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+
+### Checking out
+
+From the parent directory of where you want the openscreen checkout (typically
+/usr/local/src), configure gclient and check out openscreen with the
+following commands:
+
+```bash
+    gclient config https://chromium.googlesource.com/openscreen
+    gclient sync
+```
+
+Now, you should have openscreen checked out, with all module dependencies
+checked out to the appropriate revision.
+
 ## Continuous Build
 
 Open Screen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
@@ -47,14 +75,6 @@ Note that g++ must be installed.
 
 ## Building an example with GN and Ninja
 
-After checking out the Open Screen library, make sure to initialize the
-submodules for the dependencies.  The following commands will checkout all the
-necessary submodules:
-
-``` bash
-  git submodule init
-  git submodule update
-```
 The following commands will build the current example executable and run it.
 
 ``` bash
