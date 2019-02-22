@@ -287,7 +287,6 @@ int32_t RTCVideoDecoderAdapter::RegisterDecodeCompleteCallback(
 
 int32_t RTCVideoDecoderAdapter::Release() {
   DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   base::AutoLock auto_lock(lock_);
   pending_buffers_.clear();

@@ -72,7 +72,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
                  bool missing_frames,
                  const webrtc::CodecSpecificInfo* codec_specific_info,
                  int64_t render_time_ms) override;
-  // Called on the worker thread.
+  // Called on the worker thread and on the DecodingThread.
   int32_t Release() override;
   // Called on the worker thread and on the DecodingThread.
   const char* ImplementationName() const override;
