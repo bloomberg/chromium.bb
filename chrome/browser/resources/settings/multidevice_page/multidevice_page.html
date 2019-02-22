@@ -110,7 +110,8 @@
       </template>
     </settings-animated-pages>
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
-      <settings-password-prompt-dialog id="multidevicePasswordPrompt">
+      <settings-password-prompt-dialog id="multidevicePasswordPrompt"
+          auth-token="{{authToken_}}">
       </settings-password-prompt-dialog>
     </template>
   </template>
