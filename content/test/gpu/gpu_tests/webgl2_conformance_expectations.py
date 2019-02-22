@@ -677,6 +677,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
         ['mac', ('nvidia', 0xfe9)], bug=929398)
 
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-3d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
+        ['mac', ('nvidia', 0xfe9)], bug=934556)
+
     # When these fail on this configuration, they fail multiple times in a row.
     self.Fail('deqp/functional/gles3/shaderoperator/*',
         ['mac', 'nvidia'], bug=756537)
