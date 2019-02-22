@@ -1363,6 +1363,16 @@ const char kOmniboxUIBlueSearchLoopAndSearchQueryName[] =
 const char kOmniboxUIBlueSearchLoopAndSearchQueryDescription[] =
     "Color the generic search icon and search terms blue.";
 
+const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName[] =
+    "Omnibox UI Blue Titles And Gray Urls On Page Suggestions";
+const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription[] =
+    "Displays navigation suggestions with blue titles and gray URLs.";
+
+const char kOmniboxUIBlueTitlesOnPageSuggestionsName[] =
+    "Omnibox UI Blue Titles On Page Suggestions";
+const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[] =
+    "Displays navigation suggestions with blue titles.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =

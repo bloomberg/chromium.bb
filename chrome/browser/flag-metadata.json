@@ -2573,6 +2573,16 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-ui-blue-titles-and-gray-urls-on-page-suggestions",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "omnibox-ui-blue-titles-on-page-suggestions",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-ui-use-generic-search-engine-icon",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80

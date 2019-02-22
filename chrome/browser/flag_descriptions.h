@@ -828,6 +828,12 @@ extern const char kOmniboxSpareRendererDescription[];
 extern const char kOmniboxUIBlueSearchLoopAndSearchQueryName[];
 extern const char kOmniboxUIBlueSearchLoopAndSearchQueryDescription[];
 
+extern const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName[];
+extern const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription[];
+
+extern const char kOmniboxUIBlueTitlesOnPageSuggestionsName[];
+extern const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
