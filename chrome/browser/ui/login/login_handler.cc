@@ -193,19 +193,10 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
     : WebContentsObserver(web_contents),
       auth_info_(auth_info),
       auth_required_callback_(std::move(auth_required_callback)),
+      prompt_started_(false),
       weak_factory_(this) {
   DCHECK(web_contents);
   DCHECK(auth_info_) << "LoginHandler constructed with NULL auth info";
-
-  // This is probably OK; we need to listen to everything and we break out of
-  // the Observe() if we aren't handling the same auth_info().
-  //
-  // TODO(davidben): We only need to listen to notifications within a single
-  // BrowserContext.
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 LoginHandler::~LoginHandler() {
@@ -362,7 +353,7 @@ void LoginHandler::Observe(int type,
 
 void LoginHandler::NotifyAuthNeeded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (WasAuthHandled())
+  if (WasAuthHandled() || !prompt_started_)
     return;
 
   content::NotificationService* service =
@@ -381,7 +372,7 @@ void LoginHandler::NotifyAuthSupplied(const base::string16& username,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
 
-  if (!web_contents())
+  if (!web_contents() || !prompt_started_)
     return;
 
   content::NotificationService* service =
@@ -398,6 +389,9 @@ void LoginHandler::NotifyAuthSupplied(const base::string16& username,
 void LoginHandler::NotifyAuthCancelled() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
+
+  if (!prompt_started_)
+    return;
 
   content::NotificationService* service =
       content::NotificationService::current();
@@ -527,6 +521,17 @@ void LoginHandler::MaybeSetUpLoginPrompt(
     SetAuth(credentials->username(), credentials->password());
     return;
   }
+
+  // This is OK; we break out of the Observe() if we aren't handling the same
+  // auth_info() or BrowserContext.
+  //
+  // TODO(davidben): Only listen to notifications within a single
+  // BrowserContext.
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  prompt_started_ = true;
 
   // Check if this is a main frame navigation and
   // (a) if the request is cross origin or

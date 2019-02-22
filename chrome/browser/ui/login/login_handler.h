@@ -181,6 +181,9 @@ class LoginHandler : public content::NotificationObserver,
   LoginAuthRequiredCallback auth_required_callback_;
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
+
+  // True if the extensions logic has run and the prompt logic has started.
+  bool prompt_started_;
   base::WeakPtrFactory<LoginHandler> weak_factory_;
 };
 
