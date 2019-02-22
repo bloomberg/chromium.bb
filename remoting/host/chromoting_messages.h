@@ -314,8 +314,10 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_ReadFileChunk,
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CloseFile,
                     uint64_t /* file_id */)
 
-// Requests that the desktop process cancel the currently-being-written file
-// identified by |file_id|, which will be deleted. There is no response message.
+// Requests that the desktop process cancel the file identified by |file_id|.
+// If the file is being written, the partial file will be deleted. If the file
+// is being read, it will be closed. In either case, there is no response
+// message.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CancelFile,
                     uint64_t /* file_id */)
 

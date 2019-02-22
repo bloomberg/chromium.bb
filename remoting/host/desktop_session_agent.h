@@ -106,6 +106,10 @@ class DesktopSessionAgent
 
   // IpcFileOperations::ResultHandler implementation.
   void OnResult(std::uint64_t file_id, ResultHandler::Result result) override;
+  void OnInfoResult(std::uint64_t file_id,
+                    ResultHandler::InfoResult result) override;
+  void OnDataResult(std::uint64_t file_id,
+                    ResultHandler::DataResult result) override;
 
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned.
