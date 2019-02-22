@@ -11,6 +11,7 @@
 import argparse
 import logging
 import os
+import posixpath
 import re
 import sys
 import shutil
@@ -24,7 +25,8 @@ from devil.android import device_utils
 
 
 def _CreateSymbolsDir(build_path, dynamic_library_names):
-  generator = 'components/crash/content/tools/generate_breakpad_symbols.py'
+  generator = os.path.join('components', 'crash', 'content', 'tools',
+                           'generate_breakpad_symbols.py')
   syms_dir = os.path.join(build_path, 'crashpad_syms')
   shutil.rmtree(syms_dir, ignore_errors=True)
   os.mkdir(syms_dir)
@@ -35,9 +37,12 @@ def _CreateSymbolsDir(build_path, dynamic_library_names):
     logging.info('Generating symbols for: %s', unstripped_library_path)
     cmd = [
         generator,
-        '--symbols-dir={}'.format(syms_dir),
-        '--build-dir={}'.format(build_path),
-        '--binary={}'.format(unstripped_library_path),
+        '--symbols-dir',
+        syms_dir,
+        '--build-dir',
+        build_path,
+        '--binary',
+        unstripped_library_path,
     ]
     return_code = subprocess.call(cmd)
     if return_code != 0:
@@ -51,7 +56,7 @@ def _ChooseLatestCrashpadDump(device, crashpad_dump_path):
   latest_timestamp = 0
   for crashpad_file in device.ListDirectory(crashpad_dump_path):
     if crashpad_file.endswith('.dmp'):
-      stat = device.StatPath(os.path.join(crashpad_dump_path, crashpad_file))
+      stat = device.StatPath(posixpath.join(crashpad_dump_path, crashpad_file))
       current_timestamp = stat['st_mtime']
       if current_timestamp > latest_timestamp:
         latest_timestamp = current_timestamp
@@ -91,6 +96,9 @@ def _ExtractLibraryNamesFromDump(build_path, dump_path):
       if m:
         library_names.append(m.group('library_name'))
   if not library_names:
+    logging.warning(
+        'Could not find any library name in the dump, '
+        'default to: %s', default_library_name)
     return [default_library_name]
   return library_names
 
@@ -98,7 +106,7 @@ def _ExtractLibraryNamesFromDump(build_path, dump_path):
 def main():
   logging.basicConfig(level=logging.INFO)
   parser = argparse.ArgumentParser(
-      description='Fetches Crashpad dumps from a given device,'
+      description='Fetches Crashpad dumps from a given device, '
       'walks and symbolizes the stacks.')
   parser.add_argument('--device', required=True, help='Device serial number')
   parser.add_argument(
@@ -116,8 +124,8 @@ def main():
   devil_chromium.Initialize(adb_path=args.adb_path)
   device = device_utils.DeviceUtils(args.device)
 
-  device_crashpad_path = os.path.join(args.chrome_cache_path, 'Crashpad',
-                                      'pending')
+  device_crashpad_path = posixpath.join(args.chrome_cache_path, 'Crashpad',
+                                        'pending')
   crashpad_file = _ChooseLatestCrashpadDump(device, device_crashpad_path)
   if not crashpad_file:
     logging.error('Could not locate a crashpad dump')
@@ -127,7 +135,7 @@ def main():
     symbols_dir = None
     try:
       device.PullFile(
-          device_path=os.path.join(device_crashpad_path, crashpad_file),
+          device_path=posixpath.join(device_crashpad_path, crashpad_file),
           host_path=dump_dir)
       dump_full_path = os.path.join(dump_dir, crashpad_file)
       library_names = _ExtractLibraryNamesFromDump(args.build_path,
