@@ -18,11 +18,14 @@ class Profile;
 
 namespace app_list {
 
+class AppSearchResultRanker;
+
 class ArcAppShortcutsSearchProvider : public SearchProvider {
  public:
   ArcAppShortcutsSearchProvider(int max_results,
                                 Profile* profile,
-                                AppListControllerDelegate* list_controller);
+                                AppListControllerDelegate* list_controller,
+                                AppSearchResultRanker* ranker);
   ~ArcAppShortcutsSearchProvider() override;
 
   // SearchProvider:
@@ -35,6 +38,9 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
   const int max_results_;
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
+  // TODO(crbug.com/931149): train this ranker on app shortcut clicks, and use
+  // it to tweak their relevance scores.
+  AppSearchResultRanker* ranker_;
 
   base::WeakPtrFactory<ArcAppShortcutsSearchProvider> weak_ptr_factory_;
 

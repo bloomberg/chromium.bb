@@ -34,7 +34,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -620,14 +619,13 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
                                      base::Clock* clock,
-                                     AppListModelUpdater* model_updater)
+                                     AppListModelUpdater* model_updater,
+                                     AppSearchResultRanker* ranker)
     : profile_(profile),
       list_controller_(list_controller),
       model_updater_(model_updater),
       clock_(clock),
-      ranker_(std::make_unique<AppSearchResultRanker>(
-          profile->GetPath(),
-          chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
+      ranker_(ranker),
       refresh_apps_factory_(this),
       update_results_factory_(this) {
   bool app_service_enabled =
