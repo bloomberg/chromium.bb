@@ -141,7 +141,7 @@ class TestResultsTracker {
   std::map<std::string, CodeLocation> test_locations_;
 
   // Name of tests that will run and produce results.
-  std::vector<std::string> test_placeholders_;
+  std::set<std::string> test_placeholders_;
 
   // Set of all disabled tests in the current executable.
   std::set<std::string> disabled_tests_;
