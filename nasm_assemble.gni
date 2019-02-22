@@ -156,6 +156,10 @@ template("nasm_assemble") {
       visibility = invoker.visibility
     }
 
+    if (defined(invoker.all_dependent_configs)) {
+      all_dependent_configs = invoker.all_dependent_configs
+    }
+
     sources = get_target_outputs(":$action_name")
 
     # Do not publicize any header to remove build dependency.
