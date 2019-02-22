@@ -22,11 +22,32 @@ BadgeManagerDelegateWin::BadgeManagerDelegateWin(Profile* profile)
 void BadgeManagerDelegateWin::OnBadgeSet(const std::string& app_id,
                                          base::Optional<uint64_t> contents) {
   auto badge_string = badging::GetBadgeString(contents);
-  auto badge_alt_string =
-      contents ? l10n_util::GetPluralStringFUTF8(IDS_BADGE_UNREAD_NOTIFICATIONS,
-                                                 contents.value())
-               : l10n_util::GetStringUTF8(
-                     IDS_BADGE_UNREAD_NOTIFICATIONS_UNSPECIFIED);
+  // There are 3 different cases:
+  // 1. |contents| is between 1 and 99 inclusive => Set the accessibility text
+  //    to a pluralized notification count (e.g. 4 Unread Notifications).
+  // 2. |contents| is greater than 99 => Set the accessibility text to
+  //    More than |kMaxBadgeContent| unread notifications, so the
+  //    accessibility text matches what is displayed on the badge (e.g. More
+  //    than 99 notifications).
+  // 3. |contents| doesn't have a value (i.e. the badge is set to 'flag') => Set
+  //    the accessibility text to something less specific (e.g. Unread
+  //    Notifications).
+  std::string badge_alt_string;
+  if (contents) {
+    uint64_t value = contents.value();
+    badge_alt_string = value <= badging::kMaxBadgeContent
+                           // Case 1.
+                           ? l10n_util::GetPluralStringFUTF8(
+                                 IDS_BADGE_UNREAD_NOTIFICATIONS, value)
+                           // Case 2.
+                           : l10n_util::GetPluralStringFUTF8(
+                                 IDS_BADGE_UNREAD_NOTIFICATIONS_SATURATED,
+                                 badging::kMaxBadgeContent);
+  } else {
+    // Case 3.
+    badge_alt_string =
+        l10n_util::GetStringUTF8(IDS_BADGE_UNREAD_NOTIFICATIONS_UNSPECIFIED);
+  }
 
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (!IsAppBrowser(browser, app_id))

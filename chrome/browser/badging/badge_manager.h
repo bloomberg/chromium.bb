@@ -20,6 +20,9 @@ class Profile;
 
 namespace badging {
 
+// The maximum value of badge contents before saturation occurs.
+constexpr uint64_t kMaxBadgeContent = 99u;
+
 // Determines the text to put on the badge based on some badge_content.
 std::string GetBadgeString(base::Optional<uint64_t> badge_content);
 
