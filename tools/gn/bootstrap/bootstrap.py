@@ -97,7 +97,8 @@ def main(argv):
       os.putenv(var, os.environ.get(var, '') + ' ' + ' '.join(vals))
 
     append_to_env('LDFLAGS', [
-        '-nodefaultlibs', 'libc++.gn.so', '-lc', '-lm',
+        '-nodefaultlibs', 'libc++.gn.so',
+        '-lpthread', '-lc', '-lm',
         '-Wl,-rpath="\$$ORIGIN/."', '-Wl,-rpath-link=.'
     ])
     append_to_env('CXXFLAGS', [
