@@ -6,10 +6,6 @@
 
 namespace blink {
 
-bool NGBfcRect::IsEmpty() const {
-  return start_offset == end_offset;
-}
-
 bool NGBfcRect::operator==(const NGBfcRect& other) const {
   return start_offset == other.start_offset && end_offset == other.end_offset;
 }

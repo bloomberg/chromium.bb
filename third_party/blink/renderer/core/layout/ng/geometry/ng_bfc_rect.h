@@ -21,16 +21,10 @@ struct CORE_EXPORT NGBfcRect {
     DCHECK_GE(end_offset.block_offset, start_offset.block_offset);
   }
 
-  bool IsEmpty() const;
-
   LayoutUnit LineStartOffset() const { return start_offset.line_offset; }
   LayoutUnit LineEndOffset() const { return end_offset.line_offset; }
   LayoutUnit BlockStartOffset() const { return start_offset.block_offset; }
   LayoutUnit BlockEndOffset() const { return end_offset.block_offset; }
-
-  NGBfcOffset LineEndBlockStartOffset() const {
-    return {LineEndOffset(), BlockStartOffset()};
-  }
 
   LayoutUnit BlockSize() const {
     if (end_offset.block_offset == LayoutUnit::Max())
@@ -44,7 +38,6 @@ struct CORE_EXPORT NGBfcRect {
 
     return end_offset.line_offset - start_offset.line_offset;
   }
-  NGLogicalSize Size() const { return {InlineSize(), BlockSize()}; }
 
   bool operator==(const NGBfcRect& other) const;
   bool operator!=(const NGBfcRect& other) const { return !(*this == other); }
