@@ -59,7 +59,8 @@ suite('Multidevice', function() {
     if (authRequired) {
       assertTrue(multidevicePage.showPasswordPromptDialog_);
       // Simulate the user entering a valid password, then closing the dialog.
-      multidevicePage.fire('auth-token-changed', {value: 'validAuthToken'});
+      multidevicePage.$$('#multidevicePasswordPrompt').authToken =
+          'validAuthToken';
       // Simulate closing the password prompt dialog
       multidevicePage.$$('#multidevicePasswordPrompt').fire('close');
       Polymer.dom.flush();
