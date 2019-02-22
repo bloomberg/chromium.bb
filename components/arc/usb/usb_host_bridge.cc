@@ -166,6 +166,14 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
                    base::Bind(&OnDeviceOpenError, repeating_callback));
 }
 
+void ArcUsbHostBridge::OpenDeviceDeprecated(
+    const std::string& guid,
+    const base::Optional<std::string>& package,
+    OpenDeviceCallback callback) {
+  LOG(ERROR) << "ArcUsbHostBridge::OpenDeviceDeprecated is deprecated";
+  OpenDevice(guid, package, std::move(callback));
+}
+
 void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
                                      GetDeviceInfoCallback callback) {
   if (!usb_service_) {
