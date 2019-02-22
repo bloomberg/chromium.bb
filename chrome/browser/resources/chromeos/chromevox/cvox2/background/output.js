@@ -1436,9 +1436,9 @@ Output.prototype = {
             else
               msg = Msgs.getMsg(info.msgId);
           } else {
-            var errorMsg = 'Missing role info for ' + node.role;
-            ruleStr.writeError(errorMsg);
-            console.error(errorMsg);
+            // We can safely ignore this role. ChromeVox output tests cover
+            // message id validity.
+            return;
           }
           this.append_(buff, msg || '', options);
           ruleStr.writeTokenWithValue(token, msg);
