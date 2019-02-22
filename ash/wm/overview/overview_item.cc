@@ -228,21 +228,21 @@ void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
 }
 
 float OverviewItem::GetItemScale(const gfx::Size& size) {
-  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
+  gfx::SizeF inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedOverviewTransformWindow::GetItemScale(
       GetTargetBoundsInScreen().size(), inset_size,
       transform_window_.GetTopInset(), kHeaderHeightDp);
 }
 
-gfx::Rect OverviewItem::GetTargetBoundsInScreen() const {
+gfx::RectF OverviewItem::GetTargetBoundsInScreen() const {
   return ::ash::GetTargetBoundsInScreen(transform_window_.GetOverviewWindow());
 }
 
-gfx::Rect OverviewItem::GetTransformedBounds() const {
+gfx::RectF OverviewItem::GetTransformedBounds() const {
   return transform_window_.GetTransformedBounds();
 }
 
-void OverviewItem::SetBounds(const gfx::Rect& target_bounds,
+void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                              OverviewAnimationType animation_type) {
   if (in_bounds_update_)
     return;
@@ -261,7 +261,7 @@ void OverviewItem::SetBounds(const gfx::Rect& target_bounds,
   const bool is_first_update = target_bounds_.IsEmpty();
   target_bounds_ = target_bounds;
 
-  gfx::Rect inset_bounds(target_bounds);
+  gfx::RectF inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
 
   // Do not animate if entering when the window is minimized, as it will be
@@ -317,7 +317,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
 }
 
 void OverviewItem::CloseWindow() {
-  gfx::Rect inset_bounds(target_bounds_);
+  gfx::RectF inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
                      target_bounds_.height() * kPreCloseScale);
   // Scale down both the window and label.
@@ -397,21 +397,21 @@ void OverviewItem::UpdateWindowDimensionsType() {
 }
 
 gfx::Rect OverviewItem::GetBoundsOfSelectedItem() {
-  gfx::Rect original_bounds = target_bounds();
+  gfx::RectF original_bounds = target_bounds();
   ScaleUpSelectedItem(OVERVIEW_ANIMATION_NONE);
-  gfx::Rect selected_bounds = transform_window_.GetTransformedBounds();
+  gfx::RectF selected_bounds = transform_window_.GetTransformedBounds();
   SetBounds(original_bounds, OVERVIEW_ANIMATION_NONE);
-  return selected_bounds;
+  return gfx::ToEnclosedRect(selected_bounds);
 }
 
 void OverviewItem::ScaleUpSelectedItem(OverviewAnimationType animation_type) {
-  gfx::Rect scaled_bounds(target_bounds());
+  gfx::RectF scaled_bounds = target_bounds();
   scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
                       -scaled_bounds.height() * kDragWindowScale);
   SetBounds(scaled_bounds, animation_type);
 }
 
-void OverviewItem::HandlePressEvent(const gfx::Point& location_in_screen) {
+void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen) {
   // We allow switching finger while dragging, but do not allow dragging two or
   // more items.
   if (overview_session_->window_drag_controller() &&
@@ -423,7 +423,7 @@ void OverviewItem::HandlePressEvent(const gfx::Point& location_in_screen) {
   overview_session_->InitiateDrag(this, location_in_screen);
 }
 
-void OverviewItem::HandleReleaseEvent(const gfx::Point& location_in_screen) {
+void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
   if (!IsDragItem())
     return;
 
@@ -431,21 +431,21 @@ void OverviewItem::HandleReleaseEvent(const gfx::Point& location_in_screen) {
   overview_session_->CompleteDrag(this, location_in_screen);
 }
 
-void OverviewItem::HandleDragEvent(const gfx::Point& location_in_screen) {
+void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
   if (!IsDragItem())
     return;
 
   overview_session_->Drag(this, location_in_screen);
 }
 
-void OverviewItem::HandleLongPressEvent(const gfx::Point& location_in_screen) {
+void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
   if (!ShouldAllowSplitView())
     return;
 
   overview_session_->StartSplitViewDragMode(location_in_screen);
 }
 
-void OverviewItem::HandleFlingStartEvent(const gfx::Point& location_in_screen,
+void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,
                                          float velocity_x,
                                          float velocity_y) {
   overview_session_->Fling(this, location_in_screen, velocity_x, velocity_y);
@@ -571,7 +571,8 @@ void OverviewItem::UpdateMaskAndShadow() {
   }
 
   transform_window_.UpdateMask(true);
-  SetShadowBounds(transform_window_.GetTransformedBounds());
+  SetShadowBounds(
+      gfx::ToEnclosedRect(transform_window_.GetTransformedBounds()));
 }
 
 void OverviewItem::OnStartingAnimationComplete() {
@@ -673,24 +674,24 @@ gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
   return shadow_->content_bounds();
 }
 
-void OverviewItem::SetItemBounds(const gfx::Rect& target_bounds,
+void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
                                  OverviewAnimationType animation_type) {
   aura::Window* window = GetWindow();
   DCHECK(root_window_ == window->GetRootWindow());
-  gfx::Rect screen_rect = GetTargetBoundsInScreen();
+  gfx::RectF screen_rect = gfx::RectF(GetTargetBoundsInScreen());
 
   // Avoid division by zero by ensuring screen bounds is not empty.
-  gfx::Size screen_size(screen_rect.size());
-  screen_size.SetToMax(gfx::Size(1, 1));
+  gfx::SizeF screen_size(screen_rect.size());
+  screen_size.SetToMax(gfx::SizeF(1.f, 1.f));
   screen_rect.set_size(screen_size);
 
   const int top_view_inset = transform_window_.GetTopInset();
-  gfx::Rect overview_item_bounds =
+  gfx::RectF overview_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, kHeaderHeightDp);
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
-    window->layer()->SetBounds(overview_item_bounds);
+    window->layer()->SetBounds(gfx::ToEnclosedRect(overview_item_bounds));
     transform_window_.GetOverviewWindow()->SetTransform(gfx::Transform());
     return;
   }
@@ -735,10 +736,10 @@ void OverviewItem::CreateWindowLabel() {
 }
 
 void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
-  gfx::Rect transformed_window_bounds =
+  gfx::RectF transformed_window_bounds =
       transform_window_.overview_bounds().value_or(
           transform_window_.GetTransformedBounds());
-  ::wm::ConvertRectFromScreen(root_window_, &transformed_window_bounds);
+  ::wm::TranslateRectFromScreen(root_window_, &transformed_window_bounds);
 
   gfx::Rect label_rect(kHeaderHeightDp, kHeaderHeightDp);
   label_rect.set_width(transformed_window_bounds.width());
@@ -766,8 +767,8 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
   label_rect.Inset(-kOverviewMargin, -kOverviewMargin);
   widget_window->SetBounds(label_rect);
   gfx::Transform label_transform;
-  label_transform.Translate(transformed_window_bounds.x(),
-                            transformed_window_bounds.y());
+  label_transform.Translate(gfx::ToRoundedInt(transformed_window_bounds.x()),
+                            gfx::ToRoundedInt(transformed_window_bounds.y()));
   widget_window->SetTransform(label_transform);
 }
 

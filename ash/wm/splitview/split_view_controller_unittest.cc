@@ -2028,7 +2028,7 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     DCHECK(current_grid);
 
     OverviewItem* overview_item = current_grid->GetDropTarget();
-    return overview_item->GetTransformedBounds();
+    return gfx::ToEnclosedRect(overview_item->GetTransformedBounds());
   }
 
  private:
@@ -2683,7 +2683,8 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
       drop_target_widget->GetNativeWindow());
   ASSERT_TRUE(drop_target);
   EXPECT_EQ(drop_target, current_grid->window_list().front().get());
-  const gfx::Rect drop_target_bounds = drop_target->target_bounds();
+  const gfx::Rect drop_target_bounds =
+      gfx::ToEnclosingRect(drop_target->target_bounds());
   DragWindowTo(resizer.get(), drop_target_bounds.CenterPoint());
   CompleteDrag(std::move(resizer));
 
@@ -2960,7 +2961,8 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
 
   OverviewItem* overview_item = current_grid->GetDropTarget();
   ASSERT_TRUE(overview_item);
-  gfx::Rect drop_target_bounds = overview_item->target_bounds();
+  gfx::Rect drop_target_bounds =
+      gfx::ToEnclosingRect(overview_item->target_bounds());
   DragWindowTo(resizer.get(), drop_target_bounds.CenterPoint());
 
   CompleteDrag(std::move(resizer));
@@ -2972,7 +2974,8 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   overview_item = current_grid->window_list().front().get();
   // The new overview item's bounds should be the same during drag and after
   // drag.
-  EXPECT_EQ(drop_target_bounds, overview_item->target_bounds());
+  EXPECT_EQ(drop_target_bounds,
+            gfx::ToEnclosingRect(overview_item->target_bounds()));
   ToggleOverview();
   EXPECT_FALSE(overview_controller->IsSelecting());
 

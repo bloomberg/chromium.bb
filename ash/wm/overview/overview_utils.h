@@ -68,11 +68,12 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
 // transient hierarchy. The returned Rect is in virtual screen coordinates. The
 // returned bounds are adjusted to allow the original |transformed_window|'s
 // header to be hidden if |top_inset| is not zero.
-gfx::Rect GetTransformedBounds(aura::Window* transformed_window, int top_inset);
+gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
+                                int top_inset);
 
 // Returns the original target bounds of |window|. The bounds are a union of all
 // regular (normal and panel) windows in the window's transient hierarchy.
-gfx::Rect GetTargetBoundsInScreen(aura::Window* window);
+gfx::RectF GetTargetBoundsInScreen(aura::Window* window);
 
 // Applies the |transform| to |window| and all of its transient children. Note
 // |transform| is the transform that is applied to |window| and needs to be

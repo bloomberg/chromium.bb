@@ -153,7 +153,7 @@ class CaptionContainerView::ShieldButton : public views::Button {
     if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
-      listener()->HandlePressEvent(location);
+      listener()->HandlePressEvent(gfx::PointF(location));
       return true;
     }
     return views::Button::OnMousePressed(event);
@@ -163,7 +163,7 @@ class CaptionContainerView::ShieldButton : public views::Button {
     if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
-      listener()->HandleDragEvent(location);
+      listener()->HandleDragEvent(gfx::PointF(location));
       return true;
     }
     return views::Button::OnMouseDragged(event);
@@ -173,7 +173,7 @@ class CaptionContainerView::ShieldButton : public views::Button {
     if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
-      listener()->HandleReleaseEvent(location);
+      listener()->HandleReleaseEvent(gfx::PointF(location));
       return;
     }
     views::Button::OnMouseReleased(event);
@@ -186,8 +186,8 @@ class CaptionContainerView::ShieldButton : public views::Button {
     }
 
     if (listener()) {
-      gfx::Point location(event->location());
-      views::View::ConvertPointToScreen(this, &location);
+      const gfx::PointF location =
+          event->details().bounding_box_f().CenterPoint();
       switch (event->type()) {
         case ui::ET_GESTURE_TAP_DOWN:
           listener()->HandlePressEvent(location);

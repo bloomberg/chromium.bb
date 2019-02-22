@@ -141,10 +141,10 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
   OverviewGrid* grid =
       overview_controller->overview_session()->GetGridWithRootWindow(
           window1->GetRootWindow());
-  gfx::Rect bounds1 =
-      grid->GetOverviewItemContaining(window1.get())->target_bounds();
-  gfx::Rect bounds2 =
-      grid->GetOverviewItemContaining(window2.get())->target_bounds();
+  gfx::Rect bounds1 = gfx::ToEnclosedRect(
+      grid->GetOverviewItemContaining(window1.get())->target_bounds());
+  gfx::Rect bounds2 = gfx::ToEnclosedRect(
+      grid->GetOverviewItemContaining(window2.get())->target_bounds());
 
   std::set<aura::Window*> ignore;
   aura::Window* real_topmost = nullptr;

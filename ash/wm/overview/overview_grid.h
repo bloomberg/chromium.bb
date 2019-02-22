@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "ash/rotator/screen_rotation_animator_observer.h"
@@ -19,6 +18,7 @@
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace ui {
 class Shadow;
@@ -29,7 +29,6 @@ class Widget;
 }
 
 namespace ash {
-
 class OverviewItem;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -253,8 +252,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Struct which holds data required to perform nudges.
   struct NudgeData {
     size_t index;
-    gfx::Rect src;
-    gfx::Rect dst;
+    gfx::RectF src;
+    gfx::RectF dst;
   };
 
   // Initializes the screen shield widget.
@@ -282,7 +281,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Overall this achieves the goals of maximum size for previews (or maximum
   // row height which is equivalent assuming fixed height), balanced rows and
   // minimal wasted space.
-  std::vector<gfx::Rect> GetWindowRects(OverviewItem* ignored_item);
+  std::vector<gfx::RectF> GetWindowRects(OverviewItem* ignored_item);
 
   // Attempts to fit all |out_rects| inside |bounds|. The method ensures that
   // the |out_rects| vector has appropriate size and populates it with the
@@ -297,7 +296,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   bool FitWindowRectsInBounds(const gfx::Rect& bounds,
                               int height,
                               OverviewItem* ignored_item,
-                              std::vector<gfx::Rect>* out_rects,
+                              std::vector<gfx::RectF>* out_rects,
                               int* out_max_bottom,
                               int* out_min_right,
                               int* out_max_right);

@@ -156,12 +156,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // the windows in the window grid do not need to be repositioned.
   void RemoveOverviewItem(OverviewItem* item, bool reposition);
 
-  void InitiateDrag(OverviewItem* item, const gfx::Point& location_in_screen);
-  void Drag(OverviewItem* item, const gfx::Point& location_in_screen);
-  void CompleteDrag(OverviewItem* item, const gfx::Point& location_in_screen);
-  void StartSplitViewDragMode(const gfx::Point& location_in_screen);
+  void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
+  void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
+  void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
+  void StartSplitViewDragMode(const gfx::PointF& location_in_screen);
   void Fling(OverviewItem* item,
-             const gfx::Point& location_in_screen,
+             const gfx::PointF& location_in_screen,
              float velocity_x,
              float velocity_y);
   void ActivateDraggedWindow();
