@@ -199,5 +199,14 @@ Polymer({
     if (this.$$('#dspHotwordState')) {
       this.$$('#dspHotwordState').value = this.dspHotwordState_;
     }
-  }
+  },
+
+  /** @private */
+  hotwordDisabled_: function() {
+    const hotwordPref =
+        this.getPref('prefs.settings.voice_interaction.hotword.enabled');
+
+    return !!hotwordPref &&
+        hotwordPref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+  },
 });

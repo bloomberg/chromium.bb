@@ -3494,6 +3494,12 @@
     ]
   },
 
+  "VoiceInteractionHotwordEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "VoiceInteractionHotwordEnabled": true },
+    "pref_mappings": [{ "pref": "settings.voice_interaction.hotword.enabled" }]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
