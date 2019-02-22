@@ -1094,7 +1094,10 @@ let initializePromise = null;
  * it to create the gallery. Calls reload() to populate the gallery entries.
  */
 function initializeGallery() {
-  const promise = Promise.resolve().then(() => {
+  const htmlImportsPromise = new Promise(resolve => {
+    window.HTMLImports.whenReady(resolve);
+  });
+  const promise = htmlImportsPromise.then(() => {
     return Promise.all([loadTimeDataPromise, volumeManagerPromise]);
   });
 

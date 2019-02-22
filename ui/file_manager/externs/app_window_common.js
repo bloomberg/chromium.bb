@@ -18,3 +18,15 @@ Window.prototype.appInitialURL;
  * @type {function()}
  */
 Window.prototype.reload = function() {};
+
+/**
+ *
+ * Created by HTML imports polyfill.
+ * @type {!Object}
+ */
+Window.prototype.HTMLImports;
+
+/**
+ * @type {function(function())}
+ */
+Window.prototype.HTMLImports.whenReady;
