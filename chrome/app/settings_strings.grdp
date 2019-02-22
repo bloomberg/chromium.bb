@@ -4225,6 +4225,9 @@
     <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_MENU_ITEM" desc="In Device Settings > Displays, the text entry for a single item in the external display resolution drop down menu.">
       <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph> (<ph name="REFRESH_RATE">$3<ex>60</ex></ph> Hertz)
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_INTERLACED_MENU_ITEM" desc="In Device Settings > Displays, the text entry for a single item in the external display resolution drop down menu, when the display mode is interlaced (which means the display's odd and even lines are scanned alternately in two interwoven rasterized lines).">
+      <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph> (<ph name="REFRESH_RATE">$3<ex>60</ex></ph> Hertz) - interlaced
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_ZOOM_TITLE" desc="In Device Settings > Displays, the title for the section for changing the display's zoom.">
       Display Size
     </message>

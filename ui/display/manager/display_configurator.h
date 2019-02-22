@@ -36,6 +36,7 @@ struct GammaRampRGBEntry;
 class DisplayLayoutManager;
 class DisplayMode;
 class DisplaySnapshot;
+class ManagedDisplayMode;
 class NativeDisplayDelegate;
 class UpdateDisplayConfigurationTask;
 
@@ -98,10 +99,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     virtual MultipleDisplayState GetStateForDisplayIds(
         const DisplayConfigurator::DisplayStateList& outputs) = 0;
 
-    // Queries the resolution (|size|) in pixels to select display mode for the
-    // given display id.
-    virtual bool GetResolutionForDisplayId(int64_t display_id,
-                                           gfx::Size* size) const = 0;
+    virtual bool GetSelectedModeForDisplayId(
+        int64_t display_id,
+        ManagedDisplayMode* out_mode) const = 0;
   };
 
   // Interface for classes that implement software based mirroring.

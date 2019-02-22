@@ -136,6 +136,14 @@ Polymer({
     },
 
     /** @private */
+    listAllDisplayModes_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('listAllDisplayModes');
+      }
+    },
+
+    /** @private */
     unifiedDesktopMode_: {
       type: Boolean,
       value: false,
@@ -359,12 +367,20 @@ Polymer({
    */
   getDisplayModeOptionList_: function(selectedDisplay) {
     const optionList = [];
+
+    const listAllModes = this.listAllDisplayModes_;
+
     for (let i = 0; i < selectedDisplay.modes.length; ++i) {
+      const mode = selectedDisplay.modes[i];
+
+      const id = listAllModes && mode.isInterlaced ?
+          'displayResolutionInterlacedMenuItem' :
+          'displayResolutionMenuItem';
+      const refreshRate = Math.round(mode.refreshRate * 100) / 100;
       const option = this.i18n(
-          'displayResolutionMenuItem',
-          selectedDisplay.modes[i].width.toString(),
-          selectedDisplay.modes[i].height.toString(),
-          Math.round(selectedDisplay.modes[i].refreshRate).toString());
+          id, mode.width.toString(), mode.height.toString(),
+          refreshRate.toString());
+
       optionList.push({
         name: option,
         value: i,
@@ -505,7 +521,11 @@ Polymer({
    * @private
    */
   showDisplaySelectMenu_: function(displays, selectedDisplay) {
-    return displays.length > 1 && !selectedDisplay.isPrimary;
+    if (selectedDisplay) {
+      return displays.length > 1 && !selectedDisplay.isPrimary;
+    }
+
+    return false;
   },
 
   /**

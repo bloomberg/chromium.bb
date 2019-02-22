@@ -135,6 +135,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/event_switches.h"
@@ -1503,6 +1504,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableVideoPlayerChromecastSupport)},
+    {"list-all-display-modes", flag_descriptions::kListAllDisplayModesName,
+     flag_descriptions::kListAllDisplayModesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(display::features::kListAllDisplayModes)},
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
@@ -1542,7 +1546,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_WIN)
     {"enable-hdr", flag_descriptions::kEnableHDRName,
      flag_descriptions::kEnableHDRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kHighDynamicRange)},
+     FEATURE_VALUE_TYPE(display::features::kHighDynamicRange)},
 #endif  // OS_WIN
 #if defined(OS_CHROMEOS)
     {
@@ -2906,7 +2910,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"use-monitor-color-space", flag_descriptions::kUseMonitorColorSpaceName,
      flag_descriptions::kUseMonitorColorSpaceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kUseMonitorColorSpace)},
+     FEATURE_VALUE_TYPE(display::features::kUseMonitorColorSpace)},
 
     {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,
      flag_descriptions::kQuickUnlockPinSigninDescription, kOsCrOS,

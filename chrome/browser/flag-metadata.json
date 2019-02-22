@@ -2242,6 +2242,13 @@
     "expiry_milestone": 76
   },
   {
+    "name": "list-all-display-modes",
+    "owners": [ "//ui/display/OWNERS" ],
+    // This flag is used for debugging and development purposes to list all
+    // external displays' modes without any exclusions.'
+    "expiry_milestone": -1
+  },
+  {
     "name": "load-media-router-component-extension",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

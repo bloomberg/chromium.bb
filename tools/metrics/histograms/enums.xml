@@ -31699,6 +31699,7 @@ from previous Chrome versions.
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
   <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
+  <int value="-619740638" label="ListAllDisplayModes:enabled"/>
   <int value="-617452890" label="media-router"/>
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
@@ -31946,6 +31947,7 @@ from previous Chrome versions.
   <int value="-174564579"
       label="ServiceWorkerImportedScriptUpdateCheck:enabled"/>
   <int value="-174319545" label="BulkPrinters:enabled"/>
+  <int value="-171232290" label="ListAllDisplayModes:disabled"/>
   <int value="-171173736" label="VrBrowsingExperimentalFeatures:disabled"/>
   <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
   <int value="-169745744" label="SyncPseudoUSSPreferences:enabled"/>

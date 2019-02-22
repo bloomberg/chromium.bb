@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
@@ -589,6 +590,17 @@ bool DisplayManager::SetDisplayMode(int64_t display_id,
         info.set_device_scale_factor(display_mode.device_scale_factor());
         display_property_changed = true;
       }
+
+      if (features::IsListAllDisplayModesEnabled()) {
+        if (info.refresh_rate() != display_mode.refresh_rate()) {
+          info.set_refresh_rate(display_mode.refresh_rate());
+          resolution_changed = true;
+        }
+        if (info.is_interlaced() != display_mode.is_interlaced()) {
+          info.set_is_interlaced(display_mode.is_interlaced());
+          resolution_changed = true;
+        }
+      }
     }
     display_info_list.emplace_back(info);
   }
@@ -618,7 +630,9 @@ void DisplayManager::RegisterDisplayProperty(
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
     float device_scale_factor,
-    float display_zoom_factor) {
+    float display_zoom_factor,
+    float refresh_rate,
+    bool is_interlaced) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] =
         ManagedDisplayInfo(display_id, std::string(), false);
@@ -627,10 +641,9 @@ void DisplayManager::RegisterDisplayProperty(
   if (display_id == kUnifiedDisplayId)
     rotation = Display::ROTATE_0;
 
-  display_info_[display_id].SetRotation(rotation,
-                                        Display::RotationSource::USER);
-  display_info_[display_id].SetRotation(rotation,
-                                        Display::RotationSource::ACTIVE);
+  ManagedDisplayInfo& info = display_info_[display_id];
+  info.SetRotation(rotation, Display::RotationSource::USER);
+  info.SetRotation(rotation, Display::RotationSource::ACTIVE);
 
   // TODO(malaykeshav|oshima): Remove this code in m71.
   //
@@ -647,21 +660,22 @@ void DisplayManager::RegisterDisplayProperty(
   // display zoom enabled, and hence we do not need to port the value for
   // zoom scale from |ui_scale|.
   if (ui_scale < 0) {
-    display_info_[display_id].set_zoom_factor(display_zoom_factor);
+    info.set_zoom_factor(display_zoom_factor);
   } else {
-    display_info_[display_id].set_zoom_factor(1.f / ui_scale);
-    display_info_[display_id].set_is_zoom_factor_from_ui_scale(true);
+    info.set_zoom_factor(1.f / ui_scale);
+    info.set_is_zoom_factor_from_ui_scale(true);
   }
 
   if (overscan_insets)
-    display_info_[display_id].SetOverscanInsets(*overscan_insets);
+    info.SetOverscanInsets(*overscan_insets);
+
+  info.set_refresh_rate(refresh_rate);
+  info.set_is_interlaced(is_interlaced);
 
   if (!resolution_in_pixels.IsEmpty()) {
     DCHECK(!Display::IsInternalDisplayId(display_id));
-    // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
-    // actual display info, is 60 Hz.
-    ManagedDisplayMode mode(resolution_in_pixels, 60.0f, false, false,
-                            device_scale_factor);
+    ManagedDisplayMode mode(resolution_in_pixels, refresh_rate, is_interlaced,
+                            false, device_scale_factor);
     display_modes_[display_id] = mode;
   }
 }
@@ -809,10 +823,11 @@ void DisplayManager::OnNativeDisplaysChanged(
       new_display_info_list.emplace_back(display_info);
     }
 
-    ManagedDisplayMode new_mode(display_info.bounds_in_native().size(),
-                                0.0 /* refresh rate */, false /* interlaced */,
-                                false /* native */,
-                                display_info.device_scale_factor());
+    ManagedDisplayMode new_mode(
+        display_info.bounds_in_native().size(), display_info.refresh_rate(),
+        display_info.is_interlaced(), display_info.native(),
+        display_info.device_scale_factor());
+
     const ManagedDisplayInfo::ManagedDisplayModeList& display_modes =
         display_info.display_modes();
     // This is empty the displays are initialized from InitFromCommandLine.

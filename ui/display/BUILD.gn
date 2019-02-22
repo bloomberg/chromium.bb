@@ -14,6 +14,8 @@ jumbo_component("display") {
     "display_change_notifier.cc",
     "display_change_notifier.h",
     "display_export.h",
+    "display_features.cc",
+    "display_features.h",
     "display_finder.cc",
     "display_finder.h",
     "display_layout.cc",

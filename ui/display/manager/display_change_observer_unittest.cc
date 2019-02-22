@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/fake_display_snapshot.h"
@@ -39,9 +40,31 @@ std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
 
 }  // namespace
 
-using DisplayChangeObserverTest = testing::Test;
+class DisplayChangeObserverTest : public testing::Test,
+                                  public testing::WithParamInterface<bool> {
+ public:
+  DisplayChangeObserverTest() = default;
+  ~DisplayChangeObserverTest() override = default;
 
-TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
+  // testing::Test:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(features::kListAllDisplayModes);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kListAllDisplayModes);
+    }
+
+    Test::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserverTest);
+};
+
+TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
@@ -67,33 +90,80 @@ TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           *display_snapshot);
-  ASSERT_EQ(6u, display_modes.size());
-  EXPECT_EQ("640x480", display_modes[0].size().ToString());
-  EXPECT_TRUE(display_modes[0].is_interlaced());
-  EXPECT_EQ(display_modes[0].refresh_rate(), 60);
 
-  EXPECT_EQ("1024x600", display_modes[1].size().ToString());
-  EXPECT_FALSE(display_modes[1].is_interlaced());
-  EXPECT_EQ(display_modes[1].refresh_rate(), 70);
+  const bool listing_all_modes = GetParam();
+  if (listing_all_modes) {
+    ASSERT_EQ(12u, display_modes.size());
+    EXPECT_EQ("640x480", display_modes[0].size().ToString());
+    EXPECT_TRUE(display_modes[0].is_interlaced());
+    EXPECT_EQ(display_modes[0].refresh_rate(), 60);
 
-  EXPECT_EQ("1024x768", display_modes[2].size().ToString());
-  EXPECT_TRUE(display_modes[2].is_interlaced());
-  EXPECT_EQ(display_modes[2].refresh_rate(), 70);
+    EXPECT_EQ("1024x600", display_modes[1].size().ToString());
+    EXPECT_FALSE(display_modes[1].is_interlaced());
+    EXPECT_EQ(display_modes[1].refresh_rate(), 60);
+    EXPECT_EQ("1024x600", display_modes[2].size().ToString());
+    EXPECT_TRUE(display_modes[2].is_interlaced());
+    EXPECT_EQ(display_modes[2].refresh_rate(), 60);
+    EXPECT_EQ("1024x600", display_modes[3].size().ToString());
+    EXPECT_FALSE(display_modes[3].is_interlaced());
+    EXPECT_EQ(display_modes[3].refresh_rate(), 70);
 
-  EXPECT_EQ("1280x720", display_modes[3].size().ToString());
-  EXPECT_FALSE(display_modes[3].is_interlaced());
-  EXPECT_EQ(display_modes[3].refresh_rate(), 60);
+    EXPECT_EQ("1024x768", display_modes[4].size().ToString());
+    EXPECT_TRUE(display_modes[4].is_interlaced());
+    EXPECT_EQ(display_modes[4].refresh_rate(), 60);
+    EXPECT_EQ("1024x768", display_modes[5].size().ToString());
+    EXPECT_TRUE(display_modes[5].is_interlaced());
+    EXPECT_EQ(display_modes[5].refresh_rate(), 70);
 
-  EXPECT_EQ("1920x1080", display_modes[4].size().ToString());
-  EXPECT_FALSE(display_modes[4].is_interlaced());
-  EXPECT_EQ(display_modes[4].refresh_rate(), 80);
+    EXPECT_EQ("1280x720", display_modes[6].size().ToString());
+    EXPECT_FALSE(display_modes[6].is_interlaced());
+    EXPECT_EQ(display_modes[6].refresh_rate(), 60);
+    EXPECT_EQ("1280x720", display_modes[7].size().ToString());
+    EXPECT_TRUE(display_modes[7].is_interlaced());
+    EXPECT_EQ(display_modes[7].refresh_rate(), 60);
 
-  EXPECT_EQ("1920x1200", display_modes[5].size().ToString());
-  EXPECT_FALSE(display_modes[5].is_interlaced());
-  EXPECT_EQ(display_modes[5].refresh_rate(), 60);
+    EXPECT_EQ("1920x1080", display_modes[8].size().ToString());
+    EXPECT_FALSE(display_modes[8].is_interlaced());
+    EXPECT_EQ(display_modes[8].refresh_rate(), 60);
+    EXPECT_EQ("1920x1080", display_modes[9].size().ToString());
+    EXPECT_FALSE(display_modes[9].is_interlaced());
+    EXPECT_EQ(display_modes[9].refresh_rate(), 70);
+    EXPECT_EQ("1920x1080", display_modes[10].size().ToString());
+    EXPECT_FALSE(display_modes[10].is_interlaced());
+    EXPECT_EQ(display_modes[10].refresh_rate(), 80);
+
+    EXPECT_EQ("1920x1200", display_modes[11].size().ToString());
+    EXPECT_FALSE(display_modes[11].is_interlaced());
+    EXPECT_EQ(display_modes[11].refresh_rate(), 60);
+  } else {
+    ASSERT_EQ(6u, display_modes.size());
+    EXPECT_EQ("640x480", display_modes[0].size().ToString());
+    EXPECT_TRUE(display_modes[0].is_interlaced());
+    EXPECT_EQ(display_modes[0].refresh_rate(), 60);
+
+    EXPECT_EQ("1024x600", display_modes[1].size().ToString());
+    EXPECT_FALSE(display_modes[1].is_interlaced());
+    EXPECT_EQ(display_modes[1].refresh_rate(), 70);
+
+    EXPECT_EQ("1024x768", display_modes[2].size().ToString());
+    EXPECT_TRUE(display_modes[2].is_interlaced());
+    EXPECT_EQ(display_modes[2].refresh_rate(), 70);
+
+    EXPECT_EQ("1280x720", display_modes[3].size().ToString());
+    EXPECT_FALSE(display_modes[3].is_interlaced());
+    EXPECT_EQ(display_modes[3].refresh_rate(), 60);
+
+    EXPECT_EQ("1920x1080", display_modes[4].size().ToString());
+    EXPECT_FALSE(display_modes[4].is_interlaced());
+    EXPECT_EQ(display_modes[4].refresh_rate(), 80);
+
+    EXPECT_EQ("1920x1200", display_modes[5].size().ToString());
+    EXPECT_FALSE(display_modes[5].is_interlaced());
+    EXPECT_EQ(display_modes[5].refresh_rate(), 60);
+  }
 }
 
-TEST_F(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
+TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
       false, false, false, std::string(), {}, nullptr, nullptr, 0, gfx::Size());
@@ -104,7 +174,7 @@ TEST_F(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   EXPECT_EQ(0u, display_modes.size());
 }
 
-TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
+TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(19.5f, gfx::Rect(1600, 900)));
 
   // 21.5" 1920x1080
@@ -140,7 +210,7 @@ TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(2.25f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
 }
 
-TEST_F(DisplayChangeObserverTest,
+TEST_P(DisplayChangeObserverTest,
        FindExternalDisplayNativeModeWhenOverwritten) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
@@ -163,5 +233,9 @@ TEST_F(DisplayChangeObserverTest,
   EXPECT_TRUE(display_modes[1].native());
   EXPECT_EQ(display_modes[1].refresh_rate(), 60);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        DisplayChangeObserverTest,
+                        ::testing::Values(false, true));
 
 }  // namespace display

@@ -113,8 +113,9 @@ class TestStateController : public DisplayConfigurator::StateController {
       const DisplayConfigurator::DisplayStateList& outputs) override {
     return state_;
   }
-  bool GetResolutionForDisplayId(int64_t display_id,
-                                 gfx::Size* size) const override {
+  bool GetSelectedModeForDisplayId(
+      int64_t display_id,
+      ManagedDisplayMode* out_mode) const override {
     return false;
   }
 

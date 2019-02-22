@@ -3316,6 +3316,10 @@ const char kImeServiceName[] = "Enable IME service";
 const char kImeServiceDescription[] =
     "Enable IME service to provide the IME functionality instead of NaCl";
 
+const char kListAllDisplayModesName[] = "List all display modes";
+const char kListAllDisplayModesDescription[] =
+    "Enables listing all external displays' modes in the display settings.";
+
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
