@@ -206,7 +206,7 @@ bool TextFinder::Find(int identifier,
   }
 
   // We found something, so the result of the previous scoping may be outdated.
-  last_find_request_completed_with_no_matches_ = false;
+  find_task_controller_->ResetLastFindRequestCompletedWithNoMatches();
 
   return true;
 }
@@ -661,7 +661,6 @@ TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
       find_match_markers_version_(0),
       should_locate_active_rect_(false),
       scoping_in_progress_(false),
-      last_find_request_completed_with_no_matches_(false),
       find_match_rects_are_valid_(false) {}
 
 TextFinder::~TextFinder() = default;
