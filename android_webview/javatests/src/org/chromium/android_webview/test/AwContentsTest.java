@@ -11,6 +11,7 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -753,6 +754,68 @@ public class AwContentsTest {
         TestAwContentsClient.AddMessageToConsoleHelper consoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
         Assert.assertEquals(0, consoleHelper.getMessages().size());
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testHardwareRenderingSmokeTest() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        String html = "<html>"
+                + "  <body style=\""
+                + "       padding: 0;"
+                + "       margin: 0;"
+                + "       display: grid;"
+                + "       display: grid;"
+                + "       grid-template-columns: 50% 50%;"
+                + "       grid-template-rows: 50% 50%;\">"
+                + "   <div style=\"background-color: rgb(255, 0, 0);\"></div>"
+                + "   <div style=\"background-color: rgb(0, 255, 0);\"></div>"
+                + "   <div style=\"background-color: rgb(0, 0, 255);\"></div>"
+                + "   <div style=\"background-color: rgb(128, 128, 128);\"></div>"
+                + "  </body>"
+                + "</html>";
+        mActivityTestRule.loadDataSync(testView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), html, "text/html", false);
+        mActivityTestRule.waitForVisualStateCallback(testView.getAwContents());
+
+        // Poll for 10s in case raster is slow.
+        final Object lock = new Object();
+        final Object[] resultHolder = new Object[1];
+        for (int i = 0; i < 100; ++i) {
+            mActivityTestRule.runOnUiThread(() -> {
+                testView.readbackQuadrantColors((int[] result) -> {
+                    synchronized (lock) {
+                        resultHolder[0] = result;
+                        lock.notifyAll();
+                    }
+                });
+            });
+            int[] quadrantColors;
+            synchronized (lock) {
+                while (resultHolder[0] == null) {
+                    lock.wait();
+                }
+                quadrantColors = (int[]) resultHolder[0];
+            }
+            if (Color.rgb(255, 0, 0) == quadrantColors[0]
+                    && Color.rgb(0, 255, 0) == quadrantColors[1]
+                    && Color.rgb(0, 0, 255) == quadrantColors[2]
+                    && Color.rgb(128, 128, 128) == quadrantColors[3]) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        // If this test is failing for your CL, then chances are your change is breaking Android
+        // WebView hardware rendering. Please build the "real" webview and check if this is the
+        // case and if so, fix your CL.
+        int[] quadrantColors = (int[]) resultHolder[0];
+        Assert.assertEquals(Color.rgb(255, 0, 0), quadrantColors[0]);
+        Assert.assertEquals(Color.rgb(0, 255, 0), quadrantColors[1]);
+        Assert.assertEquals(Color.rgb(0, 0, 255), quadrantColors[2]);
+        Assert.assertEquals(Color.rgb(128, 128, 128), quadrantColors[3]);
     }
 
     @Test
