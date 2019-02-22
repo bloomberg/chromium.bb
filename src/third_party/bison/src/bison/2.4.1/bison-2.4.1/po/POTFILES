@@ -1,0 +1,24 @@
+     ../../bison-2.4.1-src/src/complain.c \
+     ../../bison-2.4.1-src/src/conflicts.c \
+     ../../bison-2.4.1-src/src/files.c \
+     ../../bison-2.4.1-src/src/getargs.c \
+     ../../bison-2.4.1-src/src/gram.c \
+     ../../bison-2.4.1-src/src/location.c \
+     ../../bison-2.4.1-src/src/main.c \
+     ../../bison-2.4.1-src/src/parse-gram.y \
+     ../../bison-2.4.1-src/src/print.c \
+     ../../bison-2.4.1-src/src/reader.c \
+     ../../bison-2.4.1-src/src/reduce.c \
+     ../../bison-2.4.1-src/src/scan-code.l \
+     ../../bison-2.4.1-src/src/scan-gram.l \
+     ../../bison-2.4.1-src/src/symlist.c \
+     ../../bison-2.4.1-src/src/symtab.c \
+     ../../bison-2.4.1-src/lib/argmatch.c \
+     ../../bison-2.4.1-src/lib/bitset_stats.c \
+     ../../bison-2.4.1-src/lib/error.c \
+     ../../bison-2.4.1-src/lib/getopt.c \
+     ../../bison-2.4.1-src/lib/obstack.c \
+     ../../bison-2.4.1-src/lib/quotearg.c \
+     ../../bison-2.4.1-src/lib/subpipe.c \
+     ../../bison-2.4.1-src/lib/timevar.c \
+     ../../bison-2.4.1-src/lib/xalloc-die.c
