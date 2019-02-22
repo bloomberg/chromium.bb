@@ -804,6 +804,13 @@
     'crostini': {
       'filepath': 'crostini',
     },
+    'cups_printing' : {
+      'filepath': 'chrome/browser/resources/settings/printing_page/'\
+                  '|chrome/test/data/webui/settings/cups_printer_page_tests.js'\
+                  '|chrome/browser/ui/webui/settings/chromeos/cups_printers_handler'\
+                  '|chrome/browser/chromeos/printing/'\
+                  '|printing/',
+    },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/browseractions/|'\
@@ -2158,6 +2165,9 @@
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
+    'cups_printing': ['baileyberro+watch-printers@chromium.org',
+                      'jimmyxgong+watch-printers@chromium.org',
+                      'zentaro+watch-printers@chromium.org'],
     'custom_tabs': ['amalova+watch@chromium.org',
                     'lizeb+watch-custom-tabs@chromium.org',
                     'peconn+watch@chromium.org',
