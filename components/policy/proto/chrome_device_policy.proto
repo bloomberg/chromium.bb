@@ -1147,12 +1147,6 @@ message DeviceRebootOnUserSignoutProto {
   optional RebootOnSignoutMode reboot_on_signout_mode = 1 [default = NEVER];
 }
 
-// Setting that controls whether wilco diagnostics and telemetry controller is
-// allowed on this device.
-message DeviceWilcoDTCAllowedProto {
-  optional bool device_wilco_dtc_allowed = 1;
-}
-
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1254,5 +1248,4 @@ message ChromeDeviceSettingsProto {
       77;
   optional PluginVmLicenseKeyProto plugin_vm_license_key = 78;
   optional DeviceRebootOnUserSignoutProto device_reboot_on_user_signout = 79;
-  optional DeviceWilcoDTCAllowedProto device_wilco_dtc_allowed = 80;
 }

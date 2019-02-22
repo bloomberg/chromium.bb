@@ -966,15 +966,6 @@
       ]
     },
     {
-      'name': 'WilcoDTC',
-      'type': 'group',
-      'caption': '''Wilco DTC''',
-      'desc': '''Controls wilco diagnostics and telemetry controller settings.''',
-      'policies': [
-        'DeviceWilcoDTCAllowed',
-      ],
-    },
-    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -14806,25 +14797,6 @@
       If the policy is disabled, Google Assistant will not be allowed to access screen context.
       If not set, users can decide whether to allow Google Assistant to access screen context or not''',
     },
-    {
-      'name': 'DeviceWilcoDTCAllowed',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': False,
-      'id': 528,
-      'caption': '''Allows wilco diagnostics and telemetry controller''',
-      'tags': [],
-      'desc': '''Allows an admin to control if telemetry and diagnostics data should be collected, processed and reported by wilco diagnostics and telemetry controller (DTC).
-
-      If the policy is set to false or left unset, DTC is switched off and is not able to collect, process and report telemetry and diagnostics data from the device.
-      If wilco DTC is available on the given device and the policy is set to true, collecting, processing and reporting of telemetry and diagnostics data is switched on.''',
-    },
   ],
 
   'messages': {
@@ -14990,5 +14962,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  528
+  'highest_id_currently_used':  527
 }

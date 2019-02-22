@@ -4247,12 +4247,6 @@
     "note": "This policy is used directly through the policy service instead of through a pref."
   },
 
-  "DeviceWilcoDTCAllowed": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceWilcoDTCAllowed": true },
-    "pref_mappings": [{ "pref": "cros.device.wilco_dtc_allowed" }]
-  },
-
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
