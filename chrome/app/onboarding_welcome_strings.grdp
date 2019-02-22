@@ -67,8 +67,8 @@
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE" desc="Label for choosing a background/wallpaper from the 'Cityscape' category">
     Cityscape
   </message>
-  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LIFE_TITLE" desc="Label for choosing a background/wallpaper from the 'Life' category, as in a category of photos of nature, flowers, and buildings.">
-    Life
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_EARTH_TITLE" desc="Label for choosing a background/wallpaper from the 'Earth' category, as in a category of photos of planets and outer space.">
+    Earth
   </message>
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE" desc="Label for choosing a background/wallpaper from the 'Geometric Shapes' category">
     Geometric shapes

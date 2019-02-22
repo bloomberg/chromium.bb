@@ -27,6 +27,12 @@ std::array<GURL, kOnboardingNtpBackgroundsCount> GetOnboardingNtpBackgrounds() {
                "_S57gvzBw859pj5Xl2pW_GpfG8k2GhE9LUFNKwA=w3840-h2160-p-k-no-nd-"
                "mv"),
 
+          // Earth
+          GURL("https://lh5.googleusercontent.com/proxy/"
+               "xvtq6_782kBajCBr0GISHpujOb51XLKUeEOJ2lLPKh12-"
+               "xNBTCtsoHT14NQcaH9l4JhatcXEMBkqgUeCWhb3XhdLnD1BiNzQ_LVydwg="
+               "w3840-h2160-p-k-no-nd-mv"),
+
           // Geometric Shapes
           GURL("https://lh3.googleusercontent.com/proxy/"
                "FWOBAVfQYasxV3KURX1VVKem1yOC2iazWAb8csOmqCDwI1CCzAA1zCpnAxR-"
@@ -38,12 +44,6 @@ std::array<GURL, kOnboardingNtpBackgroundsCount> GetOnboardingNtpBackgrounds() {
                "nMIspgHzTUU0GzmiadmPphBelzF2xy9-tIiejZg3VvJTITxUb-1vILxf-"
                "IsCfyl94VSn6YvHa8_PiIyR9d3rwD8ZhNdQ1C1rnblP6zy3OaI=w3840-h2160-"
                "p-k-no-nd-mv"),
-
-          // Life
-          GURL("https://lh3.googleusercontent.com/proxy/"
-               "6gLbz6fLpHWeNGMCg-3SAr4V3qJsZN_Q-VePkM70-"
-               "FbHVROkRKx35pwEenRDVLuRSnQse6MTKo455BPVwULXX42R7VjAKJbm-4ivxQ="
-               "w3840-h2160-p-k-no-nd-mv"),
       }};
   return kOnboardingNtpBackgrounds;
 }
