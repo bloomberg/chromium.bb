@@ -275,9 +275,10 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
 std::vector<std::wstring> TokenizeCommandLineToArray(
     const std::wstring& command_line);
 
-// We assume that the command line |command_line| contains multiple switches
-// with the format --<switch name>=<switch value>. This function returns the
-// value of the |switch_name| passed in.
+// Returns the value of a switch of the form "--<switch name>=<switch value>" in
+// |command_line|. An empty switch in |command_line| ("--") denotes the end of
+// switches and the beginning of args. Anything of the form --<switch
+// name>=<switch value> following "--" is ignored.
 std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
                                            const std::wstring& switch_name);
 
