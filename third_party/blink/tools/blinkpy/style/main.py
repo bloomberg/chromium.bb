@@ -100,8 +100,7 @@ def change_directory(filesystem, checkout_root, paths):
     return paths
 
 
-# TODO(tkent): Replace "WebKit" with "Blink" in code.
-class CheckWebKitStyle(object):
+class CheckBlinkStyle(object):
 
     def _engage_awesome_stderr_hacks(self):
         # Change stderr to write with replacement characters so we don't die
