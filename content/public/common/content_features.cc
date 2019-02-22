@@ -443,17 +443,6 @@ const base::Feature kSignedExchangeReportingForDistributors{
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Send "Accept: application/signed-exchange" header to origins who opt-in.
-const base::Feature kSignedHTTPExchangeAcceptHeader{
-    "SignedHTTPExchangeAcceptHeader", base::FEATURE_DISABLED_BY_DEFAULT};
-// Field trial parameter containing the list of origins that opted-in to receive
-// "Accept: application/signed-exchange" header.
-const char kSignedHTTPExchangeAcceptHeaderFieldTrialParamName[] = "OriginsList";
-
-// Origin Trial of Origin-Signed HTTP Exchanges (for WebPackage Loading)
-const base::Feature kSignedHTTPExchangeOriginTrial{
-    "SignedHTTPExchangeOriginTrial", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.

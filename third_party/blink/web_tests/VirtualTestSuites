@@ -633,18 +633,6 @@
     "args": ["--enable-features=NetworkService"]
   },
   {
-    "prefix": "sxg-origin-trial",
-    "base": "http/tests/loading/sxg",
-    "args": ["--stable-release-mode",
-             "--enable-features=SignedHTTPExchangeOriginTrial"]
-  },
-  {
-    "prefix": "sxg-origin-trial-with-network-service",
-    "base": "http/tests/loading/sxg",
-    "args": ["--stable-release-mode",
-             "--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
-  },
-  {
     "prefix": "disabled-service-worker-servicification",
     "base": "http/tests/serviceworker",
     "args": ["--disable-features=ServiceWorkerServicification,NetworkService"]
