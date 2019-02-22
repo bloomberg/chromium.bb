@@ -55,6 +55,8 @@ class ArcVolumeMounterBridge
  private:
   void SendAllMountEvents();
 
+  void SendMountEventForMyFiles();
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_;
