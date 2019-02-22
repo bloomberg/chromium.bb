@@ -30,5 +30,5 @@ const server = new Map([
       policy: 'pauseIfNetworkFetchesPending', budget: 5000,
       waitForNavigation: true});
   await dp.Page.navigate({url: 'http://test.com/index.html'});
-  await session.evaluateAsync(`fetch('/fetch')`);
+  await session.evaluateAsync(`fetch('/fetch').then(res => res.text())`);
 })
