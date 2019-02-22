@@ -112,7 +112,7 @@ void ViewEventTestBase::SetUp() {
 void ViewEventTestBase::TearDown() {
   if (window_) {
     window_->Close();
-    content::RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     window_ = NULL;
   }
 
@@ -160,7 +160,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
       ui_test_utils::ShowAndFocusNativeWindow(window_->GetNativeWindow()));
 
   // Flush any pending events to make sure we start with a clean slate.
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Schedule a task that starts the test. Need to do this as we're going to
   // run the message loop.
@@ -168,7 +168,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
       FROM_HERE, base::BindOnce(&ViewEventTestBase::DoTestOnMessageLoop,
                                 base::Unretained(this)));
 
-  content::RunThisRunLoop(&run_loop_);
+  run_loop_.Run();
 }
 
 void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
@@ -185,10 +185,10 @@ void ViewEventTestBase::StopBackgroundThread() {
   dnd_thread_.reset();
 }
 
-void ViewEventTestBase::RunTestMethod(const base::Closure& task) {
+void ViewEventTestBase::RunTestMethod(base::OnceClosure task) {
   StopBackgroundThread();
 
-  task.Run();
+  std::move(task).Run();
   if (HasFatalFailure())
     Done();
 }

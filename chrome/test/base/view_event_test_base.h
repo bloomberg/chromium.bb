@@ -118,9 +118,10 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // method is called in such a way that if there are any test failures
   // Done is invoked.
   template <class T, class Method>
-  base::Closure CreateEventTask(T* target, Method method) {
-    return base::Bind(&ViewEventTestBase::RunTestMethod, base::Unretained(this),
-                      base::Bind(method, base::Unretained(target)));
+  base::OnceClosure CreateEventTask(T* target, Method method) {
+    return base::BindOnce(&ViewEventTestBase::RunTestMethod,
+                          base::Unretained(this),
+                          base::BindOnce(method, base::Unretained(target)));
   }
 
   // Spawns a new thread posts a MouseMove in the background.
@@ -134,7 +135,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
   // Callback from CreateEventTask. Stops the background thread, runs the
   // supplied task and if there are failures invokes Done.
-  void RunTestMethod(const base::Closure& task);
+  void RunTestMethod(base::OnceClosure task);
 
   // The content of the Window.
   views::View* content_view_;

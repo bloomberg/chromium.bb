@@ -42,7 +42,7 @@ class MenuTestBase : public ViewEventTestBase,
   ~MenuTestBase() override;
 
   // Generate a mouse click and run |next| once the event has been processed.
-  virtual void Click(views::View* view, const base::Closure& next);
+  virtual void Click(views::View* view, base::OnceClosure next);
 
   // Generate a keypress and run |next| once the event has been processed.
   void KeyPress(ui::KeyboardCode keycode, base::OnceClosure next);
