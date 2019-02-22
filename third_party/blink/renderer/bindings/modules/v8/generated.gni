@@ -103,6 +103,8 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_navigator_user_media_success_callback.h",
   "$bindings_modules_v8_output_dir/v8_notification_permission_callback.cc",
   "$bindings_modules_v8_output_dir/v8_notification_permission_callback.h",
+  "$bindings_modules_v8_output_dir/v8_paint_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_paint_callback.h",
   "$bindings_modules_v8_output_dir/v8_position_callback.cc",
   "$bindings_modules_v8_output_dir/v8_position_callback.h",
   "$bindings_modules_v8_output_dir/v8_position_error_callback.cc",

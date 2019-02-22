@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -20,8 +21,10 @@
 namespace blink {
 
 class Image;
-class ScriptState;
 class ImageResourceObserver;
+class ScriptState;
+class V8NoArgumentConstructor;
+class V8PaintCallback;
 
 // Represents a javascript class registered on the PaintWorkletGlobalScope by
 // the author. It will store the properties for invalidation and input argument
@@ -32,8 +35,8 @@ class MODULES_EXPORT CSSPaintDefinition final
  public:
   static CSSPaintDefinition* Create(
       ScriptState*,
-      v8::Local<v8::Function> constructor,
-      v8::Local<v8::Function> paint,
+      V8NoArgumentConstructor* constructor,
+      V8PaintCallback* paint,
       const Vector<CSSPropertyID>&,
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSSyntaxDescriptor>& input_argument_types,
@@ -41,8 +44,8 @@ class MODULES_EXPORT CSSPaintDefinition final
 
   CSSPaintDefinition(
       ScriptState*,
-      v8::Local<v8::Function> constructor,
-      v8::Local<v8::Function> paint,
+      V8NoArgumentConstructor* constructor,
+      V8PaintCallback* paint,
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
       const Vector<CSSSyntaxDescriptor>& input_argument_types,
@@ -76,13 +79,6 @@ class MODULES_EXPORT CSSPaintDefinition final
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  v8::Local<v8::Function> ConstructorForTesting(v8::Isolate* isolate) {
-    return constructor_.NewLocal(isolate);
-  }
-  v8::Local<v8::Function> PaintFunctionForTesting(v8::Isolate* isolate) {
-    return paint_.NewLocal(isolate);
-  }
-
   virtual void Trace(blink::Visitor* visitor);
   const char* NameInHeapSnapshot() const override {
     return "CSSPaintDefinition";
@@ -96,8 +92,8 @@ class MODULES_EXPORT CSSPaintDefinition final
   // This object keeps the class instance object, constructor function and
   // paint function alive. It participates in wrapper tracing as it holds onto
   // V8 wrappers.
-  TraceWrapperV8Reference<v8::Function> constructor_;
-  TraceWrapperV8Reference<v8::Function> paint_;
+  TraceWrapperMember<V8NoArgumentConstructor> constructor_;
+  TraceWrapperMember<V8PaintCallback> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
   TraceWrapperV8Reference<v8::Value> instance_;
