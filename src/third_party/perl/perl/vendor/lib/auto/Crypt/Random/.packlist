@@ -1,0 +1,9 @@
+C:\strawberry\perl\bin\makerandom
+C:\strawberry\perl\bin\makerandom.bat
+C:\strawberry\perl\vendor\lib\Crypt\Random.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Generator.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Provider\File.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Provider\devrandom.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Provider\devurandom.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Provider\egd.pm
+C:\strawberry\perl\vendor\lib\Crypt\Random\Provider\rand.pm

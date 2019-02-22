@@ -1,0 +1,113 @@
+=head1 NAME
+
+Imager::LargeSamples - track/document large sample support
+
+=head1 SYNOPSIS
+
+  # make a large sample image
+  my $im = Imager->new(..., bits => 16);
+
+  # call some method
+  my $result = $im->$method(...);
+
+  # was the image modified at its full sample size
+
+=head1 DESCRIPTION
+
+Imager has had in-memory support for large samples for years now, but
+many methods still don't work at the higher sample size when supplied
+with a large sample image.
+
+This document will track which methods support large samples and which
+don't, for future improvements.
+
+=head1 Support by method
+
+  Method       Support    Notes
+  ------       -------    -----
+  arc          Partial    [1]
+  box          Partial    [2]
+  circle       Partial    [1]
+  convert      Full
+  copy         Full
+  crop         Full
+  difference   Full
+  filter       Partial    Depends on the filter.
+  flip         Full
+  flood_fill   Partial    [1]
+  getpixel     Full
+  getsamples   Full
+  getscanline  Full
+  map          None
+  masked       Full
+  matrix_transform
+               Full
+  paste        Full
+  polygon      Partial    [1]
+  polyline     None
+  read         Partial    See L<File format large sample support>
+  read_multi   Partial    See L<File format large sample support>
+  rotate       Full
+  rubthrough   Full
+  scale        Partial    Some qtypes support large samples
+  scaleX       None
+  scaleY       None
+  setpixel     Full
+  setscanline  Full
+  string       Full       Preserves large samples, but most font drivers
+                          generate 8 or fewer bits of levels of coverage.
+  transform    None
+  transform2   None
+  write        Partial    See L<File format large sample support>
+  write_multi  Partial    See L<File format large sample support>
+
+[1] filling an area using the fill parameter works at the full depth
+of the image, using filled => 1 and color works at 8-bits/sample
+
+[2] box() will fill the area at the supplied color, but outline at
+8-bits/sample.
+
+=head1 File format large sample support
+
+  Format    Format samples    Imager support
+  ------    --------------    --------------
+  BMP       8                 8
+  GIF       8                 8
+  ICO       8                 8
+  JPEG      8, 12             8
+  PBM       1                 1
+  PGM/PPM   1-16              read any, writes 8, 16
+  PNG       1, 2, 4, 8, 16    8
+  RAW                         8
+  SGI       8, 16             8, 16
+  TGA       8                 8
+  TIFF      (many)            read/write 8, 16, 32 contig rgb/grey images
+                              read/write bi-level
+                              read/write 4/8 paletted images
+
+=head1 Filter larger sample support
+
+  Filter      Large sample support
+  ------      --------------------
+  autolevels      No
+  bumpmap         No
+  bumpmap_complex No
+  contrast        No
+  conv            Yes
+  fountain        Yes
+  gaussian        Yes
+  gradgen         No
+  hardinvert      Yes
+  mosaic          No
+  postlevels      No
+  radnoise        No
+  turbnoise       No
+  unsharpmask     Yes
+  watermark       No
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=cut
+

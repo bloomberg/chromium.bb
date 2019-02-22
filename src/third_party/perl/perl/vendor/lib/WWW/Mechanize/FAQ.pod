@@ -1,0 +1,441 @@
+=head1 NAME
+
+WWW::Mechanize::FAQ - Frequently Asked Questions about WWW::Mechanize
+
+=head1 How to get help with WWW::Mechanize
+
+If your question isn't answered here in the FAQ, please turn to the
+communities at:
+
+=over
+
+=item * L<http://perlmonks.org>
+
+=item * The libwww-perl mailing list at L<http://lists.perl.org>
+
+=back
+
+=head1 JavaScript
+
+=head2 I have this web page that has JavaScript on it, and my Mech program doesn't work.
+
+That's because WWW::Mechanize doesn't operate on the JavaScript.  It only
+understands the HTML parts of the page.
+
+=head2 I thought Mech was supposed to work like a web browser.
+
+It does pretty much, but it doesn't support JavaScript.
+
+I added some basic attempts at picking up URLs in C<window.open()>
+calls and return them in C<< $mech->links >>.  They work sometimes.
+
+Since Javascript is completely visible to the client, it cannot be used
+to prevent a scraper from following links. But it can make life difficult. If
+you want to scrape specific pages, then a solution is always possible.
+
+One typical use of Javascript is to perform argument checking before
+posting to the server. The URL you want is probably just buried in the
+Javascript function. Do a regular expression match on
+C<< $mech->content() >>
+to find the link that you want and C<< $mech->get >> it directly (this
+assumes that you know what you are looking for in advance).
+
+In more difficult cases, the Javascript is used for URL mangling to
+satisfy the needs of some middleware. In this case you need to figure
+out what the Javascript is doing (why are these URLs always really
+long?). There is probably some function with one or more arguments which
+calculates the new URL. Step one: using your favorite browser, get the
+before and after URLs and save them to files. Edit each file, converting
+the the argument separators ('?', '&' or ';') into newlines. Now it is
+easy to use diff or comm to find out what Javascript did to the URL.
+Step 2 - find the function call which created the URL - you will need
+to parse and interpret its argument list. The Javascript Debugger in the
+Firebug extension for Firefox helps with the analysis. At this point, it is
+fairly trivial to write your own function which emulates the Javascript
+for the pages you want to process.
+
+Here's annother approach that answers the question, "It works in Firefox,
+but why not Mech?"  Everything the web server knows about the client is
+present in the HTTP request. If two requests are identical, the results
+should be identical. So the real question is "What is different between
+the mech request and the Firefox request?"
+
+The Firefox extension "Tamper Data" is an effective tool for examining
+the headers of the requests to the server. Compare that with what LWP
+is sending. Once the two are identical, the action of the server should
+be the same as well.
+
+I say "should", because this is an oversimplification - some values
+are naturally unique, e.g. a SessionID, but if a SessionID is present,
+that is probably sufficient, even though the value will be different
+between the LWP request and the Firefox request. The server could use
+the session to store information which is troublesome, but that's not
+the first place to look (and highly unlikely to be relevant when you
+are requesting the login page of your site).
+
+Generally the problem is to be found in missing or incorrect POSTDATA
+arguments, Cookies, User-Agents, Accepts, etc. If you are using mech,
+then redirects and cookies should not be a problem, but are listed here
+for completeness. If you are missing headers, C<< $mech->add_header >>
+can be used to add the headers that you need.
+
+=head2 Which modules work like Mechanize and have JavaScript support?
+
+In no particular order: L<Gtk2::WebKit::Mechanize>, L<Win32::IE::Mechanize>,
+L<WWW::Mechanize::Firefox>, L<WWW::Scripter>, L<WWW::Selenium>
+
+=head1 How do I do X?
+
+=head2 Can I do [such-and-such] with WWW::Mechanize?
+
+If it's possible with LWP::UserAgent, then yes.  WWW::Mechanize is
+a subclass of L<LWP::UserAgent>, so all the wondrous magic of that
+class is inherited.
+
+=head2 How do I use WWW::Mechanize through a proxy server?
+
+See the docs in L<LWP::UserAgent> on how to use the proxy.  Short version:
+
+    $mech->proxy(['http', 'ftp'], 'http://proxy.example.com:8000/');
+
+or get the specs from the environment:
+
+    $mech->env_proxy();
+
+    # Environment set like so:
+    gopher_proxy=http://proxy.my.place/
+    wais_proxy=http://proxy.my.place/
+    no_proxy="localhost,my.domain"
+    export gopher_proxy wais_proxy no_proxy
+
+=head2 How can I see what fields are on the forms?
+
+Use the mech-dump utility, optionally installed with Mechanize.
+
+    $ mech-dump --forms http://search.cpan.org
+    Dumping forms
+    GET http://search.cpan.org/search
+      query=
+      mode=all                        (option)  [*all|module|dist|author]
+      <NONAME>=CPAN Search            (submit) 
+
+=head2 How do I get Mech to handle authentication?
+
+    use MIME::Base64;
+
+    my $agent = WWW::Mechanize->new();
+    my @args = (
+        Authorization => "Basic " .
+            MIME::Base64::encode( USER . ':' . PASS )
+    );
+
+    $agent->credentials( ADDRESS, REALM, USER, PASS );
+    $agent->get( URL, @args );
+
+If you want to use the credentials for all future requests, you can
+also use the L<LWP::UserAgent> C<default_header()> method instead
+of the extra arguments to C<get()>
+
+    $mech->default_header(
+        Authorization => 'Basic ' . encode_base64( USER . ':' . PASSWORD ) );
+
+=head2 How can I get WWW::Mechanize to execute this JavaScript?
+
+You can't.  JavaScript is entirely client-based, and WWW::Mechanize
+is a client that doesn't understand JavaScript.  See the top part
+of this FAQ.
+
+=head2 How do I check a checkbox that doesn't have a value defined?
+
+Set it to to the value of "on".
+
+    $mech->field( my_checkbox => 'on' );
+
+=head2 How do I handle frames?
+
+You don't deal with them as frames, per se, but as links.  Extract
+them with
+
+    my @frame_links = $mech->find_link( tag => "frame" );
+
+=head2 How do I get a list of HTTP headers and their values?
+
+All L<HTTP::Headers> methods work on a L<HTTP::Response> object which is
+returned by the I<get()>, I<reload()>, I<response()/res()>, I<click()>,
+I<submit_form()>, and I<request()> methods.
+
+    my $mech = WWW::Mechanize->new( autocheck => 1 );
+    $mech->get( 'http://my.site.com' );
+    my $res = $mech->response();
+    for my $key ( $response->header_field_names() ) {
+        print $key, " : ", $response->header( $key ), "\n";
+    }
+
+=head2 How do I enable keep-alive?
+
+Since L<WWW::Mechanize> is a subclass of L<LWP::UserAgent>, you can
+use the same mechanism to enable keep-alive:
+
+    use LWP::ConnCache;
+    ...
+    $mech->conn_cache(LWP::ConnCache->new);
+
+=head2 How can I change/specify the action parameter of an HTML form?
+
+You can access the action of the form by utilizing the L<HTML::Form>
+object returned from one of the specifying form methods.
+
+Using C<< $mech->form_number($number) >>:
+
+    my $mech = WWW::mechanize->new;
+    $mech->get('http://someurlhere.com');
+    # Access the form using its Zero-Based Index by DOM order
+    $mech->form_number(0)->action('http://newAction'); #ABS URL
+
+Using C<< $mech->form_name($number) >>:
+
+    my $mech = WWW::mechanize->new;
+    $mech->get('http://someurlhere.com');
+    #Access the form using its Zero-Based Index by DOM order
+    $mech->form_name('trgForm')->action('http://newAction'); #ABS URL
+
+=head2 How do I save an image?  How do I save a large tarball?
+
+An image is just content.  You get the image and save it.
+
+    $mech->get( 'photo.jpg' );
+    $mech->save_content( '/path/to/my/directory/photo.jpg' );
+
+You can also save any content directly to disk using the C<:content_file>
+flag to C<get()>, which is part of L<LWP::UserAgent>.
+
+    $mech->get( 'http://www.cpan.org/src/stable.tar.gz',
+                ':content_file' => 'stable.tar.gz' );
+
+=head2 How do I pick a specific value from a C<< <select> >> list?
+
+Find the C<HTML::Form::ListInput> in the page.
+
+    my ($listbox) = $mech->find_all_inputs( name => 'listbox' );
+
+Then create a hash for the lookup:
+
+    my %name_lookup;
+    @name_lookup{ $listbox->value_names } = $listbox->possible_values;
+    my $value = $name_lookup{ 'Name I want' };
+
+If you have duplicate names, this method won't work, and you'll
+have to loop over C<< $listbox->value_names >> and
+C<< $listbox->possible_values >> in parallel until you find a
+matching name.
+
+=head2 How do I get Mech to not follow redirects?
+
+You use functionality in LWP::UserAgent, not Mech itself.
+
+    $mech->requests_redirectable( [] );
+
+Or you can set C<max_redirect>:
+
+    $mech->max_redirect( 0 );
+
+Both these options can also be set in the constructor.  Mech doesn't
+understand them, so will pass them through to the LWP::UserAgent
+constructor.
+
+
+=head1 Why doesn't this work: Debugging your Mechanize program
+
+=head2 My Mech program doesn't work, but it works in the browser.
+
+Mechanize acts like a browser, but apparently something you're doing
+is not matching the browser's behavior.  Maybe it's expecting a
+certain web client, or maybe you've not handling a field properly.
+For some reason, your Mech problem isn't doing exactly what the
+browser is doing, and when you find that, you'll have the answer.
+
+=head2 My Mech program gets these 500 errors.
+
+A 500 error from the web server says that the program on the server
+side died.  Probably the web server program was expecting certain
+inputs that you didn't supply, and instead of handling it nicely,
+the program died.
+
+Whatever the cause of the 500 error, if it works in the browser,
+but not in your Mech program, you're not acting like the browser.
+See the previous question.
+
+=head2 Why doesn't my program handle this form correctly?
+
+Run F<mech-dump> on your page and see what it says.
+
+F<mech-dump> is a marvelous diagnostic tool for figuring out what forms
+and fields are on the page.  Say you're scraping CNN.com, you'd get this:
+
+    $ mech-dump http://www.cnn.com/
+    GET http://search.cnn.com/cnn/search
+      source=cnn                     (hidden readonly)
+      invocationType=search/top      (hidden readonly)
+      sites=web                      (radio)    [*web/The Web ??|cnn/CNN.com ??]
+      query=                         (text)
+      <NONAME>=Search                (submit)
+
+    POST http://cgi.money.cnn.com/servlets/quote_redirect
+      query=                         (text)
+      <NONAME>=GET                   (submit)
+
+    POST http://polls.cnn.com/poll
+      poll_id=2112                   (hidden readonly)
+      question_1=<UNDEF>             (radio)    [1/Simplistic option|2/VIEW RESULTS]
+      <NONAME>=VOTE                  (submit)
+
+    GET http://search.cnn.com/cnn/search
+      source=cnn                     (hidden readonly)
+      invocationType=search/bottom   (hidden readonly)
+      sites=web                      (radio)    [*web/??CNN.com|cnn/??]
+      query=                         (text)
+      <NONAME>=Search                (submit)
+
+Four forms, including the first one duplicated at the end.  All the
+fields, all their defaults, lovingly generated by HTML::Form's C<dump>
+method.
+
+If you want to run F<mech-dump> on something that doesn't lend itself
+to a quick URL fetch, then use the C<save_content()> method to write
+the HTML to a file, and run F<mech-dump> on the file.
+
+=head2 Why don't https:// URLs work?
+
+You need either L<IO::Socket::SSL> or L<Crypt::SSLeay> installed.
+
+=head2 Why do I get "Input 'fieldname' is readonly"?
+
+You're trying to change the value of a hidden field and you have
+warnings on.
+
+First, make sure that you actually mean to change the field that you're
+changing, and that you don't have a typo.  Usually, hidden variables are
+set by the site you're working on for a reason.  If you change the value,
+you might be breaking some functionality by faking it out.
+
+If you really do want to change a hidden value, make the changes in a
+scope that has warnings turned off:
+
+    {
+    local $^W = 0;
+    $agent->field( name => $value );
+    }
+
+=head2 I tried to [such-and-such] and I got this weird error.
+
+Are you checking your errors?
+
+Are you sure?
+
+Are you checking that your action succeeded after every action?
+
+Are you sure?
+
+For example, if you try this:
+
+    $mech->get( "http://my.site.com" );
+    $mech->follow_link( "foo" );
+
+and the C<get> call fails for some reason, then the Mech internals
+will be unusable for the C<follow_link> and you'll get a weird
+error.  You B<must>, after every action that GETs or POSTs a page,
+check that Mech succeeded, or all bets are off.
+
+    $mech->get( "http://my.site.com" );
+    die "Can't even get the home page: ", $mech->response->status_line
+        unless $mech->success;
+
+    $mech->follow_link( "foo" );
+    die "Foo link failed: ", $mech->response->status_line
+        unless $mech->success;
+
+=head2 How do I figure out why C<< $mech->get($url) >> doesn't work?
+
+There are many reasons why a C<< get() >> can fail. The server can take
+you to someplace you didn't expect. It can generate redirects which are
+not properly handled. You can get time-outs. Servers are down more often
+than you think! etc, etc, etc. A couple of places to start:
+
+=over 4
+
+=item 1 Check C<< $mech->status() >> after each call
+
+=item 2 Check the URL with C<< $mech->uri() >> to see where you ended up
+
+=item 3 Try debugging with C<< LWP::Debug >>.
+
+=back
+
+If things are really strange, turn on debugging with
+C<< use LWP::Debug qw(+); >>
+Just put this in the main program. This causes LWP to print out a trace
+of the HTTP traffic between client and server and can be used to figure
+out what is happening at the protocol level.
+
+It is also useful to set many traps to verify that processing is
+proceeding as expected. A Mech program should always have an "I didn't
+expect to get here" or "I don't recognize the page that I am processing"
+case and bail out.
+
+Since errors can be transient, by the time you notice that the error
+has occurred, it might not be possible to reproduce it manually. So
+for automated processing it is useful to email yourself the following
+information:
+
+=over 4
+
+=item * where processing is taking place
+
+=item * An Error Message
+
+=item * $mech->uri
+
+=item * $mech->content
+
+=back
+
+You can also save the content of the page with C<< $mech->save_content( 'filename.html' ); >>
+
+=head2 I submitted a form, but the server ignored everything!  I got an empty form back!
+
+The post is handled by application software. It is common for PHP
+programmers to use the same file both to display a form and to process
+the arguments returned. So the first task of the application programmer
+is to decide whether there are arguments to processes. The program can
+check whether a particular parameter has been set, whether a hidden
+parameter has been set, or whether the submit button has been clicked.
+(There are probably other ways that I haven't thought of).
+
+In any case, if your form is not setting the parameter (e.g. the submit
+button) which the web application is keying on (and as an outsider there
+is no way to know what it is keying on), it will not notice that the form
+has been submitted. Try using C<< $mech->click() >> instead of
+C<< $mech->submit() >> or vice-versa.
+
+=head2 I've logged in to the server, but I get 500 errors when I try to get to protected content.
+
+Some web sites use distributed databases for their processing. It
+can take a few seconds for the login/session information to percolate
+through to all the servers. For human users with their slow reaction
+times, this is not a problem, but a Perl script can outrun the server.
+So try adding a C<sleep(5)> between logging in and actually doing anything
+(the optimal delay must be determined experimentally).
+
+=head2 Mech is a big memory pig!  I'm running out of RAM!
+
+Mech keeps a history of every page, and the state it was in.  It actually
+keeps a clone of the full Mech object at every step along the way.
+
+You can limit this stack size with the C<stack_depth> parm in the C<new()>
+constructor.  If you set stack_size to 0, Mech will not keep any history.
+
+=head1 AUTHOR
+
+Copyright 2005-2009 Andy Lester C<< <andy at petdance.com> >>
+
+=cut

@@ -1,0 +1,306 @@
+If you read this file _as_is_, just ignore the funny characters you
+see.  It is written in the POD format (see pod/perlpod.pod) which is
+specifically designed to be readable as is.
+
+=head1 NAME
+
+perlce - Perl for WinCE
+
+=head1 Building Perl for WinCE
+
+=head2 DESCRIPTION
+
+This file gives the instructions for building Perl5.8 and above for
+WinCE.  Please read and understand the terms under which this
+software is distributed.
+
+=head2 General explanations on cross-compiling WinCE
+
+=over
+
+=item *
+
+F<miniperl> is built. This is a single executable (without DLL), intended
+to run on Win32, and it will facilitate remaining build process; all binaries
+built after it are foreign and should not run locally.
+
+F<miniperl> is built using F<./win32/Makefile>; this is part of normal
+build process invoked as dependency from wince/Makefile.ce
+
+=item *
+
+After F<miniperl> is built, F<configpm> is invoked to create right F<Config.pm>
+in right place and its corresponding Cross.pm.
+
+Unlike Win32 build, miniperl will not have F<Config.pm> of host within reach;
+it rather will use F<Config.pm> from within cross-compilation directories.
+
+File F<Cross.pm> is dead simple: for given cross-architecture places in @INC
+a path where perl modules are, and right F<Config.pm> in that place.
+
+That said, C<miniperl -Ilib -MConfig -we 1> should report an error, because
+it can not find F<Config.pm>. If it does not give an error -- wrong F<Config.pm>
+is substituted, and resulting binaries will be a mess.
+
+C<miniperl -MCross -MConfig -we 1> should run okay, and it will provide right
+F<Config.pm> for further compilations.
+
+=item *
+
+During extensions build phase, a script F<./win32/buldext.pl> is invoked,
+which in turn steps in F<./ext> subdirectories and performs a build of
+each extension in turn.
+
+All invokes of F<Makefile.PL> are provided with C<-MCross> so to enable cross-
+compile.
+
+=back
+
+=head2 BUILD
+
+This section describes the steps to be performed to build PerlCE.
+You may find additional information about building perl for WinCE
+at L<http://perlce.sourceforge.net> and some pre-built binaries.
+
+=head3 Tools & SDK
+
+For compiling, you need following:
+
+=over 4
+
+=item * Microsoft Embedded Visual Tools
+
+=item * Microsoft Visual C++
+
+=item * Rainer Keuchel's celib-sources
+
+=item * Rainer Keuchel's console-sources
+
+=back
+
+Needed source files can be downloaded at
+L<http://perlce.sourceforge.net>
+
+=head3 Make
+
+Normally you only need to edit F<./win32/ce-helpers/compile.bat>
+to reflect your system and run it.
+
+File F<./win32/ce-helpers/compile.bat> is actually a wrapper to call
+C<nmake -f makefile.ce> with appropriate parameters and it accepts extra
+parameters and forwards them to C<nmake> command as additional
+arguments. You should pass target this way.
+
+To prepare distribution you need to do following:
+
+=over 4
+
+=item * go to F<./win32> subdirectory
+
+=item * edit file F<./win32/ce-helpers/compile.bat>
+
+=item * run 
+  compile.bat
+
+=item * run 
+  compile.bat dist
+
+=back
+
+F<Makefile.ce> has C<CROSS_NAME> macro, and it is used further to refer to
+your cross-compilation scheme. You could assign a name to it, but this
+is not necessary, because by default it is assigned after your machine
+configuration name, such as "wince-sh3-hpc-wce211", and this is enough
+to distinguish different builds at the same time. This option could be
+handy for several different builds on same platform to perform, say,
+threaded build. In a following example we assume that all required
+environment variables are set properly for C cross-compiler (a special
+*.bat file could fit perfectly to this purpose) and your F<compile.bat>
+has proper "MACHINE" parameter set, to, say, C<wince-mips-pocket-wce300>.
+
+  compile.bat
+  compile.bat dist
+  compile.bat CROSS_NAME=mips-wce300-thr "USE_ITHREADS=define" "USE_IMP_SYS=define" "USE_MULTI=define"
+  compile.bat CROSS_NAME=mips-wce300-thr "USE_ITHREADS=define" "USE_IMP_SYS=define" "USE_MULTI=define" dist
+
+If all goes okay and no errors during a build, you'll get two independent
+distributions: C<wince-mips-pocket-wce300> and C<mips-wce300-thr>.
+
+Target C<dist> prepares distribution file set. Target C<zipdist> performs
+same as C<dist> but additionally compresses distribution files into zip
+archive.
+
+NOTE: during a build there could be created a number (or one) of F<Config.pm>
+for cross-compilation ("foreign" F<Config.pm>) and those are hidden inside
+F<../xlib/$(CROSS_NAME)> with other auxiliary files, but, and this is important to
+note, there should be B<no> F<Config.pm> for host miniperl.
+If you'll get an error that perl could not find Config.pm somewhere in building
+process this means something went wrong. Most probably you forgot to
+specify a cross-compilation when invoking miniperl.exe to Makefile.PL
+When building an extension for cross-compilation your command line should
+look like
+
+  ..\miniperl.exe -I..\lib -MCross=mips-wce300-thr Makefile.PL
+
+or just
+
+  ..\miniperl.exe -I..\lib -MCross Makefile.PL
+
+to refer a cross-compilation that was created last time.
+
+All questions related to building for WinCE devices could be asked in
+F<perlce-user@lists.sourceforge.net> mailing list.
+
+=head1 Using Perl on WinCE
+
+=head2 DESCRIPTION
+
+PerlCE is currently linked with a simple console window, so it also
+works on non-hpc devices.
+
+The simple stdio implementation creates the files F<stdin.txt>,
+F<stdout.txt> and F<stderr.txt>, so you might examine them if your
+console has only a limited number of cols.
+
+When exitcode is non-zero, a message box appears, otherwise the
+console closes, so you might have to catch an exit with
+status 0 in your program to see any output.
+
+stdout/stderr now go into the files F</perl-stdout.txt> and
+F</perl-stderr.txt.>
+
+PerlIDE is handy to deal with perlce.
+
+=head2 LIMITATIONS
+
+No fork(), pipe(), popen() etc.
+
+=head2 ENVIRONMENT
+
+All environment vars must be stored in HKLM\Environment as
+strings. They are read at process startup.
+
+=over
+
+=item PERL5LIB
+
+Usual perl lib path (semi-list).
+
+=item PATH
+
+Semi-list for executables.
+
+=item TMP
+
+- Tempdir.
+
+=item UNIXROOTPATH
+
+- Root for accessing some special files, i.e. F</dev/null>, F</etc/services>.
+
+=item ROWS/COLS
+
+- Rows/cols for console.
+
+=item HOME
+
+- Home directory.
+
+=item CONSOLEFONTSIZE
+
+- Size for console font.
+
+=back
+
+You can set these with cereg.exe, a (remote) registry editor
+or via the PerlIDE.
+
+=head2 REGISTRY
+
+To start perl by clicking on a perl source file, you have
+to make the according entries in HKCR (see F<ce-helpers/wince-reg.bat>).
+cereg.exe (which must be executed on a desktop pc with
+ActiveSync) is reported not to work on some devices.
+You have to create the registry entries by hand using a 
+registry editor.
+
+=head2 XS
+
+The following Win32-Methods are built-in:
+
+	newXS("Win32::GetCwd", w32_GetCwd, file);
+	newXS("Win32::SetCwd", w32_SetCwd, file);
+	newXS("Win32::GetTickCount", w32_GetTickCount, file);
+	newXS("Win32::GetOSVersion", w32_GetOSVersion, file);
+	newXS("Win32::IsWinNT", w32_IsWinNT, file);
+	newXS("Win32::IsWin95", w32_IsWin95, file);
+	newXS("Win32::IsWinCE", w32_IsWinCE, file);
+	newXS("Win32::CopyFile", w32_CopyFile, file);
+	newXS("Win32::Sleep", w32_Sleep, file);
+	newXS("Win32::MessageBox", w32_MessageBox, file);
+	newXS("Win32::GetPowerStatus", w32_GetPowerStatus, file);
+	newXS("Win32::GetOemInfo", w32_GetOemInfo, file);
+	newXS("Win32::ShellEx", w32_ShellEx, file);
+
+=head2 BUGS
+
+Opening files for read-write is currently not supported if
+they use stdio (normal perl file handles).
+
+If you find bugs or if it does not work at all on your
+device, send mail to the address below. Please report
+the details of your device (processor, ceversion, 
+devicetype (hpc/palm/pocket)) and the date of the downloaded
+files. 
+
+=head2 INSTALLATION
+
+Currently installation instructions are at L<http://perlce.sourceforge.net/>.
+
+After installation & testing processes will stabilize, information will
+be more precise.
+
+=head1 ACKNOWLEDGEMENTS
+
+The port for Win32 was used as a reference.
+
+=head1 History of WinCE port
+
+=over
+
+=item 5.6.0
+
+Initial port of perl to WinCE. It was performed in separate directory
+named F<wince>. This port was based on contents of F<./win32> directory.
+F<miniperl> was not built, user must have HOST perl and properly edit
+F<makefile.ce> to reflect this.
+
+=item 5.8.0
+
+wince port was kept in the same F<./wince> directory, and F<wince/Makefile.ce>
+was used to invoke native compiler to create HOST miniperl, which then
+facilitates cross-compiling process.
+Extension building support was added.
+
+=item 5.9.4
+
+Two directories F<./win32> and F<./wince> were merged, so perlce build
+process comes in F<./win32> directory.
+
+=back
+
+=head1 AUTHORS
+
+=over
+
+=item Rainer Keuchel <coyxc@rainer-keuchel.de>
+
+provided initial port of Perl, which appears to be most essential work, as
+it was a breakthrough on having Perl ported at all.
+Many thanks and obligations to Rainer!
+
+=item Vadim Konovalov
+
+made further support of WinCE port.
+
+=back

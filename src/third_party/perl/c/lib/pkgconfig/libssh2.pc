@@ -1,0 +1,16 @@
+###########################################################################
+# libssh2 installation details
+###########################################################################
+
+prefix=/mingw
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libssh2
+URL: http://www.libssh2.org/
+Description: Library for SSH-based communication
+Version: 1.4.1
+Libs: -L${libdir} -lssh2   -lws2_32
+Libs.private:  -lws2_32
+Cflags: -I${includedir}
