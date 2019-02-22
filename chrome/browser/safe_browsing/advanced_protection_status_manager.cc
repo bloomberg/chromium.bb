@@ -56,11 +56,11 @@ void AdvancedProtectionStatusManager::Initialize() {
 
 void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
   // Retrieves advanced protection service status from primary account's info.
-  AccountInfo info = identity_manager_->GetPrimaryAccountInfo();
-  if (info.account_id.empty())
+  CoreAccountInfo core_info = identity_manager_->GetPrimaryAccountInfo();
+  if (core_info.account_id.empty())
     return;
 
-  is_under_advanced_protection_ = info.is_under_advanced_protection;
+  is_under_advanced_protection_ = core_info.is_under_advanced_protection;
 
   if (profile_->GetPrefs()->HasPrefPath(
           prefs::kAdvancedProtectionLastRefreshInUs)) {
