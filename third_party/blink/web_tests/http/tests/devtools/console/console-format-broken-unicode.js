@@ -40,6 +40,11 @@
   function step5(result) {
     var text = result;
     TestRunner.assertEquals(15, text.length, 'text length');
+    // It's important that this last character in |text| is an unbalanced UTF16
+    // low surrogate (|text| is invalid UTF16, allowed by Javascript), as
+    // opposed to some replacement character that came from transcoding to UTF8
+    // and back to valid UTF16.
+    TestRunner.assertEquals('\uD835', text[text.length - 1]);
     TestRunner.assertEquals(8, countTextNodes(text), 'nodes count');
     TestRunner.assertEquals(1, countTextNodes('"' + text + '"'), 'nodes with quoted text count');
     TestRunner.addResult('PASS: Found all nodes with the broken text');
