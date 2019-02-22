@@ -7053,6 +7053,42 @@ TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
 
 #if BUILDFLAG(ENABLE_REPORTING)
 
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_DontReportIfNetworkNotAccessed) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/cachetime");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  // Populate the cache.
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(200, error.status_code);
+  EXPECT_EQ(OK, error.type);
+
+  request = context.CreateRequest(request_url, DEFAULT_PRIORITY, &d,
+                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  d.RunUntilComplete();
+
+  EXPECT_FALSE(request->response_info().network_accessed);
+  EXPECT_TRUE(request->response_info().was_cached);
+  // No additional NEL report was generated.
+  EXPECT_EQ(1u, nel_service.errors().size());
+}
+
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_BasicSuccess) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.ServeFilesFromSourceDirectory(
@@ -7136,6 +7172,33 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Redirect) {
   EXPECT_EQ(OK, error2.type);
 }
 
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_RedirectWithoutLocationHeader) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/308-without-location-header");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(308, error.status_code);
+  // The body of the response was successfully read.
+  EXPECT_EQ(OK, error.type);
+}
+
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Auth) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
@@ -7167,7 +7230,62 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Auth) {
   EXPECT_EQ(OK, error2.type);
 }
 
-TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Cancel) {
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_304Response) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/auth-basic");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  // populate the cache
+  {
+    TestDelegate d;
+    d.set_credentials(AuthCredentials(kUser, kSecret));
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+    d.RunUntilComplete();
+  }
+  ASSERT_EQ(2u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error1 =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error1.uri);
+  EXPECT_EQ(401, error1.status_code);
+  EXPECT_EQ(OK, error1.type);
+  const TestNetworkErrorLoggingService::RequestDetails& error2 =
+      nel_service.errors()[1];
+  EXPECT_EQ(request_url, error2.uri);
+  EXPECT_EQ(200, error2.status_code);
+  EXPECT_EQ(OK, error2.type);
+
+  // repeat request with end-to-end validation.  since auth-basic results in a
+  // cachable page, we expect this test to result in a 304.  in which case, the
+  // response should be fetched from the cache.
+  {
+    TestDelegate d;
+    d.set_credentials(AuthCredentials(kUser, kSecret));
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetLoadFlags(LOAD_VALIDATE_CACHE);
+    r->Start();
+    d.RunUntilComplete();
+
+    // Should be the same cached document.
+    EXPECT_TRUE(r->was_cached());
+  }
+  ASSERT_EQ(3u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error3 =
+      nel_service.errors()[2];
+  EXPECT_EQ(request_url, error3.uri);
+  EXPECT_EQ(304, error3.status_code);
+  EXPECT_EQ(OK, error3.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_CancelInResponseStarted) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.ServeFilesFromSourceDirectory(
       base::FilePath(kTestFilePath));
@@ -7191,6 +7309,63 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Cancel) {
       nel_service.errors()[0];
   EXPECT_EQ(request_url, error.uri);
   EXPECT_EQ(200, error.status_code);
+  // Headers were received and the body should have been read but was not.
+  EXPECT_EQ(ERR_ABORTED, error.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_CancelOnDataReceived) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/simple.html");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  d.set_cancel_in_received_data(true);
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(200, error.status_code);
+  // Data was received but the body was not completely read.
+  EXPECT_EQ(ERR_ABORTED, error.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_CancelRedirect) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/redirect-test.html");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  d.set_cancel_in_received_redirect(true);
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(302, error.status_code);
+  // A valid HTTP response was received, even though the request was cancelled.
   EXPECT_EQ(OK, error.type);
 }
 
