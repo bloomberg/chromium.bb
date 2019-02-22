@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -20,6 +21,8 @@ namespace extensions {
 // set_log_on_completion(true) to enable it, if they want. However, even if
 // the logging is turned off, a warning is emitted when a function call is
 // very slow. See the implementation of OnResponded() for details.
+// TODO(crbug.com/934541): Remove this once all extension functions have been
+// migrated to LoggedUIThreadExtensionFunction.
 class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
  public:
   LoggedAsyncExtensionFunction();
@@ -28,6 +31,28 @@ class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
   ~LoggedAsyncExtensionFunction() override;
 
   // ChromeAsyncExtensionFunction overrides.
+  void OnResponded() override;
+
+  // Sets the logging on completion flag. By default, logging is turned off.
+  void set_log_on_completion(bool log_on_completion) {
+    log_on_completion_ = log_on_completion;
+  }
+
+ private:
+  base::Time start_time_;
+  bool log_on_completion_;
+};
+
+// This is the same class as above, but inheriting directly from
+// UIThreadExtensionFunction instead.
+class LoggedUIThreadExtensionFunction : public UIThreadExtensionFunction {
+ public:
+  LoggedUIThreadExtensionFunction();
+
+ protected:
+  ~LoggedUIThreadExtensionFunction() override;
+
+  // UIThreadExtensionFunction overrides.
   void OnResponded() override;
 
   // Sets the logging on completion flag. By default, logging is turned off.
