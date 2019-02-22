@@ -27,7 +27,7 @@
 using NavigationDetails = chromium::web::NavigationEvent;
 
 class NamedMessagePortConnectorTest
-    : public cr_fuchsia::test::WebRunnerBrowserTest,
+    : public cr_fuchsia::test::WebEngineBrowserTest,
       public chromium::web::NavigationEventObserver {
  public:
   NamedMessagePortConnectorTest()
@@ -40,8 +40,8 @@ class NamedMessagePortConnectorTest
 
  protected:
   void SetUpOnMainThread() override {
-    cr_fuchsia::test::WebRunnerBrowserTest::SetUpOnMainThread();
-    frame_ = WebRunnerBrowserTest::CreateFrame(this);
+    cr_fuchsia::test::WebEngineBrowserTest::SetUpOnMainThread();
+    frame_ = WebEngineBrowserTest::CreateFrame(this);
   }
 
   void OnNavigationStateChanged(

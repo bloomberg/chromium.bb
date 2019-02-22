@@ -20,10 +20,10 @@ namespace test {
 
 namespace {
 
-class WebRunnerTestLauncherDelegate : public content::TestLauncherDelegate {
+class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
-  WebRunnerTestLauncherDelegate() = default;
-  ~WebRunnerTestLauncherDelegate() override = default;
+  WebEngineTestLauncherDelegate() = default;
+  ~WebEngineTestLauncherDelegate() override = default;
 
   // content::TestLauncherDelegate implementation:
   int RunTestSuite(int argc, char** argv) override {
@@ -47,15 +47,15 @@ class WebRunnerTestLauncherDelegate : public content::TestLauncherDelegate {
     zx_status_t result =
         zx::channel::create(0, &client_channel, &server_channel);
     ZX_CHECK(result == ZX_OK, result) << "zx::channel::create";
-    WebRunnerBrowserTest::SetContextClientChannel(std::move(client_channel));
+    WebEngineBrowserTest::SetContextClientChannel(std::move(client_channel));
 
-    return new WebRunnerMainDelegate(std::move(server_channel));
+    return new WebEngineMainDelegate(std::move(server_channel));
   }
 
  private:
   chromium::web::ContextPtr context_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerTestLauncherDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineTestLauncherDelegate);
 };
 
 }  // namespace
@@ -73,6 +73,6 @@ int main(int argc, char** argv) {
   if (parallel_jobs > 1U) {
     parallel_jobs /= 2U;
   }
-  cr_fuchsia::test::WebRunnerTestLauncherDelegate launcher_delegate;
+  cr_fuchsia::test::WebEngineTestLauncherDelegate launcher_delegate;
   return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }

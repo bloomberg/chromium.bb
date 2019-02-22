@@ -51,7 +51,7 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
 
 // Defines a suite of tests that exercise Frame-level functionality, such as
 // navigation commands and page events.
-class FrameImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
+class FrameImplTest : public cr_fuchsia::test::WebEngineBrowserTest {
  public:
   FrameImplTest()
       : run_timeout_(TestTimeouts::action_timeout(),
@@ -67,7 +67,7 @@ class FrameImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
  protected:
   // Creates a Frame with |navigation_observer_| attached.
   chromium::web::FramePtr CreateFrame() {
-    return WebRunnerBrowserTest::CreateFrame(&navigation_observer_);
+    return WebEngineBrowserTest::CreateFrame(&navigation_observer_);
   }
 
   // Navigates a |controller| to |url|, blocking until navigation is complete.

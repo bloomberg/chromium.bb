@@ -18,11 +18,11 @@ namespace {
 zx_handle_t g_context_channel = ZX_HANDLE_INVALID;
 }  // namespace
 
-WebRunnerBrowserTest::WebRunnerBrowserTest() = default;
+WebEngineBrowserTest::WebEngineBrowserTest() = default;
 
-WebRunnerBrowserTest::~WebRunnerBrowserTest() = default;
+WebEngineBrowserTest::~WebEngineBrowserTest() = default;
 
-void WebRunnerBrowserTest::PreRunTestOnMainThread() {
+void WebEngineBrowserTest::PreRunTestOnMainThread() {
   zx_status_t result = context_.Bind(zx::channel(g_context_channel));
   ZX_DCHECK(result == ZX_OK, result) << "Context::Bind";
   g_context_channel = ZX_HANDLE_INVALID;
@@ -33,16 +33,16 @@ void WebRunnerBrowserTest::PreRunTestOnMainThread() {
   }
 }
 
-void WebRunnerBrowserTest::PostRunTestOnMainThread() {
+void WebEngineBrowserTest::PostRunTestOnMainThread() {
   // Unbind the Context while the message loops are still alive.
   context_.Unbind();
 }
 
-void WebRunnerBrowserTest::TearDownOnMainThread() {
+void WebEngineBrowserTest::TearDownOnMainThread() {
   navigation_observer_bindings_.CloseAll();
 }
 
-chromium::web::FramePtr WebRunnerBrowserTest::CreateFrame(
+chromium::web::FramePtr WebEngineBrowserTest::CreateFrame(
     chromium::web::NavigationEventObserver* observer) {
   chromium::web::FramePtr frame;
   context_->CreateFrame(frame.NewRequest());
@@ -62,13 +62,13 @@ chromium::web::FramePtr WebRunnerBrowserTest::CreateFrame(
 }
 
 // static
-void WebRunnerBrowserTest::SetContextClientChannel(zx::channel channel) {
+void WebEngineBrowserTest::SetContextClientChannel(zx::channel channel) {
   DCHECK(channel);
   g_context_channel = channel.release();
 }
 
-ContextImpl* WebRunnerBrowserTest::context_impl() const {
-  return WebRunnerMainDelegate::GetInstanceForTest()
+ContextImpl* WebEngineBrowserTest::context_impl() const {
+  return WebEngineMainDelegate::GetInstanceForTest()
       ->browser_client()
       ->main_parts_for_test()
       ->context();

@@ -11,15 +11,15 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_context.h"
 
-class WebRunnerNetLog;
-class WebRunnerURLRequestContextGetter;
+class WebEngineNetLog;
+class WebEngineURLRequestContextGetter;
 
-class WebRunnerBrowserContext : public content::BrowserContext {
+class WebEngineBrowserContext : public content::BrowserContext {
  public:
   // |force_incognito|: If set, then this BrowserContext will run in incognito
   // mode even if /data is available.
-  explicit WebRunnerBrowserContext(bool force_incognito);
-  ~WebRunnerBrowserContext() override;
+  explicit WebEngineBrowserContext(bool force_incognito);
+  ~WebEngineBrowserContext() override;
 
   // BrowserContext implementation.
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -59,11 +59,11 @@ class WebRunnerBrowserContext : public content::BrowserContext {
 
   base::FilePath data_dir_path_;
 
-  std::unique_ptr<WebRunnerNetLog> net_log_;
-  scoped_refptr<WebRunnerURLRequestContextGetter> url_request_getter_;
+  std::unique_ptr<WebEngineNetLog> net_log_;
+  scoped_refptr<WebEngineURLRequestContextGetter> url_request_getter_;
   std::unique_ptr<ResourceContext> resource_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerBrowserContext);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserContext);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_CONTEXT_H_

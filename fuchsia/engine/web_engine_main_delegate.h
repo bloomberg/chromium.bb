@@ -17,18 +17,18 @@ namespace content {
 class ContentClient;
 }  // namespace content
 
-class WebRunnerContentBrowserClient;
-class WebRunnerContentRendererClient;
+class WebEngineContentBrowserClient;
+class WebEngineContentRendererClient;
 
-class WEB_ENGINE_EXPORT WebRunnerMainDelegate
+class WEB_ENGINE_EXPORT WebEngineMainDelegate
     : public content::ContentMainDelegate {
  public:
-  explicit WebRunnerMainDelegate(zx::channel context_channel);
-  ~WebRunnerMainDelegate() override;
+  explicit WebEngineMainDelegate(zx::channel context_channel);
+  ~WebEngineMainDelegate() override;
 
-  static WebRunnerMainDelegate* GetInstanceForTest();
+  static WebEngineMainDelegate* GetInstanceForTest();
 
-  WebRunnerContentBrowserClient* browser_client() {
+  WebEngineContentBrowserClient* browser_client() {
     return browser_client_.get();
   }
 
@@ -43,12 +43,12 @@ class WEB_ENGINE_EXPORT WebRunnerMainDelegate
 
  private:
   std::unique_ptr<content::ContentClient> content_client_;
-  std::unique_ptr<WebRunnerContentBrowserClient> browser_client_;
-  std::unique_ptr<WebRunnerContentRendererClient> renderer_client_;
+  std::unique_ptr<WebEngineContentBrowserClient> browser_client_;
+  std::unique_ptr<WebEngineContentRendererClient> renderer_client_;
 
   zx::channel context_channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerMainDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineMainDelegate);
 };
 
 #endif  // FUCHSIA_ENGINE_WEB_ENGINE_MAIN_DELEGATE_H_

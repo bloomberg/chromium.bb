@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 
-class WebRunnerBrowserMainParts;
+class WebEngineBrowserMainParts;
 
-class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
+class WebEngineContentBrowserClient : public content::ContentBrowserClient {
  public:
-  explicit WebRunnerContentBrowserClient(zx::channel context_channel);
-  ~WebRunnerContentBrowserClient() override;
+  explicit WebEngineContentBrowserClient(zx::channel context_channel);
+  ~WebEngineContentBrowserClient() override;
 
-  WebRunnerBrowserMainParts* main_parts_for_test() const { return main_parts_; }
+  WebEngineBrowserMainParts* main_parts_for_test() const { return main_parts_; }
 
   // ContentBrowserClient overrides.
   content::BrowserMainParts* CreateBrowserMainParts(
@@ -28,9 +28,9 @@ class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
 
  private:
   zx::channel context_channel_;
-  WebRunnerBrowserMainParts* main_parts_;
+  WebEngineBrowserMainParts* main_parts_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerContentBrowserClient);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CONTENT_BROWSER_CLIENT_H_

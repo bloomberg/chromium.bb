@@ -14,7 +14,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
-WebRunnerURLRequestContextGetter::WebRunnerURLRequestContextGetter(
+WebEngineURLRequestContextGetter::WebEngineURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     net::NetLog* net_log,
     content::ProtocolHandlerMap protocol_handlers,
@@ -26,10 +26,10 @@ WebRunnerURLRequestContextGetter::WebRunnerURLRequestContextGetter(
       request_interceptors_(std::move(request_interceptors)),
       data_dir_path_(data_dir_path) {}
 
-WebRunnerURLRequestContextGetter::~WebRunnerURLRequestContextGetter() = default;
+WebEngineURLRequestContextGetter::~WebEngineURLRequestContextGetter() = default;
 
 net::URLRequestContext*
-WebRunnerURLRequestContextGetter::GetURLRequestContext() {
+WebEngineURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     net::URLRequestContextBuilder builder;
     builder.set_net_log(net_log_);
@@ -68,6 +68,6 @@ WebRunnerURLRequestContextGetter::GetURLRequestContext() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebRunnerURLRequestContextGetter::GetNetworkTaskRunner() const {
+WebEngineURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }

@@ -20,9 +20,9 @@ class NetLog;
 class ProxyConfigService;
 }  // namespace net
 
-class WebRunnerURLRequestContextGetter : public net::URLRequestContextGetter {
+class WebEngineURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  WebRunnerURLRequestContextGetter(
+  WebEngineURLRequestContextGetter(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       net::NetLog* net_log,
       content::ProtocolHandlerMap protocol_handlers,
@@ -35,7 +35,7 @@ class WebRunnerURLRequestContextGetter : public net::URLRequestContextGetter {
       const override;
 
  protected:
-  ~WebRunnerURLRequestContextGetter() override;
+  ~WebEngineURLRequestContextGetter() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -47,7 +47,7 @@ class WebRunnerURLRequestContextGetter : public net::URLRequestContextGetter {
   content::URLRequestInterceptorScopedVector request_interceptors_;
   base::FilePath data_dir_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerURLRequestContextGetter);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineURLRequestContextGetter);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_URL_REQUEST_CONTEXT_GETTER_H_

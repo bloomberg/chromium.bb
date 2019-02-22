@@ -32,7 +32,7 @@ using NavigationDetails = chromium::web::NavigationEvent;
 
 // Defines a suite of tests that exercise browser-level configuration and
 // functionality.
-class ContextImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
+class ContextImplTest : public cr_fuchsia::test::WebEngineBrowserTest {
  public:
   ContextImplTest() = default;
   ~ContextImplTest() = default;
@@ -40,7 +40,7 @@ class ContextImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
  protected:
   // Creates a Frame with |navigation_observer_| attached.
   chromium::web::FramePtr CreateFrame() {
-    return WebRunnerBrowserTest::CreateFrame(&navigation_observer_);
+    return WebEngineBrowserTest::CreateFrame(&navigation_observer_);
   }
 
   // Synchronously gets a list of cookies for this BrowserContext.

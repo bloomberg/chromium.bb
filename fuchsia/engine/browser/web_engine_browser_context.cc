@@ -22,7 +22,7 @@
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/network_switches.h"
 
-class WebRunnerBrowserContext::ResourceContext
+class WebEngineBrowserContext::ResourceContext
     : public content::ResourceContext {
  public:
   ResourceContext() = default;
@@ -32,21 +32,21 @@ class WebRunnerBrowserContext::ResourceContext
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };
 
-std::unique_ptr<WebRunnerNetLog> CreateNetLog() {
-  std::unique_ptr<WebRunnerNetLog> result;
+std::unique_ptr<WebEngineNetLog> CreateNetLog() {
+  std::unique_ptr<WebEngineNetLog> result;
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(network::switches::kLogNetLog)) {
     base::FilePath log_path =
         command_line->GetSwitchValuePath(network::switches::kLogNetLog);
-    result = std::make_unique<WebRunnerNetLog>(log_path);
+    result = std::make_unique<WebEngineNetLog>(log_path);
   }
 
   return result;
 }
 
-WebRunnerBrowserContext::WebRunnerBrowserContext(bool force_incognito)
+WebEngineBrowserContext::WebEngineBrowserContext(bool force_incognito)
     : net_log_(CreateNetLog()), resource_context_(new ResourceContext()) {
   if (!force_incognito) {
     base::PathService::Get(base::DIR_APP_DATA, &data_dir_path_);
@@ -59,7 +59,7 @@ WebRunnerBrowserContext::WebRunnerBrowserContext(bool force_incognito)
   BrowserContext::Initialize(this, data_dir_path_);
 }
 
-WebRunnerBrowserContext::~WebRunnerBrowserContext() {
+WebEngineBrowserContext::~WebEngineBrowserContext() {
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {
@@ -71,78 +71,78 @@ WebRunnerBrowserContext::~WebRunnerBrowserContext() {
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>
-WebRunnerBrowserContext::CreateZoomLevelDelegate(
+WebEngineBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return nullptr;
 }
 
-base::FilePath WebRunnerBrowserContext::GetPath() const {
+base::FilePath WebEngineBrowserContext::GetPath() const {
   return data_dir_path_;
 }
 
-bool WebRunnerBrowserContext::IsOffTheRecord() const {
+bool WebEngineBrowserContext::IsOffTheRecord() const {
   return data_dir_path_.empty();
 }
 
-content::ResourceContext* WebRunnerBrowserContext::GetResourceContext() {
+content::ResourceContext* WebEngineBrowserContext::GetResourceContext() {
   return resource_context_.get();
 }
 
 content::DownloadManagerDelegate*
-WebRunnerBrowserContext::GetDownloadManagerDelegate() {
+WebEngineBrowserContext::GetDownloadManagerDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-content::BrowserPluginGuestManager* WebRunnerBrowserContext::GetGuestManager() {
+content::BrowserPluginGuestManager* WebEngineBrowserContext::GetGuestManager() {
   return nullptr;
 }
 
 storage::SpecialStoragePolicy*
-WebRunnerBrowserContext::GetSpecialStoragePolicy() {
+WebEngineBrowserContext::GetSpecialStoragePolicy() {
   return nullptr;
 }
 
 content::PushMessagingService*
-WebRunnerBrowserContext::GetPushMessagingService() {
+WebEngineBrowserContext::GetPushMessagingService() {
   return nullptr;
 }
 
 content::SSLHostStateDelegate*
-WebRunnerBrowserContext::GetSSLHostStateDelegate() {
+WebEngineBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
 }
 
 content::PermissionControllerDelegate*
-WebRunnerBrowserContext::GetPermissionControllerDelegate() {
+WebEngineBrowserContext::GetPermissionControllerDelegate() {
   return nullptr;
 }
 
 content::ClientHintsControllerDelegate*
-WebRunnerBrowserContext::GetClientHintsControllerDelegate() {
+WebEngineBrowserContext::GetClientHintsControllerDelegate() {
   return nullptr;
 }
 
 content::BackgroundFetchDelegate*
-WebRunnerBrowserContext::GetBackgroundFetchDelegate() {
+WebEngineBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;
 }
 
 content::BackgroundSyncController*
-WebRunnerBrowserContext::GetBackgroundSyncController() {
+WebEngineBrowserContext::GetBackgroundSyncController() {
   return nullptr;
 }
 
 content::BrowsingDataRemoverDelegate*
-WebRunnerBrowserContext::GetBrowsingDataRemoverDelegate() {
+WebEngineBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* WebRunnerBrowserContext::CreateRequestContext(
+net::URLRequestContextGetter* WebEngineBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!url_request_getter_);
-  url_request_getter_ = new WebRunnerURLRequestContextGetter(
+  url_request_getter_ = new WebEngineURLRequestContextGetter(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       net_log_.get(), std::move(*protocol_handlers),
@@ -151,7 +151,7 @@ net::URLRequestContextGetter* WebRunnerBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-WebRunnerBrowserContext::CreateRequestContextForStoragePartition(
+WebEngineBrowserContext::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
@@ -160,13 +160,13 @@ WebRunnerBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter*
-WebRunnerBrowserContext::CreateMediaRequestContext() {
+WebEngineBrowserContext::CreateMediaRequestContext() {
   DCHECK(url_request_getter_.get());
   return url_request_getter_.get();
 }
 
 net::URLRequestContextGetter*
-WebRunnerBrowserContext::CreateMediaRequestContextForStoragePartition(
+WebEngineBrowserContext::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
   return nullptr;

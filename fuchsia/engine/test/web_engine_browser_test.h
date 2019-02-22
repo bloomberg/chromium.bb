@@ -18,15 +18,15 @@
 namespace cr_fuchsia {
 namespace test {
 
-// Base test class used for testing the WebRunner Context FIDL service in
+// Base test class used for testing the WebEngine Context FIDL service in
 // integration.
-class WebRunnerBrowserTest : public content::BrowserTestBase {
+class WebEngineBrowserTest : public content::BrowserTestBase {
  public:
-  WebRunnerBrowserTest();
-  ~WebRunnerBrowserTest() override;
+  WebEngineBrowserTest();
+  ~WebEngineBrowserTest() override;
 
   // Sets the Context client channel which will be bound to a Context FIDL
-  // object by WebRunnerBrowserTest.
+  // object by WebEngineBrowserTest.
   static void SetContextClientChannel(zx::channel channel);
 
   // Creates a Frame for this Context.
@@ -60,7 +60,7 @@ class WebRunnerBrowserTest : public content::BrowserTestBase {
   fidl::BindingSet<chromium::web::NavigationEventObserver>
       navigation_observer_bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserTest);
 };
 
 }  // namespace test

@@ -27,7 +27,7 @@ namespace {
 // referenced frequently in this file.
 using NavigationDetails = chromium::web::NavigationEvent;
 
-class CastChannelBindingsTest : public cr_fuchsia::test::WebRunnerBrowserTest,
+class CastChannelBindingsTest : public cr_fuchsia::test::WebEngineBrowserTest,
                                 public chromium::web::NavigationEventObserver,
                                 public chromium::cast::CastChannel {
  public:
@@ -42,9 +42,9 @@ class CastChannelBindingsTest : public cr_fuchsia::test::WebRunnerBrowserTest,
 
  protected:
   void SetUpOnMainThread() override {
-    cr_fuchsia::test::WebRunnerBrowserTest::SetUpOnMainThread();
+    cr_fuchsia::test::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
-    frame_ = WebRunnerBrowserTest::CreateFrame(this);
+    frame_ = WebEngineBrowserTest::CreateFrame(this);
     connector_ = std::make_unique<NamedMessagePortConnector>();
   }
 

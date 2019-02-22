@@ -19,7 +19,7 @@
 
 namespace {
 
-WebRunnerMainDelegate* g_current_web_runner_main_delegate = nullptr;
+WebEngineMainDelegate* g_current_web_engine_main_delegate = nullptr;
 
 void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   base::FilePath log_filename;
@@ -51,48 +51,48 @@ void InitializeResourceBundle() {
 }  // namespace
 
 // static
-WebRunnerMainDelegate* WebRunnerMainDelegate::GetInstanceForTest() {
-  return g_current_web_runner_main_delegate;
+WebEngineMainDelegate* WebEngineMainDelegate::GetInstanceForTest() {
+  return g_current_web_engine_main_delegate;
 }
 
-WebRunnerMainDelegate::WebRunnerMainDelegate(zx::channel context_channel)
+WebEngineMainDelegate::WebEngineMainDelegate(zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {
-  g_current_web_runner_main_delegate = this;
+  g_current_web_engine_main_delegate = this;
 }
 
-WebRunnerMainDelegate::~WebRunnerMainDelegate() = default;
+WebEngineMainDelegate::~WebEngineMainDelegate() = default;
 
-bool WebRunnerMainDelegate::BasicStartupComplete(int* exit_code) {
+bool WebEngineMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   InitLoggingFromCommandLine(*command_line);
-  content_client_ = std::make_unique<WebRunnerContentClient>();
+  content_client_ = std::make_unique<WebEngineContentClient>();
   SetContentClient(content_client_.get());
   return false;
 }
 
-void WebRunnerMainDelegate::PreSandboxStartup() {
+void WebEngineMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-int WebRunnerMainDelegate::RunProcess(
+int WebEngineMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
   if (!process_type.empty())
     return -1;
 
-  return WebRunnerBrowserMain(main_function_params);
+  return WebEngineBrowserMain(main_function_params);
 }
 
 content::ContentBrowserClient*
-WebRunnerMainDelegate::CreateContentBrowserClient() {
+WebEngineMainDelegate::CreateContentBrowserClient() {
   DCHECK(!browser_client_);
-  browser_client_ = std::make_unique<WebRunnerContentBrowserClient>(
+  browser_client_ = std::make_unique<WebEngineContentBrowserClient>(
       std::move(context_channel_));
   return browser_client_.get();
 }
 
 content::ContentRendererClient*
-WebRunnerMainDelegate::CreateContentRendererClient() {
-  renderer_client_ = std::make_unique<WebRunnerContentRendererClient>();
+WebEngineMainDelegate::CreateContentRendererClient() {
+  renderer_client_ = std::make_unique<WebEngineContentRendererClient>();
   return renderer_client_.get();
 }

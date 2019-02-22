@@ -6,33 +6,33 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-WebRunnerContentClient::WebRunnerContentClient() = default;
-WebRunnerContentClient::~WebRunnerContentClient() = default;
+WebEngineContentClient::WebEngineContentClient() = default;
+WebEngineContentClient::~WebEngineContentClient() = default;
 
-base::string16 WebRunnerContentClient::GetLocalizedString(
+base::string16 WebEngineContentClient::GetLocalizedString(
     int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::StringPiece WebRunnerContentClient::GetDataResource(
+base::StringPiece WebEngineContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
-base::RefCountedMemory* WebRunnerContentClient::GetDataResourceBytes(
+base::RefCountedMemory* WebEngineContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-gfx::Image& WebRunnerContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& WebEngineContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
 
-blink::OriginTrialPolicy* WebRunnerContentClient::GetOriginTrialPolicy() {
+blink::OriginTrialPolicy* WebEngineContentClient::GetOriginTrialPolicy() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
