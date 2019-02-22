@@ -16,10 +16,12 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactor
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Test utility functions for OfflinePages. */
@@ -149,6 +151,14 @@ public class OfflineTestUtil {
         ThreadUtils.runOnUiThreadBlocking(() -> nativeClearIntercepts());
     }
 
+    // Waits for the connectivity state to change in the native network change notifier.
+    public static void waitForConnectivityState(boolean connected) {
+        AtomicBoolean done = new AtomicBoolean();
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> nativeWaitForConnectivityState(connected, () -> done.set(true)));
+        CriteriaHelper.pollInstrumentationThread(() -> done.get());
+    }
+
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
     private static native void nativeGetAllPages(
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
@@ -156,4 +166,5 @@ public class OfflineTestUtil {
     private static native void nativeInterceptWithOfflineError(String url, Runnable readyRunnable);
     private static native void nativeClearIntercepts();
     private static native void nativeDumpRequestCoordinatorState(Callback<String> callback);
+    private static native void nativeWaitForConnectivityState(boolean connected, Runnable callback);
 }

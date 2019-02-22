@@ -134,7 +134,6 @@ public class OfflinePageAutoFetchTest {
             if (!NetworkChangeNotifier.isInitialized()) {
                 NetworkChangeNotifier.init();
             }
-            forceConnectivityState(false);
 
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
@@ -145,6 +144,7 @@ public class OfflinePageAutoFetchTest {
                         }
                     });
         });
+        forceConnectivityState(false);
     }
 
     @After
@@ -153,6 +153,23 @@ public class OfflinePageAutoFetchTest {
         if (mWebServer != null) {
             mWebServer.shutdown();
         }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"OfflineAutoFetch"})
+    public void testAutoFetchTriggersOnDNSErrorWhenOffline() throws Exception {
+        attemptLoadPage("http://does.not.resolve.com");
+        waitForRequestCount(1);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"OfflineAutoFetch"})
+    public void testAutoFetchDoesNotTriggerOnDNSErrorWhenOnline() throws Exception {
+        forceConnectivityState(true);
+        attemptLoadPage("http://does.not.resolve.com");
+        waitForRequestCount(0);
     }
 
     @Test
@@ -392,6 +409,7 @@ public class OfflinePageAutoFetchTest {
             NetworkChangeNotifier.forceConnectivityState(connected);
             DeviceConditions.mForceNoConnectionForTesting = !connected;
         });
+        OfflineTestUtil.waitForConnectivityState(connected);
     }
 
     private void waitForHistogram(String histogramAndEnum, int delta) {
