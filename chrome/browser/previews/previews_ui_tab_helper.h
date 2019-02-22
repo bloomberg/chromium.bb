@@ -127,6 +127,8 @@ class PreviewsUITabHelper
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // True if the UI for a preview has been shown for the page.
   bool displayed_preview_ui_ = false;

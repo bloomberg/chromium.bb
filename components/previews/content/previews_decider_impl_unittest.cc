@@ -1555,6 +1555,38 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
       ::testing::Contains(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT));
 }
 
+TEST_F(PreviewsDeciderImplTest, ReloadsTriggerFiveMinuteRule) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kClientLoFi,
+       features::kPreviewsReloadsAreSoftOptOuts},
+      {});
+  InitializeUIService();
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  PreviewsUserData user_data(kDefaultPageId);
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
+
+  previews_decider_impl()->AddPreviewNavigation(
+      GURL("http://wwww.somedomain.com"), false, PreviewsType::LOFI, 1);
+
+  previews_decider_impl()->AddPreviewReload();
+
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
+  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+            ui_service()->decision_reasons().back());
+
+  clock_.Advance(base::TimeDelta::FromMinutes(6));
+
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
+  EXPECT_THAT(
+      ui_service()->decision_passed_reasons().back(),
+      ::testing::Contains(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT));
+}
+
 TEST_F(PreviewsDeciderImplTest,
        LoFi_LogDecisionMadeNetworkQualityNotAvailable) {
   base::test::ScopedFeatureList scoped_feature_list;

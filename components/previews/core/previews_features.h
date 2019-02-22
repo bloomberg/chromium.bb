@@ -25,6 +25,7 @@ extern const base::Feature kSlowPageTriggering;
 extern const base::Feature kPreviewsDisallowedOnReloads;
 extern const base::Feature kHTTPSServerPreviewsUsingURLLoader;
 extern const base::Feature kDataSaverLiteModeRebranding;
+extern const base::Feature kPreviewsReloadsAreSoftOptOuts;
 
 }  // namespace features
 }  // namespace previews

@@ -278,6 +278,14 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   if (url.has_username() || url.has_password())
     return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
 
+  // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
+  // occurred recently.
+  if (recent_preview_reload_time_ &&
+      recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
+          clock_->Now()) {
+    return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
+  }
+
   // In the case that the user has chosen to ignore the normal blacklist rules
   // (flags or interventions-internals), a preview should still not be served
   // for 5 seconds after the last opt out. This allows "show original" to
@@ -539,4 +547,10 @@ void PreviewsDeciderImpl::SetEffectiveConnectionType(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   effective_connection_type_ = effective_connection_type;
 }
+
+void PreviewsDeciderImpl::AddPreviewReload() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  recent_preview_reload_time_ = clock_->Now();
+}
+
 }  // namespace previews

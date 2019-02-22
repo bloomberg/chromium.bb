@@ -135,6 +135,10 @@ class PreviewsDeciderImpl : public PreviewsDecider,
     return previews_opt_guide_.get();
   }
 
+  // When a preview is reloaded, this is called. No Previews are allowed for
+  // params::SingleOptOutDuration after that reload is reported.
+  void AddPreviewReload();
+
  protected:
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(
@@ -204,6 +208,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   base::Clock* clock_;
+
+  base::Optional<base::Time> recent_preview_reload_time_;
 
   // Whether the preview is enabled. Valid after Initialize() is called.
   PreviewsIsEnabledCallback is_enabled_callback_;
