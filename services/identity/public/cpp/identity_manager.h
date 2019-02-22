@@ -169,6 +169,12 @@ class IdentityManager : public SigninManagerBase::Observer,
                                         const std::string& consumer_id,
                                         const identity::ScopeSet& scopes) {}
 
+    // Called when an access token request is completed. Contains diagnostic
+    // information about the access token request.
+    virtual void OnAccessTokenRequestCompleted(const std::string& account_id,
+                                               GoogleServiceAuthError error,
+                                               const ScopeSet& scopes) {}
+
     // Called when an access token was removed.
     virtual void OnAccessTokenRemovedFromCache(const std::string& account_id,
                                                const ScopeSet& scopes) {}
@@ -532,6 +538,11 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnFetchAccessTokenComplete(const std::string& account_id,
+                                  const std::string& consumer_id,
+                                  const ScopeSet& scopes,
+                                  GoogleServiceAuthError error,
+                                  base::Time expiration_time) override;
   void OnAccessTokenRemoved(const std::string& account_id,
                             const ScopeSet& scopes) override;
   void OnRefreshTokenAvailableFromSource(const std::string& account_id,
