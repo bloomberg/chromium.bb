@@ -26,6 +26,57 @@ class ResourceCheckerTest(SuperMoxTestBase):
     output_api = self.mox.CreateMockAnything()
     self.checker = resource_checker.ResourceChecker(input_api, output_api)
 
+  def ShouldPassDeprecatedMojoBindingCheck(self, line):
+    error = self.checker.DeprecatedMojoBindingsCheck(1, line)
+    self.assertEqual('', error, 'Should not be flagged as error: ' + line)
+
+  def ShouldFailDeprecatedMojoBindingCheck(self, line):
+    error = self.checker.DeprecatedMojoBindingsCheck(1, line)
+    self.assertNotEqual('', error, 'Should be flagged as error: ' + line)
+    self.assertEquals('mojo_bindings.js', test_util.GetHighlight(line, error))
+
+  def testDeprecatedMojoBindingsCheckPasses(self):
+    lines = [
+      '<script src="chrome://resources/js/mojo_bindings_lite.js">',
+      "script.src = 'chrome://resources/js/mojo_bindings_lite.js';",
+    ]
+    for line in lines:
+      self.ShouldPassDeprecatedMojoBindingCheck(line)
+
+  def testDeprecatedMojoBindingsCheckFails(self):
+    lines = [
+      '<script src="chrome://resources/js/mojo_bindings.js">',
+      "script.src = 'chrome://resources/js/mojo_bindings.js';",
+    ]
+    for line in lines:
+      self.ShouldFailDeprecatedMojoBindingCheck(line)
+
+  def ShouldPassDisallowIncludeCheck(self, line):
+    self.assertEqual('', self.checker.DisallowIncludeCheck('msg', 1, line),
+                     'Should not be flagged as error')
+
+  def ShouldFailDisallowIncludeCheck(self, line):
+    error = self.checker.DisallowIncludeCheck('msg', 1, line)
+    self.assertNotEqual('', error, 'Should be flagged as error: ' + line)
+    self.assertEquals('<include', test_util.GetHighlight(line, error))
+
+  def testDisallowIncludesFails(self):
+    lines = [
+      '<include src="blah.js">',
+      ' // <include src="blah.js">',
+      '  /* <include  src="blah.js"> */ ',
+    ]
+    for line in lines:
+      self.ShouldFailDisallowIncludeCheck(line)
+
+  def testDisallowIncludesPasses(self):
+    lines = [
+      'if (count < includeCount) {',
+      '// No <include>s allowed.',
+    ]
+    for line in lines:
+      self.ShouldPassDisallowIncludeCheck(line)
+
   def ShouldFailSelfClosingIncludeCheck(self, line):
     """Checks that the '</include>' checker flags |line| as a style error."""
     error = self.checker.SelfClosingIncludeCheck(1, line)
@@ -60,32 +111,6 @@ class ResourceCheckerTest(SuperMoxTestBase):
     ]
     for line in lines:
       self.ShouldPassSelfClosingIncludeCheck(line)
-
-  def ShouldPassDisallowIncludeCheck(self, line):
-    self.assertEqual('', self.checker.DisallowIncludeCheck('msg', 1, line),
-                     'Should not be flagged as error')
-
-  def ShouldFailDisallowIncludeCheck(self, line):
-    error = self.checker.DisallowIncludeCheck('msg', 1, line)
-    self.assertNotEqual('', error, 'Should be flagged as error: ' + line)
-    self.assertEquals('<include', test_util.GetHighlight(line, error))
-
-  def testDisallowIncludesFails(self):
-    lines = [
-      '<include src="blah.js">',
-      ' // <include src="blah.js">',
-      '  /* <include  src="blah.js"> */ ',
-    ]
-    for line in lines:
-      self.ShouldFailDisallowIncludeCheck(line)
-
-  def testDisallowIncludesPasses(self):
-    lines = [
-      'if (count < includeCount) {',
-      '// No <include>s allowed.',
-    ]
-    for line in lines:
-      self.ShouldPassDisallowIncludeCheck(line)
 
 
 if __name__ == '__main__':
