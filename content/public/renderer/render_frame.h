@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/single_thread_task_runner.h"
@@ -21,7 +20,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -295,16 +293,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   GetRenderFrameMediaPlaybackOptions() = 0;
   virtual void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) = 0;
-
-  // Requests that fetches initiated by |initiator_origin| should go through the
-  // provided |url_loader_factory|.  This method should be called before
-  // executing scripts in a isolated world - such scripts are typically
-  // associated with a security origin different from the main world (and
-  // therefore fetches from such scripts set |request_initiator| that is
-  // incompatible with |request_initiator_site_lock|.
-  virtual void MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-      const url::Origin& initiator_origin,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
 
  protected:
   ~RenderFrame() override {}

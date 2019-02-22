@@ -7,12 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -34,8 +31,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/initiator_lock_compatibility.h"
-#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -987,97 +982,4 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   }
   EXPECT_EQ("fr",
             restored_translate_client->GetLanguageState().current_language());
-}
-
-// Test that the translation is successful in presence of AppCache.
-// See also:
-// - https://crbug.com/910287#c24: AppCache / Translate renderer kills.
-// - https://crbug.com/925457: Translate is incompatible with
-//                             |request_initiator_site_lock|.
-IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, AppCacheInteraction) {
-  // The real translate script used in production will try to fetch some stuff
-  // from the translate servers - the test tries to simulate a close-enough
-  // scenario below (close-enough to repro https://crbug.com/910287#c24).
-  //
-  // Unlike the real script, the request below doesn't use
-  // GetTranslateSecurityOrigin and instead fetches a resource from localhost,
-  // to simplify the test (e.g. avoid having to set up a https test server with
-  // the right certs).  Also, unlike the real script, the test below uses a
-  // random png resource (although as with the real script the resource is not
-  // protected by CORB).
-  const char kTranslateScriptTemplate[] = R"(
-      var google = {};
-      google.translate = (function() {
-        return {
-          TranslateService: function() {
-            return {
-              isAvailable : function() { return true; },
-              restore : function() { return; },
-              getDetectedLanguage : function() { return "fr"; },
-              translatePage : function(originalLang, targetLang,
-                                       onTranslateProgress) {
-                fetch($1, {mode: 'no-cors'})
-                    .then(_ => onTranslateProgress(100, true, false));
-              }
-            };
-          }
-        };
-      })();
-      cr.googleTranslate.onTranslateElementLoad();
-  )";
-  GURL fetch_url =
-      embedded_test_server()->GetURL("/downloads/image-octet-stream.png");
-  std::string translate_script =
-      content::JsReplace(kTranslateScriptTemplate, fetch_url);
-  // TODO(lukasza): Remove the extra logging statements after the test is not
-  // flaky anymore.
-  LOG(INFO) << "TEST STEP: SetTranslateScript...";
-  SetTranslateScript(translate_script);
-  LOG(INFO) << "TEST STEP: SetTranslateScript... done.";
-
-  // Navigate to a page in French that asks for AppCache.
-  GURL main_url = embedded_test_server()->GetURL(
-      "/appcache/french_page_with_appcache.html");
-  LOG(INFO) << "TEST STEP: NavigateToURL...";
-  ui_test_utils::NavigateToURL(browser(), main_url);
-  LOG(INFO) << "TEST STEP: NavigateToURL... done.";
-
-  // Translate the page through TranslateManager.
-  // In the past, this might have led to renderer kills, because of
-  // request_initiator in requests triggered by the Translate feature was
-  // different than the request_initiator_site_lock associated with the
-  // URLLoaderFactory.  See also https://crbug.com/910287#c24.
-  base::HistogramTester histograms;
-  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
-  LOG(INFO) << "TEST STEP: TranslatePage...";
-  manager->TranslatePage("fr", "en", true);
-  LOG(INFO) << "TEST STEP: TranslatePage... done.";
-
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
-  LOG(INFO) << "TEST STEP: WaitUntilPageTranslated...";
-  WaitUntilPageTranslated();
-  LOG(INFO) << "TEST STEP: WaitUntilPageTranslated... done.";
-
-  EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
-
-  // Verify that |request_initiator| seen by the network service was compatible
-  // with |request_initiator_site_lock| that was declared by the browser for the
-  // URLLoaderFactory.  See also https://crbug.com/925457.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    using LockCompatibility = network::InitiatorLockCompatibility;
-    EXPECT_EQ(
-        0,
-        histograms.GetBucketCount(
-            "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-            static_cast<int>(LockCompatibility::kIncorrectLock)));
-    EXPECT_LE(
-        1,
-        histograms.GetBucketCount(
-            "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-            static_cast<int>(LockCompatibility::kCompatibleLock)));
-  }
 }
