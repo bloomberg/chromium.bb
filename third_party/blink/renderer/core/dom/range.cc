@@ -526,8 +526,6 @@ static unsigned LengthOfContents(const Node* node) {
 
 DocumentFragment* Range::ProcessContents(ActionType action,
                                          ExceptionState& exception_state) {
-  typedef HeapVector<Member<Node>> NodeVector;
-
   DocumentFragment* fragment = nullptr;
   if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
     fragment = DocumentFragment::Create(*owner_document_.Get());
@@ -705,7 +703,7 @@ Node* Range::ProcessContentsBetweenOffsets(ActionType action,
       }
 
       Node* n = container->firstChild();
-      HeapVector<Member<Node>> nodes;
+      NodeVector nodes;
       for (unsigned i = start_offset; n && i; i--)
         n = n->nextSibling();
       for (unsigned i = start_offset; n && i < end_offset;
@@ -720,7 +718,7 @@ Node* Range::ProcessContentsBetweenOffsets(ActionType action,
 }
 
 void Range::ProcessNodes(ActionType action,
-                         HeapVector<Member<Node>>& nodes,
+                         NodeVector& nodes,
                          Node* old_container,
                          Node* new_container,
                          ExceptionState& exception_state) {
@@ -747,8 +745,6 @@ Node* Range::ProcessAncestorsAndTheirSiblings(
     Node* cloned_container,
     Node* common_root,
     ExceptionState& exception_state) {
-  typedef HeapVector<Member<Node>> NodeVector;
-
   NodeVector ancestors;
   for (Node& runner : NodeTraversal::AncestorsOf(*container)) {
     if (runner == common_root)

@@ -3939,11 +3939,14 @@ AtomicString Element::ComputeInheritedLanguage() const {
       if (const ElementData* element_data = ToElement(n)->GetElementData()) {
         AttributeCollection attributes = element_data->Attributes();
         // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
-        if (const Attribute* attribute = attributes.Find(xml_names::kLangAttr))
+        if (const Attribute* attribute =
+                attributes.Find(xml_names::kLangAttr)) {
           value = attribute->Value();
-        else if (const Attribute* attribute =
-                     attributes.Find(html_names::kLangAttr))
-          value = attribute->Value();
+        } else {
+          attribute = attributes.Find(html_names::kLangAttr);
+          if (attribute)
+            value = attribute->Value();
+        }
       }
     } else if (auto* document = DynamicTo<Document>(n)) {
       // checking the MIME content-language
