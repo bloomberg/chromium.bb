@@ -1984,6 +1984,9 @@ extern const char kGestureTypingDescription[];
 extern const char kImeServiceName[];
 extern const char kImeServiceDescription[];
 
+extern const char kListAllDisplayModesName[];
+extern const char kListAllDisplayModesDescription[];
+
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 

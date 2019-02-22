@@ -59,18 +59,3 @@ const char kEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 #endif
 
 }  // namespace switches
-
-namespace features {
-
-const base::Feature kHighDynamicRange{"HighDynamicRange",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_CHROMEOS)
-// Enables using the monitor's provided color space information when
-// rendering.
-// TODO(mcasas): remove this flag http://crbug.com/771345.
-const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OS_CHROMEOS
-
-}  // namespace features

@@ -78,6 +78,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/touch_device_manager.h"
 #else
@@ -811,6 +812,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
       {"displayResolutionSublabel", IDS_SETTINGS_DISPLAY_RESOLUTION_SUBLABEL},
       {"displayResolutionMenuItem", IDS_SETTINGS_DISPLAY_RESOLUTION_MENU_ITEM},
+      {"displayResolutionInterlacedMenuItem",
+       IDS_SETTINGS_DISPLAY_RESOLUTION_INTERLACED_MENU_ITEM},
       {"displayZoomTitle", IDS_SETTINGS_DISPLAY_ZOOM_TITLE},
       {"displayZoomSublabel", IDS_SETTINGS_DISPLAY_ZOOM_SUBLABEL},
       {"displayZoomValue", IDS_SETTINGS_DISPLAY_ZOOM_VALUE},
@@ -844,6 +847,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean("unifiedDesktopAvailable",
                           cmd.HasSwitch(::switches::kEnableUnifiedDesktop));
+
+  html_source->AddBoolean("listAllDisplayModes",
+                          display::features::IsListAllDisplayModesEnabled());
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",

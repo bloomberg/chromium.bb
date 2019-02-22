@@ -145,7 +145,7 @@
 #include "sql/sql_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/display/display_switches.h"
+#include "ui/display/display_features.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
 
@@ -1322,7 +1322,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kHighDynamicRange))
+  if (base::FeatureList::IsEnabled(display::features::kHighDynamicRange))
     HDRProxy::Initialize();
   system_message_window_.reset(new media::SystemMessageWindowWin);
 #elif defined(OS_LINUX) && defined(USE_UDEV)

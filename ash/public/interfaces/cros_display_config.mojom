@@ -143,6 +143,8 @@ struct DisplayMode {
   double refresh_rate;
   // True if the mode is the display's native mode.
   bool is_native;
+  // True if the mode is interlaced.
+  bool is_interlaced;
 };
 
 // Defines the properties of an individual display, returned by

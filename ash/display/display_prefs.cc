@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -278,6 +279,16 @@ void LoadDisplayProperties(DisplayPrefs::LocalState* local_state) {
     if (dict_value->GetInteger("device-scale-factor", &dsf_value))
       device_scale_factor = static_cast<float>(dsf_value) / 1000.0f;
 
+    // Default refresh rate is 60 Hz, until
+    // DisplayManager::OnNativeDisplaysChanged() updates us with the actual
+    // display info.
+    double refresh_rate = 60.0;
+    bool is_interlaced = false;
+    if (display::features::IsListAllDisplayModesEnabled()) {
+      dict_value->GetDouble("refresh-rate", &refresh_rate);
+      dict_value->GetBoolean("interlaced", &is_interlaced);
+    }
+
     gfx::Insets insets;
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
@@ -287,7 +298,7 @@ void LoadDisplayProperties(DisplayPrefs::LocalState* local_state) {
 
     GetDisplayManager()->RegisterDisplayProperty(
         id, rotation, ui_scale, insets_to_set, resolution_in_pixels,
-        device_scale_factor, display_zoom);
+        device_scale_factor, display_zoom, refresh_rate, is_interlaced);
   }
 }
 
@@ -567,6 +578,11 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
       property_value->SetInteger(
           "device-scale-factor",
           static_cast<int>(mode.device_scale_factor() * 1000));
+
+      if (display::features::IsListAllDisplayModesEnabled()) {
+        property_value->SetBoolean("interlaced", mode.is_interlaced());
+        property_value->SetDouble("refresh-rate", mode.refresh_rate());
+      }
     }
     if (!info.overscan_insets_in_dip().IsEmpty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());

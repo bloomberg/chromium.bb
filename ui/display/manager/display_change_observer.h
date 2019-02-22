@@ -44,8 +44,8 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   // DisplayConfigurator::StateController overrides:
   MultipleDisplayState GetStateForDisplayIds(
       const DisplayConfigurator::DisplayStateList& outputs) override;
-  bool GetResolutionForDisplayId(int64_t display_id,
-                                 gfx::Size* size) const override;
+  bool GetSelectedModeForDisplayId(int64_t display_id,
+                                   ManagedDisplayMode* out_mode) const override;
 
   // Overriden from DisplayConfigurator::Observer:
   void OnDisplayModeChanged(

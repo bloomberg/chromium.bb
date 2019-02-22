@@ -3264,7 +3264,7 @@ TEST_F(DisplayManagerTest, SubsequentInitializationOfDisplayZoom) {
   // display zoom enabled.
   display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_0,
                                              -1000, nullptr, gfx::Size(), 1.f,
-                                             zoom_factor);
+                                             zoom_factor, 60.f, false);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);
@@ -3274,8 +3274,9 @@ TEST_F(DisplayManagerTest, SubsequentInitializationOfDisplayZoom) {
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
-  display_manager()->RegisterDisplayProperty(
-      id, display::Display::ROTATE_90, 1.0f, nullptr, gfx::Size(), 1.0f, 1.0f);
+  display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_90,
+                                             1.0f, nullptr, gfx::Size(), 1.0f,
+                                             1.0f, 60.f, false);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);

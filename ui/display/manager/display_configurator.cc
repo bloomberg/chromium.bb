@@ -15,10 +15,12 @@
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/display.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/apply_content_protection_task.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/manager/update_display_configuration_task.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -67,6 +69,35 @@ bool RunColorCorrectionClosureSync(
   }
 
   return false;
+}
+
+// Returns true if a platform native |mode| is equal to a |managed_mode|.
+bool AreModesEqual(const DisplayMode& mode,
+                   const ManagedDisplayMode& managed_mode) {
+  return mode.size() == managed_mode.size() &&
+         mode.refresh_rate() == managed_mode.refresh_rate() &&
+         mode.is_interlaced() == managed_mode.is_interlaced();
+}
+
+// Finds and returns a pointer to a platform native mode in the given |display|
+// snapshot's modes which exactly matches the given |managed_mode|. Returns
+// nullptr if nothing was found.
+const DisplayMode* FindExactMatchingMode(
+    const DisplaySnapshot& display,
+    const ManagedDisplayMode& managed_mode) {
+  if (managed_mode.native()) {
+    return display.native_mode() &&
+                   AreModesEqual(*display.native_mode(), managed_mode)
+               ? display.native_mode()
+               : nullptr;
+  }
+
+  for (const std::unique_ptr<const DisplayMode>& mode : display.modes()) {
+    if (AreModesEqual(*mode, managed_mode))
+      return mode.get();
+  }
+
+  return nullptr;
 }
 
 }  // namespace
@@ -373,11 +404,23 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::IsMirroring() const {
 const DisplayMode*
 DisplayConfigurator::DisplayLayoutManagerImpl::GetUserSelectedMode(
     const DisplaySnapshot& display) const {
-  gfx::Size size;
   const DisplayMode* selected_mode = nullptr;
-  if (GetStateController() && GetStateController()->GetResolutionForDisplayId(
-                                  display.display_id(), &size)) {
-    selected_mode = FindDisplayModeMatchingSize(display, size);
+  auto* state_controller = GetStateController();
+  if (state_controller) {
+    ManagedDisplayMode mode;
+    const bool mode_found = state_controller->GetSelectedModeForDisplayId(
+        display.display_id(), &mode);
+    if (display::features::IsListAllDisplayModesEnabled()) {
+      // When selecting any arbitrary display mode is enabled, we don't try to
+      // be smart about finding the best mode matching the user-selected display
+      // size, rather we find an exact match to the selected display mode.
+      selected_mode =
+          mode_found ? FindExactMatchingMode(display, mode) : nullptr;
+    } else {
+      selected_mode = mode_found
+                          ? FindDisplayModeMatchingSize(display, mode.size())
+                          : nullptr;
+    }
   }
 
   // Fall back to native mode.

@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/display.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -47,6 +49,31 @@ const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
     {150.0f, 1.25f}, {0.0f, 1.0f},
 };
 
+// Returns a list of display modes for the given |output| that doesn't exclude
+// any mode. The returned list is sorted by size, then by refresh rate, then by
+// is_interlaced.
+ManagedDisplayInfo::ManagedDisplayModeList GetModeListWithAllRefreshRates(
+    const DisplaySnapshot& output) {
+  ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
+  for (const auto& mode_info : output.modes()) {
+    display_mode_list.emplace_back(mode_info->size(), mode_info->refresh_rate(),
+                                   mode_info->is_interlaced(),
+                                   output.native_mode() == mode_info.get(),
+                                   1.0);
+  }
+
+  std::sort(
+      display_mode_list.begin(), display_mode_list.end(),
+      [](const ManagedDisplayMode& lhs, const ManagedDisplayMode& rhs) {
+        return std::forward_as_tuple(lhs.size().width(), lhs.size().height(),
+                                     lhs.refresh_rate(), lhs.is_interlaced()) <
+               std::forward_as_tuple(rhs.size().width(), rhs.size().height(),
+                                     rhs.refresh_rate(), rhs.is_interlaced());
+      });
+
+  return display_mode_list;
+}
+
 }  // namespace
 
 // static
@@ -66,13 +93,25 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
 ManagedDisplayInfo::ManagedDisplayModeList
 DisplayChangeObserver::GetExternalManagedDisplayModeList(
     const DisplaySnapshot& output) {
-  using DisplayModeMap = std::map<std::pair<int, int>, ManagedDisplayMode>;
+  if (display::features::IsListAllDisplayModesEnabled())
+    return GetModeListWithAllRefreshRates(output);
+
+  struct SizeComparator {
+    constexpr bool operator()(const gfx::Size& lhs,
+                              const gfx::Size& rhs) const {
+      return std::forward_as_tuple(lhs.width(), lhs.height()) <
+             std::forward_as_tuple(rhs.width(), rhs.height());
+    }
+  };
+
+  using DisplayModeMap =
+      std::map<gfx::Size, ManagedDisplayMode, SizeComparator>;
   DisplayModeMap display_mode_map;
 
   ManagedDisplayMode native_mode;
   for (const auto& mode_info : output.modes()) {
-    const std::pair<int, int> size(mode_info->size().width(),
-                                   mode_info->size().height());
+    const gfx::Size size = mode_info->size();
+
     ManagedDisplayMode display_mode(
         mode_info->size(), mode_info->refresh_rate(),
         mode_info->is_interlaced(), output.native_mode() == mode_info.get(),
@@ -87,7 +126,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     // rate but is interlaced.
     auto display_mode_it = display_mode_map.find(size);
     if (display_mode_it == display_mode_map.end()) {
-      display_mode_map.insert(std::make_pair(size, display_mode));
+      display_mode_map.emplace(size, display_mode);
     } else if (display_mode_it->second.is_interlaced() &&
                !display_mode.is_interlaced()) {
       display_mode_it->second = std::move(display_mode);
@@ -103,8 +142,8 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     display_mode_list.push_back(std::move(display_mode_pair.second));
 
   if (output.native_mode()) {
-    const std::pair<int, int> size(native_mode.size().width(),
-                                   native_mode.size().height());
+    const gfx::Size size = native_mode.size();
+
     auto it = display_mode_map.find(size);
     DCHECK(it != display_mode_map.end())
         << "Native mode must be part of the mode list.";
@@ -144,13 +183,10 @@ MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
              : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
 }
 
-bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
-                                                      gfx::Size* size) const {
-  ManagedDisplayMode mode;
-  if (!display_manager_->GetSelectedModeForDisplayId(display_id, &mode))
-    return false;
-  *size = mode.size();
-  return true;
+bool DisplayChangeObserver::GetSelectedModeForDisplayId(
+    int64_t display_id,
+    ManagedDisplayMode* out_mode) const {
+  return display_manager_->GetSelectedModeForDisplayId(display_id, out_mode);
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
@@ -237,29 +273,6 @@ void DisplayChangeObserver::UpdateInternalDisplay(
 ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
     const DisplaySnapshot* snapshot,
     const DisplayMode* mode_info) {
-  float device_scale_factor = 1.0f;
-  // Sets dpi only if the screen size is not blacklisted.
-  float dpi = IsDisplaySizeBlackListed(snapshot->physical_size())
-                  ? 0
-                  : kInchInMm * mode_info->size().width() /
-                        snapshot->physical_size().width();
-  constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
-
-  if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
-    // TODO(oshima): This is a stopgap hack to deal with b/74845106.
-    // Remove this hack when it's resolved.
-    if (mode_info->size() == k225DisplaySizeHack)
-      device_scale_factor = 2.25f;
-    else if (dpi)
-      device_scale_factor = FindDeviceScaleFactor(dpi);
-  } else {
-    ManagedDisplayMode mode;
-    if (display_manager_->GetSelectedModeForDisplayId(snapshot->display_id(),
-                                                      &mode)) {
-      device_scale_factor = mode.device_scale_factor();
-    }
-  }
-
   std::string name = (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
                          ? l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL)
                          : snapshot->display_name();
@@ -284,15 +297,43 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   new_info.set_year_of_manufacture(snapshot->year_of_manufacture());
 
   new_info.set_sys_path(snapshot->sys_path());
+  new_info.set_native(true);
+
+  float device_scale_factor = 1.0f;
+  // Sets dpi only if the screen size is not blacklisted.
+  const float dpi = IsDisplaySizeBlackListed(snapshot->physical_size())
+                        ? 0
+                        : kInchInMm * mode_info->size().width() /
+                              snapshot->physical_size().width();
+  constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
+
+  if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    // TODO(oshima): This is a stopgap hack to deal with b/74845106.
+    // Remove this hack when it's resolved.
+    if (mode_info->size() == k225DisplaySizeHack)
+      device_scale_factor = 2.25f;
+    else if (dpi)
+      device_scale_factor = FindDeviceScaleFactor(dpi);
+  } else {
+    ManagedDisplayMode mode;
+    if (display_manager_->GetSelectedModeForDisplayId(snapshot->display_id(),
+                                                      &mode)) {
+      device_scale_factor = mode.device_scale_factor();
+      new_info.set_native(mode.native());
+    }
+  }
   new_info.set_device_scale_factor(device_scale_factor);
+
   const gfx::Rect display_bounds(snapshot->origin(), mode_info->size());
   new_info.SetBounds(display_bounds);
-  new_info.set_native(true);
   new_info.set_is_aspect_preserving_scaling(
       snapshot->is_aspect_preserving_scaling());
   if (dpi)
     new_info.set_device_dpi(dpi);
   new_info.set_color_space(snapshot->color_space());
+
+  new_info.set_refresh_rate(mode_info->refresh_rate());
+  new_info.set_is_interlaced(mode_info->is_interlaced());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
