@@ -138,8 +138,9 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
 
 // Tests that the NetworkChangeManagerClient reconnects to the network service
 // after it gets disconnected.
+// TODO(crbug.com/934583): Fix the flakiness.
 IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
-                       ReconnectToNetworkService) {
+                       DISABLE_ReconnectToNetworkService) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
