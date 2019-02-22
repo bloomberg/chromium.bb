@@ -26,19 +26,15 @@
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_falseWontSetCookies
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookie
--org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookiesArePerWebview
 
 # https://crbug.com/931641
 -org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookiesNullCallback
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketDisabledCase
--org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookies
--org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookiesCallback
 
 # https://crbug.com/933629
 -org.chromium.android_webview.test.CookieManagerTest.testCookiesExpire
 -org.chromium.android_webview.test.CookieManagerTest.testHasCookie
 -org.chromium.android_webview.test.CookieManagerTest.testRemoveAllCookies
--org.chromium.android_webview.test.CookieManagerTest.testRemoveAllCookiesCallback
 -org.chromium.android_webview.test.CookieManagerTest.testSetCookieNullCallback
 
 # https://crbug.com/893580
