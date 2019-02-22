@@ -619,6 +619,7 @@
   amd64-generic-incremental-tryjob
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
+  amd64-generic-llvm-tot-toolchain-tryjob
   amd64-generic-msan-fuzzer-tryjob
   amd64-generic-no-vmtest-pre-cq
   amd64-generic-nowithdebug-paladin-tryjob
@@ -654,6 +655,7 @@
   arm-generic-full-tryjob
   arm-generic-llvm-next-toolchain-tryjob
   arm-generic-llvm-toolchain-tryjob
+  arm-generic-llvm-tot-toolchain-tryjob
   arm-generic-no-vmtest-pre-cq
   arm-generic-paladin-tryjob
   arm-generic-postsubmit-tryjob
@@ -670,6 +672,7 @@
   arm64-generic-full-tryjob
   arm64-generic-llvm-next-toolchain-tryjob
   arm64-generic-llvm-toolchain-tryjob
+  arm64-generic-llvm-tot-toolchain-tryjob
   arm64-generic-no-vmtest-pre-cq
   arm64-generic-paladin-tryjob
   arm64-generic-postsubmit-tryjob

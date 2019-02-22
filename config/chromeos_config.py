@@ -937,15 +937,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddTemplate(
-      'toolchain',
+      'base_toolchain',
       # Full build, AFDO, latest-toolchain, -cros-debug, and simple-chrome.
       site_config.templates.full,
-      site_config.templates.internal,
-      site_config.templates.official_chrome,
-      site_config.templates.no_vmtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       build_type=constants.TOOLCHAIN_TYPE,
-      images=['base', 'test', 'recovery'],
       build_timeout=(15 * 60 + 50) * 60,
       # Need to re-enable platform_SyncCrash after issue crosbug/658864 is
       # fixed. Need to re-enable network_VPNConnect.* tests after issue
@@ -971,6 +967,15 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
           'strict_toolchain_checks']),
       afdo_use=True,
       latest_toolchain=True,
+  )
+
+  site_config.AddTemplate(
+      'toolchain',
+      site_config.templates.base_toolchain,
+      site_config.templates.internal,
+      site_config.templates.official_chrome,
+      site_config.templates.no_vmtest_builder,
+      images=['base', 'test', 'recovery'],
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       git_sync=False,
@@ -998,6 +1003,23 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
       useflags=config_lib.append_useflags(['llvm-next']),
+  )
+
+  # This builds everything with ToT LLVM. LLVM is a fast-moving target, so we
+  # may consider dropping expensive things (e.g. ThinLTO) to increase coverage.
+  #
+  # Since the most recent LLVM has a nonzero chance of being broken, it has a
+  # nonzero chance of producing very broken images. Only VMTests are targeted
+  # with this for now, so we don't put hardware in a bad state.
+  #
+  # This should only be used with external configs.
+  site_config.AddTemplate(
+      'llvm_tot_toolchain',
+      site_config.templates.base_toolchain,
+      site_config.templates.no_hwtest_builder,
+      images=['base', 'test'],
+      useflags=config_lib.append_useflags(['llvm-tot']),
+      description='Builds Chrome OS using top-of-tree LLVM',
   )
 
   ### Toolchain waterfall entries.
@@ -1075,6 +1097,32 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # Weekly on Sunday 3 AM UTC
       schedule='0 0 3 * * 0 *',
   )
+
+  # All *-generic boards are external.
+  site_config.Add(
+      'amd64-generic-llvm-tot-toolchain',
+      site_config.templates.llvm_tot_toolchain,
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
+      vm_tests=[config_lib.VMTestConfig(
+          constants.VM_SUITE_TEST_TYPE,
+          test_suite='smoke',
+          use_ctest=False)],
+      vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
+      boards=['amd64-generic'],
+  )
+  site_config.Add(
+      'arm-generic-llvm-tot-toolchain',
+      site_config.templates.llvm_tot_toolchain,
+      site_config.templates.no_vmtest_builder,
+      boards=['arm-generic'],
+  )
+  site_config.Add(
+      'arm64-generic-llvm-tot-toolchain',
+      site_config.templates.llvm_tot_toolchain,
+      site_config.templates.no_vmtest_builder,
+      boards=['arm64-generic'],
+  )
+
 
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
