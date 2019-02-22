@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RANKING_ITEM_UTIL_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RANKING_ITEM_UTIL_H_
 
-namespace ash {
-enum class SearchResultType;
-}
-
 class ChromeAppListItem;
+class ChromeSearchResult;
 
 namespace app_list {
 
@@ -24,9 +21,9 @@ enum class RankingItemType {
   kArcAppShortcut
 };
 
-// Convert the enum used by |ChromeSearchResult|s into a |RankingItemType|.
-RankingItemType RankingItemTypeFromSearchResultType(
-    const ash::SearchResultType& type);
+// Convert a |ChromeSearchResult| into its |RankingItemType|.
+RankingItemType RankingItemTypeFromSearchResult(
+    const ChromeSearchResult& result);
 
 // Return the type of an |ChromeAppListItem|. We currently do not distinguish
 // between different kinds of apps, and all |AppServiceAppItem|s are apps, so we

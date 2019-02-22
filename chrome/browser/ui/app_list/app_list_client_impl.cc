@@ -102,8 +102,7 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
 
     // Send training signal to search controller.
     search_controller_->Train(
-        result_id,
-        app_list::RankingItemTypeFromSearchResultType(result->result_type()));
+        result_id, app_list::RankingItemTypeFromSearchResult(*result));
   }
 }
 

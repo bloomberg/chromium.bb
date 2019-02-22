@@ -88,6 +88,10 @@ class Mixer {
   // Adaptive category ranking model, which tweaks the score of search results.
   std::unique_ptr<RecurrenceRanker> ranker_;
 
+  // How much the scores produced by |ranker_| affect the final scores.
+  // Controlled by Finch.
+  float boost_coefficient_;
+
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };
 
