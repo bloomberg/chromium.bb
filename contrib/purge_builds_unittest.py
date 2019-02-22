@@ -10,10 +10,10 @@ from __future__ import print_function
 import datetime
 import mock
 
+from chromite.contrib import purge_builds
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
-from chromite.lib import purge_lib
 
 
 # pylint: disable=protected-access
@@ -33,10 +33,10 @@ class TestHelperMethods(cros_test_lib.TestCase):
     )
 
     for branch, expected in CASES:
-      self.assertEqual(purge_lib.ParseBranchName(branch), expected)
+      self.assertEqual(purge_builds.ParseBranchName(branch), expected)
 
   def testListRemoteBranches(self):
-    branches = purge_lib.ListRemoteBranches()
+    branches = purge_builds.ListRemoteBranches()
     # We know there are more than 300 remote branches for chromite.
     self.assertGreater(len(branches), 300)
 
@@ -46,13 +46,13 @@ class TestHelperMethods(cros_test_lib.TestCase):
         'origin/factory-2723.14.B',
         'remote/firmware-falco_peppy-4389.B',
     ]
-    branch_versions = purge_lib.ProtectedBranchVersions(branch_names)
+    branch_versions = purge_builds.ProtectedBranchVersions(branch_names)
     # We know there are more than 100 firmware/factory branches.
     self.assertEqual(branch_versions, ['7505', '2723.14', '4389'])
 
   def testProtectedBranchVersionsLive(self):
-    branches = purge_lib.ListRemoteBranches()
-    branch_versions = purge_lib.ProtectedBranchVersions(branches)
+    branches = purge_builds.ListRemoteBranches()
+    branch_versions = purge_builds.ProtectedBranchVersions(branches)
     # We know there are more than 100 firmware/factory branches.
     self.assertGreater(len(branch_versions), 100)
 
@@ -62,36 +62,36 @@ class TestHelperMethods(cros_test_lib.TestCase):
   def testParseChromeosReleasesBuildUri(self):
     """Test parseChromeosReleasesBuildUri."""
     self.assertEqual(
-        purge_lib.ParseChromeosReleasesBuildUri(
+        purge_builds.ParseChromeosReleasesBuildUri(
             'gs://chromeos-releases/canary-channel/duck/6652.0.0/'),
         '6652.0.0')
 
   def testVersionBranchMatch(self):
     """Test versionBranchMatch."""
-    self.assertTrue(purge_lib.VersionBranchMatch('1.2.3', '1'))
-    self.assertTrue(purge_lib.VersionBranchMatch('1.2.3', '1.2'))
-    self.assertTrue(purge_lib.VersionBranchMatch('1.2.357', '1.2'))
+    self.assertTrue(purge_builds.VersionBranchMatch('1.2.3', '1'))
+    self.assertTrue(purge_builds.VersionBranchMatch('1.2.3', '1.2'))
+    self.assertTrue(purge_builds.VersionBranchMatch('1.2.357', '1.2'))
 
-    self.assertFalse(purge_lib.VersionBranchMatch('12.24.37', '1.2'))
-    self.assertFalse(purge_lib.VersionBranchMatch('1.0.0', '1'))
-    self.assertFalse(purge_lib.VersionBranchMatch('1.2.0', '1.2'))
+    self.assertFalse(purge_builds.VersionBranchMatch('12.24.37', '1.2'))
+    self.assertFalse(purge_builds.VersionBranchMatch('1.0.0', '1'))
+    self.assertFalse(purge_builds.VersionBranchMatch('1.2.0', '1.2'))
 
   def testInBranches(self):
     """Test versionBranchMatch."""
     branches = ('1', '2.2', '5.3')
-    self.assertTrue(purge_lib.InBranches('1.2.3', branches))
-    self.assertTrue(purge_lib.InBranches('1.2.3', branches))
-    self.assertTrue(purge_lib.InBranches('1.2.357', branches))
-    self.assertTrue(purge_lib.InBranches('5.3.23', branches))
+    self.assertTrue(purge_builds.InBranches('1.2.3', branches))
+    self.assertTrue(purge_builds.InBranches('1.2.3', branches))
+    self.assertTrue(purge_builds.InBranches('1.2.357', branches))
+    self.assertTrue(purge_builds.InBranches('5.3.23', branches))
 
-    self.assertFalse(purge_lib.InBranches('12.24.37', branches))
-    self.assertFalse(purge_lib.InBranches('1.0.0', branches))
-    self.assertFalse(purge_lib.InBranches('2.1.0', branches))
-    self.assertFalse(purge_lib.InBranches('5.3.0', branches))
+    self.assertFalse(purge_builds.InBranches('12.24.37', branches))
+    self.assertFalse(purge_builds.InBranches('1.0.0', branches))
+    self.assertFalse(purge_builds.InBranches('2.1.0', branches))
+    self.assertFalse(purge_builds.InBranches('5.3.0', branches))
 
 
 class TestBucketSearches(gs_unittest.AbstractGSContextTest):
-  """Test GS interactions in purge_lib."""
+  """Test GS interactions in purge_builds."""
   def setUp(self):
     self.expireDate = datetime.datetime.now()
     self.preExpire = self.expireDate + datetime.timedelta(minutes=5)
@@ -245,7 +245,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
                 'gs://chromeos-releases/canary-channel/x86-alex/1.2.4/b'),
         ],
     }
-    self.PatchObject(purge_lib, 'SafeList',
+    self.PatchObject(purge_builds, 'SafeList',
                      side_effect=lambda _, url: listResults[url])
 
 
@@ -255,7 +255,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
 
     self.patchSafeList()
 
-    result = purge_lib.LocateChromeosReleasesProtectedPrefixes(
+    result = purge_builds.LocateChromeosReleasesProtectedPrefixes(
         self.ctx, protected_versions)
 
     self.assertEqual(result, [
@@ -271,7 +271,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   def testLocateChromeosImageArchiveProtectedPrefixes(self):
     self.patchSafeList()
 
-    result = purge_lib.LocateChromeosImageArchiveProtectedPrefixes(self.ctx)
+    result = purge_builds.LocateChromeosImageArchiveProtectedPrefixes(self.ctx)
 
     self.assertEqual(result, [
         'gs://chromeos-image-archive/foo-firmware/',
@@ -295,7 +295,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
 
     self.patchSafeList()
 
-    result = purge_lib.ProduceFilteredCandidates(
+    result = purge_builds.ProduceFilteredCandidates(
         self.ctx, 'gs://chromeos-image-archive/', protected_prefixes, 2)
 
     self.assertEqual(list(result), [
@@ -320,7 +320,7 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
 
     self.patchSafeList()
 
-    result = purge_lib.ProduceFilteredCandidates(
+    result = purge_builds.ProduceFilteredCandidates(
         self.ctx, 'gs://chromeos-releases/', protected_prefixes, 3)
 
     self.assertEqual(list(result), [
@@ -343,13 +343,13 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   def testExpand(self):
     self.patchSafeList()
 
-    result = purge_lib.Expand(self.ctx, self.file_no_timestamp)
+    result = purge_builds.Expand(self.ctx, self.file_no_timestamp)
     self.assertEqual(result, [self.file_with_timestamp])
 
-    result = purge_lib.Expand(self.ctx, self.file_with_timestamp)
+    result = purge_builds.Expand(self.ctx, self.file_with_timestamp)
     self.assertEqual(result, [self.file_with_timestamp])
 
-    result = purge_lib.Expand(self.ctx, self.directory)
+    result = purge_builds.Expand(self.ctx, self.directory)
     self.assertEqual(result, [
         self.mockResult(
             'gs://chromeos-releases/canary-channel/x86-alex/1.2.3/a'),
@@ -362,16 +362,16 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
 
   def testExpire(self):
     # Dryrun, move nothing.
-    purge_lib.Expire(self.ctx, dryrun=True, url='gs://foo/bar')
-    purge_lib.Expire(self.ctx, dryrun=True,
-                     url='gs://chromeos-releases/deep/nested/file')
+    purge_builds.Expire(self.ctx, dryrun=True, url='gs://foo/bar')
+    purge_builds.Expire(self.ctx, dryrun=True,
+                        url='gs://chromeos-releases/deep/nested/file')
 
     self.assertEqual(self.gs_mock.call_args_list, [])
 
     # Really move stuff.
-    purge_lib.Expire(self.ctx, dryrun=False, url='gs://foo/bar')
-    purge_lib.Expire(self.ctx, dryrun=False,
-                     url='gs://chromeos-releases/deep/nested/file')
+    purge_builds.Expire(self.ctx, dryrun=False, url='gs://foo/bar')
+    purge_builds.Expire(self.ctx, dryrun=False,
+                        url='gs://chromeos-releases/deep/nested/file')
 
     self.assertEqual(self.gs_mock.call_args_list, [
         mock.call(self.ctx, [
@@ -386,12 +386,12 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   def testExpireAndExpandDryrun(self):
     self.patchSafeList()
 
-    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
-                              self.file_no_timestamp)
-    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
-                              self.file_with_timestamp)
-    purge_lib.ExpandAndExpire(self.ctx, True, self.expireDate,
-                              self.directory)
+    purge_builds.ExpandAndExpire(self.ctx, True, self.expireDate,
+                                 self.file_no_timestamp)
+    purge_builds.ExpandAndExpire(self.ctx, True, self.expireDate,
+                                 self.file_with_timestamp)
+    purge_builds.ExpandAndExpire(self.ctx, True, self.expireDate,
+                                 self.directory)
 
     self.assertEqual(self.gs_mock.call_args_list, [])
 
@@ -399,8 +399,8 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
     self.patchSafeList()
 
     # File with no timestamp.
-    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
-                              self.file_no_timestamp)
+    purge_builds.ExpandAndExpire(self.ctx, False, self.expireDate,
+                                 self.file_no_timestamp)
 
     self.assertEqual(self.gs_mock.call_args_list, [
         mock.call(self.ctx, [
@@ -414,8 +414,8 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
     self.patchSafeList()
 
     # File with timestamp.
-    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
-                              self.file_with_timestamp)
+    purge_builds.ExpandAndExpire(self.ctx, False, self.expireDate,
+                                 self.file_with_timestamp)
 
     self.assertEqual(self.gs_mock.call_args_list, [
         mock.call(self.ctx, [
@@ -428,8 +428,8 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   def testExpireAndExpandDirectory(self):
     self.patchSafeList()
 
-    purge_lib.ExpandAndExpire(self.ctx, False, self.expireDate,
-                              self.directory)
+    purge_builds.ExpandAndExpire(self.ctx, False, self.expireDate,
+                                 self.directory)
 
     self.assertEqual(self.gs_mock.call_args_list, [
         mock.call(self.ctx, [
