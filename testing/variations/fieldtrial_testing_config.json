@@ -2566,6 +2566,22 @@
             ]
         }
     ],
+    "MediaCapabilitiesParams": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DBWindow5000Frames_20190211"
+                }
+            ]
+        }
+    ],
     "MediaFoundationH264Encoding": [
         {
             "platforms": [
