@@ -196,11 +196,8 @@ base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(t);
 }
 
-// Implements steps 3-4 of
-// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
-SignedExchangeSignatureVerifier::Result VerifyTimestamps(
-    const SignedExchangeEnvelope& envelope,
-    const base::Time& verification_time) {
+SignedExchangeSignatureVerifier::Result VerifyValidityPeriod(
+    const SignedExchangeEnvelope& envelope) {
   base::Time expires_time =
       TimeFromSignedExchangeUnixTime(envelope.signature().expires);
   base::Time creation_time =
@@ -211,6 +208,18 @@ SignedExchangeSignatureVerifier::Result VerifyTimestamps(
   if ((expires_time - creation_time).InSeconds() > kOneWeek.InSeconds()) {
     return SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong;
   }
+  return SignedExchangeSignatureVerifier::Result::kSuccess;
+}
+
+// Implements "Signature validity" of
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+SignedExchangeSignatureVerifier::Result VerifyTimestamps(
+    const SignedExchangeEnvelope& envelope,
+    const base::Time& verification_time) {
+  base::Time expires_time =
+      TimeFromSignedExchangeUnixTime(envelope.signature().expires);
+  base::Time creation_time =
+      TimeFromSignedExchangeUnixTime(envelope.signature().date);
 
   // 4. "If the current time is before date or after expires, return
   // "invalid"."
@@ -258,6 +267,17 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeSignatureVerifier::Verify");
   DCHECK(certificate);
+  const auto validity_period_result = VerifyValidityPeriod(envelope);
+  if (validity_period_result != Result::kSuccess) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Specified validity period too long. creation_time: %" PRIu64
+            ", expires_time: %" PRIu64 ", verification_time: %" PRIu64,
+            envelope.signature().date, envelope.signature().expires,
+            (verification_time - base::Time::UnixEpoch()).InSeconds()));
+    return validity_period_result;
+  }
   const auto timestamp_result = VerifyTimestamps(envelope, verification_time);
   if (timestamp_result != Result::kSuccess &&
       !ShouldIgnoreTimestampError(certificate)) {
