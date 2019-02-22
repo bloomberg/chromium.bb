@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="/tracing/core/test_utils.html">
+<link rel="import" href="/tracing/metrics/android_startup_metric.html">
+<link rel="import" href="/tracing/value/histogram_set.html">
+
+<script>
+'use strict';
+
+tr.b.unittest.testSuite(function() {
+  function createNewThread(model) {
+    const browserProcess = model.getOrCreateProcess(tr.b.GUID.allocateSimple());
+    const mainThread = browserProcess.getOrCreateThread(
+        tr.b.GUID.allocateSimple());
+    // Initializing the thread name is necessary to pass validation checks
+    // made by the ChromeModelHelper.
+    mainThread.name = 'CrBrowserMain';
+    return mainThread;
+  }
+
+  // Add a browser and renderer to the process, with a few key events necessary
+  // to calculate the |androidStartupMetric|. An |offset| can be added to all
+  // events and the length of a few events can be extended by
+  // |incrementForMetrics|.
+  function fillModelWithOneBrowserSession(model, offset, incrementForMetrics) {
+    // In order for the tests below to succeed with strictEqual, the floating
+    // point values should have exact representation as IEEE754 float.
+    createNewThread(model).asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
+      cat: 'startup',
+      title: 'Startup.BrowserMessageLoopStartTimeFromMainEntry3',
+      start: (offset + 6800.125),
+      duration: (incrementForMetrics + 1700.0625)
+    }));
+  }
+
+  // Adds an event for the messageloop metric with an early start timestamp. The
+  // metric should ignore the very first messageloop start event in the trace.
+  // The specific lengths are not important.
+  function addEarlyMessageLoopEvent(model, offset) {
+    createNewThread(model).asyncSliceGroup.push(tr.c.TestUtils.newAsyncSliceEx({
+      cat: 'startup',
+      title: 'Startup.BrowserMessageLoopStartTimeFromMainEntry3',
+      start: (offset + 1.0),
+      duration: 1000.0
+    }));
+  }
+
+  function makeTestModel(offset, incrementForMetrics) {
+    return tr.c.TestUtils.newModel(function(model) {
+      fillModelWithOneBrowserSession(model, offset, incrementForMetrics);
+      addEarlyMessageLoopEvent(model, offset);
+    });
+  }
+
+  // Checks recording of the main histograms in the simplest case.
+  test('androidStartupMetric_simple', function() {
+    const histograms = new tr.v.HistogramSet();
+    tr.metrics.sh.androidStartupMetric(histograms, makeTestModel(0.0, 0.0));
+    const messageLoopStartHistogram = histograms.getHistogramNamed(
+        'messageloop_start_time');
+    assert.strictEqual(1, messageLoopStartHistogram.numValues);
+    assert.strictEqual(1700.0625, messageLoopStartHistogram.average);
+  });
+
+  // Checks the metrics after adding an offset to events in the model, and
+  // making a few durations longer by a constant.
+  test('androidStartupMetric_withOffsetAndLongerTask', function() {
+    const histograms = new tr.v.HistogramSet();
+    tr.metrics.sh.androidStartupMetric(histograms, makeTestModel(5.0, 7.0));
+    const messageLoopStartHistogram = histograms.getHistogramNamed(
+        'messageloop_start_time');
+    assert.strictEqual(1, messageLoopStartHistogram.numValues);
+    assert.strictEqual(1707.0625, messageLoopStartHistogram.average);
+  });
+
+  test('androidStartupMetric_twoSessions', function() {
+    function makeTestModelWithTwoSessionsOneDelayed(
+        offset, incrementForMetrics) {
+      return tr.c.TestUtils.newModel(function(model) {
+        fillModelWithOneBrowserSession(model, 0.0, 0.0);
+        fillModelWithOneBrowserSession(model, offset, incrementForMetrics);
+        addEarlyMessageLoopEvent(model, 0.0, 0.0);
+      });
+    }
+    const delta = 0.125;
+    const histograms = new tr.v.HistogramSet();
+    tr.metrics.sh.androidStartupMetric(histograms,
+        makeTestModelWithTwoSessionsOneDelayed(10000.0, delta));
+    const messageLoopStartHistogram = histograms.getHistogramNamed(
+        'messageloop_start_time');
+    assert.strictEqual(2, messageLoopStartHistogram.numValues);
+    assert.strictEqual(1700.0625, messageLoopStartHistogram.min);
+    assert.strictEqual(1700.0625 + delta, messageLoopStartHistogram.max);
+  });
+});
+</script>
