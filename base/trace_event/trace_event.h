@@ -435,28 +435,6 @@
     }                                                                \
   } while (0)
 
-// Implementation detail: internal macro to enter and leave a
-// context based on the current scope.
-#define INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
-  struct INTERNAL_TRACE_EVENT_UID(ScopedContext) {                         \
-   public:                                                                 \
-    INTERNAL_TRACE_EVENT_UID(ScopedContext)(uint64_t cid) : cid_(cid) {    \
-      TRACE_EVENT_ENTER_CONTEXT(category_group, name, cid_);               \
-    }                                                                      \
-    ~INTERNAL_TRACE_EVENT_UID(ScopedContext)() {                           \
-      TRACE_EVENT_LEAVE_CONTEXT(category_group, name, cid_);               \
-    }                                                                      \
-                                                                           \
-   private:                                                                \
-    uint64_t cid_;                                                         \
-    /* Local class friendly DISALLOW_COPY_AND_ASSIGN */                    \
-    INTERNAL_TRACE_EVENT_UID(ScopedContext)                                \
-    (const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {};                   \
-    void operator=(const INTERNAL_TRACE_EVENT_UID(ScopedContext)&) {};     \
-  };                                                                       \
-  INTERNAL_TRACE_EVENT_UID(ScopedContext)                                  \
-  INTERNAL_TRACE_EVENT_UID(scoped_context)(context);
-
 #if BUILDFLAG(ENABLE_LOCATION_SOURCE)
 
 // Implementation detail: internal macro to trace a task execution with the
