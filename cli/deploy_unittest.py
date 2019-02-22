@@ -99,13 +99,14 @@ class DbApiFake(object):
 class PackageScannerFake(object):
   """Fake for PackageScanner."""
 
-  def __init__(self, packages):
+  def __init__(self, packages, packages_cpvs=None):
     self.pkgs = packages
+    self.cpvs = packages_cpvs or packages
     self.listed = []
     self.num_updates = None
 
   def Run(self, _device, _root, _packages, _update, _deep, _deep_rev):
-    return self.pkgs, self.listed, self.num_updates
+    return self.cpvs, self.listed, self.num_updates
 
 
 class PortageTreeFake(object):
@@ -306,15 +307,15 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
       return fname == _BINPKG
 
     packages = ['some/foo-1.2.3', _BINPKG, 'some/foobar-2.0']
-    self.package_scanner.return_value = PackageScannerFake(packages)
+    cpvs = ['some/foo-1.2.3', 'to/bar-1.2.5', 'some/foobar-2.0']
+    self.package_scanner.return_value = PackageScannerFake(packages, cpvs)
     self.PatchObject(os.path, 'isfile', side_effect=FakeIsFile)
 
     deploy.Deploy(None, ['package'], force=True, clean_binpkg=False)
 
     # Check that package names were correctly resolved into binary packages.
     self.get_packages_paths.assert_called_once_with(
-        [portage_util.SplitCPV(p) for p in packages if p != _BINPKG],
-        True, 'sysroot')
+        [portage_util.SplitCPV(p) for p in cpvs], True, 'sysroot')
     # Check that deploy._Emerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, len(packages))
     self.assertEqual(self.unmerge.call_count, 0)

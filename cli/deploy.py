@@ -838,30 +838,16 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
 def _GetPackagesPaths(pkgs, strip, sysroot):
   """Returns paths to binary |pkgs|.
 
-  Each package argument may be specified as a filename, in which case it is
-  returned as-is, or it may be a CPV value, in which case it is stripped (if
-  instructed) and a path to it is returned.
-
   Args:
-    pkgs: List of package arguments.
+    pkgs: List of package CPVs string.
     strip: Whether or not to run strip_package for CPV packages.
     sysroot: The sysroot path.
 
   Returns:
     List of paths corresponding to |pkgs|.
   """
-  indexes = []
-  cpvs = []
-  for i, pkg in enumerate(pkgs):
-    if not os.path.isfile(pkg):
-      indexes.append(i)
-      cpvs.append(portage_util.SplitCPV(pkg))
-
-  cpv_paths = cpvs and _GetPackagesByCPV(cpvs, strip, sysroot)
-  paths = list(pkgs)
-  for i, cpv_path in zip(indexes, cpv_paths):
-    paths[i] = cpv_path
-  return paths
+  cpvs = [portage_util.SplitCPV(p) for p in pkgs]
+  return _GetPackagesByCPV(cpvs, strip, sysroot)
 
 
 def _Unmerge(device, pkg, root):
