@@ -125,6 +125,9 @@ class UkmPageLoadMetricsObserver
   // True if the page main resource was served from disk cache.
   bool was_cached_ = false;
 
+  // True if the page main resource is inner response of a signed exchange.
+  bool is_signed_exchange_inner_response_ = false;
+
   // The number of main frame redirects that occurred before commit.
   uint32_t main_frame_request_redirect_count_ = 0;
 

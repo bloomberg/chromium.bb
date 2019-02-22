@@ -3643,6 +3643,11 @@ be describing additional metrics about the same event.
       meaningful input with longest queuing delay per navigation. In ms.
     </summary>
   </metric>
+  <metric name="IsSignedExchangeInnerResponse">
+    <summary>
+      Set to 1 if the main resource is an inner response of a signed exchange.
+    </summary>
+  </metric>
   <metric name="LayoutStability.JankScore">
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has

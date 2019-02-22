@@ -85,6 +85,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
+  is_signed_exchange_inner_response_ =
+      navigation_handle->IsSignedExchangeInnerResponse();
   navigation_start_ = navigation_handle->NavigationStart();
   return CONTINUE_OBSERVING;
 }
@@ -341,6 +343,9 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
       static_cast<int64_t>(info.page_end_reason));
   if (info.did_commit && was_cached_) {
     builder.SetWasCached(1);
+  }
+  if (info.did_commit && is_signed_exchange_inner_response_) {
+    builder.SetIsSignedExchangeInnerResponse(1);
   }
   builder.Record(ukm::UkmRecorder::Get());
 }
