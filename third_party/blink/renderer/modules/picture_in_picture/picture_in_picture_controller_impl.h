@@ -62,6 +62,11 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // recently.
   HTMLVideoElement* AutoPictureInPictureElement() const;
 
+  // Returns whether Auto Picture-in-Picture is allowed. It returns true if
+  // it's a Chrome extension or if is's a PWA window in its web app scope.
+  // Otherwise it returns false.
+  bool IsAutoPictureInPictureAllowed() const;
+
   // Implementation of PictureInPictureController.
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;

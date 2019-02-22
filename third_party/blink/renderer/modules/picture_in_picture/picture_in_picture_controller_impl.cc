@@ -249,18 +249,27 @@ HTMLVideoElement* PictureInPictureControllerImpl::AutoPictureInPictureElement()
              : auto_picture_in_picture_elements_.back();
 }
 
-void PictureInPictureControllerImpl::PageVisibilityChanged() {
-  DCHECK(GetSupplementable());
+bool PictureInPictureControllerImpl::IsAutoPictureInPictureAllowed() const {
+  // Chrome extensions are allowed to trigger Auto Picture-in-Picture.
+  if (GetSupplementable()->Url().ProtocolIs("chrome-extension"))
+    return true;
 
-  // Auto Picture-in-Picture is allowed only in a PWA window.
+  // Otherwise, Auto Picture-in-Picture is allowed only in a PWA window.
   if (!GetSupplementable()->GetFrame() ||
       GetSupplementable()->GetFrame()->View()->DisplayMode() ==
           WebDisplayMode::kWebDisplayModeBrowser) {
-    return;
+    return false;
   }
 
-  // Auto Picture-in-Picture is allowed only in the scope of a PWA.
-  if (!GetSupplementable()->IsInWebAppScope())
+  // And if in a PWA window, Auto Picture-in-Picture is allowed only in the
+  // scope of the PWA.
+  return (GetSupplementable()->IsInWebAppScope());
+}
+
+void PictureInPictureControllerImpl::PageVisibilityChanged() {
+  DCHECK(GetSupplementable());
+
+  if (!IsAutoPictureInPictureAllowed())
     return;
 
   // If page becomes visible and Picture-in-Picture element has entered
