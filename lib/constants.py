@@ -640,7 +640,6 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
     'guado_moblab-no-vmtest-pre-cq',  # broadwell   moblab
     'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
-    'lakitu-no-vmtest-pre-cq',        # container
     'nyan_blaze-no-vmtest-pre-cq',    # arm32
     'whirlwind-no-vmtest-pre-cq',     # brillo
 ]
