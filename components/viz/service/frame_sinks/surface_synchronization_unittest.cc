@@ -3018,4 +3018,157 @@ TEST_F(SurfaceSynchronizationTest, EvictSurface) {
   EXPECT_FALSE(IsMarkedForDestruction(child_id3));
 }
 
+// If a parent CompositorFrame is blocked on the child, don't throttle child's
+// surface to avoid a deadlock. In this variation of the test, parent's
+// CompositorFrame arrives first.
+TEST_F(SurfaceSynchronizationTest, ChildNotThrottledWhenParentBlocked1) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 2);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink1, 2, 3);
+  const SurfaceId child_id5 = MakeSurfaceId(kChildFrameSink1, 2, 4);
+
+  // The parent embeds |child_surface3|. This should avoid the child getting
+  // throttled when it submits to |child_id2|.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id3}, {SurfaceRange(base::nullopt, child_id3)},
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+
+  // |child_id1| Surface should immediately activate because it's the child's
+  // first surface.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+
+  // |child_id2| would normally get throttled, but in this case it shouldn't
+  // because the parent is blocked.
+  child_support1().SubmitCompositorFrame(
+      child_id2.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_FALSE(child_surface2->HasPendingFrame());
+  EXPECT_TRUE(child_surface2->HasActiveFrame());
+
+  // After this submission, the parent will be unblocked.
+  Surface* parent_surface = GetSurfaceForId(parent_id);
+  ASSERT_NE(nullptr, parent_surface);
+  EXPECT_TRUE(parent_surface->HasPendingFrame());
+  EXPECT_FALSE(parent_surface->HasActiveFrame());
+  child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface3 = GetSurfaceForId(child_id3);
+  ASSERT_NE(nullptr, child_surface3);
+  EXPECT_FALSE(child_surface3->HasPendingFrame());
+  EXPECT_TRUE(child_surface3->HasActiveFrame());
+  EXPECT_FALSE(parent_surface->HasPendingFrame());
+  EXPECT_TRUE(parent_surface->HasActiveFrame());
+
+  // This is the first surface after the parent got unblocked. It will not get
+  // throttled.
+  child_support1().SubmitCompositorFrame(child_id4.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface4 = GetSurfaceForId(child_id4);
+  ASSERT_NE(nullptr, child_surface4);
+  EXPECT_FALSE(child_surface4->HasPendingFrame());
+  EXPECT_TRUE(child_surface4->HasActiveFrame());
+
+  // This is the second surface after the parent got unblocked. It will get
+  // throttled.
+  child_support1().SubmitCompositorFrame(child_id5.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface5 = GetSurfaceForId(child_id5);
+  ASSERT_NE(nullptr, child_surface5);
+  EXPECT_TRUE(child_surface5->HasPendingFrame());
+  EXPECT_FALSE(child_surface5->HasActiveFrame());
+}
+
+// If a parent CompositorFrame is blocked on the child, don't throttle child's
+// surface to avoid a deadlock. In this variation of the test, child's
+// CompositorFrame arrives first.
+TEST_F(SurfaceSynchronizationTest, ChildNotThrottledWhenParentBlocked2) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 1);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink1, 2, 2);
+  const SurfaceId child_id5 = MakeSurfaceId(kChildFrameSink1, 2, 3);
+  const SurfaceId child_id6 = MakeSurfaceId(kChildFrameSink1, 2, 4);
+
+  // |child_id1| Surface should immediately activate.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+
+  // |child_id2| Surface should not activate because |child_id1| was never
+  // added as a dependency by a parent.
+  child_support1().SubmitCompositorFrame(
+      child_id2.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_TRUE(child_surface2->HasPendingFrame());
+  EXPECT_FALSE(child_surface2->HasActiveFrame());
+  EXPECT_TRUE(child_surface2->has_deadline());
+
+  FrameDeadline deadline = MakeDefaultDeadline();
+  base::TimeTicks deadline_wall_time = deadline.ToWallTime();
+  EXPECT_EQ(deadline_wall_time, child_surface2->deadline_for_testing());
+
+  // The parent gets blocked on the child. The child should get unthrottled to
+  // avoid deadlocks.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id3}, {SurfaceRange(base::nullopt, child_id3)},
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+  EXPECT_FALSE(child_surface2->HasPendingFrame());
+  EXPECT_TRUE(child_surface2->HasActiveFrame());
+
+  // After this submission, the parent will be unblocked.
+  Surface* parent_surface = GetSurfaceForId(parent_id);
+  ASSERT_NE(nullptr, parent_surface);
+  EXPECT_TRUE(parent_surface->HasPendingFrame());
+  EXPECT_FALSE(parent_surface->HasActiveFrame());
+  child_support1().SubmitCompositorFrame(child_id4.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface4 = GetSurfaceForId(child_id4);
+  ASSERT_NE(nullptr, child_surface4);
+  EXPECT_FALSE(child_surface4->HasPendingFrame());
+  EXPECT_TRUE(child_surface4->HasActiveFrame());
+  EXPECT_FALSE(parent_surface->HasPendingFrame());
+  EXPECT_TRUE(parent_surface->HasActiveFrame());
+
+  // This is the first surface after the parent got unblocked. It will not get
+  // throttled.
+  child_support1().SubmitCompositorFrame(child_id5.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface5 = GetSurfaceForId(child_id5);
+  ASSERT_NE(nullptr, child_surface5);
+  EXPECT_FALSE(child_surface5->HasPendingFrame());
+  EXPECT_TRUE(child_surface5->HasActiveFrame());
+
+  // This is the second surface after the parent got unblocked. It will get
+  // throttled.
+  child_support1().SubmitCompositorFrame(child_id6.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface6 = GetSurfaceForId(child_id6);
+  ASSERT_NE(nullptr, child_surface6);
+  EXPECT_TRUE(child_surface6->HasPendingFrame());
+  EXPECT_FALSE(child_surface6->HasActiveFrame());
+}
+
 }  // namespace viz

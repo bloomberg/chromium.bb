@@ -140,10 +140,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // frame.
   void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
 
-  // Returns whether the Surface is blocked on the provided |surface_id| or a
-  // predecessor.
-  bool IsBlockedOn(const SurfaceId& surface_id) const;
-
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
   void ActivatePendingFrameForDeadline(
