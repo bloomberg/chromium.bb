@@ -3149,7 +3149,7 @@
   },
   {
     "name": "wake-on-wifi-packet",
-    // "owners": [ "your-team" ],
+    "owners": [ "abhishekbh", "chirantan" ],
     "expiry_milestone": 76
   },
   {
