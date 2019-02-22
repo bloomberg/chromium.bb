@@ -15,6 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -124,8 +126,12 @@ void DesktopCapturerProxy::Core::OnCaptureResult(
 }
 
 DesktopCapturerProxy::DesktopCapturerProxy(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner)
-    : capture_task_runner_(capture_task_runner), weak_factory_(this) {
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : capture_task_runner_(capture_task_runner),
+      client_session_control_(client_session_control),
+      desktop_display_info_(new DesktopDisplayInfo()),
+      weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr()));
 }
 
@@ -182,8 +188,14 @@ bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
   return false;
 }
 
-bool DesktopCapturerProxy::SelectSource(SourceId id) {
+bool DesktopCapturerProxy::SelectSource(SourceId id_index) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(desktop_display_info_);
+  SourceId id = -1;
+  if (id_index >= 0 && id_index < desktop_display_info_->NumDisplays()) {
+    DisplayGeometry display = desktop_display_info_->displays()[id_index];
+    id = display.id;
+  }
   capture_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Core::SelectSource, base::Unretained(core_.get()), id));
@@ -196,6 +208,33 @@ void DesktopCapturerProxy::OnFrameCaptured(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   callback_->OnCaptureResult(result, std::move(frame));
+
+// On Windows, this is handled in the DesktopSessionAgent.
+// Once WebRTC has a callback with the display geometry, then we can remove
+// this and rely on WebRTC to pass this through the callbacks up to the
+// ClientSession.
+// See https://bugs.chromium.org/p/webrtc/issues/detail?id=10122
+#if !defined(OS_WIN)
+  if (client_session_control_) {
+    auto info = std::make_unique<DesktopDisplayInfo>();
+    info->LoadCurrentDisplayInfo();
+    if (*desktop_display_info_ != *info) {
+      desktop_display_info_ = std::move(info);
+
+      auto layout = std::make_unique<protocol::VideoLayout>();
+      for (auto display : desktop_display_info_->displays()) {
+        protocol::VideoTrackLayout* track = layout->add_video_track();
+        track->set_position_x(display.x);
+        track->set_position_y(display.y);
+        track->set_width(display.width);
+        track->set_height(display.height);
+        track->set_x_dpi(display.dpi);
+        track->set_y_dpi(display.dpi);
+      }
+      client_session_control_->OnDesktopDisplayChanged(std::move(layout));
+    }
+  }
+#endif
 }
 
 }  // namespace remoting

@@ -58,6 +58,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       ui::SystemInputInjectorFactory* system_input_injector_factory,
+      base::WeakPtr<ClientSessionControl> client_session_control,
       const DesktopEnvironmentOptions& options);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
@@ -109,6 +110,9 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
 
   // Passed to InputInjector.
   ui::SystemInputInjectorFactory* system_input_injector_factory_;
+
+  // Used to send messages directly to the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
 
   DesktopEnvironmentOptions options_;
 

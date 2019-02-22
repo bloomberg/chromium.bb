@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "remoting/host/desktop_display_info.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {
@@ -23,6 +24,8 @@ class DesktopCaptureOptions;
 
 namespace remoting {
 
+class ClientSessionControl;
+
 // DesktopCapturerProxy is responsible for calling webrtc::DesktopCapturer on
 // the capturer thread and then returning results to the caller's thread.
 // GetSourceList() and SelectSource() functions are not implemented by this
@@ -30,7 +33,8 @@ namespace remoting {
 class DesktopCapturerProxy : public webrtc::DesktopCapturer {
  public:
   explicit DesktopCapturerProxy(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+      base::WeakPtr<ClientSessionControl> client_session_control);
   ~DesktopCapturerProxy() override;
 
   // CreateCapturer() should be used if the capturer needs to be created on the
@@ -58,6 +62,14 @@ class DesktopCapturerProxy : public webrtc::DesktopCapturer {
   std::unique_ptr<Core> core_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   webrtc::DesktopCapturer::Callback* callback_;
+
+  // Used to disconnect the client session.
+  // Note: This cannot be used on Windows because the ClientSession is not in
+  // the same process as the DesktopCapturerProxy.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  // Contains the most recently gathered info about the desktop displays.
+  std::unique_ptr<DesktopDisplayInfo> desktop_display_info_;
 
   base::WeakPtrFactory<DesktopCapturerProxy> weak_factory_;
 
