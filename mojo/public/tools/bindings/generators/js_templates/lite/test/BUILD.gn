@@ -20,6 +20,6 @@ js_type_check("closure_compile") {
 
 js_library("test") {
   deps = [
-    ":mojo_bindings_js_externs",
+    ":mojo_bindings_js_library_for_compile",
   ]
 }

@@ -1,5 +1,9 @@
 {#--- Constants #}
 {%- for constant in module.constants %}
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{constant.name}}');
+
+{%- endif %}
 /**
  * @const { {{constant.kind|lite_closure_type_with_nullability}} }
  * @export
@@ -9,9 +13,9 @@
 {%- endfor %}
 
 {#--- Enums #}
-{% from "lite/enum_definition.tmpl" import enum_def %}
+{% from "lite/enum_definition.tmpl" import enum_def with context %}
 {%- for enum in enums %}
-{{enum_def("%s.%s"|format(module.namespace, enum.name), enum)}}
+{{enum_def(module.namespace, module.namespace, enum)}}
 {%  endfor %}
 
 {#--- Interface definitions #}
@@ -24,19 +28,25 @@
  # mojo.internal.Struct and mojo.internal.Union will fix-up the object
  # appropriately, and we don't want Closure to complain. #}
 {%  for struct in structs %}
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{struct.name}}Spec');
+{%- endif %}
 /**
- * @const {!Object}
+ * @const { {$:!mojo.internal.MojomType}}
  * @export
  */
-{{module.namespace}}.{{struct.name}} =
+{{module.namespace}}.{{struct.name}}Spec =
     { $: /** @type {!mojo.internal.MojomType} */ ({}) };
 {% endfor %}
 {%- for union in unions %}
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{union.name}}Spec');
+{%- endif %}
 /**
- * @const {!Object}
+ * @const { {$:!mojo.internal.MojomType} }
  * @export
  */
-{{module.namespace}}.{{union.name}} =
+{{module.namespace}}.{{union.name}}Spec =
     { $: /** @type {!mojo.internal.MojomType} */ ({}) };
 {% endfor %}
 
