@@ -4992,7 +4992,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
     bool set_result = false;
     base::RunLoop run_loop;
     cookie_manager_ptr->SetCanonicalCookie(
-        *cc.get(), origin1.scheme(), true /* modify_http_only */,
+        *cc.get(), origin1.SchemeIsCryptographic(), true /* modify_http_only */,
         base::BindOnce(&SetCookieSaveData, &set_result,
                        run_loop.QuitClosure()));
     run_loop.Run();

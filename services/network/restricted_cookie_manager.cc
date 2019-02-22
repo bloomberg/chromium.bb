@@ -219,10 +219,12 @@ void RestrictedCookieManager::SetCanonicalCookie(
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
       cookie.SameSite(), cookie.Priority());
 
-  // TODO(pwnall): source_scheme might depend on the renderer.
+  // TODO(pwnall): secure_source should depend on url, and might depend on the
+  //               renderer.
+  bool secure_source = true;
   bool modify_http_only = false;
   cookie_store_->SetCanonicalCookieAsync(std::move(sanitized_cookie),
-                                         origin_.scheme(), modify_http_only,
+                                         secure_source, modify_http_only,
                                          StatusToBool(std::move(callback)));
 }
 

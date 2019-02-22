@@ -61,7 +61,7 @@ class FakeCookieManager : public network::TestCookieManager {
   void InvokePendingSetCanonicalCookieCallback(
       const std::string& expected_cookie_name,
       const std::string& expected_cookie_value,
-      const std::string& expected_source_scheme,
+      bool expected_secure_source,
       bool expected_modify_http_only,
       bool success) {
     ASSERT_FALSE(set_canonical_cookie_calls_.empty());
@@ -70,7 +70,7 @@ class FakeCookieManager : public network::TestCookieManager {
 
     EXPECT_EQ(expected_cookie_name, std::get<0>(params).Name());
     EXPECT_EQ(expected_cookie_value, std::get<0>(params).Value());
-    EXPECT_EQ(expected_source_scheme, std::get<1>(params));
+    EXPECT_EQ(expected_secure_source, std::get<1>(params));
     EXPECT_EQ(expected_modify_http_only, std::get<2>(params));
 
     std::move(std::get<3>(params)).Run(success);
@@ -92,11 +92,11 @@ class FakeCookieManager : public network::TestCookieManager {
 
   // network::mojom::CookieManager
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          const std::string& source_scheme,
+                          bool secure_source,
                           bool modify_http_only,
                           SetCanonicalCookieCallback callback) override {
     set_canonical_cookie_calls_.emplace_back(
-        cookie, source_scheme, modify_http_only, std::move(callback));
+        cookie, secure_source, modify_http_only, std::move(callback));
   }
 
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
@@ -105,10 +105,8 @@ class FakeCookieManager : public network::TestCookieManager {
   }
 
  private:
-  std::vector<std::tuple<net::CanonicalCookie,
-                         std::string,
-                         bool,
-                         SetCanonicalCookieCallback>>
+  std::vector<
+      std::tuple<net::CanonicalCookie, bool, bool, SetCanonicalCookieCallback>>
       set_canonical_cookie_calls_;
   std::vector<
       std::pair<network::mojom::CookieDeletionFilterPtr, DeleteCookiesCallback>>
@@ -208,8 +206,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
-        "true" /* expected_cookie_value */,
-        "https" /* expected_source_scheme */,
+        "true" /* expected_cookie_value */, true /* expected_secure_source */,
         false /* expected_modify_http_only */, true /* success */);
 
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
@@ -281,7 +278,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
           "cros_migrated_to" /* expected_cookie_name */,
           migrated_to_app_url.GetContent() /* expected_cookie_value */,
-          "https" /* expected_source_scheme */,
+          true /* expected_secure_source */,
           false /* expected_modify_http_only */, true /* success */);
 
       fake_cookie_manager_->InvokePendingDeleteCookiesCallback(

@@ -613,8 +613,8 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
     // Pass a null callback since we don't care about when the 'set' completes.
     cookie_store->SetCanonicalCookieAsync(
-        std::move(cookie), url.scheme(), !options.exclude_httponly(),
-        net::CookieStore::SetCookiesCallback());
+        std::move(cookie), url.SchemeIsCryptographic(),
+        !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
     return;
   }
 
@@ -627,7 +627,8 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                          std::move(callback)),
           false);
   (*GetCookieManager())
-      ->SetCanonicalCookie(*cookie, url.scheme(), !options.exclude_httponly(),
+      ->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
+                           !options.exclude_httponly(),
                            std::move(net_callback));
 }
 

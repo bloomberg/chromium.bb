@@ -459,7 +459,7 @@ void SetCookieOnIO(
       context_getter->GetURLRequestContext();
 
   request_context->cookie_store()->SetCanonicalCookieAsync(
-      std::move(cookie), "https" /* source_scheme */, true /*modify_http_only*/,
+      std::move(cookie), true /* secure_source */, true /*modify_http_only*/,
       std::move(callback));
 }
 
@@ -1249,7 +1249,7 @@ void NetworkHandler::SetCookie(const std::string& name,
   }
 
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cookie, "https", true /* modify_http_only */,
+      *cookie, true /* secure_source */, true /* modify_http_only */,
       base::BindOnce(&SetCookieCallback::sendSuccess, std::move(callback)));
 }
 
@@ -1296,7 +1296,7 @@ void NetworkHandler::SetCookies(
       storage_partition_->GetCookieManagerForBrowserProcess();
   for (const auto& cookie : net_cookies) {
     cookie_manager->SetCanonicalCookie(
-        *cookie, "https", true,
+        *cookie, true, true,
         base::BindOnce(
             [](base::RepeatingClosure callback, bool) { callback.Run(); },
             barrier_closure));

@@ -1080,7 +1080,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
 
       auto* store = request_details_.url_request_context->cookie_store();
       store->SetCanonicalCookieAsync(
-          std::move(cookie), request_details_.url.scheme(),
+          std::move(cookie), request_details_.url.SchemeIsCryptographic(),
           !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
     }
 
