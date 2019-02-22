@@ -284,6 +284,22 @@ TEST_F(CSPSourceTest, HostMatches) {
     // Please see http://crbug.com/692505
     EXPECT_FALSE(source.Matches(KURL(base, "http://.foo.bar")));
   }
+
+  // Host matching is case-insensitive.
+  {
+    CSPSource source(csp.Get(), "", "FoO.BaR", 0, "", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://sub.foo.bar")));
+  }
+
+  // Wildcarded host matching is case-insensitive.
+  {
+    CSPSource source(csp.Get(), "", "FoO.BaR", 0, "", CSPSource::kHasWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://foo.bar")));
+  }
 }
 
 TEST_F(CSPSourceTest, DoesNotSubsume) {

@@ -1408,4 +1408,20 @@ TEST_F(SourceListDirectiveTest, AllowHostWildcard) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, AllowHostMixedCase) {
+  KURL base;
+  // Non-wildcard sources should match hosts case-insensitively.
+  {
+    String sources = "http://ExAmPle.com";
+    SourceListDirective source_list("default-src", sources, csp.Get());
+    EXPECT_TRUE(source_list.Allows(KURL(base, "http://example.com")));
+  }
+  // Wildcard sources should match hosts case-insensitively.
+  {
+    String sources = "http://*.ExAmPle.com";
+    SourceListDirective source_list("default-src", sources, csp.Get());
+    EXPECT_TRUE(source_list.Allows(KURL(base, "http://www.example.com")));
+  }
+}
+
 }  // namespace blink
