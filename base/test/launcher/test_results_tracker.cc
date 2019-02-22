@@ -234,7 +234,7 @@ void TestResultsTracker::AddTestLocation(const std::string& test_name,
 }
 
 void TestResultsTracker::AddTestPlaceholder(const std::string& test_name) {
-  test_placeholders_.push_back(test_name);
+  test_placeholders_.insert(test_name);
 }
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
