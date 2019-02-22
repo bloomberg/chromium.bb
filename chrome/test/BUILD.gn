@@ -5763,6 +5763,15 @@ if (!is_android && !is_fuchsia) {
       "//chrome/test/data/autofill/captured_sites/",
     ]
 
+    if (is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_200_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+        "$root_out_dir/resources.pak",
+      ]
+    }
+
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     ldflags = []
