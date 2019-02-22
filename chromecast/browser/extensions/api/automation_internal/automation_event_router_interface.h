@@ -50,8 +50,8 @@ class AutomationEventRouterInterface {
       bool result,
       content::BrowserContext* active_profile) = 0;
 
-  AutomationEventRouterInterface(){};
-  virtual ~AutomationEventRouterInterface(){};
+  AutomationEventRouterInterface() {}
+  virtual ~AutomationEventRouterInterface() {}
 
   DISALLOW_COPY_AND_ASSIGN(AutomationEventRouterInterface);
 };

@@ -23,7 +23,7 @@
 
 namespace gfx {
 class ClientNativePixmapFactory;
-};
+}
 
 namespace exo {
 class ClientControlledShellSurface;

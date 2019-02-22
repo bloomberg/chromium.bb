@@ -70,7 +70,7 @@ class CastNetworkDelegateTest : public testing::Test {
     cast_network_delegate_ = std::make_unique<CastNetworkDelegate>(
         std::move(cast_network_request_interceptor_));
   }
-  ~CastNetworkDelegateTest() override{};
+  ~CastNetworkDelegateTest() override {}
 
  protected:
   base::test::ScopedTaskEnvironment task_env_;

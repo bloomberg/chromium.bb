@@ -106,7 +106,7 @@ extern const char kCannotUpdateMuteCaptured[];
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
 extern const char kMissingLockWindowFullscreenPrivatePermission[];
 
-};  // namespace tabs_constants
-};  // namespace extensions
+}  // namespace tabs_constants
+}  // namespace extensions
 
 #endif  // CHROMECAST_BROWSER_EXTENSIONS_API_TABS_TABS_CONSTANTS_H_

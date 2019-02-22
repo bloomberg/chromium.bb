@@ -25,7 +25,7 @@ class ThreadHealthCheckerTest : public ::testing::Test {
         event_(base::WaitableEvent::ResetPolicy::MANUAL,
                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  ~ThreadHealthCheckerTest() override{};
+  ~ThreadHealthCheckerTest() override {}
 
   scoped_refptr<base::TestMockTimeTaskRunner> patient_;
   scoped_refptr<base::TestMockTimeTaskRunner> doctor_;

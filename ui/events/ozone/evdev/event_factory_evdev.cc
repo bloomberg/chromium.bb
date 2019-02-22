@@ -407,7 +407,7 @@ void EventFactoryEvdev::DispatchStylusStateChanged(StylusState stylus_state) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchStylusStateChanged");
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnStylusStateChanged(stylus_state);
-};
+}
 
 void EventFactoryEvdev::DispatchGamepadDevicesUpdated(
     const std::vector<InputDevice>& devices) {
