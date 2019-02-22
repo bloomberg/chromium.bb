@@ -84,6 +84,7 @@ executable("flatc") {
     ":compiler_files",
     ":flatbuffers",
   ]
+  # TODO(https://crbug.com/934834): Re-enable chromium_code for this.
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
@@ -113,6 +114,9 @@ test("flatbuffers_unittest") {
     ":flatbuffers",
     ":flatbuffers_samplebuffer",
   ]
+  # TODO(https://crbug.com/934834): Re-enable chromium_code for this.
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   data = [
     "src/tests/",
   ]
