@@ -6,6 +6,7 @@
 #define BASE_THREADING_SCOPED_BLOCKING_CALL_H
 
 #include "base/base_export.h"
+#include "base/location.h"
 #include "base/logging.h"
 
 namespace base {
@@ -34,7 +35,7 @@ class BlockingObserver;
 // ScopedBlockingCallWithBaseSyncPrimitives without assertions.
 class BASE_EXPORT UncheckedScopedBlockingCall {
  public:
-  UncheckedScopedBlockingCall(BlockingType blocking_type);
+  explicit UncheckedScopedBlockingCall(BlockingType blocking_type);
   ~UncheckedScopedBlockingCall();
 
  private:
@@ -109,7 +110,8 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
 class BASE_EXPORT ScopedBlockingCall
     : public internal::UncheckedScopedBlockingCall {
  public:
-  ScopedBlockingCall(BlockingType blocking_type);
+  explicit ScopedBlockingCall(BlockingType blocking_type);
+  ScopedBlockingCall(const Location& from_here, BlockingType blocking_type);
   ~ScopedBlockingCall();
 };
 
@@ -123,7 +125,9 @@ namespace internal {
 class BASE_EXPORT ScopedBlockingCallWithBaseSyncPrimitives
     : public UncheckedScopedBlockingCall {
  public:
-  ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
+  explicit ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
+  ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
+                                           BlockingType blocking_type);
   ~ScopedBlockingCallWithBaseSyncPrimitives();
 };
 
