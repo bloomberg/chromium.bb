@@ -18,6 +18,7 @@
 #include <notification-shell-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
 #include <presentation-time-server-protocol.h>
+#include <relative-pointer-unstable-v1-server-protocol.h>
 #include <remote-shell-unstable-v1-server-protocol.h>
 #include <secure-output-unstable-v1-server-protocol.h>
 #include <stddef.h>
@@ -110,6 +111,7 @@
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
 #include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
+#include "components/exo/wayland/zwp_relative_pointer_manager.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wayland/zxdg_shell.h"
 #include "components/exo/wm_helper_chromeos.h"
@@ -735,6 +737,9 @@ Server::Server(Display* display)
                    bind_input_timestamps_manager);
   wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
                    display_, bind_pointer_gestures);
+  wl_global_create(wl_display_.get(),
+                   &zwp_relative_pointer_manager_v1_interface, 1, display_,
+                   bind_relative_pointer_manager);
   wl_global_create(wl_display_.get(), &zwp_text_input_manager_v1_interface, 1,
                    display_, bind_text_input_manager);
   wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
