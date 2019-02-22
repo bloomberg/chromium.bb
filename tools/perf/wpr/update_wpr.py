@@ -26,6 +26,7 @@ HISTOGRAM2CSV = os.path.join(
 RUN_BENCHMARK = os.path.join(SRC_ROOT, 'tools', 'perf', 'run_benchmark')
 DATA_DIR = os.path.join(SRC_ROOT, 'tools', 'perf', 'page_sets', 'data')
 RECORD_WPR = os.path.join(SRC_ROOT, 'tools', 'perf', 'record_wpr')
+DEFAULT_REVIEWERS = ['perezju@chromium.org']
 
 
 class WprUpdater(object):
@@ -38,6 +39,8 @@ class WprUpdater(object):
     self.repeat = args.repeat
     self.binary = args.binary
     self.output_dir = tempfile.mkdtemp()
+    self.bug_id = args.bug_id
+    self.reviewers = args.reviewers or DEFAULT_REVIEWERS
 
   def _PrepareEnv(self):
     # Enforce the same local settings for recording and replays on the bots.
@@ -252,6 +255,26 @@ class WprUpdater(object):
     self._UploadArchiveToGoogleStorage(archive)
     return self._GitAddArtifactHash(archive)
 
+  def UploadCL(self, short_description=False):
+    cli_helpers.Step('UPLOAD CL: %s' % self.story)
+    if short_description:
+      commit_message = 'Automated upload'
+    else:
+      commit_message = (
+          'Add %s system health story\n\nThis CL was created automatically '
+          'with tools/perf/update_wpr script' % self.story)
+    if self.bug_id:
+      commit_message += '\n\nBug: %s' % self.bug_id
+    cli_helpers.Run(['git', 'commit', '-a', '-m', commit_message])
+    commit_msg_file = os.path.join(self.output_dir, 'commit_message.tmp')
+    with open(commit_msg_file, 'w') as fd:
+      fd.write(commit_message)
+    return cli_helpers.Run([
+      'git', 'cl', 'upload',
+      '--reviewers', ','.join(self.reviewers),
+      '--force',  # to prevent message editor from appearing
+      '--message-file', commit_msg_file], ok_fail=True)
+
 
 def Main(argv):
   parser = argparse.ArgumentParser()
@@ -263,6 +286,12 @@ def Main(argv):
       help='Specify the device serial number listed by `adb devices`. When not '
            'specified, the script runs in desktop mode.')
   parser.add_argument(
+      '-b', '--bug', dest='bug_id',
+      help='Bug ID to be referenced on created CL')
+  parser.add_argument(
+      '-r', '--reviewer', action='append', dest='reviewers',
+      help='Email of the reviewer(s) for the created CL.')
+  parser.add_argument(
       '--pageset-repeat', type=int, default=1, dest='repeat',
       help='Number of times to repeat the entire pageset.')
   parser.add_argument(
@@ -270,7 +299,7 @@ def Main(argv):
       help='Path to the Chromium/Chrome binary relative to output directory. '
            'Defaults to default Chrome browser installed if not specified.')
   parser.add_argument(
-      'command', choices=['live', 'record', 'replay', 'upload'],
+      'command', choices=['live', 'record', 'replay', 'upload', 'review'],
       help='Mode in which to run this script.')
 
   args = parser.parse_args(argv)
@@ -284,4 +313,6 @@ def Main(argv):
     updater.ReplayWpr()
   elif args.command == 'upload':
     updater.UploadWpr()
+  elif args.command == 'review':
+    updater.UploadCL()
   updater.Cleanup()
