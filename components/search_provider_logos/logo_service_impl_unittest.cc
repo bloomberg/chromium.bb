@@ -72,12 +72,6 @@ namespace {
 using MockLogoCallback = base::MockCallback<LogoCallback>;
 using MockEncodedLogoCallback = base::MockCallback<EncodedLogoCallback>;
 
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
-
 scoped_refptr<base::RefCountedString> EncodeBitmapAsPNG(
     const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedMemory> png_bytes =
