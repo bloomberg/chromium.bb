@@ -116,6 +116,12 @@ void SkFontGetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
   SkPath path;
   font.getPath(glyph, &path);
   *bounds = path.getBounds();
+  // For Apple Color Emoji path bounds are returning empty rectangles, see
+  // https://bugs.chromium.org/p/skia/issues/detail?id=8779
+  // OpenTypeVerticalData::GetVerticalTranslationsForGlyphs needs a non-empty
+  // rectangle for vertical origin computation, hence fall back to bounds here.
+  if (UNLIKELY(bounds->isEmpty()))
+    font.getWidths(&glyph, 1, nullptr, bounds);
 #else
   font.getWidths(&glyph, 1, nullptr, bounds);
 #endif
