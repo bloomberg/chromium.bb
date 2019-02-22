@@ -726,6 +726,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVoiceInteractionContextEnabled,
     arc::prefs::kVoiceInteractionContextEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kVoiceInteractionHotwordEnabled,
+    arc::prefs::kVoiceInteractionHotwordEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

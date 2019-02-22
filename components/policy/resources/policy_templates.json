@@ -964,6 +964,7 @@
       'desc': '''Controls settings for Google Assistant.''',
       'policies': [
         'VoiceInteractionContextEnabled',
+        'VoiceInteractionHotwordEnabled',
       ]
     },
     {
@@ -14819,6 +14820,26 @@
       If the policy is disabled, Google Assistant will not be allowed to access screen context.
       If not set, users can decide whether to allow Google Assistant to access screen context or not''',
     },
+    {
+      'name': 'VoiceInteractionHotwordEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:74-'],
+      'tags' : [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 529,
+      'caption': '''"Allow Google Access Assistant to listen for the voice activation phrase"''',
+      'desc': '''This policy gives Google Assistant permission to listen for the voice activation phrase.
+
+      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
+      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
+      If not set, users can decide whether to allow Google Assistant to listen to the voice activation phrase.
+      ''',
+    },
   ],
 
   'messages': {
@@ -14984,5 +15005,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  528
+  'highest_id_currently_used':  529,
 }
