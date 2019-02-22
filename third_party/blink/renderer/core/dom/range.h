@@ -194,7 +194,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                                              unsigned end_offset,
                                              ExceptionState&);
   static void ProcessNodes(ActionType,
-                           HeapVector<Member<Node>>&,
+                           NodeVector&,
                            Node* old_container,
                            Node* new_container,
                            ExceptionState&);

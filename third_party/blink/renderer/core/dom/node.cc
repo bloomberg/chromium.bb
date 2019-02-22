@@ -2105,10 +2105,10 @@ String Node::ToFlatTreeStringForThis() const {
 
 void Node::PrintNodePathTo(std::ostream& stream) const {
   HeapVector<Member<const Node>, 16> chain;
-  const Node* node = this;
-  while (node->ParentOrShadowHostNode()) {
-    chain.push_back(node);
-    node = node->ParentOrShadowHostNode();
+  const Node* parent_node = this;
+  while (parent_node->ParentOrShadowHostNode()) {
+    chain.push_back(parent_node);
+    parent_node = parent_node->ParentOrShadowHostNode();
   }
   for (unsigned index = chain.size(); index > 0; --index) {
     const Node* node = chain[index - 1];
