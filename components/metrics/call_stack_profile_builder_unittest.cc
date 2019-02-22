@@ -311,11 +311,9 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
 
-  Module module1 = {module_base_address, "1", module_path};
-  Frame frame1 = {module_base_address + 0x10, &module1};
-
-  Module module2 = {module_base_address, "1", module_path};
-  Frame frame2 = {module_base_address + 0x20, &module2};
+  Module module = {module_base_address, "1", module_path};
+  Frame frame1 = {module_base_address + 0x10, &module};
+  Frame frame2 = {module_base_address + 0x20, &module};
 
   std::vector<Frame> frames = {frame1, frame2};
 
@@ -334,8 +332,8 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   ASSERT_EQ(1, profile.stack_size());
   ASSERT_EQ(2, profile.stack(0).frame_size());
 
-  // Since module1 and module2 have the same base address, they are considered
-  // the same module and therefore deduped.
+  // The two frames share the same module, which should be deduped in the
+  // output.
   ASSERT_TRUE(profile.stack(0).frame(0).has_module_id_index());
   EXPECT_EQ(0, profile.stack(0).frame(0).module_id_index());
   ASSERT_TRUE(profile.stack(0).frame(0).has_address());
