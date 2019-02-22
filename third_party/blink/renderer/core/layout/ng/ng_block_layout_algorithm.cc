@@ -109,9 +109,9 @@ inline bool IsEmptyBlock(const NGConstraintSpace& child_space,
   return IsEmptyBlock(child_space.IsNewFormattingContext(), layout_result);
 }
 
-LayoutUnit LogicalFromBfcLineOffset(const NGFragment& fragment,
-                                    LayoutUnit child_bfc_line_offset,
+LayoutUnit LogicalFromBfcLineOffset(LayoutUnit child_bfc_line_offset,
                                     LayoutUnit parent_bfc_line_offset,
+                                    LayoutUnit child_inline_size,
                                     LayoutUnit parent_inline_size,
                                     TextDirection direction) {
   // We need to respect the current text direction to calculate the logical
@@ -122,19 +122,19 @@ LayoutUnit LogicalFromBfcLineOffset(const NGFragment& fragment,
   LayoutUnit inline_offset =
       direction == TextDirection::kLtr
           ? relative_line_offset
-          : parent_inline_size - relative_line_offset - fragment.InlineSize();
+          : parent_inline_size - relative_line_offset - child_inline_size;
 
   return inline_offset;
 }
 
-NGLogicalOffset LogicalFromBfcOffsets(const NGFragment& fragment,
-                                      const NGBfcOffset& child_bfc_offset,
+NGLogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
                                       const NGBfcOffset& parent_bfc_offset,
+                                      LayoutUnit child_inline_size,
                                       LayoutUnit parent_inline_size,
                                       TextDirection direction) {
   LayoutUnit inline_offset = LogicalFromBfcLineOffset(
-      fragment, child_bfc_offset.line_offset, parent_bfc_offset.line_offset,
-      parent_inline_size, direction);
+      child_bfc_offset.line_offset, parent_bfc_offset.line_offset,
+      child_inline_size, parent_inline_size, direction);
 
   return {inline_offset,
           child_bfc_offset.block_offset - parent_bfc_offset.block_offset};
@@ -337,13 +337,13 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 
   if (child_bfc_block_offset) {
     return LogicalFromBfcOffsets(
-        fragment, {child_bfc_line_offset, *child_bfc_block_offset},
-        ContainerBfcOffset(), inline_size, direction);
+        {child_bfc_line_offset, *child_bfc_block_offset}, ContainerBfcOffset(),
+        fragment.InlineSize(), inline_size, direction);
   }
 
   LayoutUnit inline_offset = LogicalFromBfcLineOffset(
-      fragment, child_bfc_line_offset, container_builder_.BfcLineOffset(),
-      inline_size, direction);
+      child_bfc_line_offset, container_builder_.BfcLineOffset(),
+      fragment.InlineSize(), inline_size, direction);
 
   // If we've reached here, both the child and the current layout don't have a
   // BFC block offset yet. Children in this situation are always placed at a
@@ -814,23 +814,45 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
   const ComputedStyle& child_style = child.Style();
-  LayoutUnit inline_offset = border_scrollbar_padding_.inline_start;
-  if (child_style.IsOriginalDisplayInlineType()) {
-    // If this out-of-flow child is inline type, its static position should
-    // honor the 'text-align' property.
-    inline_offset +=
-        InlineOffsetForTextAlign(Style(), child_available_size_.inline_size);
-  }
 
-  // TODO(ikilpatrick): Determine which of the child's margins need to be
-  // included for the static position.
-  NGLogicalOffset offset = {inline_offset,
+  NGLogicalOffset offset = {border_scrollbar_padding_.inline_start,
                             previous_inflow_position.logical_block_offset};
 
   // We only include the margin strut in the OOF static-position if we know we
   // aren't going to be a zero-block-size fragment.
   if (container_builder_.BfcBlockOffset())
     offset.block_offset += previous_inflow_position.margin_strut.Sum();
+
+  if (child_style.IsOriginalDisplayInlineType()) {
+    // OOF-positioned nodes which were initially inline-level, however are in a
+    // block-level context, pretend they are in an inline-level context. E.g.
+    // they avoid floats, and respect text-align.
+    const TextDirection direction = ConstraintSpace().Direction();
+    LayoutUnit child_origin_line_offset =
+        container_builder_.BfcLineOffset() +
+        border_scrollbar_padding_.LineLeft(direction);
+
+    // Find a layout opportunity, this is where we would have placed a
+    // zero-sized line.
+    NGLayoutOpportunity opportunity = exclusion_space_.FindLayoutOpportunity(
+        {child_origin_line_offset, BfcBlockOffset() + offset.block_offset},
+        child_available_size_.inline_size, /* minimum_size */ NGLogicalSize());
+
+    LayoutUnit child_line_offset = IsLtr(direction)
+                                       ? opportunity.rect.LineStartOffset()
+                                       : opportunity.rect.LineEndOffset();
+
+    // Convert back to the logical coordinate system. As the conversion is on
+    // an OOF-positioned node, we pretent it has zero inline-size.
+    offset.inline_offset = LogicalFromBfcLineOffset(
+        child_line_offset, container_builder_.BfcLineOffset(),
+        /* child_inline_size */ LayoutUnit(),
+        container_builder_.Size().inline_size, direction);
+
+    // Adjust for text alignment, within the layout opportunity.
+    offset.inline_offset +=
+        InlineOffsetForTextAlign(Style(), opportunity.rect.InlineSize());
+  }
 
   container_builder_.AddOutOfFlowChildCandidate(child, offset);
 }
@@ -1058,7 +1080,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                                opportunity.rect.start_offset.block_offset);
 
   NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
-      fragment, child_bfc_offset, ContainerBfcOffset(),
+      child_bfc_offset, ContainerBfcOffset(), fragment.InlineSize(),
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation()) {
@@ -2280,7 +2302,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
         *positioned_float.layout_result->PhysicalFragment());
 
     NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
-        child_fragment, positioned_float.bfc_offset, bfc_offset,
+        positioned_float.bfc_offset, bfc_offset, child_fragment.InlineSize(),
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
     container_builder_.AddChild(*positioned_float.layout_result,
