@@ -409,12 +409,11 @@ std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
     return HasValidRbp(unwind_cursor, new_stack_top);
   };
 
-  WalkStack(
-      thread_state,
-      [&frames](uintptr_t frame_ip, const ModuleCache::Module* module) {
-        frames.emplace_back(frame_ip, module);
-      },
-      continue_predicate);
+  WalkStack(thread_state,
+            [&frames](uintptr_t frame_ip, ModuleCache::Module module) {
+              frames.emplace_back(frame_ip, std::move(module));
+            },
+            continue_predicate);
 
   return frames;
 }
@@ -445,8 +444,8 @@ bool NativeStackSamplerMac::WalkStackFromContext(
     // libunwind adds the expected stack size, it will look for the return
     // address in the wrong place. This check should ensure that we bail before
     // trying to deref a bad IP obtained this way in the previous frame.
-    const ModuleCache::Module* module = module_cache_->GetModuleForAddress(rip);
-    if (!module->is_valid)
+    const ModuleCache::Module& module = module_cache_->GetModuleForAddress(rip);
+    if (!module.is_valid)
       return false;
 
     callback(static_cast<uintptr_t>(rip), module);

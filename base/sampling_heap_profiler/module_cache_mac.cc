@@ -64,15 +64,13 @@ std::string GetUniqueId(const void* module_addr) {
 }  // namespace
 
 // static
-std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
-    uintptr_t address) {
+ModuleCache::Module ModuleCache::CreateModuleForAddress(uintptr_t address) {
   Dl_info inf;
   if (!dladdr(reinterpret_cast<const void*>(address), &inf))
-    return std::make_unique<Module>();
+    return Module();
   auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
-  return std::make_unique<Module>(
-      base_module_address, GetUniqueId(inf.dli_fbase), FilePath(inf.dli_fname),
-      GetModuleTextSize(inf.dli_fbase));
+  return Module(base_module_address, GetUniqueId(inf.dli_fbase),
+                FilePath(inf.dli_fname), GetModuleTextSize(inf.dli_fbase));
 }
 
 size_t ModuleCache::GetModuleTextSize(const void* module_addr) {

@@ -86,15 +86,15 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
   const uintptr_t module_base_address3 = 0x1010;
   Module module3 = {module_base_address3, "3", module_path};
-  Frame frame3 = {module_base_address3 + 0x10, &module3};
+  Frame frame3 = {module_base_address3 + 0x10, module3};
 
   std::vector<Frame> frames1 = {frame1, frame2};
   std::vector<Frame> frames2 = {frame3};
@@ -166,11 +166,11 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
   std::vector<Frame> frames = {frame1, frame2};
 
@@ -212,11 +212,11 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
   std::vector<Frame> frames1 = {frame1};
   std::vector<Frame> frames2 = {frame2};
@@ -252,7 +252,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1;  // module1 has no information hence invalid.
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -263,7 +263,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
   Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
   std::vector<Frame> frames = {frame1, frame2};
 
@@ -312,10 +312,10 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 #endif
 
   Module module1 = {module_base_address, "1", module_path};
-  Frame frame1 = {module_base_address + 0x10, &module1};
+  Frame frame1 = {module_base_address + 0x10, module1};
 
   Module module2 = {module_base_address, "1", module_path};
-  Frame frame2 = {module_base_address + 0x20, &module2};
+  Frame frame2 = {module_base_address + 0x20, module2};
 
   std::vector<Frame> frames = {frame1, frame2};
 
@@ -372,7 +372,7 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
 #endif
 
   Module module = {0x1000, "1", module_path};
-  Frame frame = {0x1000 + 0x10, &module};
+  Frame frame = {0x1000 + 0x10, module};
 
   // Id 0 means the message loop hasn't been started yet, so the sample should
   // not have continued_work set.
@@ -429,7 +429,7 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
 #endif
 
   Module module = {0x1000, "1", module_path};
-  Frame frame = {0x1000 + 0x10, &module};
+  Frame frame = {0x1000 + 0x10, module};
 
   metadata_recorder.current_value = 5;
   profile_builder->OnSampleCompleted({frame});
