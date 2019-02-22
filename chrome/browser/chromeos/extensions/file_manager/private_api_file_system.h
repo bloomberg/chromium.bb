@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
@@ -86,12 +87,12 @@ class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {
 // "FileWatch",
 // the class and its sub classes are used only for watching changes in
 // directories.
-class FileWatchFunctionBase : public LoggedUIThreadExtensionFunction {
+class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
  public:
   using ResponseCallback = base::Callback<void(bool success)>;
 
-  // Calls Respond() with |success| converted to base::Value.
-  void RespondWith(bool success);
+  // Calls SendResponse() with |success| converted to base::Value.
+  void Respond(bool success);
 
  protected:
   ~FileWatchFunctionBase() override = default;
@@ -111,8 +112,8 @@ class FileWatchFunctionBase : public LoggedUIThreadExtensionFunction {
       const storage::FileSystemURL& file_system_url,
       base::WeakPtr<file_manager::EventRouter> event_router) = 0;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 
  private:
   void RunAsyncOnIOThread(
@@ -168,7 +169,7 @@ class FileManagerPrivateInternalRemoveFileWatchFunction
 
 // Implements the chrome.fileManagerPrivate.getSizeStats method.
 class FileManagerPrivateGetSizeStatsFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getSizeStats",
                              FILEMANAGERPRIVATE_GETSIZESTATS)
@@ -176,8 +177,8 @@ class FileManagerPrivateGetSizeStatsFunction
  protected:
   ~FileManagerPrivateGetSizeStatsFunction() override = default;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 
  private:
   void OnGetDriveAvailableSpace(drive::FileError error,
@@ -193,7 +194,7 @@ class FileManagerPrivateGetSizeStatsFunction
 
 // Implements the chrome.fileManagerPrivate.validatePathNameLength method.
 class FileManagerPrivateInternalValidatePathNameLengthFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.validatePathNameLength",
@@ -205,14 +206,14 @@ class FileManagerPrivateInternalValidatePathNameLengthFunction
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.formatVolume method.
 // Formats Volume given its mount path.
 class FileManagerPrivateFormatVolumeFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.formatVolume",
                              FILEMANAGERPRIVATE_FORMATVOLUME)
@@ -220,14 +221,14 @@ class FileManagerPrivateFormatVolumeFunction
  protected:
   ~FileManagerPrivateFormatVolumeFunction() override = default;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.renameVolume method.
 // Renames Volume given its mount path and new Volume name.
 class FileManagerPrivateRenameVolumeFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.renameVolume",
                              FILEMANAGERPRIVATE_RENAMEVOLUME)
@@ -235,24 +236,22 @@ class FileManagerPrivateRenameVolumeFunction
  protected:
   ~FileManagerPrivateRenameVolumeFunction() override = default;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.startCopy method.
 class FileManagerPrivateInternalStartCopyFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
-  FileManagerPrivateInternalStartCopyFunction();
-
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.startCopy",
                              FILEMANAGERPRIVATEINTERNAL_STARTCOPY)
 
  protected:
   ~FileManagerPrivateInternalStartCopyFunction() override = default;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 
  private:
   void RunAfterGetFileMetadata(base::File::Error result,
@@ -271,12 +270,11 @@ class FileManagerPrivateInternalStartCopyFunction
 
   storage::FileSystemURL source_url_;
   storage::FileSystemURL destination_url_;
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.cancelCopy method.
 class FileManagerPrivateCancelCopyFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelCopy",
                              FILEMANAGERPRIVATE_CANCELCOPY)
@@ -284,8 +282,8 @@ class FileManagerPrivateCancelCopyFunction
  protected:
   ~FileManagerPrivateCancelCopyFunction() override = default;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivateInternal.resolveIsolatedEntries
@@ -311,7 +309,7 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
 };
 
 class FileManagerPrivateInternalComputeChecksumFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   FileManagerPrivateInternalComputeChecksumFunction();
 
@@ -321,22 +319,20 @@ class FileManagerPrivateInternalComputeChecksumFunction
  protected:
   ~FileManagerPrivateInternalComputeChecksumFunction() override;
 
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 
  private:
   std::unique_ptr<drive::util::FileStreamMd5Digester> digester_;
 
-  void RespondWith(const std::string& hash);
+  void Respond(const std::string& hash);
 };
 
 // Implements the chrome.fileManagerPrivate.searchFilesByHashes method.
 // TODO(b/883628): Write some tests maybe?
 class FileManagerPrivateSearchFilesByHashesFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
-  FileManagerPrivateSearchFilesByHashesFunction();
-
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchFilesByHashes",
                              FILEMANAGERPRIVATE_SEARCHFILESBYHASHES)
 
@@ -344,8 +340,8 @@ class FileManagerPrivateSearchFilesByHashesFunction
   ~FileManagerPrivateSearchFilesByHashesFunction() override = default;
 
  private:
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides.
+  bool RunAsync() override;
 
   // Fallback to walking the filesystem and checking file attributes.
   std::vector<drive::HashAndFilePath> SearchByAttribute(
@@ -359,8 +355,6 @@ class FileManagerPrivateSearchFilesByHashesFunction
   void OnSearchByHashes(const std::set<std::string>& hashes,
                         drive::FileError error,
                         const std::vector<drive::HashAndFilePath>& results);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.isUMAEnabled method.
@@ -400,7 +394,7 @@ class FileManagerPrivateInternalSetEntryTagFunction
 
 // Implements the chrome.fileManagerPrivate.getDirectorySize method.
 class FileManagerPrivateInternalGetDirectorySizeFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getDirectorySize",
                              FILEMANAGERPRIVATEINTERNAL_GETDIRECTORYSIZE)
@@ -410,8 +404,8 @@ class FileManagerPrivateInternalGetDirectorySizeFunction
 
   void OnDirectorySizeRetrieved(int64_t size);
 
-  // ExtensionFunction overrides
-  ResponseAction Run() override;
+  // ChromeAsyncExtensionFunction overrides
+  bool RunAsync() override;
 };
 
 }  // namespace extensions
