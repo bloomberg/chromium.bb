@@ -85,6 +85,14 @@ class BrowserSwitcherPrefs : public KeyedService,
   // Returns true if Chrome should download and apply the XML sitelist from
   // IEEM's SiteList policy. If the pref is not managed, returns false.
   bool UseIeSitelist() const;
+
+  // Returns the path to the Chrome executable to launch when switching from IE,
+  // before substitutions.
+  const std::string& GetChromePath() const;
+
+  // Returns the arguments to pass to Chrome when switching from IE, before
+  // substitutions.
+  const std::vector<std::string>& GetChromeParameters() const;
 #endif
 
   // policy::PolicyService::Observer
@@ -109,6 +117,10 @@ class BrowserSwitcherPrefs : public KeyedService,
   void AlternativeBrowserParametersChanged();
   void UrlListChanged();
   void GreylistChanged();
+#if defined(OS_WIN)
+  void ChromePathChanged();
+  void ChromeParametersChanged();
+#endif
 
   policy::PolicyService* const policy_service_;
   PrefService* const prefs_;
@@ -128,6 +140,10 @@ class BrowserSwitcherPrefs : public KeyedService,
   // PrefChangeRegistrar hooks.
   std::string alt_browser_path_;
   std::vector<std::string> alt_browser_params_;
+#if defined(OS_WIN)
+  std::string chrome_path_;
+  std::vector<std::string> chrome_params_;
+#endif
 
   RuleSet rules_;
 
@@ -154,6 +170,8 @@ extern const char kExternalSitelistUrl[];
 
 #if defined(OS_WIN)
 extern const char kUseIeSitelist[];
+extern const char kChromePath[];
+extern const char kChromeParameters[];
 #endif
 
 }  // namespace prefs

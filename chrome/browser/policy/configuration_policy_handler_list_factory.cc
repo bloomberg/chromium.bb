@@ -990,6 +990,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherUseIeSitelist,
     browser_switcher::prefs::kUseIeSitelist,
     base::Value::Type::BOOLEAN },
+  { key::kBrowserSwitcherChromePath,
+    browser_switcher::prefs::kChromePath,
+    base::Value::Type::STRING },
+  { key::kBrowserSwitcherChromeParameters,
+    browser_switcher::prefs::kChromeParameters,
+    base::Value::Type::LIST },
 #endif
 };
 // clang-format on

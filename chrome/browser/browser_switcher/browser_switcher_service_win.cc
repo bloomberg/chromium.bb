@@ -53,11 +53,8 @@ std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs) {
   buffer << base::JoinString(prefs.GetAlternativeBrowserParameters(), " ")
          << std::endl;
 
-  // TODO(nicolaso): Use GetChromePath() and GetChromeParameters once the
-  // policies are implemented. For now, those are just ${chrome} with no
-  // arguments, to ensure the BHO works correctly.
-  buffer << "${chrome}" << std::endl;
-  buffer << base::JoinString(std::vector<std::string>(), " ") << std::endl;
+  buffer << prefs.GetChromePath() << std::endl;
+  buffer << base::JoinString(prefs.GetChromeParameters(), " ") << std::endl;
 
   const auto& rules = prefs.GetRules();
   buffer << rules.sitelist.size() << std::endl;

@@ -711,6 +711,8 @@
       'policies': [
         'AlternativeBrowserPath',
         'AlternativeBrowserParameters',
+        'BrowserSwitcherChromePath',
+        'BrowserSwitcherChromeParameters',
         'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
@@ -14334,6 +14336,63 @@
       Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable. On Mac OS X and Linux, ${ABC} is replaced with the value of the ABC environment variable.''',
     },
     {
+      'id': 530,
+      'name': 'BrowserSwitcherChromePath',
+      'future': True,
+      'type': 'string',
+      'schema': {'type': 'string'},
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': '${chrome}',
+      'supported_on': ['chrome.win:74-'],
+      'caption': '''Path to Chrome for switching from the alternative browser.''',
+      'tags': [],
+      'desc': '''This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching from Internet Explorer.
+
+      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
+
+      When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s own executable path when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
+
+      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
+
+      This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.''',
+    },
+    {
+      'id': 531,
+      'name': 'BrowserSwitcherChromeParameters',
+      'future': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'example_value': [
+        '--force-dark-mode',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.win:74-'],
+      'caption': '''Command-line parameters for switching from the alternative browser.''',
+      'tags': [],
+      'desc': '''This policy controls command-line parameters for Chrome from Internet Explorer.
+
+      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
+
+      When this policy is left unset, Internet Explorer only passes the URL to Chrome as a command-line parameter.
+
+      When this policy is set to a list of strings, the strings are joined with spaces and passed to Chrome as command-line parameters.
+
+      If an element contains ${url}, it gets replaced with the URL of the page to open.
+
+      If no element contains ${url}, the URL is appended at the end of the command line.
+
+      Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable.''',
+    },
+    {
       'id': 496,
       'name': 'BrowserSwitcherUrlList',
       'future': True,
@@ -15005,5 +15064,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  529,
+  'highest_id_currently_used':  531
 }

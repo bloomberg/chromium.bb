@@ -4397,6 +4397,23 @@
     ]
   },
 
+  "BrowserSwitcherChromePath": {
+    "os": ["win"],
+    "test_policy": { "BrowserSwitcherChromePath": "chrome.exe" },
+    "pref_mappings": [
+      { "pref": "browser_switcher.chrome_path" }
+    ]
+  },
+
+  "BrowserSwitcherChromeParameters": {
+    "os": ["win"],
+    "test_policy": { "BrowserSwitcherChromeParameters": ["--force-dark-mode"] },
+    "pref_mappings": [
+      { "pref": "browser_switcher.chrome_parameters" }
+    ]
+  },
+
+
   "BrowserSwitcherUrlList": {
     "os": ["win", "linux", "mac"],
     "test_policy": {
