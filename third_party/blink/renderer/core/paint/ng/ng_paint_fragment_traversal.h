@@ -13,14 +13,6 @@ namespace blink {
 
 class NGPaintFragment;
 
-// Used for return value of traversing fragment tree.
-struct CORE_EXPORT NGPaintFragmentWithContainerOffset {
-  DISALLOW_NEW();
-  NGPaintFragment* fragment;
-  // Offset relative to container fragment
-  NGPhysicalOffset container_offset;
-};
-
 // Represents an NGPaintFragment by its parent and its index in the parent's
 // |Children()| vector.
 struct CORE_EXPORT NGPaintFragmentTraversalContext {
