@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
