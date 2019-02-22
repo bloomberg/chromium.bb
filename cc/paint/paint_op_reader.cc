@@ -1016,7 +1016,7 @@ void PaintOpReader::ReadMergePaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
   size_t input_count = 0;
-  ReadSimple(&input_count);
+  ReadSize(&input_count);
 
   // The minimum size for a serialized filter is 4 bytes (a zero uint32_t to
   // indicate a null filter). Make sure the |input_count| doesn't exceed the
