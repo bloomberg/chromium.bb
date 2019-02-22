@@ -15,8 +15,10 @@ Modifications:
 - Applied these patches in chromium/*.patch:
   chromium-issue-599427.patch: workaround for VS 2015 Update 2 code-gen bug
   chromium-issue-628581.patch: See https://crbug.com/628581#c18
+  chromium-issue-894933.patch: Use ptrdiff_t instead of unsigned long for
+    pointer differences in parser.c
   libxml2-2.9.4-security-CVE-2017-7376-nanohttp-out-of-bounds-write.patch:
-  See https://crbug.com/708433
+    See https://crbug.com/708433
   libxml2-2.9.4-security-xpath-nodetab-uaf.patch: See https://crbug.com/705445
   chromium-issue-708434.patch: Guard against input counter overflow.
 - Delete various unused files, see chromium/roll.py
