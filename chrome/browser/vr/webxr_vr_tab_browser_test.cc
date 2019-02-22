@@ -19,10 +19,12 @@ void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
                                   std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
   t->ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()");
+  auto* first_tab_web_contents = t->GetCurrentWebContents();
   chrome::AddTabAt(t->browser(), GURL(url::kAboutBlankURL),
                    -1 /* index, append to end */, true /* foreground */);
-  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()");
-  t->EndTest();
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
+                        first_tab_web_contents);
+  t->EndTest(first_tab_web_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPoseDataUnfocusedTab) {

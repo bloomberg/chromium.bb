@@ -72,9 +72,9 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   // HTML files, initializing and starting the server if necessary.
   net::EmbeddedTestServer* GetEmbeddedServer();
 
-  // Convenience function for accessing the WebContents belonging to the first
+  // Convenience function for accessing the WebContents belonging to the current
   // tab open in the browser.
-  content::WebContents* GetFirstTabWebContents();
+  content::WebContents* GetCurrentWebContents();
 
   // Loads the given GURL and blocks until the JavaScript on the page has
   // signalled that pre-test initialization is complete.
@@ -147,42 +147,42 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   Browser* browser() { return InProcessBrowserTest::browser(); }
 
   // Convenience function for running RunJavaScriptOrFail with the return value
-  // of GetFirstTabWebContents.
+  // of GetCurrentWebContents.
   void RunJavaScriptOrFail(const std::string& js_expression);
 
   // Convenience function for running RunJavaScriptAndExtractBoolOrFail with the
-  // return value of GetFirstTabWebContents.
+  // return value of GetCurrentWebContents.
   bool RunJavaScriptAndExtractBoolOrFail(const std::string& js_expression);
 
   // Convenience function for running RunJavaScriptAndExtractStringOrFail with
-  // the return value of GetFirstTabWebContents.
+  // the return value of GetCurrentWebContents.
   std::string RunJavaScriptAndExtractStringOrFail(
       const std::string& js_expression);
 
   // Convenience function for running PollJavaScriptBoolean with the return
-  // value of GetFirstTabWebContents.
+  // value of GetCurrentWebContents.
   bool PollJavaScriptBoolean(const std::string& bool_expression,
                              const base::TimeDelta& timeout);
 
   // Convenience function for running PollJavaScriptBooleanOrFail with the
-  // return value of GetFirstTabWebContents.
+  // return value of GetCurrentWebContents.
   void PollJavaScriptBooleanOrFail(const std::string& bool_expression,
                                    const base::TimeDelta& timeout);
 
   // Convenience function for running WaitOnJavaScriptStep with the return value
-  // of GetFirstTabWebContents.
+  // of GetCurrentWebContents.
   void WaitOnJavaScriptStep();
 
   // Convenience function for running ExecuteStepAndWait with the return value
-  // of GetFirstTabWebContents.
+  // of GetCurrentWebContents.
   void ExecuteStepAndWait(const std::string& step_function);
 
   // Convenience function for running EndTest with the return value of
-  // GetFirstTabWebContents.
+  // GetCurrentWebContents.
   void EndTest();
 
   // Convenience function for running AssertNoJavaScriptErrors with the return
-  // value of GetFirstTabWebContents.
+  // value of GetCurrentWebContents.
   void AssertNoJavaScriptErrors();
 
  protected:

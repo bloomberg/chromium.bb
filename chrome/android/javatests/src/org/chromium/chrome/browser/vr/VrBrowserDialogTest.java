@@ -106,9 +106,8 @@ public class VrBrowserDialogTest {
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             NativeUiUtils.performActionAndWaitForVisibilityStatus(
                     UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
-                        VrBrowserTestFramework.runJavaScriptOrFail(promptCommand,
-                                POLL_TIMEOUT_LONG_MS,
-                                mVrTestRule.getActivity().getActivityTab().getWebContents());
+                        mVrBrowserTestFramework.runJavaScriptOrFail(
+                                promptCommand, POLL_TIMEOUT_LONG_MS);
                     });
         });
     }
@@ -152,17 +151,12 @@ public class VrBrowserDialogTest {
         // Special case location because the callbacks never fire on swarming, likely because
         // location is disabled at the system level during device provisioning.
         if (!nameBase.equals("location_permission_prompt")) {
-            // We specify the web contents here so that it works in both regular and incognito mode.
-            // This can be removed as part of https://crbug.com/931420
-            VrBrowserTestFramework.waitOnJavaScriptStep(
-                    mVrTestRule.getActivity().getActivityTab().getWebContents());
+            mVrBrowserTestFramework.waitOnJavaScriptStep();
             Assert.assertEquals("Last permission interaction did not have expected grant result",
                     grant,
-                    Boolean.valueOf(VrBrowserTestFramework.runJavaScriptOrFail(
-                            "lastPermissionGranted", POLL_TIMEOUT_SHORT_MS,
-                            mVrTestRule.getActivity().getActivityTab().getWebContents())));
-            VrBrowserTestFramework.assertNoJavaScriptErrors(
-                    mVrTestRule.getActivity().getActivityTab().getWebContents());
+                    Boolean.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
+                            "lastPermissionGranted", POLL_TIMEOUT_SHORT_MS)));
+            mVrBrowserTestFramework.assertNoJavaScriptErrors();
         }
     }
 

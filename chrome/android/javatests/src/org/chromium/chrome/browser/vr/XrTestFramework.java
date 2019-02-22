@@ -81,8 +81,6 @@ public abstract class XrTestFramework {
     }
 
     private ChromeActivityTestRule mRule;
-    protected WebContents mFirstTabWebContents;
-    private View mFirstTabContentView;
 
     /**
      * Gets the file:// URL to the test file.
@@ -374,8 +372,6 @@ public abstract class XrTestFramework {
      */
     public XrTestFramework(ChromeActivityTestRule rule) {
         mRule = rule;
-        mFirstTabWebContents = mRule.getWebContents();
-        mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
     }
 
     /**
@@ -405,125 +401,125 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Helper method to run permissionRequestWouldTriggerPrompt with the first tab's WebContents.
+     * Helper method to run permissionRequestWouldTriggerPrompt with the current tab's WebContents.
      *
      * @param permission The name of the permission to check.
      * @return True if the permission request would trigger a prompt, false otherwise.
      */
     public boolean permissionRequestWouldTriggerPrompt(String permission) {
-        return permissionRequestWouldTriggerPrompt(permission, mFirstTabWebContents);
+        return permissionRequestWouldTriggerPrompt(permission, getCurrentWebContents());
     }
 
     /**
-     * Helper method to run runJavaScriptOrFail with the first tab's WebContents.
+     * Helper method to run runJavaScriptOrFail with the current tab's WebContents.
      *
      * @param js The JavaScript to run.
      * @param timeout The timeout in milliseconds before a failure.
      * @return The return value of the JavaScript.
      */
     public String runJavaScriptOrFail(String js, int timeout) {
-        return runJavaScriptOrFail(js, timeout, mFirstTabWebContents);
+        return runJavaScriptOrFail(js, timeout, getCurrentWebContents());
     }
 
     /**
-     * Helper method to run runJavaScriptInFrameOrFail with the first tab's WebContents.
+     * Helper method to run runJavaScriptInFrameOrFail with the current tab's WebContents.
      *
      * @param js The JavaScript to run.
      * @param timeout The timeout in milliseconds before a failure.
      * @return The return value of the JavaScript.
      */
     public String runJavaScriptInFrameOrFail(String js, int timeout) {
-        return runJavaScriptInFrameOrFail(js, timeout, mFirstTabWebContents);
+        return runJavaScriptInFrameOrFail(js, timeout, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run pollJavaScriptBoolean with the first tab's WebContents.
+     * Helper function to run pollJavaScriptBoolean with the current tab's WebContents.
      *
      * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      * @return True if the boolean evaluated to true, false if timed out.
      */
     public boolean pollJavaScriptBoolean(String boolExpression, int timeoutMs) {
-        return pollJavaScriptBoolean(boolExpression, timeoutMs, mFirstTabWebContents);
+        return pollJavaScriptBoolean(boolExpression, timeoutMs, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run pollJavaScriptBooleanInFrame with the first tab's WebContents.
+     * Helper function to run pollJavaScriptBooleanInFrame with the current tab's WebContents.
      *
      * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      * @return True if the boolean evaluated to true, false if timed out.
      */
     public boolean pollJavaScriptInFrameBoolean(String boolExpression, int timeoutMs) {
-        return pollJavaScriptBooleanInFrame(boolExpression, timeoutMs, mFirstTabWebContents);
+        return pollJavaScriptBooleanInFrame(boolExpression, timeoutMs, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run pollJavaScriptBooleanOrFail with the first tab's WebContents.
+     * Helper function to run pollJavaScriptBooleanOrFail with the current tab's WebContents.
      *
      * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      */
     public void pollJavaScriptBooleanOrFail(String boolExpression, int timeoutMs) {
-        pollJavaScriptBooleanOrFail(boolExpression, timeoutMs, mFirstTabWebContents);
+        pollJavaScriptBooleanOrFail(boolExpression, timeoutMs, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run pollJavaScriptBooleanInFrameOrFail with the first tab's WebContents.
+     * Helper function to run pollJavaScriptBooleanInFrameOrFail with the current tab's WebContents.
      *
      * @param boolExpression The JavaScript boolean expression to poll.
      * @param timeoutMs The polling timeout in milliseconds.
      */
     public void pollJavaScriptBooleanInFrameOrFail(String boolExpression, int timeoutMs) {
-        pollJavaScriptBooleanInFrameOrFail(boolExpression, timeoutMs, mFirstTabWebContents);
+        pollJavaScriptBooleanInFrameOrFail(boolExpression, timeoutMs, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run executeStepAndWait using the first tab's WebContents.
+     * Helper function to run executeStepAndWait using the current tab's WebContents.
      *
      * @param stepFunction The JavaScript step function to call.
      */
     public void executeStepAndWait(String stepFunction) {
-        executeStepAndWait(stepFunction, mFirstTabWebContents);
+        executeStepAndWait(stepFunction, getCurrentWebContents());
     }
 
     /**
-     * Helper function to run waitOnJavaScriptStep with the first tab's WebContents.
+     * Helper function to run waitOnJavaScriptStep with current current tab's WebContents.
      */
     public void waitOnJavaScriptStep() {
-        waitOnJavaScriptStep(mFirstTabWebContents);
+        waitOnJavaScriptStep(getCurrentWebContents());
     }
 
     /**
-     * Helper method to run checkTestSTatus with the first tab's WebContents.
+     * Helper method to run checkTestSTatus with the current tab's WebContents.
      *
      * @return A TestStatus integer corresponding to the current state of the JavaScript test.
      */
     @TestStatus
     public int checkTestStatus() {
-        return checkTestStatus(mFirstTabWebContents);
+        return checkTestStatus(getCurrentWebContents());
     }
 
     /**
-     * Helper function to run endTest with the first tab's WebContents.
+     * Helper function to run endTest with the current tab's WebContents.
      */
     public void endTest() {
-        endTest(mFirstTabWebContents);
+        endTest(getCurrentWebContents());
     }
 
     /**
-     * Helper function to run assertNoJavaScriptErrors with the first tab's WebContents.
+     * Helper function to run assertNoJavaScriptErrors with the current tab's WebContents.
      */
     public void assertNoJavaScriptErrors() {
-        assertNoJavaScriptErrors(mFirstTabWebContents);
+        assertNoJavaScriptErrors(getCurrentWebContents());
     }
 
-    public View getFirstTabContentView() {
-        return mFirstTabContentView;
+    public View getCurrentContentView() {
+        return mRule.getActivity().getActivityTab().getContentView();
     }
 
-    public WebContents getFirstTabWebContents() {
-        return mFirstTabWebContents;
+    public WebContents getCurrentWebContents() {
+        return mRule.getWebContents();
     }
 
     public ChromeActivityTestRule getRule() {

@@ -39,7 +39,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -278,8 +277,8 @@ public class WebXrVrInputTest {
         mWebVrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS);
         // Wait to enter VR
         mWebVrTestFramework.enterSessionWithUserGestureOrFail();
-        int x = mWebVrTestFramework.getFirstTabContentView().getWidth() / 2;
-        int y = mWebVrTestFramework.getFirstTabContentView().getHeight() / 2;
+        int x = mWebVrTestFramework.getCurrentContentView().getWidth() / 2;
+        int y = mWebVrTestFramework.getCurrentContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
@@ -315,8 +314,8 @@ public class WebXrVrInputTest {
         mWebXrVrTestFramework.runJavaScriptOrFail(
                 "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS);
 
-        int x = mWebXrVrTestFramework.getFirstTabContentView().getWidth() / 2;
-        int y = mWebXrVrTestFramework.getFirstTabContentView().getHeight() / 2;
+        int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
+        int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
@@ -683,8 +682,8 @@ public class WebXrVrInputTest {
                 controller.performControllerClick();
             }
         } else {
-            int x = mWebXrVrTestFramework.getFirstTabContentView().getWidth() / 2;
-            int y = mWebXrVrTestFramework.getFirstTabContentView().getHeight() / 2;
+            int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
+            int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
 
             View presentationView;
             if (webxrPresent) {
@@ -730,11 +729,7 @@ public class WebXrVrInputTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testAppButtonLongPressDisplaysPermissionsIncognito()
             throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mWebXrVrTestFramework.openIncognitoTab("about:blank");
         testAppButtonLongPressDisplaysPermissionsImpl();
     }
 
@@ -820,11 +815,7 @@ public class WebXrVrInputTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testInSessionPermissionRequestsIncognito() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mWebXrVrTestFramework.openIncognitoTab("about:blank");
         testInSessionPermissionRequestsImpl();
     }
 

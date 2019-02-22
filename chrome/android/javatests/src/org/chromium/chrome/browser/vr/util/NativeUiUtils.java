@@ -168,7 +168,7 @@ public class NativeUiUtils {
      */
     public static void clickContentNode(String nodeId, PointF position, final int numClicks,
             VrBrowserTestFramework testFramework) throws InterruptedException, TimeoutException {
-        Rect nodeBounds = DOMUtils.getNodeBounds(testFramework.getFirstTabWebContents(), nodeId);
+        Rect nodeBounds = DOMUtils.getNodeBounds(testFramework.getCurrentWebContents(), nodeId);
         int contentWidth = Integer.valueOf(
                 testFramework.runJavaScriptOrFail("window.innerWidth", POLL_TIMEOUT_SHORT_MS));
         int contentHeight = Integer.valueOf(
