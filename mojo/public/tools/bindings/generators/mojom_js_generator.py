@@ -341,10 +341,6 @@ class Generator(generator.Generator):
   def _GenerateLiteBindingsForCompile(self):
     return self._GetParameters(for_compile=True)
 
-  @UseJinja("lite/module.externs.tmpl")
-  def _GenerateLiteExterns(self):
-    return self._GetParameters()
-
   def GenerateFiles(self, args):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
@@ -362,8 +358,6 @@ class Generator(generator.Generator):
       self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
       self.Write(self._GenerateLiteBindingsForCompile(),
           "%s-lite-for-compile.js" % self.module.path)
-      self.Write(self._GenerateLiteExterns(),
-                 "%s-lite.externs.js" % self.module.path)
 
   def _SetUniqueNameForImports(self):
     used_names = set()
@@ -532,19 +526,20 @@ class Generator(generator.Generator):
     if named_kind.module:
       name.append(named_kind.module.namespace)
     if named_kind.parent_kind:
-      name.append(named_kind.parent_kind.name)
+      name.append(named_kind.parent_kind.name + "Spec")
     name.append(named_kind.name)
     name = ".".join(name)
 
     if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
         mojom.IsEnumKind(kind)):
-      return "%s.$" % name
+      return "%sSpec.$" % name
     if mojom.IsInterfaceKind(kind):
       return "mojo.internal.InterfaceProxy(%sProxy)" % name
     if mojom.IsInterfaceRequestKind(kind):
       return "mojo.internal.InterfaceRequest(%sRequest)" % name
     if mojom.IsAssociatedInterfaceKind(kind):
-      return "mojo.internal.AssociatedInterfaceProxy(%sAssociatedProxy)" % (
+      # TODO(rockot): Implement associated interfaces.
+      return "mojo.internal.AssociatedInterfaceProxy(%sProxy)" % (
           name)
     if mojom.IsAssociatedInterfaceRequestKind(kind):
       return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
@@ -584,7 +579,7 @@ class Generator(generator.Generator):
       if mojom.IsStructKind(field.kind):
         assert field.default == "default"
         return "null";
-      return self._ExpressionToText(field.default)
+      return self._ExpressionToTextLite(field.default)
     if field.kind in mojom.PRIMITIVES:
       return _kind_to_javascript_default_value[field.kind]
     if mojom.IsEnumKind(field.kind):
