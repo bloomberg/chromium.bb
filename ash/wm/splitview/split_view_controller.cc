@@ -874,11 +874,12 @@ void SplitViewController::OnActiveUserSessionChanged(const AccountId&) {
       break;
   }
 
-  // If there is a window snapped to one side but no window snapped to the other
-  // side, then overview should be started (to be seen on the side with no
-  // snapped window).
+  // Ensure that overview mode is active if and only if there is a window
+  // snapped to one side but no window snapped to the other side.
   if (state_ == LEFT_SNAPPED || state_ == RIGHT_SNAPPED)
     StartOverview();
+  else
+    EndOverview();
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
