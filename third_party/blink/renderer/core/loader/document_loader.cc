@@ -951,6 +951,7 @@ void DocumentLoader::ProcessDataBuffer() {
 void DocumentLoader::StopLoading() {
   fetcher_->StopFetching();
   body_loader_.reset();
+  virtual_time_pauser_.UnpauseVirtualTime();
   if (!SentDidFinishLoad())
     LoadFailed(ResourceError::CancelledError(Url()));
 }
