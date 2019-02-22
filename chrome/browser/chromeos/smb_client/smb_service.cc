@@ -525,7 +525,6 @@ void SmbService::CompleteSetup(
       base::BindRepeating(&SmbService::RequestUpdatedSharePath,
                           base::Unretained(this))));
   RestoreMounts();
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 void SmbService::FireMountCallback(MountResponse callback,
@@ -661,22 +660,6 @@ void SmbService::RequestUpdatedSharePath(
 bool SmbService::ShouldRunHostDiscoveryAgain() const {
   return tick_clock_->NowTicks() >
          previous_host_discovery_time_ + kHostDiscoveryInterval;
-}
-
-void SmbService::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-
-  if (!user) {
-    // If a network change occurs on the lockscreen, do nothing.
-    return;
-  }
-
-  // Run host discovery to refresh list of cached hosts for subsequent name
-  // resolution attempts.
-  share_finder_->DiscoverHostsInNetwork(base::DoNothing()
-                                        /* HostDiscoveryResponse */);
 }
 
 void SmbService::RecordMountCount() const {
