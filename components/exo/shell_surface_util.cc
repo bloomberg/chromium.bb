@@ -10,6 +10,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -72,8 +73,14 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
 
   Surface* main_surface = GetShellMainSurface(window);
   // Skip if the event is captured by non exo windows.
-  if (!main_surface)
-    return nullptr;
+  if (!main_surface) {
+    auto* widget = views::Widget::GetTopLevelWidgetForNativeView(window);
+    if (!widget)
+      return nullptr;
+    main_surface = GetShellMainSurface(widget->GetNativeWindow());
+    if (!main_surface)
+      return nullptr;
+  }
 
   while (true) {
     aura::Window* focused = window->GetEventHandlerForPoint(
