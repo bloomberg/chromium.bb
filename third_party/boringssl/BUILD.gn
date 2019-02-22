@@ -237,6 +237,7 @@ if (build_with_chromium) {
         "src/ssl/test/fuzzer.h",
         "src/ssl/test/fuzzer_tags.h",
       ]
+      additional_configs = [ ":internal_config" ]
       deps = [
         ":boringssl_fuzzer",
       ]
@@ -305,6 +306,7 @@ if (build_with_chromium) {
       "src/ssl/test/fuzzer.h",
       "src/ssl/test/fuzzer_tags.h",
     ]
+    additional_configs = [ ":internal_config" ]
     deps = [
       ":boringssl_fuzzer_no_fuzzer_mode",
     ]
@@ -317,6 +319,7 @@ if (build_with_chromium) {
       "src/ssl/test/fuzzer.h",
       "src/ssl/test/fuzzer_tags.h",
     ]
+    additional_configs = [ ":internal_config" ]
     deps = [
       ":boringssl_fuzzer_no_fuzzer_mode",
     ]
