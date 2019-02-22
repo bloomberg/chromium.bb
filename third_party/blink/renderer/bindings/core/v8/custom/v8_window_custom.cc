@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -81,7 +82,7 @@ void V8Window::LocationAttributeGetterCustom(
   // whether or not |window| is cross-origin. If |window| is local, the
   // |location| property must always return the same wrapper, even if the
   // cross-origin status changes by changing properties like |document.domain|.
-  if (window->IsRemoteDOMWindow()) {
+  if (IsA<RemoteDOMWindow>(window)) {
     DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
     const auto* location_wrapper_type = location->GetWrapperTypeInfo();
     v8::Local<v8::Object> new_wrapper =

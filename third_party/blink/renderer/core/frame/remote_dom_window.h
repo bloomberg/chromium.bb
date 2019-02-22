@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -48,11 +48,12 @@ class RemoteDOMWindow final : public DOMWindow {
                           bool has_user_gesture);
 };
 
-DEFINE_TYPE_CASTS(RemoteDOMWindow,
-                  DOMWindow,
-                  x,
-                  x->IsRemoteDOMWindow(),
-                  x.IsRemoteDOMWindow());
+template <>
+struct DowncastTraits<RemoteDOMWindow> {
+  static bool AllowFrom(const DOMWindow& window) {
+    return window.IsRemoteDOMWindow();
+  }
+};
 
 }  // namespace blink
 
