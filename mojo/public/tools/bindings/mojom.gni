@@ -1219,7 +1219,6 @@ template("mojom") {
             "$target_gen_dir/$source.externs.js",
             "$target_gen_dir/$source-lite.js",
             "$target_gen_dir/$source-lite-for-compile.js",
-            "$target_gen_dir/$source-lite.externs.js",
           ]
         }
 
@@ -1293,48 +1292,30 @@ template("mojom") {
       }
     }
 
-    if (enable_mojom_closure_compile) {
-      js_library_for_compile_target_name =
-          "${target_name}_js_library_for_compile"
-      if (defined(invoker.sources)) {
-        generator_js_lite_for_compile_outputs =
-            [ "{{source_gen_dir}}/{{source_file_part}}-lite-for-compile.js" ]
-        js_library(js_library_for_compile_target_name) {
-          extra_public_deps = [ ":$generator_js_target_name" ]
-          sources = process_file_template(invoker.sources,
-                                          generator_js_lite_for_compile_outputs)
-
-          deps = []
-          foreach(d, all_deps) {
-            full_name = get_label_info(d, "label_no_toolchain")
-            deps += [ "${full_name}_js_library_for_compile" ]
-          }
-        }
-      } else {
-        group(js_library_for_compile_target_name) {
-        }
-      }
-    }
-
-    js_externs_target_suffix = "_js_externs"
-    js_externs_target_name = "${target_name}${js_externs_target_suffix}"
+    js_library_for_compile_target_name = "${target_name}_js_library_for_compile"
     if (defined(invoker.sources)) {
-      js_library(js_externs_target_name) {
-        sources = []
+      generator_js_lite_for_compile_outputs =
+          [ "{{source_gen_dir}}/{{source_file_part}}-lite-for-compile.js" ]
+      js_library(js_library_for_compile_target_name) {
         extra_public_deps = [ ":$generator_js_target_name" ]
-        externs_list = [ "${externs_path}/mojo.js" ]
-        externs_list += process_file_template(
-                invoker.sources,
-                [ "{{source_gen_dir}}/{{source_file_part}}-lite.externs.js" ])
+        sources = process_file_template(invoker.sources,
+                                        generator_js_lite_for_compile_outputs)
 
+        externs_list = [
+          "${externs_path}/mojo_core.js",
+          "${externs_path}/pending.js",
+        ]
         deps = []
+        if (!defined(invoker.disallow_native_types)) {
+          deps += [ "//mojo/public/js:bindings_lite_sources" ]
+        }
         foreach(d, all_deps) {
           full_name = get_label_info(d, "label_no_toolchain")
-          deps += [ "${full_name}${js_externs_target_suffix}" ]
+          deps += [ "${full_name}_js_library_for_compile" ]
         }
       }
     } else {
-      group(js_externs_target_name) {
+      group(js_library_for_compile_target_name) {
       }
     }
   }

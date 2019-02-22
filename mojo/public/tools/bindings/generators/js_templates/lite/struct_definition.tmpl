@@ -7,13 +7,14 @@
     {{constant.value|expression_to_text_lite}};
 {%  endfor %}
 
-{%- from "lite/enum_definition.tmpl" import enum_def %}
+{%- from "lite/enum_definition.tmpl" import enum_def with context %}
 {%  for enum in struct.enums %}
-{{enum_def("%s.%s.%s"|format(module.namespace, struct.name, enum.name), enum)}}
+{{enum_def("%s.%sSpec"|format(module.namespace, struct.name),
+           "%s.%s"|format(module.namespace, struct.name), enum)}}
 {%  endfor %}
 
 mojo.internal.Struct(
-    {{module.namespace}}.{{struct.name}}.$,
+    {{module.namespace}}.{{struct.name}}Spec.$,
     '{{struct.name}}',
     {{struct.packed|payload_size}},
     [
@@ -31,3 +32,21 @@ mojo.internal.Struct(
 {%-   endif %}
 {%- endfor %}
     ]);
+
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{struct.name}}');
+
+{% if struct.packed.packed_fields %}
+/**
+ * @typedef { {
+{%- for packed_field in struct.packed.packed_fields %}
+ *   {{packed_field.field.name}}: {{packed_field.field.kind|lite_closure_field_type}},
+{%-  endfor %}
+ * } }
+ */
+{% else %}
+/** @typedef {Object} */
+{% endif %}
+{{module.namespace}}.{{struct.name}};
+
+{%- endif %}

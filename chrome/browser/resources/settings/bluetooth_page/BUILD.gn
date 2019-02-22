@@ -61,6 +61,6 @@ js_library("bluetooth_device_list_item") {
 js_library("bluetooth_system_on_extensions") {
   sources = []
   deps = [
-    "//services/device/public/mojom:mojom_js_externs",
+    "//services/device/public/mojom:mojom_js_library_for_compile",
   ]
 }

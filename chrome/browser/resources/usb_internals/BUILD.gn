@@ -16,7 +16,7 @@ js_library("usb_internals") {
   ]
 
   deps = [
-    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js_externs",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:tabs",

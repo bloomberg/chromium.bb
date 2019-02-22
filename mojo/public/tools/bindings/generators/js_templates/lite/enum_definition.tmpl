@@ -1,26 +1,42 @@
-{%- macro enum_def(enum_name, enum) -%}
+{%- macro enum_def(enum_spec_parent, enum_parent, enum) -%}
 {# TODO: Less generic enum annotations would be nice. We do it this way because
    the bindings generator is still too stupid to generate the right integral
    constants directly. #}
+{%  if generate_closure_exports -%}
+goog.provide('{{enum_spec_parent}}.{{enum.name}}Spec');
+{%- endif %}
 /**
- * @const {!Object}
+ * @const { {$: !mojo.internal.MojomType} }
  * @export
  */
-{{enum_name}} = { $: mojo.internal.Enum() };
+{{enum_spec_parent}}.{{enum.name}}Spec = { $: mojo.internal.Enum() };
+
+/**
+ * @enum {number}
+ * @export
+ */
+{{enum_parent}}.{{enum.name}} = {
+  {# Set up the enum here, but fill out the values later. #}
 {%-   for field in enum.fields %}
-{%-     if field.value %}
-{{enum_name}}.{{field.name}} = {{field.value|expression_to_text_lite}};
-{%-     elif loop.first %}
-{{enum_name}}.{{field.name}} = 0;
-{%-     else %}
-{{enum_name}}.{{field.name}} = {{enum_name}}.{{enum.fields[loop.index0 - 1].name}} + 1;
-{%-     endif %}
+  {{field.name}}: 0,
 {%-   endfor %}
 {%-   if enum.min_value is not none %}
-{{enum_name}}.MIN_VALUE = {{enum.min_value}};
+  MIN_VALUE: {{enum.min_value}},
 {%-   endif %}
 {%-   if enum.max_value is not none %}
-{{enum_name}}.MAX_VALUE = {{enum.max_value}};
+  MAX_VALUE: {{enum.max_value}},
 {%-   endif %}
+};
+{%-   for field in enum.fields %}
+{# Suppress type checks since we're assigning number into an enum. #}
+/** @suppress {checkTypes} */
+{%-     if field.value %}
+{{enum_parent}}.{{enum.name}}.{{field.name}} = {{field.value|expression_to_text_lite}};
+{%-     elif loop.first %}
+{{enum_parent}}.{{enum.name}}.{{field.name}} = 0;
+{%-     else %}
+{{enum_parent}}.{{enum.name}}.{{field.name}} = {{enum_parent}}.{{enum.name}}.{{enum.fields[loop.index0 - 1].name}} + 1;
+{%-     endif %}
+{%-   endfor %}
 
 {%- endmacro %}

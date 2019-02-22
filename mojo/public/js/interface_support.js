@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 'use strict';
 
-goog.require('mojo.interfaceControl');
+goog.require('mojo.interfaceControl.kRunMessageId');
+goog.require('mojo.interfaceControl.RunResponseMessageParamsSpec');
 goog.require('mojo.internal');
 
 goog.provide('mojo.internal.interfaceSupport');
@@ -27,7 +28,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
       mojo.internal.serializeAndSendMessage(
           this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
           mojo.internal.kMessageFlagExpectsResponse,
-          mojo.interfaceControl.RunMessageParams.$, {'input': input});
+          mojo.interfaceControl.RunMessageParamsSpec.$, {'input': input});
       this.pendingFlushResolvers_.set(requestId, resolve);
     });
   }
@@ -47,12 +48,13 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
 
   handleRunRequest_(requestId, decoder) {
     const input = decoder.decodeStructInline(
-        mojo.interfaceControl.RunMessageParams.$.$.structSpec)['input'];
+        mojo.interfaceControl.RunMessageParamsSpec.$.$.structSpec)['input'];
     if (input.hasOwnProperty('flushForTesting')) {
       mojo.internal.serializeAndSendMessage(
           this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
           mojo.internal.kMessageFlagIsResponse,
-          mojo.interfaceControl.RunResponseMessageParams.$, {'output': null});
+          mojo.interfaceControl.RunResponseMessageParamsSpec.$,
+          {'output': null});
       return true;
     }
 
