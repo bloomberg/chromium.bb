@@ -79,6 +79,10 @@ dependencies {
     // ARCore - needed for WebXR implementation on Android
     compile "com.google.ar:core:1.6.0"
 
+    // Androidx test libraries
+    compile "androidx.test:core:1.0.0"
+    compile "androidx.test:monitor:1.1.0"
+    compile "androidx.test.ext:junit:1.0.0"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {
