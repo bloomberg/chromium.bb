@@ -229,9 +229,11 @@ bool Surface::QueueFrame(
   surface_client_->ReceiveFromChild(frame.resource_list);
 
   if (!seen_first_surface_dependency_) {
+    // We should not throttle this client if there is another client blocked on
+    // it, in order to avoid deadlocks.
     seen_first_surface_dependency_ =
         surface_manager_->dependency_tracker()->HasSurfaceBlockedOn(
-            surface_id());
+            surface_id().frame_sink_id());
   }
 
   bool block_activation =
@@ -348,17 +350,6 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
 
   // All blockers have been cleared. The surface can be activated now.
   ActivatePendingFrame(base::nullopt);
-}
-
-bool Surface::IsBlockedOn(const SurfaceId& surface_id) const {
-  for (const SurfaceId& dependency : activation_dependencies_) {
-    if (dependency.frame_sink_id() != surface_id.frame_sink_id())
-      continue;
-
-    if (dependency.local_surface_id() <= surface_id.local_surface_id())
-      return true;
-  }
-  return false;
 }
 
 void Surface::ActivatePendingFrameForDeadline(
