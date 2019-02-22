@@ -279,6 +279,8 @@ jumbo_static_library("test_support") {
     "test_content_browser_client.h",
     "test_content_client.cc",
     "test_content_client.h",
+    "test_document_interface_broker.cc",
+    "test_document_interface_broker.h",
     "test_mojo_proxy_resolver_factory.cc",
     "test_mojo_proxy_resolver_factory.h",
     "test_navigation_url_loader.cc",
