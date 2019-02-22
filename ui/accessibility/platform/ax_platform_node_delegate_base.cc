@@ -8,6 +8,7 @@
 
 #include "base/no_destructor.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
 
 namespace ui {
@@ -73,23 +74,23 @@ AXPlatformNodeDelegateBase::GetTargetForNativeAccessibilityEvent() {
 }
 
 bool AXPlatformNodeDelegateBase::IsTable() const {
-  return false;
+  return ui::IsTableLike(GetData().role);
 }
 
 int AXPlatformNodeDelegateBase::GetTableRowCount() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount);
 }
 
 int AXPlatformNodeDelegateBase::GetTableColCount() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableAriaColCount() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableAriaRowCount() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellCount() const {
@@ -98,58 +99,61 @@ int32_t AXPlatformNodeDelegateBase::GetTableCellCount() const {
 
 const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds()
     const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds(
     int32_t col_index) const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds()
     const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
     int32_t row_index) const {
-  return std::vector<int32_t>();
+  return {};
 }
 
 bool AXPlatformNodeDelegateBase::IsTableRow() const {
-  return false;
+  return ui::IsTableRow(GetData().role);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableRowRowIndex() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex);
 }
 
 bool AXPlatformNodeDelegateBase::IsTableCellOrHeader() const {
-  return false;
+  return ui::IsCellOrTableHeader(GetData().role);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellColIndex() const {
-  return 0;
+  return GetData().GetIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellRowIndex() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellColSpan() const {
-  return 0;
+  return GetData().GetIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnSpan);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellRowSpan() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellAriaColIndex() const {
-  return 0;
+  return GetData().GetIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellAriaRowIndex() const {
-  return 0;
+  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex);
 }
 
 int32_t AXPlatformNodeDelegateBase::GetCellId(int32_t row_index,
