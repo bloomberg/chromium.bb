@@ -32,8 +32,9 @@ class WebrtcTaskQueue final : public webrtc::TaskQueueBase {
  private:
   ~WebrtcTaskQueue() override = default;
 
-  void RunTask(scoped_refptr<base::RefCountedData<bool>> is_active,
-               std::unique_ptr<webrtc::QueuedTask> task);
+  static void RunTask(WebrtcTaskQueue* task_queue,
+                      scoped_refptr<base::RefCountedData<bool>> is_active,
+                      std::unique_ptr<webrtc::QueuedTask> task);
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // Value of |is_active_| is checked and set on |task_runner_|.
@@ -57,12 +58,13 @@ void WebrtcTaskQueue::Delete() {
 }
 
 void WebrtcTaskQueue::RunTask(
+    WebrtcTaskQueue* task_queue,
     scoped_refptr<base::RefCountedData<bool>> is_active,
     std::unique_ptr<webrtc::QueuedTask> task) {
   if (!is_active->data)
     return;
 
-  CurrentTaskQueueSetter set_current(this);
+  CurrentTaskQueueSetter set_current(task_queue);
   webrtc::QueuedTask* task_ptr = task.release();
   if (task_ptr->Run()) {
     // Delete task_ptr before CurrentTaskQueueSetter clears state that this code
