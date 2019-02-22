@@ -52,7 +52,7 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
   int32_t ntstatus = 0;
   DWORD lzma_result = UnPackArchive(compressed_archive_, working_directory_,
                                     &output_file, &unpack_status, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus, consumer_);
+  RecordUnPackMetrics(unpack_status, ntstatus, lzma_result, consumer_);
   if (lzma_result != ERROR_SUCCESS)
     return false;
 

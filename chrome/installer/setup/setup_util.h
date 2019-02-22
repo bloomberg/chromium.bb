@@ -33,8 +33,9 @@ class InstallationState;
 class InstallerState;
 class MasterPreferences;
 
-extern const char kUnPackStatusMetricsName[];
 extern const char kUnPackNTSTATUSMetricsName[];
+extern const char kUnPackResultMetricsName[];
+extern const char kUnPackStatusMetricsName[];
 
 // The name of consumers of UnPackArchive which is used to publish metrics.
 enum UnPackConsumer {
@@ -123,6 +124,7 @@ int GetInstallAge(const InstallerState& installer_state);
 // Records UMA metrics for unpack result.
 void RecordUnPackMetrics(UnPackStatus unpack_status,
                          int32_t status,
+                         DWORD lzma_result,
                          UnPackConsumer consumer);
 
 // Register Chrome's EventLog message provider dll.
