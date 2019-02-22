@@ -9,8 +9,6 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 
-class MediaRouterAction;
-
 namespace media_router {
 
 class MediaRouterUIBase;
@@ -27,14 +25,9 @@ class MediaRouterDialogControllerImplBase : public MediaRouterDialogController,
   static MediaRouterDialogControllerImplBase* FromWebContents(
       content::WebContents* web_contents);
 
-  // Sets the action to notify when a dialog gets shown or hidden.
-  void SetMediaRouterAction(const base::WeakPtr<MediaRouterAction>& action);
-
   // MediaRouterDialogController:
   void CreateMediaRouterDialog() override;
   void Reset() override;
-
-  MediaRouterAction* action() { return action_.get(); }
 
  protected:
   // Use MediaRouterDialogControllerImplBase::CreateForWebContents() to create
@@ -52,15 +45,6 @@ class MediaRouterDialogControllerImplBase : public MediaRouterDialogController,
   // MediaRouterActionController is responsible for showing and hiding the
   // toolbar action. It's owned by MediaRouterUIService and it may be nullptr.
   MediaRouterActionController* GetActionController();
-
-  // |action_| refers to the MediaRouterAction on the toolbar, rather than
-  // overflow menu. A MediaRouterAction is always created for the toolbar
-  // first. Any subsequent creations for the overflow menu will not be set as
-  // |action_|.
-  // The lifetime of |action_| is dependent on the creation and destruction of
-  // a browser window. The overflow menu's MediaRouterAction is only created
-  // when the overflow menu is opened and destroyed when the menu is closed.
-  base::WeakPtr<MediaRouterAction> action_;
 
   // |media_router_ui_service_| Service which provides
   // MediaRouterActionController. It outlives |this|.

@@ -87,7 +87,7 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
     MediaRouter* media_router =
         MediaRouterFactory::GetApiForBrowserContext(profile_.get());
     auto context_menu = std::make_unique<MediaRouterContextualMenu>(
-        browser_.get(), true, false, &context_menu_observer_);
+        browser_.get(), false, &context_menu_observer_);
     button_ = std::make_unique<CastToolbarButton>(browser_.get(), media_router,
                                                   std::move(context_menu));
 

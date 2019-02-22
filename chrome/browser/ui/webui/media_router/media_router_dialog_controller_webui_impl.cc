@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/url_constants.h"
@@ -98,7 +97,6 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   bool ShouldShowDialogTitle() const override { return false; }
 
  private:
-  base::WeakPtr<MediaRouterAction> action_;
   base::WeakPtr<MediaRouterDialogControllerWebUIImpl> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogDelegate);

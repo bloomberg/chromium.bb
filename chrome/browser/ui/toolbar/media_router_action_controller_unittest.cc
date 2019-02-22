@@ -7,40 +7,10 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/browser/ui/toolbar/component_action_delegate.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
-#include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-class FakeComponentActionDelegate : public ComponentActionDelegate {
- public:
-  FakeComponentActionDelegate() {}
-  ~FakeComponentActionDelegate() override {}
-
-  void AddComponentAction(const std::string& action_id) override {
-    EXPECT_EQ(action_id, ComponentToolbarActionsFactory::kMediaRouterActionId);
-    EXPECT_FALSE(HasComponentAction(
-        ComponentToolbarActionsFactory::kMediaRouterActionId));
-    has_media_router_action_ = true;
-  }
-
-  void RemoveComponentAction(const std::string& action_id) override {
-    EXPECT_EQ(action_id, ComponentToolbarActionsFactory::kMediaRouterActionId);
-    EXPECT_TRUE(HasComponentAction(
-        ComponentToolbarActionsFactory::kMediaRouterActionId));
-    has_media_router_action_ = false;
-  }
-
-  bool HasComponentAction(const std::string& action_id) const override {
-    EXPECT_EQ(action_id, ComponentToolbarActionsFactory::kMediaRouterActionId);
-    return has_media_router_action_;
-  }
-
- private:
-  bool has_media_router_action_ = false;
-};
 
 class FakeCastToolbarIcon : public MediaRouterActionController::Observer {
  public:
@@ -60,7 +30,7 @@ class FakeCastToolbarIcon : public MediaRouterActionController::Observer {
   bool icon_shown_ = false;
 };
 
-class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
+class MediaRouterActionControllerUnitTest : public BrowserWithTestWindowTest {
  public:
   MediaRouterActionControllerUnitTest()
       : issue_(media_router::IssueInfo(
@@ -72,15 +42,12 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
 
   ~MediaRouterActionControllerUnitTest() override {}
 
-  // MediaRouterWebUITest:
   void SetUp() override {
-    MediaRouterWebUITest::SetUp();
+    BrowserWithTestWindowTest::SetUp();
 
     router_ = std::make_unique<media_router::MockMediaRouter>();
-    component_action_delegate_ =
-        std::make_unique<FakeComponentActionDelegate>();
-    controller_ = std::make_unique<MediaRouterActionController>(
-        profile(), router_.get(), component_action_delegate_.get());
+    controller_ =
+        std::make_unique<MediaRouterActionController>(profile(), router_.get());
     controller_->AddObserver(&icon_);
 
     SetAlwaysShowActionPref(false);
@@ -95,9 +62,8 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
 
   void TearDown() override {
     controller_.reset();
-    component_action_delegate_.reset();
     router_.reset();
-    MediaRouterWebUITest::TearDown();
+    BrowserWithTestWindowTest::TearDown();
   }
 
   bool IsIconShown() const {
@@ -113,7 +79,6 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
  protected:
   std::unique_ptr<MediaRouterActionController> controller_;
   std::unique_ptr<media_router::MockMediaRouter> router_;
-  std::unique_ptr<FakeComponentActionDelegate> component_action_delegate_;
   FakeCastToolbarIcon icon_;
 
   const media_router::Issue issue_;

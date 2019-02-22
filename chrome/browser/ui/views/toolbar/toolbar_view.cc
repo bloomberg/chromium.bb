@@ -226,10 +226,8 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
-  if (media_router::MediaRouterEnabled(browser_->profile()) &&
-      media_router::ShouldUseViewsDialog()) {
+  if (media_router::MediaRouterEnabled(browser_->profile()))
     cast_ = media_router::CastToolbarButton::Create(browser_).release();
-  }
 
   bool show_avatar_toolbar_button = true;
 #if defined(OS_CHROMEOS)
