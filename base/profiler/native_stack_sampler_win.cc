@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
@@ -427,22 +428,24 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
   win::ScopedHandle thread_handle_;
 
-  ModuleCache* module_cache_;
-
   NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
+
+  // The module objects, indexed by the module handle.
+  std::map<HMODULE, std::unique_ptr<ModuleCache::Module>> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
 
 NativeStackSamplerWin::NativeStackSamplerWin(
     win::ScopedHandle thread_handle,
+    // Ignored for now, until we can switch the internal module cache to use
+    // this one.
     ModuleCache* module_cache,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_handle_(thread_handle.Take()),
-      module_cache_(module_cache),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
@@ -450,6 +453,7 @@ NativeStackSamplerWin::NativeStackSamplerWin(
 NativeStackSamplerWin::~NativeStackSamplerWin() {}
 
 void NativeStackSamplerWin::ProfileRecordingStarting() {
+  module_cache_.clear();
 }
 
 std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
@@ -482,12 +486,32 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "NativeStackSamplerWin::CreateFrames");
 
+  static NoDestructor<ModuleCache::Module> invalid_module;
+
   std::vector<Frame> frames;
   frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
-    frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-                        module_cache_->GetModuleForHandle(frame.module.Get()));
+    auto frame_ip = reinterpret_cast<uintptr_t>(frame.instruction_pointer);
+
+    HMODULE module_handle = frame.module.Get();
+    if (!module_handle) {
+      frames.emplace_back(frame_ip, invalid_module.get());
+      continue;
+    }
+
+    auto loc = module_cache_.find(module_handle);
+    if (loc != module_cache_.end()) {
+      frames.emplace_back(frame_ip, loc->second.get());
+      continue;
+    }
+
+    std::unique_ptr<ModuleCache::Module> module =
+        ModuleCache::CreateModuleForHandle(module_handle);
+    frames.emplace_back(frame_ip,
+                        module->is_valid ? module.get() : invalid_module.get());
+    if (module->is_valid)
+      module_cache_.insert(std::make_pair(module_handle, std::move(module)));
   }
 
   return frames;

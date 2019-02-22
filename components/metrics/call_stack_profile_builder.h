@@ -120,8 +120,8 @@ class CallStackProfileBuilder
   // The indexes of stacks, indexed by stack's address.
   std::map<const CallStackProfile::Stack*, int, StackComparer> stack_index_;
 
-  // The indexes of modules in the modules_ vector below..
-  std::unordered_map<const base::ModuleCache::Module*, size_t> module_index_;
+  // The indexes of modules, indexed by module's base_address.
+  std::unordered_map<uintptr_t, size_t> module_index_;
 
   // The distinct modules in the current profile.
   std::vector<const base::ModuleCache::Module*> modules_;

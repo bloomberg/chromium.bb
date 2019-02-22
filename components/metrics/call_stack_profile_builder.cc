@@ -95,17 +95,18 @@ void CallStackProfileBuilder::OnSampleCompleted(
       continue;
 
     // Dedup modules.
-    auto module_loc = module_index_.find(frame.module);
+    const base::ModuleCache::Module* module = frame.module;
+    auto module_loc = module_index_.find(module->base_address);
     if (module_loc == module_index_.end()) {
-      modules_.push_back(frame.module);
+      modules_.push_back(module);
       size_t index = modules_.size() - 1;
-      module_loc = module_index_.emplace(frame.module, index).first;
+      module_loc = module_index_.emplace(module->base_address, index).first;
     }
 
     // Write CallStackProfile::Location protobuf message.
     ptrdiff_t module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
-        reinterpret_cast<const char*>(frame.module->base_address);
+        reinterpret_cast<const char*>(module->base_address);
     DCHECK_GE(module_offset, 0);
     location->set_address(static_cast<uint64_t>(module_offset));
     location->set_module_id_index(module_loc->second);
