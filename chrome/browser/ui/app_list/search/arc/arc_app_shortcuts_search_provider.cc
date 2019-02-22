@@ -7,11 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcut_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 
@@ -20,10 +22,12 @@ namespace app_list {
 ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
     int max_results,
     Profile* profile,
-    AppListControllerDelegate* list_controller)
+    AppListControllerDelegate* list_controller,
+    AppSearchResultRanker* ranker)
     : max_results_(max_results),
       profile_(profile),
       list_controller_(list_controller),
+      ranker_(ranker),
       weak_ptr_factory_(this) {}
 
 ArcAppShortcutsSearchProvider::~ArcAppShortcutsSearchProvider() = default;
@@ -66,7 +70,14 @@ void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
       continue;
     search_results.emplace_back(std::make_unique<ArcAppShortcutSearchResult>(
         std::move(item), profile_, list_controller_));
+
+    if (app_list_features::IsAppSearchResultRankerEnabled() &&
+        ranker_ != nullptr) {
+      // TODO(crbug.com/931149): tweak the scores of each search result item
+      // using the ranker.
+    }
   }
+
   SwapResults(&search_results);
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,6 +38,10 @@ class ArcAppShortcutsSearchProviderTest
     AppListTestBase::SetUp();
     arc_test_.SetUp(profile());
     controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ranker_ =
+        std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
+                                                /*is_ephemeral_user=*/true);
   }
 
   void TearDown() override {
@@ -70,6 +76,8 @@ class ArcAppShortcutsSearchProviderTest
     return app_id;
   }
 
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<AppSearchResultRanker> ranker_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
 
@@ -88,7 +96,7 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
   constexpr char kQuery[] = "shortlabel";
 
   auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
-      kMaxResults, profile(), controller_.get());
+      kMaxResults, profile(), controller_.get(), ranker_.get());
   EXPECT_TRUE(provider->results().empty());
   arc::IconDecodeRequest::DisableSafeDecodingForTesting();
 

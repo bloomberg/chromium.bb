@@ -73,7 +73,9 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
-      std::make_unique<SearchController>(model_updater, list_controller);
+      std::make_unique<SearchController>(model_updater, list_controller,
+                                         profile);
+  AppSearchResultRanker* ranker = controller->GetSearchResultRanker();
 
   // Add mixer groups. There are four main groups: answer card, apps
   // and omnibox. Each group has a "soft" maximum number of results. However, if
@@ -89,10 +91,10 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
 
   // Add search providers.
-  controller->AddProvider(
-      apps_group_id, std::make_unique<AppSearchProvider>(
-                         profile, list_controller,
-                         base::DefaultClock::GetInstance(), model_updater));
+  controller->AddProvider(apps_group_id, std::make_unique<AppSearchProvider>(
+                                             profile, list_controller,
+                                             base::DefaultClock::GetInstance(),
+                                             model_updater, ranker));
   controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                 profile, list_controller));
   if (app_list_features::IsAnswerCardEnabled()) {
@@ -155,7 +157,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(
         app_shortcut_group_id,
         std::make_unique<ArcAppShortcutsSearchProvider>(
-            kMaxAppShortcutResults, profile, list_controller));
+            kMaxAppShortcutResults, profile, list_controller, ranker));
   }
 
   // TODO(https://crbug.com/921429): Put feature switch in ash/public/app_list/

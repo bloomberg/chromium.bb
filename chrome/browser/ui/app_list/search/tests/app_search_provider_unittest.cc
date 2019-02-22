@@ -80,6 +80,8 @@ constexpr char kRankingNormalAppPackageName[] = "test.ranking.app.normal";
 
 constexpr char kSettingsInternalName[] = "Settings";
 
+constexpr bool kEphemeralUser = true;
+
 // Waits for base::Time::Now() is updated.
 void WaitTimeUpdated() {
   base::RunLoop run_loop;
@@ -108,18 +110,25 @@ class AppSearchProviderTest : public AppListTestBase {
 
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
     controller_ = std::make_unique<::test::TestAppListControllerDelegate>();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void CreateSearch() {
     clock_.SetNow(kTestCurrentTime);
+    // Create ranker here so that tests can modify feature flags.
+    ranker_ = std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
+                                                      kEphemeralUser);
     app_search_ = std::make_unique<AppSearchProvider>(
-        profile_.get(), nullptr, &clock_, model_updater_.get());
+        profile_.get(), nullptr, &clock_, model_updater_.get(), ranker_.get());
   }
 
   void CreateSearchWithContinueReading() {
     clock_.SetNow(kTestCurrentTime);
+    // Create ranker here so that tests can modify feature flags.
+    ranker_ = std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
+                                                      kEphemeralUser);
     app_search_ = std::make_unique<AppSearchProvider>(
-        profile_.get(), nullptr, &clock_, model_updater_.get());
+        profile_.get(), nullptr, &clock_, model_updater_.get(), ranker_.get());
 
     session_tracker_ = std::make_unique<sync_sessions::SyncedSessionTracker>(
         &mock_sync_sessions_client_);
@@ -216,9 +225,11 @@ class AppSearchProviderTest : public AppListTestBase {
 
  private:
   base::SimpleTestClock clock_;
+  base::ScopedTempDir temp_dir_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
+  std::unique_ptr<AppSearchResultRanker> ranker_;
   ArcAppTest arc_test_;
 
   // For continue reading.
