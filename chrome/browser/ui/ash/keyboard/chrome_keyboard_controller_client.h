@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_CONTROLLER_CLIENT_H_
 
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "base/callback_forward.h"
@@ -103,7 +105,7 @@ class ChromeKeyboardControllerClient
   // Returns whether |flag| has been set.
   bool IsEnableFlagSet(const keyboard::mojom::KeyboardEnableFlag& flag);
 
-  // Calls forwarded to ash.mojom.KeyboardController..
+  // Calls forwarded to ash.mojom.KeyboardController.
   void ReloadKeyboardIfNeeded();
   void RebuildKeyboardIfEnabled();
   void ShowKeyboard();

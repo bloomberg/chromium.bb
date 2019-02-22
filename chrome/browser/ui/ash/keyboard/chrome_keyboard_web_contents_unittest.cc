@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_web_contents.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -38,7 +40,7 @@ class ChromeKeyboardWebContentsTest : public ChromeRenderViewHostTestHarness {
   void CreateWebContents(const GURL& url,
                          ChromeKeyboardWebContents::LoadCallback callback) {
     chrome_keyboard_web_contents_ = std::make_unique<ChromeKeyboardWebContents>(
-        profile(), url, std::move(callback));
+        profile(), url, std::move(callback), base::NullCallback());
   }
 
  protected:

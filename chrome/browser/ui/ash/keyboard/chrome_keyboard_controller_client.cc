@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 
-#include <memory>
+#include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
@@ -379,8 +379,13 @@ void ChromeKeyboardControllerClient::OnLoadKeyboardContentsRequested() {
   DVLOG(1) << "OnLoadKeyboardContentsRequested: Create: " << keyboard_url;
   keyboard_contents_ = std::make_unique<ChromeKeyboardWebContents>(
       GetProfile(), keyboard_url,
+      /*load_callback=*/
       base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardContentsLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      /*unembed_callback=*/
+      base::BindRepeating(
+          &ChromeKeyboardControllerClient::OnKeyboardUIDestroyed,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardUIDestroyed() {
