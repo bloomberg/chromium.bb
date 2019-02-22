@@ -55,6 +55,12 @@ const base::Feature kIPHNewTabPageButtonFeature{
     "IPH_NewTabPageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPreviewsOmniboxUIFeature{
     "IPH_PreviewsOmniboxUI", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
+    "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{
+    "IPH_TabGroupsTapToSeeAnotherTab", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature{
+    "IPH_TabGroupsYourTabsTogether", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTranslateMenuButtonFeature{
     "IPH_TranslateMenuButton", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
