@@ -18,7 +18,7 @@ class ChromeAppListItem;
 
 class FakeAppListModelUpdater : public AppListModelUpdater {
  public:
-  FakeAppListModelUpdater();
+  explicit FakeAppListModelUpdater(Profile* profile = nullptr);
   ~FakeAppListModelUpdater() override;
 
   // For AppListModel:
@@ -62,7 +62,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
     return search_results_;
   }
 
-  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr folder) override {}
+  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr folder) override;
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override {}
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override {}
   void OnPageBreakItemAdded(const std::string& id,
@@ -77,6 +77,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
   std::vector<ChromeSearchResult*> search_results_;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
+  Profile* profile_;
 
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(
       const std::string& oem_folder_name,

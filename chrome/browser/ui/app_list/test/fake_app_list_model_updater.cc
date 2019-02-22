@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
-FakeAppListModelUpdater::FakeAppListModelUpdater() = default;
+FakeAppListModelUpdater::FakeAppListModelUpdater(Profile* profile)
+    : profile_(profile) {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() = default;
 
@@ -212,6 +213,17 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
     // This updates the folder in both chrome and ash:
     MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
   }
+}
+
+void FakeAppListModelUpdater::OnFolderCreated(
+    ash::mojom::AppListItemMetadataPtr folder) {
+  std::unique_ptr<ChromeAppListItem> stub_folder =
+      std::make_unique<ChromeAppListItem>(profile_, folder->id, this);
+
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(stub_folder.get());
+
+  AddItem(std::move(stub_folder));
 }
 
 void FakeAppListModelUpdater::AddObserver(
