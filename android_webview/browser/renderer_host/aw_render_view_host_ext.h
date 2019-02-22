@@ -75,7 +75,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver {
   // the meta viewport tag.
   void SetInitialPageScale(double page_scale_factor);
   void SetBackgroundColor(SkColor c);
-  void SetShouldSuppressErrorPage(bool suppress);
+  void SetWillSuppressErrorPage(bool suppress);
   void SetJsOnlineProperty(bool network_up);
 
   void SmoothScroll(int target_x, int target_y, long duration_ms);
@@ -124,7 +124,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver {
   service_manager::BinderRegistry registry_;
 
   // Some WebView users might want to show their own error pages / logic.
-  bool should_suppress_error_page_ = false;
+  bool will_suppress_error_page_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

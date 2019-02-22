@@ -230,8 +230,8 @@ bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
-    IPC_MESSAGE_HANDLER(AwViewMsg_ShouldSuppressErrorPage,
-                        OnSetShouldSuppressErrorPage)
+    IPC_MESSAGE_HANDLER(AwViewMsg_WillSuppressErrorPage,
+                        OnSetWillSuppressErrorPage)
     IPC_MESSAGE_HANDLER(AwViewMsg_SmoothScroll, OnSmoothScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -347,12 +347,12 @@ void AwRenderFrameExt::OnSmoothScroll(int target_x,
   webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
 }
 
-void AwRenderFrameExt::OnSetShouldSuppressErrorPage(bool suppress) {
-  this->should_suppress_error_page_ = suppress;
+void AwRenderFrameExt::OnSetWillSuppressErrorPage(bool suppress) {
+  this->will_suppress_error_page_ = suppress;
 }
 
-bool AwRenderFrameExt::GetShouldSuppressErrorPage() {
-  return this->should_suppress_error_page_;
+bool AwRenderFrameExt::GetWillSuppressErrorPage() {
+  return this->will_suppress_error_page_;
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {

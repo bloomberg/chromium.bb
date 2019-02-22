@@ -117,15 +117,15 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
   }
 }
 
-void AwRenderViewHostExt::SetShouldSuppressErrorPage(bool suppress) {
+void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
   // We need to store state on the browser-side, as state might need to be
   // synchronized again later (see AwRenderViewHostExt::RenderFrameCreated)
-  if (should_suppress_error_page_ == suppress)
+  if (will_suppress_error_page_ == suppress)
     return;
-  should_suppress_error_page_ = suppress;
+  will_suppress_error_page_ = suppress;
 
-  web_contents()->SendToAllFrames(new AwViewMsg_ShouldSuppressErrorPage(
-      MSG_ROUTING_NONE, should_suppress_error_page_));
+  web_contents()->SendToAllFrames(new AwViewMsg_WillSuppressErrorPage(
+      MSG_ROUTING_NONE, will_suppress_error_page_));
 }
 
 void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
@@ -170,8 +170,8 @@ void AwRenderViewHostExt::RenderFrameCreated(
   // it) because for cross-origin navigations in multi-process mode, the
   // navigation will already have started then. Also, newly created subframes
   // need to inherit the state.
-  frame_host->Send(new AwViewMsg_ShouldSuppressErrorPage(
-      frame_host->GetRoutingID(), should_suppress_error_page_));
+  frame_host->Send(new AwViewMsg_WillSuppressErrorPage(
+      frame_host->GetRoutingID(), will_suppress_error_page_));
 }
 
 void AwRenderViewHostExt::DidFinishNavigation(

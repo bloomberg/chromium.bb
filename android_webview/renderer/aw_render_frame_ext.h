@@ -31,7 +31,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
 
   static AwRenderFrameExt* FromRenderFrame(content::RenderFrame* render_frame);
 
-  bool GetShouldSuppressErrorPage();
+  bool GetWillSuppressErrorPage();
 
  private:
   ~AwRenderFrameExt() override;
@@ -61,7 +61,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
 
   void OnSmoothScroll(int target_x, int target_y, int duration_ms);
 
-  void OnSetShouldSuppressErrorPage(bool suppress);
+  void OnSetWillSuppressErrorPage(bool suppress);
 
   blink::WebView* GetWebView();
   blink::WebFrameWidget* GetWebFrameWidget();
@@ -71,7 +71,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   blink::AssociatedInterfaceRegistry registry_;
 
   // Some WebView users might want to show their own error pages / logic
-  bool should_suppress_error_page_ = false;
+  bool will_suppress_error_page_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };

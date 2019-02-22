@@ -1464,13 +1464,13 @@ public class AwSettingsTest {
         }
     }
 
-    class AwSettingsShouldSuppressErrorPageTestHelper extends AwSettingsTestHelper<Boolean> {
+    class AwSettingsWillSuppressErrorPageTestHelper extends AwSettingsTestHelper<Boolean> {
         private static final String BAD_SCHEME_URL = "htt://nonsense";
         private static final String PREV_TITLE = "cuencpobgjhfdmdovhmfdkjf";
         private static final int MAX_TIME_LOADING_ERROR_PAGE = 1000;
         private final AwContents mAwContents;
 
-        AwSettingsShouldSuppressErrorPageTestHelper(AwTestContainerView containerView,
+        AwSettingsWillSuppressErrorPageTestHelper(AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(containerView, contentViewClient, true);
             mAwContents = containerView.getAwContents();
@@ -1488,12 +1488,12 @@ public class AwSettingsTest {
 
         @Override
         protected Boolean getCurrentValue() {
-            return mAwSettings.getShouldSuppressErrorPage();
+            return mAwSettings.getWillSuppressErrorPage();
         }
 
         @Override
         protected void setCurrentValue(Boolean value) {
-            mAwSettings.setShouldSuppressErrorPage(value);
+            mAwSettings.setWillSuppressErrorPage(value);
         }
 
         @Override
@@ -1516,7 +1516,7 @@ public class AwSettingsTest {
 
             // Verify the state in settings reflect what we expect
             AwSettings settings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
-            Assert.assertEquals(value, settings.getShouldSuppressErrorPage());
+            Assert.assertEquals(value, settings.getWillSuppressErrorPage());
 
             // Verify the error page is shown / suppressed
             if (value == DISABLED) {
@@ -1725,11 +1725,11 @@ public class AwSettingsTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Preferences"})
-    public void testShouldSuppressErrorPage() throws Throwable {
+    public void testWillSuppressErrorPage() throws Throwable {
         ViewPair views = createViews();
-        runPerViewSettingsTest(new AwSettingsShouldSuppressErrorPageTestHelper(
+        runPerViewSettingsTest(new AwSettingsWillSuppressErrorPageTestHelper(
                                        views.getContainer0(), views.getClient0()),
-                new AwSettingsShouldSuppressErrorPageTestHelper(
+                new AwSettingsWillSuppressErrorPageTestHelper(
                         views.getContainer1(), views.getClient1()));
     }
 
