@@ -13603,7 +13603,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
         "actions" : [
           { "name": "pointerDown", "x": %f, "y": %f},
           { "name": "pointerUp"},
-          { "name": "pause", "duration": 0.05 },
+          { "name": "pause", "duration": 50 },
           { "name": "pointerDown", "x": %f, "y": %f},
           { "name": "pointerUp"}
         ]
@@ -14294,7 +14294,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         "actions" : [
           { "name": "pointerDown", "x": %f, "y": %f},
           { "name": "pointerMove", "x": %f, "y": %f},
-          { "name": "pause", "duration": 0.3 },
+          { "name": "pause", "duration": 300 },
           { "name": "pointerUp"}
         ]
       }]

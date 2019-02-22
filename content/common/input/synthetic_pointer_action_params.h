@@ -102,6 +102,11 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
 
   void set_timestamp(base::TimeTicks timestamp) { timestamp_ = timestamp; }
 
+  void set_duration(base::TimeDelta duration) {
+    DCHECK_EQ(PointerActionType::IDLE, pointer_action_type_);
+    duration_ = duration;
+  }
+
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
   uint32_t pointer_id() const { return pointer_id_; }
@@ -150,6 +155,11 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
 
   base::TimeTicks timestamp() const { return timestamp_; }
 
+  base::TimeDelta duration() const {
+    DCHECK_EQ(PointerActionType::IDLE, pointer_action_type_);
+    return duration_;
+  }
+
   static unsigned GetWebMouseEventModifier(
       SyntheticPointerActionParams::Button button);
   static blink::WebMouseEvent::Button GetWebMouseEventButton(
@@ -176,6 +186,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   float rotation_angle_ = 0.f;
   float force_ = 1.f;
   base::TimeTicks timestamp_;
+  // The duration of the pause action is in milliseconds.
+  base::TimeDelta duration_;
 };
 
 }  // namespace content

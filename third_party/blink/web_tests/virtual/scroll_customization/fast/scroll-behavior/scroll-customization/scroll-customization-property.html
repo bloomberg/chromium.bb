@@ -181,7 +181,7 @@ p {
     // this when and if it becomes possible to create gesture scroll without the
     // delay (https://crbug.com/803168).
     // Necessary to avoid getting a fling instead. Cannot be too small.
-    var pauseSeconds = 0.05;
+    var pauseMilliseconds = 100;
     return new Promise((resolve) => {
       chrome.gpuBenchmarking.pointerActionSequence([{
         source: 'touch',
@@ -189,7 +189,7 @@ p {
         { name: 'pointerDown', x: startingX, y: startingY },
         { name: 'pointerMove', x: (startingX + deltaX),
           y: (startingY + deltaY)},
-        { name: 'pause', duration: pauseSeconds},
+        { name: 'pause', duration: pauseMilliseconds},
         { name: 'pointerUp'}
         ]
       }], resolve);

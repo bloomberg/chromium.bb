@@ -544,7 +544,7 @@ function doubleTapAtCoordinates(x, y, timeout, callback) {
       actions: [
         { name: 'pointerDown', x: x, y: y },
         { name: 'pointerUp' },
-        { name: 'pause', duration: timeout / 1000 },
+        { name: 'pause', duration: timeout },
         { name: 'pointerDown', x: x, y: y },
         { name: 'pointerUp' }
       ]
@@ -610,7 +610,7 @@ function doubleTouchAtCoordinates(x, y, timeout, callback) {
       actions: [
         { name: 'pointerDown', x: x, y: y },
         { name: 'pointerUp' },
-        { name: 'pause', duration: timeout / 1000 },
+        { name: 'pause', duration: timeout },
         { name: 'pointerDown', x: x, y: y },
         { name: 'pointerUp' }
       ]

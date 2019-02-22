@@ -378,7 +378,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
           "actions": [
             { "name": "pointerDown", "x": 50, "y": 50 },
             { "name": "pointerUp" },
-            { "name": "pause", "duration": 0.05 },
+            { "name": "pause", "duration": 50 },
             { "name": "pointerDown", "x": 50, "y": 50 },
             { "name": "pointerMove", "x": 50, "y": 150 },
             { "name": "pointerUp" }
