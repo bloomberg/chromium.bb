@@ -19,8 +19,9 @@ ContextImpl::~ContextImpl() = default;
 
 void ContextImpl::CreateFrame(
     fidl::InterfaceRequest<chromium::web::Frame> frame_request) {
-  auto web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(browser_context_, nullptr));
+  content::WebContents::CreateParams create_params(browser_context_, nullptr);
+  create_params.initially_hidden = true;
+  auto web_contents = content::WebContents::Create(create_params);
   frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
                                              std::move(frame_request)));
 }
