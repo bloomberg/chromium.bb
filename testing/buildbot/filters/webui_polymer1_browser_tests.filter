@@ -65,7 +65,7 @@ CrElementsToggleTest.*
 CrElementsToolbarSearchFieldTest.*
 CrExtensionsActivityLogTest.*
 CrExtensionsActivityLogHistoryTest.*
-CrExtensionsActivityLogItemTest.*
+CrExtensionsActivityLogHistoryItemTest.*
 CrExtensionsActivityLogStreamTest.*
 CrExtensionsActivityLogStreamItemTest.*
 CrExtensionsA11yTest.*

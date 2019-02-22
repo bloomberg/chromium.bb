@@ -41,11 +41,11 @@
       <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_JS"
                  file="activity_log/activity_log_history.js"
                  type="chrome_html" />
-      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_ITEM_HTML"
-                 file="activity_log/activity_log_item.html"
+      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_ITEM_HTML"
+                 file="activity_log/activity_log_history_item.html"
                  type="chrome_html" />
-      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_ITEM_JS"
-                 file="activity_log/activity_log_item.js"
+      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_ITEM_JS"
+                 file="activity_log/activity_log_history_item.js"
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_HTML"
                  file="activity_log/activity_log_stream.html"

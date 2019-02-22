@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
          activityLogHistory.whenDataFetched().then(() => {
              Polymer.dom.flush();
              let item = activityLogHistory.shadowRoot.querySelector(
-                 'activity-log-item');
+                 'activity-log-history-item');
              let activityKey = item.shadowRoot.getElementById('activity-key');
              window.domAutomationController.send(
                  activityKey.innerText === 'test.sendMessage');

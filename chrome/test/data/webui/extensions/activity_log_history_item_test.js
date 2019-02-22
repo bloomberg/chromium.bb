@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for activity-log-item. */
-suite('ExtensionsActivityLogItemTest', function() {
+/** @fileoverview Suite of tests for activity-log-history-item. */
+suite('ExtensionsActivityLogHistoryItemTest', function() {
   /**
-   * Extension activityLogItem created before each test.
-   * @type {extensions.ActivityLogItem}
+   * Extension activityLogHistoryItem created before each test.
+   * @type {extensions.ActivityLogHistoryItem}
    */
-  let activityLogItem;
+  let activityLogHistoryItem;
   let testVisible;
 
   /**
-   * ActivityGroup data for the activityLogItem
+   * ActivityGroup data for the activityLogHistoryItem
    * @type {extensions.ActivityGroup}
    */
   let testActivityGroup;
@@ -28,15 +28,16 @@ suite('ExtensionsActivityLogItemTest', function() {
       countsByUrl: new Map()
     };
 
-    activityLogItem = new extensions.ActivityLogItem();
-    activityLogItem.data = testActivityGroup;
-    testVisible = extension_test_util.testVisible.bind(null, activityLogItem);
+    activityLogHistoryItem = new extensions.ActivityLogHistoryItem();
+    activityLogHistoryItem.data = testActivityGroup;
+    testVisible =
+        extension_test_util.testVisible.bind(null, activityLogHistoryItem);
 
-    document.body.appendChild(activityLogItem);
+    document.body.appendChild(activityLogHistoryItem);
   });
 
   teardown(function() {
-    activityLogItem.remove();
+    activityLogHistoryItem.remove();
   });
 
   test('no page URLs shown when activity has no associated page', function() {
@@ -57,14 +58,14 @@ suite('ExtensionsActivityLogItemTest', function() {
           chrome.activityLogPrivate.ExtensionActivityFilter.DOM_ACCESS,
       countsByUrl
     };
-    activityLogItem.set('data', testActivityGroup);
+    activityLogHistoryItem.set('data', testActivityGroup);
 
     Polymer.dom.flush();
 
     testVisible('#activity-item-main-row', true);
     testVisible('#page-url-list', false);
 
-    activityLogItem.$$('#activity-item-main-row').click();
+    activityLogHistoryItem.$$('#activity-item-main-row').click();
     testVisible('#page-url-list', true);
   });
 
@@ -80,8 +81,8 @@ suite('ExtensionsActivityLogItemTest', function() {
       countsByUrl
     };
 
-    activityLogItem.set('data', testActivityGroup);
-    activityLogItem.$$('#activity-item-main-row').click();
+    activityLogHistoryItem.set('data', testActivityGroup);
+    activityLogHistoryItem.$$('#activity-item-main-row').click();
 
     Polymer.dom.flush();
 
@@ -102,8 +103,8 @@ suite('ExtensionsActivityLogItemTest', function() {
           chrome.activityLogPrivate.ExtensionActivityFilter.DOM_ACCESS,
       countsByUrl
     };
-    activityLogItem.set('data', testActivityGroup);
-    activityLogItem.$$('#activity-item-main-row').click();
+    activityLogHistoryItem.set('data', testActivityGroup);
+    activityLogHistoryItem.$$('#activity-item-main-row').click();
 
     Polymer.dom.flush();
 
@@ -111,7 +112,8 @@ suite('ExtensionsActivityLogItemTest', function() {
     testVisible('#page-url-list', true);
     testVisible('.page-url-count', true);
 
-    const pageUrls = activityLogItem.shadowRoot.querySelectorAll('.page-url');
+    const pageUrls =
+        activityLogHistoryItem.shadowRoot.querySelectorAll('.page-url');
     expectEquals(pageUrls.length, 2);
 
     // Test the order of the page URLs and activity count for the activity
