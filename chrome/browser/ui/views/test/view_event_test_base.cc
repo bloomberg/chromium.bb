@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/view_event_test_base.h"
+#include "chrome/browser/ui/views/test/view_event_test_base.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ui/views/test/view_event_test_platform_part.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/view_event_test_platform_part.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -59,9 +59,7 @@ class TestView : public views::View {
 
 }  // namespace
 
-ViewEventTestBase::ViewEventTestBase()
-  : window_(NULL),
-    content_view_(NULL) {
+ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) {
   // The TestingBrowserProcess must be created in the constructor because there
   // are tests that require it before SetUp() is called.
   TestingBrowserProcess::CreateInstance();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_
-#define CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_BASE_H_
+#define CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_BASE_H_
 
 // We only want to use ViewEventTestBase in test targets which properly
 // isolate each test case by running each test in a separate process.
@@ -73,8 +73,7 @@ class ViewEventTestPlatformPart;
 //   // Then schedule another mouse move to finish it.
 //   ScheduleMouseMoveInBackground(loc.x, loc.y);
 
-class ViewEventTestBase : public views::WidgetDelegate,
-                          public testing::Test {
+class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
  public:
   ViewEventTestBase();
 
@@ -161,10 +160,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
 // Convenience macro for defining a ViewEventTestBase. See class description
 // of ViewEventTestBase for details.
 #define VIEW_TEST(test_class, name) \
-  TEST_F(test_class, name) {\
-    StartMessageLoopAndRunTest();\
-  }
+  TEST_F(test_class, name) { StartMessageLoopAndRunTest(); }
 
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
-#endif  // CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_BASE_H_
