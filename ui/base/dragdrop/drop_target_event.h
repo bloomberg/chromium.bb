@@ -11,12 +11,15 @@
 
 namespace ui {
 
+// Note: This object must not outlive the OSExchangeData used to construct it,
+// as it stores that by reference.
 class UI_BASE_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const OSExchangeData& data,
                   const gfx::PointF& location,
                   const gfx::PointF& root_location,
                   int source_operations);
+  DropTargetEvent(const DropTargetEvent& other);
 
   const OSExchangeData& data() const { return data_; }
   int source_operations() const { return source_operations_; }
@@ -27,8 +30,6 @@ class UI_BASE_EXPORT DropTargetEvent : public LocatedEvent {
 
   // Bitmask of supported DragDropTypes::DragOperation by the source.
   int source_operations_;
-
-  DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
 }  // namespace ui
