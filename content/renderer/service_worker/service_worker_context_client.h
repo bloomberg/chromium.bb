@@ -365,6 +365,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   void SetTimeoutTimerForTesting(
       std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer);
+  ServiceWorkerTimeoutTimer* GetTimeoutTimerForTesting();
 
   // TODO(crbug.com/907311): Remove after we identified the cause of crash.
   void RecordDebugLog(const char* message);

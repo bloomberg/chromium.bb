@@ -66,7 +66,7 @@ base::OnceClosure CreateDispatchingEventTask(
 
         out_tags->emplace_back(std::move(tag));
 
-        timer->EndEvent(event_id, FROM_HERE);
+        timer->EndEvent(event_id);
         EXPECT_FALSE(event.has_aborted());
       },
       timer, std::move(tag), out_tags);
@@ -131,12 +131,12 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   // Nothing happens since there are two inflight events.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event_id_2, FROM_HERE);
+  timer.EndEvent(event_id_2);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event_id_1, FROM_HERE);
+  timer.EndEvent(event_id_1);
   task_runner()->FastForwardBy(kIdleInterval);
   // |idle_callback| should be fired.
   EXPECT_TRUE(is_idle);
@@ -148,7 +148,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   EXPECT_FALSE(is_idle);
 
   std::unique_ptr<StayAwakeToken> token = timer.CreateStayAwakeToken();
-  timer.EndEvent(event_id_3, FROM_HERE);
+  timer.EndEvent(event_id_3);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is a living StayAwakeToken.
   EXPECT_FALSE(is_idle);
@@ -196,7 +196,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
 
   EXPECT_FALSE(event1.has_aborted());
   EXPECT_FALSE(event2.has_aborted());
-  timer.EndEvent(event1.event_id(), FROM_HERE);
+  timer.EndEvent(event1.event_id());
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kEventTimeout +
                                base::TimeDelta::FromSeconds(1));
 
@@ -348,7 +348,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id, FROM_HERE);
+    timer.EndEvent(event_id);
     // EndEvent() immediately triggers the idle callback.
     EXPECT_TRUE(is_idle);
   }
@@ -364,11 +364,11 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     // Nothing happens since there are two inflight events.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id_1, FROM_HERE);
+    timer.EndEvent(event_id_1);
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
 
-    timer.EndEvent(event_id_2, FROM_HERE);
+    timer.EndEvent(event_id_2);
     // EndEvent() immediately triggers the idle callback when no inflight events
     // exist.
     EXPECT_TRUE(is_idle);

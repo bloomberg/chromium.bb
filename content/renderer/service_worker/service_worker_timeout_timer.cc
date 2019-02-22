@@ -6,7 +6,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -117,29 +116,19 @@ int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
   return event_id;
 }
 
-// TODO(falken): Debugging for https://crbug.com/933273.
-void ServiceWorkerTimeoutTimer::CrashBecauseNoEvent(
-    int event_id,
-    const base::Location& from_here) {
-  DEBUG_ALIAS_FOR_CSTR(from_here_copy, from_here.ToString().c_str(), 256);
-  bool in_dtor = in_dtor_;
-  base::debug::Alias(&in_dtor);
-  CHECK(false);
-}
+void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
+  CHECK(HasEvent(event_id));
 
-void ServiceWorkerTimeoutTimer::EndEvent(int event_id,
-                                         const base::Location& from_here) {
   auto iter = id_event_map_.find(event_id);
-  if (iter == id_event_map_.end()) {
-    CrashBecauseNoEvent(event_id, from_here);
-    return;
-  }
-  CHECK(iter != id_event_map_.end());
   inflight_events_.erase(iter->second);
   id_event_map_.erase(iter);
 
   if (!HasInflightEvent())
     OnNoInflightEvent();
+}
+
+bool ServiceWorkerTimeoutTimer::HasEvent(int event_id) const {
+  return id_event_map_.find(event_id) != id_event_map_.end();
 }
 
 std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>

@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -175,7 +174,6 @@ template <typename MapType, class... Args>
 bool RunEventCallback(MapType* map,
                       ServiceWorkerTimeoutTimer* timer,
                       int event_id,
-                      const base::Location& from_here,
                       Args... args) {
   auto iter = map->find(event_id);
   // The event may have been aborted.
@@ -183,7 +181,7 @@ bool RunEventCallback(MapType* map,
     return false;
   std::move(iter->second).Run(args...);
   map->erase(iter);
-  timer->EndEvent(event_id, from_here);
+  timer->EndEvent(event_id);
   return true;
 }
 
@@ -581,8 +579,7 @@ void ServiceWorkerContextClient::DidHandleActivateEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->activate_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
@@ -597,8 +594,7 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_abort_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
@@ -613,8 +609,7 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_click_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
@@ -629,8 +624,7 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_fail_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchSuccessEvent(
@@ -645,8 +639,7 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchSuccessEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetched_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleCookieChangeEvent(
@@ -660,8 +653,7 @@ void ServiceWorkerContextClient::DidHandleCookieChangeEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->cookie_change_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
@@ -676,8 +668,7 @@ void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->message_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleInstallEvent(
@@ -691,7 +682,7 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->install_event_callbacks,
-                   context_->timeout_timer.get(), event_id, FROM_HERE, status,
+                   context_->timeout_timer.get(), event_id, status,
                    proxy_->HasFetchEventHandler());
 }
 
@@ -795,8 +786,7 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   if (!RunEventCallback(&context_->fetch_event_callbacks,
-                        context_->timeout_timer.get(), event_id, FROM_HERE,
-                        status)) {
+                        context_->timeout_timer.get(), event_id, status)) {
     // The event may have been aborted. Its response callback also needs to be
     // deleted.
     context_->fetch_response_callbacks.erase(event_id);
@@ -819,8 +809,7 @@ void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->notification_click_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
@@ -835,8 +824,7 @@ void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->notification_close_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandlePushEvent(
@@ -850,8 +838,7 @@ void ServiceWorkerContextClient::DidHandlePushEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->push_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleSyncEvent(
@@ -865,8 +852,7 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->sync_event_callbacks,
-                   context_->timeout_timer.get(), request_id, FROM_HERE,
-                   status);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
@@ -896,8 +882,7 @@ void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->abort_payment_event_callbacks,
-                       context_->timeout_timer.get(), event_id, FROM_HERE,
-                       status)) {
+                       context_->timeout_timer.get(), event_id, status)) {
     context_->abort_payment_result_callbacks.erase(event_id);
   }
 }
@@ -932,8 +917,7 @@ void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->can_make_payment_event_callbacks,
-                       context_->timeout_timer.get(), event_id, FROM_HERE,
-                       status)) {
+                       context_->timeout_timer.get(), event_id, status)) {
     context_->can_make_payment_result_callbacks.erase(event_id);
   }
 }
@@ -973,7 +957,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->payment_request_event_callbacks,
                        context_->timeout_timer.get(), payment_request_id,
-                       FROM_HERE, status)) {
+                       status)) {
     context_->payment_response_callbacks.erase(payment_request_id);
   }
 }
@@ -1037,7 +1021,12 @@ void ServiceWorkerContextClient::DidEndTask(int task_id) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   CHECK(context_);
   CHECK(context_->timeout_timer);
-  context_->timeout_timer->EndEvent(task_id, FROM_HERE);
+  // Check if the task is still alive, since the timeout timer might have
+  // already timed it out (which calls the abort callback passed to StartEvent()
+  // but that does nothing, since we just check HasEvent() here instead of
+  // maintaining our own set of started events).
+  if (context_->timeout_timer->HasEvent(task_id))
+    context_->timeout_timer->EndEvent(task_id);
 }
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
@@ -1651,7 +1640,7 @@ void ServiceWorkerContextClient::OnRequestedTermination(
   // Dispatch a dummy event to run all of queued tasks. This updates the
   // idle timer too.
   const int event_id = context_->timeout_timer->StartEvent(base::DoNothing());
-  context_->timeout_timer->EndEvent(event_id, FROM_HERE);
+  context_->timeout_timer->EndEvent(event_id);
 }
 
 bool ServiceWorkerContextClient::RequestedTermination() const {
@@ -1676,6 +1665,13 @@ void ServiceWorkerContextClient::SetTimeoutTimerForTesting(
     std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer) {
   CHECK(context_);
   context_->timeout_timer = std::move(timeout_timer);
+}
+
+ServiceWorkerTimeoutTimer*
+ServiceWorkerContextClient::GetTimeoutTimerForTesting() {
+  CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  CHECK(context_);
+  return context_->timeout_timer.get();
 }
 
 void ServiceWorkerContextClient::RecordDebugLog(const char* message) {
