@@ -57555,22 +57555,6 @@ Full version information for the fingerprint enum values:
   <int value="2" label="People"/>
 </enum>
 
-<enum name="WMIRefresherInitStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="Local WMI Connection error"/>
-  <int value="2" label="Refresher creation error"/>
-  <int value="3" label="Refresher config error"/>
-  <int value="4" label="Add Enum error"/>
-</enum>
-
-<enum name="WMIRefresherRefreshStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="Call to Refresh failed"/>
-  <int value="2" label="Call to GetObjects failed"/>
-  <int value="3" label="Call to GetPropertyHandle failed"/>
-  <int value="4" label="Call to Read failed"/>
-</enum>
-
 <enum name="WorkerThreadExitCode">
   <int value="0" label="NotTerminated"/>
   <int value="1" label="GracefullyTerminated"/>
