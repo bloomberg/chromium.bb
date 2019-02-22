@@ -7,13 +7,15 @@
 
 #include "base/optional.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
+class AccountTrackerService;
+class FakeAccountFetcherService;
+class FakeProfileOAuth2TokenService;
+class FakeSigninManagerBase;
+class FakeSigninManager;
+class GaiaCookieManagerService;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
