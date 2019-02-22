@@ -91,6 +91,7 @@ class PLATFORM_EXPORT MemoryCache final
     size_t decoded_size;
     size_t encoded_size;
     size_t overhead_size;
+    size_t code_cache_size;
     size_t encoded_size_duplicated_in_data_urls;
 
     TypeStatistic()
@@ -99,6 +100,7 @@ class PLATFORM_EXPORT MemoryCache final
           decoded_size(0),
           encoded_size(0),
           overhead_size(0),
+          code_cache_size(0),
           encoded_size_duplicated_in_data_urls(0) {}
 
     void AddResource(Resource*);

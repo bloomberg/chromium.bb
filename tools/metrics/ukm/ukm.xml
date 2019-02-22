@@ -3120,6 +3120,12 @@ be describing additional metrics about the same event.
       Measure of memory consumed by Script resources in Blink Web Cache.
     </summary>
   </metric>
+  <metric name="WebCache.V8CodeCache">
+    <summary>
+      Measure of memory consumed by V8 code cache held by Script resources in
+      Blink Web Cache.
+    </summary>
+  </metric>
   <metric name="WebCache.XSLStylesheetResources">
     <summary>
       Measure of memory consumed by XSL Stylesheet resources in Blink Web Cache.
