@@ -55,6 +55,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
 BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kForbidSyncXHRInPageDismissal;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kRestrictDeviceSensorEventsToSecureContexts;
 
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentBgColorParameterName[];

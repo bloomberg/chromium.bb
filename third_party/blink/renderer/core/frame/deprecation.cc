@@ -58,6 +58,7 @@ enum Milestone {
   kM73,
   kM74,
   kM75,
+  kM76,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -100,6 +101,8 @@ const char* MilestoneString(Milestone milestone) {
       return "M74, around April 2019";
     case kM75:
       return "M75, around June 2019";
+    case kM76:
+      return "M76, around July 2019";
   }
 
   NOTREACHED();
@@ -147,10 +150,30 @@ double MilestoneDate(Milestone milestone) {
       return 1555992000000;  // April 23, 2019.
     case kM75:
       return 1559620800000;  // June 4, 2019.
+    case kM76:
+      return 1564459200000;  // Jul 30, 2019.
   }
 
   NOTREACHED();
   return 0;
+}
+
+String GetDeviceSensorDeprecationMessage(const char* event_name,
+                                         const char* status_url) {
+  static constexpr char kConcreteMessage[] =
+      "The `%s` event is deprecated on insecure origins and will be removed in "
+      "%s. Event handlers can still be registered but are no longer invoked "
+      "since %s. See %s for more details.";
+  static constexpr char kGenericMessage[] =
+      "The `%s` event is deprecated on insecure origins and will be removed. "
+      "See %s for more details.";
+
+  if (blink::RuntimeEnabledFeatures::
+          RestrictDeviceSensorEventsToSecureContextsEnabled()) {
+    return String::Format(kConcreteMessage, event_name, MilestoneString(kM76),
+                          MilestoneString(kM74), status_url);
+  }
+  return String::Format(kGenericMessage, event_name, status_url);
 }
 
 struct DeprecationInfo {
@@ -281,25 +304,22 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case WebFeature::kDeviceMotionInsecureOrigin:
-      return {"DeviceMotionInsecureOrigin", kUnknown,
-              "The devicemotion event is deprecated on insecure origins, and "
-              "support will be removed in the future. You should consider "
-              "switching your application to a secure origin, such as HTTPS. "
-              "See https://goo.gl/rStTGz for more details."};
+      return {"DeviceMotionInsecureOrigin", kM76,
+              GetDeviceSensorDeprecationMessage(
+                  "devicemotion",
+                  "https://www.chromestatus.com/feature/5688035094036480")};
 
     case WebFeature::kDeviceOrientationInsecureOrigin:
-      return {"DeviceOrientationInsecureOrigin", kUnknown,
-              "The deviceorientation event is deprecated on insecure origins, "
-              "and support will be removed in the future. You should consider "
-              "switching your application to a secure origin, such as HTTPS. "
-              "See https://goo.gl/rStTGz for more details."};
+      return {"DeviceOrientationInsecureOrigin", kM76,
+              GetDeviceSensorDeprecationMessage(
+                  "deviceorientation",
+                  "https://www.chromestatus.com/feature/5468407470227456")};
 
     case WebFeature::kDeviceOrientationAbsoluteInsecureOrigin:
-      return {"DeviceOrientationAbsoluteInsecureOrigin", kUnknown,
-              "The deviceorientationabsolute event is deprecated on insecure "
-              "origins, and support will be removed in the future. You should "
-              "consider switching your application to a secure origin, such as "
-              "HTTPS. See https://goo.gl/rStTGz for more details."};
+      return {"DeviceOrientationAbsoluteInsecureOrigin", kM76,
+              GetDeviceSensorDeprecationMessage(
+                  "deviceorientationabsolute",
+                  "https://www.chromestatus.com/feature/5468407470227456")};
 
     case WebFeature::kGeolocationInsecureOrigin:
     case WebFeature::kGeolocationInsecureOriginIframe:

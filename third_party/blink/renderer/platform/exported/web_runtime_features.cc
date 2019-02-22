@@ -488,6 +488,12 @@ void WebRuntimeFeatures::EnableResourceLoadScheduler(bool enable) {
   RuntimeEnabledFeatures::SetResourceLoadSchedulerEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableRestrictDeviceSensorEventsToSecureContexts(
+    bool enable) {
+  RuntimeEnabledFeatures::SetRestrictDeviceSensorEventsToSecureContextsEnabled(
+      enable);
+}
+
 void WebRuntimeFeatures::EnableRestrictLazyFrameLoadingToDataSaver(
     bool enable) {
   RuntimeEnabledFeatures::SetRestrictLazyFrameLoadingToDataSaverEnabled(enable);

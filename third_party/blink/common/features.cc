@@ -187,6 +187,13 @@ const base::Feature kWritableFilesAPI{"WritableFilesAPI",
 const base::Feature kForbidSyncXHRInPageDismissal{
     "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Emergency lever that can be used to restore DeviceOrientationEvent and
+// DeviceMotionEvent functionality in non-secure browsing contexts.
+// See: https://crbug.com/932078.
+const base::Feature kRestrictDeviceSensorEventsToSecureContexts{
+    "RestrictDeviceSensorEventsToSecureContexts",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
