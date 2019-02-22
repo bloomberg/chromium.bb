@@ -21,7 +21,7 @@ class HandoffActiveURLObserverDelegate {
   virtual void HandoffActiveURLChanged(content::WebContents* web_contents) = 0;
 
  protected:
-  virtual ~HandoffActiveURLObserverDelegate(){};
+  virtual ~HandoffActiveURLObserverDelegate() {}
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_HANDOFF_ACTIVE_URL_OBSERVER_DELEGATE_H_

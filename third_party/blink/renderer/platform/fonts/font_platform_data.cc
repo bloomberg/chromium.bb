@@ -170,7 +170,7 @@ FontPlatformData::~FontPlatformData() = default;
 #if defined(OS_MACOSX)
 CTFontRef FontPlatformData::CtFont() const {
   return SkTypeface_GetCTFontRef(typeface_.get());
-};
+}
 
 CGFontRef FontPlatformData::CgFont() const {
   if (!CtFont())

@@ -105,7 +105,7 @@ extern "C" {
 void _LSSetApplicationLaunchServicesServerConnectionStatus(
     uint64_t flags,
     bool (^connection_allowed)(CFDictionaryRef));
-};
+}
 #endif  // defined(OS_MACOSX)
 
 namespace content {

@@ -25,7 +25,7 @@
 
 extern "C" {
 CGError CGSSetDenyWindowServerConnections(bool);
-};
+}
 
 namespace content {
 

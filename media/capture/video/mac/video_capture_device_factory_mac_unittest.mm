@@ -45,4 +45,4 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   }));
 }
 
-};  // namespace media
+}  // namespace media

@@ -43,7 +43,7 @@ gfx::NativeEvent NativeInputEventBuilder::CreateEvent(
         charactersIgnoringModifiers:character
                           isARepeat:NO
                             keyCode:event.native_key_code] retain];
-};
+}
 
 }  // namespace protocol
 }  // namespace content

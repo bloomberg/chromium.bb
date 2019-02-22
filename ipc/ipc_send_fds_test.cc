@@ -8,7 +8,7 @@
 #if defined(OS_MACOSX)
 extern "C" {
 #include <sandbox.h>
-};
+}
 #endif
 #include <fcntl.h>
 #include <stddef.h>
