@@ -135,12 +135,6 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
 // Instances of this class are associated with a specific session and app.
 class CastActivityRecord {
  public:
-  CastActivityRecord(const MediaRoute& route,
-                     const std::string& app_id,
-                     MediaSinkServiceBase* media_sink_service,
-                     cast_channel::CastMessageHandler* message_handler,
-                     CastSessionTracker* session_tracker,
-                     DataDecoder* data_decoder);
   ~CastActivityRecord();
 
   const MediaRoute& route() const { return route_; }
@@ -167,6 +161,10 @@ class CastActivityRecord {
   // response indicating whether the request succeeded is received.
   void SendSetVolumeRequestToReceiver(const CastInternalMessage& cast_message,
                                       cast_channel::ResultCallback callback);
+
+  void SendStopSessionMessageToReceiver(
+      const base::Optional<std::string>& client_id,
+      mojom::MediaRouteProvider::TerminateRouteCallback callback);
 
   // Adds a new client |client_id| to this session and returns the handles of
   // the two pipes to be held by Blink It is invalid to call this method if the
@@ -198,6 +196,16 @@ class CastActivityRecord {
 
  private:
   friend class CastSessionClient;
+  friend class CastActivityManager;
+
+  // Creates a new record owned by |owner|.
+  CastActivityRecord(const MediaRoute& route,
+                     const std::string& app_id,
+                     MediaSinkServiceBase* media_sink_service,
+                     cast_channel::CastMessageHandler* message_handler,
+                     CastSessionTracker* session_tracker,
+                     DataDecoder* data_decoder,
+                     CastActivityManager* owner);
 
   CastSession* GetSession();
   int GetCastChannelId();
@@ -217,6 +225,7 @@ class CastActivityRecord {
   cast_channel::CastMessageHandler* const message_handler_;
   CastSessionTracker* const session_tracker_;
   DataDecoder* const data_decoder_;
+  CastActivityManager* const activity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastActivityRecord);
 };
@@ -280,6 +289,8 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
                             base::Optional<int> request_id) override;
 
  private:
+  friend class CastActivityRecord;
+
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
 
@@ -349,6 +360,8 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
 
   void SendFailedToCastIssue(const MediaSink::Id& sink_id,
                              const MediaRoute::Id& route_id);
+
+  base::WeakPtr<CastActivityManager> GetWeakPtr();
 
   // These methods return |activities_.end()| when nothing is found.
   ActivityMap::iterator FindActivityByChannelId(int channel_id);

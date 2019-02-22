@@ -6,6 +6,7 @@
 
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/rand_util.h"
@@ -191,9 +192,11 @@ void CastMessageHandler::LaunchSession(int channel_id,
   }
 }
 
-void CastMessageHandler::StopSession(int channel_id,
-                                     const std::string& session_id,
-                                     ResultCallback callback) {
+void CastMessageHandler::StopSession(
+    int channel_id,
+    const std::string& session_id,
+    const base::Optional<std::string>& client_id,
+    ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
@@ -207,8 +210,8 @@ void CastMessageHandler::StopSession(int channel_id,
            << ", request_id: " << request_id;
   if (requests->AddStopRequest(std::make_unique<StopSessionRequest>(
           request_id, std::move(callback), clock_))) {
-    SendCastMessage(socket,
-                    CreateStopRequest(sender_id_, request_id, session_id));
+    SendCastMessage(socket, CreateStopRequest(client_id.value_or(sender_id_),
+                                              request_id, session_id));
   }
 }
 
