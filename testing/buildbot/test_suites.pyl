@@ -4081,51 +4081,6 @@
       'crashpad_tests': {},
     },
 
-    'non_network_service_gtests': {
-      'non_network_service_browser_tests': {
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'browser_tests',
-      },
-      'non_network_service_components_browsertests': {
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'test': 'components_browsertests',
-      },
-      'non_network_service_content_browsertests': {
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'test': 'content_browsertests',
-      },
-      'non_network_service_extensions_browsertests': {
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'test': 'extensions_browsertests',
-      },
-      'non_network_service_interactive_ui_tests': {
-        'args': [
-          '--disable-features=NetworkService'
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-        'test': 'interactive_ui_tests',
-      },
-      'non_network_service_sync_integration_tests': {
-        'args': [
-          '--disable-features=NetworkService'
-        ],
-        'test': 'sync_integration_tests',
-      },
-    },
-
     'non_viz_fyi_chromium_gtests': {
       'non_viz_content_browsertests': {
         'args': [
@@ -5014,24 +4969,6 @@
       'viz_chromeos_gtests',
       'viz_gtests',
     ],
-
-    'linux_chromeos_with_non_network_service_gtests': [
-      # This is:
-      #   linux_chromeos_gtests
-      #   + non_newtork_service_gtests
-      'aura_gtests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chromium_gtests_for_linux_and_chromeos_only',
-      'chromium_gtests_for_win_and_linux_only',
-      'linux_chromeos_specific_gtests',
-      'linux_flavor_specific_chromium_gtests',
-      'non_android_chromium_gtests',
-      'non_network_service_gtests',
-      'viz_chromeos_gtests',
-      'viz_gtests',
-    ],
-
 
     'linux_viz_gtests': [
       'non_viz_fyi_chromium_gtests',
