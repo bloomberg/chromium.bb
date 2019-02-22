@@ -10,6 +10,7 @@ var capturedUnexpectedData;
 var expectedEventOrder;
 var networkServiceState = "unknown";
 var tabId;
+var tabIsIncognito;
 var tabIdMap;
 var frameIdMap;
 var testWebSocketPort;
@@ -50,6 +51,7 @@ function runTestsForTab(tests, tab) {
   tabId = tab.id;
   tabIdMap = {"-1": -1};
   tabIdMap[tabId] = 0;
+  tabIsIncognito = tab.incognito;
   chrome.test.getConfig(function(config) {
     testServerPort = config.testServer.port;
     testWebSocketPort = config.testWebSocketPort;
@@ -132,11 +134,36 @@ function navigateAndWait(url, callback) {
   chrome.tabs.update(tabId, {url: url});
 }
 
+function deepCopy(obj) {
+  if (obj === null)
+    return null;
+  if (typeof(obj) != 'object')
+    return obj;
+  if (Array.isArray(obj)) {
+    var tmp_array = new Array;
+    for (var i = 0; i < obj.length; i++) {
+      tmp_array.push(deepCopy(obj[i]));
+    }
+    return tmp_array;
+  }
+
+  var tmp_object = {}
+  for (var p in obj) {
+    tmp_object[p] = deepCopy(obj[p]);
+  }
+  return tmp_object;
+}
+
 // data: array of expected events, each one is a dictionary:
 //     { label: "<unique identifier>",
 //       event: "<webrequest event type>",
 //       details: { <expected details of the webrequest event> },
 //       retval: { <dictionary that the event handler shall return> } (optional)
+//       retval_function: <function to run when the event occurs, this overrides
+//                         any retval handling. The function takes
+//                         (name, details, optional callback). The value it
+//                         returns is returned out of the event
+//                         handler> (optional)
 //     }
 // order: an array of sequences, e.g. [ ["a", "b", "c"], ["d", "e"] ] means that
 //     event with label "a" needs to occur before event with label "b". The
@@ -288,17 +315,7 @@ function captureEvent(name, details, callback) {
     return;
   }
 
-  // Pull the extra per-event options out of the expected data. These let
-  // us specify special return values per event.
-  var currentIndex = capturedEventData.length;
-  var extraOptions;
-  var retval;
-  if (expectedEventData.length > currentIndex) {
-    retval =
-        expectedEventData[currentIndex].retval_function ?
-        expectedEventData[currentIndex].retval_function(name, details) :
-        expectedEventData[currentIndex].retval;
-  }
+  var originalDetails = deepCopy(details);
 
   // Check that the frameId can be used to reliably determine the URL of the
   // frame that caused requests.
@@ -356,41 +373,51 @@ function captureEvent(name, details, callback) {
     }
   });
 
-  // find |details| in expectedEventData
-  var found = false;
-  var label = undefined;
+  // find |details| in matchingExpectedEventData
+  var matchingExpectedEvent = undefined;
   expectedEventData.forEach(function (exp) {
     if (deepEq(exp.event, name) && deepEq(exp.details, details)) {
-      if (found) {
+      if (matchingExpectedEvent) {
         chrome.test.fail("Duplicated expectation entry '" + exp.label +
         "' should be identified by |eventCount|: " + JSON.stringify(details));
       } else {
-        found = true;
-        label = exp.label;
+        matchingExpectedEvent = exp;
       }
     }
   });
-  if (!found && !ignoreUnexpected) {
+  if (!matchingExpectedEvent && !ignoreUnexpected) {
     console.log("Expected events: " +
         JSON.stringify(expectedEventData, null, 2));
     chrome.test.fail("Received unexpected event '" + name + "':" +
         JSON.stringify(details, null, 2));
   }
 
-  if (found) {
+  var retval;
+  var retval_function;
+  if (matchingExpectedEvent) {
     if (logAllRequests) {
       console.log("Expected: " + name + ": " + JSON.stringify(details));
     }
-    capturedEventData.push({label: label, event: name, details: details});
+    capturedEventData.push(
+        {label: matchingExpectedEvent.label, event: name, details: details});
 
     // checkExpecations decrements the counter of pending events. We may only
     // call it if an expected event has occurred.
     checkExpectations();
+
+    // Pull the extra per-event options out of the expected data. These let us
+    // specify special return values per event.
+    retval = matchingExpectedEvent.retval;
+    retval_function = matchingExpectedEvent.retval_function;
   } else {
     if (logAllRequests) {
-      console.log("NOT Expected: " + name + ": " + JSON.stringify(details));
+      console.log('NOT Expected: ' + name + ': ' + JSON.stringify(details));
     }
-    capturedUnexpectedData.push({label: label, event: name, details: details});
+    capturedUnexpectedData.push({event: name, details: details});
+  }
+
+  if (retval_function) {
+    return retval_function(name, originalDetails, callback);
   }
 
   if (callback) {
