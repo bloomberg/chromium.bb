@@ -25,9 +25,9 @@ namespace nux {
 enum class NtpBackgrounds {
   kArt = 0,
   kCityscape = 1,
-  kGeometricShapes = 2,
-  kLandscape = 3,
-  kLife = 4,
+  kEarth = 2,
+  kGeometricShapes = 3,
+  kLandscape = 4,
 };
 
 NtpBackgroundHandler::NtpBackgroundHandler() {}
@@ -56,7 +56,17 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
       GetOnboardingNtpBackgrounds();
 
   auto element = std::make_unique<base::DictionaryValue>();
-  int id = static_cast<int>(NtpBackgrounds::kCityscape);
+  int id = static_cast<int>(NtpBackgrounds::kEarth);
+  element->SetInteger("id", id);
+  element->SetString("title",
+                     l10n_util::GetStringUTF8(
+                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_EARTH_TITLE));
+  element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "earth");
+  list_value.Append(std::move(element));
+
+  element = std::make_unique<base::DictionaryValue>();
+  id = static_cast<int>(NtpBackgrounds::kCityscape);
   element->SetInteger("id", id);
   element->SetString(
       "title", l10n_util::GetStringUTF8(
@@ -96,16 +106,6 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString("thumbnailClass", "geometric-shapes");
   list_value.Append(std::move(element));
 
-  element = std::make_unique<base::DictionaryValue>();
-  id = static_cast<int>(NtpBackgrounds::kLife);
-  element->SetInteger("id", id);
-  element->SetString("title",
-                     l10n_util::GetStringUTF8(
-                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LIFE_TITLE));
-  element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
-  element->SetString("thumbnailClass", "life");
-  list_value.Append(std::move(element));
-
   ResolveJavascriptCallback(*callback_id, list_value);
 }
 
@@ -136,6 +136,14 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
           GURL("https://500px.com/photo/135751035/"
                "soulseek-by-%E5%B0%A4%E9%87%91%E5%B0%BC-ev-tchebotarev"));
       break;
+    case static_cast<int>(NtpBackgrounds::kEarth):
+      instant_service->SetCustomBackgroundURLWithAttributions(
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("NASA Image Library")),
+          "", GURL("https://www.google.com/sky/"));
+      break;
     case static_cast<int>(NtpBackgrounds::kGeometricShapes):
       instant_service->SetCustomBackgroundURLWithAttributions(
           onboardingNtpBackgrounds[backgroundIndex], "Tessellation 15",
@@ -151,16 +159,6 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
           "",
           GURL("https://500px.com/photo/41149196/"
                "le-piscine-sunset-by-giulio-rosso-chioso"));
-      break;
-    case static_cast<int>(NtpBackgrounds::kLife):
-      instant_service->SetCustomBackgroundURLWithAttributions(
-          onboardingNtpBackgrounds[backgroundIndex],
-          l10n_util::GetStringFUTF8(
-              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
-              base::UTF8ToUTF16("Toa Heftiba on Unsplash")),
-          "",
-          GURL("https://unsplash.com/collections/1813652/"
-               "google-pixel-in-bloom-collection"));
       break;
   }
 }

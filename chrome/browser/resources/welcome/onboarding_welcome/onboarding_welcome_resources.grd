@@ -40,9 +40,9 @@
       <include name="IDR_NUX_NTP_BACKGROUND_LOGO_2X" file="images\ntp_background_2x.png" type="BINDATA" />
       <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_ART" file="images\ntp_thumbnails\art.jpg" type="BINDATA" />
       <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_CITYSCAPE" file="images\ntp_thumbnails\cityscape.jpg" type="BINDATA" />
+      <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_EARTH" file="images\ntp_thumbnails\earth.jpg" type="BINDATA" />
       <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_GEOMETRIC_SHAPES" file="images\ntp_thumbnails\geometric_shapes.jpg" type="BINDATA" />
       <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_LANDSCAPE" file="images\ntp_thumbnails\landscape.jpg" type="BINDATA" />
-      <include name="IDR_NUX_NTP_BACKGROUND_THUMBNAIL_LIFE" file="images\ntp_thumbnails\life.jpg" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X" file="images\set_as_default_illustration_1x.png" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X" file="images\set_as_default_illustration_2x.png" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_1X" file="images\set_as_default_1x.png" type="BINDATA" />
