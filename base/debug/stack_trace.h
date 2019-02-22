@@ -124,6 +124,9 @@ class BASE_EXPORT StackTrace {
   size_t count_;
 };
 
+// Forwards to StackTrace::OutputToStream().
+BASE_EXPORT std::ostream& operator<<(std::ostream& os, const StackTrace& s);
+
 // Record a stack trace with up to |count| frames into |trace|. Returns the
 // number of frames read.
 BASE_EXPORT size_t CollectStackTrace(void** trace, size_t count);
