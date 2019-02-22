@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"

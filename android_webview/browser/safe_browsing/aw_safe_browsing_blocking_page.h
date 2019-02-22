@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
+#define ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
 
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
@@ -61,4 +61,4 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_BLOCKING_PAGE_H_

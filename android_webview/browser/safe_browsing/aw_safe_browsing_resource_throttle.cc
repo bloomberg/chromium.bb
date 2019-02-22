@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_resource_throttle.h"
 
 #include <memory>
 
-#include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
-#include "android_webview/browser/aw_url_checker_delegate_impl.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/resource_request_info.h"

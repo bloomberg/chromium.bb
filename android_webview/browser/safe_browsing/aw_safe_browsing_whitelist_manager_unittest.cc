@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 
 #include "base/bind.h"
 #include "base/callback.h"

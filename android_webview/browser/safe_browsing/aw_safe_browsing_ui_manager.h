@@ -6,8 +6,8 @@
 // anti-malware tables and checking urls against them. This is android_webview
 // specific ui_manager.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_UI_MANAGER_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_UI_MANAGER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_UI_MANAGER_H_
+#define ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_UI_MANAGER_H_
 
 #include "components/safe_browsing/base_ui_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -23,7 +23,7 @@ namespace safe_browsing {
 class PingManager;
 class SafeBrowsingNetworkContext;
 class SafeBrowsingURLRequestContextGetter;
-}  // namespace
+}  // namespace safe_browsing
 
 namespace android_webview {
 class AwURLRequestContextGetter;
@@ -102,4 +102,4 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_UI_MANAGER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_UI_MANAGER_H_
