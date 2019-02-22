@@ -6,7 +6,10 @@ import("//build/symlink.gni")
 import("//testing/test.gni")
 assert(is_win)
 
-if (current_toolchain == host_toolchain) {
+# Don't target the tool to non-win host for cross build because the tool depends
+# on Win32 API.
+# TODO(thakis): Enable this in cross builds, https://crbug.com/799827
+if (current_toolchain == host_toolchain || host_os != "win") {
   executable("alternate_version_generator") {
     testonly = true
     sources = [
