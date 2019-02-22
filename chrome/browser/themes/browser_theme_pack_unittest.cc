@@ -63,13 +63,13 @@ class BrowserThemePackTest : public ::testing::Test {
   // This function returns void in order to be able use ASSERT_...
   // The BrowserThemePack is returned in |pack|.
   static void BuildFromUnpackedExtension(const base::FilePath& extension_path,
-                                         scoped_refptr<BrowserThemePack>* pack);
+                                         BrowserThemePack* pack);
 
   // Builds the theme represented by an unpacked extension (located in
   // {DIR_TEST_DATA}/extensions/|theme_folder|).
   // The BrowserThemePack is returned in |pack|.
   static void BuildTestExtensionTheme(const base::StringPiece theme_folder,
-                                      scoped_refptr<BrowserThemePack>* pack);
+                                      BrowserThemePack* pack);
 
   static base::FilePath GetTestExtensionThemePath(
       base::StringPiece theme_folder);
@@ -113,12 +113,14 @@ class BrowserThemePackTest : public ::testing::Test {
 };
 
 BrowserThemePackTest::BrowserThemePackTest()
-    : theme_pack_(new BrowserThemePack()) {
+    : theme_pack_(
+          new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION)) {
   std::vector<ui::ScaleFactor> scale_factors;
   scale_factors.push_back(ui::SCALE_FACTOR_100P);
   scale_factors.push_back(ui::SCALE_FACTOR_200P);
   scoped_set_supported_scale_factors_.reset(
       new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
+  theme_pack_->InitEmptyPack();
 }
 
 // static
@@ -158,7 +160,7 @@ void BrowserThemePackTest::LoadColorJSON(const std::string& json) {
 }
 
 void BrowserThemePackTest::LoadColorDictionary(base::DictionaryValue* value) {
-  theme_pack_->BuildColorsFromJSON(value);
+  theme_pack_->SetColorsFromJSON(value);
   theme_pack_->GenerateFrameColors();
 }
 
@@ -169,7 +171,7 @@ void BrowserThemePackTest::LoadTintJSON(const std::string& json) {
 }
 
 void BrowserThemePackTest::LoadTintDictionary(base::DictionaryValue* value) {
-  theme_pack_->BuildTintsFromJSON(value);
+  theme_pack_->SetTintsFromJSON(value);
 }
 
 void BrowserThemePackTest::LoadDisplayPropertiesJSON(const std::string& json) {
@@ -181,7 +183,7 @@ void BrowserThemePackTest::LoadDisplayPropertiesJSON(const std::string& json) {
 
 void BrowserThemePackTest::LoadDisplayPropertiesDictionary(
     base::DictionaryValue* value) {
-  theme_pack_->BuildDisplayPropertiesFromJSON(value);
+  theme_pack_->SetDisplayPropertiesFromJSON(value);
 }
 
 void BrowserThemePackTest::ParseImageNamesJSON(
@@ -210,7 +212,7 @@ bool BrowserThemePackTest::LoadRawBitmapsTo(
 // static
 void BrowserThemePackTest::BuildFromUnpackedExtension(
     const base::FilePath& extension_path,
-    scoped_refptr<BrowserThemePack>* pack) {
+    BrowserThemePack* pack) {
   base::FilePath manifest_path = extension_path.AppendASCII("manifest.json");
   std::string error;
   JSONFileValueDeserializer deserializer(manifest_path);
@@ -223,15 +225,14 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
                         *valid_value, Extension::REQUIRE_KEY, &error));
   ASSERT_TRUE(extension.get());
   ASSERT_EQ("", error);
-  *pack = new BrowserThemePack;
-  BrowserThemePack::BuildFromExtension(extension.get(), *pack);
-  ASSERT_TRUE((*pack)->is_valid());
+  BrowserThemePack::BuildFromExtension(extension.get(), pack);
+  ASSERT_TRUE(pack->is_valid());
 }
 
 // static
 void BrowserThemePackTest::BuildTestExtensionTheme(
     const base::StringPiece theme_folder,
-    scoped_refptr<BrowserThemePack>* pack) {
+    BrowserThemePack* pack) {
   base::FilePath contrast_theme_path = GetTestExtensionThemePath(theme_folder);
   BuildFromUnpackedExtension(contrast_theme_path, pack);
 }
@@ -712,8 +713,9 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
   // Part 1: Build the pack from an extension.
   {
     base::FilePath star_gazing_path = GetStarGazingPath();
-    scoped_refptr<BrowserThemePack> pack;
-    BuildFromUnpackedExtension(star_gazing_path, &pack);
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+    BuildFromUnpackedExtension(star_gazing_path, pack.get());
     ASSERT_TRUE(pack->WriteToDisk(file));
     VerifyStarGazing(pack.get());
   }
@@ -736,8 +738,9 @@ TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
   // Part 1: Build the pack from an extension.
   {
     base::FilePath hidpi_path = GetHiDpiThemePath();
-    scoped_refptr<BrowserThemePack> pack;
-    BuildFromUnpackedExtension(hidpi_path, &pack);
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+    BuildFromUnpackedExtension(hidpi_path, pack.get());
     ASSERT_TRUE(pack->WriteToDisk(file));
     VerifyHiDpiTheme(pack.get());
   }
@@ -755,8 +758,9 @@ TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
 // are too similar, the importing process modifies the text color so that it
 // maintains a minimum readable contrast ratio with the background.
 TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_tabcontrast", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_tabcontrast", pack.get());
 
   // Check the contrast ratio of text/tab color pairs to make sure that they
   // meet the minimum criteria for readable contrast ratio.
@@ -797,8 +801,9 @@ TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast_NoTabColor) {
   // (theme_test_bgtabtext_notabcolor_singletextcolor).
   base::FilePath theme_path = GetTestExtensionThemePath(
       "theme_test_bgtabtext_notabcolor_singletextcolor");
-  scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(theme_path, &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildFromUnpackedExtension(theme_path, pack.get());
 
   SkColor frame_color;
   SkColor text_color;
@@ -815,17 +820,18 @@ TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast_NoTabColor) {
 // COLOR_BACKGROUND_TAB_TEXT, that color is used for the other variants of
 // background tab text (inactive, incognito, and incognito+inactive).
 TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_testinherittextcolor", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_testinherittextcolor", pack.get());
 
   // Verify that all background tab text colors match the color for background
   // tab text.
-  BrowserThemePack* pack_ptr = pack.get();
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+  VerifyColorsMatch(pack.get(), TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+  VerifyColorsMatch(pack.get(), TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+  VerifyColorsMatch(pack.get(),
+                    TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
 }
 
@@ -833,16 +839,17 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign) {
 // COLOR_BACKGROUND_TAB_TEXT and COLOR_BACKGROUND_TAB_TEXT_INCOGNITO, those
 // colors are also used for their respective inactive variants.
 TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_WithIncognito) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_testinherittextcolor_withincog", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_testinherittextcolor_withincog", pack.get());
 
   // Verify that background_inactive is getting its color from background, and
   // background_incognito_inactive is getting its color from
   // background_incognito.
-  BrowserThemePack* pack_ptr = pack.get();
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+  VerifyColorsMatch(pack.get(), TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+  VerifyColorsMatch(pack.get(),
+                    TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
 }
 
@@ -857,17 +864,18 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_NoTabColor) {
   // no tab background colors, and no variants of background_tab_text.
   base::FilePath theme_path = GetTestExtensionThemePath(
       "theme_test_bgtabtext_notabcolor_singletextcolor_autoassign");
-  scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(theme_path, &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildFromUnpackedExtension(theme_path, pack.get());
 
   // Verify that all background tab text colors match the color for background
   // tab text.
-  BrowserThemePack* pack_ptr = pack.get();
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+  VerifyColorsMatch(pack.get(), TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+  VerifyColorsMatch(pack.get(), TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
-  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+  VerifyColorsMatch(pack.get(),
+                    TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
 }
 
@@ -880,8 +888,9 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorContrast_TabTint) {
   // nearly zero.
   base::FilePath theme_path =
       GetTestExtensionThemePath("theme_test_bgtabtext_tintonly");
-  scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(theme_path, &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildFromUnpackedExtension(theme_path, pack.get());
 
   SkColor frame_color;
   SkColor text_color;
@@ -901,21 +910,22 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorContrast_TabTint) {
 // Ensure that, given a theme which only specifies a frame color, the calculated
 // caption button background colors appropriately match the frame color.
 TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_FrameColor) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_captionbutton_framecolor", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_captionbutton_framecolor", pack.get());
 
   // Verify that control button background colors are matching the frame colors.
-  BrowserThemePack* pack_ptr = pack.get();
-  VerifyColorsMatch(pack_ptr, TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+  VerifyColorsMatch(pack.get(),
+                    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
                     TP::COLOR_FRAME);
-  VerifyColorsMatch(pack_ptr,
+  VerifyColorsMatch(pack.get(),
                     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
                     TP::COLOR_FRAME_INACTIVE);
-  VerifyColorsMatch(pack_ptr,
+  VerifyColorsMatch(pack.get(),
                     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
                     TP::COLOR_FRAME_INCOGNITO);
   VerifyColorsMatch(
-      pack_ptr, TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+      pack.get(), TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
       TP::COLOR_FRAME_INCOGNITO_INACTIVE);
 }
 
@@ -923,8 +933,9 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_FrameColor) {
 // calculated caption button background colors appropriately match the button
 // background color blended with the frame color.
 TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_captionbutton_buttoncolor", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_captionbutton_buttoncolor", pack.get());
 
   SkColor button_bg_color;
   const bool has_button_bg_color =
@@ -970,8 +981,9 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
 // caption button image, the calculated caption button background color is dark
 // (to match the bg image).
 TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGImage) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_captionbutton_buttonimage", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_captionbutton_buttonimage", pack.get());
 
   // Verify that all of the calculated button background colors are on the
   // 'dark' end of the spectrum.
@@ -993,8 +1005,10 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGImage) {
 // Ensure that a specified 'toolbar' color is propagated to other 'bar' and
 // 'shelf' colors (before a new color is computed from the toolbar image).
 TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors",
+                          pack.get());
 
   SkColor infobar_color;
   SkColor bookmark_bar_color;
@@ -1017,8 +1031,9 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
 // Ensure that a specified 'toolbar' color is propagated to other 'bar' and
 // 'shelf' colors (before a new color is computed from the toolbar image).
 TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_toolbar_color_no_image", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_color_no_image", pack.get());
 
   SkColor infobar_color;
   SkColor bookmark_bar_color;
@@ -1043,8 +1058,10 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
 // color).
 TEST_F(BrowserThemePackTest,
        TestToolbarColorComputedFromImageOverridesInputColor) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors",
+                          pack.get());
 
   SkColor toolbar_color;
   EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
@@ -1058,12 +1075,29 @@ TEST_F(BrowserThemePackTest,
 // color).
 TEST_F(BrowserThemePackTest,
        TestFrameColorComputedFromImageOverridesInputColor) {
-  scoped_refptr<BrowserThemePack> pack;
-  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors",
+                          pack.get());
 
   SkColor frame_color;
   EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(255, 0, 255);
   EXPECT_NE(frame_color, kExplicitColor);
+}
+
+// Test theme generation for a given color.
+TEST_F(BrowserThemePackTest, TestBuildFromColor) {
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+  SkColor color = SkColorSetRGB(100, 100, 200);
+  BrowserThemePack::BuildFromColor(color, pack.get());
+
+  SkColor frame_color;
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+  EXPECT_EQ(frame_color, color);
+
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &frame_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_NTP_BACKGROUND, &frame_color));
 }

@@ -58,7 +58,10 @@ class BrowserThemePack : public CustomThemeSupplier {
   // separate thread as it takes so long. This can fail in the case where the
   // theme has invalid data, in which case |pack->is_valid()| will be false.
   static void BuildFromExtension(const extensions::Extension* extension,
-                                 scoped_refptr<BrowserThemePack> pack);
+                                 BrowserThemePack* pack);
+
+  // Builds the theme from given |color| into |pack|.
+  static void BuildFromColor(SkColor color, BrowserThemePack* pack);
 
   // Builds the theme pack from a previously performed WriteToDisk(). This
   // operation should be relatively fast, as it should be an mmap() and some
@@ -71,7 +74,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   static bool IsPersistentImageID(int id);
 
   // Default. Everything is empty.
-  BrowserThemePack();
+  explicit BrowserThemePack(ThemeType theme_type);
 
   bool is_valid() const { return is_valid_; }
 
@@ -124,24 +127,44 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Calculates the dominant color of the top |height| rows of |image|.
   SkColor ComputeImageColor(const gfx::Image& image, int height);
 
-  // Builds a header ready to write to disk.
-  void BuildHeader(const extensions::Extension* extension);
+  // Adjusts/sets theme properties.
+  void AdjustThemePack();
+
+  // Initializes necessary fields.
+  void InitEmptyPack();
+
+  // Initializes the |header_| with default values.
+  void InitHeader();
+
+  // Initializes the |tints_| with default values.
+  void InitTints();
+
+  // Initializes the |colors_| with default values.
+  void InitColors();
+
+  // Initializes the |display_properties_| with default values.
+  void InitDisplayProperties();
+
+  // Initializes the |source_images_| with default values.
+  void InitSourceImages();
+
+  // Sets the ID from |extension|.
+  void SetHeaderId(const extensions::Extension* extension);
 
   // Transforms the JSON tint values into their final versions in the |tints_|
   // array.
-  void BuildTintsFromJSON(const base::DictionaryValue* tints_value);
+  void SetTintsFromJSON(const base::DictionaryValue* tints_value);
 
   // Transforms the JSON color values into their final versions in the
   // |colors_| array and also fills in unspecified colors based on tint values.
-  void BuildColorsFromJSON(const base::DictionaryValue* color_value);
+  void SetColorsFromJSON(const base::DictionaryValue* color_value);
 
   // Implementation details of BuildColorsFromJSON().
   void ReadColorsFromJSON(const base::DictionaryValue* colors_value,
                           std::map<int, SkColor>* temp_colors);
 
   // Transforms the JSON display properties into |display_properties_|.
-  void BuildDisplayPropertiesFromJSON(
-      const base::DictionaryValue* display_value);
+  void SetDisplayPropertiesFromJSON(const base::DictionaryValue* display_value);
 
   // Parses the image names out of an extension.
   void ParseImageNamesFromJSON(const base::DictionaryValue* images_value,
