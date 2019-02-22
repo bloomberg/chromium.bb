@@ -89,10 +89,11 @@ def run_executable(cmd, env, stdoutfile=None):
       xvfb_script = __file__
       if xvfb_script.endswith('.pyc'):
         xvfb_script = xvfb_script[:-1]
-      return subprocess.call(['xvfb-run', '-a', "--server-args=-screen 0 "
-                              "1280x800x24 -ac -nolisten tcp -dpi 96 "
-                              "+extension RANDR",
-                              xvfb_script] + cmd, env=env)
+      # TODO(crbug.com/932240): Propagate signals properly.
+      return subprocess.call([
+          'xvfb-run', '-a', "--server-args=-screen 0 "
+          "1280x800x24 -ac -nolisten tcp -dpi 96 "
+          "+extension RANDR", xvfb_script] + cmd, env=env)
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
 

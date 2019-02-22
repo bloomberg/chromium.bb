@@ -17,6 +17,7 @@ import traceback
 # Add src/testing/ into sys.path for importing xvfb.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import xvfb
+import test_env
 
 # Unfortunately we need to copy these variables from ../test_env.py.
 # Importing it and using its get_sandbox_env breaks test runs on Linux
@@ -79,7 +80,7 @@ def run_script(argv, funcs):
 
 def run_command(argv, env=None, cwd=None):
   print 'Running %r in %r (env: %r)' % (argv, cwd, env)
-  rc = subprocess.call(argv, env=env, cwd=cwd)
+  rc = test_env.run_command(argv, env=env, cwd=cwd)
   print 'Command %r returned exit code %d' % (argv, rc)
   return rc
 
@@ -196,20 +197,6 @@ def extract_filter_list(filter_list):
   be used in the names of perf benchmarks, which contain URLs.
   """
   return filter_list.split('::')
-
-
-def run_integration_test(script_to_run, extra_args, log_file, output):
-  integration_test_res = subprocess.call(
-      [sys.executable, script_to_run] + extra_args)
-
-  with open(log_file) as f:
-    failures = json.load(f)
-  json.dump({
-      'valid': integration_test_res == 0,
-      'failures': failures,
-  }, output)
-
-  return integration_test_res
 
 
 class BaseIsolatedScriptArgsAdapter(object):
@@ -350,7 +337,7 @@ class BaseIsolatedScriptArgsAdapter(object):
       if self.options.xvfb:
         exit_code = xvfb.run_executable(cmd, env)
       else:
-        exit_code = subprocess.call(cmd, env=env)
+        exit_code = test_env.run_command(cmd, env=env)
       print 'Command returned exit code %d' % exit_code
       return exit_code
     except Exception:
