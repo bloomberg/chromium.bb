@@ -9373,17 +9373,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
      </message>
    </if>
 
-   <!-- Incognito Window Counter bubble. -->
-    <message name="IDS_INCOGNITO_WINDOW_COUNTER_TITLE" desc="The title of the incognito window counter dialog.">
+   <!-- Incognito Profile Menu bubble. -->
+    <message name="IDS_INCOGNITO_PROFILE_MENU_TITLE" desc="The title of the incognito version of profile menu.">
       Incognito
     </message>
-    <message name="IDS_INCOGNITO_WINDOW_COUNTER_MESSAGE" desc="The message showing the number of open incogntio windows. This is not used for zero windows.[ICU Syntax]">
+    <message name="IDS_INCOGNITO_WINDOW_COUNT_MESSAGE" desc="The message showing the number of open incogntio windows. This is not used for zero windows.[ICU Syntax]">
       {0, plural,
         =1 {# open window}
         other {# open windows}
       }
     </message>
-    <message name="IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON" desc="The text of the button offering to close all incognito windows.">
+    <message name="IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON" desc="The text of the button offering to close all incognito windows.">
       Exit Incognito
     </message>
   </messages>

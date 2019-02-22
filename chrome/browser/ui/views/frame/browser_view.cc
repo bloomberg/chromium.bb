@@ -2423,7 +2423,7 @@ void BrowserView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void BrowserView::OnThemeChanged() {
   if (!IsRegularOrGuestSession()) {
-    // When the theme changes, the native theme may also change (in incognito,
+    // When the theme changes, the native theme may also change (in Incognito,
     // the usage of dark or normal hinges on the browser theme), so we have to
     // propagate both kinds of change.
     base::AutoReset<bool> reset(&handling_theme_changed_, true);
@@ -2958,10 +2958,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
 #if !defined(OS_CHROMEOS)
-  // Never show any avatar bubble in Incognito.
-  if (!IsRegularOrGuestSession())
-    return;
-
   // Do not show avatar bubble if there is no avatar menu button.
   views::Button* avatar_button = toolbar_->avatar_button();
   if (!avatar_button)

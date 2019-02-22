@@ -435,6 +435,9 @@ void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
     case BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR:
       *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
       return;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO:
+      *bubble_view_mode = BUBBLE_VIEW_MODE_INCOGNITO;
+      return;
     default:
       *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
   }

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -522,6 +524,10 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, menu_width_);
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
+    case profiles::BUBBLE_VIEW_MODE_INCOGNITO:
+      layout = CreateSingleColumnLayout(this, menu_width_);
+      sub_view = CreateIncognitoWindowCountView();
+      break;
   }
 
   views::ScrollView* scroll_view = new views::ScrollView;
@@ -643,6 +649,14 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // If this is a guest session, close all the guest browser windows.
     if (browser_->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
+    } else if (browser_->profile()->GetProfileType() ==
+               Profile::INCOGNITO_PROFILE) {
+      // Skipping before-unload trigger to give incognito mode users a chance to
+      // close all incognito windows without needing to confirm closing the open
+      // forms.
+      BrowserList::CloseAllBrowsersWithIncognitoProfile(
+          browser_->profile(), base::DoNothing(), base::DoNothing(),
+          true /* skip_beforeunload */);
     } else {
       base::RecordAction(
           base::UserMetricsAction("ProfileChooser_ManageClicked"));
@@ -825,6 +839,54 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 const gfx::Range& range,
                                                 int event_flags) {
   chrome::ShowSettings(browser_);
+}
+
+views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
+  // TODO(https://crbug.com/896235): Refactor to merge this view with other
+  // views.
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
+
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  int content_list_vert_spacing =
+      provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+
+  int incognito_window_count =
+      BrowserList::GetIncognitoSessionsActiveForProfile(browser_->profile());
+  auto incognito_icon = std::make_unique<views::ImageView>();
+  const SkColor icon_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_TOOLBAR, true /* incognito */);
+  incognito_icon->SetImage(
+      gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
+
+  // TODO(https://crbug.com/915120): This Button is never clickable. Replace
+  // by an alternative list item.
+  HoverButton* profile_card = new HoverButton(
+      nullptr, std::move(incognito_icon),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
+      incognito_window_count > 1
+          ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
+                                             incognito_window_count)
+          : base::string16());
+  profile_card->SetEnabled(false);
+
+  layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
+                              content_list_vert_spacing);
+  layout->AddView(profile_card);
+
+  layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
+                              content_list_vert_spacing);
+  layout->AddView(new views::Separator());
+
+  users_button_ = new HoverButton(
+      this, gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON));
+
+  layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
+                              content_list_vert_spacing);
+  layout->AddView(users_button_);
+
+  return view;
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(

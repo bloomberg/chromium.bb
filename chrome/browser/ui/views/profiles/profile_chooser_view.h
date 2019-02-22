@@ -137,6 +137,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Creates the profile chooser view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);
 
+  // Creates the incognito window count view.
+  views::View* CreateIncognitoWindowCountView();
+
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.

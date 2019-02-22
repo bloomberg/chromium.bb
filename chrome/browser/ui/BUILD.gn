@@ -1817,8 +1817,6 @@ jumbo_split_static_library("ui") {
       "views/close_bubble_on_tab_activation_helper.h",
       "views/hats/hats_bubble_view.cc",
       "views/hats/hats_bubble_view.h",
-      "views/profiles/incognito_window_count_view.cc",
-      "views/profiles/incognito_window_count_view.h",
       "webui/discards/discards_ui.cc",
       "webui/discards/discards_ui.h",
       "webui/signin/inline_login_handler.cc",
