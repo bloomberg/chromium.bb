@@ -93,7 +93,9 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   mojo::Binding<mojom::ScreenCaptureSession> binding_;
   mojom::ScreenCaptureSessionNotifierPtr notifier_;
   gfx::Size size_;
-  aura::Window* desktop_window_;
+  // aura::Window of the display being captured. This corresponds to one of
+  // Ash's root windows.
+  aura::Window* display_root_window_ = nullptr;
 
   // We have 2 separate queues for handling incoming GPU buffers from Android
   // and also textures for the desktop we have captured already. Due to the
