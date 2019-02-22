@@ -48,11 +48,11 @@ class CONTENT_EXPORT RtcDataChannelHandler
   blink::WebString Label() override;
   bool IsReliable() override;
   bool Ordered() const override;
-  unsigned short MaxRetransmitTime() const override;
-  unsigned short MaxRetransmits() const override;
+  uint16_t MaxRetransmitTime() const override;
+  uint16_t MaxRetransmits() const override;
   blink::WebString Protocol() const override;
   bool Negotiated() const override;
-  unsigned short Id() const override;
+  uint16_t Id() const override;
   blink::WebRTCDataChannelHandlerClient::ReadyState GetState() const override;
   unsigned long BufferedAmount() override;
   bool SendStringData(const blink::WebString& data) override;

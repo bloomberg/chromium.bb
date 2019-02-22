@@ -122,11 +122,11 @@ bool RTCDataChannel::ordered() const {
   return handler_->Ordered();
 }
 
-unsigned short RTCDataChannel::maxRetransmitTime() const {
+uint16_t RTCDataChannel::maxRetransmitTime() const {
   return handler_->MaxRetransmitTime();
 }
 
-unsigned short RTCDataChannel::maxRetransmits() const {
+uint16_t RTCDataChannel::maxRetransmits() const {
   return handler_->MaxRetransmits();
 }
 
@@ -138,7 +138,7 @@ bool RTCDataChannel::negotiated() const {
   return handler_->Negotiated();
 }
 
-unsigned short RTCDataChannel::id() const {
+uint16_t RTCDataChannel::id() const {
   return handler_->Id();
 }
 

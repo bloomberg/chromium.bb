@@ -76,11 +76,11 @@ class MODULES_EXPORT RTCDataChannel final
   bool reliable() const;
 
   bool ordered() const;
-  unsigned short maxRetransmitTime() const;
-  unsigned short maxRetransmits() const;
+  uint16_t maxRetransmitTime() const;
+  uint16_t maxRetransmits() const;
   String protocol() const;
   bool negotiated() const;
-  unsigned short id() const;
+  uint16_t id() const;
   String readyState() const;
   unsigned bufferedAmount() const;
 

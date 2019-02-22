@@ -44,11 +44,11 @@ class WebRTCDataChannelHandler {
   virtual bool IsReliable() { return true; }
 
   virtual bool Ordered() const = 0;
-  virtual unsigned short MaxRetransmitTime() const = 0;
-  virtual unsigned short MaxRetransmits() const = 0;
+  virtual uint16_t MaxRetransmitTime() const = 0;
+  virtual uint16_t MaxRetransmits() const = 0;
   virtual WebString Protocol() const = 0;
   virtual bool Negotiated() const = 0;
-  virtual unsigned short Id() const = 0;
+  virtual uint16_t Id() const = 0;
 
   virtual WebRTCDataChannelHandlerClient::ReadyState GetState() const = 0;
   virtual unsigned long BufferedAmount() = 0;
