@@ -152,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
                          ->hosted_app_button_container_for_testing());
 }
 
-// Tests the frame color for a bookmark app when a theme is applied.
+// Checks that the title bar for hosted app windows is hidden when in fullscreen
+// for tab mode.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
                        FullscreenForTabTitlebarHeight) {
   InstallAndLaunchBookmarkApp();
