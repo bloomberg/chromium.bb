@@ -13,6 +13,7 @@
 namespace blink {
 class WebElement;
 class WebFrame;
+class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
@@ -26,6 +27,7 @@ namespace extensions {
 // for an embedded MimeHandlerView extension in a cross-origin frame.
 class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
  public:
+  static bool IsSupportedMimeType(const std::string& mime_type);
   static bool Create(const blink::WebElement& plugin_element,
                      const GURL& resource_url,
                      const std::string& mime_type,
@@ -35,12 +37,24 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
  private:
   class RenderFrameLifetimeObserver;
   friend class RenderFrameLifetimeObserver;
+  friend class MimeHandlerViewContainerManager;
+
+  static void CreateWithFrame(blink::WebLocalFrame* web_frame,
+                              const GURL& resource_url,
+                              const std::string& mime_type,
+                              const std::string& view_id);
+
+  MimeHandlerViewFrameContainer(blink::WebLocalFrame* web_frame,
+                                const GURL& resource_url,
+                                const std::string& mime_type,
+                                const std::string& view_id);
 
   MimeHandlerViewFrameContainer(const blink::WebElement& plugin_element,
                                 const GURL& resource_url,
                                 const std::string& mime_type,
                                 const content::WebPluginInfo& plugin_info,
                                 int32_t element_instance_id);
+
   ~MimeHandlerViewFrameContainer() override;
 
   // MimeHandlerViewContainerBase overrides.
@@ -57,13 +71,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   void SetShowBeforeUnloadDialog(
       bool show_dialog,
       SetShowBeforeUnloadDialogCallback callback) override;
-
-  // Returns true if the container is considered as "embedded". A non-embedded
-  // MimeHandlerViewFrameContainer is the one which is created as a result of
-  // navigating a frame (either <iframe> or top-level) to a corresponding
-  // MimeHandlerView mimetype. For such containers there is no need to request
-  // the resource immediately.
-  bool IsEmbedded() const;
 
   void OnMessageReceived(const IPC::Message& message);
 

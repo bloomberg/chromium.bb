@@ -30,9 +30,7 @@ class MimeHandlerViewContainerManager
                             const std::string& view_id) override;
 
  private:
-  GURL resource_url_;
-  std::string mime_type_;
-  std::string view_id_;
+  const int32_t render_frame_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewContainerManager);
 };

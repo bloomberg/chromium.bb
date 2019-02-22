@@ -71,6 +71,8 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void DidFinishLoading() override;
 
  protected:
+  MimeHandlerViewContainerBase();
+
   virtual void CreateMimeHandlerViewGuestIfNecessary();
   virtual void OnRetryCreatingMimeHandlerViewGuest(int32_t element_instance_id);
   virtual void OnDestroyFrameContainer(int32_t element_instance_id);
