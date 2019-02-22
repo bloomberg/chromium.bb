@@ -28,13 +28,17 @@ def _CreateMinimalDeviceSpec(bundle_path, sdk_version):
     sdk_version = int(
         re.search(r'minSdkVersion.*?(\d+)', manifest_data).group(1))
 
+  # Measure with one language split installed. Use Hindi because it is popular.
+  # resource_size.py looks for splits/base-hi.apk.
+  # Note: English is always included since it's in base-master.apk.
+  locales = ['hi']
   # Setting sdkVersion=minSdkVersion prevents multiple per-minSdkVersion .apk
   # files from being created within the .apks file.
   return {
       'screenDensity': 1000,  # Ignored since we don't split on density.
       'sdkVersion': sdk_version,
       'supportedAbis': _ALL_ABIS,  # Our .aab files are already split on abi.
-      'supportedLocales': ['en'],
+      'supportedLocales': locales,
   }
 
 
