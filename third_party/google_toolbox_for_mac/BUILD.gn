@@ -39,11 +39,6 @@ component("google_toolbox_for_mac") {
       "Cocoa.framework",
       "QuartzCore.framework",
     ]
-
-    # TODO(crbug.com/841631): GTM uses accessibility APIs that are deprecated as
-    # of 10.10. These can't yet be compiled out, so for now, ignore deprecated
-    # declarations in GTM altogether.
-    cflags = [ "-Wno-deprecated-declarations" ]
   } else {  # is_ios
     sources += [
       "src/DebugUtils/GTMMethodCheck.h",
