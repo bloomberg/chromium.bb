@@ -73,7 +73,7 @@ class FrameImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
   // Navigates a |controller| to |url|, blocking until navigation is complete.
   void CheckLoadUrl(const std::string& url,
                     const std::string& expected_title,
-                    chromium::web::LoadUrlParamsPtr load_url_params,
+                    chromium::web::LoadUrlParams2 load_url_params,
                     chromium::web::NavigationController* controller) {
     base::RunLoop run_loop;
     EXPECT_CALL(navigation_observer_,
@@ -81,7 +81,7 @@ class FrameImplTest : public cr_fuchsia::test::WebRunnerBrowserTest {
                     Field(&NavigationDetails::title, expected_title),
                     Field(&NavigationDetails::url, url))))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-    controller->LoadUrl(url, std::move(load_url_params));
+    controller->LoadUrl2(url, std::move(load_url_params));
     run_loop.Run();
     Mock::VerifyAndClearExpectations(this);
     navigation_observer_.Acknowledge();
@@ -113,8 +113,27 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, nullptr,
-               controller.get());
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL,
+               chromium::web::LoadUrlParams2(), controller.get());
+}
+
+// TODO(crbug.com/931831): Remove this test once the transition is complete.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DeprecatedNavigateFrame) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(navigation_observer_,
+              MockableOnNavigationStateChanged(testing::AllOf(
+                  Field(&NavigationDetails::title, url::kAboutBlankURL),
+                  Field(&NavigationDetails::url, url::kAboutBlankURL))))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  controller->LoadUrl(url::kAboutBlankURL, nullptr);
+  run_loop.Run();
+  Mock::VerifyAndClearExpectations(this);
+  navigation_observer_.Acknowledge();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
@@ -123,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  CheckLoadUrl(kDataUrl, kDataUrl, nullptr, controller.get());
+  CheckLoadUrl(kDataUrl, kDataUrl, chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
@@ -141,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  controller->LoadUrl(url::kAboutBlankURL, nullptr);
+  controller->LoadUrl2(url::kAboutBlankURL, chromium::web::LoadUrlParams2());
 
   frame.Unbind();
   run_loop.Run();
@@ -195,8 +215,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
-  CheckLoadUrl(title1.spec(), kPage1Title, nullptr, controller.get());
-  CheckLoadUrl(title2.spec(), kPage2Title, nullptr, controller.get());
+  CheckLoadUrl(title1.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               controller.get());
+  CheckLoadUrl(title2.spec(), kPage2Title, chromium::web::LoadUrlParams2(),
+               controller.get());
 
   {
     base::RunLoop run_loop;
@@ -247,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ReloadFrame) {
   GURL url(embedded_test_server()->GetURL(kPage1Path));
 
   EXPECT_CALL(*this, OnServeHttpRequest(_));
-  CheckLoadUrl(url.spec(), kPage1Title, nullptr, navigation_controller.get());
+  CheckLoadUrl(url.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               navigation_controller.get());
 
   navigation_observer_.Observe(
       context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
@@ -420,7 +443,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(title1.spec(), kPage1Title, nullptr, controller.get());
+  CheckLoadUrl(title1.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               controller.get());
   std::vector<std::string> origins = {title1.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(
@@ -454,7 +478,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello", nullptr, controller.get());
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
@@ -472,7 +497,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello", nullptr, controller.get());
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
@@ -494,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   // Expect that the original HTML title is used, because we didn't inject a
   // script with a replacement title.
   CheckLoadUrl(url.spec(), "Welcome to Stan the Offline Dino's Homepage",
-               nullptr, controller.get());
+               chromium::web::LoadUrlParams2(), controller.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
@@ -513,15 +539,17 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   // Test script injection for the origin 127.0.0.1.
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello", nullptr, controller.get());
-
-  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, nullptr,
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams2(),
                controller.get());
+
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL,
+               chromium::web::LoadUrlParams2(), controller.get());
 
   // Test script injection using a different origin ("localhost"), which should
   // still be picked up by the wildcard.
   GURL alt_url = embedded_test_server()->GetURL("localhost", kDynamicTitlePath);
-  CheckLoadUrl(alt_url.spec(), "hello", nullptr, controller.get());
+  CheckLoadUrl(alt_url.spec(), "hello", chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 // Test that consecutive scripts are executed in order by computing a cumulative
@@ -544,7 +572,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello there", nullptr, controller.get());
+  CheckLoadUrl(url.spec(), "hello there", chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 // Test that we can inject scripts before and after RenderFrame creation.
@@ -562,7 +591,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), "hello", nullptr, controller.get());
+  CheckLoadUrl(url.spec(), "hello", chromium::web::LoadUrlParams2(),
+               controller.get());
 
   frame->ExecuteJavaScript(
       std::move(origins),
@@ -571,11 +601,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
       [](bool success) { EXPECT_TRUE(success); });
 
   // Navigate away to clean the slate.
-  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, nullptr,
-               controller.get());
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL,
+               chromium::web::LoadUrlParams2(), controller.get());
 
   // Navigate back and see if both scripts are working.
-  CheckLoadUrl(url.spec(), "hello there", nullptr, controller.get());
+  CheckLoadUrl(url.spec(), "hello there", chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
@@ -586,7 +617,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(url.spec(), kPage1Title, nullptr, controller.get());
+  CheckLoadUrl(url.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               controller.get());
 
   base::RunLoop run_loop;
 
@@ -762,8 +794,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(post_message_url.spec(), "postmessage", nullptr,
-               controller.get());
+  CheckLoadUrl(post_message_url.spec(), "postmessage",
+               chromium::web::LoadUrlParams2(), controller.get());
 
   chromium::web::WebMessage message;
   message.data = cr_fuchsia::MemBufferFromString(kPage1Path);
@@ -791,8 +823,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(post_message_url.spec(), "messageport", nullptr,
-               controller.get());
+  CheckLoadUrl(post_message_url.spec(), "messageport",
+               chromium::web::LoadUrlParams2(), controller.get());
 
   chromium::web::MessagePortPtr message_port;
   chromium::web::WebMessage msg;
@@ -844,8 +876,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(post_message_url.spec(), "messageport", nullptr,
-               controller.get());
+  CheckLoadUrl(post_message_url.spec(), "messageport",
+               chromium::web::LoadUrlParams2(), controller.get());
 
   chromium::web::MessagePortPtr message_port;
   chromium::web::WebMessage msg;
@@ -892,8 +924,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(post_message_url.spec(), "messageport", nullptr,
-               controller.get());
+  CheckLoadUrl(post_message_url.spec(), "messageport",
+               chromium::web::LoadUrlParams2(), controller.get());
 
   chromium::web::MessagePortPtr incoming_message_port;
   chromium::web::WebMessage msg;
@@ -981,8 +1013,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
 
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-  CheckLoadUrl(post_message_url.spec(), "messageport", nullptr,
-               controller.get());
+  CheckLoadUrl(post_message_url.spec(), "messageport",
+               chromium::web::LoadUrlParams2(), controller.get());
 
   chromium::web::MessagePortPtr bad_origin_incoming_message_port;
   chromium::web::WebMessage msg;
@@ -1049,7 +1081,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
 
   // Verify that the Frame can navigate, prior to the View being created.
   const GURL page1_url(embedded_test_server()->GetURL(kPage1Path));
-  CheckLoadUrl(page1_url.spec(), kPage1Title, nullptr, controller.get());
+  CheckLoadUrl(page1_url.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               controller.get());
 
   // Request a View from the Frame, and pump the loop to process the request.
   zx::eventpair owner_token, frame_token;
@@ -1060,7 +1093,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
 
   // Verify that the Frame still works, by navigating to Page #2.
   const GURL page2_url(embedded_test_server()->GetURL(kPage2Path));
-  CheckLoadUrl(page2_url.spec(), kPage2Title, nullptr, controller.get());
+  CheckLoadUrl(page2_url.spec(), kPage2Title, chromium::web::LoadUrlParams2(),
+               controller.get());
 
   // Create new View tokens and request a new view.
   zx::eventpair owner_token2, frame_token2;
@@ -1070,7 +1104,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   EXPECT_TRUE(frame_impl->has_view_for_test());
 
   // Verify that the Frame still works, by navigating back to Page #1.
-  CheckLoadUrl(page1_url.spec(), kPage1Title, nullptr, controller.get());
+  CheckLoadUrl(page1_url.spec(), kPage1Title, chromium::web::LoadUrlParams2(),
+               controller.get());
 }
 
 class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
@@ -1121,6 +1156,33 @@ std::vector<uint8_t> StringToUnsignedVector(base::StringPiece str) {
 IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
   chromium::web::FramePtr frame = CreateFrame();
 
+  chromium::web::LoadUrlParams2 load_url_params;
+  load_url_params.set_headers({StringToUnsignedVector("X-ExtraHeaders: 1"),
+                               StringToUnsignedVector("X-2ExtraHeaders: 2")});
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
+  CheckLoadUrl(page_url.spec(), kPage1Title, std::move(load_url_params),
+               controller.get());
+  base::RunLoop().RunUntilIdle();
+
+  // At this point, the page should be loaded, the server should have received
+  // the request and the request should be in the map.
+  const auto iter = accumulated_requests_.find(page_url);
+  ASSERT_NE(iter, accumulated_requests_.end());
+  EXPECT_THAT(iter->second.headers,
+              testing::Contains(testing::Key("X-ExtraHeaders")));
+  EXPECT_THAT(iter->second.headers,
+              testing::Contains(testing::Key("X-2ExtraHeaders")));
+}
+
+// TODO(crbug.com/931831): Remove this test once the transition is complete.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
+                       DeprecatedExtraHeaders) {
+  chromium::web::FramePtr frame = CreateFrame();
+
   chromium::web::LoadUrlParamsPtr load_url_params =
       chromium::web::LoadUrlParams::New();
   load_url_params->headers.push_back(
@@ -1132,8 +1194,18 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
   frame->GetNavigationController(controller.NewRequest());
 
   const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-  CheckLoadUrl(page_url.spec(), kPage1Title, std::move(load_url_params),
-               controller.get());
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(navigation_observer_,
+              MockableOnNavigationStateChanged(testing::AllOf(
+                  Field(&NavigationDetails::title, kPage1Title),
+                  Field(&NavigationDetails::url, page_url.spec()))))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  controller->LoadUrl(page_url.spec(), std::move(load_url_params));
+  run_loop.Run();
+  Mock::VerifyAndClearExpectations(this);
+  navigation_observer_.Acknowledge();
+
   base::RunLoop().RunUntilIdle();
 
   // At this point, the page should be loaded, the server should have received
