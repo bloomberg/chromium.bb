@@ -96,6 +96,8 @@ class APP_LIST_EXPORT SearchResultView
   void OnBlur() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
