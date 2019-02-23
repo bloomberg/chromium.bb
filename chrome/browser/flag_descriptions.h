@@ -2108,6 +2108,9 @@ extern const char kVoiceInputDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
+extern const char kEnableAppReinstallZeroStateName[];
+extern const char kEnableAppReinstallZeroStateDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
