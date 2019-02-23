@@ -706,6 +706,8 @@ HWTEST_TAST_CQ_SUITE = 'bvt-tast-cq'
 HWTEST_TAST_CHROME_PFQ_SUITE = 'bvt-tast-chrome-pfq'
 # Runs non-informational Tast tests exercising ARC.
 HWTEST_TAST_ANDROID_PFQ_SUITE = 'bvt-tast-android-pfq'
+# Runs all Tast informational tests.
+HWTEST_TAST_INFORMATIONAL_SUITE = 'bvt-tast-informational'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_JETSTREAM_COMMIT_SUITE = 'jetstream_cq'
 HWTEST_MOBLAB_SUITE = 'moblab'
