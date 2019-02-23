@@ -103,7 +103,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   HttpProxyConnectJob(RequestPriority priority,
                       const CommonConnectJobParams& common_connect_job_params,
                       const scoped_refptr<HttpProxySocketParams>& params,
-                      Delegate* delegate);
+                      Delegate* delegate,
+                      const NetLogWithSource* net_log);
   ~HttpProxyConnectJob() override;
 
   // ConnectJob methods.

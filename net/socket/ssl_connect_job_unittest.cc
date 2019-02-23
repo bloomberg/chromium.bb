@@ -167,7 +167,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
         SSLParams(proxy_scheme),
         proxy_scheme == ProxyServer::SCHEME_HTTP ? &http_proxy_socket_pool_
                                                  : nullptr,
-        test_delegate);
+        test_delegate, nullptr /* net_log */);
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {

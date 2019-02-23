@@ -96,21 +96,27 @@ SSLConnectJob::SSLConnectJob(
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SSLSocketParams>& params,
     TransportClientSocketPool* http_proxy_pool,
-    ConnectJob::Delegate* delegate)
+    ConnectJob::Delegate* delegate,
+    const NetLogWithSource* net_log)
     : ConnectJob(priority,
                  ConnectionTimeout(
                      *params,
                      common_connect_job_params.network_quality_estimator),
                  common_connect_job_params,
                  delegate,
-                 NetLogWithSource::Make(common_connect_job_params.net_log,
-                                        NetLogSourceType::SSL_CONNECT_JOB)),
+                 net_log,
+                 NetLogSourceType::SSL_CONNECT_JOB,
+                 NetLogEventType::SSL_CONNECT_JOB_CONNECT),
       params_(params),
       http_proxy_pool_(http_proxy_pool),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))) {}
 
-SSLConnectJob::~SSLConnectJob() = default;
+SSLConnectJob::~SSLConnectJob() {
+  // In the case the job was canceled, need to delete nested job first to
+  // correctly order NetLog events.
+  nested_connect_job_.reset();
+}
 
 LoadState SSLConnectJob::GetLoadState() const {
   switch (next_state_) {
@@ -248,7 +254,7 @@ int SSLConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
       params_->GetDirectConnectionParams(), priority(),
-      common_connect_job_params(), this);
+      common_connect_job_params(), this, &net_log());
   return nested_connect_job_->Connect();
 }
 
@@ -276,7 +282,7 @@ int SSLConnectJob::DoSOCKSConnect() {
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SOCKSConnectJob>(
       priority(), common_connect_job_params(),
-      params_->GetSocksProxyConnectionParams(), this);
+      params_->GetSocksProxyConnectionParams(), this, &net_log());
   return nested_connect_job_->Connect();
 }
 

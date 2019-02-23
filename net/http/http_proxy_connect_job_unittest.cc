@@ -201,7 +201,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
             nullptr /* socket_performance_watcher_factory */,
             &network_quality_estimator_, nullptr /* net_log */,
             nullptr /* websocket_endpoint_lock_manager */),
-        std::move(http_proxy_socket_params), delegate);
+        std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
   }
 
   void InitProxyDelegate() {

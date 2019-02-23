@@ -41,7 +41,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
       RequestPriority priority,
       const CommonConnectJobParams& common_connect_job_params,
       const scoped_refptr<TransportSocketParams>& params,
-      Delegate* delegate);
+      Delegate* delegate,
+      const NetLogWithSource* net_log);
   ~WebSocketTransportConnectJob() override;
 
   // ConnectJob methods.

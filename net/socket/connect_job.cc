@@ -55,20 +55,35 @@ ConnectJob::ConnectJob(RequestPriority priority,
                        base::TimeDelta timeout_duration,
                        const CommonConnectJobParams& common_connect_job_params,
                        Delegate* delegate,
-                       const NetLogWithSource& net_log)
+                       const NetLogWithSource* net_log,
+                       NetLogSourceType net_log_source_type,
+                       NetLogEventType net_log_connect_event_type)
     : timeout_duration_(timeout_duration),
       priority_(priority),
       common_connect_job_params_(common_connect_job_params),
       delegate_(delegate),
-      net_log_(net_log) {
+      top_level_job_(net_log == nullptr),
+      net_log_(net_log
+                   ? *net_log
+                   : NetLogWithSource::Make(common_connect_job_params.net_log,
+                                            net_log_source_type)),
+      net_log_connect_event_type_(net_log_connect_event_type) {
   DCHECK(delegate);
-  net_log.BeginEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB,
-                     NetLog::StringCallback(
-                         "group_name", &common_connect_job_params.group_name));
+  if (top_level_job_) {
+    net_log_.BeginEvent(
+        NetLogEventType::CONNECT_JOB,
+        NetLog::StringCallback("group_name",
+                               &common_connect_job_params.group_name));
+  }
 }
 
 ConnectJob::~ConnectJob() {
-  net_log().EndEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB);
+  // Log end of Connect event if ConnectJob was still in-progress when
+  // destroyed.
+  if (delegate_)
+    LogConnectCompletion(ERR_ABORTED);
+  if (top_level_job_)
+    net_log().EndEvent(NetLogEventType::CONNECT_JOB);
 }
 
 std::unique_ptr<StreamSocket> ConnectJob::PassSocket() {
@@ -100,10 +115,8 @@ int ConnectJob::Connect() {
 }
 
 void ConnectJob::SetSocket(std::unique_ptr<StreamSocket> socket) {
-  if (socket) {
-    net_log().AddEvent(NetLogEventType::CONNECT_JOB_SET_SOCKET,
-                       socket->NetLog().source().ToEventParametersCallback());
-  }
+  if (socket)
+    net_log().AddEvent(NetLogEventType::CONNECT_JOB_SET_SOCKET);
   socket_ = std::move(socket);
 }
 
@@ -124,20 +137,19 @@ void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
 
 void ConnectJob::LogConnectStart() {
   connect_timing_.connect_start = base::TimeTicks::Now();
-  net_log().BeginEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB_CONNECT);
+  net_log().BeginEvent(net_log_connect_event_type_);
 }
 
 void ConnectJob::LogConnectCompletion(int net_error) {
   connect_timing_.connect_end = base::TimeTicks::Now();
-  net_log().EndEventWithNetErrorCode(
-      NetLogEventType::SOCKET_POOL_CONNECT_JOB_CONNECT, net_error);
+  net_log().EndEventWithNetErrorCode(net_log_connect_event_type_, net_error);
 }
 
 void ConnectJob::OnTimeout() {
   // Make sure the socket is NULL before calling into |delegate|.
   SetSocket(nullptr);
 
-  net_log_.AddEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB_TIMED_OUT);
+  net_log_.AddEvent(NetLogEventType::CONNECT_JOB_TIMED_OUT);
 
   NotifyDelegateOfCompletion(ERR_TIMED_OUT);
 }

@@ -42,7 +42,7 @@ std::unique_ptr<ConnectJob> CreateTransportConnectJob(
   DCHECK(!http_proxy_pool_for_ssl_pool);
   return TransportConnectJob::CreateTransportConnectJob(
       std::move(transport_socket_params), priority, common_connect_job_params,
-      delegate);
+      delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
@@ -54,7 +54,7 @@ std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
   DCHECK(!http_proxy_pool_for_ssl_pool);
   return std::make_unique<SOCKSConnectJob>(priority, common_connect_job_params,
                                            std::move(socks_socket_params),
-                                           delegate);
+                                           delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateSSLConnectJob(
@@ -65,7 +65,7 @@ std::unique_ptr<ConnectJob> CreateSSLConnectJob(
     TransportClientSocketPool* http_proxy_pool_for_ssl_pool) {
   return std::make_unique<SSLConnectJob>(
       priority, common_connect_job_params, std::move(ssl_socket_params),
-      http_proxy_pool_for_ssl_pool, delegate);
+      http_proxy_pool_for_ssl_pool, delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
@@ -77,7 +77,7 @@ std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
   DCHECK(!http_proxy_pool_for_ssl_pool);
   return std::make_unique<HttpProxyConnectJob>(
       priority, common_connect_job_params, std::move(http_proxy_socket_params),
-      delegate);
+      delegate, nullptr /* net_log */);
 }
 
 }  // namespace
