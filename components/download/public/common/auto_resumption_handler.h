@@ -40,7 +40,8 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
       std::unique_ptr<download::TaskManager> task_manager,
       std::unique_ptr<Config> config);
 
-  // Returns the singleton instance of the AutoResumptionHandler.
+  // Returns the singleton instance of the AutoResumptionHandler, or nullptr if
+  // initialization is not yet complete.
   static AutoResumptionHandler* Get();
 
   AutoResumptionHandler(

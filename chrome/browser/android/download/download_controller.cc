@@ -382,7 +382,8 @@ void DownloadController::OnDownloadStarted(
   download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
-  download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
+  if (download::AutoResumptionHandler::Get())
+    download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
 
   OnDownloadUpdated(download_item);
 }
