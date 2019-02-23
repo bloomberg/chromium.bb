@@ -109,9 +109,9 @@ bool OverlayProcessor::ProcessForDCLayers(
   if (!overlay_validator || !overlay_validator->AllowDCLayerOverlays())
     return false;
 
-  dc_processor_.Process(
-      resource_provider, gfx::RectF(render_passes->back()->output_rect),
-      render_passes, &overlay_damage_rect_, damage_rect, dc_layer_overlays);
+  dc_processor_.Process(resource_provider,
+                        gfx::RectF(render_passes->back()->output_rect),
+                        render_passes, damage_rect, dc_layer_overlays);
 
   DCHECK(overlay_candidates->empty());
   return true;
@@ -150,7 +150,12 @@ void OverlayProcessor::ProcessForOverlays(
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.
   if (!render_pass->copy_requests.empty()) {
+    damage_rect->Union(
+        dc_processor_.previous_frame_overlay_damage_contribution());
+    // Update damage rect before calling ClearOverlayState, otherwise
+    // previous_frame_overlay_rect_union will be empty.
     dc_processor_.ClearOverlayState();
+
     return;
   }
 
