@@ -33,19 +33,13 @@
     <div>
       <button id="refresh-logs">Refresh Logs</button>
       <div>
-        Page Model Log: <span id="model-status"></span>
-        <button id="log-model-on">Enable</button>
-        <button id="log-model-off">Disable</button>
+        <input type="checkbox" id="model-checkbox">Page Model Log</input>
       </div>
       <div>
-        Request Queue Log: <span id="request-status"></span>
-        <button id="log-request-on">Enable</button>
-        <button id="log-request-off">Disable</button>
+        <input type="checkbox" id="request-checkbox">Request Queue Log</input>
       </div>
       <div>
-        Prefetching Log: <span id="prefetch-status"></span>
-        <button id="log-prefetch-on">Enable</button>
-        <button id="log-prefetch-off">Disable</button>
+        <input type="checkbox" id="prefetch-checkbox">Prefetching Log</input>
       </div>
       <ul id="logs"></ul>
     </div>
@@ -134,9 +128,9 @@
       </div>
     </div>
     <div>
-      Limitless prefetching: <span id="limitless-prefetching-status"></span>
-      <button id="limitless-prefetching-on">Enable</button>
-      <button id="limitless-prefetching-off">Disable</button>
+      <input type="checkbox" id="limitless-prefetching-checkbox">
+          Enable limitless prefetching
+      </input>
     </div>
     <div id="prefetch-actions-info" class="dump"></div>
   </body>
