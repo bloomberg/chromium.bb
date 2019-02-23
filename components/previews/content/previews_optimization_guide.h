@@ -91,7 +91,8 @@ class PreviewsOptimizationGuide
 
   PreviewsHints* GetHintsForTesting() { return hints_.get(); }
 
-  // |next_update_closure| is called the next time the hints have been updated.
+  // |next_update_closure| is called the next time OnHintsComponentAvailable is
+  // called and the corresponding hints have been updated.
   void ListenForNextUpdateForTesting(base::OnceClosure next_update_closure);
 
  private:
@@ -101,11 +102,14 @@ class PreviewsOptimizationGuide
   void OnHintCacheInitialized();
 
   // Updates the hints to the latest hints sent by the Component Updater.
-  void UpdateHints(std::unique_ptr<PreviewsHints> hints);
+  // |update_closure| is called once the hints are updated.
+  void UpdateHints(base::OnceClosure update_closure,
+                   std::unique_ptr<PreviewsHints> hints);
 
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.
-  void OnHintsUpdated();
+  // |update_closure| is called immediately if not null.
+  void OnHintsUpdated(base::OnceClosure update_closure);
 
   // Callback when a hint is loaded.
   void OnLoadedHint(base::OnceClosure callback,

@@ -136,10 +136,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
-
-    // Wait for hint update processing to complete.
+    // Register a QuitClosure for when the next hint update is started below.
     base::RunLoop run_loop;
     PreviewsServiceFactory::GetForProfile(
         Profile::FromBrowserContext(browser()
@@ -150,6 +147,9 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         ->previews_decider_impl()
         ->previews_opt_guide()
         ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
+        component_info);
     run_loop.Run();
   }
 
