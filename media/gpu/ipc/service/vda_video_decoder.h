@@ -47,7 +47,7 @@ class VdaVideoDecoder : public VideoDecoder,
   using CreateCommandBufferHelperCB =
       base::OnceCallback<scoped_refptr<CommandBufferHelper>()>;
   using CreateAndInitializeVdaCB =
-      base::OnceCallback<std::unique_ptr<VideoDecodeAccelerator>(
+      base::RepeatingCallback<std::unique_ptr<VideoDecodeAccelerator>(
           scoped_refptr<CommandBufferHelper>,
           VideoDecodeAccelerator::Client*,
           MediaLog*,
@@ -138,6 +138,7 @@ class VdaVideoDecoder : public VideoDecoder,
   // Tasks and thread hopping.
   void DestroyOnGpuThread();
   void InitializeOnGpuThread();
+  void ReinitializeOnGpuThread();
   void InitializeDone(bool status);
   void DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
                          int32_t bitstream_id);
@@ -197,8 +198,10 @@ class VdaVideoDecoder : public VideoDecoder,
   // Only written on the GPU thread during initialization, which is mutually
   // exclusive with reads on the parent thread.
   std::unique_ptr<VideoDecodeAccelerator> vda_;
+  scoped_refptr<CommandBufferHelper> command_buffer_helper_;
   bool vda_initialized_ = false;
   bool decode_on_parent_thread_ = false;
+  bool reinitializing_ = false;
 
   //
   // Weak pointers, prefixed by bound thread.

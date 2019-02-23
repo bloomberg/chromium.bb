@@ -103,8 +103,8 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
                        base::Unretained(this)),
-        base::BindOnce(&VdaVideoDecoderTest::CreateAndInitializeVda,
-                       base::Unretained(this)),
+        base::BindRepeating(&VdaVideoDecoderTest::CreateAndInitializeVda,
+                            base::Unretained(this)),
         GetCapabilities()));
     client_ = vdavd_.get();
   }

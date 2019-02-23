@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -21,6 +22,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/video/picture.h"
@@ -118,8 +120,8 @@ VdaVideoDecoder::Create(
           std::move(media_log), target_color_space,
           base::BindOnce(&PictureBufferManager::Create),
           base::BindOnce(&CreateCommandBufferHelper, std::move(get_stub_cb)),
-          base::BindOnce(&CreateAndInitializeVda, gpu_preferences,
-                         gpu_workarounds),
+          base::BindRepeating(&CreateAndInitializeVda, gpu_preferences,
+                              gpu_workarounds),
           GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
               GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
                   gpu_preferences, gpu_workarounds))));
@@ -264,13 +266,31 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  // VaapiVideoDecodeAccelerator doesn't support profile change, the different
+  // profiles from the initial profile will causes an issue in AMD driver
+  // (https://crbug.com/929565). We should support reinitialization for profile
+  // changes. We limit this support as small as possible for safety.
+  const bool is_profile_change =
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
+      config_.profile() != config.profile();
+#else
+      false;
+#endif
+
   // The configuration is supported.
   config_ = config;
 
   if (reinitializing) {
-    parent_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                  parent_weak_this_, true));
+    if (is_profile_change) {
+      MEDIA_LOG(INFO, media_log_) << "Reinitialize VideoDecodeAccelerator";
+      gpu_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&VdaVideoDecoder::ReinitializeOnGpuThread,
+                                    gpu_weak_this_));
+    } else {
+      parent_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
+                                    parent_weak_this_, true));
+    }
     return;
   }
 
@@ -279,21 +299,36 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       base::BindOnce(&VdaVideoDecoder::InitializeOnGpuThread, gpu_weak_this_));
 }
 
+void VdaVideoDecoder::ReinitializeOnGpuThread() {
+  DVLOG(2) << __func__;
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+  DCHECK(vda_initialized_);
+  DCHECK(vda_);
+  DCHECK(!reinitializing_);
+
+  reinitializing_ = true;
+  vda_->Flush();
+}
+
 void VdaVideoDecoder::InitializeOnGpuThread() {
   DVLOG(2) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(!vda_);
+  DCHECK(!vda_initialized_);
 
-  // Set up |command_buffer_helper|.
-  scoped_refptr<CommandBufferHelper> command_buffer_helper =
-      std::move(create_command_buffer_helper_cb_).Run();
-  if (!command_buffer_helper) {
-    parent_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                  parent_weak_this_, false));
-    return;
+  // Set up |command_buffer_helper_|.
+  if (!reinitializing_) {
+    command_buffer_helper_ = std::move(create_command_buffer_helper_cb_).Run();
+    if (!command_buffer_helper_) {
+      parent_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
+                                    parent_weak_this_, false));
+      return;
+    }
+
+    picture_buffer_manager_->Initialize(gpu_task_runner_,
+                                        command_buffer_helper_);
   }
-  picture_buffer_manager_->Initialize(gpu_task_runner_, command_buffer_helper);
 
   // Convert the configuration.
   VideoDecodeAccelerator::Config vda_config;
@@ -312,8 +347,8 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
   // vda_config.supported_output_formats = [Only used by PPAPI]
 
   // Create and initialize the VDA.
-  vda_ = std::move(create_and_initialize_vda_cb_)
-             .Run(command_buffer_helper, this, media_log_.get(), vda_config);
+  vda_ = create_and_initialize_vda_cb_.Run(command_buffer_helper_, this,
+                                           media_log_.get(), vda_config);
   if (!vda_) {
     parent_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
@@ -347,6 +382,7 @@ void VdaVideoDecoder::InitializeDone(bool status) {
     return;
   }
 
+  reinitializing_ = false;
   std::move(init_cb_).Run(true);
 }
 
@@ -623,6 +659,17 @@ void VdaVideoDecoder::NotifyFlushDone() {
   DVLOG(2) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(vda_initialized_);
+
+  if (reinitializing_) {
+    // If reinitializing, this Flush() is requested by VdaVideoDecoder in
+    // ReinitializeOnGpuThread(), not MojoVideoDecoder. We should not invoke
+    // NotifyFlushDoneOnParentThread.
+    gpu_weak_vda_factory_ = nullptr;
+    vda_ = nullptr;
+    vda_initialized_ = false;
+    InitializeOnGpuThread();
+    return;
+  }
 
   parent_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VdaVideoDecoder::NotifyFlushDoneOnParentThread,
