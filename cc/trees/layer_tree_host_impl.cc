@@ -322,12 +322,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scroll_animating_latched_element_id_(kInvalidElementId),
       // It is safe to use base::Unretained here since we will outlive the
       // ImageAnimationController.
-      image_animation_controller_(
-          GetTaskRunner(),
-          base::BindRepeating(
-              &LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
-              base::Unretained(this)),
-          settings_.enable_image_animation_resync),
+      image_animation_controller_(GetTaskRunner(),
+                                  this,
+                                  settings_.enable_image_animation_resync),
       frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
       skipped_frame_tracker_(&frame_metrics_),
       is_animating_for_snap_(false),
@@ -485,8 +482,8 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   if (ukm_manager_)
     ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
 
-  const auto& animated_images = image_animation_controller_.AnimateForSyncTree(
-      CurrentBeginFrameArgs().frame_time);
+  const auto& animated_images =
+      image_animation_controller_.AnimateForSyncTree(CurrentBeginFrameArgs());
   images_to_invalidate.insert(animated_images.begin(), animated_images.end());
   sync_tree()->InvalidateRegionForImages(images_to_invalidate);
 
@@ -2425,6 +2422,8 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
     input_handler_client_->DeliverInputForBeginFrame();
 
   Animate();
+
+  image_animation_controller_.WillBeginImplFrame(args);
 
   for (auto* it : video_frame_controllers_)
     it->OnBeginFrame(args);
@@ -5683,13 +5682,6 @@ void LayerTreeHostImpl::ShowScrollbarsForImplScroll(ElementId element_id) {
     animation_controller->DidScrollUpdate();
 }
 
-void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
-  // If we are animating an image, we want at least one draw of the active tree
-  // before a new tree is activated.
-  bool needs_first_draw_on_activation = true;
-  client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
-}
-
 void LayerTreeHostImpl::InitializeUkm(
     std::unique_ptr<ukm::UkmRecorder> recorder) {
   DCHECK(!ukm_manager_);
@@ -5742,6 +5734,19 @@ void LayerTreeHostImpl::AllocateLocalSurfaceId() {
   child_local_surface_id_allocator_.GenerateId();
   client_->DidGenerateLocalSurfaceIdAllocationOnImplThread(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+}
+
+void LayerTreeHostImpl::RequestBeginFrameForAnimatedImages() {
+  SetNeedsOneBeginImplFrame();
+}
+
+void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
+  DCHECK_EQ(impl_thread_phase_, ImplThreadPhase::INSIDE_IMPL_FRAME);
+
+  // If we are animating an image, we want at least one draw of the active tree
+  // before a new tree is activated.
+  bool needs_first_draw_on_activation = true;
+  client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
 }
 
 }  // namespace cc
