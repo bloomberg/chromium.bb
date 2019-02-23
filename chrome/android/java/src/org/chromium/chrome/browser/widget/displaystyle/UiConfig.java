@@ -69,6 +69,13 @@ public class UiConfig {
     }
 
     /**
+     * @return The context for the view associated with this UiConfig.
+     */
+    public Context getContext() {
+        return mContext;
+    }
+
+    /**
      * Refresh the display style, notify observers of changes.
      */
     public void updateDisplayStyle() {
