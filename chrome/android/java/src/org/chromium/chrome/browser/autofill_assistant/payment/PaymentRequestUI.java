@@ -319,6 +319,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mAcceptThirdPartyConditions.setOnClickListener(this);
         mReviewThirdPartyConditions.setOnClickListener(this);
 
+        // Set 3rd party privacy notice text.
+        TextView thirdPartyPrivacyNotice =
+                mRequestView.findViewById(R.id.payment_request_3rd_party_privacy_notice);
+        thirdPartyPrivacyNotice.setText(SpanApplier.applySpans(
+                context.getString(R.string.autofill_assistant_3rd_party_privacy_notice, origin),
+                new SpanApplier.SpanInfo("<b>", "</b>", boldSpan)));
+
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
         mPaymentContainer = (FadingEdgeScrollView) mRequestView.findViewById(R.id.option_container);
@@ -354,7 +361,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Always show separator at the top.
         mPaymentContainer.setEdgeVisibility(
-                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
+                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.HARD);
 
         if (mRequestContactDetails) {
             mPaymentContainerLayout.addView(mContactDetailsSection,
