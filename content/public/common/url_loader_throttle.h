@@ -156,6 +156,11 @@ class CONTENT_EXPORT URLLoaderThrottle {
       const network::ResourceResponseHead& response_head,
       bool* defer);
 
+  // Called if there is a non-OK net::Error in the completion status.
+  virtual void WillOnCompleteWithError(
+      const network::URLLoaderCompletionStatus& status,
+      bool* defer);
+
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  protected:

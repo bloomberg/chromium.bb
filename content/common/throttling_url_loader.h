@@ -151,7 +151,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
     DEFERRED_START,
     DEFERRED_REDIRECT,
     DEFERRED_BEFORE_RESPONSE,
-    DEFERRED_RESPONSE
+    DEFERRED_RESPONSE,
+    DEFERRED_COMPLETE
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
   bool loader_completed_ = false;

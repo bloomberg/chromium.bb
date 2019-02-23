@@ -385,6 +385,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertestWithNetworkService,
 class DataReductionProxyFallbackBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
+  using ResponseHook =
+      base::RepeatingCallback<void(net::test_server::BasicHttpResponse*)>;
+
   void SetUpOnMainThread() override {
     // Set up a primary server which will return the Chrome-Proxy header set by
     // SetHeader() and status set by SetStatusCode(). Secondary server will just
@@ -411,6 +414,10 @@ class DataReductionProxyFallbackBrowsertest
     DataReductionProxyBrowsertest::SetUpOnMainThread();
   }
 
+  void SetResponseHook(ResponseHook response_hook) {
+    response_hook_ = response_hook;
+  }
+
   void SetHeader(const std::string& header) { header_ = header; }
 
   void SetStatusCode(net::HttpStatusCode status_code) {
@@ -423,6 +430,8 @@ class DataReductionProxyFallbackBrowsertest
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     if (!header_.empty())
       response->AddCustomHeader(chrome_proxy_header(), header_);
+    if (response_hook_)
+      response_hook_.Run(response.get());
     response->set_code(status_code_);
     response->set_content(kPrimaryResponse);
     response->set_content_type("text/plain");
@@ -431,9 +440,32 @@ class DataReductionProxyFallbackBrowsertest
 
   net::HttpStatusCode status_code_ = net::HTTP_OK;
   std::string header_;
+  ResponseHook response_hook_;
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
 };
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       FallbackProxyUsedOnNetError) {
+  SetResponseHook(
+      base::BindRepeating([](net::test_server::BasicHttpResponse* response) {
+        response->AddCustomHeader("Content-Disposition", "inline");
+        response->AddCustomHeader("Content-Disposition", "form-data");
+      }));
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
+  EXPECT_THAT(GetBody(), kSecondaryResponse);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.InvalidResponseHeadersReceived.NetError",
+      -net::ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION, 1);
+
+  // Bad proxy should still be bypassed.
+  SetResponseHook(ResponseHook());
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
+  EXPECT_THAT(GetBody(), kSecondaryResponse);
+}
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedOn500Status) {
