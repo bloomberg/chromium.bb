@@ -1126,8 +1126,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsResponse)) {
-  if (GetParam())
-    return;
   {
     // Verify the preview is not triggered when the server responds with bypass
     // 307.
@@ -1137,14 +1135,18 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyInfoStatus(&histogram_tester,
                      previews::ServerLitePageStatus::kBypass);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
+    if (!GetParam()) {
+      histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                         true, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kPreviewUnavailable,
+          1);
+
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
+    }
   }
 
   {
@@ -1156,15 +1158,17 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyInfoStatus(&histogram_tester,
                      previews::ServerLitePageStatus::kBypass);
 
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
-
+    if (!GetParam()) {
+      histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                         true, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kPreviewUnavailable,
+          1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
+    }
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
@@ -1186,11 +1190,13 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyInfoStatus(&histogram_tester,
                      previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure, 1);
+    if (!GetParam()) {
+      histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                         true, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure, 1);
+    }
   }
 
   {
@@ -1201,19 +1207,20 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyInfoStatus(&histogram_tester,
                      previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kServiceUnavailable,
-        1);
+    if (!GetParam()) {
+      histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                         true, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kServiceUnavailable,
+          1);
+    }
   }
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsLoadshed)) {
-  if (GetParam())
-    return;
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);

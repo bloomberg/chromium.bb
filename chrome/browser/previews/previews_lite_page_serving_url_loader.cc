@@ -4,21 +4,89 @@
 
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 namespace previews {
 
 namespace {
+
+void BlacklistBypassedHostOnUIThread(const std::string& host,
+                                     base::TimeDelta duration,
+                                     int frame_tree_node_id) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  // If the WebContents has been closed this may be null.
+  if (!web_contents)
+    return;
+
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
+      ->BlacklistBypassedHost(host, duration);
+}
+
+void BlacklistBypassedHost(const std::string& host,
+                           base::TimeDelta duration,
+                           int frame_tree_node_id) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&BlacklistBypassedHostOnUIThread, host, duration,
+                     frame_tree_node_id));
+}
+
+void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
+                                       int frame_tree_node_id) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  // If the WebContents has been closed this may be null.
+  if (!web_contents)
+    return;
+
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
+      ->SetServerUnavailableFor(duration);
+}
+
+void SetServerUnavailableFor(base::TimeDelta duration, int frame_tree_node_id) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
+                     frame_tree_node_id));
+}
+
+const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
+
 // Used for mojo pipe size. Same constant as navigation code.
 constexpr size_t kServingDefaultAllocationSize = 512 * 1024;
 
@@ -68,6 +136,8 @@ void PreviewsLitePageServingURLLoader::StartNetworkRequest(
     const scoped_refptr<network::SharedURLLoaderFactory>&
         network_loader_factory,
     int frame_tree_node_id) {
+  frame_tree_node_id_ = frame_tree_node_id;
+  previews_url_ = request.url;
   network::mojom::URLLoaderClientPtr client;
 
   url_loader_binding_.Bind(mojo::MakeRequest(&client),
@@ -78,7 +148,7 @@ void PreviewsLitePageServingURLLoader::StartNetworkRequest(
 
   // Create a network service URL loader with passed in params.
   network_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_url_loader_), frame_tree_node_id, 0,
+      mojo::MakeRequest(&network_url_loader_), frame_tree_node_id_, 0,
       network::mojom::kURLLoadOptionNone, request, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(kPreviewsTrafficAnnotation));
 }
@@ -137,8 +207,22 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   DCHECK(!forwarding_client_);
 
+  const net::HttpResponseHeaders* response_headers = head.headers.get();
   // TODO: evaluate all the responses we allow, don't hard code 200.
-  if (head.headers->response_code() != net::HTTP_OK) {
+  if (!response_headers || response_headers->response_code() != net::HTTP_OK) {
+    if (response_headers &&
+        response_headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE) {
+      std::string retry_after_header;
+      base::TimeDelta retry_after = base::TimeDelta::FromSeconds(base::RandInt(
+          60, previews::params::PreviewServerLoadshedMaxSeconds()));
+      if (response_headers->EnumerateHeader(nullptr, "retry-after",
+                                            &retry_after_header)) {
+        net::HttpUtil::ParseRetryAfterHeader(retry_after_header,
+                                             base::Time::Now(), &retry_after);
+      }
+      SetServerUnavailableFor(retry_after, frame_tree_node_id_);
+    }
+
     Fallback();
     return;
   }
@@ -162,6 +246,29 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
   // Make a deep copy of ResourceResponseHead before passing it cross-thread.
   resource_response_ = base::MakeRefCounted<network::ResourceResponse>();
   resource_response_->head = head;
+
+  // If the URL we are redirecting to is the one we started at, we should
+  // fallback after checking headers for bypass instructions.
+  std::string original_url;
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(previews_url_,
+                                                          &original_url) &&
+      GURL(original_url) == redirect_info.new_url) {
+    const net::HttpResponseHeaders* response_headers = head.headers.get();
+
+    std::string chrome_proxy_header;
+    bool blacklist_host =
+        response_headers &&
+        response_headers->EnumerateHeader(
+            nullptr, data_reduction_proxy::chrome_proxy_header(),
+            &chrome_proxy_header) &&
+        chrome_proxy_header.find("host-blacklisted") != std::string::npos;
+
+    if (blacklist_host)
+      BlacklistBypassedHost(GURL(original_url).host(), kBlacklistDuration,
+                            frame_tree_node_id_);
+    Fallback();
+    return;
+  }
 
   std::move(result_callback_)
       .Run(ServingLoaderResult::kRedirect, redirect_info, resource_response_);

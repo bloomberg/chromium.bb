@@ -9,13 +9,14 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -30,7 +31,8 @@ namespace {
 class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
  public:
   PreviewsLitePageURLLoaderInterceptorTest()
-      : shared_factory_(
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
   ~PreviewsLitePageURLLoaderInterceptorTest() override {}
@@ -67,7 +69,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
   PreviewsLitePageURLLoaderInterceptor& interceptor() { return *interceptor_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   base::Optional<bool> callback_was_empty_;
@@ -100,7 +102,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", false, 1);
 
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_TRUE(callback_was_empty().value());
@@ -121,7 +123,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   histogram_tester.ExpectTotalCount(
       "Previews.ServerLitePage.URLLoader.Attempted", 2);
 
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_FALSE(callback_was_empty().value());
@@ -146,7 +148,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_TRUE(callback_was_empty().value());
 }
@@ -171,7 +173,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_TRUE(callback_was_empty().value());
@@ -197,7 +199,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
 
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_TRUE(callback_was_empty().value());
 }
@@ -221,7 +223,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
 
-  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_was_empty().has_value());
   EXPECT_TRUE(callback_was_empty().value());
 }

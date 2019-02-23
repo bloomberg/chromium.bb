@@ -114,6 +114,13 @@ class PreviewsLitePageServingURLLoader
   // network URL Loader calls are paused.
   scoped_refptr<network::ResourceResponse> resource_response_;
 
+  // The frame tree node id associated with the request. Used to get the
+  // BrowserContext on the UI thread for the request.
+  int frame_tree_node_id_ = 0;
+
+  // The previews URL that is being requested.
+  GURL previews_url_;
+
   // Forwarding client binding.
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr forwarding_client_;
