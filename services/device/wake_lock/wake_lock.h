@@ -49,6 +49,11 @@ class WakeLock : public mojom::WakeLock {
     // number of holders goes to 0.
     virtual void OnWakeLockDeactivated(mojom::WakeLockType type) {}
 
+    // Called when the tracked wake lock's type is changed via ChangeType.
+    // |old_type| refers to its old type and new type refers to its new type.
+    virtual void OnWakeLockChanged(mojom::WakeLockType old_type,
+                                   mojom::WakeLockType new_type) {}
+
     // Called when |WakeLock| has no bindings left.
     virtual void OnConnectionError(mojom::WakeLockType type,
                                    WakeLock* wake_lock) {}

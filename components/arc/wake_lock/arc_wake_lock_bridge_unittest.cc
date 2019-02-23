@@ -81,8 +81,20 @@ class ArcWakeLockBridgeTest : public testing::Test {
     instance_.reset();
   }
 
-  device::TestWakeLockProvider* GetWakeLockProvider() {
-    return &wake_lock_provider_;
+  // Returns the number of active wake locks of type |type|.
+  int GetActiveWakeLocks(WakeLockType type) {
+    base::RunLoop run_loop;
+    int result_count = 0;
+    wake_lock_provider_.GetActiveWakeLocksForTests(
+        type,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, int* result_count, int32_t count) {
+              *result_count = count;
+              run_loop->Quit();
+            },
+            &run_loop, &result_count));
+    run_loop.Run();
+    return result_count;
   }
 
  private:
@@ -100,12 +112,10 @@ class ArcWakeLockBridgeTest : public testing::Test {
 
 TEST_F(ArcWakeLockBridgeTest, AcquireAndReleaseSinglePartialWakeLock) {
   EXPECT_TRUE(AcquirePartialWakeLock());
-  EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 
   EXPECT_TRUE(ReleasePartialWakeLock());
-  EXPECT_EQ(0, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(ArcWakeLockBridgeTest, AcquireAndReleaseMultiplePartialWakeLocks) {
@@ -113,43 +123,35 @@ TEST_F(ArcWakeLockBridgeTest, AcquireAndReleaseMultiplePartialWakeLocks) {
   EXPECT_TRUE(AcquirePartialWakeLock());
   EXPECT_TRUE(AcquirePartialWakeLock());
   EXPECT_TRUE(AcquirePartialWakeLock());
-  EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 
   // Releasing two wake locks after acquiring three should not result in
   // releasing a wake lock.
   EXPECT_TRUE(ReleasePartialWakeLock());
   EXPECT_TRUE(ReleasePartialWakeLock());
-  EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 
   // Releasing the remaining wake lock should result in the release of the wake
   // lock.
   EXPECT_TRUE(ReleasePartialWakeLock());
-  EXPECT_EQ(0, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(ArcWakeLockBridgeTest, ReleaseWakeLockOnInstanceClosed) {
   EXPECT_TRUE(AcquirePartialWakeLock());
-  ASSERT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  ASSERT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 
   // If the instance is closed, all wake locks should be released.
   base::RunLoop run_loop;
-  GetWakeLockProvider()->set_wake_lock_canceled_callback(
-      run_loop.QuitClosure());
   DestroyWakeLockInstance();
-  run_loop.Run();
-  EXPECT_EQ(0, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   // Check that wake locks can be requested after the instance becomes ready
   // again.
   CreateWakeLockInstance();
   EXPECT_TRUE(AcquirePartialWakeLock());
-  EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
 }
 
 }  // namespace arc
