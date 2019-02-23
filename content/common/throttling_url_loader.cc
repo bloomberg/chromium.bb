@@ -614,6 +614,31 @@ void ThrottlingURLLoader::OnComplete(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
 
+  // Only dispatch WillOnCompleteWithError() if status is not OK.
+  if (!throttles_.empty() && status.error_code != net::OK) {
+    pending_restart_flags_ = 0;
+    has_pending_restart_ = false;
+    bool deferred = false;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      throttle->WillOnCompleteWithError(status, &throttle_deferred);
+      if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
+        return;
+    }
+
+    if (deferred) {
+      deferred_stage_ = DEFERRED_COMPLETE;
+      client_binding_.PauseIncomingMethodCallProcessing();
+      return;
+    }
+
+    if (has_pending_restart_) {
+      RestartWithFlagsNow();
+      return;
+    }
+  }
+
   // This is the last expected message. Pipe closure before this is an error
   // (see OnClientConnectionError). After this it is expected and should be
   // ignored. The owner of |this| is expected to destroy |this| when
@@ -677,6 +702,17 @@ void ThrottlingURLLoader::Resume() {
     case DEFERRED_RESPONSE: {
       client_binding_.ResumeIncomingMethodCallProcessing();
       forwarding_client_->OnReceiveResponse(response_info_->response_head);
+      // Note: |this| may be deleted here.
+      break;
+    }
+    case DEFERRED_COMPLETE: {
+      // TODO(eroman): For simplicity we require throttles that defer during
+      // WillOnCompleteWithError() to do a restart. We could support deferring
+      // and choosing not to restart if needed, however the current consumers
+      // don't need that.
+      CHECK(has_pending_restart_);
+
+      RestartWithFlagsNow();
       // Note: |this| may be deleted here.
       break;
     }

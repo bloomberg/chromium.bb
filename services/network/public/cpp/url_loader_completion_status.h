@@ -70,6 +70,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   // Set when response blocked by CORB needs to be reported to the DevTools
   // console.
   bool should_report_corb_blocking = false;
+
+  // The proxy server used for this request, if any.
+  net::ProxyServer proxy_server;
 };
 
 }  // namespace network

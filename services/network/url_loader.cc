@@ -1109,6 +1109,7 @@ void URLLoader::NotifyCompleted(int error_code) {
     status.encoded_data_length = url_request_->GetTotalReceivedBytes();
     status.encoded_body_length = url_request_->GetRawBodyBytes();
     status.decoded_body_length = total_written_bytes_;
+    status.proxy_server = url_request_->proxy_server();
 
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
         net::IsCertStatusError(url_request_->ssl_info().cert_status) &&

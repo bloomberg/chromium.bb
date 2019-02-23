@@ -54,6 +54,10 @@ void URLLoaderThrottle::BeforeWillProcessResponse(
     const network::ResourceResponseHead& response_head,
     bool* defer) {}
 
+void URLLoaderThrottle::WillOnCompleteWithError(
+    const network::URLLoaderCompletionStatus& status,
+    bool* defer) {}
+
 URLLoaderThrottle::URLLoaderThrottle() {}
 
 }  // namespace content
