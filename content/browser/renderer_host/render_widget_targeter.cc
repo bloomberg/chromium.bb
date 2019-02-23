@@ -209,6 +209,10 @@ void RenderWidgetTargeter::ViewWillBeDestroyed(RenderWidgetHostViewBase* view) {
   unresponsive_views_.erase(view);
 }
 
+bool RenderWidgetTargeter::HasEventsPendingDispatch() const {
+  return request_in_flight_ || !requests_.empty();
+}
+
 void RenderWidgetTargeter::QueryClientInternal(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,

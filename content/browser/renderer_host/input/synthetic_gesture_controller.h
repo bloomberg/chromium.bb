@@ -47,35 +47,49 @@ class CONTENT_EXPORT SyntheticGestureController {
       std::unique_ptr<SyntheticGesture> synthetic_gesture,
       OnGestureCompleteCallback completion_callback);
 
+  // Like QueueSyntheticGesture, but the gesture is considered complete as soon
+  // as the SyntheticGestureController is done dispatching the events.
+  void QueueSyntheticGestureCompleteImmediately(
+      std::unique_ptr<SyntheticGesture> synthetic_gesture);
+
   bool DispatchNextEvent(base::TimeTicks = base::TimeTicks::Now());
 
  private:
   friend class SyntheticGestureControllerTestBase;
 
+  void QueueSyntheticGesture(
+      std::unique_ptr<SyntheticGesture> synthetic_gesture,
+      OnGestureCompleteCallback completion_callback,
+      bool complete_immediately);
+
   void StartTimer(bool high_frequency);
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
-                   SyntheticGesture::Result result);
+                   SyntheticGesture::Result result,
+                   bool complete_immediately);
   void GestureCompleted(SyntheticGesture::Result result);
   void ResolveCompletionCallback();
 
   Delegate* const delegate_;
   std::unique_ptr<SyntheticGestureTarget> gesture_target_;
 
-  // A queue of gesture/callback pairs.  Implemented as two queues to
+  // A queue of gesture/callback/bool tuples.  Implemented as multiple queues to
   // simplify the ownership of SyntheticGesture pointers.
   class GestureAndCallbackQueue {
   public:
     GestureAndCallbackQueue();
     ~GestureAndCallbackQueue();
     void Push(std::unique_ptr<SyntheticGesture> gesture,
-              OnGestureCompleteCallback callback) {
+              OnGestureCompleteCallback callback,
+              bool complete_immediately) {
       gestures_.push_back(std::move(gesture));
       callbacks_.push(std::move(callback));
+      complete_immediately_.push(complete_immediately);
     }
     void Pop() {
       gestures_.erase(gestures_.begin());
       callbacks_.pop();
+      complete_immediately_.pop();
       result_of_current_gesture_ = SyntheticGesture::GESTURE_RUNNING;
     }
     SyntheticGesture* FrontGesture() { return gestures_.front().get(); }
@@ -85,8 +99,12 @@ class CONTENT_EXPORT SyntheticGestureController {
       // remove FrontGesture/FrontCallback.
       return std::move(callbacks_.front());
     }
+    bool CompleteCurrentGestureImmediately() {
+      return complete_immediately_.front();
+    }
     bool IsEmpty() const {
       CHECK(gestures_.empty() == callbacks_.empty());
+      CHECK(gestures_.empty() == complete_immediately_.empty());
       return gestures_.empty();
     }
 
@@ -107,6 +125,7 @@ class CONTENT_EXPORT SyntheticGestureController {
         SyntheticGesture::GESTURE_RUNNING;
     std::vector<std::unique_ptr<SyntheticGesture>> gestures_;
     base::queue<OnGestureCompleteCallback> callbacks_;
+    base::queue<bool> complete_immediately_;
 
     DISALLOW_COPY_AND_ASSIGN(GestureAndCallbackQueue);
   } pending_gesture_queue_;
