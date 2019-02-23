@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_scheduler/task_scheduler_impl.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -335,8 +336,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
               ? nullptr
               : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
                     TestTimeouts::action_max_timeout(),
-                    BindRepeating(
-                        []() { LOG(FATAL) << "Run() timed out."; }))) {
+                    MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out."))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
   CHECK(!TaskScheduler::GetInstance())
