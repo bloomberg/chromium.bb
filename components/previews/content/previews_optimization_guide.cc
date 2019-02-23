@@ -199,10 +199,11 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
   if (manual_config) {
     // Allow |UpdateHints| to block startup so that the first navigation gets
     // the hints when a command line hint proto is provided.
-    UpdateHints(PreviewsHints::CreateFromHintsConfiguration(
-        std::move(manual_config),
-        hint_cache_->MaybeCreateComponentUpdateData(
-            base::Version(kManualConfigComponentVersion))));
+    UpdateHints(base::OnceClosure(),
+                PreviewsHints::CreateFromHintsConfiguration(
+                    std::move(manual_config),
+                    hint_cache_->MaybeCreateComponentUpdateData(
+                        base::Version(kManualConfigComponentVersion))));
   }
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
@@ -232,10 +233,12 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
       base::BindOnce(&PreviewsHints::CreateFromHintsComponent, info,
                      hint_cache_->MaybeCreateComponentUpdateData(info.version)),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+                     ui_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(next_update_closure_)));
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
+    base::OnceClosure update_closure,
     std::unique_ptr<PreviewsHints> hints) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
@@ -243,16 +246,18 @@ void PreviewsOptimizationGuide::UpdateHints(
     hints_->Initialize(
         hint_cache_.get(),
         base::BindOnce(&PreviewsOptimizationGuide::OnHintsUpdated,
-                       ui_weak_ptr_factory_.GetWeakPtr()));
+                       ui_weak_ptr_factory_.GetWeakPtr(),
+                       std::move(update_closure)));
   } else {
-    OnHintsUpdated();
+    OnHintsUpdated(std::move(update_closure));
   }
 }
 
-void PreviewsOptimizationGuide::OnHintsUpdated() {
+void PreviewsOptimizationGuide::OnHintsUpdated(
+    base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (!next_update_closure_.is_null())
-    std::move(next_update_closure_).Run();
+  if (!update_closure.is_null())
+    std::move(update_closure).Run();
 
   // Record the result of updating the hints. This is used as a signal for the
   // hints being fully processed in testing.

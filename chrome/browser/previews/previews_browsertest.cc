@@ -249,10 +249,7 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
     base::HistogramTester histogram_tester;
 
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
-
-    // Wait for hint update processing to complete.
+    // Register a QuitClosure for when the next hint update is started below.
     base::RunLoop run_loop;
     PreviewsServiceFactory::GetForProfile(
         Profile::FromBrowserContext(browser()
@@ -263,6 +260,10 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
         ->previews_decider_impl()
         ->previews_opt_guide()
         ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
+        component_info);
+
     run_loop.Run();
 
     // Navigate to |hint_setup_url| to prime the OptimizationGuide hints for the
