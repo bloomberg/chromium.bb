@@ -210,6 +210,9 @@ class PowerMeasurementExpectations(GpuTestExpectations):
     pass
 
 class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
+
+  _url_mode = None
+
   @classmethod
   def Name(cls):
     return 'power'
@@ -264,6 +267,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if options.url is not None:
       # This is for local testing convenience only and is not to be added to
       # any bots.
+      cls._url_mode = True
       yield ('URL', options.url,
              {'test_func': 'URL',
               'repeat': options.repeat,
@@ -276,6 +280,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'resolution': options.resolution,
               'bypass_ipg': options.bypass_ipg})
     else:
+      cls._url_mode = False
       yield ('Basic', '-',
              {'test_func': 'Basic',
               'bypass_ipg': options.bypass_ipg})
@@ -310,7 +315,9 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     path_util.SetupTelemetryPaths()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
-    cls.SetStaticServerDirs(_DATA_PATHS)
+    assert cls._url_mode is not None
+    if not cls._url_mode:
+      cls.SetStaticServerDirs(_DATA_PATHS)
 
   def RunActualGpuTest(self, test_path, *args):
     test_params = args[0]
