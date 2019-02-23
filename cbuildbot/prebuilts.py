@@ -19,8 +19,9 @@ _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _POSTSUBMIT_BINHOST = 'POSTSUBMIT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _FULL_BINHOST = 'FULL_BINHOST'
-_BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
-                         'package.installable')
+# The list of packages to upload for the dev-install tool.  This path is
+# relative to the /build/$BOARD sysroot.
+_BINHOST_PACKAGE_FILE = 'build/dev-install/package.installable'
 PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                             'chromeos/binhost')
 PUBLIC_BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
@@ -225,8 +226,8 @@ def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,
   extra_args.extend(['--upload', binhost_bucket])
   extra_args.extend(['--key', binhost_key])
 
-  filename = os.path.join(buildroot, 'chroot', 'build', board,
-                          _BINHOST_PACKAGE_FILE.lstrip('/'))
+  filename = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                          'build', board, _BINHOST_PACKAGE_FILE)
   cmd_packages = _AddPackagesForPrebuilt(filename)
   if cmd_packages:
     extra_args.extend(cmd_packages)
