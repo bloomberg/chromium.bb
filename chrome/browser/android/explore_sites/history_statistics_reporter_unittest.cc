@@ -32,7 +32,7 @@ class HistoryStatisticsReporterTest : public testing::Test {
   HistoryStatisticsReporterTest()
       : task_runner_(new base::TestMockTimeTaskRunner(
             base::TestMockTimeTaskRunner::Type::kBoundToThread)) {}
-  ~HistoryStatisticsReporterTest() override{};
+  ~HistoryStatisticsReporterTest() override {}
 
   void SetUp() override {
     HistoryStatisticsReporter::RegisterPrefs(pref_service_.registry());

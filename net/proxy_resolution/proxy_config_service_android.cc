@@ -143,7 +143,7 @@ bool GetProxyRules(const GetPropertyCallback& get_property,
       rules->proxies_for_https.IsEmpty() &&
       rules->proxies_for_ftp.IsEmpty() &&
       rules->fallback_proxies.IsEmpty());
-};
+}
 
 void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
                                   ProxyConfigWithAnnotation* config) {

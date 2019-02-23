@@ -195,7 +195,7 @@ size_t GetNumTables(base::File& font_file) {
   uint16_t num_tables =
       static_cast<uint16_t>(num_tables_bytes[0] + (num_tables_bytes[1] << 8));
   return num_tables;
-};
+}
 
 const size_t kOffsetTableRecords = 13;
 const size_t kSizeOneTableRecord = 16;

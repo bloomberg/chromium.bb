@@ -24,7 +24,7 @@ class FakeWindow::ScopedMakeCurrent {
     view_root_->context_current_ = true;
     bool result = view_root_->context_->MakeCurrent(view_root_->surface_.get());
     DCHECK(result);
-  };
+  }
 
   ~ScopedMakeCurrent() {
     DCHECK(view_root_->context_current_);

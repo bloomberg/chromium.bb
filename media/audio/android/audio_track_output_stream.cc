@@ -117,11 +117,11 @@ void AudioTrackOutputStream::SetVolume(double volume) {
 
   Java_AudioTrackOutputStream_setVolume(AttachCurrentThread(),
                                         j_audio_output_stream_, volume);
-};
+}
 
 void AudioTrackOutputStream::GetVolume(double* volume) {
   *volume = volume_;
-};
+}
 
 // AudioOutputStream::SourceCallback implementation methods called from Java.
 ScopedJavaLocalRef<jobject> AudioTrackOutputStream::OnMoreData(

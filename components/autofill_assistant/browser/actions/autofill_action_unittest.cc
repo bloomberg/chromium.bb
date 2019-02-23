@@ -35,7 +35,7 @@ using ::testing::StrNe;
 class MockPersonalDataManager : public autofill::PersonalDataManager {
  public:
   MockPersonalDataManager() : PersonalDataManager("en-US") {}
-  ~MockPersonalDataManager() override{};
+  ~MockPersonalDataManager() override {}
 
   // PersonalDataManager:
   std::string SaveImportedProfile(

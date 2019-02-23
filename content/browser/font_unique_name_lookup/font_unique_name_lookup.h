@@ -97,9 +97,7 @@ class CONTENT_EXPORT FontUniqueNameLookup {
   }
 
   // Returns the storage location of the table cache protobuf file.
-  base::FilePath TableCacheFilePathForTesting() {
-    return TableCacheFilePath();
-  };
+  base::FilePath TableCacheFilePathForTesting() { return TableCacheFilePath(); }
 
  private:
   // Scan the font file at |font_file_path| and given |ttc_index| and extract

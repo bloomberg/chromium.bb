@@ -88,7 +88,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
 #if defined(OS_ANDROID)
     virtual void SetAppStatusListener(
-        base::android::ApplicationStatusListener* app_status_listener){};
+        base::android::ApplicationStatusListener* app_status_listener) {}
 #endif
   };
 

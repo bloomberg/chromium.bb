@@ -99,7 +99,7 @@ void FetchAvatar(const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
   fetcher->Start(loader_factory);
 }
 
-};  // namespace
+}  // namespace
 
 AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     content::WebContents* web_contents,
