@@ -9,6 +9,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/config/host_byteorder.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -1586,6 +1587,13 @@ config("chromium_code") {
       # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
       "-Wthread-safety",
     ]
+
+    # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
+    has_dchecks = is_debug || dcheck_always_on
+    if (has_dchecks && is_linux && target_os != "chromeos" && !is_chromecast &&
+        !use_libfuzzer && !is_debug) {
+      cflags += [ "-Wextra-semi" ]
+    }
   }
 
   configs = [ ":default_warnings" ]
