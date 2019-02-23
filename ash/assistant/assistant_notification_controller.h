@@ -8,8 +8,10 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -24,6 +26,8 @@ class AssistantController;
 // The class to manage Assistant notifications.
 class ASH_EXPORT AssistantNotificationController
     : public mojom::AssistantNotificationController,
+      public AssistantControllerObserver,
+      public AssistantUiModelObserver,
       public AssistantNotificationModelObserver,
       public message_center::MessageCenterObserver {
  public:
@@ -31,6 +35,8 @@ class ASH_EXPORT AssistantNotificationController
       chromeos::assistant::mojom::AssistantNotification;
   using AssistantNotificationPtr =
       chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotificationType =
+      chromeos::assistant::mojom::AssistantNotificationType;
 
   explicit AssistantNotificationController(
       AssistantController* assistant_controller);
@@ -47,6 +53,17 @@ class ASH_EXPORT AssistantNotificationController
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+
+  // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // mojom::AssistantNotificationController:
   void AddOrUpdateNotification(AssistantNotificationPtr notification) override;

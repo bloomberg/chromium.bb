@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -25,6 +26,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
       chromeos::assistant::mojom::AssistantNotification;
   using AssistantNotificationPtr =
       chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotificationType =
+      chromeos::assistant::mojom::AssistantNotificationType;
 
   AssistantNotificationModel();
   ~AssistantNotificationModel();
@@ -53,6 +56,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
 
   // Returns the notification uniquely identified by |id|.
   const AssistantNotification* GetNotificationById(const std::string& id) const;
+
+  // Returns all notifications matching the specified |type|.
+  std::vector<const AssistantNotification*> GetNotificationsByType(
+      AssistantNotificationType type) const;
 
   // Returns true if the model contains a notification uniquely identified by
   // |id|, otherwise false.

@@ -79,8 +79,20 @@ void AssistantNotificationView::ButtonPressed(views::Button* sender,
 
 void AssistantNotificationView::OnNotificationUpdated(
     const AssistantNotification* notification) {
+  // We only care about the |notification| being updated if it is the
+  // notification associated with this view.
   if (notification->client_id != notification_id_)
     return;
+
+  using AssistantNotificationType =
+      chromeos::assistant::mojom::AssistantNotificationType;
+
+  // If the notification associated with this view is no longer of type
+  // |kInAssistant|, it should not be shown in Assistant UI.
+  if (notification->type != AssistantNotificationType::kInAssistant) {
+    delete this;
+    return;
+  }
 
   // Title/Message.
   title_->SetText(base::UTF8ToUTF16(notification->title));
