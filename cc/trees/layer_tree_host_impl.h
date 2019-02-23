@@ -171,6 +171,7 @@ class CC_EXPORT LayerTreeHostImpl
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
       public MutatorHostClient,
+      public ImageAnimationController::Client,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   // This structure is used to build all the state required for producing a
@@ -295,6 +296,10 @@ class CC_EXPORT LayerTreeHostImpl
   void DidChangeBrowserControlsPosition() override;
   bool HaveRootScrollNode() const override;
   void SetNeedsCommit() override;
+
+  // ImageAnimationController::Client implementation.
+  void RequestBeginFrameForAnimatedImages() override;
+  void RequestInvalidationForAnimatedImages() override;
 
   void UpdateViewportContainerSizes();
 
@@ -873,9 +878,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Copy any opacity values already in the active tree to the pending
   // tree, because the active tree value always takes precedence for scrollbars.
   void PushScrollbarOpacitiesFromActiveToPending();
-
-  // Request an impl-side invalidation to animate an image.
-  void RequestInvalidationForAnimatedImages();
 
   // Pushes state for image animations and checkerboarded images from the
   // pending to active tree. This is called during activation when a pending

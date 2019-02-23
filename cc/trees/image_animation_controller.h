@@ -17,6 +17,7 @@
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/tiles/tile_priority.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace cc {
 class PaintImage;
@@ -34,7 +35,7 @@ class PaintImage;
 //    registered drivers interested in animating it.
 //
 //  3) An animation is only advanced on the sync tree, which is requested to be
-//     created using the |invalidation_callback|. This effectively means that
+//     created using the |client| callbacks. This effectively means that
 //     the frame of the image used remains consistent throughout the lifetime of
 //     a tree, guaranteeing that the image update is atomic.
 class CC_EXPORT ImageAnimationController {
@@ -52,16 +53,25 @@ class CC_EXPORT ImageAnimationController {
     virtual bool ShouldAnimate(PaintImage::Id paint_image_id) const = 0;
   };
 
-  // |invalidation_callback| is the callback to trigger an invalidation and
-  // create a sync tree for advancing an image animation. The controller is
-  // guaranteed to receive a call to AnimateForSyncTree when the sync tree is
-  // created.
-  // |task_runner| is the thread on which the controller is used. The
-  // invalidation_callback can only be run on this thread.
+  class CC_EXPORT Client {
+   public:
+    virtual ~Client() {}
+
+    // Notifies the client that an impl frame is needed to animate an image.
+    virtual void RequestBeginFrameForAnimatedImages() = 0;
+
+    // Notifies the client that a sync tree is needed to invalidate the animated
+    // images in this impl frame. This should only be called from within an impl
+    // frame.
+    virtual void RequestInvalidationForAnimatedImages() = 0;
+  };
+
+  // |task_runner| is the thread on which the controller is used. The |client|
+  // can only be called on this thread.
   // |enable_image_animation_resync| specifies whether the animation can be
   // reset to the beginning to avoid skipping many frames.
   ImageAnimationController(base::SingleThreadTaskRunner* task_runner,
-                           base::RepeatingClosure invalidation_callback,
+                           Client* client,
                            bool enable_image_animation_resync);
   ~ImageAnimationController();
 
@@ -83,13 +93,14 @@ class CC_EXPORT ImageAnimationController {
   // a call to DidActivate when this tree is activated.
   // Returns the set of images that were animated and should be invalidated on
   // this sync tree.
-  const PaintImageIdFlatSet& AnimateForSyncTree(base::TimeTicks now);
+  const PaintImageIdFlatSet& AnimateForSyncTree(
+      const viz::BeginFrameArgs& args);
 
   // Called whenever the ShouldAnimate response for a driver could have changed.
   // For instance on a change in the visibility of the image, we would pause
   // off-screen animations.
   // This is called after every DrawProperties update and commit.
-  void UpdateStateFromDrivers(base::TimeTicks now);
+  void UpdateStateFromDrivers();
 
   // Called when the sync tree was activated and the animations' associated
   // state should be pushed to the active tree.
@@ -98,6 +109,9 @@ class CC_EXPORT ImageAnimationController {
   // Returns the frame index to use for the given PaintImage and tree.
   size_t GetFrameIndexForImage(PaintImage::Id paint_image_id,
                                WhichTree tree) const;
+
+  // Notifies the beginning of an impl frame with the given |args|.
+  void WillBeginImplFrame(const viz::BeginFrameArgs& args);
 
   void set_did_navigate() { did_navigate_ = true; }
 
@@ -110,6 +124,11 @@ class CC_EXPORT ImageAnimationController {
     return animation_state_map_.size();
   }
 
+  using NowCallback = base::RepeatingCallback<base::TimeTicks()>;
+  void set_now_callback_for_testing(NowCallback cb) {
+    scheduler_.set_now_callback_for_testing(cb);
+  }
+
  private:
   class AnimationState {
    public:
@@ -119,7 +138,8 @@ class CC_EXPORT ImageAnimationController {
     ~AnimationState();
 
     bool ShouldAnimate() const;
-    bool AdvanceFrame(base::TimeTicks now, bool enable_image_animation_resync);
+    bool AdvanceFrame(const viz::BeginFrameArgs& args,
+                      bool enable_image_animation_resync);
     void UpdateMetadata(const DiscardableImageMap::AnimatedImageMetadata& data);
     void PushPendingToActive();
 
@@ -141,6 +161,8 @@ class CC_EXPORT ImageAnimationController {
     }
 
    private:
+    void AdvanceFrameInternal(const viz::BeginFrameArgs& args,
+                              bool enable_image_animation_resync);
     void ResetAnimation();
     size_t NextFrameIndex() const;
     bool is_complete() const {
@@ -199,30 +221,45 @@ class CC_EXPORT ImageAnimationController {
     DISALLOW_COPY_AND_ASSIGN(AnimationState);
   };
 
-  class DelayedNotifier {
+  class InvalidationScheduler {
    public:
-    DelayedNotifier(base::SingleThreadTaskRunner* task_runner,
-                    base::RepeatingClosure closure);
-    ~DelayedNotifier();
+    InvalidationScheduler(base::SingleThreadTaskRunner* task_runner,
+                          Client* client);
+    ~InvalidationScheduler();
 
-    void Schedule(base::TimeTicks now, base::TimeTicks notification_time);
+    void Schedule(base::TimeTicks animation_time);
     void Cancel();
     void WillAnimate();
+    void WillBeginImplFrame(const viz::BeginFrameArgs& args);
+    void set_now_callback_for_testing(NowCallback cb) {
+      now_callback_for_testing_ = cb;
+    }
 
    private:
-    void Notify();
+    enum InvalidationState {
+      // No notification pending.
+      kIdle,
+      // Task pending to request impl frame.
+      kPendingRequestBeginFrame,
+      // Impl frame request pending after request dispatched to client.
+      kPendingImplFrame,
+      // Sync tree for animation pending after request dispatched to client.
+      kPendingInvalidation,
+    };
+
+    void RequestBeginFrame();
+    void RequestInvalidation();
 
     base::SingleThreadTaskRunner* task_runner_;
-    base::RepeatingClosure closure_;
+    Client* const client_;
+    NowCallback now_callback_for_testing_;
 
-    // Set if a notification is currently pending.
-    base::Optional<base::TimeTicks> pending_notification_time_;
+    InvalidationState state_ = InvalidationState::kIdle;
 
-    // Set if the notification was dispatched and the resulting animation on the
-    // next sync tree is pending.
-    bool animation_pending_ = false;
+    // The time at which the next animation is expected to run.
+    base::TimeTicks next_animation_time_;
 
-    base::WeakPtrFactory<DelayedNotifier> weak_factory_;
+    base::WeakPtrFactory<InvalidationScheduler> weak_factory_;
   };
 
   // The AnimationState for images is persisted until they are cleared on
@@ -239,7 +276,7 @@ class CC_EXPORT ImageAnimationController {
   // The set of images that were animated and invalidated on the last sync tree.
   PaintImageIdFlatSet images_animated_on_sync_tree_;
 
-  DelayedNotifier notifier_;
+  InvalidationScheduler scheduler_;
 
   const bool enable_image_animation_resync_;
 

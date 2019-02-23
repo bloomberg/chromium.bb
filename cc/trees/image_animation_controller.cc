@@ -21,9 +21,9 @@ const base::TimeDelta kAnimationResyncCutoff = base::TimeDelta::FromMinutes(5);
 
 ImageAnimationController::ImageAnimationController(
     base::SingleThreadTaskRunner* task_runner,
-    base::RepeatingClosure invalidation_callback,
+    Client* client,
     bool enable_image_animation_resync)
-    : notifier_(task_runner, invalidation_callback),
+    : scheduler_(task_runner, client),
       enable_image_animation_resync_(enable_image_animation_resync) {}
 
 ImageAnimationController::~ImageAnimationController() = default;
@@ -54,11 +54,11 @@ void ImageAnimationController::UnregisterAnimationDriver(
 }
 
 const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
-    base::TimeTicks now) {
+    const viz::BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "ImageAnimationController::AnimateImagesForSyncTree");
   DCHECK(images_animated_on_sync_tree_.empty());
 
-  notifier_.WillAnimate();
+  scheduler_.WillAnimate();
   base::Optional<base::TimeTicks> next_invalidation_time;
 
   for (auto id : registered_animations_) {
@@ -73,7 +73,7 @@ const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
 
     // If we were able to advance this animation, invalidate it on the sync
     // tree.
-    if (state.AdvanceFrame(now, enable_image_animation_resync_))
+    if (state.AdvanceFrame(args, enable_image_animation_resync_))
       images_animated_on_sync_tree_.insert(id);
 
     // Update the next invalidation time to the earliest time at which we need
@@ -84,7 +84,7 @@ const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
     if (!state.ShouldAnimate())
       continue;
 
-    DCHECK_GT(state.next_desired_frame_time(), now);
+    DCHECK_GT(state.next_desired_frame_time(), args.frame_time);
     if (!next_invalidation_time.has_value()) {
       next_invalidation_time.emplace(state.next_desired_frame_time());
     } else {
@@ -94,14 +94,14 @@ const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
   }
 
   if (next_invalidation_time.has_value())
-    notifier_.Schedule(now, next_invalidation_time.value());
+    scheduler_.Schedule(next_invalidation_time.value());
   else
-    notifier_.Cancel();
+    scheduler_.Cancel();
 
   return images_animated_on_sync_tree_;
 }
 
-void ImageAnimationController::UpdateStateFromDrivers(base::TimeTicks now) {
+void ImageAnimationController::UpdateStateFromDrivers() {
   TRACE_EVENT0("cc", "UpdateStateFromAnimationDrivers");
 
   base::Optional<base::TimeTicks> next_invalidation_time;
@@ -113,7 +113,7 @@ void ImageAnimationController::UpdateStateFromDrivers(base::TimeTicks now) {
 
     // Note that by not updating the |next_invalidation_time| from this image
     // here, we will cancel any pending invalidation scheduled for this image
-    // when updating the |notifier_| at the end of this loop.
+    // when updating the |scheduler_| at the end of this loop.
     if (!state.ShouldAnimate())
       continue;
 
@@ -126,9 +126,9 @@ void ImageAnimationController::UpdateStateFromDrivers(base::TimeTicks now) {
   }
 
   if (next_invalidation_time.has_value())
-    notifier_.Schedule(now, next_invalidation_time.value());
+    scheduler_.Schedule(next_invalidation_time.value());
   else
-    notifier_.Cancel();
+    scheduler_.Cancel();
 }
 
 void ImageAnimationController::DidActivate() {
@@ -163,6 +163,11 @@ size_t ImageAnimationController::GetFrameIndexForImage(
   DCHECK(it != animation_state_map_.end());
   return tree == WhichTree::PENDING_TREE ? it->second.pending_index()
                                          : it->second.active_index();
+}
+
+void ImageAnimationController::WillBeginImplFrame(
+    const viz::BeginFrameArgs& args) {
+  scheduler_.WillBeginImplFrame(args);
 }
 
 const base::flat_set<ImageAnimationController::AnimationDriver*>&
@@ -231,7 +236,41 @@ bool ImageAnimationController::AnimationState::ShouldAnimate() const {
 }
 
 bool ImageAnimationController::AnimationState::AdvanceFrame(
-    base::TimeTicks now,
+    const viz::BeginFrameArgs& args,
+    bool enable_image_animation_resync) {
+  AdvanceFrameInternal(args, enable_image_animation_resync);
+  const bool needs_invalidation = pending_index_ != active_index_;
+
+  // If the animation will no longer continue, |next_desired_frame_time_| is
+  // not needed and will not be updated.
+  if (!ShouldAnimate())
+    return needs_invalidation;
+
+  DCHECK_GT(next_desired_frame_time_, args.frame_time);
+  auto snapped_next_desired_frame_time =
+      next_desired_frame_time_.SnappedToNextTick(args.frame_time,
+                                                 args.interval);
+  if (snapped_next_desired_frame_time != next_desired_frame_time_) {
+    // If the next desired frame time was past the next tick but did not lie
+    // exactly at the frame tick, then snapping it would have set it to the tick
+    // after we wanted to display it. So set it to the tick we want to target.
+    snapped_next_desired_frame_time -= args.interval;
+  }
+
+  // In the common case, |next_desired_frame_time_| should be >= to the
+  // |next_tick_time|, since the catch up loop skips frames until it reaches the
+  // first frame which should be drawn at or after the next tick.
+  // But in some cases we decode to skip the catch up and restart the regular
+  // animation from the next frame, in which case just snap it to the next tick.
+  auto next_tick_time = args.frame_time + args.interval;
+  next_desired_frame_time_ =
+      std::max(snapped_next_desired_frame_time, next_tick_time);
+
+  return needs_invalidation;
+}
+
+void ImageAnimationController::AnimationState::AdvanceFrameInternal(
+    const viz::BeginFrameArgs& args,
     bool enable_image_animation_resync) {
   DCHECK(ShouldAnimate());
 
@@ -243,24 +282,25 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
   if (!animation_started_) {
     DCHECK_EQ(pending_index_, 0u);
 
-    next_desired_frame_time_ = now + frames_[0].duration;
+    next_desired_frame_time_ = args.frame_time + frames_[0].duration;
     animation_started_ = true;
-    return pending_index_ != active_index_;
+    return;
   }
 
   // Don't advance the animation if its not time yet to move to the next frame.
-  if (now < next_desired_frame_time_)
-    return false;
+  if (args.frame_time < next_desired_frame_time_)
+    return;
 
   // If the animation is more than 5 min out of date, we don't bother catching
   // up and start again from the current frame.
   // Note that we don't need to invalidate this image since the active tree
   // is already displaying the current frame.
   if (enable_image_animation_resync &&
-      now - next_desired_frame_time_ > kAnimationResyncCutoff) {
+      args.frame_time - next_desired_frame_time_ > kAnimationResyncCutoff) {
     DCHECK_EQ(pending_index_, active_index_);
-    next_desired_frame_time_ = now + frames_[pending_index_].duration;
-    return false;
+    next_desired_frame_time_ =
+        args.frame_time + frames_[pending_index_].duration;
+    return;
   }
 
   // Keep catching up the animation until we reach the frame we should be
@@ -269,7 +309,9 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
   // in the animations.
   size_t last_frame_index = frames_.size() - 1;
   size_t num_of_frames_advanced = 0u;
-  while (next_desired_frame_time_ <= now && ShouldAnimate()) {
+
+  base::TimeTicks next_frame_time = args.frame_time + args.interval;
+  while (next_desired_frame_time_ < next_frame_time && ShouldAnimate()) {
     num_of_frames_advanced++;
     size_t next_frame_index = NextFrameIndex();
     base::TimeTicks next_desired_frame_time =
@@ -286,9 +328,10 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
     // especially if users switch tabs (and thus stop drawing the animation,
     // which will pause it) during that initial loop, then switch back later.
     if (enable_image_animation_resync && next_frame_index == 0u &&
-        repetitions_completed_ == 1 && next_desired_frame_time <= now) {
+        repetitions_completed_ == 1 &&
+        next_desired_frame_time <= args.frame_time) {
       pending_index_ = 0u;
-      next_desired_frame_time_ = now + frames_[0].duration;
+      next_desired_frame_time_ = args.frame_time + frames_[0].duration;
       repetitions_completed_ = 0;
       break;
     }
@@ -309,8 +352,6 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
   last_num_frames_skipped_ = num_of_frames_advanced - 1u;
   UMA_HISTOGRAM_COUNTS_100000("AnimatedImage.NumOfFramesSkipped.Compositor",
                               last_num_frames_skipped_);
-
-  return pending_index_ != active_index_;
 }
 
 void ImageAnimationController::AnimationState::UpdateMetadata(
@@ -384,65 +425,129 @@ size_t ImageAnimationController::AnimationState::NextFrameIndex() const {
   return (pending_index_ + 1) % frames_.size();
 }
 
-ImageAnimationController::DelayedNotifier::DelayedNotifier(
+ImageAnimationController::InvalidationScheduler::InvalidationScheduler(
     base::SingleThreadTaskRunner* task_runner,
-    base::RepeatingClosure closure)
-    : task_runner_(task_runner),
-      closure_(std::move(closure)),
-      weak_factory_(this) {
+    Client* client)
+    : task_runner_(task_runner), client_(client), weak_factory_(this) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-ImageAnimationController::DelayedNotifier::~DelayedNotifier() {
+ImageAnimationController::InvalidationScheduler::~InvalidationScheduler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-void ImageAnimationController::DelayedNotifier::Schedule(
-    base::TimeTicks now,
-    base::TimeTicks notification_time) {
-  // If an animation is already pending, don't schedule another invalidation.
-  // We will schedule the next invalidation based on the latest animation state
-  // during AnimateForSyncTree.
-  if (animation_pending_)
+void ImageAnimationController::InvalidationScheduler::Schedule(
+    base::TimeTicks animation_time) {
+  auto now = now_callback_for_testing_.is_null()
+                 ? base::TimeTicks::Now()
+                 : now_callback_for_testing_.Run();
+
+  // If an animation or impl frame is already pending, don't schedule another
+  // notification. We will schedule the next notification based on the latest
+  // animation state during AnimateForSyncTree, or in WillBeginImplFrame if
+  // needed.
+  if (state_ == InvalidationState::kPendingInvalidation ||
+      state_ == InvalidationState::kPendingImplFrame) {
     return;
+  }
 
   // The requested notification time can be in the past. For instance, if an
   // animation was paused because the image became invisible.
-  if (notification_time < now)
-    notification_time = now;
+  if (animation_time < now)
+    animation_time = now;
 
   // If we already have a notification scheduled to run at this time, no need to
   // Cancel it.
-  if (pending_notification_time_.has_value() &&
-      notification_time == pending_notification_time_.value())
+  if (state_ == InvalidationState::kPendingRequestBeginFrame &&
+      animation_time == next_animation_time_)
     return;
 
   // Cancel the pending notification since we the requested notification time
   // has changed.
   Cancel();
 
-  TRACE_EVENT2("cc", "ScheduleInvalidationForImageAnimation",
-               "notification_time", notification_time, "now", now);
-  pending_notification_time_.emplace(notification_time);
+  base::TimeDelta delta = animation_time - now;
+  TRACE_EVENT1("cc", "ScheduleFrameForImageAnimation", "delta",
+               delta.InMillisecondsF());
+
+  state_ = InvalidationState::kPendingRequestBeginFrame;
+  next_animation_time_ = animation_time;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&DelayedNotifier::Notify, weak_factory_.GetWeakPtr()),
-      notification_time - now);
+      base::BindOnce(&InvalidationScheduler::RequestBeginFrame,
+                     weak_factory_.GetWeakPtr()),
+      delta);
 }
 
-void ImageAnimationController::DelayedNotifier::Cancel() {
-  pending_notification_time_.reset();
+void ImageAnimationController::InvalidationScheduler::Cancel() {
+  state_ = InvalidationState::kIdle;
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void ImageAnimationController::DelayedNotifier::Notify() {
-  pending_notification_time_.reset();
-  animation_pending_ = true;
-  closure_.Run();
+void ImageAnimationController::InvalidationScheduler::RequestBeginFrame() {
+  TRACE_EVENT0(
+      "cc",
+      "ImageAnimationController::InvalidationScheduler::RequestBeginFrame");
+  DCHECK_EQ(state_, InvalidationState::kPendingRequestBeginFrame);
+
+  state_ = InvalidationState::kPendingImplFrame;
+  client_->RequestBeginFrameForAnimatedImages();
 }
 
-void ImageAnimationController::DelayedNotifier::WillAnimate() {
-  animation_pending_ = false;
+void ImageAnimationController::InvalidationScheduler::WillAnimate() {
+  // Unless the sync tree came after we explicitly requested an invalidation,
+  // we can't proceed to idle state.
+  if (state_ != InvalidationState::kPendingInvalidation)
+    return;
+
+  state_ = InvalidationState::kIdle;
+  next_animation_time_ = base::TimeTicks();
+}
+
+void ImageAnimationController::InvalidationScheduler::WillBeginImplFrame(
+    const viz::BeginFrameArgs& args) {
+  switch (state_) {
+    case InvalidationState::kIdle:
+    case InvalidationState::kPendingInvalidation:
+      // We don't need an invalidation or one is already pending. In either
+      // case, no state change is needed.
+      break;
+    case InvalidationState::kPendingRequestBeginFrame:
+      if (args.frame_time >= next_animation_time_) {
+        // If we can make progress on the animation in this impl frame request
+        // an invalidation.
+        RequestInvalidation();
+      }
+      // Otherwise the pending notification will ensure we get another impl
+      // impl frame at the |next_animation_time_|.
+      break;
+    case InvalidationState::kPendingImplFrame:
+      if (args.frame_time >= next_animation_time_) {
+        // We received the impl frame needed for the animation, request an
+        // invalidation.
+        RequestInvalidation();
+      } else {
+        // Ideally this should be the impl frame we wanted, so we should always
+        // be able to animate at this frame. But that might not be the case if
+        // we get a missed BeginFrame. In that case, make a request for the next
+        // impl frame.
+        client_->RequestBeginFrameForAnimatedImages();
+      }
+      break;
+  }
+}
+
+void ImageAnimationController::InvalidationScheduler::RequestInvalidation() {
+  DCHECK_NE(state_, InvalidationState::kIdle);
+  DCHECK_NE(state_, InvalidationState::kPendingInvalidation);
+
+  // Any pending notification can/should be cancelled once an invalidation is
+  // requested because each time we animate a sync tree, we schedule a task for
+  // the next animation update if necessary.
+  Cancel();
+
+  state_ = InvalidationState::kPendingInvalidation;
+  client_->RequestInvalidationForAnimatedImages();
 }
 
 }  // namespace cc

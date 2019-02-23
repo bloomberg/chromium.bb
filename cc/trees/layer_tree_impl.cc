@@ -1366,8 +1366,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
   }
 
   if (update_image_animation_controller && image_animation_controller()) {
-    image_animation_controller()->UpdateStateFromDrivers(
-        CurrentBeginFrameArgs().frame_time);
+    image_animation_controller()->UpdateStateFromDrivers();
   }
 
   DCHECK(!needs_update_draw_properties_)
