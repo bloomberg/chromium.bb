@@ -200,6 +200,17 @@ class CalcParser {
     source_range_ = range_;
     return CSSPrimitiveValue::Create(calc_value_.Release());
   }
+
+  CSSPrimitiveValue* ConsumeRoundedInt() {
+    if (!calc_value_)
+      return nullptr;
+    source_range_ = range_;
+    CSSPrimitiveValue::UnitType unit_type =
+        CSSPrimitiveValue::UnitType::kInteger;
+    double rounded_value = floor(calc_value_->DoubleValue() + 0.5);
+    return CSSPrimitiveValue::Create(rounded_value, unit_type);
+  }
+
   CSSPrimitiveValue* ConsumeNumber() {
     if (!calc_value_)
       return nullptr;
@@ -237,12 +248,18 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
   }
   CalcParser calc_parser(range);
   if (const CSSCalcValue* calculation = calc_parser.Value()) {
-    if (calculation->Category() != kCalcNumber || !calculation->IsInt())
+    if (!RuntimeEnabledFeatures::CSSCalcAsIntEnabled() && !calculation->IsInt())
+      return nullptr;
+    if (calculation->Category() != kCalcNumber)
       return nullptr;
     double value = calculation->DoubleValue();
     if (value < minimum_value)
       return nullptr;
-    return calc_parser.ConsumeNumber();
+    if (!RuntimeEnabledFeatures::CSSCalcAsIntEnabled())
+      return calc_parser.ConsumeNumber();
+    if (calculation->IsInt())
+      return calc_parser.ConsumeNumber();
+    return calc_parser.ConsumeRoundedInt();
   }
   return nullptr;
 }
