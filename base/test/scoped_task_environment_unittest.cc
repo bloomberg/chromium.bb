@@ -25,6 +25,7 @@
 #include "base/win/com_init_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
@@ -363,13 +364,14 @@ TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
   {
     ScopedTaskEnvironment scoped_task_environment;
 
-    // ScopedTaskEnvironment should set a default Run() timeout that CHECKs if
-    // reached.
+    // ScopedTaskEnvironment should set a default Run() timeout that fails the
+    // calling test.
     const RunLoop::ScopedRunTimeoutForTest* run_timeout =
         RunLoop::ScopedRunTimeoutForTest::Current();
     ASSERT_NE(run_timeout, old_run_timeout);
     EXPECT_EQ(run_timeout->timeout(), TestTimeouts::action_max_timeout());
-    EXPECT_DEATH_IF_SUPPORTED({ run_timeout->on_timeout().Run(); }, "");
+    EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
+                            "Run() timed out");
   }
 
   EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);
