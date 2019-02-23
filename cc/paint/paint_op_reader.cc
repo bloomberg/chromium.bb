@@ -215,33 +215,45 @@ void PaintOpReader::Read(SkPath* path) {
   if (!valid_)
     return;
 
-  size_t path_bytes = 0u;
-  ReadSize(&path_bytes);
-  if (path_bytes > remaining_bytes_)
-    SetInvalid();
-  if (!valid_)
+  uint32_t entry_state_int = 0u;
+  ReadSimple(&entry_state_int);
+  if (entry_state_int > static_cast<uint32_t>(PaintCacheEntryState::kLast)) {
+    valid_ = false;
     return;
+  }
 
-  if (path_bytes != 0u) {
-    auto* scratch = CopyScratchSpace(path_bytes);
-    size_t bytes_read = path->readFromMemory(scratch, path_bytes);
-    if (bytes_read == 0u) {
-      SetInvalid();
+  auto entry_state = static_cast<PaintCacheEntryState>(entry_state_int);
+  switch (entry_state) {
+    case PaintCacheEntryState::kEmpty:
+      return;
+    case PaintCacheEntryState::kCached: {
+      auto* cached_path = options_.paint_cache->GetPath(path_id);
+      if (!cached_path)
+        SetInvalid();
+      else
+        *path = *cached_path;
       return;
     }
+    case PaintCacheEntryState::kInlined: {
+      size_t path_bytes = 0u;
+      ReadSize(&path_bytes);
+      if (path_bytes > remaining_bytes_ || path_bytes == 0u)
+        SetInvalid();
+      if (!valid_)
+        return;
 
-    options_.paint_cache->PutPath(path_id, *path);
-    memory_ += path_bytes;
-    remaining_bytes_ -= path_bytes;
-    return;
+      auto* scratch = CopyScratchSpace(path_bytes);
+      size_t bytes_read = path->readFromMemory(scratch, path_bytes);
+      if (bytes_read == 0u) {
+        SetInvalid();
+        return;
+      }
+      options_.paint_cache->PutPath(path_id, *path);
+      memory_ += path_bytes;
+      remaining_bytes_ -= path_bytes;
+      return;
+    }
   }
-
-  auto* cached_path = options_.paint_cache->GetPath(path_id);
-  if (!cached_path) {
-    SetInvalid();
-    return;
-  }
-  *path = *cached_path;
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
