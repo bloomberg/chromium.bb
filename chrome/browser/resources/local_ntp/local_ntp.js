@@ -424,6 +424,11 @@ function renderTheme() {
   $(customBackgrounds.IDS.RESTORE_DEFAULT).tabIndex =
       (info.customBackgroundConfigured ? 0 : -1);
 
+  $(customBackgrounds.IDS.EDIT_BG)
+      .classList.toggle(
+          customBackgrounds.CLASSES.ENTRY_POINT_ENHANCED,
+          !info.customBackgroundConfigured);
+
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
     // disabled.
@@ -1155,6 +1160,9 @@ function init() {
     }
 
     doodles.init();
+
+    $(customBackgrounds.IDS.EDIT_BG_TEXT).textContent =
+        configData.translatedStrings.customizeButtonLabel;
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }

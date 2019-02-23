@@ -81,8 +81,9 @@ customBackgrounds.IDS = {
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
   EDIT_BG_DIVIDER: 'edit-bg-divider',
-  EDIT_BG_GEAR: 'edit-bg-gear',
+  EDIT_BG_ICON: 'edit-bg-icon',
   EDIT_BG_MENU: 'edit-bg-menu',
+  EDIT_BG_TEXT: 'edit-bg-text',
   MSG_BOX: 'message-box',
   MSG_BOX_MSG: 'message-box-message',
   MSG_BOX_LINK: 'message-box-link',
@@ -115,6 +116,8 @@ customBackgrounds.CLASSES = {
   COLLECTION_TILE_BG: 'bg-sel-tile-bg',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   DONE_AVAILABLE: 'done-available',
+  // Extended and elevated style for entry point.
+  ENTRY_POINT_ENHANCED: 'ep-enhanced',
   FLOAT_UP: 'float-up',
   HAS_LINK: 'has-link',
   HIDE_MSG_BOX: 'message-box-hide',
@@ -891,11 +894,11 @@ customBackgrounds.init = function(
   $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeBackground;
 
-  $(customBackgrounds.IDS.EDIT_BG_GEAR)
+  $(customBackgrounds.IDS.EDIT_BG_ICON)
       .setAttribute(
           'aria-label', configData.translatedStrings.customizeThisPage);
 
-  $(customBackgrounds.IDS.EDIT_BG_GEAR)
+  $(customBackgrounds.IDS.EDIT_BG_ICON)
       .setAttribute('title', configData.translatedStrings.customizeBackground);
 
   // Edit gear icon interaction events.
