@@ -80,8 +80,8 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 
-// The default directory containing the regulatory labels for
-// supported regions, relative to chromeos-assets directory
+// The directory containing the regulatory labels for supported
+// models/regions, relative to chromeos-assets directory
 const char kRegulatoryLabelsDirectory[] = "regulatory_labels";
 
 // File names of the image file and the file containing alt text for the label.
@@ -165,30 +165,31 @@ bool CanChangeChannel(Profile* profile) {
   return service && service->IsOwner();
 }
 
-// Returns the absolute path to the directory of regulatory labels
-// for a given region, if found.
-// (e.g. "/usr/share/chromeos-assets/regulatory_labels/us".)
-// Must be called from the blocking pool.
+// Returns the relative path under the chromeos-assets dir
+// to the directory of regulatory labels for a given region, if found
+// (e.g. "regulatory_labels/us"). Must be called from the blocking pool.
 base::FilePath GetRegulatoryLabelDirForRegion(const std::string& region) {
-  // Allow the regulatory label path to be overriden by a flag.
-  base::FilePath base_dir =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  base::FilePath region_path(kRegulatoryLabelsDirectory);
+  const std::string model_subdir =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           chromeos::switches::kRegulatoryLabelDir);
-  if (base_dir.empty()) {
-    base_dir = base::FilePath(chrome::kChromeOSAssetPath)
-                   .Append(kRegulatoryLabelsDirectory);
+  if (!model_subdir.empty()) {
+    region_path = region_path.AppendASCII(model_subdir);
   }
-  const base::FilePath region_dir = base_dir.AppendASCII(region);
-  const base::FilePath image_path =
-      region_dir.AppendASCII(kRegulatoryLabelImageFilename);
+  region_path = region_path.AppendASCII(region);
 
-  // Check if the label image file exists in the path.
-  return base::PathExists(image_path) ? region_dir : base::FilePath();
+  // Check if the label image file exists in the full path, e.g.,
+  // "/usr/share/chromeos-assets/regulatory_labels/us/label.png".
+  const base::FilePath image_path =
+      base::FilePath(chrome::kChromeOSAssetPath)
+          .Append(region_path)
+          .AppendASCII(kRegulatoryLabelImageFilename);
+  return base::PathExists(image_path) ? region_path : base::FilePath();
 }
 
-// Finds the absolute path to the directory of regulatory labels,
-// using the VPD region code. Also tries "us" as a fallback region.
-// Must be called from the blocking pool.
+// Finds the relative path under the chromeos-assets dir to the region
+// subdirectory of regulatory labels, using the VPD region code. Also
+// tries "us" as a fallback region. Must be called from the blocking pool.
 base::FilePath FindRegulatoryLabelDir() {
   std::string region;
   base::FilePath region_path;
@@ -206,12 +207,14 @@ base::FilePath FindRegulatoryLabelDir() {
   return region_path;
 }
 
-// Reads the file containing the regulatory label text, if found in
-// the given path to the directory of regulatory labels. Must be called
-// from the blocking pool.
+// Reads the file containing the regulatory label text, if found
+// in the given relative path under the chromeos-assets dir.
+// Must be called from the blocking pool.
 std::string ReadRegulatoryLabelText(const base::FilePath& label_dir_path) {
-  base::FilePath text_path =
-      label_dir_path.AppendASCII(kRegulatoryLabelTextFilename);
+  const base::FilePath text_path =
+      base::FilePath(chrome::kChromeOSAssetPath)
+          .Append(label_dir_path)
+          .AppendASCII(kRegulatoryLabelTextFilename);
 
   std::string contents;
   if (base::ReadFileToString(text_path, &contents))

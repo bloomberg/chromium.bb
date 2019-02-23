@@ -506,9 +506,10 @@ const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 // If true, files in Android internal storage will be hidden in Files app.
 const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 
-// This directory contains per-region subdirectories with regulatory label
-// files. If this is not set, we fall back to the default directory
-// '/usr/share/chromeos-assets/regulatory_labels'
+// The name of the per-model directory which contains per-region
+// subdirectories with regulatory label files for this model.
+// The per-model directories (if there are any) are located under
+// "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 
 // If true, the developer tool overlay will be shown for the login/lock screen.
