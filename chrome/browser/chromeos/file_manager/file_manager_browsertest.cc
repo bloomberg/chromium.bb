@@ -60,6 +60,16 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableDocumentsProvider() {
+    enable_documents_provider.emplace(true);
+    return *this;
+  }
+
+  TestCase& DisableDocumentsProvider() {
+    enable_documents_provider.emplace(false);
+    return *this;
+  }
+
   TestCase& Offline() {
     offline = true;
     return *this;
@@ -108,6 +118,9 @@ struct TestCase {
     if (test.enable_myfiles_volume.value_or(false))
       name.append("_MyFilesVolume");
 
+    if (test.enable_documents_provider.value_or(false))
+      name.append("_DocumentsProvider");
+
     return name;
   }
 
@@ -116,6 +129,7 @@ struct TestCase {
   bool tablet_mode = false;
   base::Optional<bool> enable_drivefs;
   base::Optional<bool> enable_myfiles_volume;
+  base::Optional<bool> enable_documents_provider;
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
@@ -169,6 +183,11 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetEnableDriveFs() const override {
     return GetParam().enable_drivefs.value_or(
         FileManagerBrowserTestBase::GetEnableDriveFs());
+  }
+
+  bool GetEnableDocumentsProvider() const override {
+    return GetParam().enable_documents_provider.value_or(
+        FileManagerBrowserTestBase::GetEnableDocumentsProvider());
   }
 
   bool GetRequiresStartupBrowser() const override {
@@ -481,32 +500,34 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("openQuickView"),
-                      TestCase("openQuickView").InGuestMode(),
-                      TestCase("openQuickView").TabletMode(),
-                      TestCase("openQuickViewAudio"),
-                      TestCase("openQuickViewImage"),
-                      TestCase("openQuickViewVideo"),
+    ::testing::Values(
+        TestCase("openQuickView"),
+        TestCase("openQuickView").InGuestMode(),
+        TestCase("openQuickView").TabletMode(),
+        TestCase("openQuickViewAudio"),
+        TestCase("openQuickViewImage"),
+        TestCase("openQuickViewVideo"),
 // QuickView PDF test fails on MSAN, crbug.com/768070
 #if !defined(MEMORY_SANITIZER)
-                      TestCase("openQuickViewPdf"),
+        TestCase("openQuickViewPdf"),
 #endif
-                      TestCase("openQuickViewKeyboardUpDownChangesView"),
-                      TestCase("openQuickViewKeyboardLeftRightChangesView"),
-                      TestCase("openQuickViewScrollText"),
-                      TestCase("openQuickViewScrollHtml"),
-                      TestCase("openQuickViewBackgroundColorText"),
-                      TestCase("openQuickViewBackgroundColorHtml"),
-                      TestCase("openQuickViewDrive").DisableDriveFs(),
-                      TestCase("openQuickViewDrive").EnableDriveFs(),
-                      TestCase("openQuickViewAndroid"),
-                      TestCase("openQuickViewCrostini"),
-                      TestCase("openQuickViewUsb"),
-                      TestCase("openQuickViewRemovablePartitions"),
-                      TestCase("openQuickViewMtp"),
-                      TestCase("pressEnterOnInfoBoxToOpenClose"),
-                      TestCase("closeQuickView"),
-                      TestCase("cantOpenQuickViewWithMultipleFiles")));
+        TestCase("openQuickViewKeyboardUpDownChangesView"),
+        TestCase("openQuickViewKeyboardLeftRightChangesView"),
+        TestCase("openQuickViewScrollText"),
+        TestCase("openQuickViewScrollHtml"),
+        TestCase("openQuickViewBackgroundColorText"),
+        TestCase("openQuickViewBackgroundColorHtml"),
+        TestCase("openQuickViewDrive").DisableDriveFs(),
+        TestCase("openQuickViewDrive").EnableDriveFs(),
+        TestCase("openQuickViewAndroid"),
+        TestCase("openQuickViewDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("openQuickViewCrostini"),
+        TestCase("openQuickViewUsb"),
+        TestCase("openQuickViewRemovablePartitions"),
+        TestCase("openQuickViewMtp"),
+        TestCase("pressEnterOnInfoBoxToOpenClose"),
+        TestCase("closeQuickView"),
+        TestCase("cantOpenQuickViewWithMultipleFiles")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */

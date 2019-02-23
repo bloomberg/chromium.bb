@@ -291,6 +291,36 @@ testcase.openQuickViewAndroid = async function() {
 };
 
 /**
+ * Tests opening Quick View on a DocumentsProvider root.
+ */
+testcase.openQuickViewDocumentsProvider = async function() {
+  const DOCUMENTS_PROVIDER_VOLUME_QUERY =
+      '[has-children="true"] [volume-type-icon="documents_provider"]';
+
+  // Open Files app.
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
+
+  // Add files to the DocumentsProvider volume.
+  await addEntries(['documents_provider'], BASIC_LOCAL_ENTRY_SET);
+
+  // Wait for the DocumentsProvider volume to mount.
+  await remoteCall.waitForElement(appId, DOCUMENTS_PROVIDER_VOLUME_QUERY);
+
+  // Click to open the DocumentsProvider volume.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [DOCUMENTS_PROVIDER_VOLUME_QUERY]),
+      'fakeMouseClick failed');
+
+  // Check: the DocumentsProvider files should appear in the file list.
+  const files = TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+  // Open a DocumentsProvider file in Quick View.
+  await openQuickView(appId, ENTRIES.hello.nameText);
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * text document.
  */

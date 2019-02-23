@@ -63,6 +63,7 @@ QuickViewUma.VolumeType = [
   VolumeManagerCommon.VolumeType.MEDIA_VIEW,
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
+  VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
 ];
 
 /**
