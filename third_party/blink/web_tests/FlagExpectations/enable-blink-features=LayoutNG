@@ -149,7 +149,6 @@ crbug.com/591099 external/wpt/css/css-masking/clip-path/clip-path-ellipse-007.ht
 crbug.com/591099 external/wpt/css/css-masking/clip-path/clip-path-polygon-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Pass ]
-crbug.com/921396 external/wpt/css/css-position/position-absolute-container-dynamic.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-relative-table-tbody-top-absolute-child.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-relative-table-tr-left-absolute-child.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/static-position/htb-ltr-rtl.tentative.html [ Pass ]
