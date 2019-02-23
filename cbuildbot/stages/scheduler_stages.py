@@ -54,6 +54,37 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return bot_id
 
+  def _CreateRequestBuild(self,
+                          build_name,
+                          build_config,
+                          master_build_id,
+                          master_buildbucket_id,
+                          requested_bot):
+    if build_config.build_affinity:
+      requested_bot = self._FindMostRecentBotId(build_config.name,
+                                                self._run.manifest_branch)
+      logging.info('Requesting build affinity for %s against %s',
+                   build_config.name, requested_bot)
+
+    cbb_extra_args = ['--buildbot']
+    # Adding cbb_snapshot_revision to child builders to force child builders
+    # to sync to annealing snapshot revision.
+    if self._run.options.cbb_snapshot_revision:
+      logging.info('Adding --cbb_snapshot_revision=%s for %s',
+                   self._run.options.cbb_snapshot_revision, build_config.name)
+      cbb_extra_args.append('--cbb_snapshot_revision')
+      cbb_extra_args.append(self._run.options.cbb_snapshot_revision)
+
+    return request_build.RequestBuild(
+        build_config=build_name,
+        display_label=build_config.display_label,
+        branch=self._run.manifest_branch,
+        master_cidb_id=master_build_id,
+        master_buildbucket_id=master_buildbucket_id,
+        extra_args=cbb_extra_args,
+        requested_bot=requested_bot,
+    )
+
   def PostSlaveBuildToBuildbucket(self,
                                   build_name,
                                   build_config,
@@ -76,20 +107,12 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         created_ts
     """
     requested_bot = None
-    if build_config.build_affinity:
-      requested_bot = self._FindMostRecentBotId(build_config.name,
-                                                self._run.manifest_branch)
-      logging.info('Requesting build affinity for %s against %s',
-                   build_config.name, requested_bot)
-
-    request = request_build.RequestBuild(
-        build_config=build_name,
-        display_label=build_config.display_label,
-        branch=self._run.manifest_branch,
-        master_cidb_id=master_build_id,
-        master_buildbucket_id=master_buildbucket_id,
-        extra_args=['--buildbot'],
-        requested_bot=requested_bot,
+    request = self._CreateRequestBuild(
+        build_name,
+        build_config,
+        master_build_id,
+        master_buildbucket_id,
+        requested_bot
     )
     result = request.Submit(dryrun=dryrun)
 
@@ -121,6 +144,10 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     # May be None. This is okay.
     master_buildbucket_id = self._run.options.buildbucket_id
+
+    if self._run.options.cbb_snapshot_revision:
+      logging.info('Parent has cbb_snapshot_rev=%s',
+                   self._run.options.cbb_snapshot_revision)
 
     scheduled_important_slave_builds = []
     scheduled_experimental_slave_builds = []

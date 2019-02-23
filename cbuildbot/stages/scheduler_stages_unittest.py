@@ -49,6 +49,39 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     bs = FakeBuildStore()
     return scheduler_stages.ScheduleSlavesStage(self._run, bs, self.sync_stage)
 
+  def testRequestBuild(self):
+    config = config_lib.BuildConfig(
+        name='child',
+        build_affinity=True,
+        important=True,
+        display_label='cq',
+        boards=['board_A'], build_type='paladin')
+
+    stage = self.ConstructStage()
+    # pylint: disable=protected-access
+    request = stage._CreateRequestBuild('child', config, 0, 'master_bb_0', None)
+    self.assertEqual(request.build_config, 'child')
+    self.assertEqual(request.master_buildbucket_id, 'master_bb_0')
+    self.assertEqual(request.extra_args, ['--buildbot'])
+
+  def testRequestBuildWithSnapshotRev(self):
+    config = config_lib.BuildConfig(
+        name='child',
+        build_affinity=True,
+        important=True,
+        display_label='cq',
+        boards=['board_A'], build_type='paladin')
+
+    stage = self.ConstructStage()
+    # Set the annealing snapshot revision to pass to the child builders.
+    # pylint: disable=protected-access
+    stage._run.options.cbb_snapshot_revision = 'hash1234'
+    request = stage._CreateRequestBuild('child', config, 0, 'master_bb_1', None)
+    self.assertEqual(request.build_config, 'child')
+    self.assertEqual(request.master_buildbucket_id, 'master_bb_1')
+    expected_extra_args = ['--buildbot', '--cbb_snapshot_revision', 'hash1234']
+    self.assertEqual(request.extra_args, expected_extra_args)
+
   def testPerformStage(self):
     """Test PerformStage."""
     stage = self.ConstructStage()
