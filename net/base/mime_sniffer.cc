@@ -101,11 +101,11 @@ namespace net {
 static const size_t kBytesRequiredForMagic = 42;
 
 struct MagicNumber {
-  const char* mime_type;
-  const char* magic;
+  const char* const mime_type;
+  const char* const magic;
   size_t magic_len;
   bool is_string;
-  const char* mask;  // if set, must have same length as |magic|
+  const char* const mask;  // if set, must have same length as |magic|
 };
 
 #define MAGIC_NUMBER(mime_type, magic) \
@@ -196,7 +196,7 @@ enum OfficeDocType {
 
 struct OfficeExtensionType {
   OfficeDocType doc_type;
-  const char* extension;
+  const char* const extension;
   size_t extension_len;
 };
 
