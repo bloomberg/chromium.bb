@@ -18,12 +18,14 @@ namespace leveldb_proto {
 
 namespace {
 
-const char kMetadataDatabaseName[] = "metadata";
+const char kMetadataDatabaseName[] = "Metadata";
 const base::FilePath::CharType kMetadataDatabasePath[] =
     FILE_PATH_LITERAL("metadata");
 const int kMaxInitMetaDatabaseAttempts = 3;
 
 const char kGlobalMetadataKey[] = "__global";
+
+const char kSharedProtoDatabaseUmaName[] = "SharedDb";
 
 }  // namespace
 
@@ -321,6 +323,7 @@ void SharedProtoDatabase::InitDatabase(bool create_shared_db_if_missing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
   auto options = CreateSimpleOptions();
   options.create_if_missing = create_shared_db_if_missing;
+  db_wrapper_->SetMetricsId(kSharedProtoDatabaseUmaName);
   // |db_wrapper_| uses the same SequencedTaskRunner that Init is called on,
   // so OnDatabaseInit will be called on the same sequence after Init.
   // This means any callers to Init using the same TaskRunner can guarantee that
