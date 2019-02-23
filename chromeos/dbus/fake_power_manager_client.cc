@@ -252,6 +252,13 @@ void FakePowerManagerClient::CreateArcTimers(
     const std::string& tag,
     std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
     DBusMethodCallback<std::vector<TimerId>> callback) {
+  // Return error if tag is empty.
+  if (tag.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::vector<TimerId>()));
+    return;
+  }
+
   // Check if client tag already exists. Return error iff it does.
   if (base::ContainsKey(client_timer_ids_, tag)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
