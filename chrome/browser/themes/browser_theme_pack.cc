@@ -104,7 +104,7 @@ struct PersistingImagesTable {
 
   // String to check for when parsing theme manifests or NULL if this isn't
   // supposed to be changeable by the user.
-  const char* key;
+  const char* const key;
 };
 
 // IDR_* resource names change whenever new resources are added; use persistent
@@ -215,7 +215,7 @@ std::string GetScaleFactorsAsString(
 }
 
 struct StringToIntTable {
-  const char* key;
+  const char* const key;
   TP::OverwritableByUserThemeProperty id;
 };
 
