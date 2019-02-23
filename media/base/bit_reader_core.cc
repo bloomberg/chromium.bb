@@ -113,6 +113,7 @@ bool BitReaderCore::ReadBitsInternal(int num_bits, uint64_t* out) {
     // empty the current bit register for that purpose.
     nbits_ = 0;
     reg_ = 0;
+    *out = 0;
     return false;
   }
 
