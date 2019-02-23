@@ -53,7 +53,7 @@ class FormatResourceMapUnittest(unittest.TestCase):
 #ifndef GRIT_RESOURCE_MAP_STRUCT_
 #define GRIT_RESOURCE_MAP_STRUCT_
 struct GritResourceMap {
-  const char* name;
+  const char* const name;
   int value;
 };
 #endif // GRIT_RESOURCE_MAP_STRUCT_
@@ -148,7 +148,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);'''
 #ifndef GZIPPED_GRIT_RESOURCE_MAP_STRUCT_
 #define GZIPPED_GRIT_RESOURCE_MAP_STRUCT_
 struct GzippedGritResourceMap {
-  const char* name;
+  const char* const name;
   int value;
   bool gzipped;
 };
@@ -216,7 +216,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 #ifndef GRIT_RESOURCE_MAP_STRUCT_
 #define GRIT_RESOURCE_MAP_STRUCT_
 struct GritResourceMap {
-  const char* name;
+  const char* const name;
   int value;
 };
 #endif // GRIT_RESOURCE_MAP_STRUCT_
@@ -295,7 +295,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 #ifndef GRIT_RESOURCE_MAP_STRUCT_
 #define GRIT_RESOURCE_MAP_STRUCT_
 struct GritResourceMap {
-  const char* name;
+  const char* const name;
   int value;
 };
 #endif // GRIT_RESOURCE_MAP_STRUCT_
@@ -368,7 +368,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 #ifndef GRIT_RESOURCE_MAP_STRUCT_
 #define GRIT_RESOURCE_MAP_STRUCT_
 struct GritResourceMap {
-  const char* name;
+  const char* const name;
   int value;
 };
 #endif // GRIT_RESOURCE_MAP_STRUCT_

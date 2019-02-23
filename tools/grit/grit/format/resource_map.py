@@ -61,7 +61,7 @@ def _FormatHeader(root, lang='en', output_dir='.', include_gzipped=False):
 #ifndef %(macro_prefix)sGRIT_RESOURCE_MAP_STRUCT_
 #define %(macro_prefix)sGRIT_RESOURCE_MAP_STRUCT_
 struct %(struct_prefix)sGritResourceMap {
-  const char* name;
+  const char* const name;
   int value;%(maybe_gzipped_bool)s
 };
 #endif // %(macro_prefix)sGRIT_RESOURCE_MAP_STRUCT_
