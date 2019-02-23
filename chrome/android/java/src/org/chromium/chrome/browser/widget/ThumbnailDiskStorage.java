@@ -83,6 +83,9 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     @VisibleForTesting
     long mSizeBytes;
 
+    // Whether or not this class has been destroyed and should not be used.
+    private boolean mDestroyed;
+
     private class InitTask extends AsyncTask<Void> {
         @Override
         protected Void doInBackground() {
@@ -201,6 +204,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
      */
     public void destroy() {
         mThumbnailGenerator.destroy();
+        mDestroyed = true;
     }
 
     /**
@@ -217,7 +221,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
      */
     public void retrieveThumbnail(ThumbnailProvider.ThumbnailRequest request) {
         ThreadUtils.assertOnUiThread();
-        if (TextUtils.isEmpty(request.getContentId())) return;
+        if (mDestroyed || TextUtils.isEmpty(request.getContentId())) return;
 
         new GetThumbnailTask(request).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
@@ -233,6 +237,9 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     @Override
     public void onThumbnailRetrieved(
             @NonNull String contentId, @Nullable Bitmap bitmap, int iconSizePx) {
+        // If we've been destroyed, drop any responses coming back from retrieval tasks.
+        if (mDestroyed) return;
+
         ThreadUtils.assertOnUiThread();
         if (bitmap != null && !TextUtils.isEmpty(contentId)) {
             new CacheThumbnailTask(contentId, bitmap, iconSizePx)

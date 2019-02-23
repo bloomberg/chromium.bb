@@ -84,6 +84,10 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
 
     @Override
     public void destroy() {
+        // Drop any references to any current requests.
+        mCurrentRequest = null;
+        mRequestQueue.clear();
+
         ThreadUtils.assertOnUiThread();
         mStorage.destroy();
         mBitmapCache.destroy();
@@ -195,6 +199,9 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
      */
     @Override
     public void onThumbnailRetrieved(@NonNull String contentId, @Nullable Bitmap bitmap) {
+        // Early-out if we have no actual current request.
+        if (mCurrentRequest == null) return;
+
         if (bitmap != null) {
             // The bitmap returned here is retrieved from the native side. The image decoder there
             // scales down the image (if it is too big) so that one of its sides is smaller than or
