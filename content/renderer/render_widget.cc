@@ -3074,6 +3074,14 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     settings.wait_for_all_pipeline_stages_before_draw = true;
     settings.enable_latency_recovery = false;
   }
+#if defined(OS_ANDROID)
+  if (features::IsSurfaceSynchronizationEnabled()) {
+    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
+    // Disable in viz mode for now, with plant o disable more widely once
+    // viz launches.
+    settings.enable_latency_recovery = false;
+  }
+#endif
 
   settings.enable_image_animation_resync =
       !cmd.HasSwitch(switches::kDisableImageAnimationResync);
