@@ -16,6 +16,9 @@
 // Asks the delegate to dismiss the InfobarBanner.
 - (void)dismissInfobarBanner:(UIViewController*)sender;
 
+// Asks the delegate to to present the InfobarModal for this InfobarBanner.
+- (void)presentInfobarModal;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_DELEGATE_H_

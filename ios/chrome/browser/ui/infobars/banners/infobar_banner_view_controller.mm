@@ -98,6 +98,7 @@
       gesture.state == UIGestureRecognizerStateCancelled) {
     if (self.view.center.y > self.originalCenter.y) {
       self.view.center = self.originalCenter;
+      [self.delegate presentInfobarModal];
     } else {
       [self.delegate dismissInfobarBanner:self];
     }
