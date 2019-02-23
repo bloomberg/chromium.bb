@@ -99,8 +99,6 @@ class RenderWidgetTargeter {
 
   void ViewWillBeDestroyed(RenderWidgetHostViewBase* view);
 
-  bool HasEventsPendingDispatch() const;
-
   void set_async_hit_test_timeout_delay_for_testing(
       const base::TimeDelta& delay) {
     async_hit_test_timeout_delay_ = delay;

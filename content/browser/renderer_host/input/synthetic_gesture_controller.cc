@@ -33,28 +33,12 @@ SyntheticGestureController::~SyntheticGestureController() {
 void SyntheticGestureController::QueueSyntheticGesture(
     std::unique_ptr<SyntheticGesture> synthetic_gesture,
     OnGestureCompleteCallback completion_callback) {
-  QueueSyntheticGesture(std::move(synthetic_gesture),
-                        std::move(completion_callback), false);
-}
-
-void SyntheticGestureController::QueueSyntheticGestureCompleteImmediately(
-    std::unique_ptr<SyntheticGesture> synthetic_gesture) {
-  QueueSyntheticGesture(std::move(synthetic_gesture),
-                        base::BindOnce([](SyntheticGesture::Result result) {}),
-                        true);
-}
-
-void SyntheticGestureController::QueueSyntheticGesture(
-    std::unique_ptr<SyntheticGesture> synthetic_gesture,
-    OnGestureCompleteCallback completion_callback,
-    bool complete_immediately) {
   DCHECK(synthetic_gesture);
 
   bool was_empty = pending_gesture_queue_.IsEmpty();
 
   pending_gesture_queue_.Push(std::move(synthetic_gesture),
-                              std::move(completion_callback),
-                              complete_immediately);
+                              std::move(completion_callback));
 
   if (was_empty)
     StartGesture(*pending_gesture_queue_.FrontGesture());
@@ -89,13 +73,11 @@ bool SyntheticGestureController::DispatchNextEvent(base::TimeTicks timestamp) {
     pending_gesture_queue_.mark_current_gesture_complete(result);
   }
 
-  if (!pending_gesture_queue_.CompleteCurrentGestureImmediately() &&
-      !delegate_->HasGestureStopped())
+  if (!delegate_->HasGestureStopped())
     return true;
 
   StopGesture(*pending_gesture_queue_.FrontGesture(),
-              pending_gesture_queue_.current_gesture_result(),
-              pending_gesture_queue_.CompleteCurrentGestureImmediately());
+              pending_gesture_queue_.current_gesture_result());
 
   return !pending_gesture_queue_.IsEmpty();
 }
@@ -108,9 +90,9 @@ void SyntheticGestureController::StartGesture(const SyntheticGesture& gesture) {
     StartTimer(gesture.AllowHighFrequencyDispatch());
 }
 
-void SyntheticGestureController::StopGesture(const SyntheticGesture& gesture,
-                                             SyntheticGesture::Result result,
-                                             bool complete_immediately) {
+void SyntheticGestureController::StopGesture(
+    const SyntheticGesture& gesture,
+    SyntheticGesture::Result result) {
   DCHECK_NE(result, SyntheticGesture::GESTURE_RUNNING);
   TRACE_EVENT_ASYNC_END0("input,benchmark",
                          "SyntheticGestureController::running",
@@ -118,7 +100,7 @@ void SyntheticGestureController::StopGesture(const SyntheticGesture& gesture,
 
   dispatch_timer_.Stop();
 
-  if (result != SyntheticGesture::GESTURE_FINISHED || complete_immediately) {
+  if (result != SyntheticGesture::GESTURE_FINISHED) {
     GestureCompleted(result);
     return;
   }
