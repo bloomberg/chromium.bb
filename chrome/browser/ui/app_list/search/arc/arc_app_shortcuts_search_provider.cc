@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcut_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 
@@ -56,19 +54,10 @@ void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAppShortcutsSearchProvider::Train(const std::string& id,
-                                          RankingItemType type) {
-  if (type == RankingItemType::kArcAppShortcut && ranker_ != nullptr)
-    ranker_->Train(id);
-}
-
 void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
     std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items) {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_prefs);
-  base::flat_map<std::string, float> ranker_scores;
-  if (app_list_features::IsAppSearchResultRankerEnabled() && ranker_ != nullptr)
-    ranker_scores = ranker_->Rank();
 
   SearchProvider::Results search_results;
   for (auto& item : shortcut_items) {
@@ -79,16 +68,16 @@ void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
     // Ignore shortcuts for apps that are not present in the launcher.
     if (!app_info || !app_info->show_in_launcher)
       continue;
-    auto result = std::make_unique<ArcAppShortcutSearchResult>(
-        std::move(item), profile_, list_controller_);
-    // TODO(crbug.com/931149): update the formula for relevance scores.
-    // This formula should be updated in the same way as query-based
-    // app search results
-    const auto find_in_ranker = ranker_scores.find(result->id());
-    if (find_in_ranker != ranker_scores.end())
-      result->set_relevance(result->relevance() + find_in_ranker->second / 10);
-    search_results.emplace_back(std::move(result));
+    search_results.emplace_back(std::make_unique<ArcAppShortcutSearchResult>(
+        std::move(item), profile_, list_controller_));
+
+    if (app_list_features::IsAppSearchResultRankerEnabled() &&
+        ranker_ != nullptr) {
+      // TODO(crbug.com/931149): tweak the scores of each search result item
+      // using the ranker.
+    }
   }
+
   SwapResults(&search_results);
 }
 
