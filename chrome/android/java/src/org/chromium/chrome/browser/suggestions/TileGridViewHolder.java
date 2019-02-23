@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.List;
  */
 public class TileGridViewHolder extends SiteSectionViewHolder {
     private final TileGridLayout mSectionView;
-    private final MarginResizer mMarginResizer;
 
     public TileGridViewHolder(ViewGroup view, int maxRows, int maxColumns, UiConfig uiConfig) {
         super(view);
@@ -32,8 +30,6 @@ public class TileGridViewHolder extends SiteSectionViewHolder {
         int defaultLateralMargin =
                 res.getDimensionPixelSize(R.dimen.tile_grid_layout_padding_start);
         int wideLateralMargin = res.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
-        mMarginResizer =
-                new MarginResizer(itemView, uiConfig, defaultLateralMargin, wideLateralMargin);
     }
 
     @Override
@@ -54,12 +50,10 @@ public class TileGridViewHolder extends SiteSectionViewHolder {
     @Override
     public void bindDataSource(TileGroup tileGroup, TileRenderer tileRenderer) {
         super.bindDataSource(tileGroup, tileRenderer);
-        if (mMarginResizer != null) mMarginResizer.attach();
     }
 
     @Override
     public void recycle() {
         super.recycle();
-        if (mMarginResizer != null) mMarginResizer.detach();
     }
 }

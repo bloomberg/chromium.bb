@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.displaystyle.ViewResizer;
 
 /**
  * The native new tab page, represented by some basic data such as title and url, and an Android
@@ -46,6 +47,7 @@ public class NewTabPageView extends HistoryNavigationLayout {
     private Tab mTab;
     private SnapScrollHelper mSnapScrollHelper;
     private UiConfig mUiConfig;
+    private ViewResizer mRecyclerViewResizer;
 
     private boolean mNewTabPageRecyclerViewChanged;
     private int mSnapshotWidth;
@@ -185,6 +187,12 @@ public class NewTabPageView extends HistoryNavigationLayout {
         newTabPageAdapter.refreshSuggestions();
         mRecyclerView.setAdapter(newTabPageAdapter);
         mRecyclerView.getLinearLayoutManager().scrollToPosition(scrollPosition);
+
+        mRecyclerViewResizer = ViewResizer.createAndAttach(mRecyclerView, mUiConfig,
+                mRecyclerView.getResources().getDimensionPixelSize(
+                        R.dimen.content_suggestions_card_modern_margin),
+                mRecyclerView.getResources().getDimensionPixelSize(
+                        R.dimen.ntp_wide_card_lateral_margins));
 
         setupScrollHandling();
 
