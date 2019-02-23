@@ -705,7 +705,7 @@ void GraphicsLayer::SetRenderingContext(int context) {
   CcLayer()->Set3dSortingContextId(context);
 
   if (contents_layer_)
-    CcLayer()->Set3dSortingContextId(rendering_context3d_);
+    contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {
