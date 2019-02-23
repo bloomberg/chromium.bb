@@ -300,6 +300,13 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
                            MessagePumpForIO::FdWatcher* delegate);
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  bool WatchMachReceivePort(
+      mach_port_t port,
+      MessagePumpForIO::MachPortWatchController* controller,
+      MessagePumpForIO::MachPortWatcher* delegate);
+#endif
+
 #if defined(OS_FUCHSIA)
   // Additional watch API for native platform resources.
   bool WatchZxHandle(zx_handle_t handle,
