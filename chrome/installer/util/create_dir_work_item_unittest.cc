@@ -16,13 +16,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-  class CreateDirWorkItemTest : public testing::Test {
-   protected:
-    void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+class CreateDirWorkItemTest : public testing::Test {
+ protected:
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
-    base::ScopedTempDir temp_dir_;
-  };
+  base::ScopedTempDir temp_dir_;
 };
+}  // namespace
 
 TEST_F(CreateDirWorkItemTest, CreatePath) {
   base::FilePath parent_dir(temp_dir_.GetPath());

@@ -58,7 +58,7 @@ HRESULT FakeWinWebAuthnApi::CancelCurrentOperation(GUID* cancellation_id) {
 const wchar_t* FakeWinWebAuthnApi::GetErrorName(HRESULT hr) {
   DCHECK(is_available_);
   return L"not implemented";
-};
+}
 
 ScopedFakeWinWebAuthnApi::ScopedFakeWinWebAuthnApi() : FakeWinWebAuthnApi() {
   WinWebAuthnApi::SetDefaultForTesting(this);

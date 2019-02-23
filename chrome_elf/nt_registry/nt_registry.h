@@ -262,6 +262,6 @@ bool SetTestingOverride(ROOT_KEY root, const std::wstring& new_path);
 // Getter function for test suites that use reg redirection.
 std::wstring GetTestingOverride(ROOT_KEY root);
 
-};  // namespace nt
+}  // namespace nt
 
 #endif  // CHROME_ELF_NT_REGISTRY_NT_REGISTRY_H_

@@ -152,7 +152,7 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
   const wchar_t* GetErrorName(HRESULT hr) override {
     DCHECK(is_bound_);
     return get_error_name_(hr);
-  };
+  }
 
  private:
   std::pair<HRESULT, ScopedCredentialAttestation>

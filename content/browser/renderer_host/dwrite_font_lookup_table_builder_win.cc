@@ -85,7 +85,7 @@ bool ExtractCaseFoldedLocalizedStrings(
 class ScopedAutoSignal {
  public:
   ScopedAutoSignal(base::WaitableEvent* waitable_event)
-      : waitable_event_(waitable_event){};
+      : waitable_event_(waitable_event) {}
   ~ScopedAutoSignal() { waitable_event_->Signal(); }
 
  private:
@@ -99,7 +99,7 @@ class ScopedAutoSignal {
 DWriteFontLookupTableBuilder::FontFileWithUniqueNames::FontFileWithUniqueNames(
     blink::FontUniqueNameTable_UniqueFont&& font,
     std::vector<std::string>&& names)
-    : font_entry(std::move(font)), extracted_names(std::move(names)){};
+    : font_entry(std::move(font)), extracted_names(std::move(names)) {}
 
 DWriteFontLookupTableBuilder::FontFileWithUniqueNames::
     ~FontFileWithUniqueNames() = default;
