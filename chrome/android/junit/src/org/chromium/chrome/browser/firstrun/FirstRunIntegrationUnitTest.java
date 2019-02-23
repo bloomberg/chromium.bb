@@ -25,13 +25,18 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowApplication;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.init.BrowserParts;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
+import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -40,8 +45,19 @@ import org.chromium.webapk.test.WebApkTestHelper;
 
 /** JUnit tests for first run triggering code. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        shadows = {FirstRunIntegrationUnitTest.MockChromeBrowserInitializer.class})
 public final class FirstRunIntegrationUnitTest {
+    /** Do nothing version of {@link ChromeBrowserInitializer}. */
+    @Implements(ChromeBrowserInitializer.class)
+    public static class MockChromeBrowserInitializer {
+        @Implementation
+        public void __constructor__() {}
+
+        @Implementation
+        public void handlePreNativeStartup(final BrowserParts parts) {}
+    }
+
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
@@ -59,6 +75,11 @@ public final class FirstRunIntegrationUnitTest {
 
         FirstRunStatus.setFirstRunFlowComplete(false);
         WebApkValidator.disableValidationForTesting();
+    }
+
+    /** Checks that the intent component targets the passed-in class. */
+    private boolean checkIntentComponentClass(Intent intent, Class componentClass) {
+        return checkIntentComponentClassOneOf(intent, new Class[] {componentClass});
     }
 
     /** Checks that the intent component is one of the provided classes. */
@@ -178,8 +199,7 @@ public final class FirstRunIntegrationUnitTest {
         Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
 
         Intent launchedIntent = mShadowApplication.getNextStartedActivity();
-        while (checkIntentComponentClassOneOf(
-                launchedIntent, new Class[] {WebappLauncherActivity.class})) {
+        while (checkIntentComponentClass(launchedIntent, WebappLauncherActivity.class)) {
             buildActivityWithClassNameFromIntent(launchedIntent);
             launchedIntent = mShadowApplication.getNextStartedActivity();
         }
@@ -190,5 +210,36 @@ public final class FirstRunIntegrationUnitTest {
         Assert.assertNotNull(freCompleteLaunchIntent);
         Assert.assertEquals(webApkPackageName,
                 Shadows.shadowOf(freCompleteLaunchIntent).getSavedIntent().getPackage());
+    }
+
+    /**
+     * Test that if a WebAPK only requires the lightweight FRE and a user has gone through the
+     * lightweight FRE that the WebAPK launches and no FRE is shown to the user.
+     */
+    @Test
+    public void testUserAcceptedLightweightFreLaunch() {
+        FirstRunStatus.setLightweightFirstRunFlowComplete(true);
+
+        String webApkPackageName = "unbound.webapk";
+        String startUrl = "https://pwa.rocks/";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                webApkPackageName, bundle, null /* shareTargetMetaData */);
+        WebApkTestHelper.addIntentFilterForUrl(webApkPackageName, startUrl);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
+
+        Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
+
+        Intent launchedIntent = mShadowApplication.getNextStartedActivity();
+        Assert.assertTrue(checkIntentComponentClass(launchedIntent, WebApkActivity.class));
+        buildActivityWithClassNameFromIntent(launchedIntent);
+
+        // No FRE should have been launched.
+        Assert.assertNull(mShadowApplication.getNextStartedActivity());
     }
 }

@@ -14,6 +14,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * An Activity is designed for WebAPKs (native Android apps) and displays a webapp in a nearly
@@ -47,6 +49,18 @@ public class WebApkActivity extends WebappActivity {
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
         getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
+    }
+
+    @Override
+    public boolean shouldPreferLightweightFre(Intent intent) {
+        // We cannot use getWebApkPackageName() because {@link WebappActivity#preInflationStartup()}
+        // may not have been called yet.
+        String webApkPackageName =
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+
+        // Use the lightweight FRE for unbound WebAPKs.
+        return webApkPackageName != null
+                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override
