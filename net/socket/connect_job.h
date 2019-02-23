@@ -104,14 +104,20 @@ class NET_EXPORT_PRIVATE ConnectJob {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  // A |timeout_duration| of 0 corresponds to no timeout. |group_name| is a
-  // caller-provided opaque string, only used for logging and the corresponding
-  // accessor.
+  // A |timeout_duration| of 0 corresponds to no timeout.
+  //
+  // If |net_log| is non-NULL, the ConnectJob will use it for logging.
+  // Otherwise, a new one will be created of type |net_log_source_type|.
+  //
+  // |net_log_connect_event_type| is the NetLog event type logged on Connect()
+  // and connect completion.
   ConnectJob(RequestPriority priority,
              base::TimeDelta timeout_duration,
              const CommonConnectJobParams& common_connect_job_params,
              Delegate* delegate,
-             const NetLogWithSource& net_log);
+             const NetLogWithSource* net_log,
+             NetLogSourceType net_log_source_type,
+             NetLogEventType net_log_connect_event_type);
   virtual ~ConnectJob();
 
   // Accessors
@@ -231,7 +237,12 @@ class NET_EXPORT_PRIVATE ConnectJob {
   base::OneShotTimer timer_;
   Delegate* delegate_;
   std::unique_ptr<StreamSocket> socket_;
+  // Indicates if this is the topmost ConnectJob. The topmost ConnectJob logs an
+  // extra begin and end event, to allow callers to log extra data before the
+  // ConnectJob has started / after it has completed.
+  const bool top_level_job_;
   NetLogWithSource net_log_;
+  const NetLogEventType net_log_connect_event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectJob);
 };

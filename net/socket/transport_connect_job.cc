@@ -71,28 +71,32 @@ std::unique_ptr<ConnectJob> TransportConnectJob::CreateTransportConnectJob(
     scoped_refptr<TransportSocketParams> transport_client_params,
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
+    ConnectJob::Delegate* delegate,
+    const NetLogWithSource* net_log) {
   if (!common_connect_job_params.websocket_endpoint_lock_manager) {
     return std::make_unique<TransportConnectJob>(
-        priority, common_connect_job_params, transport_client_params, delegate);
+        priority, common_connect_job_params, transport_client_params, delegate,
+        net_log);
   }
 
   return std::make_unique<WebSocketTransportConnectJob>(
-      priority, common_connect_job_params, transport_client_params, delegate);
+      priority, common_connect_job_params, transport_client_params, delegate,
+      net_log);
 }
 
 TransportConnectJob::TransportConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
-    Delegate* delegate)
-    : ConnectJob(
-          priority,
-          ConnectionTimeout(),
-          common_connect_job_params,
-          delegate,
-          NetLogWithSource::Make(common_connect_job_params.net_log,
-                                 NetLogSourceType::TRANSPORT_CONNECT_JOB)),
+    Delegate* delegate,
+    const NetLogWithSource* net_log)
+    : ConnectJob(priority,
+                 ConnectionTimeout(),
+                 common_connect_job_params,
+                 delegate,
+                 net_log,
+                 NetLogSourceType::TRANSPORT_CONNECT_JOB,
+                 NetLogEventType::TRANSPORT_CONNECT_JOB_CONNECT),
       params_(params),
       next_state_(STATE_NONE),
       resolve_result_(OK) {

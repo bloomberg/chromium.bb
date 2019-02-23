@@ -64,7 +64,8 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   SOCKSConnectJob(RequestPriority priority,
                   const CommonConnectJobParams& common_connect_job_params,
                   const scoped_refptr<SOCKSSocketParams>& socks_params,
-                  ConnectJob::Delegate* delegate);
+                  ConnectJob::Delegate* delegate,
+                  const NetLogWithSource* net_log);
   ~SOCKSConnectJob() override;
 
   // ConnectJob methods.

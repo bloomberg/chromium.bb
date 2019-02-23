@@ -165,14 +165,15 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<HttpProxySocketParams>& params,
-    Delegate* delegate)
-    : ConnectJob(
-          priority,
-          base::TimeDelta() /* The socket takes care of timeouts */,
-          common_connect_job_params,
-          delegate,
-          NetLogWithSource::Make(common_connect_job_params.net_log,
-                                 NetLogSourceType::HTTP_PROXY_CONNECT_JOB)),
+    Delegate* delegate,
+    const NetLogWithSource* net_log)
+    : ConnectJob(priority,
+                 base::TimeDelta() /* The socket takes care of timeouts */,
+                 common_connect_job_params,
+                 delegate,
+                 net_log,
+                 NetLogSourceType::HTTP_PROXY_CONNECT_JOB,
+                 NetLogEventType::HTTP_PROXY_CONNECT_JOB_CONNECT),
       client_socket_(std::make_unique<HttpProxyClientSocketWrapper>(
           priority,
           ConnectionTimeout(

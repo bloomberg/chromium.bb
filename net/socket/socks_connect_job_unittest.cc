@@ -95,7 +95,7 @@ TEST_F(SOCKSConnectJobTest, HostResolutionFailure) {
     TestConnectJobDelegate test_delegate;
     SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                       CreateSOCKSParams(SOCKSVersion::V5),
-                                      &test_delegate);
+                                      &test_delegate, nullptr /* net_log */);
     test_delegate.StartJobExpectingResult(
         &socks_connect_job, ERR_PROXY_CONNECTION_FAILED, failure_synchronous);
   }
@@ -123,7 +123,7 @@ TEST_F(SOCKSConnectJobTest, HandshakeError) {
       TestConnectJobDelegate test_delegate;
       SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V5),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
           &socks_connect_job, ERR_UNEXPECTED,
           host_resolution_synchronous && write_failure_synchronous);
@@ -156,7 +156,7 @@ TEST_F(SOCKSConnectJobTest, SOCKS4) {
       TestConnectJobDelegate test_delegate;
       SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V4),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
           &socks_connect_job, OK,
           host_resolution_synchronous && read_and_writes_synchronous);
@@ -192,7 +192,7 @@ TEST_F(SOCKSConnectJobTest, SOCKS5) {
       TestConnectJobDelegate test_delegate;
       SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V5),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
           &socks_connect_job, OK,
           host_resolution_synchronous && read_and_writes_synchronous);
@@ -219,7 +219,7 @@ TEST_F(SOCKSConnectJobTest, HasEstablishedConnection) {
   TestConnectJobDelegate test_delegate;
   SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                     CreateSOCKSParams(SOCKSVersion::V4),
-                                    &test_delegate);
+                                    &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, socks_connect_job.GetLoadState());
   EXPECT_FALSE(socks_connect_job.HasEstablishedConnection());
@@ -249,7 +249,7 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringDnsResolution) {
   TestConnectJobDelegate test_delegate;
   SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                     CreateSOCKSParams(SOCKSVersion::V5),
-                                    &test_delegate);
+                                    &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
 
   // Just before the TransportConnectJob's timeout, nothing should have
@@ -286,7 +286,7 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringHandshake) {
   TestConnectJobDelegate test_delegate;
   SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                     CreateSOCKSParams(SOCKSVersion::V5),
-                                    &test_delegate);
+                                    &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
 
   // Just before the TransportConnectJob's timeout, nothing should have
@@ -330,7 +330,8 @@ TEST_F(SOCKSConnectJobTest, Priority) {
       TestConnectJobDelegate test_delegate;
       SOCKSConnectJob socks_connect_job(
           static_cast<RequestPriority>(initial_priority), CreateCommonParams(),
-          CreateSOCKSParams(SOCKSVersion::V4), &test_delegate);
+          CreateSOCKSParams(SOCKSVersion::V4), &test_delegate,
+          nullptr /* net_log */);
       ASSERT_THAT(socks_connect_job.Connect(), test::IsError(ERR_IO_PENDING));
       ASSERT_TRUE(host_resolver_.has_pending_requests());
       int request_id = host_resolver_.num_resolve();
@@ -375,7 +376,7 @@ TEST_F(SOCKSConnectJobTest, ConnectTiming) {
   TestConnectJobDelegate test_delegate;
   SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
                                     CreateSOCKSParams(SOCKSVersion::V5),
-                                    &test_delegate);
+                                    &test_delegate, nullptr /* net_log */);
   base::TimeTicks start = base::TimeTicks::Now();
   socks_connect_job.Connect();
 
@@ -414,7 +415,7 @@ TEST_F(SOCKSConnectJobTest, CancelDuringDnsResolution) {
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
       std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V5),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();
 
   EXPECT_TRUE(host_resolver_.has_pending_requests());
@@ -437,7 +438,7 @@ TEST_F(SOCKSConnectJobTest, CancelDuringConnect) {
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
       std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V5),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();
   // Host resolution should resolve immediately. The ConnectJob should currently
   // be trying to connect.
@@ -465,7 +466,7 @@ TEST_F(SOCKSConnectJobTest, CancelDuringHandshake) {
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
       std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
                                         CreateSOCKSParams(SOCKSVersion::V5),
-                                        &test_delegate);
+                                        &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();
   // Host resolution should resolve immediately. The socket connecting, and the
   // ConnectJob should currently be trying to send the SOCKS handshake.

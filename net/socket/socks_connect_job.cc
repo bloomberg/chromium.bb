@@ -38,16 +38,22 @@ SOCKSConnectJob::SOCKSConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
-    ConnectJob::Delegate* delegate)
+    ConnectJob::Delegate* delegate,
+    const NetLogWithSource* net_log)
     : ConnectJob(priority,
                  ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
-                 NetLogWithSource::Make(common_connect_job_params.net_log,
-                                        NetLogSourceType::SOCKS_CONNECT_JOB)),
+                 net_log,
+                 NetLogSourceType::SOCKS_CONNECT_JOB,
+                 NetLogEventType::SOCKS_CONNECT_JOB_CONNECT),
       socks_params_(socks_params) {}
 
-SOCKSConnectJob::~SOCKSConnectJob() {}
+SOCKSConnectJob::~SOCKSConnectJob() {
+  // In the case the job was canceled, need to delete nested job first to
+  // correctly order NetLog events.
+  transport_connect_job_.reset();
+}
 
 LoadState SOCKSConnectJob::GetLoadState() const {
   switch (next_state_) {
@@ -124,7 +130,7 @@ int SOCKSConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
       socks_params_->transport_params(), priority(),
-      common_connect_job_params(), this);
+      common_connect_job_params(), this, &net_log());
   return transport_connect_job_->Connect();
 }
 

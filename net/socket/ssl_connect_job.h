@@ -85,7 +85,8 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                 const CommonConnectJobParams& common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
                 TransportClientSocketPool* http_proxy_pool,
-                ConnectJob::Delegate* delegate);
+                ConnectJob::Delegate* delegate,
+                const NetLogWithSource* net_log);
   ~SSLConnectJob() override;
 
   // ConnectJob methods.

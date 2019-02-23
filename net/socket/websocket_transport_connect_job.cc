@@ -25,14 +25,15 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
-    Delegate* delegate)
+    Delegate* delegate,
+    const NetLogWithSource* net_log)
     : ConnectJob(priority,
                  TransportConnectJob::ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
-                 NetLogWithSource::Make(
-                     common_connect_job_params.net_log,
-                     NetLogSourceType::WEB_SOCKET_TRANSPORT_CONNECT_JOB)),
+                 net_log,
+                 NetLogSourceType::WEB_SOCKET_TRANSPORT_CONNECT_JOB,
+                 NetLogEventType::WEB_SOCKET_TRANSPORT_CONNECT_JOB_CONNECT),
       params_(params),
       next_state_(STATE_NONE),
       race_result_(TransportConnectJob::RACE_UNKNOWN),

@@ -91,12 +91,14 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
       scoped_refptr<TransportSocketParams> transport_client_params,
       RequestPriority priority,
       const CommonConnectJobParams& common_connect_job_params,
-      ConnectJob::Delegate* delegate);
+      ConnectJob::Delegate* delegate,
+      const NetLogWithSource* net_log);
 
   TransportConnectJob(RequestPriority priority,
                       const CommonConnectJobParams& common_connect_job_params,
                       const scoped_refptr<TransportSocketParams>& params,
-                      Delegate* delegate);
+                      Delegate* delegate,
+                      const NetLogWithSource* net_log);
   ~TransportConnectJob() override;
 
   // ConnectJob methods.
