@@ -23,6 +23,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 
 FaviconSource::IconRequest::IconRequest()
@@ -175,6 +176,10 @@ bool FaviconSource::HandleMissingResource(const IconRequest& request) {
   return false;
 }
 
+ui::NativeTheme* FaviconSource::GetNativeTheme() {
+  return ui::NativeTheme::GetInstanceForNativeUi();
+}
+
 void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
@@ -192,23 +197,24 @@ void FaviconSource::SendDefaultResponse(
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
+  const bool dark = GetNativeTheme()->SystemDarkModeEnabled();
   int resource_id;
   switch (icon_request.size_in_dip) {
     case 64:
-      resource_id = IDR_DEFAULT_FAVICON_64;
+      resource_id = dark ? IDR_DEFAULT_FAVICON_DARK_64 : IDR_DEFAULT_FAVICON_64;
       break;
     case 32:
-      resource_id = IDR_DEFAULT_FAVICON_32;
+      resource_id = dark ? IDR_DEFAULT_FAVICON_DARK_32 : IDR_DEFAULT_FAVICON_32;
       break;
     default:
-      resource_id = IDR_DEFAULT_FAVICON;
+      resource_id = dark ? IDR_DEFAULT_FAVICON_DARK : IDR_DEFAULT_FAVICON;
       break;
   }
+  icon_request.callback.Run(LoadIconBytes(icon_request, resource_id));
+}
 
-  base::RefCountedMemory* default_favicon =
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          resource_id,
-          ui::GetSupportedScaleFactor(icon_request.device_scale_factor));
-
-  icon_request.callback.Run(default_favicon);
+base::RefCountedMemory* FaviconSource::LoadIconBytes(const IconRequest& request,
+                                                     int resource_id) {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+      resource_id, ui::GetSupportedScaleFactor(request.device_scale_factor));
 }

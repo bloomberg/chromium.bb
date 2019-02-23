@@ -17,6 +17,14 @@
 
 class Profile;
 
+namespace base {
+class RefCountedMemory;
+}
+
+namespace ui {
+class NativeTheme;
+}
+
 // FaviconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
 //
@@ -85,6 +93,11 @@ class FaviconSource : public content::URLDataSource {
   // |request| contains information for the failed request.
   // Returns true if the missing resource is found.
   virtual bool HandleMissingResource(const IconRequest& request);
+
+  // Exposed for testing.
+  virtual ui::NativeTheme* GetNativeTheme();
+  virtual base::RefCountedMemory* LoadIconBytes(const IconRequest& request,
+                                                int resource_id);
 
   Profile* profile_;
 

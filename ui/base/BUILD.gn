@@ -642,6 +642,8 @@ component("features") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
+    "resource/mock_resource_bundle_delegate.cc",
+    "resource/mock_resource_bundle_delegate.h",
     "test/material_design_controller_test_api.cc",
     "test/material_design_controller_test_api.h",
     "test/ui_controls.h",
@@ -693,6 +695,7 @@ jumbo_static_library("test_support") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/base:ui_data_pack",
     "//ui/display:test_support",
@@ -914,9 +917,7 @@ test("ui_base_unittests") {
       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
     }
     if (is_chromeos || use_ozone) {
-      sources += [
-        "ime/character_composer_unittest.cc",
-      ]
+      sources += [ "ime/character_composer_unittest.cc" ]
     }
   }
 

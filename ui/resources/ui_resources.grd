@@ -90,8 +90,11 @@
       <structure type="chrome_scaled_image" name="IDR_DISABLE_H" file="disable_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_DISABLE_P" file="disable_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="common/default_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_DARK" file="common/default_favicon_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_32" file="common/default_favicon_32.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_DARK_32" file="common/default_favicon_dark_32.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_64" file="common/default_favicon_64.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_DARK_64" file="common/default_favicon_dark_64.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_HARDLOCKED" file="common/easy_unlock_hardlocked.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_HARDLOCKED_HOVER" file="common/easy_unlock_hardlocked_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_HARDLOCKED_PRESSED" file="common/easy_unlock_hardlocked_pressed.png" />
