@@ -343,9 +343,25 @@ public class AwContentsTest {
     @Feature({"AndroidWebView", "Downloads"})
     @SmallTest
     public void testDownload() throws Throwable {
+        downloadAndCheck(null);
+    }
+
+    @Test
+    @Feature({"AndroidWebView", "Downloads"})
+    @SmallTest
+    public void testDownloadWithCustomUserAgent() throws Throwable {
+        downloadAndCheck("Custom User Agent");
+    }
+
+    private void downloadAndCheck(String customUserAgent) throws Throwable {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
+
+        if (customUserAgent != null) {
+            AwSettings awSettings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
+            awSettings.setUserAgentString(customUserAgent);
+        }
 
         final String data = "download data";
         final String contentDisposition = "attachment;filename=\"download.txt\"";
@@ -370,6 +386,13 @@ public class AwContentsTest {
             Assert.assertEquals(contentDisposition, downloadStartHelper.getContentDisposition());
             Assert.assertEquals(mimeType, downloadStartHelper.getMimeType());
             Assert.assertEquals(data.length(), downloadStartHelper.getContentLength());
+            Assert.assertFalse(downloadStartHelper.getUserAgent().isEmpty());
+            if (customUserAgent != null) {
+                Assert.assertEquals(customUserAgent, downloadStartHelper.getUserAgent());
+            } else {
+                Assert.assertEquals(
+                        downloadStartHelper.getUserAgent(), AwSettings.getDefaultUserAgent());
+            }
         } finally {
             webServer.shutdown();
         }

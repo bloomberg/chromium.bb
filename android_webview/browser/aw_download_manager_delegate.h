@@ -10,6 +10,12 @@
 #include "base/supports_user_data.h"
 #include "content/public/browser/download_manager_delegate.h"
 
+namespace content {
+
+class WebContents;
+
+}  // namespace content
+
 namespace android_webview {
 
 // Android WebView does not use Chromium downloads, so implement methods here to
