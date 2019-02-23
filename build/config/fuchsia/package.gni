@@ -38,6 +38,7 @@ template("fuchsia_package") {
   _pkg_out_dir = "${target_gen_dir}/${pkg.package_name}"
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
   _archive_manifest = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
+  _build_ids_file = "$_pkg_out_dir/ids.txt"
   _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
   _key_file = "$_pkg_out_dir/signing-key"
   _meta_far_file = "$_pkg_out_dir/meta.far"
@@ -61,7 +62,7 @@ template("fuchsia_package") {
                              "testonly",
                            ])
 
-    script = "//build/config/fuchsia/build_manifest.py"
+    script = "//build/config/fuchsia/prepare_package_inputs.py"
 
     inputs = [
       _runtime_deps_file,
@@ -70,6 +71,7 @@ template("fuchsia_package") {
 
     outputs = [
       _archive_manifest,
+      _build_ids_file,
       _component_manifest,
     ]
 
@@ -98,8 +100,10 @@ template("fuchsia_package") {
       rebase_path(_runtime_deps_file, root_build_dir),
       "--depfile-path",
       rebase_path(_depfile, root_build_dir),
-      "--output-path",
+      "--manifest-path",
       rebase_path(_archive_manifest, root_build_dir),
+      "--build-ids-file",
+      rebase_path(_build_ids_file, root_build_dir),
     ]
 
     if (defined(pkg.excluded_files)) {
@@ -215,6 +219,7 @@ template("fuchsia_package") {
     data = [
       _final_far_file,
       _package_info_path,
+      _build_ids_file,
     ]
 
     sources = [
