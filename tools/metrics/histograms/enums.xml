@@ -43318,10 +43318,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Parsing error">
     Threshold parameter was not parsed correctly from string to double.
   </int>
-  <int value="3" label="Use default value">
-    Threshold parameter was not supplied or same as the default value. In either
-    case, the default value was used.
-  </int>
 </enum>
 
 <enum name="PowerSupplyType">
