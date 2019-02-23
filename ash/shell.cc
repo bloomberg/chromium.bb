@@ -423,6 +423,10 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
   PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
 }
 
+display::DisplayConfigurator* Shell::display_configurator() {
+  return display_manager_->configurator();
+}
+
 void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
   wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
       std::move(file_helper), aura_env_);
@@ -651,9 +655,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
-      display_configurator_(std::make_unique<display::DisplayConfigurator>()),
-      display_output_protection_(std::make_unique<DisplayOutputProtection>(
-          display_configurator_.get())),
       native_cursor_manager_(nullptr),
       weak_factory_(this) {
   // Ash doesn't properly remove pre-target-handlers.
@@ -667,6 +668,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   login_screen_controller_ =
       std::make_unique<LoginScreenController>(system_tray_notifier_.get());
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
+  display_output_protection_ = std::make_unique<DisplayOutputProtection>(
+      display_manager_->configurator());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
   ash_keyboard_controller_ =
@@ -898,9 +901,11 @@ Shell::~Shell() {
   projecting_observer_.reset();
 
   if (display_change_observer_)
-    display_configurator_->RemoveObserver(display_change_observer_.get());
+    display_manager_->configurator()->RemoveObserver(
+        display_change_observer_.get());
   if (display_error_observer_)
-    display_configurator_->RemoveObserver(display_error_observer_.get());
+    display_manager_->configurator()->RemoveObserver(
+        display_error_observer_.get());
   display_change_observer_.reset();
   display_shutdown_observer_.reset();
 
@@ -1017,14 +1022,14 @@ void Shell::Init(
   cursor_manager_ =
       std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
 
+  InitializeDisplayManager();
+
   // In CLASSIC mode, |initial_display_prefs| contains the synchronously
   // loaded display pref values. Otherwise |initial_display_prefs| is null and
   // the pref values will be loaded once |local_state_| is available. (Any store
   // requests in the meanwhile will be queued).
   display_prefs_ =
       std::make_unique<DisplayPrefs>(std::move(initial_display_prefs));
-
-  InitializeDisplayManager();
 
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
@@ -1128,7 +1133,7 @@ void Shell::Init(
       backlights_forced_off_setter_.get());
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
-      display_configurator_->cached_displays());
+      display_configurator()->cached_displays());
 
   drag_drop_controller_ = std::make_unique<DragDropController>();
 
@@ -1284,11 +1289,11 @@ void Shell::Init(
 void Shell::InitializeDisplayManager() {
   bool display_initialized = display_manager_->InitFromCommandLine();
 
+  display_manager_->InitConfigurator(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate());
   display_configuration_controller_ =
       std::make_unique<DisplayConfigurationController>(
           display_manager_.get(), window_tree_host_manager_.get());
-  display_configurator_->Init(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
   display_configuration_observer_ =
       std::make_unique<DisplayConfigurationObserver>();
 
@@ -1298,32 +1303,26 @@ void Shell::InitializeDisplayManager() {
       std::make_unique<PersistentWindowController>();
 
   projecting_observer_ =
-      std::make_unique<ProjectingObserver>(display_configurator_.get());
+      std::make_unique<ProjectingObserver>(display_manager_->configurator());
 
   if (!display_initialized) {
     if (chromeos::IsRunningAsSystemCompositor()) {
       display_change_observer_ =
           std::make_unique<display::DisplayChangeObserver>(
-              display_configurator_.get(), display_manager_.get());
+              display_manager_.get());
 
+      display_error_observer_ = std::make_unique<DisplayErrorObserver>();
       display_shutdown_observer_ = std::make_unique<DisplayShutdownObserver>(
-          display_configurator_.get());
+          display_manager_->configurator());
 
-      // Register |display_change_observer_| first so that the rest of
-      // observer gets invoked after the root windows are configured.
-      display_configurator_->AddObserver(display_change_observer_.get());
-      display_error_observer_.reset(new DisplayErrorObserver());
-      display_configurator_->AddObserver(display_error_observer_.get());
-      display_configurator_->set_state_controller(
-          display_change_observer_.get());
-      display_configurator_->set_mirroring_controller(display_manager_.get());
-      display_configurator_->ForceInitialConfigure();
+      display_manager_->ForceInitialConfigureWithObservers(
+          display_change_observer_.get(), display_error_observer_.get());
       display_initialized = true;
     }
   }
 
   display_color_manager_ = std::make_unique<DisplayColorManager>(
-      display_configurator_.get(), display::Screen::GetScreen());
+      display_manager_->configurator(), display::Screen::GetScreen());
 
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();

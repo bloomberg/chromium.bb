@@ -772,10 +772,6 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
-display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
-  return Shell::Get()->display_configurator();
-}
-
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
     DispatchKeyEventPostIMECallback callback) {

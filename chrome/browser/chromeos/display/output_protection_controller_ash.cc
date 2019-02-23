@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
+#include "ui/display/manager/display_configurator.h"
 
 #include "ash/shell.h"  // mash-ok
 

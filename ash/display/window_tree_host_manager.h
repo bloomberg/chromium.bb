@@ -171,7 +171,6 @@ class ASH_EXPORT WindowTreeHostManager
   void SetPrimaryDisplayId(int64_t id) override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
-  display::DisplayConfigurator* display_configurator() override;
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(

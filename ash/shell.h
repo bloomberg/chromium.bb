@@ -382,10 +382,8 @@ class ASH_EXPORT Shell : public SessionObserver,
     return display_configuration_controller_.get();
   }
 
-  // TODO(oshima): Move these objects to WindowTreeHostManager.
-  display::DisplayConfigurator* display_configurator() {
-    return display_configurator_.get();
-  }
+  display::DisplayConfigurator* display_configurator();
+
   DisplayColorManager* display_color_manager() {
     return display_color_manager_.get();
   }
@@ -824,7 +822,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
   // Controls video output device state.
-  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayOutputProtection> display_output_protection_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
   std::unique_ptr<DisplayErrorObserver> display_error_observer_;

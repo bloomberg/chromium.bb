@@ -870,23 +870,19 @@ class NightLightCrtcTest : public NightLightTest {
   static constexpr int64_t kId1 = 123;
   static constexpr int64_t kId2 = 456;
 
-  display::DisplayConfigurator* display_configurator() {
-    return Shell::Get()->display_configurator();
-  }
-
   // NightLightTest:
   void SetUp() override {
     NightLightTest::SetUp();
 
     native_display_delegate_ =
         new display::test::TestNativeDisplayDelegate(logger_.get());
-    display_configurator()->SetDelegateForTesting(
+    display_manager()->configurator()->SetDelegateForTesting(
         std::unique_ptr<display::NativeDisplayDelegate>(
             native_display_delegate_));
-    display_change_observer_ = std::make_unique<display::DisplayChangeObserver>(
-        display_configurator(), display_manager());
+    display_change_observer_ =
+        std::make_unique<display::DisplayChangeObserver>(display_manager());
     test_api_ = std::make_unique<display::DisplayConfigurator::TestApi>(
-        display_configurator());
+        display_manager()->configurator());
   }
 
   void TearDown() override {
@@ -938,7 +934,7 @@ class NightLightCrtcTest : public NightLightTest {
   // display snapshots.
   void UpdateDisplays(const std::vector<display::DisplaySnapshot*>& outputs) {
     native_display_delegate_->set_outputs(outputs);
-    display_configurator()->OnConfigurationChanged();
+    display_manager()->configurator()->OnConfigurationChanged();
     EXPECT_TRUE(test_api_->TriggerConfigureTimeout());
     display_change_observer_->GetStateForDisplayIds(outputs);
     display_change_observer_->OnDisplayModeChanged(outputs);

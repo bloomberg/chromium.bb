@@ -156,11 +156,8 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
   return display_mode_list;
 }
 
-DisplayChangeObserver::DisplayChangeObserver(
-    DisplayConfigurator* display_configurator,
-    DisplayManager* display_manager)
-    : display_configurator_(display_configurator),
-      display_manager_(display_manager) {
+DisplayChangeObserver::DisplayChangeObserver(DisplayManager* display_manager)
+    : display_manager_(display_manager) {
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
@@ -233,7 +230,8 @@ void DisplayChangeObserver::OnInputDeviceConfigurationChanged(
     // case there aren't any touchscreens to associate. For the second case,
     // the displays and touch input-devices will get associated when display
     // configuration finishes.
-    const auto& cached_displays = display_configurator_->cached_displays();
+    const auto& cached_displays =
+        display_manager_->configurator()->cached_displays();
     if (!cached_displays.empty())
       OnDisplayModeChanged(cached_displays);
   }
