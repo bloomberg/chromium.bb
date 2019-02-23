@@ -56,9 +56,10 @@ class MEDIA_EXPORT BitReaderCore {
   // integer type.
   template<typename T> bool ReadBits(int num_bits, T* out) {
     DCHECK_LE(num_bits, static_cast<int>(sizeof(T) * 8));
-    uint64_t temp;
+    uint64_t temp = 0;
     bool ret = ReadBitsInternal(num_bits, &temp);
-    *out = static_cast<T>(temp);
+    if (ret)
+      *out = static_cast<T>(temp);
     return ret;
   }
 
