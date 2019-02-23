@@ -41,7 +41,6 @@ class XDGPopupWrapperV6 : public XDGPopupWrapper {
 
  private:
   WaylandWindow* wayland_window_ = nullptr;
-  ;
   std::unique_ptr<XDGSurfaceWrapper> zxdg_surface_v6_;
   wl::Object<zxdg_popup_v6> xdg_popup_;
 
