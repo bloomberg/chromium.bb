@@ -395,9 +395,12 @@ TEST_F(UnifiedMessageCenterViewTest,
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_TRUE(GetStackingCounter()->visible());
-  // The offset change matches with the scroll amount.
-  EXPECT_EQ(previous_bounds - gfx::Vector2d(0, scroll_amount),
-            GetMessageViewVisibleBounds(2));
+  // The offset change matches with the scroll amount plus the stacking bar
+  // height.
+  EXPECT_EQ(
+      previous_bounds -
+          gfx::Vector2d(0, scroll_amount + kStackingNotificationCounterHeight),
+      GetMessageViewVisibleBounds(2));
 
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount - 1);
   message_center_view()->OnMessageCenterScrolled();

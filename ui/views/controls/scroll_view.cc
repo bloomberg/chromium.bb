@@ -749,7 +749,6 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
                                         contents_viewport_->height());
 
   ScrollToOffset(gfx::ScrollOffset(new_x, new_y));
-  UpdateScrollBarPositions();
 }
 
 void ScrollView::ComputeScrollBarsVisibility(const gfx::Size& vp_size,
@@ -834,6 +833,7 @@ void ScrollView::ScrollToOffset(const gfx::ScrollOffset& offset) {
     ScrollHeader();
   }
   UpdateOverflowIndicatorVisibility(offset);
+  UpdateScrollBarPositions();
 }
 
 bool ScrollView::ScrollsWithLayers() const {
