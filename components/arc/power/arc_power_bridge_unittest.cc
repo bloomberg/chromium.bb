@@ -82,10 +82,25 @@ class ArcPowerBridgeTest : public testing::Test {
     power_bridge_->FlushWakeLocksForTesting();
   }
 
+  // Returns the number of active wake locks of type |type|.
+  int GetActiveWakeLocks(WakeLockType type) {
+    base::RunLoop run_loop;
+    int result_count = 0;
+    wake_lock_provider_->GetActiveWakeLocksForTests(
+        type,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, int* result_count, int32_t count) {
+              *result_count = count;
+              run_loop->Quit();
+            },
+            &run_loop, &result_count));
+    run_loop.Run();
+    return result_count;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<device::TestWakeLockProvider> wake_lock_provider_;
 
   chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.
 
@@ -94,6 +109,8 @@ class ArcPowerBridgeTest : public testing::Test {
   std::unique_ptr<ArcPowerBridge> power_bridge_;
 
  private:
+  std::unique_ptr<device::TestWakeLockProvider> wake_lock_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcPowerBridgeTest);
 };
 
@@ -170,71 +187,59 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
 
 TEST_F(ArcPowerBridgeTest, DifferentWakeLocks) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(0,
+            GetActiveWakeLocks(WakeLockType::kPreventDisplaySleepAllowDimming));
 
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::DIM);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1,
+            GetActiveWakeLocks(WakeLockType::kPreventDisplaySleepAllowDimming));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1,
+            GetActiveWakeLocks(WakeLockType::kPreventDisplaySleepAllowDimming));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::DIM);
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(0,
+            GetActiveWakeLocks(WakeLockType::kPreventDisplaySleepAllowDimming));
 }
 
 TEST_F(ArcPowerBridgeTest, ConsolidateWakeLocks) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   // Acquiring a second Android wake lock of the same time shouldn't result in a
   // second device service wake lock being requested.
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   // The device service wake lock should only be released when all Android wake
   // locks have been released.
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 }
 
 TEST_F(ArcPowerBridgeTest, ReleaseWakeLocksWhenInstanceClosed) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  ASSERT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  ASSERT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   // If the instance is closed, all wake locks should be released.
   base::RunLoop run_loop;
-  wake_lock_provider_->set_wake_lock_canceled_callback(run_loop.QuitClosure());
   DestroyPowerInstance();
-  run_loop.Run();
-  EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(0, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 
   // Check that wake locks can be requested after the instance becomes ready
   // again.
   CreatePowerInstance();
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
-  EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventDisplaySleep));
+  EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventDisplaySleep));
 }
 
 }  // namespace arc

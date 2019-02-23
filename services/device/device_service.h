@@ -33,6 +33,7 @@
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/device/wake_lock/wake_lock_context.h"
+#include "services/device/wake_lock/wake_lock_provider.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -181,6 +182,7 @@ class DeviceService : public service_manager::Service {
 
   const std::string geolocation_api_key_;
   WakeLockContextCallback wake_lock_context_callback_;
+  WakeLockProvider wake_lock_provider_;
 
 #if defined(OS_ANDROID)
   // Binds |java_interface_provider_| to an interface registry that exposes

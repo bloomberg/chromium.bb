@@ -96,6 +96,7 @@ DeviceService::DeviceService(
       url_loader_factory_(std::move(url_loader_factory)),
       geolocation_api_key_(geolocation_api_key),
       wake_lock_context_callback_(wake_lock_context_callback),
+      wake_lock_provider_(file_task_runner_, wake_lock_context_callback_),
       java_interface_provider_initialized_(false) {
   java_nfc_delegate_.Reset(java_nfc_delegate);
 }
@@ -110,7 +111,8 @@ DeviceService::DeviceService(
       file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
-      geolocation_api_key_(geolocation_api_key) {}
+      geolocation_api_key_(geolocation_api_key),
+      wake_lock_provider_(file_task_runner_, wake_lock_context_callback_) {}
 #endif
 
 DeviceService::~DeviceService() {
@@ -319,8 +321,7 @@ void DeviceService::BindTimeZoneMonitorRequest(
 
 void DeviceService::BindWakeLockProviderRequest(
     mojom::WakeLockProviderRequest request) {
-  WakeLockProvider::Create(std::move(request), file_task_runner_,
-                           wake_lock_context_callback_);
+  wake_lock_provider_.AddBinding(std::move(request));
 }
 
 void DeviceService::BindUsbDeviceManagerRequest(

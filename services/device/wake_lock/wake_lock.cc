@@ -52,6 +52,7 @@ void WakeLock::RemoveObserver(Observer* observer) {
 void WakeLock::RequestWakeLock() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(binding_set_.dispatch_context());
+  DCHECK_GE(num_lock_requests_, 0);
 
   // Uses the Context to get the outstanding status of current binding.
   // Two consecutive requests from the same client should be coalesced
@@ -69,6 +70,8 @@ void WakeLock::CancelWakeLock() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(binding_set_.dispatch_context());
 
+  // TODO(crbug.com/935063): Calling CancelWakeLock befoe RequestWakeLock
+  // shouldn't be allowed.
   if (!(*binding_set_.dispatch_context()))
     return;
 
@@ -97,8 +100,12 @@ void WakeLock::ChangeType(mojom::WakeLockType type,
   mojom::WakeLockType old_type = type_;
   type_ = type;
 
-  if (type_ != old_type && wake_lock_)
+  if (type_ != old_type && wake_lock_) {
     SwapWakeLock();
+    for (auto& observer : observers_) {
+      observer.OnWakeLockChanged(old_type, type_);
+    }
+  }
 
   std::move(callback).Run(true);
 }
@@ -171,7 +178,11 @@ void WakeLock::OnConnectionError() {
   }
 
   if (binding_set_.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    // In reality there is only one observer to this class i.e.
+    // WakeLockProvider, it will take care of deleting this object as it owns
+    // it.
+    for (auto& observer : observers_)
+      observer.OnConnectionError(type_, this);
   }
 }
 
