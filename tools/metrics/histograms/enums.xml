@@ -21738,6 +21738,13 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Supervised User Interstitial"/>
 </enum>
 
+<enum name="FeedHostMismatch">
+  <int value="0" label="Agree neither are set"/>
+  <int value="1" label="Feed is set only"/>
+  <int value="2" label="Host is set only"/>
+  <int value="3" label="Agree both are set"/>
+</enum>
+
 <enum name="FeedImageFetchResult">
   <int value="0" label="Fetch cache success"/>
   <int value="1" label="Fetch network success"/>
