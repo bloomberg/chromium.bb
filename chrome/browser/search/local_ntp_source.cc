@@ -190,6 +190,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
 
     // Custom Backgrounds
+    AddString(translated_strings.get(), "customizeButtonLabel",
+              IDS_NTP_CUSTOMIZE_BUTTON_LABEL);
     AddString(translated_strings.get(), "customizeBackground",
               IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND);
     AddString(translated_strings.get(), "connectGooglePhotos",
