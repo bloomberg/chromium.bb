@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,6 +109,31 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
     EXPECT_EQ(base::StringPrintf("ShortLabel %zu", i),
               base::UTF16ToUTF8(results[i]->title()));
     EXPECT_EQ(ash::SearchResultDisplayType::kTile, results[i]->display_type());
+  }
+
+  // If ranker_ is nullptr, the program won't break
+  // TODO(crbug.com/931149): Add more tests to check ranker_ does have some
+  // effects
+  auto provider_null_ranker = std::make_unique<ArcAppShortcutsSearchProvider>(
+      kMaxResults, profile(), controller_.get(), nullptr);
+
+  EXPECT_TRUE(provider_null_ranker->results().empty());
+  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
+
+  provider_null_ranker->Start(base::UTF8ToUTF16(kQuery));
+  provider_null_ranker->Train(
+      AddArcAppAndShortcut(
+          CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName),
+          launchable),
+      RankingItemType::kArcAppShortcut);
+  const auto& results_null_ranker = provider_null_ranker->results();
+  EXPECT_EQ(kMaxResults, results_null_ranker.size());
+  // Verify search results.
+  for (size_t i = 0; i < results_null_ranker.size(); ++i) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %zu", i),
+              base::UTF16ToUTF8(results_null_ranker[i]->title()));
+    EXPECT_EQ(ash::SearchResultDisplayType::kTile,
+              results_null_ranker[i]->display_type());
   }
 }
 
