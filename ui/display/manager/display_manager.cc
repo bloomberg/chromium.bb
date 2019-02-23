@@ -44,7 +44,10 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
+#include "ui/display/manager/display_change_observer.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_util.h"
+#include "ui/display/types/native_display_delegate.h"
 #endif
 
 #if defined(OS_WIN)
@@ -617,7 +620,7 @@ bool DisplayManager::SetDisplayMode(int64_t display_id,
     ReconfigureDisplays();
 #if defined(OS_CHROMEOS)
   else if (resolution_changed && configure_displays_)
-    delegate_->display_configurator()->OnConfigurationChanged();
+    display_configurator_->OnConfigurationChanged();
 #endif  // defined(OS_CHROMEOS)
 
   return resolution_changed || display_property_changed;
@@ -1369,7 +1372,7 @@ void DisplayManager::SetMirrorMode(
     MultipleDisplayState new_state =
         enabled ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
                 : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
-    delegate_->display_configurator()->SetDisplayMode(new_state);
+    display_configurator_->SetDisplayMode(new_state);
     return;
   }
 #endif
@@ -1438,6 +1441,25 @@ void DisplayManager::ToggleDisplayScaleFactor() {
 }
 
 #if defined(OS_CHROMEOS)
+void DisplayManager::InitConfigurator(
+    std::unique_ptr<NativeDisplayDelegate> delegate) {
+  display_configurator_ = std::make_unique<display::DisplayConfigurator>();
+  display_configurator_->Init(std::move(delegate),
+                              false /* is_panel_fitting_enabled */);
+}
+
+void DisplayManager::ForceInitialConfigureWithObservers(
+    display::DisplayChangeObserver* display_change_observer,
+    display::DisplayConfigurator::Observer* display_error_observer) {
+  // Register |display_change_observer_| first so that the rest of
+  // observer gets invoked after the root windows are configured.
+  display_configurator_->AddObserver(display_change_observer);
+  display_configurator_->AddObserver(display_error_observer);
+  display_configurator_->set_state_controller(display_change_observer);
+  display_configurator_->set_mirroring_controller(this);
+  display_configurator_->ForceInitialConfigure();
+}
+
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
   SetMultiDisplayMode(enabled ? MIRRORING
                               : current_default_multi_display_mode_);

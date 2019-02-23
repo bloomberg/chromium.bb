@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -44,8 +45,10 @@ class Rect;
 }  // namespace gfx
 
 namespace display {
+class DisplayChangeObserver;
 class DisplayLayoutStore;
 class DisplayObserver;
+class NativeDisplayDelegate;
 class Screen;
 
 namespace test {
@@ -79,11 +82,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     // window and set the focus window to NULL.
     virtual void PreDisplayConfigurationChange(bool clear_focus) = 0;
     virtual void PostDisplayConfigurationChange() = 0;
-
-#if defined(OS_CHROMEOS)
-    // Get the DisplayConfigurator.
-    virtual DisplayConfigurator* display_configurator() = 0;
-#endif
   };
 
   // How secondary displays will be used.
@@ -140,6 +138,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   TouchDeviceManager* touch_device_manager() const {
     return touch_device_manager_.get();
   }
+
+  DisplayConfigurator* configurator() { return display_configurator_.get(); }
 #endif
 
   const UnifiedDesktopLayoutMatrix& current_unified_desktop_matrix() const {
@@ -425,8 +425,13 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       ManagedDisplayInfo::ManagedDisplayModeList display_modes = {});
   void ToggleDisplayScaleFactor();
 
-// SoftwareMirroringController override:
 #if defined(OS_CHROMEOS)
+  void InitConfigurator(std::unique_ptr<NativeDisplayDelegate> delegate);
+  void ForceInitialConfigureWithObservers(
+      display::DisplayChangeObserver* display_change_observer,
+      display::DisplayConfigurator::Observer* display_error_observer);
+
+  // SoftwareMirroringController override:
   void SetSoftwareMirroring(bool enabled) override;
   bool SoftwareMirroringEnabled() const override;
   bool IsSoftwareMirroringEnforced() const override;
@@ -673,6 +678,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   int notify_depth_ = 0;
 
 #if defined(OS_CHROMEOS)
+  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
+
   std::unique_ptr<TouchDeviceManager> touch_device_manager_;
 
   // A cancelable callback to trigger sending UMA metrics when display zoom is

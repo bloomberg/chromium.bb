@@ -143,10 +143,8 @@ const display::ManagedDisplayInfo& WMHelperChromeOS::GetDisplayInfo(
 
 const std::vector<uint8_t>& WMHelperChromeOS::GetDisplayIdentificationData(
     int64_t display_id) const {
-  const auto& displays = ash::Shell::Get()
-                             ->window_tree_host_manager()
-                             ->display_configurator()
-                             ->cached_displays();
+  const auto& displays =
+      ash::Shell::Get()->display_configurator()->cached_displays();
 
   for (display::DisplaySnapshot* display : displays)
     if (display->display_id() == display_id)

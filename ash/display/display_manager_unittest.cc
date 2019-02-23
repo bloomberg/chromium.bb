@@ -3384,8 +3384,7 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
   display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
   Shell* shell = Shell::Get();
-  display::DisplayChangeObserver observer(shell->display_configurator(),
-                                          display_manager());
+  display::DisplayChangeObserver observer(shell->display_manager());
   display::DisplayConfigurator::DisplayStateList outputs;
   std::unique_ptr<display::DisplaySnapshot> internal_snapshot =
       display::FakeDisplaySnapshot::Builder()
@@ -3431,9 +3430,7 @@ TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {
           .SetFirstDisplayAsInternalDisplay();
   display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
-  Shell* shell = Shell::Get();
-  display::DisplayChangeObserver observer(shell->display_configurator(),
-                                          display_manager());
+  display::DisplayChangeObserver observer(display_manager());
   display::DisplayConfigurator::DisplayStateList outputs;
   std::unique_ptr<display::DisplaySnapshot> internal_snapshot =
       display::FakeDisplaySnapshot::Builder()
@@ -3481,9 +3478,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
   constexpr int64_t id2 = 2;
   display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
-  Shell* shell = Shell::Get();
-  display::DisplayChangeObserver observer(shell->display_configurator(),
-                                          display_manager());
+  display::DisplayChangeObserver observer(display_manager());
   display::DisplayConfigurator::DisplayStateList outputs;
   std::unique_ptr<display::DisplaySnapshot> snapshot1 =
       display::FakeDisplaySnapshot::Builder()
