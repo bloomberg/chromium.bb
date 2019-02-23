@@ -60,7 +60,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                               ATL::CWindow,
                               ATL::CWinTraits<WS_CHILD>> {
  public:
-  DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND", CS_DBLCLKS, 0);
+  DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND", CS_DBLCLKS, 0)
 
   typedef ATL::CWindowImpl<LegacyRenderWidgetHostHWND,
                            ATL::CWindow,

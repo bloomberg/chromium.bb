@@ -129,7 +129,7 @@ void FakeFontCollection::MapCharacters(
 }
 
 void FakeFontCollection::GetUniqueNameLookupTable(
-    GetUniqueNameLookupTableCallback callback){};
+    GetUniqueNameLookupTableCallback callback) {}
 
 FakeFontCollection::~FakeFontCollection() = default;
 

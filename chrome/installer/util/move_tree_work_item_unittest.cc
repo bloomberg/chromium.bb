@@ -54,7 +54,7 @@ std::wstring ReadTextFile(const base::FilePath& path) {
 
 const wchar_t kTextContent1[] = L"Gooooooooooooooooooooogle";
 const wchar_t kTextContent2[] = L"Overwrite Me";
-};  // namespace
+}  // namespace
 
 // Move one directory from source to destination when destination does not
 // exist.

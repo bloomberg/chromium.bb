@@ -144,7 +144,7 @@ HRESULT EtwTraceController::Query(const wchar_t* session_name,
   ULONG err = ::ControlTrace(NULL, session_name, properties->get(),
                              EVENT_TRACE_CONTROL_QUERY);
   return HRESULT_FROM_WIN32(err);
-};
+}
 
 HRESULT EtwTraceController::Update(const wchar_t* session_name,
     EtwTraceProperties* properties) {

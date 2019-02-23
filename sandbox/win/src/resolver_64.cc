@@ -31,7 +31,7 @@ struct InternalThunk {
     mov_rax = kMovRax;
     jmp_rax = kJmpRax;
     interceptor_function = 0;
-  };
+  }
   USHORT mov_rax;  // = 48 B8
   ULONG_PTR interceptor_function;
   USHORT jmp_rax;  // = ff e0

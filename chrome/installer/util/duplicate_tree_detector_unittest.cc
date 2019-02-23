@@ -75,7 +75,7 @@ const wchar_t DuplicateTreeDetectorTest::text_content_2_[] =
 const wchar_t DuplicateTreeDetectorTest::text_content_3_[] =
     L"I'd rather see your watermelon and raise you ham and a half.";
 
-};  // namespace
+}  // namespace
 
 // Test the DuplicateTreeChecker's definition of identity on two identical
 // directory structures.

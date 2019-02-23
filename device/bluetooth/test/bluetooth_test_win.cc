@@ -161,7 +161,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
       IBluetoothAdapterStatics** statics) const override {
     auto adapter_statics = Make<FakeBluetoothAdapterStaticsWinrt>(adapter_);
     return adapter_statics.CopyTo(statics);
-  };
+  }
 
   HRESULT
   GetDeviceInformationStaticsActivationFactory(
@@ -169,7 +169,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
     auto device_information_statics =
         Make<FakeDeviceInformationStaticsWinrt>(device_information_);
     return device_information_statics.CopyTo(statics);
-  };
+  }
 
   HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       IBluetoothLEAdvertisementWatcher** instance) const override {

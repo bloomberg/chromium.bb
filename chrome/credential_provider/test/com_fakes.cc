@@ -58,7 +58,7 @@ FakeCredentialProviderUser::GetValue(REFPROPERTYKEY key, PROPVARIANT* value) {
   return E_NOTIMPL;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUser);
+IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUser)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +88,7 @@ HRESULT FakeCredentialProviderUserArray::GetAt(DWORD index,
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUserArray);
+IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUserArray)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +102,7 @@ HRESULT FakeCredentialProviderEvents::CredentialsChanged(
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderEvents);
+IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderEvents)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -129,6 +129,6 @@ HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeGaiaCredentialProvider);
+IMPL_IUNKOWN_NOQI_NOREF(FakeGaiaCredentialProvider)
 
 }  // namespace credential_provider

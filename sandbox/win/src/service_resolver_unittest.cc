@@ -62,7 +62,7 @@ class ResolverThunkTestImpl : public T, public ResolverThunkTest {
     this->target_ = fake_target_;
 
     return ret;
-  };
+  }
 
   DISALLOW_COPY_AND_ASSIGN(ResolverThunkTestImpl);
 };

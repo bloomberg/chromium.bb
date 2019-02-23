@@ -82,9 +82,9 @@ void InputDeviceObserverWin::RemoveObserver(
 }
 
 WIN_NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                     kKeyboard);
+                     kKeyboard)
 
 WIN_NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                     kTouchpad);
+                     kTouchpad)
 
 }  // namespace ui

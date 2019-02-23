@@ -2257,11 +2257,11 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
 
 // Tests that pressing F10 system key closes the menu.
 using BookmarkBarViewTest25F10 = BookmarkBarViewTest25<ui::VKEY_F10>;
-VIEW_TEST(BookmarkBarViewTest25F10, F10ClosesMenu);
+VIEW_TEST(BookmarkBarViewTest25F10, F10ClosesMenu)
 
 // Tests that pressing Alt system key closes the menu.
 using BookmarkBarViewTest25Alt = BookmarkBarViewTest25<ui::VKEY_MENU>;
-VIEW_TEST(BookmarkBarViewTest25Alt, AltClosesMenu);
+VIEW_TEST(BookmarkBarViewTest25Alt, AltClosesMenu)
 
 // Tests that WM_CANCELMODE closes the menu.
 class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
@@ -2304,7 +2304,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest26, CancelModeClosesMenu);
+VIEW_TEST(BookmarkBarViewTest26, CancelModeClosesMenu)
 #endif
 
 class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {

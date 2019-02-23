@@ -24,7 +24,7 @@ void XRDeviceAbstraction::OnSessionStart() {}
 void XRDeviceAbstraction::HandleDeviceLost() {}
 bool XRDeviceAbstraction::PreComposite() {
   return true;
-};
+}
 void XRDeviceAbstraction::OnLayerBoundsChanged() {}
 
 XRCompositorCommon::OutstandingFrame::OutstandingFrame() = default;
@@ -154,7 +154,7 @@ void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
   source_size_ = source_size;
 
   OnLayerBoundsChanged();
-};
+}
 
 void XRCompositorCommon::RequestSession(
     base::OnceCallback<void()> on_presentation_ended,

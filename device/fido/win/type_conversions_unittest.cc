@@ -126,7 +126,7 @@ TEST(TypeConversionsTest, ToAuthenticatorMakeCredentialResponse) {
               test.cbor_attestation_statement);
     EXPECT_EQ(response->transport_used(), test.expected_transport);
   }
-};
+}
 
 }  // namespace
 }  // namespace device

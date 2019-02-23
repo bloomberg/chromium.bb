@@ -516,7 +516,7 @@ void* GetProcessBaseAddress(HANDLE process) {
   return base_address;
 }
 
-};  // namespace sandbox
+}  // namespace sandbox
 
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
   static volatile HMODULE ntdll = nullptr;
