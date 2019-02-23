@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "api/impl/quic/quic_client.h"
+#include "api/impl/quic/quic_server.h"
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 #include "api/impl/testing/fake_clock.h"
 #include "api/public/message_demuxer.h"
@@ -54,16 +56,18 @@ class FakeQuicBridge {
 
   void RunTasksUntilIdle();
 
-  std::unique_ptr<FakeClock> fake_clock_;
+  platform::TimeDelta initial_clock_time;
 
   const IPEndpoint kControllerEndpoint{{192, 168, 1, 3}, 4321};
   const IPEndpoint kReceiverEndpoint{{192, 168, 1, 17}, 1234};
 
-  std::unique_ptr<MessageDemuxer> controller_demuxer_;
-  std::unique_ptr<MessageDemuxer> receiver_demuxer_;
-  std::unique_ptr<FakeQuicConnectionFactoryBridge> fake_bridge_;
-  MockServiceObserver mock_client_observer_;
-  MockServerObserver mock_server_observer_;
+  std::unique_ptr<MessageDemuxer> controller_demuxer;
+  std::unique_ptr<MessageDemuxer> receiver_demuxer;
+  std::unique_ptr<QuicClient> quic_client;
+  std::unique_ptr<QuicServer> quic_server;
+  std::unique_ptr<FakeQuicConnectionFactoryBridge> fake_bridge;
+  MockServiceObserver mock_client_observer;
+  MockServerObserver mock_server_observer;
 };
 
 }  // namespace openscreen

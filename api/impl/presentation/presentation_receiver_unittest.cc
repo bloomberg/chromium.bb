@@ -101,6 +101,9 @@ class PresentationReceiverTest : public ::testing::Test {
   }
 
   void SetUp() override {
+    NetworkServiceManager::Create(nullptr, nullptr,
+                                  std::move(quic_bridge_.quic_client),
+                                  std::move(quic_bridge_.quic_server));
     Receiver::Get()->Init();
     Receiver::Get()->SetReceiverDelegate(&mock_receiver_delegate_);
   }
@@ -108,6 +111,7 @@ class PresentationReceiverTest : public ::testing::Test {
   void TearDown() override {
     Receiver::Get()->SetReceiverDelegate(nullptr);
     Receiver::Get()->Deinit();
+    NetworkServiceManager::Dispose();
   }
 
   const std::string url1_{"https://www.example.com/receiver.html"};
@@ -122,7 +126,7 @@ class PresentationReceiverTest : public ::testing::Test {
 TEST_F(PresentationReceiverTest, QueryAvailability) {
   MockMessageCallback mock_callback;
   MessageDemuxer::MessageWatch availability_watch =
-      quic_bridge_.controller_demuxer_->SetDefaultMessageTypeWatch(
+      quic_bridge_.controller_demuxer->SetDefaultMessageTypeWatch(
           msgs::Type::kPresentationUrlAvailabilityResponse, &mock_callback);
 
   std::unique_ptr<ProtocolConnection> stream = MakeClientStream();
@@ -164,7 +168,7 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
 TEST_F(PresentationReceiverTest, StartPresentation) {
   MockMessageCallback mock_callback;
   MessageDemuxer::MessageWatch initiation_watch =
-      quic_bridge_.controller_demuxer_->SetDefaultMessageTypeWatch(
+      quic_bridge_.controller_demuxer->SetDefaultMessageTypeWatch(
           msgs::Type::kPresentationInitiationResponse, &mock_callback);
 
   std::unique_ptr<ProtocolConnection> stream = MakeClientStream();

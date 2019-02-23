@@ -72,20 +72,24 @@ class NullObserver final : public ProtocolConnectionServiceObserver {
 class UrlAvailabilityRequesterTest : public Test {
  public:
   void SetUp() override {
+    NetworkServiceManager::Create(nullptr, nullptr,
+                                  std::move(quic_bridge_.quic_client),
+                                  std::move(quic_bridge_.quic_server));
     availability_watch_ =
-        quic_bridge_.receiver_demuxer_->SetDefaultMessageTypeWatch(
+        quic_bridge_.receiver_demuxer->SetDefaultMessageTypeWatch(
             msgs::Type::kPresentationUrlAvailabilityRequest, &mock_callback_);
   }
 
   void TearDown() override {
     availability_watch_ = MessageDemuxer::MessageWatch();
+    NetworkServiceManager::Dispose();
   }
 
  protected:
   std::unique_ptr<ProtocolConnection> ExpectIncomingConnection() {
     std::unique_ptr<ProtocolConnection> stream;
 
-    EXPECT_CALL(quic_bridge_.mock_server_observer_, OnIncomingConnectionMock(_))
+    EXPECT_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
         .WillOnce(
             Invoke([&stream](std::unique_ptr<ProtocolConnection>& connection) {
               stream = std::move(connection);
@@ -129,7 +133,7 @@ class UrlAvailabilityRequesterTest : public Test {
   MessageDemuxer::MessageWatch availability_watch_;
   FakeQuicBridge quic_bridge_;
   std::unique_ptr<FakeClock> fake_clock_owned_{
-      std::make_unique<FakeClock>(quic_bridge_.fake_clock_->Now())};
+      std::make_unique<FakeClock>(quic_bridge_.initial_clock_time)};
 
   // We keep a weak pointer for changing the clock later.
   FakeClock* fake_clock_{fake_clock_owned_.get()};

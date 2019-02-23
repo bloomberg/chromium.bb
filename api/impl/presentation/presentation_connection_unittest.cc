@@ -52,6 +52,14 @@ class MockConnectRequest final
 
 class ConnectionTest : public ::testing::Test {
  protected:
+  void SetUp() override {
+    NetworkServiceManager::Create(nullptr, nullptr,
+                                  std::move(quic_bridge_.quic_client),
+                                  std::move(quic_bridge_.quic_server));
+  }
+
+  void TearDown() override { NetworkServiceManager::Dispose(); }
+
   std::string MakeEchoResponse(const std::string& message) {
     return std::string("echo: ") + message;
   }
@@ -64,9 +72,9 @@ class ConnectionTest : public ::testing::Test {
 
   FakeQuicBridge quic_bridge_;
   ConnectionManager controller_connection_manager_{
-      quic_bridge_.controller_demuxer_.get()};
+      quic_bridge_.controller_demuxer.get()};
   ConnectionManager receiver_connection_manager_{
-      quic_bridge_.receiver_demuxer_.get()};
+      quic_bridge_.receiver_demuxer.get()};
 };
 
 TEST_F(ConnectionTest, ConnectAndSend) {
@@ -100,7 +108,7 @@ TEST_F(ConnectionTest, ConnectAndSend) {
         controller_stream.reset(stream);
       }));
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnIncomingConnectionMock(_))
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
       .WillOnce(testing::WithArgs<0>(testing::Invoke(
           [&receiver_stream](std::unique_ptr<ProtocolConnection>& connection) {
             receiver_stream = std::move(connection);

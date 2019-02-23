@@ -12,50 +12,43 @@
 
 namespace openscreen {
 
-FakeQuicBridge::FakeQuicBridge() {
-  fake_bridge_ =
+FakeQuicBridge::FakeQuicBridge()
+    : initial_clock_time(platform::TimeDelta::FromMilliseconds(1298424)) {
+  fake_bridge =
       std::make_unique<FakeQuicConnectionFactoryBridge>(kControllerEndpoint);
-  platform::TimeDelta now = platform::TimeDelta::FromMilliseconds(1298424);
 
-  fake_clock_ = std::make_unique<FakeClock>(now);
-
-  controller_demuxer_ = std::make_unique<MessageDemuxer>(
+  controller_demuxer = std::make_unique<MessageDemuxer>(
       MessageDemuxer::kDefaultBufferLimit,
-      std::make_unique<FakeClock>(*fake_clock_));
-  receiver_demuxer_ = std::make_unique<MessageDemuxer>(
+      std::make_unique<FakeClock>(initial_clock_time));
+  receiver_demuxer = std::make_unique<MessageDemuxer>(
       MessageDemuxer::kDefaultBufferLimit,
-      std::make_unique<FakeClock>(*fake_clock_));
+      std::make_unique<FakeClock>(initial_clock_time));
 
   auto fake_client_factory =
-      std::make_unique<FakeClientQuicConnectionFactory>(fake_bridge_.get());
-  auto quic_client = std::make_unique<QuicClient>(
-      controller_demuxer_.get(), std::move(fake_client_factory),
-      &mock_client_observer_);
+      std::make_unique<FakeClientQuicConnectionFactory>(fake_bridge.get());
+  quic_client = std::make_unique<QuicClient>(controller_demuxer.get(),
+                                             std::move(fake_client_factory),
+                                             &mock_client_observer);
 
   auto fake_server_factory =
-      std::make_unique<FakeServerQuicConnectionFactory>(fake_bridge_.get());
+      std::make_unique<FakeServerQuicConnectionFactory>(fake_bridge.get());
   ServerConfig config;
   config.connection_endpoints.push_back(kReceiverEndpoint);
-  auto quic_server = std::make_unique<QuicServer>(
-      config, receiver_demuxer_.get(), std::move(fake_server_factory),
-      &mock_server_observer_);
+  quic_server = std::make_unique<QuicServer>(config, receiver_demuxer.get(),
+                                             std::move(fake_server_factory),
+                                             &mock_server_observer);
 
   quic_client->Start();
   quic_server->Start();
-
-  NetworkServiceManager::Get()->Create(nullptr, nullptr, std::move(quic_client),
-                                       std::move(quic_server));
 }
 
-FakeQuicBridge::~FakeQuicBridge() {
-  NetworkServiceManager::Get()->Dispose();
-}
+FakeQuicBridge::~FakeQuicBridge() = default;
 
 void FakeQuicBridge::RunTasksUntilIdle() {
   do {
     NetworkServiceManager::Get()->GetProtocolConnectionClient()->RunTasks();
     NetworkServiceManager::Get()->GetProtocolConnectionServer()->RunTasks();
-  } while (!fake_bridge_->idle());
+  } while (!fake_bridge->idle());
 }
 
 }  // namespace openscreen

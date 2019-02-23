@@ -63,7 +63,7 @@ class QuicServerTest : public Test {
         quic_bridge_.kReceiverEndpoint, &mock_connect_request);
     std::unique_ptr<ProtocolConnection> stream;
     EXPECT_CALL(mock_connect_request, OnConnectionOpenedMock());
-    EXPECT_CALL(quic_bridge_.mock_server_observer_, OnIncomingConnectionMock(_))
+    EXPECT_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
         .WillOnce(
             Invoke([&stream](std::unique_ptr<ProtocolConnection>& connection) {
               stream = std::move(connection);
@@ -73,14 +73,18 @@ class QuicServerTest : public Test {
   }
 
   void SetUp() override {
-    server_ = reinterpret_cast<QuicServer*>(
-        NetworkServiceManager::Get()->GetProtocolConnectionServer());
+    server_ = quic_bridge_.quic_server.get();
+    NetworkServiceManager::Create(nullptr, nullptr,
+                                  std::move(quic_bridge_.quic_client),
+                                  std::move(quic_bridge_.quic_server));
   }
+
+  void TearDown() override { NetworkServiceManager::Dispose(); }
 
   void SendTestMessage(ProtocolConnection* connection) {
     MockMessageCallback mock_message_callback;
     MessageDemuxer::MessageWatch message_watch =
-        quic_bridge_.controller_demuxer_->WatchMessageType(
+        quic_bridge_.controller_demuxer->WatchMessageType(
             0, msgs::Type::kPresentationConnectionMessage,
             &mock_message_callback);
 
@@ -151,7 +155,7 @@ TEST_F(QuicServerTest, OpenImmediate) {
 
 TEST_F(QuicServerTest, States) {
   server_->Stop();
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnRunning());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnRunning());
   EXPECT_TRUE(server_->Start());
   EXPECT_FALSE(server_->Start());
 
@@ -161,27 +165,27 @@ TEST_F(QuicServerTest, States) {
   connection->SetObserver(&mock_connection_observer);
 
   EXPECT_CALL(mock_connection_observer, OnConnectionClosed(_));
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnStopped());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnStopped());
   EXPECT_TRUE(server_->Stop());
   EXPECT_FALSE(server_->Stop());
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnRunning());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnRunning());
   EXPECT_TRUE(server_->Start());
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnSuspended());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnSuspended());
   EXPECT_TRUE(server_->Suspend());
   EXPECT_FALSE(server_->Suspend());
   EXPECT_FALSE(server_->Start());
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnRunning());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnRunning());
   EXPECT_TRUE(server_->Resume());
   EXPECT_FALSE(server_->Resume());
   EXPECT_FALSE(server_->Start());
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnSuspended());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnSuspended());
   EXPECT_TRUE(server_->Suspend());
 
-  EXPECT_CALL(quic_bridge_.mock_server_observer_, OnStopped());
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnStopped());
   EXPECT_TRUE(server_->Stop());
 }
 

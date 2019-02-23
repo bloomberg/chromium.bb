@@ -69,14 +69,18 @@ class ConnectionCallback final
 class QuicClientTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    client_ = reinterpret_cast<QuicClient*>(
-        NetworkServiceManager::Get()->GetProtocolConnectionClient());
+    client_ = quic_bridge_.quic_client.get();
+    NetworkServiceManager::Create(nullptr, nullptr,
+                                  std::move(quic_bridge_.quic_client),
+                                  std::move(quic_bridge_.quic_server));
   }
+
+  void TearDown() override { NetworkServiceManager::Dispose(); }
 
   void SendTestMessage(ProtocolConnection* connection) {
     MockMessageCallback mock_message_callback;
     MessageDemuxer::MessageWatch message_watch =
-        quic_bridge_.receiver_demuxer_->WatchMessageType(
+        quic_bridge_.receiver_demuxer->WatchMessageType(
             0, msgs::Type::kPresentationConnectionMessage,
             &mock_message_callback);
 
@@ -179,7 +183,7 @@ TEST_F(QuicClientTest, States) {
       client_->CreateProtocolConnection(1);
   EXPECT_FALSE(connection2);
 
-  EXPECT_CALL(quic_bridge_.mock_client_observer_, OnRunning());
+  EXPECT_CALL(quic_bridge_.mock_client_observer, OnRunning());
   EXPECT_TRUE(client_->Start());
   EXPECT_FALSE(client_->Start());
 
@@ -198,7 +202,7 @@ TEST_F(QuicClientTest, States) {
 
   EXPECT_CALL(mock_connection_observer1, OnConnectionClosed(_));
   EXPECT_CALL(mock_connection_observer2, OnConnectionClosed(_));
-  EXPECT_CALL(quic_bridge_.mock_client_observer_, OnStopped());
+  EXPECT_CALL(quic_bridge_.mock_client_observer, OnStopped());
   EXPECT_TRUE(client_->Stop());
   EXPECT_FALSE(client_->Stop());
 
