@@ -162,7 +162,7 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
 
 std::unique_ptr<base::MessagePump> CreateMessagePumpForUIStub() {
   return std::unique_ptr<base::MessagePump>(new MessagePumpForUIStub());
-};
+}
 
 // Provides the test path for DIR_SOURCE_ROOT and DIR_ANDROID_APP_DATA.
 bool GetTestProviderPath(int key, base::FilePath* result) {

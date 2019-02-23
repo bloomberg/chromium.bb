@@ -108,6 +108,6 @@ class GL_EXPORT SurfaceControl {
     ASurfaceTransaction* transaction_;
   };
 };
-};  // namespace gl
+}  // namespace gl
 
 #endif  // UI_GL_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_

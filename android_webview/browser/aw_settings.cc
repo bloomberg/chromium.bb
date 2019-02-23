@@ -47,7 +47,7 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
 
-};  // namespace
+}  // namespace
 
 class AwSettingsUserData : public base::SupportsUserData::Data {
  public:

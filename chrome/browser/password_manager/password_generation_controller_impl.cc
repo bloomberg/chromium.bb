@@ -168,4 +168,4 @@ PasswordGenerationControllerImpl::PasswordGenerationControllerImpl(
       manual_filling_controller_(std::move(manual_filling_controller_)),
       create_dialog_factory_(create_dialog_factory) {}
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordGenerationControllerImpl);
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordGenerationControllerImpl)

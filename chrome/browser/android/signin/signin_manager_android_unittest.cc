@@ -54,7 +54,7 @@ class SigninManagerAndroidTest : public ::testing::Test {
  public:
   SigninManagerAndroidTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  ~SigninManagerAndroidTest() override{};
+  ~SigninManagerAndroidTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());

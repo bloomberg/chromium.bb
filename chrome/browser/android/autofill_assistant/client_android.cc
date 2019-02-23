@@ -289,6 +289,6 @@ void ClientAndroid::SetUI(
   ui_controller_android_->Attach(web_contents_, this, controller_.get());
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid);
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid)
 
 }  // namespace autofill_assistant.

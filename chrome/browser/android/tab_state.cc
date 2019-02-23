@@ -374,7 +374,7 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
   return web_contents.release();
 }
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
     JNIEnv* env,

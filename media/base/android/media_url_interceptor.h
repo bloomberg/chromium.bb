@@ -18,7 +18,7 @@ namespace media {
 // and translate them into files containing media.
 class MEDIA_EXPORT MediaUrlInterceptor {
  public:
-  virtual ~MediaUrlInterceptor() {};
+  virtual ~MediaUrlInterceptor() {}
 
   // Returns true if the embedder has intercepted the url and
   // false otherwise.

@@ -32,7 +32,7 @@ class ExploreSitesStoreTest : public testing::Test {
         task_runner_handle_(task_runner_) {
     EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   }
-  ~ExploreSitesStoreTest() override{};
+  ~ExploreSitesStoreTest() override {}
 
  protected:
   void TearDown() override {

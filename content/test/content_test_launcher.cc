@@ -45,7 +45,7 @@ namespace content {
 #if defined(OS_ANDROID)
 std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
   return std::unique_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
-};
+}
 #endif
 
 class ContentBrowserTestSuite : public ContentTestSuiteBase {

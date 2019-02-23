@@ -237,7 +237,7 @@ void OnTransactionCompletedOnAnyThread(void* context,
 
   delete ack_ctx;
 }
-};
+}  // namespace
 
 // static
 bool SurfaceControl::IsSupported() {

@@ -39,7 +39,7 @@
 namespace {
 char kShortSnapshotDelayForTest[] =
     "short-offline-page-snapshot-delay-for-test";
-};  // namespace
+}  // namespace
 
 namespace offline_pages {
 

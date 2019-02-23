@@ -129,4 +129,4 @@ static void JNI_LaunchMetrics_RecordHomePageLaunchMetrics(
       homepage_url);
 }
 
-};  // namespace metrics
+}  // namespace metrics

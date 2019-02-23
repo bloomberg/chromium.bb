@@ -13,11 +13,11 @@
 
 namespace content {
 class WebContents;
-};
+}
 
 namespace printing {
 class PrintSettings;
-};
+}
 
 namespace android_webview {
 

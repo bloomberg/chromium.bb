@@ -143,7 +143,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
 #if defined(OS_ANDROID)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::MediaDrmKeyType,
                               media::MediaDrmKeyType::MIN,
-                              media::MediaDrmKeyType::MAX);
+                              media::MediaDrmKeyType::MAX)
 #endif  // defined(OS_ANDROID)
 
 IPC_ENUM_TRAITS_VALIDATE(

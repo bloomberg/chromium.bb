@@ -13,11 +13,11 @@
 
 namespace content {
 class WebContents;
-};
+}
 
 namespace net {
 class AuthChallengeInfo;
-};
+}
 
 namespace android_webview {
 

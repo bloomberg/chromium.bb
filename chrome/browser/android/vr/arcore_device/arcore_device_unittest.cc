@@ -33,7 +33,7 @@ class StubArImageTransport : public ArImageTransport {
 
   // TODO(lincolnfrog): verify this gets called on GL thread.
   // TODO(lincolnfrog): test what happens if this returns false.
-  bool Initialize() override { return true; };
+  bool Initialize() override { return true; }
 
   // TODO(lincolnfrog): test verify this somehow.
   GLuint GetCameraTextureId() override { return CAMERA_TEXTURE_ID; }
@@ -75,7 +75,7 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
 
   uint32_t CreateMailboxTexture(gpu::Mailbox* mailbox) override {
     return TEXTURE_ID;
-  };
+  }
 
   bool IsConnected() override { return true; }
 
@@ -91,16 +91,16 @@ class StubArCoreInstallUtils : public vr::ArCoreInstallUtils {
  public:
   StubArCoreInstallUtils() = default;
 
-  bool CanRequestInstallArModule() override { return false; };
-  bool ShouldRequestInstallArModule() override { return false; };
+  bool CanRequestInstallArModule() override { return false; }
+  bool ShouldRequestInstallArModule() override { return false; }
 
   void RequestInstallArModule(int render_process_id,
-                              int render_frame_id) override{};
-  bool ShouldRequestInstallSupportedArCore() override { return false; };
+                              int render_frame_id) override {}
+  bool ShouldRequestInstallSupportedArCore() override { return false; }
   void RequestInstallSupportedArCore(int render_process_id,
-                                     int render_frame_id) override{};
+                                     int render_frame_id) override {}
 
-  bool EnsureLoaded() override { return true; };
+  bool EnsureLoaded() override { return true; }
 
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override {
     JNIEnv* env = base::android::AttachCurrentThread();
