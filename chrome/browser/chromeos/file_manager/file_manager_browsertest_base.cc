@@ -28,6 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -55,6 +56,12 @@
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_features.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
@@ -153,7 +160,8 @@ struct AddEntriesMessage {
     DRIVE_VOLUME,
     CROSTINI_VOLUME,
     USB_VOLUME,
-    ANDROID_FILES_VOLUME
+    ANDROID_FILES_VOLUME,
+    DOCUMENTS_PROVIDER_VOLUME
   };
 
   // Represents the different types of entries (e.g. file, folder).
@@ -199,6 +207,8 @@ struct AddEntriesMessage {
       *volume = USB_VOLUME;
     else if (value == "android_files")
       *volume = ANDROID_FILES_VOLUME;
+    else if (value == "documents_provider")
+      *volume = DOCUMENTS_PROVIDER_VOLUME;
     else
       return false;
     return true;
@@ -1263,6 +1273,64 @@ class DriveFsTestVolume : public DriveTestVolume {
   DISALLOW_COPY_AND_ASSIGN(DriveFsTestVolume);
 };
 
+// DocumentsProviderTestVolume: test volume for Android DocumentsProvider.
+class DocumentsProviderTestVolume : public TestVolume {
+ public:
+  DocumentsProviderTestVolume(
+      arc::FakeFileSystemInstance* const file_system_instance,
+      const std::string& authority,
+      const std::string& root_document_id)
+      : TestVolume("DocumentsProvider"),
+        file_system_instance_(file_system_instance),
+        authority_(authority),
+        root_document_id_(root_document_id) {}
+  ~DocumentsProviderTestVolume() override = default;
+
+  virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
+    // Register a document to the fake FileSystemInstance.
+    arc::FakeFileSystemInstance::Document document(
+        authority_, entry.name_text, root_document_id_, entry.name_text,
+        GetMimeType(entry), GetFileSize(entry),
+        entry.last_modified_time.ToJavaTime());
+    file_system_instance_->AddDocument(document);
+  }
+
+  bool Mount(Profile* profile) {
+    // Register a root document of this volume.
+    arc::FakeFileSystemInstance::Document document(
+        authority_, root_document_id_, "", "", arc::kAndroidDirectoryMimeType,
+        0, 0);
+    file_system_instance_->AddDocument(document);
+
+    // Tell VolumeManager that a new DocumentsProvider volume is added.
+    VolumeManager::Get(profile)->OnDocumentsProviderRootAdded(
+        authority_, root_document_id_, root_document_id_, name(), "", GURL());
+    return true;
+  }
+
+ private:
+  arc::FakeFileSystemInstance* const file_system_instance_;
+  std::string authority_;
+  std::string root_document_id_;
+
+  int64_t GetFileSize(const AddEntriesMessage::TestEntryInfo& entry) {
+    if (entry.type != AddEntriesMessage::FILE)
+      return 0;
+
+    int64_t file_size = 0;
+    const base::FilePath source_path =
+        TestVolume::GetTestDataFilePath(entry.source_file_name);
+    bool success = base::GetFileSize(source_path, &file_size);
+    return success ? file_size : 0;
+  }
+
+  std::string GetMimeType(const AddEntriesMessage::TestEntryInfo& entry) {
+    return entry.type == AddEntriesMessage::FILE
+               ? entry.mime_type
+               : arc::kAndroidDirectoryMimeType;
+  }
+};
+
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
@@ -1327,6 +1395,15 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.emplace_back(chromeos::features::kMyFilesVolume);
   } else {
     disabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+  }
+
+  if (IsDocumentsProviderTest()) {
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+    enabled_features.emplace_back(
+        arc::kEnableDocumentsProviderInFilesAppFeature);
+  } else {
+    disabled_features.emplace_back(
+        arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -1406,9 +1483,35 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
 
-    android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
-    if (!DoesTestStartWithNoVolumesMounted()) {
-      android_files_volume_->Mount(profile());
+    if (arc::IsArcAvailable()) {
+      // When ARC is marked as available, we create fake FileSystemInstance and
+      // register it so that ARC-related services can work without real ARC
+      // container.
+      arc_file_system_instance_ =
+          std::make_unique<arc::FakeFileSystemInstance>();
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->file_system()
+          ->SetInstance(arc_file_system_instance_.get());
+      arc::WaitForInstanceReady(
+          arc::ArcServiceManager::Get()->arc_bridge_service()->file_system());
+      ASSERT_TRUE(arc_file_system_instance_->InitCalled());
+
+      // Though we can have multiple DocumentsProvider volumes, only one volume
+      // is created and mounted for now.
+      documents_provider_volume_ =
+          std::make_unique<DocumentsProviderTestVolume>(
+              arc_file_system_instance_.get(), "com.example.documents", "root");
+      if (!DoesTestStartWithNoVolumesMounted()) {
+        documents_provider_volume_->Mount(profile());
+      }
+    } else {
+      // When ARC is not available, "Android Files" will not be mounted.
+      // We need to mount testing volume here.
+      android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
+      if (!DoesTestStartWithNoVolumesMounted()) {
+        android_files_volume_->Mount(profile());
+      }
     }
   }
 
@@ -1454,6 +1557,10 @@ bool FileManagerBrowserTestBase::GetEnableMyFilesVolume() const {
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
   return true;
+}
+
+bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
 }
 
 bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
@@ -1660,6 +1767,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             android_files_volume_->CreateEntry(*message.entries[i]);
           } else {
             LOG(FATAL) << "Add entry: but no Android files volume.";
+          }
+          break;
+        case AddEntriesMessage::DOCUMENTS_PROVIDER_VOLUME:
+          if (documents_provider_volume_) {
+            documents_provider_volume_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no DocumentsProvider volume.";
           }
           break;
       }
