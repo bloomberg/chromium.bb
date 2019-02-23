@@ -276,6 +276,10 @@
       status: "experimental",
     },
     {
+      name: "CSSCalcAsInt",
+      status: "test",
+    },
+    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
