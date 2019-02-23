@@ -335,9 +335,6 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 // After an idle event, we have a ui::Event, we should expect one
 // UserActivityEvent.
 TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -362,9 +359,6 @@ TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
 
 // Get a user event before an idle event, we should not log it.
 TEST_F(UserActivityManagerTest, LogBeforeIdleEvent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -376,9 +370,6 @@ TEST_F(UserActivityManagerTest, LogBeforeIdleEvent) {
 // Get a user event, then an idle event, then another user event,
 // we should log the last one.
 TEST_F(UserActivityManagerTest, LogSecondEvent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -404,9 +395,6 @@ TEST_F(UserActivityManagerTest, LogSecondEvent) {
 
 // Log multiple events.
 TEST_F(UserActivityManagerTest, LogMultipleEvents) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger the 1st idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -489,9 +477,6 @@ TEST_F(UserActivityManagerTest, LogMultipleEvents) {
 }
 
 TEST_F(UserActivityManagerTest, UserCloseLid) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -504,9 +489,6 @@ TEST_F(UserActivityManagerTest, UserCloseLid) {
 }
 
 TEST_F(UserActivityManagerTest, PowerChangeActivity) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -530,9 +512,6 @@ TEST_F(UserActivityManagerTest, PowerChangeActivity) {
 }
 
 TEST_F(UserActivityManagerTest, VideoActivity) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -554,9 +533,6 @@ TEST_F(UserActivityManagerTest, VideoActivity) {
 // System remains idle, screen is dimmed then turned off, and system is finally
 // suspended.
 TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -583,9 +559,6 @@ TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
 // System remains idle, screen is dimmed then turned off, but system is not
 // suspended.
 TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -602,9 +575,6 @@ TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
 // Test system idle interrupt by user activity.
 // We should only observe user activity.
 TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -632,9 +602,6 @@ TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -645,9 +612,6 @@ TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -672,9 +636,6 @@ TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
 // As we log when SuspendImminent is received, sleep duration from SuspendDone
 // doesn't make any difference.
 TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -696,9 +657,6 @@ TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
 }
 
 TEST_F(UserActivityManagerTest, SuspendLidClosed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -719,9 +677,6 @@ TEST_F(UserActivityManagerTest, SuspendLidClosed) {
 }
 
 TEST_F(UserActivityManagerTest, SuspendOther) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -743,9 +698,6 @@ TEST_F(UserActivityManagerTest, SuspendOther) {
 
 // Test feature extraction.
 TEST_F(UserActivityManagerTest, FeatureExtraction) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
@@ -793,9 +745,6 @@ TEST_F(UserActivityManagerTest, FeatureExtraction) {
 }
 
 TEST_F(UserActivityManagerTest, ManagedDevice) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   fake_user_manager_.set_is_enterprise_managed(true);
 
   const IdleEventNotifier::ActivityData data;
@@ -810,9 +759,6 @@ TEST_F(UserActivityManagerTest, ManagedDevice) {
 }
 
 TEST_F(UserActivityManagerTest, DimAndOffDelays) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(3000) /* screen_off_delay */);
@@ -829,9 +775,6 @@ TEST_F(UserActivityManagerTest, DimAndOffDelays) {
 }
 
 TEST_F(UserActivityManagerTest, DimDelays) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta() /* screen_off_delay */);
@@ -848,9 +791,6 @@ TEST_F(UserActivityManagerTest, DimDelays) {
 }
 
 TEST_F(UserActivityManagerTest, OffDelays) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportInactivityDelays(
       base::TimeDelta() /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(4000) /* screen_off_delay */);
@@ -869,9 +809,6 @@ TEST_F(UserActivityManagerTest, OffDelays) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, InitialScreenOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
 
   const IdleEventNotifier::ActivityData data;
@@ -901,9 +838,6 @@ TEST_F(UserActivityManagerTest, InitialScreenOff) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
 
   const IdleEventNotifier::ActivityData data;
@@ -934,9 +868,6 @@ TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
@@ -1315,9 +1246,6 @@ TEST_F(UserActivityManagerTest, ModelError) {
 }
 
 TEST_F(UserActivityManagerTest, BasicTabs) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -1346,9 +1274,6 @@ TEST_F(UserActivityManagerTest, BasicTabs) {
 }
 
 TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   // Simulates three browsers:
   //  - browser1 is the last active but minimized and so not visible.
   //  - browser2 and browser3 are both visible but browser2 is the topmost.
@@ -1393,9 +1318,6 @@ TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
 }
 
 TEST_F(UserActivityManagerTest, Incognito) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   std::unique_ptr<Browser> browser = CreateTestBrowser(
       true /* is_visible */, true /* is_focused */, true /* is_incognito */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -1421,9 +1343,6 @@ TEST_F(UserActivityManagerTest, Incognito) {
 }
 
 TEST_F(UserActivityManagerTest, NoOpenTabs) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
-
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
 
