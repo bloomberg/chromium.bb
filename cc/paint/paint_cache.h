@@ -37,6 +37,13 @@ namespace cc {
 using PaintCacheId = uint32_t;
 using PaintCacheIds = std::vector<PaintCacheId>;
 enum class PaintCacheDataType : uint32_t { kTextBlob, kPath, kLast = kPath };
+enum class PaintCacheEntryState : uint32_t {
+  kEmpty,
+  kCached,
+  kInlined,
+  kLast = kInlined
+};
+
 constexpr size_t PaintCacheDataTypeCount =
     static_cast<uint32_t>(PaintCacheDataType::kLast) + 1u;
 

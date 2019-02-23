@@ -173,18 +173,27 @@ void PaintOpWriter::Write(const SkPath& path) {
   auto id = path.getGenerationID();
   Write(id);
 
+  if (options_.paint_cache->Get(PaintCacheDataType::kPath, id)) {
+    Write(static_cast<uint32_t>(PaintCacheEntryState::kCached));
+    return;
+  }
+
+  // The SkPath may fail to serialize if the bytes required would overflow.
+  uint64_t bytes_required = path.writeToMemory(nullptr);
+  if (bytes_required == 0u) {
+    Write(static_cast<uint32_t>(PaintCacheEntryState::kEmpty));
+    return;
+  }
+
+  Write(static_cast<uint32_t>(PaintCacheEntryState::kInlined));
   uint64_t* bytes_to_skip = WriteSize(0u);
   if (!valid_)
     return;
 
-  if (options_.paint_cache->Get(PaintCacheDataType::kPath, id))
-    return;
-  uint64_t bytes_required = path.writeToMemory(nullptr);
   if (bytes_required > remaining_bytes_) {
     valid_ = false;
     return;
   }
-
   size_t bytes_written = path.writeToMemory(memory_);
   DCHECK_EQ(bytes_written, bytes_required);
   options_.paint_cache->Put(PaintCacheDataType::kPath, id, bytes_written);
