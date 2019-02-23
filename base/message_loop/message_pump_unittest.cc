@@ -41,9 +41,13 @@ bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
       return false;
 #endif
     case MessageLoopBase::Type::TYPE_IO:
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+      return true;
+#else
       // TODO(gab): Complete migration of all IO pumps to DoSomeWork() as part
       // of crbug.com/885371.
       return false;
+#endif
 
     case MessageLoopBase::Type::TYPE_CUSTOM:
 #if defined(OS_ANDROID)

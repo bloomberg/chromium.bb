@@ -259,6 +259,17 @@ bool MessageLoopCurrentForIO::WatchFileDescriptor(
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+bool MessageLoopCurrentForIO::WatchMachReceivePort(
+    mach_port_t port,
+    MessagePumpForIO::MachPortWatchController* controller,
+    MessagePumpForIO::MachPortWatcher* delegate) {
+  DCHECK(current_->IsBoundToCurrentThread());
+  return GetMessagePumpForIO()->WatchMachReceivePort(port, controller,
+                                                     delegate);
+}
+#endif
+
 #endif  // !defined(OS_NACL_SFI)
 
 #if defined(OS_FUCHSIA)

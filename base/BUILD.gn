@@ -1691,6 +1691,8 @@ jumbo_component("base") {
       "memory/platform_shared_memory_region_mac.cc",
       "memory/shared_memory_handle_mac.cc",
       "memory/shared_memory_mac.cc",
+      "message_loop/message_pump_kqueue.cc",
+      "message_loop/message_pump_kqueue.h",
       "power_monitor/power_monitor_device_source_mac.mm",
       "system/sys_info_mac.mm",
       "time/time_conversion_posix.cc",
@@ -2746,6 +2748,7 @@ test("base_unittests") {
   }
 
   if (is_mac) {
+    sources += [ "message_loop/message_pump_kqueue_unittest.cc" ]
     libs = [
       "CoreFoundation.framework",
       "Foundation.framework",
