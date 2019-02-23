@@ -2189,69 +2189,6 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
   *dist = last_part_rdc.dist;
 }
 
-/* clang-format off */
-static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
-                            BLOCK_4X4,    //                     4x4
-  BLOCK_4X4,   BLOCK_4X4,   BLOCK_4X4,    //    4x8,    8x4,     8x8
-  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   8x16,   16x8,   16x16
-  BLOCK_8X8,   BLOCK_8X8,   BLOCK_16X16,  //  16x32,  32x16,   32x32
-  BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  //  32x64,  64x32,   64x64
-  BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  // 64x128, 128x64, 128x128
-  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   4x16,   16x4,    8x32
-  BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,  //   32x8,  16x64,   64x16
-};
-
-static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
-                                  BLOCK_8X8,    //                     4x4
-  BLOCK_16X16,   BLOCK_16X16,   BLOCK_16X16,    //    4x8,    8x4,     8x8
-  BLOCK_32X32,   BLOCK_32X32,   BLOCK_32X32,    //   8x16,   16x8,   16x16
-  BLOCK_64X64,   BLOCK_64X64,   BLOCK_64X64,    //  16x32,  32x16,   32x32
-  BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  //  32x64,  64x32,   64x64
-  BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  // 64x128, 128x64, 128x128
-  BLOCK_16X16,   BLOCK_16X16,   BLOCK_32X32,    //   4x16,   16x4,    8x32
-  BLOCK_32X32,   BLOCK_LARGEST, BLOCK_LARGEST,  //   32x8,  16x64,   64x16
-};
-
-// Next square block size less or equal than current block size.
-static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
-                              BLOCK_4X4,    //                     4x4
-  BLOCK_4X4,   BLOCK_4X4,     BLOCK_8X8,    //    4x8,    8x4,     8x8
-  BLOCK_8X8,   BLOCK_8X8,     BLOCK_16X16,  //   8x16,   16x8,   16x16
-  BLOCK_16X16, BLOCK_16X16,   BLOCK_32X32,  //  16x32,  32x16,   32x32
-  BLOCK_32X32, BLOCK_32X32,   BLOCK_64X64,  //  32x64,  64x32,   64x64
-  BLOCK_64X64, BLOCK_64X64, BLOCK_128X128,  // 64x128, 128x64, 128x128
-  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
-  BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,    //   32x8,  16x64,   64x16
-};
-/* clang-format on */
-
-// Look at all the mode_info entries for blocks that are part of this
-// partition and find the min and max values for sb_type.
-// At the moment this is designed to work on a superblock but could be
-// adjusted to use a size parameter.
-//
-// The min and max are assumed to have been initialized prior to calling this
-// function so repeat calls can accumulate a min and max of more than one
-// superblock.
-static void get_sb_partition_size_range(const AV1_COMMON *const cm,
-                                        MACROBLOCKD *xd, MB_MODE_INFO **mib,
-                                        BLOCK_SIZE *min_block_size,
-                                        BLOCK_SIZE *max_block_size) {
-  int i, j;
-  int index = 0;
-
-  // Check the sb_type for each block that belongs to this region.
-  for (i = 0; i < cm->seq_params.mib_size; ++i) {
-    for (j = 0; j < cm->seq_params.mib_size; ++j) {
-      MB_MODE_INFO *mi = mib[index + j];
-      BLOCK_SIZE sb_type = mi ? mi->sb_type : BLOCK_4X4;
-      *min_block_size = AOMMIN(*min_block_size, sb_type);
-      *max_block_size = AOMMAX(*max_block_size, sb_type);
-    }
-    index += xd->mi_stride;
-  }
-}
-
 // Checks to see if a super block is on a horizontal image edge.
 // In most cases this is the "real" edge unless there are formatting
 // bars embedded in the stream.
@@ -2304,14 +2241,6 @@ static int active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
     is_active_v_edge = 1;
   }
   return is_active_v_edge;
-}
-
-// Checks to see if a super block is at the edge of the active image.
-// In most cases this is the "real" edge unless there are formatting
-// bars embedded in the stream.
-static int active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
-  return active_h_edge(cpi, mi_row, cpi->common.seq_params.mib_size) ||
-         active_v_edge(cpi, mi_col, cpi->common.seq_params.mib_size);
 }
 
 // Performs a motion search in SIMPLE_TRANSLATION mode using reference frame
@@ -2410,81 +2339,6 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   if (scaled_ref_frame) {
     xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
   }
-}
-
-// Look at neighboring blocks and set a min and max partition size based on
-// what they chose.
-static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
-                                    MACROBLOCKD *const xd, int mi_row,
-                                    int mi_col, BLOCK_SIZE *min_block_size,
-                                    BLOCK_SIZE *max_block_size) {
-  AV1_COMMON *const cm = &cpi->common;
-  MB_MODE_INFO **mi = xd->mi;
-  const int left_in_image = xd->left_available && mi[-1];
-  const int above_in_image = xd->up_available && mi[-xd->mi_stride];
-  const int mi_rows_remaining = tile->mi_row_end - mi_row;
-  const int mi_cols_remaining = tile->mi_col_end - mi_col;
-  int bh, bw;
-  BLOCK_SIZE min_size = BLOCK_4X4;
-  BLOCK_SIZE max_size = BLOCK_LARGEST;
-
-  // Trap case where we do not have a prediction.
-  if (left_in_image || above_in_image ||
-      cm->current_frame.frame_type != KEY_FRAME) {
-    // Default "min to max" and "max to min"
-    min_size = BLOCK_LARGEST;
-    max_size = BLOCK_4X4;
-
-    // NOTE: each call to get_sb_partition_size_range() uses the previous
-    // passed in values for min and max as a starting point.
-    // Find the min and max partition used in previous frame at this location
-    if (cm->current_frame.frame_type != KEY_FRAME) {
-      MB_MODE_INFO **prev_mi =
-          &cm->prev_mi_grid_visible[mi_row * xd->mi_stride + mi_col];
-      get_sb_partition_size_range(cm, xd, prev_mi, &min_size, &max_size);
-    }
-    // Find the min and max partition sizes used in the left superblock
-    if (left_in_image) {
-      MB_MODE_INFO **left_sb_mi = &mi[-cm->seq_params.mib_size];
-      get_sb_partition_size_range(cm, xd, left_sb_mi, &min_size, &max_size);
-    }
-    // Find the min and max partition sizes used in the above suprblock.
-    if (above_in_image) {
-      MB_MODE_INFO **above_sb_mi =
-          &mi[-xd->mi_stride * cm->seq_params.mib_size];
-      get_sb_partition_size_range(cm, xd, above_sb_mi, &min_size, &max_size);
-    }
-
-    // Adjust observed min and max for "relaxed" auto partition case.
-    if (cpi->sf.auto_min_max_partition_size == RELAXED_NEIGHBORING_MIN_MAX) {
-      min_size = min_partition_size[min_size];
-      max_size = max_partition_size[max_size];
-    }
-  }
-
-  // Check border cases where max and min from neighbors may not be legal.
-  max_size = find_partition_size(max_size, mi_rows_remaining, mi_cols_remaining,
-                                 &bh, &bw);
-  min_size = AOMMIN(min_size, max_size);
-
-  // Test for blocks at the edge of the active image.
-  // This may be the actual edge of the image or where there are formatting
-  // bars.
-  if (active_edge_sb(cpi, mi_row, mi_col)) {
-    min_size = BLOCK_4X4;
-  } else {
-    min_size = AOMMIN(cpi->sf.rd_auto_partition_min_limit, min_size);
-  }
-
-  // When use_square_partition_only is true, make sure at least one square
-  // partition is allowed by selecting the next smaller square size as
-  // *min_block_size.
-  if (min_size >= cpi->sf.use_square_partition_only_threshold) {
-    min_size = AOMMIN(min_size, next_square_size[max_size]);
-  }
-
-  *min_block_size = AOMMIN(min_size, cm->seq_params.sb_size);
-  *max_block_size = AOMMIN(max_size, cm->seq_params.sb_size);
 }
 
 static INLINE void store_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
@@ -3985,9 +3839,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   const int xss = x->e_mbd.plane[1].subsampling_x;
   const int yss = x->e_mbd.plane[1].subsampling_y;
 
-  BLOCK_SIZE min_size = x->min_partition_size;
-  BLOCK_SIZE max_size = x->max_partition_size;
-
   if (none_rd) *none_rd = 0;
 
 #if CONFIG_FP_MB_STATS
@@ -4057,25 +3908,12 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
     x->mb_energy = av1_log_block_var(cpi, x, bsize);
 
-  // Determine partition types in search according to the speed features.
-  // The threshold set here has to be of square block size.
-  if (cpi->sf.auto_min_max_partition_size) {
-    const int no_partition_allowed = (bsize <= max_size && bsize >= min_size);
-    // Note: Further partitioning is NOT allowed when bsize == min_size already.
-    const int partition_allowed = (bsize <= max_size && bsize > min_size);
-    partition_none_allowed &= no_partition_allowed;
-    partition_horz_allowed &= partition_allowed || !has_rows;
-    partition_vert_allowed &= partition_allowed || !has_cols;
-    do_square_split &= bsize > min_size;
-  }
-
   if (bsize > cpi->sf.use_square_partition_only_threshold) {
     partition_horz_allowed &= !has_rows;
     partition_vert_allowed &= !has_cols;
   }
 
-  if (bsize > BLOCK_4X4 && x->use_cb_search_range &&
-      cpi->sf.auto_min_max_partition_size == 0) {
+  if (bsize > BLOCK_4X4 && x->use_cb_search_range) {
     int split_score = 0;
     int none_score = 0;
     const int score_valid = ml_prune_2pass_split_partition(
@@ -5863,13 +5701,6 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
         x->cb_rdmult = dr;
         x->rdmult = x->cb_rdmult;
-      }
-
-      // If required set upper and lower partition size limits
-      if (sf->auto_min_max_partition_size) {
-        set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-        rd_auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
-                                &x->min_partition_size, &x->max_partition_size);
       }
 
       reset_partition(pc_root, sb_size);

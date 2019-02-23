@@ -120,11 +120,6 @@ enum {
 } UENUM1BYTE(TX_SIZE_SEARCH_METHOD);
 
 enum {
-  NOT_IN_USE = 0,
-  RELAXED_NEIGHBORING_MIN_MAX = 1
-} UENUM1BYTE(AUTO_MIN_MAX_MODE);
-
-enum {
   // Try the full image with different values.
   LPF_PICK_FROM_FULL_IMAGE,
   // Try a small portion of the image with different values.
@@ -400,10 +395,6 @@ typedef struct SPEED_FEATURES {
 
   // Prune ref/mode choices for partitions.
   int prune_ref_mode_for_partitions;
-
-  // Sets min and max partition sizes for this superblock based on the
-  // same superblock in last encoded frame, and the left and above neighbor.
-  AUTO_MIN_MAX_MODE auto_min_max_partition_size;
 
   // Sets min and max square partition levels for this superblock based on
   // motion vector and prediction error distribution produced from 16x16

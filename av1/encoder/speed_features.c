@@ -292,9 +292,6 @@ static void set_good_speed_features_framesize_independent(
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
     sf->partition_search_breakout_rate_thr = 80;
-    // Note: This speed feature is disable as it seems to be worse in
-    // compression/quality and is also slower.
-    // sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->disable_wedge_search_edge_thresh = 0;
@@ -510,9 +507,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
     sf->partition_search_breakout_rate_thr = 80;
-    // Note: This speed feature is disable as it seems to be worse in
-    // compression/quality and is also slower.
-    // sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->disable_wedge_search_edge_thresh = 0;
@@ -706,7 +700,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_square_partition_only_threshold = BLOCK_128X128;
   sf->prune_ref_frame_for_rect_partitions = 0;
   sf->prune_ref_mode_for_partitions = 0;
-  sf->auto_min_max_partition_size = NOT_IN_USE;
   sf->auto_min_max_partition_based_on_simple_motion = 0;
   sf->rd_auto_partition_min_limit = BLOCK_4X4;
   sf->default_max_partition_size = BLOCK_LARGEST;
