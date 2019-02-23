@@ -45,6 +45,7 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   using chromeos::assistant::mojom::AssistantNotification;
   using chromeos::assistant::mojom::AssistantNotificationButton;
   using chromeos::assistant::mojom::AssistantNotificationPtr;
+  using chromeos::assistant::mojom::AssistantNotificationType;
 
   const std::string title =
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
@@ -54,6 +55,14 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
 
   AssistantNotificationPtr notification = AssistantNotification::New();
+
+  // If in-Assistant notifications are supported, we'll allow alarm/timer
+  // notifications to show in either Assistant UI or the Message Center.
+  // Otherwise, we'll only allow the notification to show in the Message Center.
+  notification->type =
+      chromeos::assistant::features::IsInAssistantNotificationsEnabled()
+          ? AssistantNotificationType::kPreferInAssistant
+          : AssistantNotificationType::kSystem;
 
   notification->title = title;
   notification->message = message;

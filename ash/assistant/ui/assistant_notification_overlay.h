@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_ASSISTANT_NOTIFICATION_OVERLAY_H_
 
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_overlay.h"
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -18,6 +19,7 @@ class AssistantViewDelegate;
 // responsible for parenting in-Assistant notifications.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationOverlay
     : public AssistantOverlay,
+      public AssistantUiModelObserver,
       public AssistantNotificationModelObserver {
  public:
   AssistantNotificationOverlay(AssistantViewDelegate* delegate);
@@ -28,6 +30,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationOverlay
   LayoutParams GetLayoutParams() const override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // AssistantNotificationModelObserver:
   void OnNotificationAdded(const AssistantNotification* notification) override;

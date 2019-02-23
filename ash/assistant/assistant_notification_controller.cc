@@ -58,6 +58,13 @@ message_center::NotifierId GetNotifierId() {
       message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId);
 }
 
+bool IsSystemNotification(
+    const chromeos::assistant::mojom::AssistantNotification* notification) {
+  using chromeos::assistant::mojom::AssistantNotificationType;
+  return notification->type == AssistantNotificationType::kPreferInAssistant ||
+         notification->type == AssistantNotificationType::kSystem;
+}
+
 bool IsValidActionUrl(const GURL& action_url) {
   return action_url.is_valid() && (action_url.SchemeIsHTTPOrHTTPS() ||
                                    assistant::util::IsDeepLinkUrl(action_url));
@@ -73,11 +80,13 @@ AssistantNotificationController::AssistantNotificationController(
       binding_(this),
       notifier_id_(GetNotifierId()) {
   AddModelObserver(this);
+  assistant_controller_->AddObserver(this);
   message_center::MessageCenter::Get()->AddObserver(this);
 }
 
 AssistantNotificationController::~AssistantNotificationController() {
   message_center::MessageCenter::Get()->RemoveObserver(this);
+  assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
 }
 
@@ -101,10 +110,69 @@ void AssistantNotificationController::SetAssistant(
   assistant_ = assistant;
 }
 
+// AssistantControllerObserver -------------------------------------------------
+
+void AssistantNotificationController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantNotificationController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
+// AssistantUiModelObserver ----------------------------------------------------
+
+void AssistantNotificationController::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  switch (new_visibility) {
+    case AssistantVisibility::kVisible:
+      // When the Assistant UI becomes visible we convert any notifications of
+      // type |kPreferInAssistant| to type |kInAssistant|. This will cause them
+      // to be removed from the Message Center (if they had previously been
+      // added) and to finish out their lifetimes as in-Assistant notifications.
+      for (const auto* notification : model_.GetNotificationsByType(
+               AssistantNotificationType::kPreferInAssistant)) {
+        auto update = notification->Clone();
+        update->type = AssistantNotificationType::kInAssistant;
+        model_.AddOrUpdateNotification(std::move(update));
+      }
+      break;
+    case AssistantVisibility::kHidden:
+    case AssistantVisibility::kClosed:
+      // When the Assistant UI is no longer visible to the user we remove any
+      // notifications of type |kInAssistant| as this type of notification does
+      // not outlive the Assistant view hierarchy.
+      if (old_visibility == AssistantVisibility::kVisible) {
+        for (const auto* notification : model_.GetNotificationsByType(
+                 AssistantNotificationType::kInAssistant)) {
+          model_.RemoveNotificationById(notification->client_id,
+                                        /*from_server=*/false);
+        }
+      }
+      break;
+  }
+}
+
 // mojom::AssistantNotificationController --------------------------------------
 
 void AssistantNotificationController::AddOrUpdateNotification(
     AssistantNotificationPtr notification) {
+  const AssistantVisibility visibility =
+      assistant_controller_->ui_controller()->model()->visibility();
+
+  // If Assistant UI is visible and |notification| is of type
+  // |kPreferInAssistant|, we convert it to a notification of type
+  // |kInAssistant|. This will cause the notification to be removed from the
+  // Message Center (if it had previously been added) and it will finish out its
+  // lifetime as an in-Assistant notification.
+  if (visibility == AssistantVisibility::kVisible &&
+      notification->type == AssistantNotificationType::kPreferInAssistant) {
+    notification->type = AssistantNotificationType::kInAssistant;
+  }
+
   model_.AddOrUpdateNotification(std::move(notification));
 }
 
@@ -132,6 +200,10 @@ void AssistantNotificationController::OnNotificationAdded(
   if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
     return;
 
+  // We only show system notifications in the Message Center.
+  if (!IsSystemNotification(notification))
+    return;
+
   message_center::MessageCenter::Get()->AddNotification(
       CreateSystemNotification(notifier_id_, notification));
 }
@@ -141,6 +213,15 @@ void AssistantNotificationController::OnNotificationUpdated(
   // Do not show system notifications if the setting is disabled.
   if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
     return;
+
+  // If the notification that was updated is *not* a system notification, we
+  // need to ensure that it is removed from the Message Center (given that it
+  // may have been a system notification prior to update).
+  if (!IsSystemNotification(notification)) {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        notification->client_id, /*by_user=*/false);
+    return;
+  }
 
   message_center::MessageCenter::Get()->UpdateNotification(
       notification->client_id,
@@ -200,7 +281,13 @@ void AssistantNotificationController::OnNotificationClicked(
 void AssistantNotificationController::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
-  model_.RemoveNotificationById(notification_id, /*from_server=*/false);
+  // If the notification that was removed is a system notification, we need to
+  // update our notification model. If it is *not* a system notification, then
+  // the notification was removed from the Message Center due to a change of
+  // |type| so it should be retained in the model.
+  const auto* notification = model_.GetNotificationById(notification_id);
+  if (notification && IsSystemNotification(notification))
+    model_.RemoveNotificationById(notification_id, /*from_server=*/false);
 }
 
 }  // namespace ash
