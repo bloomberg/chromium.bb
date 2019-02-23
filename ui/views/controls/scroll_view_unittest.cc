@@ -682,6 +682,34 @@ TEST_F(ScrollViewTest, HeaderScrollsWithContent) {
   EXPECT_EQ("-1,0", header->origin().ToString());
 }
 
+// Test that calling ScrollToPosition() also updates the position of the
+// corresponding ScrollBar.
+TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
+  ScrollViewTestApi test_api(scroll_view_.get());
+  View* contents = InstallContents();
+
+  // Scroll the horizontal scrollbar, after which, the scroll bar thumb position
+  // should be updated (i.e. it should be non-zero).
+  contents->SetBounds(0, 0, 400, 50);
+  scroll_view_->Layout();
+  auto* scroll_bar = test_api.GetBaseScrollBar(HORIZONTAL);
+  ASSERT_TRUE(scroll_bar);
+  EXPECT_TRUE(scroll_bar->visible());
+  EXPECT_EQ(0, scroll_bar->GetPosition());
+  scroll_view_->ScrollToPosition(scroll_bar, 20);
+  EXPECT_GT(scroll_bar->GetPosition(), 0);
+
+  // Scroll the vertical scrollbar.
+  contents->SetBounds(0, 0, 50, 400);
+  scroll_view_->Layout();
+  scroll_bar = test_api.GetBaseScrollBar(VERTICAL);
+  ASSERT_TRUE(scroll_bar);
+  EXPECT_TRUE(scroll_bar->visible());
+  EXPECT_EQ(0, scroll_bar->GetPosition());
+  scroll_view_->ScrollToPosition(scroll_bar, 20);
+  EXPECT_GT(scroll_bar->GetPosition(), 0);
+}
+
 // Verifies ScrollRectToVisible() on the child works.
 TEST_F(ScrollViewTest, ScrollRectToVisible) {
   ScrollViewTestApi test_api(scroll_view_.get());
