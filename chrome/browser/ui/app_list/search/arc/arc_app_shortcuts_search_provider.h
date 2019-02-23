@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_SHORTCUTS_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_SHORTCUTS_SEARCH_PROVIDER_H_
 
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -31,7 +30,6 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(const base::string16& query) override;
-  void Train(const std::string& id, RankingItemType type) override;
 
  private:
   void OnGetAppShortcutGlobalQueryItems(
@@ -40,6 +38,8 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
   const int max_results_;
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
+  // TODO(crbug.com/931149): train this ranker on app shortcut clicks, and use
+  // it to tweak their relevance scores.
   AppSearchResultRanker* ranker_;
 
   base::WeakPtrFactory<ArcAppShortcutsSearchProvider> weak_ptr_factory_;
