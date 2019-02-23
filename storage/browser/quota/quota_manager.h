@@ -23,6 +23,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "storage/browser/quota/quota_callbacks.h"
@@ -178,6 +179,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void NotifyOriginInUse(const url::Origin& origin);
   void NotifyOriginNoLongerInUse(const url::Origin& origin);
   bool IsOriginInUse(const url::Origin& origin) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return base::ContainsKey(origins_in_use_, origin);
   }
 
@@ -423,7 +425,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   const bool is_incognito_;
   const base::FilePath profile_path_;
 
-  scoped_refptr<QuotaManagerProxy> proxy_;
+  // proxy_ can be accessed by any thread so it must be thread-safe
+  const scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
   bool eviction_disabled_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
@@ -476,6 +479,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   GetVolumeInfoFn get_volume_info_fn_;
 
   std::unique_ptr<StorageMonitor> storage_monitor_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 
