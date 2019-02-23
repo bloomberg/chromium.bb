@@ -330,7 +330,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance2/state/gl-get-calls.html', ['passthrough', 'opengl'],
         bug=602688)
-    self.Flaky('conformance2/vertex_arrays/vertex-array-object.html',
+    self.Fail('conformance2/vertex_arrays/vertex-array-object.html',
         ['passthrough', 'opengl'], bug=920265)
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)

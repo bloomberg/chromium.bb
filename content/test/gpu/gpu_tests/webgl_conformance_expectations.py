@@ -131,6 +131,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
 
+    # Too flaky with ANGLE's OpenGL backend to just mark Flaky
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        ['win', 'opengl'], bug=920033)
+
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['passthrough', 'opengl'], bug=665521)
@@ -340,8 +344,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/glsl/bugs/' +
         'array-of-struct-with-int-first-position.html',
         ['win10', 'intel', 'opengl'], bug=680797)
