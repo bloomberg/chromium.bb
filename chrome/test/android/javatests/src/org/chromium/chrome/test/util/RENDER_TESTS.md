@@ -36,6 +36,11 @@ the appropriate place in your local repository.
 new goldens to Google Storage and update the hashes used to download them.
 4. Reupload the CL and run it through the trybots again.
 
+When putting a change up for review that changes goldens, please include links
+to the results_details/Render Results pages that you grabbed the new goldens
+from. This will help reviewers confirm that the changes to the goldens are
+acceptable.
+
 ### Failing locally
 
 Follow the steps in [*Running the tests locally*](#running-the-tests-locally)
