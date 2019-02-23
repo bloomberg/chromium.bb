@@ -31,6 +31,33 @@ namespace {
 using TriggerType = FeedSchedulerHost::TriggerType;
 using UserClass = UserClassifier::UserClass;
 
+// Enum for the relation between boolean fields the Feed and host both track.
+// Reported through UMA and must match the corresponding definition in
+// enums.xml
+enum class FeedHostMismatch {
+  kNeitherAreSet = 0,
+  kFeedIsSetOnly = 1,
+  kHostIsSetOnly = 2,
+  kBothAreSet = 3,
+  kMaxValue = kBothAreSet,
+};
+
+// Copies boolean args into temps to avoid evaluating them multiple times.
+#define UMA_HISTOGRAM_MISMATCH(name, feed_is_set, host_is_set)  \
+  do {                                                          \
+    bool copied_feed_is_set = feed_is_set;                      \
+    bool copied_host_is_set = host_is_set;                      \
+    FeedHostMismatch status = FeedHostMismatch::kNeitherAreSet; \
+    if (copied_feed_is_set && copied_host_is_set) {             \
+      status = FeedHostMismatch::kBothAreSet;                   \
+    } else if (copied_feed_is_set) {                            \
+      status = FeedHostMismatch::kFeedIsSetOnly;                \
+    } else if (copied_host_is_set) {                            \
+      status = FeedHostMismatch::kHostIsSetOnly;                \
+    }                                                           \
+    UMA_HISTOGRAM_ENUMERATION(name, status);                    \
+  } while (false);
+
 struct ParamPair {
   std::string name;
   double default_value;
@@ -268,18 +295,38 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     bool has_content,
     base::Time content_creation_date_time,
     bool has_outstanding_request) {
-  // The scheduler may not always know of outstanding requests, but the Feed
-  // should know about them all, and the scheduler should be notified upon
-  // completion of all requests. We should never encounter a scenario where only
-  // the scheduler thinks there is an outstanding request.
+  // Both the Feed and the scheduler track if there are outstanding requests.
+  // It's possible that this data gets out of sync. We treat the Feed as
+  // authoritative and we change our values to match.
+  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.OutstandingRequest",
+                         has_outstanding_request,
+                         !outstanding_request_until_.is_null());
+  if (has_outstanding_request == outstanding_request_until_.is_null()) {
+    if (has_outstanding_request) {
+      outstanding_request_until_ =
+          clock_->Now() +
+          base::TimeDelta::FromSeconds(kTimeoutDurationSeconds.Get());
+    } else {
+      outstanding_request_until_ = base::Time();
+    }
+  }
 
-  // TODO(skym): Update this to use kTimeoutDurationSeconds.
-  // DCHECK(has_outstanding_request || !tracking_oustanding_request_);
-
-  if (outstanding_request_until_.is_null() && has_outstanding_request) {
-    outstanding_request_until_ =
-        clock_->Now() +
-        base::TimeDelta::FromSeconds(kTimeoutDurationSeconds.Get());
+  // It seems to be possible for the scheduler's tracking of having content to
+  // get out of sync with the Feed. Root cause is currently unknown, but similar
+  // to outstanding request handling, we can repair with the information we
+  // have.
+  bool scheduler_thinks_has_content =
+      !profile_prefs_->FindPreference(prefs::kLastFetchAttemptTime)
+           ->IsDefaultValue();
+  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.HasContent",
+                         has_content, scheduler_thinks_has_content);
+  if (has_content != scheduler_thinks_has_content) {
+    if (has_content) {
+      profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,
+                              content_creation_date_time);
+    } else {
+      profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
+    }
   }
 
   NativeRequestBehavior behavior;

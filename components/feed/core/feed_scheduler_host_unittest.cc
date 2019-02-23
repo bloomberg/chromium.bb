@@ -918,6 +918,28 @@ TEST_F(FeedSchedulerHostTest, IncorporatesExternalOustandingRequest) {
   // prevent the OnForegrounded() from requesting a refresh.
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
+
+  EXPECT_EQ(kRequestWithWait,
+            scheduler()->ShouldSessionRequestData(
+                /*has_content*/ false, /*content_creation_date_time*/ Time(),
+                /*has_outstanding_request*/ false));
+}
+
+TEST_F(FeedSchedulerHostTest, IncorporatesExternalHasContent) {
+  Time now = test_clock()->Now();
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
+
+  EXPECT_EQ(kNoRequestWithContent,
+            scheduler()->ShouldSessionRequestData(
+                /*has_content*/ true, now, /*has_outstanding_request*/ false));
+  EXPECT_EQ(now, profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
+
+  // Use has_outstanding_request of true to keep the scheduler from actually
+  // triggering the refresh. We want to track the change to its internal state.
+  EXPECT_EQ(kNoRequestWithWait, scheduler()->ShouldSessionRequestData(
+                                    /*has_content*/ false, base::Time(),
+                                    /*has_outstanding_request*/ true));
+  EXPECT_EQ(Time(), profile_prefs()->GetTime(prefs::kLastFetchAttemptTime));
 }
 
 TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
@@ -933,7 +955,7 @@ TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
   EXPECT_EQ(0U, histogram_tester.GetAllSamples(forgroundedHistogram).size());
 
   scheduler()->ShouldSessionRequestData(
-      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+      /*has_content*/ true, now, /*has_outstanding_request*/ false);
   EXPECT_EQ(1, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
   EXPECT_EQ(0U, histogram_tester.GetAllSamples(forgroundedHistogram).size());
 
@@ -942,7 +964,7 @@ TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
   EXPECT_EQ(1, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
 
   scheduler()->ShouldSessionRequestData(
-      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+      /*has_content*/ true, now, /*has_outstanding_request*/ false);
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
   EXPECT_EQ(1, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
@@ -952,7 +974,7 @@ TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
   scheduler()->OnRequestError(0);
 
   scheduler()->ShouldSessionRequestData(
-      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+      /*has_content*/ true, now, /*has_outstanding_request*/ false);
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
   EXPECT_EQ(2, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
