@@ -4,6 +4,9 @@
 
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 
+#include <map>
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -88,10 +91,22 @@ void AppendSamplingTrialGroup(const std::string& group_name,
 
 // Only clients that were given an opt-out metrics-reporting consent flow are
 // eligible for sampling.
-bool IsClientEligibleForSampling() {
-  return metrics::GetMetricsReportingDefaultState(
-             g_browser_process->local_state()) ==
+bool IsClientEligibleForSampling(PrefService* local_state) {
+  return metrics::GetMetricsReportingDefaultState(local_state) ==
          metrics::EnableMetricsDefault::OPT_OUT;
+}
+
+// Implementation of IsClientInSample() that takes a PrefService param.
+bool IsClientInSampleImpl(PrefService* local_state) {
+  // Only some clients are eligible for sampling. Clients that aren't eligible
+  // will always be considered "in sample". In this case, we don't want the
+  // feature state queried, because we don't want the field trial that controls
+  // sampling to be reported as active.
+  if (!IsClientEligibleForSampling(local_state))
+    return true;
+
+  return base::FeatureList::IsEnabled(
+      metrics::internal::kMetricsReportingFeature);
 }
 
 #if defined(OS_CHROMEOS)
@@ -129,8 +144,8 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
   }
 
   bool IsReportingEnabled() const override {
-    return IsConsentGiven() &&
-           ChromeMetricsServicesManagerClient::IsClientInSample();
+    return metrics::EnabledStateProvider::IsReportingEnabled() &&
+           IsClientInSampleImpl(local_state_);
   }
 
  private:
@@ -194,22 +209,14 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
 
 // static
 bool ChromeMetricsServicesManagerClient::IsClientInSample() {
-  // Only some clients are eligible for sampling. Clients that aren't eligible
-  // will always be considered "in sample". In this case, we don't want the
-  // feature state queried, because we don't want the field trial that controls
-  // sampling to be reported as active.
-  if (!IsClientEligibleForSampling())
-    return true;
-
-  return base::FeatureList::IsEnabled(
-      metrics::internal::kMetricsReportingFeature);
+  return IsClientInSampleImpl(g_browser_process->local_state());
 }
 
 // static
 bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
   // The population that is NOT eligible for sampling in considered "in sample",
   // but does not have a defined sample rate.
-  if (!IsClientEligibleForSampling())
+  if (!IsClientEligibleForSampling(g_browser_process->local_state()))
     return false;
 
   std::string rate_str = variations::GetVariationParamValueByFeature(
@@ -232,6 +239,11 @@ void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
   OnCrosMetricsReportingSettingChange();
 }
 #endif
+
+const metrics::EnabledStateProvider&
+ChromeMetricsServicesManagerClient::GetEnabledStateProviderForTesting() {
+  return *enabled_state_provider_;
+}
 
 std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
