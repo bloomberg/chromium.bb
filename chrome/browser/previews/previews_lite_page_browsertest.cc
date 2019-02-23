@@ -765,9 +765,8 @@ INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
 #define DISABLE_ON_WIN_MAC(x) x
 #endif
 
-// TODO(crbug.com/934955): Failing on Linux trybots.
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
-                       DISABLED_LitePagePreviewsTriggering) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsTriggering)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1025,9 +1024,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   VerifyPreviewNotLoaded();
 }
 
-// TODO(crbug.com/934955): Failing on Linux trybots.
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
-                       DISABLED_ReloadingLitePagesDisablesLitePages) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC(ReloadingLitePagesDisablesLitePages)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviewsReloadsAreSoftOptOuts}, {});
