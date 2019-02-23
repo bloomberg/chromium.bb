@@ -365,6 +365,25 @@ void SearchResultView::OnMouseExited(const ui::MouseEvent& event) {
   actions_view_->UpdateButtonsOnStateChanged();
 }
 
+void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (!visible())
+    return;
+
+  // This is a work around to deal with the nested button case(append and remove
+  // button are child button of SearchResultView), which is not supported by
+  // ChromeVox. see details in crbug.com/924776.
+  // We change the role of the parent view SearchResultView to kGenericContainer
+  // i.e., not a kButton anymore.
+  node_data->role = ax::mojom::Role::kGenericContainer;
+  node_data->AddState(ax::mojom::State::kFocusable);
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+  node_data->SetName(GetAccessibleName());
+}
+
+void SearchResultView::VisibilityChanged(View* starting_from, bool is_visible) {
+  NotifyAccessibilityEvent(ax::mojom::Event::kLayoutComplete, true);
+}
+
 void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
