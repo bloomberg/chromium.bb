@@ -32,6 +32,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/mock_resource_bundle_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -52,36 +53,6 @@ using ::testing::ReturnArg;
 namespace ntp_tiles {
 namespace {
 using MockImageDecoder = image_fetcher::MockImageDecoder;
-
-// This class provides methods to inject an image resource where a real resource
-// would be necessary otherwise. All other methods have return values that allow
-// the normal implementation to proceed.
-class MockResourceDelegate : public ui::ResourceBundle::Delegate {
- public:
-  ~MockResourceDelegate() override {}
-
-  MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
-  MOCK_METHOD1(GetNativeImageNamed, gfx::Image(int resource_id));
-
-  MOCK_METHOD2(GetPathForResourcePack,
-               base::FilePath(const base::FilePath& pack_path,
-                              ui::ScaleFactor scale_factor));
-
-  MOCK_METHOD2(GetPathForLocalePack,
-               base::FilePath(const base::FilePath& pack_path,
-                              const std::string& locale));
-
-  MOCK_METHOD2(LoadDataResourceBytes,
-               base::RefCountedMemory*(int resource_id,
-                                       ui::ScaleFactor scale_factor));
-
-  MOCK_METHOD3(GetRawDataResource,
-               bool(int resource_id,
-                    ui::ScaleFactor scale_factor,
-                    base::StringPiece* value));
-
-  MOCK_METHOD2(GetLocalizedString, bool(int message_id, base::string16* value));
-};
 
 ACTION(FailFetch) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -215,7 +186,7 @@ class IconCacherTestPopularSites : public IconCacherTestBase {
   PopularSites::Site site_;
   std::unique_ptr<MockImageFetcher> image_fetcher_;
   std::unique_ptr<MockImageDecoder> image_decoder_;
-  NiceMock<MockResourceDelegate> mock_resource_delegate_;
+  NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
 };
 
 TEST_F(IconCacherTestPopularSites, LargeCached) {

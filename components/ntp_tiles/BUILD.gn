@@ -114,6 +114,7 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/gfx:test_support",
   ]
 }
