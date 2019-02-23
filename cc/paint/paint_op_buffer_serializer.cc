@@ -340,6 +340,10 @@ bool PaintOpBufferSerializer::SerializeOp(
   if (!valid_)
     return false;
 
+  // Playback on analysis canvas first to make sure the canvas transform is set
+  // correctly for analysis of records in filters.
+  PlaybackOnAnalysisCanvas(op, options, params);
+
   size_t bytes = serialize_cb_.Run(op, options);
   if (!bytes) {
     valid_ = false;
@@ -348,7 +352,13 @@ bool PaintOpBufferSerializer::SerializeOp(
 
   DCHECK_GE(bytes, 4u);
   DCHECK_EQ(bytes % PaintOpBuffer::PaintOpAlign, 0u);
+  return true;
+}
 
+void PaintOpBufferSerializer::PlaybackOnAnalysisCanvas(
+    const PaintOp* op,
+    const PaintOp::SerializeOptions& options,
+    const PlaybackParams& params) {
   // Only 2 types of ops need to played on the analysis canvas.
   // 1) Non-draw ops which affect the transform/clip state on the canvas, since
   //    we need the correct ctm at which text and images will be rasterized, and
@@ -357,7 +367,7 @@ bool PaintOpBufferSerializer::SerializeOp(
   // 2) DrawTextBlob ops since they need to be analyzed by the cache diff canvas
   //    to serialize/lock the requisite glyphs for this op.
   if (op->IsDrawOp() && op->GetType() != PaintOpType::DrawTextBlob)
-    return true;
+    return;
 
   if (op->IsPaintOpWithFlags() && options.flags_to_serialize) {
     static_cast<const PaintOpWithFlags*>(op)->RasterWithFlags(
@@ -365,7 +375,6 @@ bool PaintOpBufferSerializer::SerializeOp(
   } else {
     op->Raster(canvas_, params);
   }
-  return true;
 }
 
 void PaintOpBufferSerializer::Save(const PaintOp::SerializeOptions& options,

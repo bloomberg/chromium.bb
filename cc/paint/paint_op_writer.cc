@@ -680,8 +680,22 @@ void PaintOpWriter::Write(const ImagePaintFilter& filter) {
 
 void PaintOpWriter::Write(const RecordPaintFilter& filter) {
   WriteSimple(filter.record_bounds());
-  Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f),
-        options_.canvas ? options_.canvas->getTotalMatrix() : SkMatrix::I());
+  if (!options_.canvas) {
+    Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f),
+          SkMatrix::I());
+    return;
+  }
+
+  // The logic here to only use the scale component of the matrix during
+  // analysis is for consistency with the rasterization of the filter later in
+  // pipeline in skia. For every draw with a filter, SkCanvas creates a layer
+  // for the draw and modifies the scale for these filters.
+  // See SkCanvas::internalSaveLayer.
+  SkMatrix mat = options_.canvas->getTotalMatrix();
+  SkSize scale;
+  if (!mat.isScaleTranslate() && mat.decomposeScale(&scale))
+    mat = SkMatrix::MakeScale(scale.width(), scale.height());
+  Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f), mat);
 }
 
 void PaintOpWriter::Write(const MergePaintFilter& filter) {

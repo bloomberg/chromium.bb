@@ -1492,7 +1492,7 @@ class OopRecordFilterPixelTest : public OopPixelTest,
                                  public ::testing::WithParamInterface<bool> {
  public:
   bool UseLcdText() const { return GetParam(); }
-  void RunTest() {
+  void RunTest(const SkMatrix& mat) {
     ScopedEnableLCDText enable_lcd;
 
     RasterOptions options;
@@ -1514,7 +1514,7 @@ class OopRecordFilterPixelTest : public OopPixelTest,
 
     auto display_item_list = base::MakeRefCounted<DisplayItemList>();
     display_item_list->StartPaint();
-    display_item_list->push<ScaleOp>(2.f, 2.f);
+    display_item_list->push<SetMatrixOp>(mat);
     PaintFlags shader_flags;
     shader_flags.setImageFilter(paint_record_filter);
     display_item_list->push<DrawRectOp>(SkRect::MakeWH(50, 50), shader_flags);
@@ -1528,7 +1528,14 @@ class OopRecordFilterPixelTest : public OopPixelTest,
 };
 
 TEST_P(OopRecordFilterPixelTest, FilterWithTextScaled) {
-  RunTest();
+  SkMatrix mat = SkMatrix::MakeScale(2.f, 2.f);
+  RunTest(mat);
+}
+
+TEST_P(OopRecordFilterPixelTest, FilterWithTextAndComplexCTM) {
+  SkMatrix mat = SkMatrix::MakeScale(2.f, 2.f);
+  mat.preSkew(2.f, 2.f);
+  RunTest(mat);
 }
 
 void ClearFontCache(CompletionEvent* event) {
