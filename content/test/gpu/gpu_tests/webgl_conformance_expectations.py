@@ -803,6 +803,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_angle'], bug=716496)
+    self.Flaky('conformance/textures/misc/texture-npot-video.html',
+        ['android', 'android-chromium',
+         ('qualcomm', 'Adreno (TM) 418'), 'no_angle'],
+        bug=934545)
     self.Skip('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')],
         bug=610951)
