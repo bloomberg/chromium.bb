@@ -64,6 +64,9 @@ class ChromeMetricsServicesManagerClient
   void OnCrosSettingsCreated();
 #endif
 
+  // Accessor for the EnabledStateProvider instance used by this object.
+  const metrics::EnabledStateProvider& GetEnabledStateProviderForTesting();
+
  private:
   // This is defined as a member class to get access to
   // ChromeMetricsServiceAccessor through ChromeMetricsServicesManagerClient's
