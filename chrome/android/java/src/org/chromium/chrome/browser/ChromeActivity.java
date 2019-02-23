@@ -459,7 +459,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     Context.ACCESSIBILITY_SERVICE);
             manager.addAccessibilityStateChangeListener(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                mTouchExplorationStateChangeListener = enabled -> checkAccessibility();
+                mTouchExplorationStateChangeListener = enabled -> {
+                    AccessibilityUtil.resetAccessibilityEnabled();
+                    checkAccessibility();
+                };
                 manager.addTouchExplorationStateChangeListener(
                         mTouchExplorationStateChangeListener);
             }
