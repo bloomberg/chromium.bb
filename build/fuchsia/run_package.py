@@ -21,7 +21,7 @@ import time
 import threading
 import uuid
 
-from symbolizer import FilterStream
+from symbolizer import SymbolizerFilter
 
 FAR = os.path.join(common.SDK_ROOT, 'tools', 'far')
 PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
@@ -43,27 +43,72 @@ def _AttachKernelLogReader(target):
                                 stdout=subprocess.PIPE)
 
 
-def _ReadMergedLines(streams):
-  """Creates a generator which merges the buffered line output from |streams|.
-  The generator is terminated when the primary (first in sequence) stream
-  signals EOF. Absolute output ordering is not guaranteed."""
+class MergedInputStream(object):
+  """Merges a number of input streams into a UNIX pipe on a dedicated thread.
+  Terminates when the file descriptor of the primary stream (the first in
+  the sequence) is closed."""
 
-  assert len(streams) > 0
-  streams_by_fd = {}
-  primary_fd = streams[0].fileno()
-  for s in streams:
-    streams_by_fd[s.fileno()] = s
+  def __init__(self, streams):
+    assert len(streams) > 0
+    self._streams = streams
+    self._read_pipe, write_pipe = os.pipe()
+    self._output_stream = os.fdopen(write_pipe, 'w')
+    self._thread = threading.Thread(target=self._Run)
 
-  while primary_fd != None:
-    rlist, _, _ = select.select(streams_by_fd, [], [], 0.1)
-    for fileno in rlist:
-      line = streams_by_fd[fileno].readline()
-      if line:
-        yield line
-      elif fileno == primary_fd:
-        primary_fd = None
-      else:
+  def Start(self):
+    """Returns a file descriptor to the merged output stream."""
+
+    self._thread.start();
+    return self._read_pipe
+
+  def _Run(self):
+    streams_by_fd = {}
+    primary_fd = self._streams[0].fileno()
+    for s in self._streams:
+      streams_by_fd[s.fileno()] = s
+
+    # Set when the primary FD is closed. Input from other FDs will continue to
+    # be processed until select() runs dry.
+    flush = False
+
+    # The lifetime of the MergedInputStream is bound to the lifetime of
+    # |primary_fd|.
+    while primary_fd:
+      # When not flushing: block until data is read or an exception occurs.
+      rlist, _, xlist = select.select(streams_by_fd, [], streams_by_fd)
+
+      if len(rlist) == 0 and flush:
+        break
+
+      for fileno in xlist:
         del streams_by_fd[fileno]
+        if fileno == primary_fd:
+          primary_fd = None
+
+      for fileno in rlist:
+        line = streams_by_fd[fileno].readline()
+        if line:
+          self._output_stream.write(line + '\n')
+        else:
+          del streams_by_fd[fileno]
+          if fileno == primary_fd:
+            primary_fd = None
+
+    # Flush the streams by executing nonblocking reads from the input file
+    # descriptors until no more data is available,  or all the streams are
+    # closed.
+    while streams_by_fd:
+      rlist, _, _ = select.select(streams_by_fd, [], [], 0)
+
+      if not rlist:
+        break
+
+      for fileno in rlist:
+        line = streams_by_fd[fileno].readline()
+        if line:
+          self._output_stream.write(line + '\n')
+        else:
+          del streams_by_fd[fileno]
 
 
 def _GetComponentUri(package_name):
@@ -161,7 +206,6 @@ class RunPackageArgs:
   def FromCommonArgs(args):
     run_package_args = RunPackageArgs()
     run_package_args.install_only = args.install_only
-    run_package_args.symbolizer_config = args.package_manifest
     run_package_args.system_logging = args.include_system_logs
     run_package_args.target_staging_path = args.target_staging_path
     return run_package_args
@@ -184,8 +228,8 @@ def PublishPackage(tuf_root, package_path):
       stderr=subprocess.STDOUT)
 
 
-def RunPackage(output_dir, target, package_path, package_name, package_deps,
-               package_args, args):
+def RunPackage(output_dir, target, package_path, package_name,
+               package_deps, package_args, args):
   """Copies the Fuchsia package at |package_path| to the target,
   executes it with |package_args|, and symbolizes its output.
 
@@ -260,19 +304,16 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
                                      stderr=subprocess.STDOUT)
 
     if system_logger:
-      task_output = _ReadMergedLines([process.stdout, system_logger.stdout])
+      output_fd = MergedInputStream([process.stdout,
+                                       system_logger.stdout]).Start()
     else:
-      task_output = process.stdout
+      output_fd = process.stdout.fileno()
 
-    if args.symbolizer_config:
-      # Decorate the process output stream with the symbolizer.
-      output = FilterStream(task_output, package_name, args.symbolizer_config,
-                            output_dir)
-    else:
-      logging.warn('Symbolization is DISABLED.')
-      output = process.stdout
+    # Run the log data through the symbolizer process.
+    build_ids_path = os.path.join(os.path.dirname(package_path), 'ids.txt')
+    output_stream = SymbolizerFilter(output_fd, build_ids_path)
 
-    for next_line in output:
+    for next_line in output_stream:
       print next_line.rstrip()
 
     process.wait()

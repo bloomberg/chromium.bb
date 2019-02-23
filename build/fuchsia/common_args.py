@@ -21,9 +21,6 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--package-name', required=True,
                            help='Name of the package to execute, defined in ' +
                                 'package metadata.')
-  common_args.add_argument('--package-manifest',
-                           type=os.path.realpath, required=True,
-                           help='Path to the Fuchsia package manifest file.')
   common_args.add_argument('--package-dep', action='append', default=[],
                            help='Path to an additional package to install.')
   common_args.add_argument('--install-only', action='store_true', default=False,

@@ -86,6 +86,7 @@ template("fuchsia_package_runner") {
         _manifest_path,
         "//build/fuchsia/",
         "//build/util/lib/",
+        "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
         "${qemu_root}/",
         "${fuchsia_sdk}/",
       ]
@@ -129,8 +130,6 @@ template("fuchsia_package_runner") {
         rebase_path(_package_path, root_build_dir),
         "--package-name",
         _pkg_shortname,
-        "--package-manifest",
-        rebase_path(_manifest_path, root_build_dir),
       ]
 
       if (defined(install_only) && install_only) {

@@ -66,8 +66,48 @@ def _IsBinary(path):
   return file_tag == '\x7fELF'
 
 
+def _WriteBuildIdsTxt(binary_paths, ids_txt_path):
+  """Writes an index text file that maps build IDs to the paths of unstripped
+  binaries."""
+
+  READELF_FILE_PREFIX = 'File: '
+  READELF_BUILD_ID_PREFIX = 'Build ID: '
+
+  # List of binaries whose build IDs are awaiting processing by readelf.
+  # Entries are removed as readelf's output is parsed.
+  unprocessed_binary_paths = {os.path.basename(p): p for p in binary_paths}
+
+  with open(ids_txt_path, 'w') as ids_file:
+    readelf_stdout = subprocess.check_output(
+        ['readelf', '-n'] + map(_GetStrippedPath, binary_paths))
+
+    if len(binary_paths) == 1:
+      # Readelf won't report a binary's path if only one was provided to the
+      # tool.
+      binary_shortname = binary_paths[0]
+    else:
+      binary_shortname = None
+
+    for line in readelf_stdout.split('\n'):
+      line = line.strip()
+
+      if line.startswith(READELF_FILE_PREFIX):
+        binary_shortname = os.path.basename(line[len(READELF_FILE_PREFIX):])
+        assert binary_shortname in unprocessed_binary_paths
+
+      elif line.startswith(READELF_BUILD_ID_PREFIX):
+        build_id = line[len(READELF_BUILD_ID_PREFIX):]
+        ids_file.write(build_id + ' ' +
+                       unprocessed_binary_paths[binary_shortname])
+        del unprocessed_binary_paths[binary_shortname]
+
+  # Did readelf forget anything? Make sure that all binaries are accounted for.
+  assert not unprocessed_binary_paths
+
+
 def BuildManifest(args):
-  with open(args.output_path, 'w') as manifest, \
+  binaries = []
+  with open(args.manifest_path, 'w') as manifest, \
        open(args.depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed.
@@ -94,6 +134,7 @@ def BuildManifest(args):
     excluded_files_set = set(args.exclude_file)
     for current_file in expanded_files:
       if _IsBinary(current_file):
+        binaries.append(current_file)
         current_file = _GetStrippedPath(current_file)
 
       in_package_path = MakePackagePath(current_file,
@@ -116,14 +157,14 @@ def BuildManifest(args):
       raise Exception('Could not locate executable inside runtime_deps.')
 
     # Write meta/package manifest file.
-    with open(os.path.join(os.path.dirname(args.output_path), 'package'), 'w') \
-        as package_json:
+    with open(os.path.join(os.path.dirname(args.manifest_path), 'package'),
+              'w') as package_json:
       json.dump({'version': '0', 'name': args.app_name}, package_json)
       manifest.write('meta/package=%s\n' %
                    os.path.relpath(package_json.name, args.out_dir))
 
     # Write component manifest file.
-    cmx_file_path = os.path.join(os.path.dirname(args.output_path),
+    cmx_file_path = os.path.join(os.path.dirname(args.manifest_path),
                                  args.app_name + '.cmx')
     with open(cmx_file_path, 'w') as component_manifest_file:
       component_manifest = {
@@ -137,10 +178,14 @@ def BuildManifest(args):
                       os.path.relpath(cmx_file_path, args.out_dir)))
 
     depfile.write(
-        "%s: %s" % (os.path.relpath(args.output_path, args.out_dir),
+        "%s: %s" % (os.path.relpath(args.manifest_path, args.out_dir),
                     " ".join([os.path.relpath(f, args.out_dir)
                               for f in expanded_files])))
+
+    _WriteBuildIdsTxt(binaries, args.build_ids_file)
+
   return 0
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -157,7 +202,10 @@ def main():
       help='Path to write GN deps file.')
   parser.add_argument('--exclude-file', action='append', default=[],
       help='Package-relative file path to exclude from the package.')
-  parser.add_argument('--output-path', required=True, help='Output file path.')
+  parser.add_argument('--manifest-path', required=True,
+                      help='Manifest output path.')
+  parser.add_argument('--build-ids-file', required=True,
+                      help='Debug symbol index path.')
 
   args = parser.parse_args()
 
