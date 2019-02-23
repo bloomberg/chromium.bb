@@ -41,6 +41,46 @@
    "dns_api_endpoint": "argon2021.ct.googleapis.com"
   },
   {
+   "description": "Google 'Xenon2019' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/XyDwqzXL9i2GTjMYkqaEyiRL0Dy9sHq/BTebFdshbvCaXXEh6mjUK0Yy+AsDcI4MpzF1l7Kded2MD5zi420gA==",
+   "url": "ct.googleapis.com/logs/xenon2019/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2019.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2020' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZU75VqjyzSTgFZKAnWg1QeYfFFIRZTMK7q3kWWZsmHhQdrBYnHRZ3OA4kUeUx0JN+xX+dSgt1ruqUhhl7jOvmw==",
+   "url": "ct.googleapis.com/logs/xenon2020/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2020.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2021' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER+1MInu8Q39BwDZ5Rp9TwXhwm3ktvgJzpk/r7dDgGk7ZacMm3ljfcoIvP1E72T8jvyLT1bvdapylajZcTH6W5g==",
+   "url": "ct.googleapis.com/logs/xenon2021/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2021.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2022' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+WS9FSxAYlCVEzg8xyGwOrmPonoV14nWjjETAIdZvLvukPzIWBMKv6tDNlQjpIHNrUcUt1igRPpqoKDXw2MeKw==",
+   "url": "ct.googleapis.com/logs/xenon2022/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2022.ct.googleapis.com"
+  },
+  {
    "description": "Google 'Aviator' log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1/TMabLkDpCjiupacAlP7xNi0I1JYP8bQFAHDG1xhtolSY1l4QgNRzRrvSe8liE+NPWHdjGxfx3JhTsN9x8/6Q==",
    "url": "ct.googleapis.com/aviator/",
