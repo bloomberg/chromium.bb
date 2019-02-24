@@ -49,6 +49,9 @@ PrefService* GetUserPrefService(const std::string& user_email) {
 
 std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
                                            ScreenLockState screen_lock_state) {
+  const bool is_smart_dim_enabled =
+      prefs->GetBoolean(prefs::kPowerSmartDimEnabled);
+
   power_manager::PowerManagementPolicy expected_policy;
   expected_policy.mutable_ac_delays()->set_screen_dim_ms(
       prefs->GetInteger(screen_lock_state == ScreenLockState::LOCKED
@@ -91,10 +94,17 @@ std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
       prefs->GetBoolean(prefs::kPowerUseAudioActivity));
   expected_policy.set_use_video_activity(
       prefs->GetBoolean(prefs::kPowerUseVideoActivity));
-  expected_policy.set_presentation_screen_dim_delay_factor(
-      prefs->GetDouble(prefs::kPowerPresentationScreenDimDelayFactor));
-  expected_policy.set_user_activity_screen_dim_delay_factor(
-      prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor));
+  if (is_smart_dim_enabled) {
+    // Screen-dim scaling factors are disabled by PowerPolicyController when
+    // smart-dimming is enabled.
+    expected_policy.set_presentation_screen_dim_delay_factor(1.0);
+    expected_policy.set_user_activity_screen_dim_delay_factor(1.0);
+  } else {
+    expected_policy.set_presentation_screen_dim_delay_factor(
+        prefs->GetDouble(prefs::kPowerPresentationScreenDimDelayFactor));
+    expected_policy.set_user_activity_screen_dim_delay_factor(
+        prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor));
+  }
   expected_policy.set_wait_for_initial_user_activity(
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity));
   expected_policy.set_force_nonzero_brightness_for_user_activity(

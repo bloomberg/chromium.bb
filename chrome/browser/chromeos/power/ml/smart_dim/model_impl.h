@@ -44,7 +44,8 @@ enum class SmartDimParameterResult {
   kSuccess = 0,
   kUndefinedError = 1,
   kParsingError = 2,
-  kMaxValue = kParsingError
+  kUseDefaultValue = 3,
+  kMaxValue = kUseDefaultValue
 };
 
 // Real implementation of SmartDimModel that predicts whether an upcoming screen
