@@ -3171,4 +3171,46 @@ TEST_F(SurfaceSynchronizationTest, ChildNotThrottledWhenParentBlocked2) {
   EXPECT_FALSE(child_surface6->HasActiveFrame());
 }
 
+// Tests that in cases where a pending-deletion surface (surface A) is
+// activated during anothother surface (surface B)'s deletion, we don't attempt
+// to delete surface A twice.
+TEST_F(SurfaceSynchronizationTest, SurfaceActivationDuringDeletion) {
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  // Child-initiated synchronization event:
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+
+  // Submit a CompositorFrame to |child_id1|.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Child 1 should not yet be active.
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+
+  // Submit a CompositorFrame to |child_id2|.
+  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Child 2 should not yet be active.
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_TRUE(child_surface2->HasPendingFrame());
+  EXPECT_FALSE(child_surface2->HasActiveFrame());
+
+  // Evict |child_id2|. both surfaces should be marked for deletion.
+  child_support1().EvictSurface(child_id1.local_surface_id());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id1));
+  EXPECT_TRUE(IsMarkedForDestruction(child_id2));
+
+  // Garbage collect to delete the above surfaces. This will activate
+  // |child_id2|, which will cause it to attempt re-deletion.
+  ExpireAllTemporaryReferencesAndGarbageCollect();
+
+  // Neither should still be marked for deletion.
+  EXPECT_FALSE(IsMarkedForDestruction(child_id1));
+  EXPECT_FALSE(IsMarkedForDestruction(child_id2));
+}
+
 }  // namespace viz
