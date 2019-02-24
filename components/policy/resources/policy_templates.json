@@ -8597,6 +8597,8 @@
 
           If this policy is unset, a default scale factor is used.
 
+          This policy only takes effect if the <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME">PowerSmartDimEnabled</ph> is disabled. Otherwise, this policy is ignored because the screen dim delay is deteremined by a machine-learning model.
+
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.''',
     },
     {
@@ -8655,6 +8657,8 @@
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
 
           If this policy is unset, a default scale factor is used.
+
+          This policy only takes effect if the <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME">PowerSmartDimEnabled</ph> policy is disabled. Otherwise, this policy is ignored because the screen dim delay is deteremined by a machine-learning model.
 
           The scale factor must be 100% or more.''',
     },

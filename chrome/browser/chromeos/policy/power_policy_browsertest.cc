@@ -335,11 +335,14 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
       pm::PowerManagementPolicy::DO_NOTHING);
   power_management_policy.set_lid_closed_action(
       pm::PowerManagementPolicy::DO_NOTHING);
-  power_management_policy.set_user_activity_screen_dim_delay_factor(3.0);
+  // Screen-dim scaling factors are disabled by PowerPolicyController when
+  // smart-dimming is enabled. Smart-dim is enabled when PowerSmartDimEnabled is
+  // set to true.
+  power_management_policy.set_user_activity_screen_dim_delay_factor(1.0);
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-  proto.mutable_login_screen_power_management()->
-      set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
+  proto.mutable_login_screen_power_management()
+      ->set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
   StoreAndReloadDevicePolicyAndWaitForLoginProfileChange();
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
@@ -362,6 +365,69 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
 
 // Verifies that legacy user policy is applied during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
+  pm::PowerManagementPolicy power_management_policy =
+      power_manager_client_->policy();
+  power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
+  power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
+  power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
+  power_management_policy.mutable_ac_delays()->set_idle_warning_ms(8000);
+  power_management_policy.mutable_ac_delays()->set_idle_ms(9000);
+  power_management_policy.mutable_battery_delays()->set_screen_dim_ms(1000);
+  power_management_policy.mutable_battery_delays()->set_screen_lock_ms(2000);
+  power_management_policy.mutable_battery_delays()->set_screen_off_ms(3000);
+  power_management_policy.mutable_battery_delays()->set_idle_warning_ms(4000);
+  power_management_policy.mutable_battery_delays()->set_idle_ms(5000);
+  power_management_policy.set_use_audio_activity(false);
+  power_management_policy.set_use_video_activity(false);
+  power_management_policy.set_ac_idle_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  power_management_policy.set_battery_idle_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  power_management_policy.set_lid_closed_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  // Screen-dim scaling factors are disabled by PowerPolicyController when
+  // smart-dimming is enabled. Smart-dim is enabled when PowerSmartDimEnabled is
+  // set to true.
+  power_management_policy.set_presentation_screen_dim_delay_factor(1.0);
+  power_management_policy.set_user_activity_screen_dim_delay_factor(1.0);
+  power_management_policy.set_wait_for_initial_user_activity(true);
+
+  user_policy_.payload().mutable_screendimdelayac()->set_value(5000);
+  user_policy_.payload().mutable_screenlockdelayac()->set_value(6000);
+  user_policy_.payload().mutable_screenoffdelayac()->set_value(7000);
+  user_policy_.payload().mutable_idlewarningdelayac()->set_value(8000);
+  user_policy_.payload().mutable_idledelayac()->set_value(9000);
+  user_policy_.payload().mutable_screendimdelaybattery()->set_value(1000);
+  user_policy_.payload().mutable_screenlockdelaybattery()->set_value(2000);
+  user_policy_.payload().mutable_screenoffdelaybattery()->set_value(3000);
+  user_policy_.payload().mutable_idlewarningdelaybattery()->set_value(4000);
+  user_policy_.payload().mutable_idledelaybattery()->set_value(5000);
+  user_policy_.payload().mutable_powermanagementusesaudioactivity()->set_value(
+      false);
+  user_policy_.payload().mutable_powermanagementusesvideoactivity()->set_value(
+      false);
+  user_policy_.payload().mutable_idleactionac()->set_value(
+      chromeos::PowerPolicyController::ACTION_STOP_SESSION);
+  user_policy_.payload().mutable_idleactionbattery()->set_value(
+      chromeos::PowerPolicyController::ACTION_STOP_SESSION);
+  user_policy_.payload().mutable_lidcloseaction()->set_value(
+      chromeos::PowerPolicyController::ACTION_STOP_SESSION);
+  user_policy_.payload().mutable_presentationscreendimdelayscale()->set_value(
+      300);
+  user_policy_.payload().mutable_useractivityscreendimdelayscale()->set_value(
+      300);
+  user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
+  StoreAndReloadUserPolicy();
+  // Spin the run loop to ensure ash sees pref change.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetDebugString(power_management_policy),
+            GetDebugString(power_manager_client_->policy()));
+}
+
+// Verifies that legacy user policy is applied during a session.
+// Same as SetLegacyUserPolicy above, except that smart-dim is disabled.
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
+                       SetLegacyUserPolicySmartDimDisabled) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
@@ -411,6 +477,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
   user_policy_.payload().mutable_useractivityscreendimdelayscale()->set_value(
       300);
   user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
+  // Disable smart-dim.
+  user_policy_.payload().mutable_powersmartdimenabled()->set_value(false);
   StoreAndReloadUserPolicy();
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
@@ -440,8 +508,11 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
       pm::PowerManagementPolicy::STOP_SESSION);
   power_management_policy.set_lid_closed_action(
       pm::PowerManagementPolicy::STOP_SESSION);
-  power_management_policy.set_presentation_screen_dim_delay_factor(3.0);
-  power_management_policy.set_user_activity_screen_dim_delay_factor(3.0);
+  // Screen-dim scaling factors are disabled by PowerPolicyController when
+  // smart-dimming is enabled. Smart-dim is enabled when PowerSmartDimEnabled is
+  // set to true.
+  power_management_policy.set_presentation_screen_dim_delay_factor(1.0);
+  power_management_policy.set_user_activity_screen_dim_delay_factor(1.0);
   power_management_policy.set_wait_for_initial_user_activity(true);
 
   // Set legacy policies which are expected to be ignored.
