@@ -686,6 +686,8 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       '/usr/lib/portage': '/usr/local/lib/portage',
       '/usr/lib/python-exec': '/usr/local/lib/python-exec',
       '/usr/lib/debug': '/usr/local/usr/lib/debug',
+      # Used by `file` and libmagic.so when the package is in /usr/local.
+      '/usr/share/misc/magic.mgc': '/usr/local/share/misc/magic.mgc',
   }
 
   @classmethod
