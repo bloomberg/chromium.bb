@@ -161,8 +161,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
 
   void SetSlotting(ShadowRootSlotting slotting);
   bool IsManualSlotting() {
-    return slotting_ ==
-           static_cast<unsigned short>(ShadowRootSlotting::kManual);
+    return slotting_ == static_cast<unsigned>(ShadowRootSlotting::kManual);
   }
 
   bool ContainsShadowRoots() const { return child_shadow_root_count_; }
@@ -191,13 +190,13 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   TraceWrapperMember<StyleSheetList> style_sheet_list_;
   Member<SlotAssignment> slot_assignment_;
   Member<ShadowRootV0> shadow_root_v0_;
-  unsigned short child_shadow_root_count_;
-  unsigned short type_ : 2;
-  unsigned short registered_with_parent_shadow_root_ : 1;
-  unsigned short delegates_focus_ : 1;
-  unsigned short slotting_ : 1;
-  unsigned short needs_distribution_recalc_ : 1;
-  unsigned short unused_ : 10;
+  uint16_t child_shadow_root_count_;
+  unsigned type_ : 2;
+  unsigned registered_with_parent_shadow_root_ : 1;
+  unsigned delegates_focus_ : 1;
+  unsigned slotting_ : 1;
+  unsigned needs_distribution_recalc_ : 1;
+  unsigned unused_ : 26;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowRoot);
 };

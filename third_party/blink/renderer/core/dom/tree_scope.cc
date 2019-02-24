@@ -512,7 +512,7 @@ Element* TreeScope::AdjustedElement(const Element& target) const {
   return nullptr;
 }
 
-unsigned short TreeScope::ComparePosition(const TreeScope& other_scope) const {
+uint16_t TreeScope::ComparePosition(const TreeScope& other_scope) const {
   if (other_scope == this)
     return Node::kDocumentPositionEquivalent;
 

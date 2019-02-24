@@ -124,7 +124,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   }
 
   bool IsInclusiveAncestorOf(const TreeScope&) const;
-  unsigned short ComparePosition(const TreeScope&) const;
+  uint16_t ComparePosition(const TreeScope&) const;
 
   const TreeScope* CommonAncestorTreeScope(const TreeScope& other) const;
   TreeScope* CommonAncestorTreeScope(TreeScope& other);

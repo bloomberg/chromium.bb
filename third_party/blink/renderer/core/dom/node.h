@@ -789,7 +789,7 @@ class CORE_EXPORT Node : public EventTarget {
     kTreatShadowTreesAsComposed
   };
 
-  unsigned short compareDocumentPosition(
+  uint16_t compareDocumentPosition(
       const Node*,
       ShadowTreesTreatment = kTreatShadowTreesAsDisconnected) const;
 
