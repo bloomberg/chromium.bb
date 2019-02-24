@@ -9204,7 +9204,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION" desc="Description in the dialog instructing the user to choose how they want to connect their security key with their computer, e.g. USB or Bluetooth.">
         Pick an option
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Menu item text. The user selects this to use a security key (an external physcial device for user authentication) connected to the computer over Bluetooth Low Energy.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Menu item text. The user selects this to use a security key (an external physical device for user authentication) connected to the computer over Bluetooth Low Energy.">
         Bluetooth security key
       </message>
       <message name="IDS_WEBAUTHN_TRANSPORT_USB" desc="Menu item text. The user selects this to use a security key (an external physical device for user authentication) plugged in to the USB port of the computer.">
@@ -9222,7 +9222,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN" desc="Menu item text. The user selects this to use a security key (an external physical device for user authentication) connected to the computer, or a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
         External security key or built-in sensor
       </message>
-      <message name="IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to plug in and activate (e.g. press a button on) their USB security key (an external physcial device for user authentication).">
+      <message name="IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to plug in and activate (e.g. press a button on) their USB security key (an external physical device for user authentication).">
         Plug in your security key and activate it
       </message>
       <message name="IDS_WEBAUTHN_USB_SUCCESS_TITLE" desc="Title of the dialog informing the user that Chrome detected that they activated (e.g. pressed a button on) an external physical device used for authentication.">
@@ -9321,16 +9321,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a different hardware-based authentication mechanism from what they have selected previously.">
         Choose another option
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_USB" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physcial device for user authentication) plugged in to the USB port of the computer.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_USB" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physical device for user authentication) plugged in to the USB port of the computer.">
         Verify via USB
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physcial device for user authentication) connected to the user's computer over Bluetooth Low Energy.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physical device for user authentication) connected to the user's computer over Bluetooth Low Energy.">
         Verify via Bluetooth
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Bluetooth security key (an external physcial device for user authentication connected over Bluetooth Low Energy) that they haven't used on this computer before.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Bluetooth security key (an external physical device for user authentication connected over Bluetooth Low Energy) that they haven't used on this computer before.">
         Add another Bluetooth security key
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_NFC" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physcial device for user authentication) connected to the computer over Near-Field Communication.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_NFC" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physical device for user authentication) connected to the computer over Near-Field Communication.">
         Verify via NFC
       </message>
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_INTERNAL" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
