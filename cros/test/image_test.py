@@ -688,6 +688,7 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       '/usr/lib/debug': '/usr/local/usr/lib/debug',
       # Used by `file` and libmagic.so when the package is in /usr/local.
       '/usr/share/misc/magic.mgc': '/usr/local/share/misc/magic.mgc',
+      '/usr/share/portage': '/usr/local/share/portage',
   }
 
   @classmethod
