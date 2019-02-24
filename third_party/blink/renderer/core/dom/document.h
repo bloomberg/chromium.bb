@@ -1760,7 +1760,7 @@ class CORE_EXPORT Document : public ContainerNode,
   using AttachedRangeSet = HeapHashSet<WeakMember<Range>>;
   AttachedRangeSet ranges_;
 
-  unsigned short listener_types_;
+  uint16_t listener_types_;
 
   MutationObserverOptions mutation_observer_types_;
 

@@ -1872,9 +1872,8 @@ void Node::setTextContent(const String& text) {
   NOTREACHED();
 }
 
-unsigned short Node::compareDocumentPosition(
-    const Node* other_node,
-    ShadowTreesTreatment treatment) const {
+uint16_t Node::compareDocumentPosition(const Node* other_node,
+                                       ShadowTreesTreatment treatment) const {
   if (other_node == this)
     return kDocumentPositionEquivalent;
 
@@ -1889,8 +1888,8 @@ unsigned short Node::compareDocumentPosition(
   // If either of start1 or start2 is null, then we are disconnected, since one
   // of the nodes is an orphaned attribute node.
   if (!start1 || !start2) {
-    unsigned short direction = (this > other_node) ? kDocumentPositionPreceding
-                                                   : kDocumentPositionFollowing;
+    uint16_t direction = (this > other_node) ? kDocumentPositionPreceding
+                                             : kDocumentPositionFollowing;
     return kDocumentPositionDisconnected |
            kDocumentPositionImplementationSpecific | direction;
   }
@@ -1935,8 +1934,8 @@ unsigned short Node::compareDocumentPosition(
   if (start1->isConnected() != start2->isConnected() ||
       (treatment == kTreatShadowTreesAsDisconnected &&
        start1->GetTreeScope() != start2->GetTreeScope())) {
-    unsigned short direction = (this > other_node) ? kDocumentPositionPreceding
-                                                   : kDocumentPositionFollowing;
+    uint16_t direction = (this > other_node) ? kDocumentPositionPreceding
+                                             : kDocumentPositionFollowing;
     return kDocumentPositionDisconnected |
            kDocumentPositionImplementationSpecific | direction;
   }
@@ -1954,8 +1953,8 @@ unsigned short Node::compareDocumentPosition(
 
   // If the two elements don't have a common root, they're not in the same tree.
   if (chain1[index1 - 1] != chain2[index2 - 1]) {
-    unsigned short direction = (this > other_node) ? kDocumentPositionPreceding
-                                                   : kDocumentPositionFollowing;
+    uint16_t direction = (this > other_node) ? kDocumentPositionPreceding
+                                             : kDocumentPositionFollowing;
     return kDocumentPositionDisconnected |
            kDocumentPositionImplementationSpecific | direction;
   }
