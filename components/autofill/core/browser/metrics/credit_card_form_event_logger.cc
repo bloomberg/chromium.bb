@@ -34,16 +34,14 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
 CreditCardFormEventLogger::~CreditCardFormEventLogger() = default;
 
 void CreditCardFormEventLogger::OnDidSelectMaskedServerCardSuggestion(
-    const base::TimeTicks& form_parsed_timestamp,
+    const FormStructure& form,
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
-  form_interactions_ukm_logger_->LogSelectedMaskedServerCard(
-      form_parsed_timestamp);
 
-  Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED);
+  Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED, form);
   if (!has_logged_masked_server_card_suggestion_selected_) {
     has_logged_masked_server_card_suggestion_selected_ = true;
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE);
+    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, form);
   }
 }
 
@@ -64,11 +62,11 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       /*is_for_credit_card=*/true, form, field);
 
   if (record_type == CreditCard::MASKED_SERVER_CARD)
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED);
+    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, form);
   else if (record_type == CreditCard::FULL_SERVER_CARD)
-    Log(FORM_EVENT_SERVER_SUGGESTION_FILLED);
+    Log(FORM_EVENT_SERVER_SUGGESTION_FILLED, form);
   else
-    Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED, form);
 
   if (!has_logged_suggestion_filled_) {
     has_logged_suggestion_filled_ = true;
@@ -78,17 +76,17 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
     logged_suggestion_filled_was_masked_server_card_ =
         record_type == CreditCard::MASKED_SERVER_CARD;
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
-      Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE);
+      Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
       if (has_logged_bank_name_available_) {
         Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
       }
     } else if (record_type == CreditCard::FULL_SERVER_CARD) {
-      Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE);
+      Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
       if (has_logged_bank_name_available_) {
         Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
       }
     } else {
-      Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE);
+      Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
     }
   }
 
@@ -110,27 +108,27 @@ void CreditCardFormEventLogger::RecordShowSuggestions() {
       base::UserMetricsAction("Autofill_ShowedCreditCardSuggestions"));
 }
 
-void CreditCardFormEventLogger::LogWillSubmitForm() {
+void CreditCardFormEventLogger::LogWillSubmitForm(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
-    Log(FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else if (logged_suggestion_filled_was_server_data_) {
-    Log(FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else {
-    Log(FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE, form);
   }
 }
 
-void CreditCardFormEventLogger::LogFormSubmitted() {
+void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
-    Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_server_data_) {
-    Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
-    Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, form);
   }
 }
 
@@ -152,7 +150,7 @@ void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
   if (!has_logged_suggestion_filled_) {
     const CreditCard credit_card =
         client_->GetFormDataImporter()->ExtractCreditCardFromForm(form);
-    Log(GetCardNumberStatusFormEvent(credit_card));
+    Log(GetCardNumberStatusFormEvent(credit_card), form);
   }
 }
 

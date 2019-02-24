@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -778,8 +779,6 @@ class AutofillMetrics {
     void LogSuggestionsShown(const FormStructure& form,
                              const AutofillField& field,
                              const base::TimeTicks& form_parsed_timestamp);
-    void LogSelectedMaskedServerCard(
-        const base::TimeTicks& form_parsed_timestamp);
     void LogDidFillSuggestion(int record_type,
                               bool is_for_credit_card,
                               const FormStructure& form,
@@ -802,6 +801,9 @@ class AutofillMetrics {
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
                           FormSignature form_signature);
+    void LogFormEvent(FormEvent form_event,
+                      const std::set<FormType>& form_types,
+                      const base::TimeTicks& form_parsed_timestamp);
 
     // Log whether the autofill decided to skip or to fill each
     // hidden/representational field.

@@ -35,9 +35,9 @@ void AddressFormEventLogger::OnDidFillSuggestion(
       /*is_for_for_credit_card=*/false, form, field);
 
   if (record_type == AutofillProfile::SERVER_PROFILE) {
-    Log(FORM_EVENT_SERVER_SUGGESTION_FILLED);
+    Log(FORM_EVENT_SERVER_SUGGESTION_FILLED, form);
   } else {
-    Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED, form);
   }
 
   if (!has_logged_suggestion_filled_) {
@@ -46,7 +46,8 @@ void AddressFormEventLogger::OnDidFillSuggestion(
         record_type == AutofillProfile::SERVER_PROFILE;
     Log(record_type == AutofillProfile::SERVER_PROFILE
             ? FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE
-            : FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE);
+            : FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE,
+        form);
   }
 
   base::RecordAction(
@@ -54,20 +55,23 @@ void AddressFormEventLogger::OnDidFillSuggestion(
 }
 
 void AddressFormEventLogger::OnDidSeeFillableDynamicForm(
-    AutofillSyncSigninState sync_state) {
+    AutofillSyncSigninState sync_state,
+    const FormStructure& form) {
   sync_state_ = sync_state;
-  Log(FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM);
+  Log(FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, form);
 }
 
-void AddressFormEventLogger::OnDidRefill(AutofillSyncSigninState sync_state) {
+void AddressFormEventLogger::OnDidRefill(AutofillSyncSigninState sync_state,
+                                         const FormStructure& form) {
   sync_state_ = sync_state;
-  Log(FORM_EVENT_DID_DYNAMIC_REFILL);
+  Log(FORM_EVENT_DID_DYNAMIC_REFILL, form);
 }
 
 void AddressFormEventLogger::OnSubsequentRefillAttempt(
-    AutofillSyncSigninState sync_state) {
+    AutofillSyncSigninState sync_state,
+    const FormStructure& form) {
   sync_state_ = sync_state;
-  Log(FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL);
+  Log(FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, form);
 }
 
 void AddressFormEventLogger::RecordPollSuggestions() {

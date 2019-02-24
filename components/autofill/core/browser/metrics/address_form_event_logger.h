@@ -25,11 +25,14 @@ class AddressFormEventLogger : public FormEventLoggerBase {
                            const AutofillField& field,
                            AutofillSyncSigninState sync_state);
 
-  void OnDidSeeFillableDynamicForm(AutofillSyncSigninState sync_state);
+  void OnDidSeeFillableDynamicForm(AutofillSyncSigninState sync_state,
+                                   const FormStructure& form);
 
-  void OnDidRefill(AutofillSyncSigninState sync_state);
+  void OnDidRefill(AutofillSyncSigninState sync_state,
+                   const FormStructure& form);
 
-  void OnSubsequentRefillAttempt(AutofillSyncSigninState sync_state);
+  void OnSubsequentRefillAttempt(AutofillSyncSigninState sync_state,
+                                 const FormStructure& form);
 
  protected:
   void RecordPollSuggestions() override;
