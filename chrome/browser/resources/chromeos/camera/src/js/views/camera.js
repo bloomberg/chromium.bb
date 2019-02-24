@@ -269,6 +269,7 @@ cca.views.Camera.prototype.endTake_ = function() {
   return Promise.resolve(this.take_).then((blob) => {
     if (blob && !blob.handled) {
       // Play a sound and save the result after a successful take.
+      cca.metrics.log(cca.metrics.Type.CAPTURE);
       blob.handled = true;
       var recordMode = this.recordMode;
       cca.sound.play(recordMode ? '#sound-rec-end' : '#sound-shutter');

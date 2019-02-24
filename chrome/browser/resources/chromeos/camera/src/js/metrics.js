@@ -22,12 +22,26 @@ cca.metrics = cca.metrics || {};
 cca.metrics.base_ = null;
 
 /**
+ * @type {analytics}
+ */
+var analytics = window['analytics'] || {};
+
+/**
+ * Fixes analytics.EventBuilder's dimension() method.
+ * @param {number} i
+ * @param {string} v
+ * @return {analytics.EventBuilder}
+ */
+analytics.EventBuilder.prototype.dimen = function(i, v) {
+  return this.dimension({index: i, value: v});
+};
+
+/**
  * Promise for Google Analytics tracker.
  * @type {Promise<analytics.Tracker>}
  * @private
  */
 cca.metrics.ga_ = (function() {
-  const analytics = window['analytics'] || {};
   const id = 'UA-134822711-2';  // TODO(yuli): Use prod id.
   const service = analytics.getService('chrome-camera-app');
 
@@ -55,7 +69,7 @@ cca.metrics.ga_ = (function() {
       var match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
       var osVer = match ? match[1] : '';
       cca.metrics.base_ = analytics.EventBuilder.builder()
-          .dimension(1, boardName).dimension(2, osVer);
+          .dimen(1, boardName).dimen(2, osVer);
     });
   };
 
@@ -67,23 +81,39 @@ cca.metrics.ga_ = (function() {
 })();
 
 /**
- * Tries to fetch the given states and returns the first existing state.
- * @param {Array<string>} states States to be fetched.
- * @return {string} The first existing state among the given states.
- * @private
- */
-cca.metrics.state_ = function(states) {
-  return states.find((state) => cca.state.get(state)) || '';
-};
-
-/**
  * Returns event builder for the metrics type: launch.
+ * @param {boolean} ackMigrate Whether acknowledged to migrate during launch.
  * @return {analytics.EventBuilder}
  * @private
  */
-cca.metrics.launchType_ = function() {
-  return cca.metrics.base_.category('launch').action('launch-app')
-      .label(cca.metrics.state_(['migrate-prompted']));
+cca.metrics.launchType_ = function(ackMigrate) {
+  return cca.metrics.base_.category('launch').action('start')
+      .label(ackMigrate ? 'ack-migrate' : '');
+};
+
+/**
+ * Returns event builder for the metrics type: capture.
+ * @param {number=} time Time in minutes for capture-video.
+ * @return {analytics.EventBuilder}
+ * @private
+ */
+cca.metrics.captureType_ = function(time) {
+  var condState = (states, cond) => {
+    // Return the first existing state among the given states only if there is
+    // no gate condition or the condition is met.
+    const prerequisite = !cond || cca.state.get(cond);
+    return prerequisite && states.find((state) => cca.state.get(state)) || '';
+  };
+
+  return cca.metrics.base_.category('capture')
+      .action(cca.state.get('record-mode') ? 'capture-video' : 'capture-photo')
+      .label('')  // TODO(yuli): Add camera facing-mode.
+      .dimen(3, condState(['sound']))
+      .dimen(4, condState(['mirror']))
+      .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
+      .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
+      .dimen(7, condState(['mic'], 'record-mode'))
+      .value(time || 0);
 };
 
 /**
@@ -92,6 +122,7 @@ cca.metrics.launchType_ = function() {
  */
 cca.metrics.Type = {
   LAUNCH: cca.metrics.launchType_,
+  CAPTURE: cca.metrics.captureType_,
 };
 
 /**
