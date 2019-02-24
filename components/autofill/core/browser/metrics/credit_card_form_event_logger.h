@@ -43,7 +43,7 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   }
 
   void OnDidSelectMaskedServerCardSuggestion(
-      const base::TimeTicks& form_parsed_timestamp,
+      const FormStructure& form,
       AutofillSyncSigninState sync_state);
 
   void SetBankNameAvailable();
@@ -62,8 +62,8 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   void RecordShowSuggestions() override;
 
   // FormEventLoggerBase virtual overrides.
-  void LogWillSubmitForm() override;
-  void LogFormSubmitted() override;
+  void LogWillSubmitForm(const FormStructure& form) override;
+  void LogFormSubmitted(const FormStructure& form) override;
   void LogUkmInteractedWithForm(FormSignature form_signature) override;
   void OnSuggestionsShownOnce() override;
   void OnSuggestionsShownSubmittedOnce(const FormStructure& form) override;

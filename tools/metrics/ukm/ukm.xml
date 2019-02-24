@@ -456,6 +456,29 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.FormEvent">
+  <owner>dlkumar@google.com</owner>
+  <summary>
+    Recorded when user interacted with autofill.
+  </summary>
+  <metric name="AutofillFormEvent">
+    <summary>
+      Logs autofill form events funnel. See |FormEvent|.
+    </summary>
+  </metric>
+  <metric name="FormTypes">
+    <summary>
+      Type of form. Stored as bitvector. A set ith bit implies enum FormType's
+      ith type was detected. Multiple types are possible.
+    </summary>
+  </metric>
+  <metric name="MillisecondsSinceFormParsed">
+    <summary>
+      Time since form parse.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.FormSubmitted">
   <owner>jiahuiguo@google.com</owner>
   <summary>
@@ -526,15 +549,6 @@ be describing additional metrics about the same event.
   <metric name="ServerRecordTypeCount">
     <summary>
       Number of masked and full server credit cards or server autofill profiles.
-    </summary>
-  </metric>
-</event>
-
-<event name="Autofill.SelectedMaskedServerCard">
-  <owner>jiahuiguo@google.com</owner>
-  <metric name="MillisecondsSinceFormParsed">
-    <summary>
-      Time since form parse.
     </summary>
   </metric>
 </event>

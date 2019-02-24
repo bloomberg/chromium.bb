@@ -34,13 +34,13 @@ FormEventLoggerBase::FormEventLoggerBase(
 FormEventLoggerBase::~FormEventLoggerBase() = default;
 
 void FormEventLoggerBase::OnDidInteractWithAutofillableForm(
-    FormSignature form_signature,
+    const FormStructure& form,
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
   if (!has_logged_interacted_) {
     has_logged_interacted_ = true;
-    LogUkmInteractedWithForm(form_signature);
-    Log(FORM_EVENT_INTERACTED_ONCE);
+    LogUkmInteractedWithForm(form.form_signature());
+    Log(FORM_EVENT_INTERACTED_ONCE, form);
   }
 }
 
@@ -58,17 +58,17 @@ void FormEventLoggerBase::OnDidPollSuggestions(
   }
 }
 
-void FormEventLoggerBase::OnDidParseForm() {
-  Log(FORM_EVENT_DID_PARSE_FORM);
+void FormEventLoggerBase::OnDidParseForm(const FormStructure& form) {
+  Log(FORM_EVENT_DID_PARSE_FORM, form);
   RecordParseForm();
 }
 
 void FormEventLoggerBase::OnPopupSuppressed(const FormStructure& form,
                                             const AutofillField& field) {
-  Log(FORM_EVENT_POPUP_SUPPRESSED);
+  Log(FORM_EVENT_POPUP_SUPPRESSED, form);
   if (!has_logged_popup_suppressed_) {
     has_logged_popup_suppressed_ = true;
-    Log(FORM_EVENT_POPUP_SUPPRESSED_ONCE);
+    Log(FORM_EVENT_POPUP_SUPPRESSED_ONCE, form);
   }
 }
 
@@ -81,17 +81,18 @@ void FormEventLoggerBase::OnDidShowSuggestions(
   form_interactions_ukm_logger_->LogSuggestionsShown(form, field,
                                                      form_parsed_timestamp);
 
-  Log(FORM_EVENT_SUGGESTIONS_SHOWN);
+  Log(FORM_EVENT_SUGGESTIONS_SHOWN, form);
   if (!has_logged_suggestions_shown_) {
     has_logged_suggestions_shown_ = true;
-    Log(FORM_EVENT_SUGGESTIONS_SHOWN_ONCE);
+    Log(FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, form);
     OnSuggestionsShownOnce();
   }
 
   RecordShowSuggestions();
 }
 
-void FormEventLoggerBase::OnWillSubmitForm(AutofillSyncSigninState sync_state) {
+void FormEventLoggerBase::OnWillSubmitForm(AutofillSyncSigninState sync_state,
+                                           const FormStructure& form) {
   sync_state_ = sync_state;
   // Not logging this kind of form if we haven't logged a user interaction.
   if (!has_logged_interacted_)
@@ -102,10 +103,10 @@ void FormEventLoggerBase::OnWillSubmitForm(AutofillSyncSigninState sync_state) {
     return;
   has_logged_will_submit_ = true;
 
-  LogWillSubmitForm();
+  LogWillSubmitForm(form);
 
   if (has_logged_suggestions_shown_) {
-    Log(FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE, form);
   }
 
   base::RecordAction(base::UserMetricsAction("Autofill_OnWillSubmitForm"));
@@ -124,18 +125,25 @@ void FormEventLoggerBase::OnFormSubmitted(bool force_logging,
     return;
   has_logged_submitted_ = true;
 
-  LogFormSubmitted();
+  LogFormSubmitted(form);
 
   if (has_logged_suggestions_shown_ || force_logging) {
-    Log(FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE);
+    Log(FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE, form);
     OnSuggestionsShownSubmittedOnce(form);
   }
 }
 
-void FormEventLoggerBase::Log(FormEvent event) const {
+void FormEventLoggerBase::Log(FormEvent event,
+                              const FormStructure& form) const {
   DCHECK_LT(event, NUM_FORM_EVENTS);
   std::string name("Autofill.FormEvents." + form_type_name_);
   base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+
+  // Log UKM metrics for only autofillable form events.
+  if (form.IsAutofillable()) {
+    form_interactions_ukm_logger_->LogFormEvent(event, form.GetFormTypes(),
+                                                form.form_parsed_timestamp());
+  }
 
   // Log again in a different histogram so that iframes can be analyzed on
   // their own.
@@ -161,23 +169,23 @@ void FormEventLoggerBase::Log(FormEvent event) const {
       NUM_FORM_EVENTS);
 }
 
-void FormEventLoggerBase::LogWillSubmitForm() {
+void FormEventLoggerBase::LogWillSubmitForm(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
-    Log(FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else if (logged_suggestion_filled_was_server_data_) {
-    Log(FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else {
-    Log(FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE, form);
   }
 }
 
-void FormEventLoggerBase::LogFormSubmitted() {
+void FormEventLoggerBase::LogFormSubmitted(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
-    Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_server_data_) {
-    Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
-    Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
+    Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, form);
   }
 }
 

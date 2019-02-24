@@ -36,13 +36,13 @@ class FormEventLoggerBase {
     local_record_type_count_ = local_record_type_count;
   }
 
-  void OnDidInteractWithAutofillableForm(FormSignature form_signature,
+  void OnDidInteractWithAutofillableForm(const FormStructure& form,
                                          AutofillSyncSigninState sync_state);
 
   void OnDidPollSuggestions(const FormFieldData& field,
                             AutofillSyncSigninState sync_state);
 
-  void OnDidParseForm();
+  void OnDidParseForm(const FormStructure& form);
 
   void OnPopupSuppressed(const FormStructure& form, const AutofillField& field);
 
@@ -51,7 +51,8 @@ class FormEventLoggerBase {
                             const base::TimeTicks& form_parsed_timestamp,
                             AutofillSyncSigninState sync_state);
 
-  void OnWillSubmitForm(AutofillSyncSigninState sync_state);
+  void OnWillSubmitForm(AutofillSyncSigninState sync_state,
+                        const FormStructure& form);
 
   void OnFormSubmitted(bool force_logging,
                        AutofillSyncSigninState sync_state,
@@ -60,14 +61,14 @@ class FormEventLoggerBase {
  protected:
   virtual ~FormEventLoggerBase();
 
-  void Log(FormEvent event) const;
+  void Log(FormEvent event, const FormStructure& form) const;
 
   virtual void RecordPollSuggestions() = 0;
   virtual void RecordParseForm() = 0;
   virtual void RecordShowSuggestions() = 0;
 
-  virtual void LogWillSubmitForm();
-  virtual void LogFormSubmitted();
+  virtual void LogWillSubmitForm(const FormStructure& form);
+  virtual void LogFormSubmitted(const FormStructure& form);
 
   // Only used for UKM backward compatibility since it depends on IsCreditCard.
   // TODO (crbug.com/925913): Remove IsCreditCard from UKM logs amd replace with
