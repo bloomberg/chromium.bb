@@ -3183,14 +3183,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
           <div aria-label='not'>
             not scrollable
           </div>
-          <div style='width:10px; overflow:scroll' aria-label='x'>
-              scrollable in x
-            </div>
-          <div style='height:10px; overflow:scroll' aria-label='y'>
-            scrollable in y
+          <div style='width:100px; overflow:auto' aria-label='x'>
+              <div style='width:200px; height:100px'></div>
           </div>
-          <div style='width:10px; height:10px; overflow:scroll' aria-label='xy'>
-            scrollable in x and y
+          <div style='height:100px; overflow:auto' aria-label='y'>
+              <div style='width:100px; height:200px'></div>
           </div>
         </body>
       </html>
@@ -3204,10 +3201,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
     double size_vertical;
   };
   double error = 0.01f;
-  std::vector<ScrollTestData> all_expected = {{"not", false, false, 0, 0},
-                                              {"x", true, false, 12.65, 0},
-                                              {"y", false, true, 0, 28.57},
-                                              {"xy", true, true, 12.65, 9.34}};
+  std::vector<ScrollTestData> all_expected = {{"not", false, false, 0.0, 0.0},
+                                              {"x", true, false, 50.0, 0.0},
+                                              {"y", false, true, 0.0, 50.0}};
   for (auto& expected : all_expected) {
     BrowserAccessibility* browser_accessibility =
         FindNode(ax::mojom::Role::kGenericContainer, expected.node_name);
