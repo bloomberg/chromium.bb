@@ -523,10 +523,12 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
   // If our height is auto, make sure that our returned height is unaffected by
   // earlier layouts by returning the shrink-to-fit size.
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
+    LayoutUnit available_size =
+        ContentLogicalWidth() - child.MarginLogicalWidth();
     MinMaxSize sizes{child.MinPreferredLogicalWidth(),
                      child.MaxPreferredLogicalWidth()};
-    return sizes.ShrinkToFit(ContentLogicalWidth() -
-                             child.MarginLogicalWidth());
+    return child.ConstrainLogicalWidthByMinMax(
+        sizes.ShrinkToFit(available_size), available_size, this);
   }
 
   return child.LogicalWidth();
