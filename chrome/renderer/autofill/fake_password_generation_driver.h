@@ -28,20 +28,12 @@ class FakePasswordGenerationDriver
 
   void Flush();
 
-  bool called_automatic_generation_status_changed_true() const {
-    return called_automatic_generation_status_changed_true_;
-  }
-
   bool called_generation_available_for_form() const {
     return called_generation_available_for_form_;
   }
 
   bool called_password_generation_rejected_by_typing() const {
     return called_password_generation_rejected_by_typing_;
-  }
-
-  void reset_called_automatic_generation_status_changed_true() {
-    called_automatic_generation_status_changed_true_ = false;
   }
 
   void reset_called_generation_available_for_form() {
@@ -54,6 +46,11 @@ class FakePasswordGenerationDriver
 
   // TODO(crbug.com/851021): move all the methods to GMock.
   // autofill::mojom::PasswordGenerationDriver:
+  MOCK_METHOD2(
+      AutomaticGenerationStatusChanged,
+      void(bool,
+           const base::Optional<
+               autofill::password_generation::PasswordGenerationUIData>&));
   MOCK_METHOD1(PresaveGeneratedPassword,
                void(const autofill::PasswordForm& password_form));
   MOCK_METHOD1(PasswordNoLongerGenerated,
@@ -64,18 +61,8 @@ class FakePasswordGenerationDriver
 
  private:
   // autofill::mojom::PasswordManagerClient:
-  void AutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data)
-      override;
-
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
-
   void PasswordGenerationRejectedByTyping() override;
-
-  // Records whether AutomaticGenerationStatusChanged(true) gets called.
-  bool called_automatic_generation_status_changed_true_ = false;
 
   // Records whether GenerationAvailableForForm() gets called.
   bool called_generation_available_for_form_ = false;
