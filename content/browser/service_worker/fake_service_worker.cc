@@ -101,7 +101,7 @@ void FakeServiceWorker::DispatchCookieChangeEvent(
     const net::CanonicalCookie& cookie,
     ::network::mojom::CookieChangeCause cause,
     DispatchCookieChangeEventCallback callback) {
-  helper_->OnCookieChangeEventStub(cookie, cause, std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchFetchEvent(
