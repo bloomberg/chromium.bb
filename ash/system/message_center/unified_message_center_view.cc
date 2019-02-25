@@ -286,7 +286,6 @@ void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
-  ScrollToTarget();
   Layout();
 
   if (GetWidget() && !GetWidget()->IsClosed())
@@ -372,6 +371,9 @@ void UnifiedMessageCenterView::OnWillChangeFocus(views::View* before,
 
 void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
                                                 views::View* now) {
+  if (message_list_view_->is_deleting_removed_notifications())
+    return;
+
   OnMessageCenterScrolled();
 }
 

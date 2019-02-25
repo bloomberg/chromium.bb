@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -144,7 +143,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->scroller_->contents();
   }
 
-  StackingNotificationCounterView* GetStackingCounter() {
+  views::View* GetStackingCounter() {
     return message_center_view()->stacking_counter_;
   }
 
@@ -154,6 +153,27 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
 
   views::View* GetStackingCounterClearAllButton() {
     return message_center_view()->stacking_counter_->clear_all_button_;
+  }
+
+  message_center::MessageView* ToggleFocusToMessageView(int index,
+                                                        bool reverse) {
+    auto* focus_manager = message_center_view()->GetFocusManager();
+    if (!focus_manager)
+      return nullptr;
+
+    message_center::MessageView* focused_message_view = nullptr;
+    const int max_focus_toggles = 30;
+    for (int i = 0; i < max_focus_toggles; ++i) {
+      focus_manager->AdvanceFocus(reverse);
+      auto* focused_view = focus_manager->GetFocusedView();
+      // The MessageView is wrapped in container view in the MessageList.
+      if (focused_view->parent() == GetMessageListView()->child_at(index)) {
+        focused_message_view =
+            static_cast<message_center::MessageView*>(focused_view);
+        break;
+      }
+    }
+    return focused_message_view;
   }
 
   TestUnifiedMessageCenterView* message_center_view() {

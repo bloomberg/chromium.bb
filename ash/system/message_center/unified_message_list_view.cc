@@ -483,9 +483,12 @@ void UnifiedMessageListView::DeleteRemovedNotifications() {
       removed_views.push_back(view);
   }
 
-  for (auto* view : removed_views) {
-    model_->RemoveNotificationExpanded(view->GetNotificationId());
-    delete view;
+  {
+    base::AutoReset<bool> auto_reset(&is_deleting_removed_notifications_, true);
+    for (auto* view : removed_views) {
+      model_->RemoveNotificationExpanded(view->GetNotificationId());
+      delete view;
+    }
   }
 
   UpdateBorders();
