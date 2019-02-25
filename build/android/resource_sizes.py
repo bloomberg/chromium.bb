@@ -421,7 +421,7 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
 
     if group is java_code and is_shared_apk:
       # Updates are compiled using quicken, but system image uses speed-profile.
-      extracted_size = uncompressed_size * speed_profile_dex_multiplier
+      extracted_size = int(uncompressed_size * speed_profile_dex_multiplier)
       total_install_size_android_go += extracted_size
       report_func('InstallBreakdownGo', group.name + ' size',
                   actual_size + extracted_size, 'bytes')
