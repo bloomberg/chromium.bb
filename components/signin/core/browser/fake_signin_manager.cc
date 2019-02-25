@@ -47,13 +47,6 @@ void FakeSigninManager::SignIn(const std::string& gaia_id,
   OnExternalSigninCompleted(username);
 }
 
-void FakeSigninManager::ForceSignOut() {
-  // SigninClients should always allow sign-out for
-  // |FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TESTS|.
-  SignOut(signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
-          signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
 void FakeSigninManager::OnSignoutDecisionReached(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,

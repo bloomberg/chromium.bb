@@ -499,7 +499,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
 // Test that the user signing in results in firing of the IdentityManager
 // observer callback and the IdentityManager's state being updated.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
-  signin_manager()->ForceSignOut();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnPrimaryAccountSetCallback(
@@ -526,7 +526,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
 // Test that the user signing out results in firing of the IdentityManager
 // observer callback and the IdentityManager's state being updated.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
-  signin_manager()->ForceSignOut();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
   base::RunLoop run_loop;
@@ -537,12 +537,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
 
   // Sign the user out and check that the IdentityManager responds
   // appropriately.
-  base::RunLoop run_loop2;
-  identity_manager_observer()->SetOnPrimaryAccountClearedCallback(
-      run_loop2.QuitClosure());
-
-  signin_manager()->ForceSignOut();
-  run_loop2.Run();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   CoreAccountInfo primary_account_from_cleared_callback =
       identity_manager_observer()->PrimaryAccountFromClearedCallback();
@@ -562,7 +557,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
 // Test that the primary account's ID remains tracked by the IdentityManager
 // after signing in even after having removed the account without signing out.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
-  signin_manager()->ForceSignOut();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
   base::RunLoop run_loop;
@@ -598,12 +593,7 @@ TEST_F(IdentityManagerTest, HasPrimaryAccount) {
 #if !defined(OS_CHROMEOS)
   // Signing out should cause IdentityManager to recognize that there is no
   // longer a primary account.
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountClearedCallback(
-      run_loop.QuitClosure());
-
-  signin_manager()->ForceSignOut();
-  run_loop.Run();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 #endif
 }
@@ -1457,7 +1447,7 @@ TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
 TEST_F(
     IdentityManagerTest,
     IdentityManagerGivesConsistentValuesFromSigninManagerObserverNotificationOfSignIn) {
-  signin_manager()->ForceSignOut();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   base::RunLoop run_loop;
   TestSigninManagerObserver signin_manager_observer(signin_manager());
@@ -1497,7 +1487,7 @@ TEST_F(
   RecreateIdentityManager();
   signin_manager_observer.set_identity_manager(identity_manager());
 
-  signin_manager()->ForceSignOut();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   run_loop.Run();
 
   CoreAccountInfo primary_account_from_signout_callback =
@@ -1619,11 +1609,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
 TEST_F(
     IdentityManagerTest,
     CallbackSentOnSecondaryAccountRefreshTokenUpdateWithValidTokenWhenNoPrimaryAccount) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountClearedCallback(
-      run_loop.QuitClosure());
-  signin_manager()->ForceSignOut();
-  run_loop.Run();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   AccountInfo expected_account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail2);
@@ -1639,11 +1625,7 @@ TEST_F(
 TEST_F(
     IdentityManagerTest,
     CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidTokenWhenNoPrimaryAccount) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountClearedCallback(
-      run_loop.QuitClosure());
-  signin_manager()->ForceSignOut();
-  run_loop.Run();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   AccountInfo expected_account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail2);
@@ -1661,11 +1643,7 @@ TEST_F(
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenRemovalWhenNoPrimaryAccount) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountClearedCallback(
-      run_loop.QuitClosure());
-  signin_manager()->ForceSignOut();
-  run_loop.Run();
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
   AccountInfo expected_account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail2);

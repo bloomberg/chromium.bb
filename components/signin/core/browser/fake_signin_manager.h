@@ -36,8 +36,6 @@ class FakeSigninManager : public SigninManager {
 
   void SignIn(const std::string& gaia_id, const std::string& username);
 
-  void ForceSignOut();
-
  protected:
   void OnSignoutDecisionReached(
       signin_metrics::ProfileSignout signout_source_metric,
