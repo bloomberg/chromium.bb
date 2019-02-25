@@ -74,6 +74,7 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
       pref_service->GetDictionary(prefs::kWebShareVisitedTargets);
 
   std::vector<WebShareTarget> sufficiently_engaged_targets;
+  sufficiently_engaged_targets.reserve(share_targets_dict->size());
   for (const auto& it : *share_targets_dict) {
     GURL manifest_url(it.first);
     // This should not happen, but if the prefs file is corrupted, it might, so
@@ -92,6 +93,10 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
     share_target_dict->GetString("name", &name);
     std::string action;
     share_target_dict->GetString("action", &action);
+    std::string method;
+    share_target_dict->GetString("method", &method);
+    std::string enctype;
+    share_target_dict->GetString("enctype", &enctype);
     std::string text;
     share_target_dict->GetString("text", &text);
     std::string title;
@@ -99,9 +104,41 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
     std::string url;
     share_target_dict->GetString("url", &url);
 
+    std::vector<WebShareTargetFiles> files;
+    const base::ListValue* files_list = nullptr;
+    share_target_dict->GetList("files", &files_list);
+    if (files_list) {
+      files.reserve(files_list->GetSize());
+      for (const base::Value& entry : files_list->GetList()) {
+        const base::DictionaryValue* file_dict;
+        entry.GetAsDictionary(&file_dict);
+        // This should not happen, but if the prefs file is corrupted, it might,
+        // so don't (D)CHECK, just continue gracefully.
+        if (!file_dict)
+          continue;
+
+        std::string entry_name;
+        file_dict->GetString("name", &entry_name);
+        if (entry_name.empty())
+          continue;
+
+        std::vector<std::string> accept;
+        const base::ListValue* accept_list = nullptr;
+        file_dict->GetList("accept", &accept_list);
+        if (accept_list) {
+          accept.reserve(accept_list->GetSize());
+          for (const base::Value& accept_string : accept_list->GetList()) {
+            accept.push_back(accept_string.GetString());
+          }
+        }
+        files.emplace_back(std::move(entry_name), std::move(accept));
+      }
+    }
+
     sufficiently_engaged_targets.emplace_back(
         std::move(manifest_url), std::move(name), GURL(std::move(action)),
-        std::move(text), std::move(title), std::move(url));
+        std::move(method), std::move(enctype), std::move(text),
+        std::move(title), std::move(url), std::move(files));
   }
 
   return sufficiently_engaged_targets;
