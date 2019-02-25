@@ -487,51 +487,6 @@
     "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
-    "prefix": "outofblink-cors-ns",
-    "base": "external/wpt/fetch",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "external/wpt/http",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "external/wpt/xhr",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "http/tests/fetch",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "http/tests/navigation",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "http/tests/security",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
-    "prefix": "outofblink-cors-ns",
-    "base": "http/tests/xmlhttprequest",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
-  },
-  {
     "prefix": "presentation",
     "base": "receiver",
     "args": ["--force-presentation-receiver-for-testing"]
@@ -633,64 +588,54 @@
     "args": ["--enable-features=NetworkService"]
   },
   {
-    "prefix": "disabled-service-worker-servicification",
-    "base": "http/tests/serviceworker",
-    "args": ["--disable-features=ServiceWorkerServicification,NetworkService"]
-  },
-  {
-    "prefix": "disabled-service-worker-servicification",
-    "base": "external/wpt/service-workers/service-worker",
-    "args": ["--disable-features=ServiceWorkerServicification,NetworkService"]
-  },
-  {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/classic-data-worker-fetch",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/module-data-worker-import",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/module-worker-top-level",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/worker-request",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/resource-timing",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/upgrade-insecure-requests",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "fast/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch,NetworkService"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
