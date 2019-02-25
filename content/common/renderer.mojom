@@ -159,6 +159,16 @@ struct UpdateScrollbarThemeParams {
   bool scroll_view_rubber_banding;
 };
 
+enum RenderProcessState {
+  kVisible,
+  // Hidden render processes can still be foregrounded. For example, a hidden
+  // renderer playing audio would be foregrounded.
+  kHidden,
+  // Refers to a renderer that is hidden and running at background process
+  // priority.
+  kBackgrounded,
+};
+
 // The primordial Channel-associated interface implemented by a render process.
 // This should be used for implementing browser-to-renderer control messages
 // which need to retain FIFO with respect to legacy IPC messages.
@@ -242,8 +252,8 @@ interface Renderer {
   PurgePluginListCache(bool reload_pages);
 
 
-  // Tells the renderer process to enter or leave background mode.
-  SetProcessBackgrounded(bool background);
+  // Tells the renderer process of a change in visibility or background state.
+  SetProcessState(RenderProcessState process_state);
 
   // Tells the scheduler about "keep-alive" state which can be due to:
   // service workers, shared workers, or fetch keep-alive.

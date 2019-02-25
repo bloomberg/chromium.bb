@@ -160,7 +160,9 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
     NOTREACHED();
   }
   void PurgePluginListCache(bool reload_pages) override { NOTREACHED(); }
-  void SetProcessBackgrounded(bool backgrounded) override { NOTREACHED(); }
+  void SetProcessState(mojom::RenderProcessState process_state) override {
+    NOTREACHED();
+  }
   void SetSchedulerKeepActive(bool keep_active) override { NOTREACHED(); }
   void ProcessPurgeAndSuspend() override { NOTREACHED(); }
   void SetIsLockedToSite() override { NOTREACHED(); }

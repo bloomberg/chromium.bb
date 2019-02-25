@@ -145,7 +145,6 @@
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "skia/ext/skia_memory_dump_provider.h"
-#include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -752,12 +751,6 @@ void RenderThreadImpl::Init() {
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(registry.get());
-
-  is_backgrounded_ = blink::kLaunchingProcessIsBackgrounded;
-
-  // In single process the single process is all there is.
-  widget_count_ = 0;
-  hidden_widget_count_ = 0;
 
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
 
@@ -1653,33 +1646,27 @@ void RenderThreadImpl::SetSchedulerKeepActive(bool keep_active) {
   main_thread_scheduler_->SetSchedulerKeepActive(keep_active);
 }
 
-void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
-  main_thread_scheduler_->SetRendererBackgrounded(backgrounded);
-  if (backgrounded) {
-    needs_to_record_first_active_paint_ = false;
-    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
-                       base::Unretained(this), "5min",
-                       process_foregrounded_count_),
-        base::TimeDelta::FromMinutes(5));
-    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
-                       base::Unretained(this), "10min",
-                       process_foregrounded_count_),
-        base::TimeDelta::FromMinutes(10));
-    GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
-                       base::Unretained(this), "15min",
-                       process_foregrounded_count_),
-        base::TimeDelta::FromMinutes(15));
-    was_backgrounded_time_ = base::TimeTicks::Now();
-  } else {
-    process_foregrounded_count_++;
+void RenderThreadImpl::SetProcessState(
+    mojom::RenderProcessState process_state) {
+  DCHECK(process_state_ != process_state);
+
+  if (process_state_ == mojom::RenderProcessState::kBackgrounded ||
+      (!process_state_.has_value() &&
+       process_state != mojom::RenderProcessState::kBackgrounded)) {
+    OnRendererForegrounded();
   }
-  is_backgrounded_ = backgrounded;
+
+  if (process_state == mojom::RenderProcessState::kVisible) {
+    OnRendererVisible();
+  } else if (process_state_ == mojom::RenderProcessState::kVisible ||
+             !process_state_.has_value()) {
+    OnRendererHidden();
+  }
+
+  if (process_state == mojom::RenderProcessState::kBackgrounded)
+    OnRendererBackgrounded();
+
+  process_state_ = process_state;
 }
 
 void RenderThreadImpl::ProcessPurgeAndSuspend() {
@@ -1701,6 +1688,9 @@ void RenderThreadImpl::ProcessPurgeAndSuspend() {
     return;
 
   purge_and_suspend_memory_metrics_ = memory_metrics;
+
+  // Use of Unretained(this) is safe because |this| has the same lifetime as a
+  // renderer process.
   GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
@@ -2383,39 +2373,8 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider(
 }
 
 bool RenderThreadImpl::RendererIsHidden() const {
-  return widget_count_ > 0 && hidden_widget_count_ == widget_count_;
-}
-
-void RenderThreadImpl::WidgetCreated() {
-  bool renderer_was_hidden = RendererIsHidden();
-  widget_count_++;
-  if (renderer_was_hidden)
-    OnRendererVisible();
-}
-
-void RenderThreadImpl::WidgetDestroyed() {
-  // TODO(rmcilroy): Remove the restriction that destroyed widgets must be
-  // unhidden before WidgetDestroyed is called.
-  DCHECK_GT(widget_count_, 0);
-  DCHECK_GT(widget_count_, hidden_widget_count_);
-  widget_count_--;
-  if (RendererIsHidden())
-    OnRendererHidden();
-}
-
-void RenderThreadImpl::WidgetHidden() {
-  DCHECK_LT(hidden_widget_count_, widget_count_);
-  hidden_widget_count_++;
-  if (RendererIsHidden())
-    OnRendererHidden();
-}
-
-void RenderThreadImpl::WidgetRestored() {
-  bool renderer_was_hidden = RendererIsHidden();
-  DCHECK_GT(hidden_widget_count_, 0);
-  hidden_widget_count_--;
-  if (renderer_was_hidden)
-    OnRendererVisible();
+  return process_state_ == mojom::RenderProcessState::kHidden ||
+         process_state_ == mojom::RenderProcessState::kBackgrounded;
 }
 
 void RenderThreadImpl::OnRendererHidden() {
@@ -2432,6 +2391,39 @@ void RenderThreadImpl::OnRendererVisible() {
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   main_thread_scheduler_->SetRendererHidden(false);
+}
+
+bool RenderThreadImpl::RendererIsBackgrounded() const {
+  return process_state_ == mojom::RenderProcessState::kBackgrounded;
+}
+
+void RenderThreadImpl::OnRendererBackgrounded() {
+  main_thread_scheduler_->SetRendererBackgrounded(true);
+  needs_to_record_first_active_paint_ = false;
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                     base::Unretained(this), "5min",
+                     process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(5));
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                     base::Unretained(this), "10min",
+                     process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(10));
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                     base::Unretained(this), "15min",
+                     process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(15));
+  was_backgrounded_time_ = base::TimeTicks::Now();
+}
+
+void RenderThreadImpl::OnRendererForegrounded() {
+  main_thread_scheduler_->SetRendererBackgrounded(false);
+  process_foregrounded_count_++;
 }
 
 void RenderThreadImpl::ReleaseFreeMemory() {
