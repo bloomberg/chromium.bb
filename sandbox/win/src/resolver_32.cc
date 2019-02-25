@@ -46,7 +46,7 @@ struct InternalThunk {
     opcodes_6 = 0xc35a;
     extra_argument = 0;
     interceptor_function = 0;
-  };
+  }
   ULONG opcodes_1;  // = 0x5208ec83
   ULONG opcodes_2;  // = 0x0c24548b
   ULONG opcodes_3;  // = 0x08245489

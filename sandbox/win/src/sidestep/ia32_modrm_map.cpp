@@ -89,4 +89,4 @@ const ModrmEntry MiniDisassembler::s_ia32_modrm_map_[] = {
   /* r/m == 111 */ { false, false, OS_ZERO },
 };
 
-};  // namespace sidestep
+}  // namespace sidestep

@@ -1156,4 +1156,4 @@ const OpcodeTable MiniDisassembler::s_ia32_opcode_map_[]={
   /* 24 */ {s_opcode_byte_after_0fc7, 3, 0x07, 0, 0x01}
 };
 
-};  // namespace sidestep
+}  // namespace sidestep

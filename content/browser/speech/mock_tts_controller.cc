@@ -56,7 +56,7 @@ class MockTtsController : public TtsController {
 
   TtsEngineDelegate* GetTtsEngineDelegate() override { return nullptr; }
 
-  void SetTtsPlatform(TtsPlatform* tts_platform) override{};
+  void SetTtsPlatform(TtsPlatform* tts_platform) override {}
 
   int QueueSize() override { return 0; }
 
