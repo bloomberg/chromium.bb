@@ -68,7 +68,7 @@ public class ContextualSearchPanelMetrics {
      * @param reason The reason for the state change.
      * @param profile The current {@link Profile}.
      */
-    public void onPanelStateChanged(PanelState fromState, PanelState toState,
+    public void onPanelStateChanged(@PanelState int fromState, @PanelState int toState,
             @StateChangeReason int reason, Profile profile) {
         // Note: the logging within this function includes the promo, unless specifically
         // excluded.
@@ -368,7 +368,7 @@ public class ContextualSearchPanelMetrics {
      * @return Whether a new contextual search is starting.
      */
     private boolean isStartingNewContextualSearch(
-            PanelState toState, @StateChangeReason int reason) {
+            @PanelState int toState, @StateChangeReason int reason) {
         return toState == PanelState.PEEKED
                 && (reason == StateChangeReason.TEXT_SELECT_TAP
                         || reason == StateChangeReason.TEXT_SELECT_LONG_PRESS);
@@ -381,8 +381,8 @@ public class ContextualSearchPanelMetrics {
      * @param isStartingSearch Whether a new contextual search is starting.
      * @return Whether a contextual search is ending.
      */
-    private boolean isEndingContextualSearch(PanelState fromState, PanelState toState,
-            boolean isStartingSearch) {
+    private boolean isEndingContextualSearch(
+            @PanelState int fromState, @PanelState int toState, boolean isStartingSearch) {
         return isOngoingContextualSearch(fromState)
                 && (toState == PanelState.CLOSED || isStartingSearch);
     }
@@ -391,8 +391,7 @@ public class ContextualSearchPanelMetrics {
      * @param fromState The state the panel is transitioning from.
      * @return Whether there is an ongoing contextual search.
      */
-    private boolean isOngoingContextualSearch(PanelState fromState) {
+    private boolean isOngoingContextualSearch(@PanelState int fromState) {
         return fromState != PanelState.UNDEFINED && fromState != PanelState.CLOSED;
     }
 }
-
