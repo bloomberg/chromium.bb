@@ -203,6 +203,7 @@ _CONFIG = [
 
             # Selection bounds.
             'cc::LayerSelection',
+            'cc::LayerSelectionBound',
             'gfx::SelectionBound',
 
             # cc::Layers.
