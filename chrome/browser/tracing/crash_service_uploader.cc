@@ -118,7 +118,7 @@ void TraceCrashServiceUploader::OnURLLoaderUploadProgress(uint64_t current,
   if (progress_callback_.is_null())
     return;
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(progress_callback_, current, total));
+                           base::BindOnce(progress_callback_, current, total));
 }
 
 void TraceCrashServiceUploader::DoUpload(
@@ -134,9 +134,9 @@ void TraceCrashServiceUploader::DoUpload(
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::Bind(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
-                 base::Unretained(this), file_contents, upload_mode,
-                 upload_url_, base::Passed(std::move(metadata))));
+      base::BindOnce(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
+                     base::Unretained(this), file_contents, upload_mode,
+                     upload_url_, std::move(metadata)));
 }
 
 void TraceCrashServiceUploader::DoCompressOnBackgroundThread(

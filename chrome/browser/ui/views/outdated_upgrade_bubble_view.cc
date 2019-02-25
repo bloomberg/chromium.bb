@@ -124,7 +124,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
+        base::BindOnce(&google_update::ElevateIfNeededToReenableUpdates));
 #endif  // defined(OS_WIN)
   }
 

@@ -562,8 +562,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
   // it.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
-                 base::Unretained(this), ui::VKEY_LWIN),
+      base::BindOnce(&LoggedInSpokenFeedbackTest::SendKeyPress,
+                     base::Unretained(this), ui::VKEY_LWIN),
       base::TimeDelta::FromMilliseconds(200));
 
   EXPECT_EQ("Sticky mode enabled", speech_monitor_.GetNextUtterance());
@@ -578,8 +578,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
   // it.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
-                 base::Unretained(this), ui::VKEY_LWIN),
+      base::BindOnce(&LoggedInSpokenFeedbackTest::SendKeyPress,
+                     base::Unretained(this), ui::VKEY_LWIN),
       base::TimeDelta::FromMilliseconds(200));
 
   while ("Sticky mode disabled" != speech_monitor_.GetNextUtterance()) {

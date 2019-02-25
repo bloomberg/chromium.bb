@@ -246,9 +246,10 @@ void DidGetTPMInfoForUserOnUIThread(
   if (token_info.has_value() && token_info->slot != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
              << token_info->slot;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::Bind(&crypto::InitializeTPMForChromeOSUser,
-                                        username_hash, token_info->slot));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&crypto::InitializeTPMForChromeOSUser, username_hash,
+                       token_info->slot));
   } else {
     NOTREACHED() << "TPMTokenInfoGetter reported invalid token.";
   }
@@ -281,7 +282,7 @@ void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
+      base::BindOnce(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
 
 void StartNSSInitOnIOThread(const AccountId& account_id,
@@ -403,8 +404,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       DCHECK(!params->username_hash.empty());
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
-          base::Bind(&StartNSSInitOnIOThread, user->GetAccountId(),
-                     user->username_hash(), profile->GetPath()));
+          base::BindOnce(&StartNSSInitOnIOThread, user->GetAccountId(),
+                         user->username_hash(), profile->GetPath()));
 
       // Use the device-wide system key slot only if the user is affiliated on
       // the device.

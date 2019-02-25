@@ -279,8 +279,8 @@ void LocalExtensionCache::BackendCheckCacheStatus(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&LocalExtensionCache::OnCacheStatusChecked, local_cache,
-                 exists, callback));
+      base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked, local_cache,
+                     exists, callback));
 }
 
 void LocalExtensionCache::OnCacheStatusChecked(bool ready,
@@ -295,8 +295,8 @@ void LocalExtensionCache::OnCacheStatusChecked(bool ready,
   } else {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&LocalExtensionCache::CheckCacheStatus,
-                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::BindOnce(&LocalExtensionCache::CheckCacheStatus,
+                       weak_ptr_factory_.GetWeakPtr(), callback),
         cache_status_polling_delay_);
   }
 }
@@ -318,8 +318,8 @@ void LocalExtensionCache::BackendCheckCacheContents(
   BackendCheckCacheContentsInternal(cache_dir, cache_content.get());
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&LocalExtensionCache::OnCacheContentsChecked, local_cache,
-                 base::Passed(&cache_content), callback));
+      base::BindOnce(&LocalExtensionCache::OnCacheContentsChecked, local_cache,
+                     std::move(cache_content), callback));
 }
 
 // static
@@ -530,10 +530,11 @@ void LocalExtensionCache::BackendInstallCacheEntry(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&LocalExtensionCache::OnCacheEntryInstalled, local_cache, id,
-                 CacheItemInfo(version, expected_hash, info.last_modified,
-                               info.size, cached_crx_path),
-                 was_error, callback));
+      base::BindOnce(&LocalExtensionCache::OnCacheEntryInstalled, local_cache,
+                     id,
+                     CacheItemInfo(version, expected_hash, info.last_modified,
+                                   info.size, cached_crx_path),
+                     was_error, callback));
 }
 
 void LocalExtensionCache::OnCacheEntryInstalled(

@@ -84,7 +84,7 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
   if (!owner_key_util->ImportPublicKey(&public_key_data)) {
     scoped_refptr<PrivateKey> private_key;
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::Bind(callback, public_key, private_key));
+                             base::BindOnce(callback, public_key, private_key));
     return;
   }
   public_key = new PublicKey();
@@ -106,7 +106,7 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
         public_key->data(), public_slot.get()));
   }
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(callback, public_key, private_key));
+                           base::BindOnce(callback, public_key, private_key));
 }
 
 void ContinueLoadPrivateKeyOnIOThread(
@@ -710,8 +710,9 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
 
   bool rv = base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&LoadPrivateKeyOnIOThread, owner_key_util_,
-                 ProfileHelper::GetUserIdHashFromProfile(profile_), callback));
+      base::BindOnce(&LoadPrivateKeyOnIOThread, owner_key_util_,
+                     ProfileHelper::GetUserIdHashFromProfile(profile_),
+                     callback));
   if (!rv) {
     // IO thread doesn't exists in unit tests, but it's safe to use NSS from
     // BlockingPool in unit tests.

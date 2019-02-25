@@ -94,8 +94,8 @@ void PrepareAndSetFavicon(jbyte* icon_bytes,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&SetFaviconCallback, profile, node->url(), fake_icon_url,
-                 image_data, icon_type, &event));
+      base::BindOnce(&SetFaviconCallback, profile, node->url(), fake_icon_url,
+                     image_data, icon_type, &event));
   // TODO(aruslan): http://b/6397072 If possible - avoid using favicon service
   event.Wait();
 }

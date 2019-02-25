@@ -44,8 +44,9 @@ void CheckForUserRemovedLoginItemOnWorkerThread() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   if (!base::mac::CheckLoginItemStatus(NULL)) {
     // There's no LoginItem, so set the kUserRemovedLoginItem pref.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::Bind(SetUserRemovedLoginItemPrefOnUIThread));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(SetUserRemovedLoginItemPrefOnUIThread));
   }
 }
 
@@ -60,8 +61,9 @@ void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
       if (is_hidden) {
       // We already have a hidden login item, so set the kChromeCreatedLoginItem
       // flag.
-      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                               base::Bind(SetCreatedLoginItemPrefOnUIThread));
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(SetCreatedLoginItemPrefOnUIThread));
       }
       // LoginItem already exists - just exit.
       return;
@@ -77,7 +79,7 @@ void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
     // "Open At Login" via the dock if this happens.
     base::mac::AddToLoginItems(true);  // Hide on startup.
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::Bind(SetCreatedLoginItemPrefOnUIThread));
+                             base::BindOnce(SetCreatedLoginItemPrefOnUIThread));
   }
 }
 

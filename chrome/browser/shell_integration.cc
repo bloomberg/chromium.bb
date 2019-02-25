@@ -193,8 +193,8 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
   DefaultWebClientState state = CheckIsDefaultImpl();
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state,
-                 is_following_set_as_default));
+      base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this,
+                     state, is_following_set_as_default));
 }
 
 void DefaultWebClientWorker::SetAsDefault() {

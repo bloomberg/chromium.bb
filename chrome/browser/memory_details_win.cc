@@ -102,5 +102,5 @@ void MemoryDetails::CollectProcessData(
   // Finally return to the browser thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
+      base::BindOnce(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }

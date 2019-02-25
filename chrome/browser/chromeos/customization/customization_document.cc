@@ -642,8 +642,8 @@ void ServicesCustomizationDocument::OnSimpleLoaderComplete(
       num_retries_++;
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
-          base::Bind(&ServicesCustomizationDocument::StartFileFetch,
-                     weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&ServicesCustomizationDocument::StartFileFetch,
+                         weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(kRetriesDelayInSec));
       return;
     }

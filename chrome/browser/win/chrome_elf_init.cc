@@ -116,7 +116,7 @@ void InitializeChromeElf() {
   // inject after Chrome has started up.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&ReportSuccessfulBlocks),
+      base::BindOnce(&ReportSuccessfulBlocks),
       base::TimeDelta::FromSeconds(kBlacklistReportingDelaySec));
 
   // Make sure the early finch emergency "off switch" for

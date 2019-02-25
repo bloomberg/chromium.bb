@@ -175,7 +175,7 @@ void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
   }
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(callback, mac_address));
+                           base::BindOnce(callback, mac_address));
 }
 
 std::string GetRlzMachineId() {

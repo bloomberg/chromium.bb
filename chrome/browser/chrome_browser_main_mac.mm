@@ -68,7 +68,7 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::Bind(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
+      base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
 // Used for UMA; never alter existing values.

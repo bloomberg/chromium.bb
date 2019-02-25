@@ -97,7 +97,7 @@ void ExternalMetrics::RecordActionUI(const std::string& action_string) {
 void ExternalMetrics::RecordAction(const std::string& action) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExternalMetrics::RecordActionUI, this, action));
+      base::BindOnce(&ExternalMetrics::RecordActionUI, this, action));
 }
 
 void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
@@ -107,7 +107,7 @@ void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExternalMetrics::RecordCrashUI, this, crash_kind));
+      base::BindOnce(&ExternalMetrics::RecordCrashUI, this, crash_kind));
 }
 
 void ExternalMetrics::RecordHistogram(const metrics::MetricSample& sample) {

@@ -1043,9 +1043,9 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
     // be called before the response is being received. Furthermore, there is
     // no need to clear the offline bit since the error code should already
     // indicate that the offline page is not loaded.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&ClearOfflinePageData, delegate_->GetWebContentsGetter()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&ClearOfflinePageData,
+                                            delegate_->GetWebContentsGetter()));
     result = net::ERR_FAILED;
   }
 

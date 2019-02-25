@@ -310,8 +310,8 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
     // back on something other than the UI thread.
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&ThumbnailTabHelper::CleanUpFromThumbnailGeneration,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ThumbnailTabHelper::CleanUpFromThumbnailGeneration,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

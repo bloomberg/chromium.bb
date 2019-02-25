@@ -145,8 +145,9 @@ void ChromeRenderMessageFilter::OnAllowDatabase(
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&TabSpecificContentSettings::WebDatabaseAccessed,
-                 render_process_id_, render_frame_id, origin_url, !*allowed));
+      base::BindOnce(&TabSpecificContentSettings::WebDatabaseAccessed,
+                     render_process_id_, render_frame_id, origin_url,
+                     !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
@@ -159,9 +160,9 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
   // Record access to DOM storage for potential display in UI.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&TabSpecificContentSettings::DOMStorageAccessed,
-                 render_process_id_, render_frame_id, origin_url, local,
-                 !*allowed));
+      base::BindOnce(&TabSpecificContentSettings::DOMStorageAccessed,
+                     render_process_id_, render_frame_id, origin_url, local,
+                     !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
@@ -227,9 +228,9 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
     // Record access to file system for potential display in UI.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&ChromeRenderMessageFilter::FileSystemAccessedOnUIThread,
-                   render_process_id_, render_frame_id, origin_url, allowed,
-                   callback));
+        base::BindOnce(&ChromeRenderMessageFilter::FileSystemAccessedOnUIThread,
+                       render_process_id_, render_frame_id, origin_url, allowed,
+                       callback));
     return;
   }
 #endif
@@ -237,8 +238,9 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
   // Record access to file system for potential display in UI.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
-                 render_process_id_, render_frame_id, origin_url, !allowed));
+      base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
+                     render_process_id_, render_frame_id, origin_url,
+                     !allowed));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -286,8 +288,9 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&TabSpecificContentSettings::IndexedDBAccessed,
-                 render_process_id_, render_frame_id, origin_url, !*allowed));
+      base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
+                     render_process_id_, render_frame_id, origin_url,
+                     !*allowed));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

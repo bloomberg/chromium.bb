@@ -767,7 +767,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::Bind(&RecordLastRunAppBundlePath));
+                           base::BindOnce(&RecordLastRunAppBundlePath));
 
   // Makes "Services" menu items available.
   [self registerServicesMenuTypesTo:[notify object]];

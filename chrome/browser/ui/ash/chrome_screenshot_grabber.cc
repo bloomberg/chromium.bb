@@ -517,7 +517,7 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(EnsureLocalDirectoryExists, path, callback));
+      base::BindOnce(EnsureLocalDirectoryExists, path, callback));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(

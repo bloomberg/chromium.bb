@@ -209,8 +209,9 @@ void ExternalRegistryLoader::LoadOnBlockingThread() {
                         base::TimeTicks::Now() - start_time);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry,
-                 this, base::Passed(&prefs)));
+      base::BindOnce(
+          &ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry, this,
+          std::move(prefs)));
 }
 
 void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry(
@@ -282,8 +283,8 @@ void ExternalRegistryLoader::UpatePrefsOnBlockingThread() {
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWinUpdate",
                         base::TimeTicks::Now() - start_time);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&ExternalRegistryLoader::OnUpdated, this,
-                                      base::Passed(&prefs)));
+                           base::BindOnce(&ExternalRegistryLoader::OnUpdated,
+                                          this, base::Passed(&prefs)));
 }
 
 }  // namespace extensions

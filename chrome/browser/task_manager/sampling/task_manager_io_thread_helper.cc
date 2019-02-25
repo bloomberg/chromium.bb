@@ -34,8 +34,8 @@ IoThreadHelperManager::IoThreadHelperManager(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&TaskManagerIoThreadHelper::CreateInstance,
-                 std::move(result_callback)));
+      base::BindOnce(&TaskManagerIoThreadHelper::CreateInstance,
+                     std::move(result_callback)));
 }
 
 IoThreadHelperManager::~IoThreadHelperManager() {
@@ -47,7 +47,7 @@ IoThreadHelperManager::~IoThreadHelperManager() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&TaskManagerIoThreadHelper::DeleteInstance));
+      base::BindOnce(&TaskManagerIoThreadHelper::DeleteInstance));
 }
 
 // static
@@ -94,8 +94,8 @@ void TaskManagerIoThreadHelper::OnMultipleBytesTransferredIO() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(result_callback_,
-                 std::move(bytes_transferred_unordered_map_)));
+      base::BindOnce(result_callback_,
+                     std::move(bytes_transferred_unordered_map_)));
   bytes_transferred_unordered_map_.clear();
   DCHECK(bytes_transferred_unordered_map_.empty());
 }

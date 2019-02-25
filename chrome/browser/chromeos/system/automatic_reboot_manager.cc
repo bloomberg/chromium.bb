@@ -227,7 +227,7 @@ void AutomaticRebootManager::UpdateStatusChanged(
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::Bind(&SaveUpdateRebootNeededUptime));
+                           base::BindOnce(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
   have_update_reboot_needed_time_ = true;

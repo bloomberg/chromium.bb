@@ -377,14 +377,14 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(DoProcessNotificationResponse,
-                 static_cast<NotificationCommon::Operation>(
-                     operation.unsignedIntValue),
-                 static_cast<NotificationHandler::Type>(
-                     notification_type.unsignedIntValue),
-                 profile_id, [is_incognito boolValue],
-                 GURL(notification_origin), notification_id, action_index,
-                 base::nullopt /* reply */, true /* by_user */));
+      base::BindOnce(DoProcessNotificationResponse,
+                     static_cast<NotificationCommon::Operation>(
+                         operation.unsignedIntValue),
+                     static_cast<NotificationHandler::Type>(
+                         notification_type.unsignedIntValue),
+                     profile_id, [is_incognito boolValue],
+                     GURL(notification_origin), notification_id, action_index,
+                     base::nullopt /* reply */, true /* by_user */));
 }
 
 // static

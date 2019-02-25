@@ -164,10 +164,10 @@ void ExtensionAssetsManagerChromeOS::InstallExtension(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExtensionAssetsManagerChromeOS::CheckSharedExtension,
-                 extension->id(), extension->VersionString(),
-                 unpacked_extension_root, local_install_dir, profile,
-                 callback));
+      base::BindOnce(&ExtensionAssetsManagerChromeOS::CheckSharedExtension,
+                     extension->id(), extension->VersionString(),
+                     unpacked_extension_root, local_install_dir, profile,
+                     callback));
 }
 
 void ExtensionAssetsManagerChromeOS::UninstallExtension(
@@ -185,8 +185,9 @@ void ExtensionAssetsManagerChromeOS::UninstallExtension(
     // previous behavior that just do nothing in this case.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused,
-                   id, profile));
+        base::BindOnce(
+            &ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused, id,
+            profile));
   }
 }
 
@@ -351,8 +352,9 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtension(
       unpacked_extension_root, id, version, shared_install_dir);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone,
-                 id, version, shared_version_dir));
+      base::BindOnce(
+          &ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone, id,
+          version, shared_version_dir));
 }
 
 // static

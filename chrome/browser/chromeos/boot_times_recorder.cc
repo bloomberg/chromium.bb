@@ -220,8 +220,8 @@ bool BootTimesRecorder::Stats::UptimeDouble(double* result) const {
 void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
-                 base::Owned(new Stats(*this)), name));
+      base::BindOnce(&BootTimesRecorder::Stats::RecordStatsAsync,
+                     base::Owned(new Stats(*this)), name));
 }
 
 void BootTimesRecorder::Stats::RecordStatsWithCallback(
@@ -472,8 +472,8 @@ void BootTimesRecorder::AddMarker(std::vector<TimeMarker>* vector,
     // Note that it's safe to use an unretained pointer to the vector because
     // BootTimesRecorder's lifetime exceeds that of the UI thread message loop.
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::Bind(&BootTimesRecorder::AddMarker,
-                                        base::Unretained(vector), marker));
+                             base::BindOnce(&BootTimesRecorder::AddMarker,
+                                            base::Unretained(vector), marker));
   }
 }
 

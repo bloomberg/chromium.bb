@@ -69,7 +69,7 @@ void TtsMessageFilter::OnChannelClosing() {
   valid_ = false;
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&TtsMessageFilter::OnChannelClosingInUIThread, this));
+      base::BindOnce(&TtsMessageFilter::OnChannelClosingInUIThread, this));
 }
 
 bool TtsMessageFilter::Valid() {

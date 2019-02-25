@@ -409,8 +409,8 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(ProcessDiceHeaderUIThread, base::Passed(std::move(params)),
-                 response->GetWebContentsGetter()));
+      base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
+                     response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
