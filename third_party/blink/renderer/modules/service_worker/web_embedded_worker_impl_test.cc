@@ -67,9 +67,9 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   MockServiceWorkerContextClient() = default;
   ~MockServiceWorkerContextClient() override = default;
 
-  MOCK_METHOD0(WorkerReadyForInspection, void());
-  MOCK_METHOD0(WorkerContextFailedToStart, void());
-  MOCK_METHOD0(WorkerScriptLoaded, void());
+  MOCK_METHOD0(WorkerReadyForInspectionOnMainThread, void());
+  MOCK_METHOD0(WorkerContextFailedToStartOnMainThread, void());
+  MOCK_METHOD0(WorkerScriptLoadedOnMainThread, void());
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy) override {
     // In production code, ReadyToEvaluateScript() is called when
@@ -82,7 +82,7 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   }
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProvider() override {
+  CreateServiceWorkerNetworkProviderOnMainThread() override {
     return std::make_unique<FakeServiceWorkerNetworkProvider>();
   }
   void WorkerContextDestroyed() override { termination_event_.Signal(); }
@@ -163,30 +163,30 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   worker_->StartWorkerContext(start_data_);
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
   worker_->TerminateWorkerContext();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   start_data_.wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
   worker_->StartWorkerContext(start_data_);
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
   worker_->TerminateWorkerContext();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   // Load the shadow page.
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
@@ -196,7 +196,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Terminate before loading the script.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
   worker_->TerminateWorkerContext();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
@@ -205,7 +205,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
   // Load the shadow page.
   start_data_.pause_after_download_mode =
       WebEmbeddedWorkerStartData::kPauseAfterDownload;
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
@@ -215,12 +215,12 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Terminate before resuming after download.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
   worker_->TerminateWorkerContext();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
@@ -236,7 +236,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       script_url, response, error);
   start_data_.script_url = script_url;
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
@@ -246,8 +246,8 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(0);
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
@@ -261,7 +261,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
 #endif
 TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
   // Load the shadow page.
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
@@ -271,7 +271,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
   // This is called on the worker thread.
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
@@ -283,7 +283,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Terminate the running worker thread.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(0);
   worker_->TerminateWorkerContext();
   mock_client_->WaitUntilThreadTermination();
 }
@@ -297,7 +297,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
 #endif
 TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
   // Load the shadow page.
-  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspectionOnMainThread()).Times(1);
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
@@ -309,7 +309,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   testing::Mock::VerifyAndClearExpectations(mock_client_);
 
@@ -325,7 +325,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
   testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Terminate the running worker thread.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(0);
   worker_->TerminateWorkerContext();
   mock_client_->WaitUntilThreadTermination();
 }
