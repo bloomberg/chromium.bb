@@ -29,7 +29,6 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
   // This CHECK ensures that wrapper tracing is not started from scopes
   // that forbid GC execution, e.g., constructors.
   CHECK(ThreadState::Current());
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   PerformCleanup();
 
   CHECK(!tracing_in_progress_);
@@ -43,14 +42,12 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
 
 void ScriptWrappableMarkingVisitor::EnterFinalPause(EmbedderStackState) {
   CHECK(ThreadState::Current());
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   ThreadState::Current()->DisableWrapperTracingBarrier();
   ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate(), this);
 }
 
 void ScriptWrappableMarkingVisitor::TraceEpilogue() {
   CHECK(ThreadState::Current());
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
   ScriptWrappableVisitorVerifier verifier(ThreadState::Current());
@@ -180,7 +177,6 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(double deadline_in_ms) {
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
   CHECK(ThreadState::Current());
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   CHECK(tracing_in_progress_);
   TimeTicks deadline =
       TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);

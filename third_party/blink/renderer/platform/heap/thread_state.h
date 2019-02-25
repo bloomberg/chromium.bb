@@ -167,56 +167,12 @@ class PLATFORM_EXPORT ThreadState final
     kSweeping,
   };
 
-  // The NoAllocationScope class is used in debug mode to catch unwanted
-  // allocations. E.g. allocations during GC.
-  class NoAllocationScope final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit NoAllocationScope(ThreadState* state) : state_(state) {
-      state_->EnterNoAllocationScope();
-    }
-    ~NoAllocationScope() { state_->LeaveNoAllocationScope(); }
-
-   private:
-    ThreadState* state_;
-  };
-
-  class SweepForbiddenScope final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit SweepForbiddenScope(ThreadState* state) : state_(state) {
-      DCHECK(!state_->sweep_forbidden_);
-      state_->sweep_forbidden_ = true;
-    }
-    ~SweepForbiddenScope() {
-      DCHECK(state_->sweep_forbidden_);
-      state_->sweep_forbidden_ = false;
-    }
-
-   private:
-    ThreadState* state_;
-  };
-
-  // Used to denote when access to unmarked objects is allowed but we shouldn't
-  // ressurect it by making new references (e.g. during weak processing and pre
-  // finalizer).
-  class ObjectResurrectionForbiddenScope final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit ObjectResurrectionForbiddenScope(ThreadState* state)
-        : state_(state) {
-      state_->EnterObjectResurrectionForbiddenScope();
-    }
-    ~ObjectResurrectionForbiddenScope() {
-      state_->LeaveObjectResurrectionForbiddenScope();
-    }
-
-   private:
-    ThreadState* state_;
-  };
+  class AtomicPauseScope;
+  class GCForbiddenScope;
+  class MainThreadGCForbiddenScope;
+  class NoAllocationScope;
+  class ObjectResurrectionForbiddenScope;
+  class SweepForbiddenScope;
 
   // Returns true if some thread (possibly the current thread) may be doing
   // incremental marking. If false is returned, the *current* thread is
@@ -326,20 +282,11 @@ class PLATFORM_EXPORT ThreadState final
   }
   void EnterNoAllocationScope() { no_allocation_count_++; }
   void LeaveNoAllocationScope() { no_allocation_count_--; }
-  bool IsWrapperTracingForbidden() { return IsMixinInConstruction(); }
-  bool IsGCForbidden() const {
-    return gc_forbidden_count_ || IsMixinInConstruction();
-  }
+  bool IsGCForbidden() const { return gc_forbidden_count_; }
   void EnterGCForbiddenScope() { gc_forbidden_count_++; }
   void LeaveGCForbiddenScope() {
     DCHECK_GT(gc_forbidden_count_, 0u);
     gc_forbidden_count_--;
-  }
-  bool IsMixinInConstruction() const { return mixins_being_constructed_count_; }
-  void EnterMixinConstructionScope() { mixins_being_constructed_count_++; }
-  void LeaveMixinConstructionScope() {
-    DCHECK_GT(mixins_being_constructed_count_, 0u);
-    mixins_being_constructed_count_--;
   }
   bool SweepForbidden() const { return sweep_forbidden_; }
   bool IsObjectResurrectionForbidden() const {
@@ -374,49 +321,6 @@ class PLATFORM_EXPORT ThreadState final
 
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
-
-  class MainThreadGCForbiddenScope final {
-    STACK_ALLOCATED();
-
-   public:
-    MainThreadGCForbiddenScope()
-        : thread_state_(ThreadState::MainThreadState()) {
-      thread_state_->EnterGCForbiddenScope();
-    }
-    ~MainThreadGCForbiddenScope() { thread_state_->LeaveGCForbiddenScope(); }
-
-   private:
-    ThreadState* const thread_state_;
-  };
-
-  class GCForbiddenScope final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit GCForbiddenScope(ThreadState* thread_state)
-        : thread_state_(thread_state) {
-      thread_state_->EnterGCForbiddenScope();
-    }
-    ~GCForbiddenScope() { thread_state_->LeaveGCForbiddenScope(); }
-
-   private:
-    ThreadState* const thread_state_;
-  };
-
-  // Used to mark when we are in an atomic pause for GC.
-  class AtomicPauseScope final {
-   public:
-    explicit AtomicPauseScope(ThreadState* thread_state)
-        : thread_state_(thread_state), gc_forbidden_scope(thread_state) {
-      thread_state_->EnterAtomicPause();
-    }
-    ~AtomicPauseScope() { thread_state_->LeaveAtomicPause(); }
-
-   private:
-    ThreadState* const thread_state_;
-    ScriptForbiddenScope script_forbidden_scope;
-    GCForbiddenScope gc_forbidden_scope;
-  };
 
   void FlushHeapDoesNotContainCacheIfNeeded();
 
@@ -543,6 +447,16 @@ class PLATFORM_EXPORT ThreadState final
   // Same semantic as |incremental_marking_flag_|.
   static AtomicEntryFlag wrapper_tracing_flag_;
 
+  static WTF::ThreadSpecific<ThreadState*>* thread_specific_;
+
+  // We can't create a static member of type ThreadState here because it will
+  // introduce global constructor and destructor. We would like to manage
+  // lifetime of the ThreadState attached to the main thread explicitly instead
+  // and still use normal constructor and destructor for the ThreadState class.
+  // For this we reserve static storage for the main ThreadState and lazily
+  // construct ThreadState in it using placement new.
+  static uint8_t main_thread_state_storage_[];
+
   ThreadState();
   ~ThreadState() override;
 
@@ -630,9 +544,6 @@ class PLATFORM_EXPORT ThreadState final
 
   void ReportMemoryToV8();
 
-
-  friend class BlinkGCObserver;
-
   // Adds the given observer to the ThreadState's observer list. This doesn't
   // take ownership of the argument. The argument must not be null. The argument
   // must not be registered before calling this.
@@ -643,17 +554,6 @@ class PLATFORM_EXPORT ThreadState final
   // The argument must be registered before calling this.
   void RemoveObserver(BlinkGCObserver*);
 
-  static WTF::ThreadSpecific<ThreadState*>* thread_specific_;
-
-  // We can't create a static member of type ThreadState here
-  // because it will introduce global constructor and destructor.
-  // We would like to manage lifetime of the ThreadState attached
-  // to the main thread explicitly instead and still use normal
-  // constructor and destructor for the ThreadState class.
-  // For this we reserve static storage for the main ThreadState
-  // and lazily construct ThreadState in it using placement new.
-  static uint8_t main_thread_state_storage_[];
-
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
@@ -661,12 +561,14 @@ class PLATFORM_EXPORT ThreadState final
   intptr_t* start_of_stack_;
   intptr_t* end_of_stack_;
 
-  bool sweep_forbidden_;
-  size_t no_allocation_count_;
-  size_t gc_forbidden_count_;
-  size_t mixins_being_constructed_count_;
-  bool object_resurrection_forbidden_;
-  bool in_atomic_pause_;
+  bool object_resurrection_forbidden_ = false;
+  bool in_atomic_pause_ = false;
+  bool sweep_forbidden_ = false;
+  bool wrapper_tracing_ = false;
+  bool incremental_marking_ = false;
+  bool should_optimize_for_load_time_ = false;
+  size_t no_allocation_count_ = 0;
+  size_t gc_forbidden_count_ = 0;
 
   TimeDelta next_incremental_marking_step_duration_;
   TimeDelta previous_incremental_marking_time_left_;
@@ -674,8 +576,6 @@ class PLATFORM_EXPORT ThreadState final
   GCState gc_state_;
   GCPhase gc_phase_;
   BlinkGC::GCReason reason_for_scheduled_gc_;
-
-  bool should_optimize_for_load_time_;
 
   using PreFinalizerCallback = bool (*)(void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
@@ -689,8 +589,6 @@ class PLATFORM_EXPORT ThreadState final
   void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*);
   void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
   void (*perform_cleanup_)(v8::Isolate*);
-  bool wrapper_tracing_;
-  bool incremental_marking_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;
@@ -721,7 +619,7 @@ class PLATFORM_EXPORT ThreadState final
   };
   GCData current_gc_data_;
 
-  // Needs to set up visitor for testing purposes.
+  friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
   template <typename T>
