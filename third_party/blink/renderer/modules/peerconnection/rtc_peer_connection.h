@@ -67,6 +67,7 @@ class RTCDTMFSender;
 class RTCDataChannel;
 class RTCDataChannelInit;
 class RTCIceCandidateInitOrRTCIceCandidate;
+class RTCIceTransport;
 class RTCOfferOptions;
 class RTCPeerConnectionTest;
 class RTCRtpReceiver;
@@ -410,6 +411,11 @@ class MODULES_EXPORT RTCPeerConnection final
       rtc::scoped_refptr<webrtc::DtlsTransportInterface>,
       const webrtc::DtlsTransportInformation& info);
 
+  // Creates or updates the RTCIceTransport object corresponding to the given
+  // webrtc::IceTransportInterface object.
+  RTCIceTransport* CreateOrUpdateIceTransport(
+      rtc::scoped_refptr<webrtc::IceTransportInterface>);
+
   // Update the |receiver->streams()| to the streams indicated by |stream_ids|,
   // adding to |remove_list| and |add_list| accordingly.
   // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
@@ -492,6 +498,9 @@ class MODULES_EXPORT RTCPeerConnection final
   // when they are no longer in use.
   HeapHashMap<webrtc::DtlsTransportInterface*, WeakMember<RTCDtlsTransport>>
       dtls_transports_by_native_transport_;
+  // The same kind of map for webrtc::IceTransports.
+  HeapHashMap<webrtc::IceTransportInterface*, WeakMember<RTCIceTransport>>
+      ice_transports_by_native_transport_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 

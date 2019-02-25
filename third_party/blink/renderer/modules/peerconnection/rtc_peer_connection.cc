@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
@@ -2436,10 +2437,28 @@ RTCDtlsTransport* RTCPeerConnection::CreateOrUpdateDtlsTransport(
     return transport;
   }
   RTCDtlsTransport* transport = MakeGarbageCollected<RTCDtlsTransport>(
-      GetExecutionContext(), native_transport);
+      GetExecutionContext(), native_transport,
+      CreateOrUpdateIceTransport(native_transport->ice_transport()));
   dtls_transports_by_native_transport_.insert(native_transport.get(),
                                               transport);
   transport->ChangeState(information);
+  return transport;
+}
+
+RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
+    rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport) {
+  if (!ice_transport.get()) {
+    return nullptr;
+  }
+  auto transport_locator =
+      ice_transports_by_native_transport_.find(ice_transport);
+  if (transport_locator != ice_transports_by_native_transport_.end()) {
+    return transport_locator->value;
+  }
+  // TODO(crbug.com/907849): Create a functional ICE transport object.
+  // This is a dummy.
+  RTCIceTransport* transport = RTCIceTransport::Create(GetExecutionContext());
+  ice_transports_by_native_transport_.insert(ice_transport.get(), transport);
   return transport;
 }
 
@@ -3061,6 +3080,7 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(transceivers_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(dtls_transports_by_native_transport_);
+  visitor->Trace(ice_transports_by_native_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);

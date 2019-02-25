@@ -41,7 +41,8 @@ class MODULES_EXPORT RTCDtlsTransport final
  public:
   RTCDtlsTransport(
       ExecutionContext* context,
-      rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_context);
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_context,
+      RTCIceTransport* ice_transport);
   ~RTCDtlsTransport() override;
 
   // rtc_dtls_transport.idl
@@ -73,6 +74,7 @@ class MODULES_EXPORT RTCDtlsTransport final
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport_;
   std::unique_ptr<DtlsTransportProxy> proxy_;
+  Member<RTCIceTransport> ice_transport_;
 };
 
 }  // namespace blink
