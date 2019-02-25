@@ -5,12 +5,9 @@
 #ifndef NET_THIRD_PARTY_QUIC_TEST_TOOLS_PACKET_DROPPING_TEST_WRITER_H_
 #define NET_THIRD_PARTY_QUIC_TEST_TOOLS_PACKET_DROPPING_TEST_WRITER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstdint>
 #include <list>
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_alarm.h"

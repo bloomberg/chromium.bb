@@ -29,9 +29,6 @@
 #define SO_RXQ_OVFL 40
 #endif
 
-// TODO(rtenneti): Add support for MMSG_MORE.
-#define MMSG_MORE 0
-
 namespace quic {
 
 namespace {

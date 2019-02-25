@@ -9,7 +9,6 @@
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
-#include "net/tools/epoll_server/epoll_server.h"
 
 namespace quic {
 

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/proto/cached_network_parameters.pb.h"
@@ -254,7 +253,7 @@ class QuicSimpleServerSessionTest
     // Create and inject a STOP_SENDING frame. In GOOGLE QUIC, receiving a
     // RST_STREAM frame causes a two-way close. For IETF QUIC, RST_STREAM causes
     // a one-way close.
-    if (connection_->transport_version() != QUIC_VERSION_99) {
+    if (!IsVersion99()) {
       // Only needed for version 99/IETF QUIC.
       return;
     }

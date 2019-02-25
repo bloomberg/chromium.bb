@@ -91,7 +91,6 @@ TEST_F(HttpEncoderTest, SerializeSettingsFrame) {
   SettingsFrame settings;
   settings.values[3] = 2;
   settings.values[6] = 5;
-  // clang-format off
   char output[] = {
       // length
       0x06,
@@ -108,7 +107,6 @@ TEST_F(HttpEncoderTest, SerializeSettingsFrame) {
       // content
       0x05,
   };
-  // clang-format on
   std::unique_ptr<char[]> buffer;
   uint64_t length = encoder_.SerializeSettingsFrame(settings, &buffer);
   EXPECT_EQ(QUIC_ARRAYSIZE(output), length);

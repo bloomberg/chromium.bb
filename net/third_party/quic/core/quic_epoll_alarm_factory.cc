@@ -4,8 +4,6 @@
 
 #include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
 
-#include "net/tools/epoll_server/epoll_server.h"
-
 namespace quic {
 
 namespace {
@@ -68,10 +66,9 @@ QuicArenaScopedPtr<QuicAlarm> QuicEpollAlarmFactory::CreateAlarm(
     QuicConnectionArena* arena) {
   if (arena != nullptr) {
     return arena->New<QuicEpollAlarm>(epoll_server_, std::move(delegate));
-  } else {
+  }
     return QuicArenaScopedPtr<QuicAlarm>(
         new QuicEpollAlarm(epoll_server_, std::move(delegate)));
-  }
 }
 
 }  // namespace quic

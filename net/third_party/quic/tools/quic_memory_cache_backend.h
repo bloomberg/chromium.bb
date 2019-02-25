@@ -56,7 +56,6 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
 
    protected:
     void HandleXOriginalUrl();
-    void HandlePushUrls(const std::vector<QuicStringPiece>& push_urls);
     QuicStringPiece RemoveScheme(QuicStringPiece url);
 
     QuicString file_name_;
@@ -69,7 +68,6 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
    private:
     QuicStringPiece host_;
     QuicStringPiece path_;
-    QuicMemoryCacheBackend* cache_;
   };
 
   QuicMemoryCacheBackend();

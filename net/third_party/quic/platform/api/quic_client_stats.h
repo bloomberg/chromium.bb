@@ -5,6 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_CLIENT_STATS_H_
 #define NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_CLIENT_STATS_H_
 
+#include <string>
 #include "net/third_party/quic/platform/impl/quic_client_stats_impl.h"
 
 namespace quic {
