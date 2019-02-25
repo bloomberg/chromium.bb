@@ -39,7 +39,6 @@
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -68,7 +67,6 @@ namespace blink {
 class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
-class ComputedAccessibleNode;
 class ContentSecurityPolicy;
 class Document;
 class Editor;
@@ -103,7 +101,6 @@ class SharedBuffer;
 class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
-class WebComputedAXTree;
 class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
@@ -388,9 +385,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // preview.
   bool IsUsingDataSavingPreview() const;
 
-  ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID,
-                                                            WebComputedAXTree*);
-
   // True if AdTracker heuristics have determined that this frame is an ad.
   // Calculated in the constructor but LocalFrames created on behalf of OOPIF
   // aren't set until just before commit (ReadyToCommitNavigation time) by the
@@ -548,10 +542,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   IntRect remote_viewport_intersection_;
   bool occluded_or_obscured_by_ancestor_ = false;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
-
-  // Used to keep track of which ComputedAccessibleNodes have already been
-  // instantiated in this frame to avoid constructing duplicates.
-  HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

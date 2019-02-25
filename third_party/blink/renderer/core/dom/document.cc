@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -2876,6 +2877,7 @@ void Document::Shutdown() {
     ax_contexts_.clear();
     ClearAXObjectCache();
   }
+  computed_node_mapping_.clear();
 
   layout_view_ = nullptr;
   ContainerNode::DetachLayoutTree();
@@ -7742,6 +7744,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
   visitor->Trace(find_in_page_root_);
+  visitor->Trace(computed_node_mapping_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7999,6 +8002,17 @@ void Document::SetColorScheme(ColorScheme color_scheme) {
     else
       view->SetBaseBackgroundColor(Color::kWhite);
   }
+}
+
+ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(
+    AXID ax_id,
+    WebComputedAXTree* tree) {
+  if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
+    ComputedAccessibleNode* node =
+        ComputedAccessibleNode::Create(ax_id, tree, this);
+    computed_node_mapping_.insert(ax_id, node);
+  }
+  return computed_node_mapping_.at(ax_id);
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
