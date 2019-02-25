@@ -158,8 +158,12 @@ bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
   }
 
   // Verify |initiator_origin|.
-  if (common_params->initiator_origin.has_value() &&
-      !VerifyInitiatorOrigin(process_id,
+  if (!common_params->initiator_origin.has_value()) {
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFHI_BEGIN_NAVIGATION_MISSING_INITIATOR_ORIGIN);
+    return false;
+  }
+  if (!VerifyInitiatorOrigin(process_id,
                              common_params->initiator_origin.value())) {
     return false;
   }
