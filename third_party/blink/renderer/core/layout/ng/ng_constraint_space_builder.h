@@ -245,7 +245,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetTableCellChildLayoutPhase(
       NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
     space_.bitfields_.table_cell_child_layout_phase =
-        table_cell_child_layout_phase;
+        static_cast<unsigned>(table_cell_child_layout_phase);
     return *this;
   }
 

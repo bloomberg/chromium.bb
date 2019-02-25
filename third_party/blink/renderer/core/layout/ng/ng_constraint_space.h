@@ -37,7 +37,7 @@ enum NGFragmentationType {
 //
 // This enum is used for communicating to *direct* children of table cells,
 // which layout phase the table cell is in.
-enum NGTableCellChildLayoutPhase {
+enum class NGTableCellChildLayoutPhase {
   kNotTableCellChild,  // The node isn't a table cell child.
   kMeasure,  // The node is a table cell child, in the "measure" phase.
   kLayout    // The node is a table cell child, in the "layout" phase.
@@ -555,8 +555,8 @@ class CORE_EXPORT NGConstraintSpace final {
     Bitfields() : Bitfields(WritingMode::kHorizontalTb) {}
 
     explicit Bitfields(WritingMode writing_mode)
-        : table_cell_child_layout_phase(
-              static_cast<unsigned>(kNotTableCellChild)),
+        : table_cell_child_layout_phase(static_cast<unsigned>(
+              NGTableCellChildLayoutPhase::kNotTableCellChild)),
           adjoining_floats(static_cast<unsigned>(kFloatTypeNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
