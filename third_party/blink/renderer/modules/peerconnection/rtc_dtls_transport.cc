@@ -73,11 +73,13 @@ std::unique_ptr<DtlsTransportProxy> CreateProxy(
 
 RTCDtlsTransport::RTCDtlsTransport(
     ExecutionContext* context,
-    rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport)
+    rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport,
+    RTCIceTransport* ice_transport)
     : ContextClient(context),
       current_state_(webrtc::DtlsTransportState::kNew),
       native_transport_(native_transport),
-      proxy_(CreateProxy(context, native_transport, this)) {}
+      proxy_(CreateProxy(context, native_transport, this)),
+      ice_transport_(ice_transport) {}
 
 RTCDtlsTransport::~RTCDtlsTransport() {}
 
@@ -91,9 +93,7 @@ RTCDtlsTransport::getRemoteCertificates() const {
 }
 
 RTCIceTransport* RTCDtlsTransport::iceTransport() const {
-  // TODO(crbug.com/907849): Implement returning an IceTransport
-  NOTIMPLEMENTED();
-  return nullptr;
+  return ice_transport_;
 }
 
 webrtc::DtlsTransportInterface* RTCDtlsTransport::native_transport() {
@@ -115,6 +115,9 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  // Make sure the ICE transport is also closed. This must happen prior
+  // to garbage collection.
+  ice_transport_->stop();
 }
 
 const AtomicString& RTCDtlsTransport::InterfaceName() const {
@@ -135,6 +138,7 @@ bool RTCDtlsTransport::HasPendingActivity() const {
 
 void RTCDtlsTransport::Trace(Visitor* visitor) {
   visitor->Trace(remote_certificates_);
+  visitor->Trace(ice_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }
