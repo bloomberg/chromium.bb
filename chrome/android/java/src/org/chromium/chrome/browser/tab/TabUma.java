@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.text.format.DateUtils;
 
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
@@ -330,12 +331,12 @@ public class TabUma extends EmptyTabObserver implements UserData {
         if (mLastShownTimestamp == -1 && previousTimestampMillis > 0) {
             if (isOnBrowserStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.ForegroundTabAgeAtStartup",
-                        (int) millisecondsToMinutes(System.currentTimeMillis()
-                                                             - previousTimestampMillis));
+                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
+                                / DateUtils.MINUTE_IN_MILLIS));
             } else if (selectionType == TabSelectionType.FROM_USER) {
                 RecordHistogram.recordCountHistogram("Tab.AgeUponRestoreFromColdStart",
-                        (int) millisecondsToMinutes(System.currentTimeMillis()
-                                                             - previousTimestampMillis));
+                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
+                                / DateUtils.MINUTE_IN_MILLIS));
             }
         }
 
@@ -444,9 +445,5 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     private static void increaseTabShowCount() {
         sAllTabsShowCount++;
-    }
-
-    private static long millisecondsToMinutes(long msec) {
-        return msec / 1000 / 60;
     }
 }
