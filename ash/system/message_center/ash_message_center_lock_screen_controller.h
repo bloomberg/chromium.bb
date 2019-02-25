@@ -32,7 +32,8 @@ class AshMessageCenterLockScreenController
 
   // message_center::LockScreenController:
   void DismissLockScreenThenExecute(base::OnceClosure pending_callback,
-                                    base::OnceClosure cancel_callback) override;
+                                    base::OnceClosure cancel_callback,
+                                    int message_id) override;
   bool IsScreenLocked() const override;
 
  private:
@@ -62,7 +63,7 @@ class AshMessageCenterLockScreenController
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
   // Shows a message that asks a user to unlock the device.
-  void EncourageUserToUnlock();
+  void EncourageUserToUnlock(int message_id);
 
   bool locked_;
   AccountId active_account_id_ = EmptyAccountId();

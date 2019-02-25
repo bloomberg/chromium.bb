@@ -87,7 +87,8 @@ AshMessageCenterLockScreenController::~AshMessageCenterLockScreenController() {
 
 void AshMessageCenterLockScreenController::DismissLockScreenThenExecute(
     base::OnceClosure pending_callback,
-    base::OnceClosure cancel_callback) {
+    base::OnceClosure cancel_callback,
+    int message_id) {
   if (locked_) {
     // Invokes the previous cancel task if any.
     if (cancel_task_)
@@ -97,7 +98,7 @@ void AshMessageCenterLockScreenController::DismissLockScreenThenExecute(
     pending_task_ = std::move(pending_callback);
     cancel_task_ = std::move(cancel_callback);
 
-    EncourageUserToUnlock();
+    EncourageUserToUnlock(message_id);
   } else {
     DCHECK(pending_task_.is_null());
     DCHECK(cancel_task_.is_null());
@@ -110,7 +111,8 @@ bool AshMessageCenterLockScreenController::IsScreenLocked() const {
   return locked_;
 }
 
-void AshMessageCenterLockScreenController::EncourageUserToUnlock() {
+void AshMessageCenterLockScreenController::EncourageUserToUnlock(
+    int message_id) {
   DCHECK(locked_);
 
   DCHECK(LockScreen::Get());
@@ -124,18 +126,24 @@ void AshMessageCenterLockScreenController::EncourageUserToUnlock() {
     unified_system_tray->CloseBubble();
   }
 
+  base::string16 message;
+  if (message_id != -1) {
+    message = l10n_util::GetStringUTF16(message_id);
+  } else {
+    message =
+        (Shell::Get()->session_controller()->NumberOfLoggedInUsers() == 1 ||
+         active_account_id_.empty())
+            ? l10n_util::GetStringUTF16(
+                  IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION)
+            : l10n_util::GetStringFUTF16(
+                  IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION_WITH_USER_ID,
+                  base::UTF8ToUTF16(active_account_id_.GetUserEmail()));
+  }
+
   // TODO(yoshiki): Update UI after the UX finalizes.
-  Shell::Get()->toast_manager()->Show(ToastData(
-      kToastId,
-      (Shell::Get()->session_controller()->NumberOfLoggedInUsers() == 1 ||
-       active_account_id_.empty())
-          ? l10n_util::GetStringUTF16(
-                IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION)
-          : l10n_util::GetStringFUTF16(
-                IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION_WITH_USER_ID,
-                base::UTF8ToUTF16(active_account_id_.GetUserEmail())),
-      ToastData::kInfiniteDuration, base::nullopt,
-      /*visible_on_lock_screen=*/true));
+  Shell::Get()->toast_manager()->Show(
+      ToastData(kToastId, message, ToastData::kInfiniteDuration, base::nullopt,
+                /*visible_on_lock_screen=*/true));
 }
 
 void AshMessageCenterLockScreenController::OnLockStateChanged(bool locked) {

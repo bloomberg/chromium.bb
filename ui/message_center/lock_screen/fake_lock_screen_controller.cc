@@ -11,7 +11,8 @@ FakeLockScreenController::~FakeLockScreenController() = default;
 
 void FakeLockScreenController::DismissLockScreenThenExecute(
     base::OnceClosure pending_callback,
-    base::OnceClosure cancel_callback) {
+    base::OnceClosure cancel_callback,
+    int message_id) {
   DCHECK(pending_callback) << "pending_callback must not be null";
 
   if (!is_screen_locked_) {

@@ -1826,6 +1826,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION_WITH_USER_ID" desc="The short message to encourage user to unlock the device so that Chrome OS can perform the notification action selected by user after unlocking.">
         Unlock device as <ph name="login_id">$1<ex>example@gmail.com</ex></ph> to perform the notification action
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING" desc="The short message to encourage user to unlock the device to change the lock screen notification setting, so that Chrome OS can show the setting window after unlocking.">
+        To see notifications on your lock screen, unlock to change the setting
+      </message>
     </messages>
   </release>
 </grit>

@@ -82,7 +82,7 @@ void NotificationHiddenView::ButtonPressed(views::Button* sender,
       ->lock_screen_controller()
       ->DismissLockScreenThenExecute(
           base::BindOnce(&ShowLockScreenNotificationSettings),
-          base::DoNothing());
+          base::DoNothing(), IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING);
 }
 
 }  // namespace ash
