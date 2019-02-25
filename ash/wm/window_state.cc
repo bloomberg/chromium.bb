@@ -529,7 +529,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-  UpdatePipState(/*was_pip=*/false);
+  UpdatePipState(mojom::WindowStateType::DEFAULT);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -602,7 +602,7 @@ void WindowState::NotifyPreStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
-  UpdatePipState(old_window_state_type == mojom::WindowStateType::PIP);
+  UpdatePipState(old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
@@ -682,7 +682,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::UpdatePipState(bool was_pip) {
+void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
   if (IsPip()) {
     // widget may not exit in some unit tests.
@@ -695,10 +695,13 @@ void WindowState::UpdatePipState(bool was_pip) {
     }
     ::wm::SetWindowVisibilityAnimationType(
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
-
     // There may already be a system ui window on the initial position.
     UpdatePipBounds();
-  } else if (was_pip) {
+    if (old_window_state_type != mojom::WindowStateType::PIP) {
+      window()->SetProperty(ash::kPrePipWindowStateTypeKey,
+                            old_window_state_type);
+    }
+  } else if (old_window_state_type == mojom::WindowStateType::PIP) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
       Shell::Get()->focus_cycler()->RemoveWidget(widget);

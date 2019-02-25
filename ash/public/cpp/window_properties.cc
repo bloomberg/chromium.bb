@@ -95,6 +95,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kIsShowingInOverviewKey, mojom::kIsShowingInOverview_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kPrePipWindowStateTypeKey, mojom::kPrePipWindowStateType_Property,
+      base::BindRepeating(&IsValidWindowStateType));
+  property_converter->RegisterPrimitiveProperty(
       kRenderTitleAreaProperty,
       ws::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -172,6 +175,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDeferredTabDraggingTargetWindowKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDraggingTabsKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsShowingInOverviewKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+                             kPrePipWindowStateTypeKey,
+                             mojom::WindowStateType::DEFAULT);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kRestoreBoundsOverrideKey,
