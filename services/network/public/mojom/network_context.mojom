@@ -202,6 +202,12 @@ struct NetworkContextParams {
   // Must be false if built without FTP support.
   bool enable_ftp_url_support = false;
 
+  // Whether or not to check the Android platform's cleartext policy for
+  // requests. Under some conditions, Android may advise us to block cleartext
+  // traffic.
+  [EnableIf=is_android]
+  bool check_clear_text_permitted = false;
+
   // True if the "Certificate Transparency in Chrome" policy (see
   // https://github.com/chromium/ct-policy/blob/master/ct_policy.md) should
   // be enforced for certificates and connections.
