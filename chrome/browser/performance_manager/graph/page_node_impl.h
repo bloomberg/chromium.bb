@@ -24,10 +24,8 @@ class PageNodeImpl
     return resource_coordinator::CoordinationUnitType::kPage;
   }
 
-  PageNodeImpl(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
+  PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+               Graph* graph);
   ~PageNodeImpl() override;
 
   // resource_coordinator::mojom::PageCoordinationUnit implementation.

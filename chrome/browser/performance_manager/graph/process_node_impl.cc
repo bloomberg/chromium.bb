@@ -12,9 +12,8 @@ namespace performance_manager {
 
 ProcessNodeImpl::ProcessNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
+    Graph* graph)
+    : CoordinationUnitInterface(id, graph) {}
 
 ProcessNodeImpl::~ProcessNodeImpl() {
   // Make as if we're transitioning to the null PID before we die to clear this

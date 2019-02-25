@@ -13,7 +13,6 @@
 #include "chrome/browser/performance_manager/graph/graph_node_provider_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -30,7 +29,7 @@ class TestNodeWrapper {
   static TestNodeWrapper<NodeClass> Create(Graph* graph) {
     resource_coordinator::CoordinationUnitID cu_id(
         NodeClass::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
-    return TestNodeWrapper<NodeClass>(NodeClass::Create(cu_id, graph, nullptr));
+    return TestNodeWrapper<NodeClass>(NodeClass::Create(cu_id, graph));
   }
 
   explicit TestNodeWrapper(NodeClass* impl) : impl_(impl) { DCHECK(impl); }
@@ -63,8 +62,8 @@ class GraphTestHarness : public testing::Test {
   template <class NodeClass>
   TestNodeWrapper<NodeClass> CreateCoordinationUnit(
       resource_coordinator::CoordinationUnitID cu_id) {
-    return TestNodeWrapper<NodeClass>(NodeClass::Create(
-        cu_id, coordination_unit_graph(), service_keepalive_.CreateRef()));
+    return TestNodeWrapper<NodeClass>(
+        NodeClass::Create(cu_id, coordination_unit_graph()));
   }
 
   template <class NodeClass>
@@ -76,8 +75,7 @@ class GraphTestHarness : public testing::Test {
 
   TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {
     return TestNodeWrapper<SystemNodeImpl>(
-        coordination_unit_graph()->FindOrCreateSystemNode(
-            service_keepalive_.CreateRef()));
+        coordination_unit_graph()->FindOrCreateSystemNode());
   }
 
   // testing::Test:
@@ -90,7 +88,6 @@ class GraphTestHarness : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
-  service_manager::ServiceKeepalive service_keepalive_;
   Graph coordination_unit_graph_;
   GraphNodeProviderImpl provider_;
 };

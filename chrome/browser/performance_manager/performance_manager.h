@@ -20,7 +20,6 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace ukm {
 class MojoUkmRecorder;
@@ -81,9 +80,6 @@ class PerformanceManager {
       const service_manager::BindSourceInfo& source_info);
   void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
 
-  // TODO(siggi): Remove this as it's only here to maintain compatibility
-  //     with the current interface of the CoordinationUnits.
-  service_manager::ServiceKeepalive service_keepalive_;
   InterfaceRegistry interface_registry_;
 
   // The performance task runner.

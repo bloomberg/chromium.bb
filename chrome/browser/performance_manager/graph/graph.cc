@@ -48,10 +48,9 @@ Graph::~Graph() {
 }
 
 void Graph::OnStart(service_manager::BinderRegistryWithArgs<
-                        const service_manager::BindSourceInfo&>* registry,
-                    service_manager::ServiceKeepalive* keepalive) {
+                    const service_manager::BindSourceInfo&>* registry) {
   // Create the singleton CoordinationUnitProvider.
-  provider_ = std::make_unique<GraphNodeProviderImpl>(keepalive, this);
+  provider_ = std::make_unique<GraphNodeProviderImpl>(this);
   registry->AddInterface(base::BindRepeating(
       &GraphNodeProviderImpl::Bind, base::Unretained(provider_.get())));
 }
@@ -75,32 +74,27 @@ void Graph::OnBeforeNodeDestroyed(NodeBase* coordination_unit) {
 }
 
 FrameNodeImpl* Graph::CreateFrameNode(
-    const resource_coordinator::CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
-  return FrameNodeImpl::Create(id, this, std::move(service_ref));
+    const resource_coordinator::CoordinationUnitID& id) {
+  return FrameNodeImpl::Create(id, this);
 }
 
 PageNodeImpl* Graph::CreatePageNode(
-    const resource_coordinator::CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
-  return PageNodeImpl::Create(id, this, std::move(service_ref));
+    const resource_coordinator::CoordinationUnitID& id) {
+  return PageNodeImpl::Create(id, this);
 }
 
 ProcessNodeImpl* Graph::CreateProcessNode(
-    const resource_coordinator::CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
-  return ProcessNodeImpl::Create(id, this, std::move(service_ref));
+    const resource_coordinator::CoordinationUnitID& id) {
+  return ProcessNodeImpl::Create(id, this);
 }
 
-SystemNodeImpl* Graph::FindOrCreateSystemNode(
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
+SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   NodeBase* system_cu = GetNodeByID(system_coordination_unit_id_);
   if (system_cu)
     return SystemNodeImpl::FromNodeBase(system_cu);
 
   // Create the singleton SystemCU instance. Ownership is taken by the graph.
-  return SystemNodeImpl::Create(system_coordination_unit_id_, this,
-                                std::move(service_ref));
+  return SystemNodeImpl::Create(system_coordination_unit_id_, this);
 }
 
 NodeBase* Graph::GetNodeByID(

@@ -38,10 +38,7 @@ PerformanceManager* PerformanceManager::GetInstance() {
 }
 
 PerformanceManager::PerformanceManager()
-    : service_keepalive_(static_cast<service_manager::ServiceBinding*>(nullptr),
-                         base::nullopt),
-      task_runner_(CreateTaskRunner()),
-      introspector_(&graph_) {
+    : task_runner_(CreateTaskRunner()), introspector_(&graph_) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -127,7 +124,7 @@ void PerformanceManager::OnStartImpl(
     graph_.set_ukm_recorder(ukm_recorder_.get());
   }
 
-  graph_.OnStart(&interface_registry_, &service_keepalive_);
+  graph_.OnStart(&interface_registry_);
 }
 
 void PerformanceManager::BindInterfaceImpl(
@@ -140,7 +137,7 @@ void PerformanceManager::BindInterfaceImpl(
 
 void PerformanceManager::DistributeMeasurementBatchImpl(
     resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
-  SystemNodeImpl* system_node = graph_.FindOrCreateSystemNode(nullptr);
+  SystemNodeImpl* system_node = graph_.FindOrCreateSystemNode();
   DCHECK(system_node);
 
   system_node->DistributeMeasurementBatch(std::move(batch));

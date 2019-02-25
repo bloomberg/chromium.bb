@@ -29,10 +29,8 @@ class FrameNodeImpl
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 
-  FrameNodeImpl(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
+  FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+                Graph* graph);
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.

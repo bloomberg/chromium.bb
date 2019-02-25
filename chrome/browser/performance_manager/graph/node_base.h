@@ -19,7 +19,6 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace performance_manager {
 
@@ -90,11 +89,9 @@ class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
  public:
   static CoordinationUnitClass* Create(
       const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref) {
+      Graph* graph) {
     std::unique_ptr<CoordinationUnitClass> new_cu =
-        std::make_unique<CoordinationUnitClass>(id, graph,
-                                                std::move(keepalive_ref));
+        std::make_unique<CoordinationUnitClass>(id, graph);
     return static_cast<CoordinationUnitClass*>(
         PassOwnershipToGraph(std::move(new_cu)));
   }
@@ -109,14 +106,9 @@ class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
     return static_cast<CoordinationUnitClass*>(cu);
   }
 
-  CoordinationUnitInterface(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-      : NodeBase(id, graph), binding_(this) {
-    keepalive_ref_ = std::move(keepalive_ref);
-  }
+  CoordinationUnitInterface(const resource_coordinator::CoordinationUnitID& id,
+                            Graph* graph)
+      : NodeBase(id, graph), binding_(this) {}
 
   ~CoordinationUnitInterface() override = default;
 
@@ -146,7 +138,6 @@ class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
  private:
   mojo::BindingSet<MojoInterfaceClass> bindings_;
   mojo::Binding<MojoInterfaceClass> binding_;
-  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitInterface);
 };

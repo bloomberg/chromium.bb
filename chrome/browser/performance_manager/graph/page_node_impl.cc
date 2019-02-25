@@ -27,11 +27,9 @@ size_t ToIndex(
 
 }  // namespace
 
-PageNodeImpl::PageNodeImpl(
-    const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {
+PageNodeImpl::PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+                           Graph* graph)
+    : CoordinationUnitInterface(id, graph) {
   InvalidateAllInterventionPolicies();
 }
 

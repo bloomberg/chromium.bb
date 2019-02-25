@@ -17,7 +17,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace service_manager {
 template <typename... BinderArgs>
@@ -50,23 +49,18 @@ class Graph {
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
   void OnStart(service_manager::BinderRegistryWithArgs<
-                   const service_manager::BindSourceInfo&>* registry,
-               service_manager::ServiceKeepalive* keepalive);
+               const service_manager::BindSourceInfo&>* registry);
   void RegisterObserver(std::unique_ptr<GraphObserver> observer);
   void OnNodeCreated(NodeBase* coordination_unit);
   void OnBeforeNodeDestroyed(NodeBase* coordination_unit);
 
   FrameNodeImpl* CreateFrameNode(
-      const resource_coordinator::CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+      const resource_coordinator::CoordinationUnitID& id);
   PageNodeImpl* CreatePageNode(
-      const resource_coordinator::CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+      const resource_coordinator::CoordinationUnitID& id);
   ProcessNodeImpl* CreateProcessNode(
-      const resource_coordinator::CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
-  SystemNodeImpl* FindOrCreateSystemNode(
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+      const resource_coordinator::CoordinationUnitID& id);
+  SystemNodeImpl* FindOrCreateSystemNode();
 
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
   std::vector<FrameNodeImpl*> GetAllFrameNodes();
@@ -105,7 +99,7 @@ class Graph {
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<GraphNodeProviderImpl> provider_;
 
-  static void Create(service_manager::ServiceKeepalive* keepalive);
+  static void Create();
 
   DISALLOW_COPY_AND_ASSIGN(Graph);
 };

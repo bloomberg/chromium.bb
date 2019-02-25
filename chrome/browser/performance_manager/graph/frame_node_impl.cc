@@ -11,11 +11,9 @@
 
 namespace performance_manager {
 
-FrameNodeImpl::FrameNodeImpl(
-    const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)),
+FrameNodeImpl::FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+                             Graph* graph)
+    : CoordinationUnitInterface(id, graph),
       parent_frame_coordination_unit_(nullptr),
       page_coordination_unit_(nullptr),
       process_coordination_unit_(nullptr) {

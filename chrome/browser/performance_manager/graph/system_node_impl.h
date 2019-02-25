@@ -21,10 +21,8 @@ class SystemNodeImpl
     return resource_coordinator::CoordinationUnitType::kSystem;
   }
 
-  SystemNodeImpl(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
+  SystemNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+                 Graph* graph);
   ~SystemNodeImpl() override;
 
   // resource_coordinator::mojom::SystemCoordinationUnit implementation:
