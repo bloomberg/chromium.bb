@@ -1253,7 +1253,6 @@ jumbo_component("platform") {
     "scroll/overscroll_behavior.h",
     "scroll/scroll_alignment.cc",
     "scroll/scroll_alignment.h",
-    "scroll/scroll_snap_data.h",
     "scroll/scroll_types.h",
     "shared_buffer.cc",
     "shared_buffer.h",

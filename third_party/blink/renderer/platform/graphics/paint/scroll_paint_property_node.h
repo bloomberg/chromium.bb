@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 
 namespace blink {
 

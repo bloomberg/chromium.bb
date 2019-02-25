@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "cc/input/scroll_snap_data.h"
+#include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 
 namespace blink {
 
