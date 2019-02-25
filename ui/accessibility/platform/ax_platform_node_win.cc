@@ -2035,6 +2035,71 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
 }
 
 //
+// IWindowProvider implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::SetVisualState(
+    WindowVisualState window_visual_state) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL();
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::Close() {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL();
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::WaitForInputIdle(int milliseconds,
+                                                   BOOL* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_CanMaximize(BOOL* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_CanMinimize(BOOL* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_IsModal(BOOL* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+
+  *result = GetBoolAttribute(ax::mojom::BoolAttribute::kModal);
+
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_WindowVisualState(
+    WindowVisualState* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_WindowInteractionState(
+    WindowInteractionState* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_IsTopmost(BOOL* result) {
+  DVLOG(1) << __func__;
+  UIA_VALIDATE_CALL_1_ARG(result);
+  return UIA_E_NOTSUPPORTED;
+}
+
+//
 // IRangeValueProvider implementation.
 //
 
@@ -3475,6 +3540,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_WindowPatternId:
+      if (HasBoolAttribute(ax::mojom::BoolAttribute::kModal)) {
+        AddRef();
+        *result = static_cast<IWindowProvider*>(this);
+      }
       break;
 
     // Overlap with MSAA, not supported.

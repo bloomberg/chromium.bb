@@ -260,6 +260,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public ITableProvider,
                         public IToggleProvider,
                         public IValueProvider,
+                        public IWindowProvider,
                         public AXPlatformNodeBase {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
@@ -293,6 +294,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(ITableProvider)
     COM_INTERFACE_ENTRY(IToggleProvider)
     COM_INTERFACE_ENTRY(IValueProvider)
+    COM_INTERFACE_ENTRY(IWindowProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
@@ -593,6 +595,29 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_IsReadOnly(BOOL* result) override;
 
   IFACEMETHODIMP get_Value(BSTR* result) override;
+
+  //
+  // IWindowProvider methods.
+  //
+
+  IFACEMETHODIMP SetVisualState(WindowVisualState window_visual_state) override;
+
+  IFACEMETHODIMP Close() override;
+
+  IFACEMETHODIMP WaitForInputIdle(int milliseconds, BOOL* result) override;
+
+  IFACEMETHODIMP get_CanMaximize(BOOL* result) override;
+
+  IFACEMETHODIMP get_CanMinimize(BOOL* result) override;
+
+  IFACEMETHODIMP get_IsModal(BOOL* result) override;
+
+  IFACEMETHODIMP get_WindowVisualState(WindowVisualState* result) override;
+
+  IFACEMETHODIMP get_WindowInteractionState(
+      WindowInteractionState* result) override;
+
+  IFACEMETHODIMP get_IsTopmost(BOOL* result) override;
 
   //
   // IRangeValueProvider methods.
