@@ -145,8 +145,9 @@ void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
     NET_LOG(ERROR) << "Empty app id for " << kAddThirdPartyVpnMessage;
     return;
   }
-  if (profile_ != GetProfileForPrimaryUser()) {
-    NET_LOG(ERROR) << "Only the primary user can add VPNs";
+  if (profile_ != GetProfileForPrimaryUser() || profile_->IsChild()) {
+    NET_LOG(ERROR)
+        << "Only the primary user and non-child accounts can add VPNs";
     return;
   }
 
