@@ -25,8 +25,8 @@
 # corrections 15.12.2018 - new Slovenian braille standard: http://liblouis.org/braille-specs/slovenian
 # Robert Merič <info@slepslaboviden.si>
 
-include text_nabcc.dis Alldisplay opcodes
-
+include text_nabcc.dis
+include braille-patterns.cti
 
 # ----------- define all chars --------------------------------------
 
@@ -127,6 +127,10 @@ include countries.cti
 # Braille indicators
 numsign 3456  number sign, just a dots operand
 capsletter 46
+begcapsword 456
+endcapsword 6
+nocontractsign 6
+numericnocontchars abcdefghij
 
 # the decimal digits
 include litdigits6Dots.uti
