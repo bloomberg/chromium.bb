@@ -125,7 +125,7 @@ class DeviceManagementServiceIntegrationTest
     EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
         .WillOnce(DoAll(
             Invoke(this, &DeviceManagementServiceIntegrationTest::RecordToken),
-            InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle)));
+            InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)));
     std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
         DeviceManagementRequestJob::TYPE_REGISTRATION, GetFactory()));
     job->SetOAuthTokenParameter("oauth_token");
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
       .WillOnce(DoAll(
           Invoke(this, &DeviceManagementServiceIntegrationTest::RecordAuthCode),
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle)));
+          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)));
   std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH, GetFactory()));
   job->SetAuthData(DMAuth::FromDMToken(token_));
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
 
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_POLICY_FETCH, GetFactory()));
   job->SetAuthData(DMAuth::FromDMToken(token_));
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
 
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_UNREGISTRATION, GetFactory()));
   job->SetAuthData(DMAuth::FromDMToken(token_));
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, GetFactory()));
   job->SetAuthData(DMAuth::NoAuth());
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
 
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
       GetFactory()));
