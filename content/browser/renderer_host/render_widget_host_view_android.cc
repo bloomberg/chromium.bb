@@ -1354,7 +1354,8 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     overscroll_controller_->Enable();
 
   if (delegated_frame_host_ &&
-      delegated_frame_host_->IsPrimarySurfaceEvicted()) {
+      (delegated_frame_host_->IsPrimarySurfaceEvicted() ||
+       !local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())) {
     ui::WindowAndroidCompositor* compositor =
         view_.GetWindowAndroid() ? view_.GetWindowAndroid()->GetCompositor()
                                  : nullptr;
@@ -1364,6 +1365,12 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
                   ui::DelegatedFrameHostAndroid::FirstFrameTimeoutFrames())
             : cc::DeadlinePolicy::UseDefaultDeadline(),
         base::nullopt);
+    // If we navigated while hidden, we need to update the fallback surface only
+    // after we've completed navigation, and embedded the new surface.
+    if (navigation_while_hidden_) {
+      navigation_while_hidden_ = false;
+      delegated_frame_host_->DidNavigate();
+    }
   }
 
   host()->WasShown(false /* record_presentation_time */);
@@ -2350,6 +2357,7 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     // sizes are ready, or we begin to Show, we can then allocate the new
     // LocalSurfaceId.
     local_surface_id_allocator_.Invalidate();
+    navigation_while_hidden_ = true;
   } else {
     if (is_first_navigation_) {
       SynchronizeVisualProperties(
@@ -2359,8 +2367,9 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
       SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
                                   base::nullopt);
     }
+    // Only notify of navigation once a surface has been embedded.
+    delegated_frame_host_->DidNavigate();
   }
-  delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
 
