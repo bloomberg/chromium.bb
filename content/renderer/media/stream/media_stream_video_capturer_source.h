@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
@@ -31,6 +32,9 @@ class RenderFrame;
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:
+  using DeviceCapturerFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
+          int session_id)>;
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
@@ -38,14 +42,12 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       int render_frame_id,
       const SourceStoppedCallback& stop_callback,
       const blink::MediaStreamDevice& device,
-      const media::VideoCaptureParams& capture_params);
+      const media::VideoCaptureParams& capture_params,
+      DeviceCapturerFactoryCallback device_capturer_factory_callback);
   ~MediaStreamVideoCapturerSource() override;
 
-  using DeviceVideoCapturerFactoryCallback =
-      base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
-          int session_id)>;
-  void SetDeviceVideoCapturerFactoryCallbackForTesting(
-      DeviceVideoCapturerFactoryCallback testing_factory_callback);
+  void SetDeviceCapturerFactoryCallbackForTesting(
+      DeviceCapturerFactoryCallback testing_factory_callback);
 
  private:
   friend class CanvasCaptureHandlerTest;
@@ -79,9 +81,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   const blink::mojom::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost(RenderFrame* render_frame);
 
-  static std::unique_ptr<media::VideoCapturerSource>
-  RecreateLocalVideoCapturerSource(int session_id);
-
   blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
 
   int render_frame_id_;
@@ -101,7 +100,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
 
   media::VideoCaptureParams capture_params_;
   blink::VideoCaptureDeliverFrameCB frame_callback_;
-  DeviceVideoCapturerFactoryCallback device_video_capturer_factory_callback_;
+  DeviceCapturerFactoryCallback device_capturer_factory_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

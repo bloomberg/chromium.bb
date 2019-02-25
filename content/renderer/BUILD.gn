@@ -256,6 +256,8 @@ target(link_target_type, "renderer") {
     "media/stream/external_media_stream_audio_source.h",
     "media/stream/local_media_stream_audio_source.cc",
     "media/stream/local_media_stream_audio_source.h",
+    "media/stream/local_video_capturer_source.cc",
+    "media/stream/local_video_capturer_source.h",
     "media/stream/media_stream_audio_level_calculator.cc",
     "media/stream/media_stream_audio_level_calculator.h",
     "media/stream/media_stream_audio_processor.cc",

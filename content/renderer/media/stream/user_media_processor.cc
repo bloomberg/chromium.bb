@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
+#include "content/renderer/media/stream/local_video_capturer_source.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
@@ -1043,7 +1044,8 @@ std::unique_ptr<MediaStreamVideoSource> UserMediaProcessor::CreateVideoSource(
 
   return std::make_unique<MediaStreamVideoCapturerSource>(
       render_frame_->GetRoutingID(), stop_callback, device,
-      current_request_info_->video_capture_settings().capture_params());
+      current_request_info_->video_capture_settings().capture_params(),
+      base::BindRepeating(&LocalVideoCapturerSource::Create));
 }
 
 void UserMediaProcessor::StartTracks(const std::string& label) {
