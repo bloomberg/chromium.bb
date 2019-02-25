@@ -41,6 +41,7 @@ class AXPlatformNodeTest : public testing::Test {
   AXTreeUpdate BuildContentEditableWithSelectionRange(int32_t start,
                                                       int32_t end);
   AXTreeUpdate Build3X3Table();
+  AXTreeUpdate BuildAriaColumnAndRowCountGrids();
 
   std::unique_ptr<AXTree> tree_;
 };

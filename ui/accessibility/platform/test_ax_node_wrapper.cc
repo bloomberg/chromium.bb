@@ -227,11 +227,11 @@ int TestAXNodeWrapper::GetTableColCount() const {
   return node_->GetTableColCount();
 }
 
-int TestAXNodeWrapper::GetTableAriaRowCount() const {
+base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaRowCount() const {
   return node_->GetTableAriaRowCount();
 }
 
-int TestAXNodeWrapper::GetTableAriaColCount() const {
+base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaColCount() const {
   return node_->GetTableAriaColCount();
 }
 

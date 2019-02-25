@@ -1119,11 +1119,11 @@ int32_t BrowserAccessibility::GetTableColCount() const {
   return node()->GetTableColCount();
 }
 
-int32_t BrowserAccessibility::GetTableAriaColCount() const {
+base::Optional<int32_t> BrowserAccessibility::GetTableAriaColCount() const {
   return node()->GetTableAriaColCount();
 }
 
-int32_t BrowserAccessibility::GetTableAriaRowCount() const {
+base::Optional<int32_t> BrowserAccessibility::GetTableAriaRowCount() const {
   return node()->GetTableAriaRowCount();
 }
 

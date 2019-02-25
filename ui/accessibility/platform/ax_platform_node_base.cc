@@ -498,6 +498,18 @@ int AXPlatformNodeBase::GetTableColumnCount() const {
   return int{table->delegate_->GetTableColCount()};
 }
 
+base::Optional<int32_t> AXPlatformNodeBase::GetTableAriaColumnCount() const {
+  if (!delegate_)
+    return base::nullopt;
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return base::nullopt;
+
+  DCHECK(table->delegate_);
+  return table->delegate_->GetTableAriaColCount();
+}
+
 int AXPlatformNodeBase::GetTableColumnSpan() const {
   if (!delegate_)
     return 1;
@@ -524,6 +536,18 @@ int AXPlatformNodeBase::GetTableRowCount() const {
 
   DCHECK(table->delegate_);
   return int{table->delegate_->GetTableRowCount()};
+}
+
+base::Optional<int32_t> AXPlatformNodeBase::GetTableAriaRowCount() const {
+  if (!delegate_)
+    return base::nullopt;
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return base::nullopt;
+
+  DCHECK(table->delegate_);
+  return table->delegate_->GetTableAriaRowCount();
 }
 
 int AXPlatformNodeBase::GetTableRowSpan() const {
