@@ -1,7 +1,9 @@
+# Based on the Latvian braille specifications <http://liblouis.org/braille-specs/latvian>
+#
 # Copyright © 2017-2018 Rimas Kudelis
 # Copyright © 2018 Gatis Grintals
 # Copyright © 2018 Artis Raugulis
-# Copyright © 2018 Bert Frees
+# Copyright © 2018-2019 Bert Frees
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -125,10 +127,13 @@ tests:
     - ⠱
   - - 'aⁿ'
     - ⠬
+    - xfail: fixme
   - - 'Sˣ'
     - ⠌
+    - xfail: fixme
   - - 'Sₓ'
     - ⠡
+    - xfail: fixme
   - - '%'
     - ⠼⠚⠴
   - - '‰'
