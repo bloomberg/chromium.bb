@@ -79,10 +79,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     }
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    BoxPainter(layout_fieldset_)
-        .RecordHitTestData(paint_info, paint_rect, layout_fieldset_);
-  }
+  BoxPainter(layout_fieldset_)
+      .RecordHitTestData(paint_info, paint_rect, layout_fieldset_);
 }
 
 void FieldsetPainter::PaintMask(const PaintInfo& paint_info,

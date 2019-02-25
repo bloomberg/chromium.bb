@@ -40,7 +40,6 @@ class LayoutGeometryMap;
 class LayoutBoxModelObject;
 class LayoutObject;
 class ComputedStyle;
-class LayoutSVGRoot;
 class SVGLengthContext;
 class StrokeData;
 class TransformState;
@@ -132,9 +131,6 @@ class CORE_EXPORT SVGLayoutSupport {
 
   // Determines if any ancestor's layout size has changed.
   static bool LayoutSizeOfNearestViewportChanged(const LayoutObject*);
-
-  // FIXME: These methods do not belong here.
-  static const LayoutSVGRoot* FindTreeRootObject(const LayoutObject*);
 
   // Helper method for determining if a LayoutObject marked as text (isText()==
   // true) can/will be laid out as part of a <text>.

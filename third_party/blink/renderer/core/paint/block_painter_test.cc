@@ -213,16 +213,12 @@ TEST_P(BlockPainterTest, OverflowRectCompositedScrollingForCullRectTesting) {
             BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
 }
 
-class BlockPainterTestWithPaintTouchAction
-    : public PaintControllerPaintTestBase,
-      private ScopedPaintTouchActionRectsForTest {
- public:
-  BlockPainterTestWithPaintTouchAction()
-      : PaintControllerPaintTestBase(),
-        ScopedPaintTouchActionRectsForTest(true) {}
-};
+// TODO(pdr): These touch action tests should be run for all paint test
+// parameters (using INSTANTIATE_PAINT_TEST_SUITE_P) but they are currently
+// run without flags (i.e., stable configuration).
+class BlockPainterTouchActionTest : public PaintControllerPaintTestBase {};
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectsWithoutPaint) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -267,8 +263,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction,
-       TouchActionRectSubsequenceCaching) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectSubsequenceCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -329,7 +324,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
                                hit_test_chunk_properties, hit_test_data)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -390,7 +385,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
                                hit_test_chunk_properties, hit_test_data)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -448,7 +443,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
                   GetLayoutView().FirstFragment().ContentsProperties())));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintChunkChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -514,7 +509,7 @@ class BlockPainterMockEventListener final : public NativeEventListener {
 };
 }  // namespace
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
+TEST_F(BlockPainterTouchActionTest, TouchHandlerRectsWithoutPaint) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -558,8 +553,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction,
-       TouchActionRectsAcrossPaintChanges) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectsAcrossPaintChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -590,7 +584,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
                           IsSameId(child, DisplayItem::kHitTest)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
+TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }

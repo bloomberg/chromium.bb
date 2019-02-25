@@ -299,25 +299,23 @@ void EventHandlerRegistry::NotifyHandlersChanged(
       break;
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    if (handler_class == kTouchStartOrMoveEventBlocking ||
-        handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
-      if (auto* node = target->ToNode()) {
-        if (auto* layout_object = node->GetLayoutObject()) {
-          layout_object->MarkEffectiveWhitelistedTouchActionChanged();
-          auto* continuation = layout_object->VirtualContinuation();
-          while (continuation) {
-            continuation->MarkEffectiveWhitelistedTouchActionChanged();
-            continuation = continuation->VirtualContinuation();
-          }
+  if (handler_class == kTouchStartOrMoveEventBlocking ||
+      handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
+    if (auto* node = target->ToNode()) {
+      if (auto* layout_object = node->GetLayoutObject()) {
+        layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+        auto* continuation = layout_object->VirtualContinuation();
+        while (continuation) {
+          continuation->MarkEffectiveWhitelistedTouchActionChanged();
+          continuation = continuation->VirtualContinuation();
         }
-      } else if (auto* dom_window = target->ToLocalDOMWindow()) {
-        // This event handler is on a window. Ensure the layout view is
-        // invalidated because the layout view tracks the window's blocking
-        // touch event rects.
-        if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
-          layout_view->MarkEffectiveWhitelistedTouchActionChanged();
       }
+    } else if (auto* dom_window = target->ToLocalDOMWindow()) {
+      // This event handler is on a window. Ensure the layout view is
+      // invalidated because the layout view tracks the window's blocking
+      // touch event rects.
+      if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
+        layout_view->MarkEffectiveWhitelistedTouchActionChanged();
     }
   }
 }

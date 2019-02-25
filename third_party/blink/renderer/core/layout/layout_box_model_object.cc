@@ -517,34 +517,6 @@ PaintLayerScrollableArea* LayoutBoxModelObject::GetScrollableArea() const {
   return Layer() ? Layer()->GetScrollableArea() : nullptr;
 }
 
-void LayoutBoxModelObject::AddLayerHitTestRects(
-    LayerHitTestRects& rects,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
-  if (HasLayer()) {
-    if (IsLayoutView()) {
-      // LayoutView is handled with a special fast-path, but it needs to know
-      // the current layer.
-      LayoutObject::AddLayerHitTestRects(rects, Layer(), LayoutPoint(),
-                                         supported_fast_actions, LayoutRect(),
-                                         TouchAction::kTouchActionAuto);
-    } else {
-      // Since a LayoutObject never lives outside it's container Layer, we can
-      // switch to marking entire layers instead. This may sometimes mark more
-      // than necessary (when a layer is made of disjoint objects) but in
-      // practice is a significant performance savings.
-      Layer()->AddLayerHitTestRects(rects, supported_fast_actions);
-    }
-  } else {
-    LayoutObject::AddLayerHitTestRects(rects, current_layer, layer_offset,
-                                       supported_fast_actions, container_rect,
-                                       container_whitelisted_touch_action);
-  }
-}
-
 void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
@@ -1237,19 +1209,6 @@ void LayoutBoxModelObject::SetContinuation(LayoutBoxModelObject* continuation) {
     if (g_continuation_map)
       g_continuation_map->erase(this);
   }
-}
-
-void LayoutBoxModelObject::ComputeLayerHitTestRects(
-    LayerHitTestRects& rects,
-    TouchAction supported_fast_actions) const {
-  LayoutObject::ComputeLayerHitTestRects(rects, supported_fast_actions);
-
-  // If there is a continuation then we need to consult it here, since this is
-  // the root of the tree walk and it wouldn't otherwise get picked up.
-  // Continuations should always be siblings in the tree, so any others should
-  // get picked up already by the tree walk.
-  if (Continuation())
-    Continuation()->ComputeLayerHitTestRects(rects, supported_fast_actions);
 }
 
 LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(

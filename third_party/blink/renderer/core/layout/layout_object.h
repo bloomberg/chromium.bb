@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
-#include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
@@ -1805,10 +1804,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
   }
 
-  // Compute a list of hit-test rectangles per layer rooted at this
-  // layoutObject with at most the given touch action.
-  virtual void ComputeLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
-
   static RespectImageOrientationEnum ShouldRespectImageOrientation(
       const LayoutObject*);
 
@@ -2329,29 +2324,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     DCHECK(IsAnonymous());
     node_ = document;
   }
-
-  // Add hit-test rects for the layout tree rooted at this node to the provided
-  // collection on a per-Layer basis.
-  // currentLayer must be the enclosing layer, and layerOffset is the current
-  // offset within this layer. Subclass implementations will add any offset for
-  // this layoutObject within it's container, so callers should provide only the
-  // offset of the container within it's layer.
-  // containerRect is a rect that has already been added for the currentLayer
-  // which is likely to be a container for child elements. Any rect wholly
-  // contained by containerRect can be skipped.
-  virtual void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const;
-
-  // Add hit-test rects for this layoutObject only to the provided list.
-  // layerOffset is the offset of this layoutObject within the current layer
-  // that should be used for each result.
-  virtual void ComputeSelfHitTestRects(Vector<LayoutRect>&,
-                                       const LayoutPoint& layer_offset) const {}
 
 #if DCHECK_IS_ON()
   virtual bool PaintInvalidationStateIsDirty() const;

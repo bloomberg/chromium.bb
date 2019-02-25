@@ -8,14 +8,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace cc {
 class AnimationHost;
 }
 
 namespace blink {
-class PaintLayer;
 
 // This enscapsulates ScrollingCoordinator state for each local frame root.
 // TODO(kenrb): This class could be temporary depending on how
@@ -32,8 +30,6 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
 
   CompositorAnimationTimeline* GetCompositorAnimationTimeline();
   cc::AnimationHost* GetCompositorAnimationHost();
-
-  HashSet<const PaintLayer*>* GetLayersWithTouchRects();
 
   // Non-fast scrollable regions need updating by ScrollingCoordinator.
   bool ScrollGestureRegionIsDirty() const;
@@ -52,8 +48,6 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
   void SetWasScrollable(bool was_scrollable);
 
  private:
-  HashSet<const PaintLayer*> layers_with_touch_rects_;
-
   std::unique_ptr<CompositorAnimationTimeline> animation_timeline_;
   cc::AnimationHost* animation_host_ = nullptr;
 

@@ -2581,27 +2581,6 @@ void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
     AddLayoutOverflowFromFloats();
 }
 
-void LayoutBlockFlow::ComputeSelfHitTestRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& layer_offset) const {
-  LayoutBlock::ComputeSelfHitTestRects(rects, layer_offset);
-
-  if (!HasHorizontalLayoutOverflow() && !HasVerticalLayoutOverflow())
-    return;
-
-  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
-    LayoutUnit top = std::max<LayoutUnit>(curr->LineTop(), curr->Y());
-    LayoutUnit bottom =
-        std::min<LayoutUnit>(curr->LineBottom(), curr->Y() + curr->Height());
-    LayoutRect rect(layer_offset.X() + curr->X(), layer_offset.Y() + top,
-                    curr->Width(), bottom - top);
-    // It's common for this rect to be entirely contained in our box, so exclude
-    // that simple case.
-    if (!rect.IsEmpty() && (rects.IsEmpty() || !rects[0].Contains(rect)))
-      rects.push_back(rect);
-  }
-}
-
 void LayoutBlockFlow::AbsoluteRects(
     Vector<IntRect>& rects,
     const LayoutPoint& accumulated_offset) const {

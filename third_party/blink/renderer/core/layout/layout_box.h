@@ -1388,28 +1388,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasRelativeLogicalWidth() const;
   bool HasRelativeLogicalHeight() const;
 
-  bool HasHorizontalLayoutOverflow() const {
-    if (!LayoutOverflowIsSet())
-      return false;
-
-    LayoutRect layout_overflow_rect =
-        overflow_->layout_overflow->LayoutOverflowRect();
-    LayoutRect no_overflow_rect = NoOverflowRect();
-    return layout_overflow_rect.X() < no_overflow_rect.X() ||
-           layout_overflow_rect.MaxX() > no_overflow_rect.MaxX();
-  }
-
-  bool HasVerticalLayoutOverflow() const {
-    if (!LayoutOverflowIsSet())
-      return false;
-
-    LayoutRect layout_overflow_rect =
-        overflow_->layout_overflow->LayoutOverflowRect();
-    LayoutRect no_overflow_rect = NoOverflowRect();
-    return layout_overflow_rect.Y() < no_overflow_rect.Y() ||
-           layout_overflow_rect.MaxY() > no_overflow_rect.MaxY();
-  }
-
   virtual LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject*) const {
     NOTREACHED();
@@ -1620,15 +1598,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                const HitTestLocation& location_in_container,
                                const LayoutPoint& accumulated_offset,
                                HitTestAction);
-  void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_composited_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const override;
-  void ComputeSelfHitTestRects(Vector<LayoutRect>&,
-                               const LayoutPoint& layer_offset) const override;
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
 

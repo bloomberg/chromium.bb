@@ -491,10 +491,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);
-
-  void ComputeSelfHitTestRects(Vector<LayoutRect>&,
-                               const LayoutPoint& layer_offset) const override;
-
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const override;
   void AbsoluteQuads(Vector<FloatQuad>&,

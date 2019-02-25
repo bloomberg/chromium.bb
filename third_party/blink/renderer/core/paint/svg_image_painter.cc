@@ -44,8 +44,7 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_state.GetPaintInfo().context, layout_svg_image_,
             paint_state.GetPaintInfo().phase)) {
-      if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-        SVGModelObjectPainter::RecordHitTestData(layout_svg_image_, paint_info);
+      SVGModelObjectPainter::RecordHitTestData(layout_svg_image_, paint_info);
       DrawingRecorder recorder(paint_state.GetPaintInfo().context,
                                layout_svg_image_,
                                paint_state.GetPaintInfo().phase);

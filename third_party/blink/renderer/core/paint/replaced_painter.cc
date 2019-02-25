@@ -104,10 +104,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible) {
       if (layout_replaced_.HasBoxDecorationBackground())
         should_paint_background = true;
-      if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
-          layout_replaced_.HasEffectiveWhitelistedTouchAction()) {
+      if (layout_replaced_.HasEffectiveWhitelistedTouchAction())
         should_paint_background = true;
-      }
     }
     if (should_paint_background) {
       if (layout_replaced_.HasLayer() &&
@@ -117,12 +115,9 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
               ->GetCompositedLayerMapping()
               ->DrawsBackgroundOntoContentLayer()) {
         // If the background paints into the content layer, we can skip painting
-        // the background but still need to paint the touch action rects.
-        if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-          BoxPainter(layout_replaced_)
-              .RecordHitTestData(local_paint_info, border_rect,
-                                 layout_replaced_);
-        }
+        // the background but still need to paint the hit test rects.
+        BoxPainter(layout_replaced_)
+            .RecordHitTestData(local_paint_info, border_rect, layout_replaced_);
         return;
       }
 

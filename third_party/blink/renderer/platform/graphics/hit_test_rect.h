@@ -8,16 +8,12 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
 class TouchActionRegion;
 }
 
 namespace blink {
-
-class PaintLayer;
 
 struct PLATFORM_EXPORT HitTestRect {
   // HitTestRect is a class shared by touch action region, wheel event handler
@@ -43,8 +39,6 @@ struct PLATFORM_EXPORT HitTestRect {
 
   String ToString() const;
 };
-
-using LayerHitTestRects = WTF::HashMap<const PaintLayer*, Vector<HitTestRect>>;
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestRect&);
 

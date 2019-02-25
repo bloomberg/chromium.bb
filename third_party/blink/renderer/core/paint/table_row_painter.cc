@@ -95,8 +95,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
   ScopedPaintState paint_state(layout_table_row_, paint_info);
   const auto& local_paint_info = paint_state.GetPaintInfo();
   auto paint_offset = paint_state.PaintOffset();
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(local_paint_info, paint_offset);
+  RecordHitTestData(local_paint_info, paint_offset);
 
   bool has_background = layout_table_row_.StyleRef().HasBackground();
   bool has_box_shadow = layout_table_row_.StyleRef().BoxShadow();

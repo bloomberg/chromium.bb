@@ -152,8 +152,6 @@ class CORE_EXPORT PaintLayerCompositor {
       PaintLayer*,
       CompositingStateTransitionType composited_layer_update);
 
-  bool InOverlayFullscreenVideo() const { return in_overlay_fullscreen_video_; }
-
   bool IsRootScrollerAncestor() const;
 
   void AttachRootLayerViaChromeClient();
@@ -215,7 +213,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // except the one in updateIfNeeded, then rename this to
   // m_compositingDirty.
   bool root_should_always_composite_dirty_;
-  bool in_overlay_fullscreen_video_;
 
   enum RootLayerAttachment {
     kRootLayerUnattached,

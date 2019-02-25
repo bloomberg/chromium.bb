@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
-
 namespace blink {
 
 void ScrollingCoordinatorContext::SetAnimationTimeline(
@@ -24,11 +22,6 @@ ScrollingCoordinatorContext::GetCompositorAnimationTimeline() {
 
 cc::AnimationHost* ScrollingCoordinatorContext::GetCompositorAnimationHost() {
   return animation_host_;
-}
-
-HashSet<const PaintLayer*>*
-ScrollingCoordinatorContext::GetLayersWithTouchRects() {
-  return &layers_with_touch_rects_;
 }
 
 bool ScrollingCoordinatorContext::ScrollGestureRegionIsDirty() const {

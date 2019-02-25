@@ -282,16 +282,6 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
                                 local_visual_rect);
 }
 
-const LayoutSVGRoot* SVGLayoutSupport::FindTreeRootObject(
-    const LayoutObject* start) {
-  while (start && !start->IsSVGRoot())
-    start = start->Parent();
-
-  DCHECK(start);
-  DCHECK(start->IsSVGRoot());
-  return ToLayoutSVGRoot(start);
-}
-
 bool SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(
     const LayoutObject* start) {
   for (; start; start = start->Parent()) {

@@ -138,10 +138,8 @@ void TableCellPainter::PaintBoxDecorationBackground(
     }
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    BoxPainter(layout_table_cell_)
-        .RecordHitTestData(paint_info, paint_rect, *client);
-  }
+  BoxPainter(layout_table_cell_)
+      .RecordHitTestData(paint_info, paint_rect, *client);
 }
 
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,

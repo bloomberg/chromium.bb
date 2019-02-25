@@ -347,14 +347,6 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void ComputePreferredLogicalWidths() override;
 
-  void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_composited_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const override;
-
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
 
   LayoutSize OffsetFromContainerInternal(
