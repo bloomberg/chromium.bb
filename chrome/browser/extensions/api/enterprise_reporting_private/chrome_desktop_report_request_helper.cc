@@ -114,7 +114,7 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
     request->mutable_browser_report()
         ->mutable_chrome_user_profile_reports(0)
         ->set_policy_data(
-            policy::GetAllPolicyValuesAsJSON(profile, true, false));
+            policy::GetAllPolicyValuesAsJSON(profile, true, false, false));
 
     int64_t timestamp = GetMachineLevelUserCloudPolicyFetchTimestamp();
     if (timestamp > 0) {

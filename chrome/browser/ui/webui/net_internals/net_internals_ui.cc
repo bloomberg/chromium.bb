@@ -434,7 +434,8 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
   base::FilePath policies_path = path.Append("policies.json");
   std::string json_policies = policy::GetAllPolicyValuesAsJSON(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with_device_data */);
+      true /* with_user_policies */, false /* with_device_data */,
+      true /* is_pretty_print */);
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,

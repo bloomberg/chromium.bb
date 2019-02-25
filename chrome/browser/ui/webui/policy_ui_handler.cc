@@ -845,7 +845,7 @@ void PolicyUIHandler::SendPolicyValues() const {
   base::Value all_policies = policy::GetAllPolicyValuesAsDictionary(
       web_ui()->GetWebContents()->GetBrowserContext(),
       true /* with_user_policies */, true /* convert_values */,
-      false /* with_device_data */);
+      false /* with_device_data */, true /* is_pretty_print */);
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
                                          all_policies);
 }
@@ -922,7 +922,8 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
   std::string json_policies = policy::GetAllPolicyValuesAsJSON(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with_device_data */);
+      true /* with_user_policies */, false /* with_device_data */,
+      true /* is_pretty_print */);
 
   base::PostTaskWithTraits(
       FROM_HERE,
