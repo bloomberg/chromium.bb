@@ -61,7 +61,7 @@ void InvalidationSet::CacheTracingFlag() {
 }
 
 InvalidationSet::InvalidationSet(InvalidationType type)
-    : type_(type),
+    : type_(static_cast<unsigned>(type)),
       invalidates_self_(false),
       is_alive_(true) {}
 
@@ -136,7 +136,7 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
 
   CHECK_NE(&other, this);
 
-  if (GetType() == kInvalidateSiblings) {
+  if (IsSiblingInvalidationSet()) {
     SiblingInvalidationSet& siblings = ToSiblingInvalidationSet(*this);
     const SiblingInvalidationSet& other_siblings =
         ToSiblingInvalidationSet(other);
@@ -377,7 +377,7 @@ void InvalidationSet::Show() const {
 
 SiblingInvalidationSet::SiblingInvalidationSet(
     scoped_refptr<DescendantInvalidationSet> descendants)
-    : InvalidationSet(kInvalidateSiblings),
+    : InvalidationSet(InvalidationType::kInvalidateSiblings),
       max_direct_adjacent_selectors_(1),
       descendant_invalidation_set_(std::move(descendants)) {}
 

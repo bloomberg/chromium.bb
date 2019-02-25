@@ -49,7 +49,7 @@ namespace blink {
 class Element;
 class TracedValue;
 
-enum InvalidationType { kInvalidateDescendants, kInvalidateSiblings };
+enum class InvalidationType { kInvalidateDescendants, kInvalidateSiblings };
 
 class InvalidationSet;
 
@@ -99,10 +99,10 @@ class CORE_EXPORT InvalidationSet
     return static_cast<InvalidationType>(type_);
   }
   bool IsDescendantInvalidationSet() const {
-    return GetType() == kInvalidateDescendants;
+    return GetType() == InvalidationType::kInvalidateDescendants;
   }
   bool IsSiblingInvalidationSet() const {
-    return GetType() == kInvalidateSiblings;
+    return GetType() == InvalidationType::kInvalidateSiblings;
   }
 
   static void CacheTracingFlag();
@@ -394,7 +394,8 @@ class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
   }
 
  private:
-  DescendantInvalidationSet() : InvalidationSet(kInvalidateDescendants) {}
+  DescendantInvalidationSet()
+      : InvalidationSet(InvalidationType::kInvalidateDescendants) {}
 };
 
 class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
