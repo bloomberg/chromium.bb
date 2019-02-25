@@ -40,7 +40,7 @@ bool FontLoader::matchFamilyName(const char family_name[],
 
 SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
   TRACE_EVENT2("font_loader", "FontLoader::openStream", "identity",
-               identity.fID, "name", identity.fString.c_str());
+               identity.fID, "name", TRACE_STR_COPY(identity.fString.c_str()));
   {
     base::AutoLock lock(lock_);
     auto mapped_font_files_it = mapped_font_files_.find(identity.fID);
