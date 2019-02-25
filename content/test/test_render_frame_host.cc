@@ -336,9 +336,9 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */);
-  // TODO(mkwst): The initiator origin in |common_params| is missing/incorrect.
   CommonNavigationParams common_params;
   common_params.url = url;
+  common_params.initiator_origin = GetLastCommittedOrigin();
   common_params.referrer =
       Referrer(GURL(), network::mojom::ReferrerPolicy::kDefault);
   common_params.transition = ui::PAGE_TRANSITION_LINK;
