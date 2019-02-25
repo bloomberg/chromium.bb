@@ -1204,13 +1204,11 @@
         },
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
-          'isolated_scripts': 'mojo_network_isolated_scripts',
         },
       },
       'Mojo Windows': {
         'test_suites': {
           'gtest_tests': 'mojo_windows_gtests',
-          'isolated_scripts': 'mojo_network_isolated_scripts',
         },
       },
       'Site Isolation Android': {
@@ -1528,10 +1526,6 @@
             'mac_10.13',
             'no_gpu',
         ],
-        'test_suites': {
-          'gtest_tests': 'network_service_gtests',
-          'isolated_scripts': 'mojo_network_isolated_scripts',
-        },
       },
       'mac-osxbeta-rel': {
         'mixins': [

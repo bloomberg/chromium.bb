@@ -3819,30 +3819,6 @@
       'wayland_client_perftests': {},
     },
 
-    'mojo_network_isolated_scripts': {
-      'webkit_layout_tests': {
-        'args': [
-          '--additional-driver-flag=--enable-features=NetworkService',
-
-          # layout test failures are retried 3 times when '--test-list' is not
-          # passed, but 0 times when '--test-list' is passed. We want to always
-          # retry 3 times, so we explicitly specify it.
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests_exparchive',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 12,
-        },
-      },
-    },
-
     'mojo_windows_specific_gtests': {
       'services_unittests': {},
     },
@@ -3942,7 +3918,7 @@
     'network_service_fyi_gtests': {
       'network_service_web_request_proxy_browser_tests': {
         'args': [
-          '--enable-features=NetworkService,ForceWebRequestProxyForTest',
+          '--enable-features=ForceWebRequestProxyForTest',
         ],
         'swarming': {
           'shards': 15,
@@ -4079,6 +4055,30 @@
 
     'non_linux_chromium_gtests': {
       'crashpad_tests': {},
+    },
+
+    'non_network_service_isolated_scripts': {
+      'non_network_service_webkit_layout_tests': {
+        'args': [
+          '--additional-driver-flag=--disable-features=NetworkService',
+
+          # layout test failures are retried 3 times when '--test-list' is not
+          # passed, but 0 times when '--test-list' is passed. We want to always
+          # retry 3 times, so we explicitly specify it.
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_web_tests_exparchive',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 12,
+        },
+      },
     },
 
     'non_viz_fyi_chromium_gtests': {
@@ -4518,7 +4518,6 @@
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
@@ -4545,7 +4544,6 @@
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
@@ -4554,6 +4552,7 @@
     'chromium_linux_dbg_isolated_scripts': [
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
+      'non_network_service_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
@@ -4565,7 +4564,6 @@
       'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
       'linux_specific_xr_gtests',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'skia_renderer_gtests',
@@ -4584,7 +4582,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'mac_specific_chromium_gtests',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_linux_chromium_gtests',
@@ -4598,7 +4595,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'mac_specific_chromium_gtests',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_linux_chromium_gtests',
@@ -4616,7 +4612,6 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_win_and_linux_only',
-      'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_linux_chromium_gtests',
@@ -5003,14 +4998,12 @@
     ],
 
     'mojo_linux_gtests': [
-      'network_service_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
-      'network_service_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
       'non_viz_fyi_chromium_gtests',

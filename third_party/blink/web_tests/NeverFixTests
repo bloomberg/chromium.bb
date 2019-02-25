@@ -1710,10 +1710,6 @@ crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
 
 # Tests that only work when the mixed content autoupgrade experiment is enabled
 http/tests/mixed-autoupgrade [ WontFix ]
@@ -2126,27 +2122,16 @@ external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-abort-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
-
-# See crbug.com/865839.
-virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ WontFix ]
 
 # MathML is not implemented.
 crbug.com/6606 external/wpt/mathml [ WontFix ]

@@ -3591,17 +3591,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 15
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -3658,16 +3647,6 @@
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3683,17 +3662,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 6
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -3757,16 +3725,6 @@
         "test": "events_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3873,17 +3831,6 @@
         "test": "headless_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -6865,24 +6812,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 15
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
@@ -7008,23 +6937,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "components_browsertests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -7066,24 +6978,6 @@
             }
           ],
           "shards": 6
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -7229,23 +7123,6 @@
         "args": [
           "--test-launcher-print-test-stdio=always"
         ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "extensions_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7428,24 +7305,6 @@
         "args": [
           "--test-launcher-print-test-stdio=always"
         ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9825,22 +9684,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 15
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -9970,21 +9813,6 @@
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "components_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10015,22 +9843,6 @@
             }
           ],
           "shards": 6
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -10161,21 +9973,6 @@
         "test": "events_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "extensions_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10335,22 +10132,6 @@
         "test": "installer_util_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
