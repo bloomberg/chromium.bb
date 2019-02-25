@@ -524,8 +524,8 @@ void MediaDevicesManager::StartMonitoring() {
 #if defined(OS_MACOSX)
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MediaDevicesManager::StartMonitoringOnUIThread,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
+                     base::Unretained(this)));
 #endif
 }
 

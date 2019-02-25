@@ -69,9 +69,9 @@ void ScopedSurfaceRequestManager::FulfillScopedSurfaceRequest(
   // the lifetime of the browser process.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ScopedSurfaceRequestManager::CompleteRequestOnUiThread,
-                 base::Unretained(this), request_token,
-                 base::Passed(&surface)));
+      base::BindOnce(&ScopedSurfaceRequestManager::CompleteRequestOnUiThread,
+                     base::Unretained(this), request_token,
+                     std::move(surface)));
 }
 
 void ScopedSurfaceRequestManager::CompleteRequestOnUiThread(

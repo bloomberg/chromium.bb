@@ -54,8 +54,8 @@ class TextInputClientMacHelper {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(&TextInputClientMacHelper::OnResult,
-                     base::Unretained(this), string, point));
+          base::BindOnce(&TextInputClientMacHelper::OnResult,
+                         base::Unretained(this), string, point));
       return;
     }
     word_ = string;

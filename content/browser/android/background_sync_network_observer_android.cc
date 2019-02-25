@@ -22,8 +22,8 @@ BackgroundSyncNetworkObserverAndroid::Observer::Create(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
-                 observer));
+      base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
+                     observer));
   return observer;
 }
 
@@ -53,8 +53,8 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(callback_, static_cast<network::mojom::ConnectionType>(
-                                new_connection_type)));
+      base::BindOnce(callback_, static_cast<network::mojom::ConnectionType>(
+                                    new_connection_type)));
 }
 
 BackgroundSyncNetworkObserverAndroid::Observer::Observer(
