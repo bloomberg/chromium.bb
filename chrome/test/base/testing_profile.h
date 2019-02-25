@@ -115,6 +115,9 @@ class TestingProfile : public Profile {
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
 
+    // Makes Profile::AllowsBrowserWindows() return false.
+    void DisallowBrowserWindows();
+
     // Override the default behavior of is_new_profile to return the provided
     // value.
     void OverrideIsNewProfile(bool is_new_profile);
@@ -150,6 +153,7 @@ class TestingProfile : public Profile {
     base::FilePath path_;
     Delegate* delegate_;
     bool guest_session_;
+    bool allows_browser_windows_;
     base::Optional<bool> is_new_profile_;
     std::string supervised_user_id_;
     std::unique_ptr<policy::PolicyService> policy_service_;
@@ -182,6 +186,7 @@ class TestingProfile : public Profile {
                  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
+                 bool allows_browser_windows,
                  base::Optional<bool> is_new_profile,
                  const std::string& supervised_user_id,
                  std::unique_ptr<policy::PolicyService> policy_service,
@@ -296,6 +301,7 @@ class TestingProfile : public Profile {
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
+  bool AllowsBrowserWindows() const override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
@@ -402,6 +408,8 @@ class TestingProfile : public Profile {
   TestingProfile* original_profile_;
 
   bool guest_session_;
+
+  bool allows_browser_windows_;
 
   base::Optional<bool> is_new_profile_;
 

@@ -343,6 +343,10 @@ bool OffTheRecordProfileImpl::IsLegacySupervised() const {
   return profile_->IsLegacySupervised();
 }
 
+bool OffTheRecordProfileImpl::AllowsBrowserWindows() const {
+  return profile_->AllowsBrowserWindows();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_.get();
 }

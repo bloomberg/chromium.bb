@@ -237,6 +237,22 @@ class Browser : public TabStripModelObserver,
 
   // Constructors, Creation, Showing //////////////////////////////////////////
 
+  // Creates a browser instance with the provided params.
+  // Returns nullptr if the requested browser creation is not allowed.
+  // For example, browser creation will not be allowed for profiles that
+  // disallow browsing (like sign-in profile on Chrome OS).
+  //
+  // Unless |params->window| is specified, a new BrowserWindow will be created
+  // for the browser - the created BrowserWindow will take the ownership of the
+  // created Browser instance.
+  //
+  // If |params.window| or |params.skip_window_init_for_testing| are set, the
+  // caller is expected to take the ownership of the created Browser instance.
+  static Browser* Create(const CreateParams& params);
+
+  // DEPRECATED in favor of Create().
+  // TODO(tbarzic): Make the constructor non-public once browser construction
+  // instances are replaced with Create(). https://crbug.com/916859.
   explicit Browser(const CreateParams& params);
   ~Browser() override;
 

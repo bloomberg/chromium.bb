@@ -106,6 +106,7 @@ extern const char kCannotUpdateMuteCaptured[];
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
 extern const char kMissingLockWindowFullscreenPrivatePermission[];
 extern const char kJavaScriptUrlsNotAllowedInTabsUpdate[];
+extern const char kBrowserWindowNotAllowed[];
 
 }  // namespace tabs_constants
 }  // namespace extensions

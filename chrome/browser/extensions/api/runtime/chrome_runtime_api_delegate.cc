@@ -278,7 +278,9 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, false));
+    browser = Browser::Create(Browser::CreateParams(profile, false));
+  if (!browser)
+    return;
 
   NavigateParams params(browser, uninstall_url,
                         ui::PAGE_TRANSITION_CLIENT_REDIRECT);

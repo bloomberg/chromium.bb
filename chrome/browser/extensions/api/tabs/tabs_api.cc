@@ -632,7 +632,9 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
         ConvertToWindowShowState(create_data->state);
   }
 
-  Browser* new_window = new Browser(create_params);
+  Browser* new_window = Browser::Create(create_params);
+  if (!new_window)
+    return RespondNow(Error(tabs_constants::kBrowserWindowNotAllowed));
 
   for (const GURL& url : urls) {
     NavigateParams navigate_params(new_window, url, ui::PAGE_TRANSITION_LINK);
