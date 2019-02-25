@@ -90,7 +90,8 @@ void RegisterChromeInterfacesForExtension(
                               base::Unretained(delegate)));
     }
   }
-  if (extension->id().compare(extension_misc::kChromeCameraAppId) == 0) {
+  if (extension->id().compare(extension_misc::kChromeCameraAppId) == 0 ||
+      extension->id().compare(extension_misc::kChromeCameraAppDevId) == 0) {
     registry->AddInterface(
         base::BindRepeating(&ForwardRequest<cros::mojom::CrosImageCapture>,
                             video_capture::mojom::kServiceName));
