@@ -334,6 +334,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void WasEvicted();
 
+  ui::DelegatedFrameHostAndroid* delegated_frame_host_for_testing() {
+    return delegated_frame_host_.get();
+  }
+
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
@@ -504,6 +508,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
   bool is_first_navigation_ = true;
+  // If true, then the next allocated surface should be embedded.
+  bool navigation_while_hidden_ = false;
 
   base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
 
