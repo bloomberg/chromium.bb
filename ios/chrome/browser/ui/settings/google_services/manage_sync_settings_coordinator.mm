@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 
 #include "base/logging.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,6 +63,21 @@
 #pragma mark - ManageSyncSettingsCommandHandler
 
 - (void)openPassphraseDialog {
+  DCHECK(self.mediator.shouldEncryptionItemBeEnabled);
+  syncer::SyncService* syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  UIViewController<SettingsRootViewControlling>* controllerToPush;
+  // If there was a sync error, prompt the user to enter the passphrase.
+  // Otherwise, show the full encryption options.
+  if (syncService->GetUserSettings()->IsPassphraseRequired()) {
+    controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
+        initWithBrowserState:self.browserState];
+  } else {
+    controllerToPush = [[SyncEncryptionTableViewController alloc]
+        initWithBrowserState:self.browserState];
+  }
+  controllerToPush.dispatcher = self.dispatcher;
+  [self.navigationController pushViewController:controllerToPush animated:YES];
 }
 
 - (void)openWebAppActivityDialog {

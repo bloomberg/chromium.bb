@@ -28,6 +28,8 @@ class SyncService;
 @property(nonatomic, assign) SyncSetupService* syncSetupService;
 // Command handler.
 @property(nonatomic, weak) id<ManageSyncSettingsCommandHandler> commandHandler;
+// Returns YES if the encryption item should be enabled.
+@property(nonatomic, assign, readonly) BOOL shouldEncryptionItemBeEnabled;
 
 // Designated initializer.
 // |syncService|: Sync service. Should not be null.
