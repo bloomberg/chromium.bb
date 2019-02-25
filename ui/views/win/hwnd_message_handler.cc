@@ -38,6 +38,7 @@
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/base/win/session_change_observer.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/display/win/dpi.h"
@@ -59,7 +60,6 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
-#include "ui/views/win/windows_session_change_observer.h"
 
 namespace views {
 namespace {
@@ -1596,9 +1596,9 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   delegate_->HandleCreate();
 
-  windows_session_change_observer_.reset(new WindowsSessionChangeObserver(
-      base::Bind(&HWNDMessageHandler::OnSessionChange,
-                 base::Unretained(this))));
+  session_change_observer_ =
+      std::make_unique<ui::SessionChangeObserver>(base::BindRepeating(
+          &HWNDMessageHandler::OnSessionChange, base::Unretained(this)));
 
   dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
 
@@ -1608,7 +1608,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
 void HWNDMessageHandler::OnDestroy() {
   ::RemoveProp(hwnd(), ui::kWindowTranslucent);
-  windows_session_change_observer_.reset(nullptr);
+  session_change_observer_.reset(nullptr);
   delegate_->HandleDestroying();
   // If the window going away is a fullscreen window then remove its references
   // from the full screen window map.

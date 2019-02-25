@@ -99,7 +99,10 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
            base::TaskPriority::USER_VISIBLE,
            // Occlusion calculation doesn't need to happen on shutdown.
            // event hooks should also be cleaned up by Windows.
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      session_change_observer_(
+          base::BindRepeating(&NativeWindowOcclusionTrackerWin::OnSessionChange,
+                              base::Unretained(this))) {
   occlusion_calculator_ = std::make_unique<WindowOcclusionCalculator>(
       update_occlusion_task_runner_, base::SequencedTaskRunnerHandle::Get());
 }
@@ -184,6 +187,19 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
     if (!root_window_hidden)
       num_visible_root_windows_++;
   }
+}
+
+void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
+  if (status_code == WTS_SESSION_LOCK) {
+    // Tell all root windows that they're occluded.
+    for (const auto& root_window_hwnd_pair : hwnd_root_window_map_) {
+      root_window_hwnd_pair.second->GetHost()->SetNativeWindowOcclusionState(
+          Window::OcclusionState::OCCLUDED);
+    }
+  }
+  // Other session changes don't need to trigger occlusion calculation. In
+  // particular, UNLOCK will cause a foreground window change, which will
+  // trigger an occlusion calculation on its own.
 }
 
 NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::

@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <winuser.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -18,6 +19,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/win/session_change_observer.h"
 
 namespace aura {
 
@@ -199,6 +201,10 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   void UpdateOcclusionState(const base::flat_map<HWND, Window::OcclusionState>&
                                 root_window_hwnds_occlusion_state);
 
+  // This is called with session changed notifications. If the screen is locked,
+  // it marks app windows as occluded.
+  void OnSessionChange(WPARAM status_code);
+
   // Task runner to call ComputeNativeWindowOcclusionStatus, and to handle
   // Windows event notifications, off of the UI thread.
   const scoped_refptr<base::SequencedTaskRunner> update_occlusion_task_runner_;
@@ -212,6 +218,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   int num_visible_root_windows_ = 0;
 
   std::unique_ptr<WindowOcclusionCalculator> occlusion_calculator_;
+
+  // Manages observation of Windows Session Change messages.
+  ui::SessionChangeObserver session_change_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWindowOcclusionTrackerWin);
 };
