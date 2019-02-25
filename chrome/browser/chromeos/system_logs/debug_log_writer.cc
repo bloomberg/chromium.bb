@@ -120,14 +120,15 @@ void OnCompressArchiveCompleted(
   if (!compression_command_success) {
     LOG(ERROR) << "Failed compressing " << compressed_output_path.value();
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::Bind(callback, base::FilePath(), false));
+                             base::BindOnce(callback, base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
     base::DeleteFile(compressed_output_path, false);
     return;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(callback, compressed_output_path, true));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(callback, compressed_output_path, true));
 }
 
 // Gzips |tar_file_path| and stores results in |compressed_output_path|.
@@ -138,7 +139,7 @@ void CompressArchive(const base::FilePath& tar_file_path,
   if (!add_user_logs_command_success) {
     LOG(ERROR) << "Failed adding user logs to " << tar_file_path.value();
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::Bind(callback, base::FilePath(), false));
+                             base::BindOnce(callback, base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
     return;
   }
@@ -189,8 +190,8 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&AddUserLogsToArchive, user_log_dir, tar_file_path,
-                 compressed_output_path, callback));
+      base::BindOnce(&AddUserLogsToArchive, user_log_dir, tar_file_path,
+                     compressed_output_path, callback));
 }
 
 void InitializeLogFile(base::File* file,

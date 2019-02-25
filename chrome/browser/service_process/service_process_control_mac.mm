@@ -19,5 +19,5 @@ void ServiceProcessControl::Launcher::DoRun() {
   launched_ = mac::services::SubmitJob(
       GetServiceProcessJobOptions(cmd_line_.get(), false));
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&Launcher::Notify, this));
+                           base::BindOnce(&Launcher::Notify, this));
 }

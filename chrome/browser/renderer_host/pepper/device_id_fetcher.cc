@@ -78,7 +78,7 @@ bool DeviceIDFetcher::Start(const IDCallback& callback) {
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&DeviceIDFetcher::CheckPrefsOnUIThread, this));
+      base::BindOnce(&DeviceIDFetcher::CheckPrefsOnUIThread, this));
   return true;
 }
 
@@ -127,8 +127,8 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
   // in case the legacy id doesn't exist.
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::Bind(&DeviceIDFetcher::LegacyComputeAsync,
-                                      this, profile->GetPath(), salt));
+                           base::BindOnce(&DeviceIDFetcher::LegacyComputeAsync,
+                                          this, profile->GetPath(), salt));
 #else
   // Get the machine ID and call ComputeOnUIThread with salt + machine_id.
   GetMachineIDAsync(
@@ -193,8 +193,9 @@ void DeviceIDFetcher::LegacyComputeAsync(const base::FilePath& profile_path,
   // generate an ID.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetMachineIDAsync,
-                 base::Bind(&DeviceIDFetcher::ComputeOnUIThread, this, salt)));
+      base::BindOnce(
+          &GetMachineIDAsync,
+          base::Bind(&DeviceIDFetcher::ComputeOnUIThread, this, salt)));
 }
 
 void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id,
@@ -202,7 +203,8 @@ void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id,
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&DeviceIDFetcher::RunCallbackOnIOThread, this, id, result));
+        base::BindOnce(&DeviceIDFetcher::RunCallbackOnIOThread, this, id,
+                       result));
     return;
   }
   in_progress_ = false;

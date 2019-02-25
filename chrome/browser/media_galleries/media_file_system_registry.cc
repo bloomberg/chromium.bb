@@ -668,9 +668,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&MTPDeviceMapService::RevokeMTPFileSystem,
-                   base::Unretained(MTPDeviceMapService::GetInstance()),
-                   fs_name));
+        base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
+                       base::Unretained(MTPDeviceMapService::GetInstance()),
+                       fs_name));
 #endif
   }
 
@@ -718,9 +718,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(result);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
-                   base::Unretained(MTPDeviceMapService::GetInstance()),
-                   path.value(), fs_name, true /* read only */));
+        base::BindOnce(&MTPDeviceMapService::RegisterMTPFileSystem,
+                       base::Unretained(MTPDeviceMapService::GetInstance()),
+                       path.value(), fs_name, true /* read only */));
     return result;
 #else
     NOTREACHED();

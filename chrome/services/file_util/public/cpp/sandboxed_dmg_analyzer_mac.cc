@@ -34,7 +34,7 @@ void SandboxedDMGAnalyzer::Start() {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
+      base::BindOnce(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
 }
 
 SandboxedDMGAnalyzer::~SandboxedDMGAnalyzer() = default;
@@ -63,8 +63,8 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
   }
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(&SandboxedDMGAnalyzer::AnalyzeFile, this,
-                                      base::Passed(&file)));
+                           base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile,
+                                          this, std::move(file)));
 }
 
 void SandboxedDMGAnalyzer::ReportFileFailure() {
@@ -73,7 +73,7 @@ void SandboxedDMGAnalyzer::ReportFileFailure() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(callback_, safe_browsing::ArchiveAnalyzerResults()));
+      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {

@@ -63,7 +63,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     if (InterlockedCompareExchange(&request_sent_, 1, 0) == 0) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
-          base::Bind(&MonitorFinder::FetchMonitorFromWidget, this));
+          base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
     }
     return reinterpret_cast<int64_t>(monitor_);
   }

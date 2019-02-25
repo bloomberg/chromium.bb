@@ -264,8 +264,8 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     int routing_id = reply_msg->routing_id();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&PrintingMessageFilter::NotifySystemDialogCancelled, this,
-                   routing_id));
+        base::BindOnce(&PrintingMessageFilter::NotifySystemDialogCancelled,
+                       this, routing_id));
   }
 #endif
   PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params,

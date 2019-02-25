@@ -294,7 +294,7 @@ void IOThread::Init() {
   // Start observing Keychain events. This needs to be done on the UI thread,
   // as Keychain services requires a CFRunLoop.
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&ObserveKeychainEvents));
+                           base::BindOnce(&ObserveKeychainEvents));
 #endif
 
   ConstructSystemRequestContext();

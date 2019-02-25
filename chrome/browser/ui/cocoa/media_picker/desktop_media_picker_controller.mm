@@ -503,7 +503,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   // Notify the |callback_| asynchronously because it may release the
   // controller.
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(doneCallback_, sourceID));
+                           base::BindOnce(doneCallback_, sourceID));
   doneCallback_.Reset();
 }
 

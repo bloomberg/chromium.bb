@@ -111,7 +111,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(
+      base::BindOnce(
           &DataReductionProxyResourceThrottle::StartDisplayingBlockingPage,
           AsWeakPtr(), safe_browsing_->ui_manager(), unsafe_resource));
 }
@@ -134,7 +134,7 @@ void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
       base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                               base::Bind(resource.callback, false));
+                               base::BindOnce(resource.callback, false));
       return;
     }
   }

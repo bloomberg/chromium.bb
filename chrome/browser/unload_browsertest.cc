@@ -150,7 +150,7 @@ class UnloadTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   void CheckTitle(const char* expected_title, bool wait = false) {

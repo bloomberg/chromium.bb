@@ -36,7 +36,7 @@ void SymlinkSetUp(const base::CommandLine& command_line,
     DLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
     base::PostTaskWithTraits(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&RemoveSymlinkAndLog, log_path, target_path));
+        base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
   } else {
     chrome_logging_redirected_ = true;
   }

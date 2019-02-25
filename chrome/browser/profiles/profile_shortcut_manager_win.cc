@@ -248,7 +248,7 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   }
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&OnProfileIconCreateSuccess, profile_path));
+      base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
   return icon_path;
 }
 

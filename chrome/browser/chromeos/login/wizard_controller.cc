@@ -819,7 +819,7 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
 #if defined(GOOGLE_CHROME_BUILD)
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&breakpad::InitCrashReporter, std::string()));
+      base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
 }
 

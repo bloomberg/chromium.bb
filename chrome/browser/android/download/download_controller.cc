@@ -282,9 +282,10 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&DownloadController::StartAndroidDownload,
-                                      base::Unretained(this), wc_getter, info));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&DownloadController::StartAndroidDownload,
+                     base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {

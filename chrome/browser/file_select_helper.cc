@@ -188,7 +188,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
+      base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)
@@ -216,7 +216,7 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
+      base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)

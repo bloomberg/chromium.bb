@@ -191,8 +191,8 @@ void SetupStabilityDebugging() {
     if (should_flush) {
       base::PostTaskWithTraits(
           FROM_HERE, {base::MayBlock()},
-          base::Bind(&base::PersistentMemoryAllocator::Flush,
-                     base::Unretained(global_tracker->allocator()), true));
+          base::BindOnce(&base::PersistentMemoryAllocator::Flush,
+                         base::Unretained(global_tracker->allocator()), true));
     }
 
     // Store a copy of the system profile in this allocator. There will be some

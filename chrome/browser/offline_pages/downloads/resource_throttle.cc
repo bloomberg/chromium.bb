@@ -59,8 +59,8 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
 
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&WillStartOfflineRequestOnUIThread, request_->url(),
-                   request_origin, info->GetWebContentsGetterForRequest()));
+        base::BindOnce(&WillStartOfflineRequestOnUIThread, request_->url(),
+                       request_origin, info->GetWebContentsGetterForRequest()));
     Cancel();
   }
 }

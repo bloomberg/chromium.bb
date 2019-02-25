@@ -527,7 +527,7 @@ bool AuthenticateUserNew(gfx::NativeWindow window,
 
 void DelayReportOsPassword() {
   base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::Bind(&GetOsPasswordStatus),
+                                  base::BindOnce(&GetOsPasswordStatus),
                                   base::TimeDelta::FromSeconds(40));
 }
 

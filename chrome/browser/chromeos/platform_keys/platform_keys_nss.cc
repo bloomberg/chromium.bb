@@ -151,8 +151,8 @@ void GetCertDatabase(const std::string& token_id,
                      NSSOperationState* state) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&GetCertDatabaseOnIOThread, token_id, callback,
-                 browser_context->GetResourceContext(), state));
+      base::BindOnce(&GetCertDatabaseOnIOThread, token_id, callback,
+                     browser_context->GetResourceContext(), state));
 }
 
 class GenerateRSAKeyState : public NSSOperationState {
@@ -476,7 +476,7 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&GenerateRSAKeyOnWorkerThread, base::Passed(&state)));
+      base::BindOnce(&GenerateRSAKeyOnWorkerThread, std::move(state)));
 }
 
 // Does the actual signing on a worker thread. Used by SignRSAWithDB().
@@ -570,7 +570,7 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)));
+      base::BindOnce(&SignRSAOnWorkerThread, std::move(state)));
 }
 
 // Called when ClientCertStoreChromeOS::GetClientCerts is done. Builds the list
@@ -654,7 +654,7 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FilterCertificatesOnWorkerThread, base::Passed(&state)));
+      base::BindOnce(&FilterCertificatesOnWorkerThread, std::move(state)));
 }
 
 // Continues getting certificates with the obtained NSSCertDatabase. Used by
@@ -895,7 +895,7 @@ void SelectClientCertificates(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&SelectCertificatesOnIOThread, base::Passed(&state)));
+      base::BindOnce(&SelectCertificatesOnIOThread, std::move(state)));
 }
 
 }  // namespace subtle

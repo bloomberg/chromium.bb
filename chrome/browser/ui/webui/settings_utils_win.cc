@@ -102,7 +102,7 @@ void OpenConnectionDialogCallback() {
 void ShowNetworkProxySettings(content::WebContents* web_contents) {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-                           base::Bind(&OpenConnectionDialogCallback));
+                           base::BindOnce(&OpenConnectionDialogCallback));
 }
 
 void ShowManageSSLCertificates(content::WebContents* web_contents) {

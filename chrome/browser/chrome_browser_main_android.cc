@@ -81,7 +81,7 @@ void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ReportSeccompSupport), base::TimeDelta::FromMinutes(1));
+      base::BindOnce(&ReportSeccompSupport), base::TimeDelta::FromMinutes(1));
 
   RegisterChromeJavaMojoInterfaces();
 }

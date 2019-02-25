@@ -126,9 +126,10 @@ jboolean SQLiteCursor::IsNull(JNIEnv* env,
 jint SQLiteCursor::MoveTo(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
                           jint pos) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&SQLiteCursor::RunMoveStatementOnUIThread,
-                                      base::Unretained(this), pos));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&SQLiteCursor::RunMoveStatementOnUIThread,
+                     base::Unretained(this), pos));
   if (test_observer_)
     test_observer_->OnPostMoveToTask();
 
@@ -151,8 +152,8 @@ void SQLiteCursor::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     DestroyOnUIThread();
   } else if (!base::PostTaskWithTraits(
                  FROM_HERE, {BrowserThread::UI},
-                 base::Bind(&SQLiteCursor::DestroyOnUIThread,
-                            base::Unretained(this)))) {
+                 base::BindOnce(&SQLiteCursor::DestroyOnUIThread,
+                                base::Unretained(this)))) {
     delete this;
   }
 }
@@ -186,7 +187,7 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
   if (id) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(
+        base::BindOnce(
             &SQLiteCursor::GetFaviconForIDInUIThread, base::Unretained(this),
             id,
             base::Bind(&SQLiteCursor::OnFaviconData, base::Unretained(this))));

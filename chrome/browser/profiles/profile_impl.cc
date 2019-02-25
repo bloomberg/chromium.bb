@@ -296,7 +296,7 @@ void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
     base::PostTaskWithTraits(FROM_HERE,
                              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                               base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                             base::Bind(&CreateProfileReadme, path));
+                             base::BindOnce(&CreateProfileReadme, path));
   }
 }
 

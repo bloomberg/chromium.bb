@@ -32,7 +32,7 @@ int64_t MonitorFinder::GetMonitor() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&MonitorFinder::FetchMonitorFromWidget, this));
+      base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
   return display_id_;
 }
 

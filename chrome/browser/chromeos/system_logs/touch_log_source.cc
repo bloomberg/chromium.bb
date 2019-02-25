@@ -128,7 +128,7 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
   // Cleanup these temporary log files.
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::Bind(CleanupEventLog, log_paths));
+                           base::BindOnce(CleanupEventLog, log_paths));
 }
 
 // Callback for handing the outcome of GetTouchEventLog().

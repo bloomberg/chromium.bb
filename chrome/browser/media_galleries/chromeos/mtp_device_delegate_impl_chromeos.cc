@@ -379,8 +379,8 @@ void CloseFileDescriptor(const int file_descriptor) {
 void DeleteTemporaryFile(const base::FilePath& file_path) {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::Bind(base::IgnoreResult(base::DeleteFile),
-                                      file_path, false /* not recursive*/));
+                           base::BindOnce(base::IgnoreResult(base::DeleteFile),
+                                          file_path, false /* not recursive*/));
 }
 
 // A fake callback to be passed as CopyFileProgressCallback.
@@ -850,8 +850,8 @@ void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&CloseStorageAndDestroyTaskHelperOnUIThread, storage_name_,
-                 read_only_));
+      base::BindOnce(&CloseStorageAndDestroyTaskHelperOnUIThread, storage_name_,
+                     read_only_));
   delete this;
 }
 
@@ -1300,9 +1300,9 @@ void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
     task_in_progress_ = true;
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&OpenStorageOnUIThread, storage_name_, read_only_,
-                   base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
-                              weak_ptr_factory_.GetWeakPtr())));
+        base::BindOnce(&OpenStorageOnUIThread, storage_name_, read_only_,
+                       base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
+                                  weak_ptr_factory_.GetWeakPtr())));
   }
 }
 
