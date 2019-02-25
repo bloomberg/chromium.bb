@@ -67,9 +67,9 @@ var FilesSafeMedia = Polymer({
       const data = {};
       data.type = this.type;
       data.src = this.src;
-      window.setTimeout(function() {
+      window.setTimeout(() => {
         this.webview_.contentWindow.postMessage(data, FILES_APP_ORIGIN);
-      }.bind(this));
+      });
     }
   },
 
@@ -90,7 +90,7 @@ var FilesSafeMedia = Polymer({
         }
       }
     });
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', event => {
       if (event.origin !== FILES_APP_ORIGIN) {
         console.log('Unknown origin.');
         return;
@@ -108,6 +108,6 @@ var FilesSafeMedia = Polymer({
           this.webview_.removeAttribute('loaded');
         }
       }
-    }.bind(this));
+    });
   }
 });

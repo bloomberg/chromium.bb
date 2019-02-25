@@ -75,7 +75,7 @@ var FilesRipple = Polymer({
 
     this._setPressed(true);
 
-    this.pressAnimationPromise_ = new Promise(function(resolve, reject) {
+    this.pressAnimationPromise_ = new Promise((resolve, reject) => {
       animationPlayer.addEventListener('finish', resolve, false);
       animationPlayer.addEventListener('cancel', reject, false);
     });
@@ -90,7 +90,7 @@ var FilesRipple = Polymer({
     this.pressAnimationPromise_ = null;
 
     // Wait if press animation is performing.
-    pressAnimationPromise.then(function() {
+    pressAnimationPromise.then(() => {
       this._setPressed(false);
 
       this.ripple_.animate([
@@ -117,6 +117,6 @@ var FilesRipple = Polymer({
           offset: 1
         }
       ], 150);
-    }.bind(this));
+    });
   }
 });
