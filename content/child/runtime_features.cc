@@ -225,8 +225,9 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
-  if (base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees))
-    WebRuntimeFeatures::EnableFeatureFromString("BlinkGenPropertyTrees", true);
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "BlinkGenPropertyTrees",
+      base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees));
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
