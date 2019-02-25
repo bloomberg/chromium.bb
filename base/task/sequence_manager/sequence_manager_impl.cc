@@ -103,6 +103,7 @@ SequenceManagerImpl::SequenceManagerImpl(
       type_(settings.message_loop_type),
       metric_recording_settings_(InitializeMetricRecordingSettings(
           settings.randomised_sampling_enabled)),
+      empty_queues_to_reload_(associated_thread_),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
       main_thread_only_(associated_thread_,
                         settings.randomised_sampling_enabled),
@@ -154,10 +155,6 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   if (GetMessagePump())
     MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
-
-SequenceManagerImpl::AnyThread::AnyThread() = default;
-
-SequenceManagerImpl::AnyThread::~AnyThread() = default;
 
 SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
     const scoped_refptr<AssociatedThreadId>& associated_thread,
@@ -253,8 +250,6 @@ SequenceManagerImpl::CreateTaskQueueImpl(const TaskQueue::Spec& spec) {
       std::make_unique<internal::TaskQueueImpl>(this, time_domain, spec);
   main_thread_only().active_queues.insert(task_queue.get());
   main_thread_only().selector.AddQueue(task_queue.get());
-  main_thread_only().queues_to_reload.resize(
-      main_thread_only().active_queues.size());
   return task_queue;
 }
 
@@ -268,41 +263,6 @@ bool SequenceManagerImpl::GetAddQueueTimeToTasks() {
 
 void SequenceManagerImpl::SetObserver(Observer* observer) {
   main_thread_only().observer = observer;
-}
-
-bool SequenceManagerImpl::AddToEmptyQueuesToReloadList(
-    internal::TaskQueueImpl* task_queue,
-    internal::EnqueueOrder enqueue_order) {
-  AutoLock lock(any_thread_lock_);
-  // Check if |task_queue| is already in the linked list.
-  if (task_queue->empty_queues_to_reload_list_storage()->queue)
-    return false;
-
-  // Insert into the linked list.
-  task_queue->empty_queues_to_reload_list_storage()->queue = task_queue;
-  task_queue->empty_queues_to_reload_list_storage()->order = enqueue_order;
-  task_queue->empty_queues_to_reload_list_storage()->next =
-      any_thread().empty_queues_to_reload_list;
-  any_thread().empty_queues_to_reload_list =
-      task_queue->empty_queues_to_reload_list_storage();
-  return true;
-}
-
-void SequenceManagerImpl::RemoveFromEmptyQueuesToReloadList(
-    internal::TaskQueueImpl* task_queue) {
-  AutoLock lock(any_thread_lock_);
-  internal::EmptyQueuesToReloadList** prev =
-      &any_thread().empty_queues_to_reload_list;
-  while (*prev) {
-    if ((*prev)->queue == task_queue) {
-      *prev = (*prev)->next;
-      break;
-    }
-    prev = &(*prev)->next;
-  }
-
-  task_queue->empty_queues_to_reload_list_storage()->next = nullptr;
-  task_queue->empty_queues_to_reload_list_storage()->queue = nullptr;
 }
 
 void SequenceManagerImpl::ShutdownTaskQueueGracefully(
@@ -325,51 +285,28 @@ void SequenceManagerImpl::UnregisterTaskQueueImpl(
   // when posting a task.
   task_queue->UnregisterTaskQueue();
 
-  // Remove |task_queue| from the linked list if present.
-  // This is O(n).  We assume this will be a relatively infrequent operation.
-  RemoveFromEmptyQueuesToReloadList(task_queue.get());
-
   // Add |task_queue| to |main_thread_only().queues_to_delete| so we can prevent
   // it from being freed while any of our structures hold hold a raw pointer to
   // it.
   main_thread_only().active_queues.erase(task_queue.get());
   main_thread_only().queues_to_delete[task_queue.get()] = std::move(task_queue);
-  main_thread_only().queues_to_reload.resize(
-      main_thread_only().active_queues.size());
 }
 
-void SequenceManagerImpl::ReloadEmptyWorkQueues() {
-  size_t num_queues_to_reload = 0;
+AtomicFlagSet::AtomicFlag
+SequenceManagerImpl::GetFlagToRequestReloadForEmptyQueue(
+    TaskQueueImpl* task_queue) {
+  return empty_queues_to_reload_.AddFlag(BindRepeating(
+      &TaskQueueImpl::ReloadEmptyImmediateWorkQueue, Unretained(task_queue)));
+}
 
-  DCHECK_EQ(main_thread_only().active_queues.size(),
-            main_thread_only().queues_to_reload.size());
-  {
-    AutoLock lock(any_thread_lock_);
-
-    for (internal::EmptyQueuesToReloadList* iter =
-             any_thread().empty_queues_to_reload_list;
-         iter; iter = iter->next) {
-      DCHECK_LT(num_queues_to_reload,
-                main_thread_only().queues_to_reload.size());
-      main_thread_only().queues_to_reload[num_queues_to_reload++] = iter->queue;
-      iter->queue = nullptr;
-    }
-
-    any_thread().empty_queues_to_reload_list = nullptr;
-  }
-
+void SequenceManagerImpl::ReloadEmptyWorkQueues() const {
   // There are two cases where a queue needs reloading.  First, it might be
   // completely empty and we've just posted a task (this method handles that
   // case). Secondly if the work queue becomes empty in when calling
   // WorkQueue::TakeTaskFromWorkQueue (handled there).
-  for (size_t i = 0; i < num_queues_to_reload; i++) {
-    // It's important we call
-    // ReloadEmptyImmediateWorkQueue out side of
-    // |any_thread_lock_| to avoid lock order inversion.
-    main_thread_only().queues_to_reload[i]->ReloadEmptyImmediateWorkQueue();
-    main_thread_only().queues_to_reload[i] =
-        nullptr;  // Not strictly necessary.
-  }
+  //
+  // Invokes callbacks created by GetFlagToRequestReloadForEmptyQueue above.
+  empty_queues_to_reload_.RunActiveCallbacks();
 }
 
 void SequenceManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
@@ -409,16 +346,6 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
   }
   if (main_thread_only().observer)
     main_thread_only().observer->OnExitNestedRunLoop();
-}
-
-void SequenceManagerImpl::OnEmptyQueueHasIncomingImmediateWork(
-    internal::TaskQueueImpl* queue,
-    internal::EnqueueOrder enqueue_order,
-    bool schedule_work) {
-  bool success = AddToEmptyQueuesToReloadList(queue, enqueue_order);
-  DCHECK(success);
-  if (schedule_work)
-    controller_->ScheduleWork();
 }
 
 void SequenceManagerImpl::ScheduleWork() {
@@ -521,17 +448,12 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   if (!main_thread_only().selector.AllEnabledWorkQueuesAreEmpty())
     return TimeDelta();
 
-  // Its possible the selectors state is dirty because ReloadEmptyWorkQueues
-  // hasn't been called yet. This check catches the case of fresh incoming work.
-  {
-    AutoLock lock(any_thread_lock_);
-    for (const internal::EmptyQueuesToReloadList* iter =
-             any_thread().empty_queues_to_reload_list;
-         iter; iter = iter->next) {
-      if (iter->queue->CouldTaskRun(iter->order))
-        return TimeDelta();
-    }
-  }
+  // There may be some incoming immediate work which we haven't accounted for.
+  // NB ReloadEmptyWorkQueues involves a memory barrier, so it's fastest to not
+  // do this always.
+  ReloadEmptyWorkQueues();
+  if (!main_thread_only().selector.AllEnabledWorkQueuesAreEmpty())
+    return TimeDelta();
 
   // Otherwise we need to find the shortest delay, if any.  NB we don't need to
   // call WakeUpReadyDelayedQueues because it's assumed DelayTillNextTask will
@@ -775,16 +697,6 @@ SequenceManagerImpl::AsValueWithSelectorResult(
   for (auto* time_domain : main_thread_only().time_domains)
     time_domain->AsValueInto(state.get());
   state->EndArray();
-  {
-    AutoLock lock(any_thread_lock_);
-    state->BeginArray("has_incoming_immediate_work");
-    for (const internal::EmptyQueuesToReloadList* iter =
-             any_thread().empty_queues_to_reload_list;
-         iter; iter = iter->next) {
-      state->AppendString(iter->queue->GetName());
-    }
-    state->EndArray();
-  }
   return std::move(state);
 }
 
@@ -808,7 +720,6 @@ void SequenceManagerImpl::CleanUpQueues() {
   for (auto it = main_thread_only().queues_to_gracefully_shutdown.begin();
        it != main_thread_only().queues_to_gracefully_shutdown.end();) {
     if (it->first->IsEmpty()) {
-      // Will resize |main_thread_only().queues_to_reload|.
       UnregisterTaskQueueImpl(std::move(it->second));
       main_thread_only().active_queues.erase(it->first);
       main_thread_only().queues_to_gracefully_shutdown.erase(it++);

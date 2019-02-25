@@ -45,7 +45,6 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
 
   using internal::SequenceManagerImpl::GetNextSequenceNumber;
   using internal::SequenceManagerImpl::ReloadEmptyWorkQueues;
-  using internal::SequenceManagerImpl::RemoveFromEmptyQueuesToReloadList;
   using internal::SequenceManagerImpl::WakeUpReadyDelayedQueues;
 
  private:
