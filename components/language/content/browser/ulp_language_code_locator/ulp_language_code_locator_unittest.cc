@@ -7,16 +7,27 @@
 #include <bitset>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "components/language/content/browser/ulp_language_code_locator/s2langquadtree.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/s2cellid/src/s2/s2cellid.h"
 #include "third_party/s2cellid/src/s2/s2latlng.h"
 
 namespace language {
+
+class UlpLanguageCodeLocatorTest : public testing::Test {
+ public:
+  UlpLanguageCodeLocatorTest() {
+    UlpLanguageCodeLocator::RegisterLocalStatePrefs(local_state_.registry());
+  }
+
+  TestingPrefServiceSimple local_state_;
+};
 
 std::vector<std::unique_ptr<SerializedLanguageTree>> GetSerializedTrees() {
   const std::vector<std::string> languages_rank0{"fr", "en"};
@@ -51,10 +62,11 @@ void ExpectLatLngHasLanguages(const UlpLanguageCodeLocator& locator,
   EXPECT_THAT(languages, ::testing::ElementsAreArray(languages_expected));
 }
 
-TEST(UlpLanguageCodeLocatorTest, TreeLeaves) {
+TEST_F(UlpLanguageCodeLocatorTest, TreeLeaves) {
   std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
       GetSerializedTrees();
-  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees),
+                                       &local_state_);
   const S2CellId face = S2CellId::FromFace(0);
 
   ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
@@ -63,10 +75,11 @@ TEST(UlpLanguageCodeLocatorTest, TreeLeaves) {
   ExpectLatLngHasLanguages(locator, face.child(3), {"en", "en"});
 }
 
-TEST(UlpLanguageCodeLocatorTest, Idempotence) {
+TEST_F(UlpLanguageCodeLocatorTest, Idempotence) {
   std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
       GetSerializedTrees();
-  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees),
+                                       &local_state_);
   const S2CellId face = S2CellId::FromFace(0);
 
   ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
@@ -76,10 +89,11 @@ TEST(UlpLanguageCodeLocatorTest, Idempotence) {
   ExpectLatLngHasLanguages(locator, face.child(3), {"en", "en"});
 }
 
-TEST(UlpLanguageCodeLocatorTest, TreeLeafDescendants) {
+TEST_F(UlpLanguageCodeLocatorTest, TreeLeafDescendants) {
   std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees =
       GetSerializedTrees();
-  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees));
+  const UlpLanguageCodeLocator locator(std::move(serialized_langtrees),
+                                       &local_state_);
   const S2CellId cell = S2CellId::FromFace(0).child(0);
 
   ExpectLatLngHasLanguages(locator, cell, {"fr", "de"});

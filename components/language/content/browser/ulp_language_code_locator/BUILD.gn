@@ -52,6 +52,7 @@ source_set("ulp_language_code_locator") {
     ":ulp_serialized_to_static_c",
     "//base",
     "//components/language/content/browser:language_code_locator",
+    "//components/prefs:prefs",
     "//third_party/s2cellid",
   ]
 }
@@ -67,6 +68,7 @@ source_set("unit_tests") {
     ":ulp_language_code_locator",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/s2cellid",

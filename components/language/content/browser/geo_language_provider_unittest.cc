@@ -15,6 +15,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/language/content/browser/test_utils.h"
+#include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,8 @@ class GeoLanguageProviderTest : public testing::Test {
         base::BindRepeating(&MockIpGeoLocationProvider::Bind,
                             base::Unretained(&mock_ip_geo_location_provider_)));
     language::GeoLanguageProvider::RegisterLocalStatePrefs(
+        local_state_.registry());
+    language::UlpLanguageCodeLocator::RegisterLocalStatePrefs(
         local_state_.registry());
   }
 

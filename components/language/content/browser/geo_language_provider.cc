@@ -93,7 +93,7 @@ void GeoLanguageProvider::BackgroundStartUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
   // Initialize location->language lookup library.
-  language_code_locator_ = GetLanguageCodeLocator();
+  language_code_locator_ = GetLanguageCodeLocator(prefs_);
 
   // Make initial query.
   QueryNextPosition();

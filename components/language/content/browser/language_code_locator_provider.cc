@@ -5,6 +5,7 @@
 #include "components/language/content/browser/language_code_locator_provider.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "components/language/content/browser/language_code_locator.h"
@@ -12,13 +13,15 @@
 #include "components/language/content/browser/ulp_language_code_locator/s2langquadtree.h"
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/prefs/pref_service.h"
 
 namespace language {
 namespace {
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator_helper.h"
 }  // namespace
 
-std::unique_ptr<LanguageCodeLocator> GetLanguageCodeLocator() {
+std::unique_ptr<LanguageCodeLocator> GetLanguageCodeLocator(
+    PrefService* prefs) {
   if (base::FeatureList::IsEnabled(kImprovedGeoLanguageData)) {
     std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees;
     serialized_langtrees.reserve(3);
@@ -32,7 +35,7 @@ std::unique_ptr<LanguageCodeLocator> GetLanguageCodeLocator() {
         std::make_unique<BitsetSerializedLanguageTree<kNumBits2>>(
             GetLanguagesRank2(), GetTreeSerializedRank2()));
     return std::make_unique<UlpLanguageCodeLocator>(
-        std::move(serialized_langtrees));
+        std::move(serialized_langtrees), prefs);
   } else {
     return std::make_unique<RegionalLanguageCodeLocator>();
   }
