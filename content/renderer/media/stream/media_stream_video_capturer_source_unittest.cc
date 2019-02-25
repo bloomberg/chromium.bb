@@ -122,11 +122,11 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     webkit_source_.SetPlatformSource(base::WrapUnique(source_));
     webkit_source_id_ = webkit_source_.Id();
 
-    MediaStreamVideoCapturerSource::DeviceVideoCapturerFactoryCallback
-        callback = base::BindRepeating(
+    MediaStreamVideoCapturerSource::DeviceCapturerFactoryCallback callback =
+        base::BindRepeating(
             &MediaStreamVideoCapturerSourceTest::RecreateVideoCapturerSource,
             base::Unretained(this));
-    source_->SetDeviceVideoCapturerFactoryCallbackForTesting(callback);
+    source_->SetDeviceCapturerFactoryCallbackForTesting(std::move(callback));
   }
 
   void TearDown() override {
