@@ -75,7 +75,8 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       firebase_app_id_(StrDupParam(params, 18)),
       custom_themes_(StrDupParam(params, 19)),
       resources_version_(StrDupParam(params, 20)),
-      extracted_file_suffix_(params[21]) {}
+      extracted_file_suffix_(params[21]),
+      is_at_least_q_(GetIntParam(params, 22)) {}
 
 // static
 BuildInfo* BuildInfo::GetInstance() {

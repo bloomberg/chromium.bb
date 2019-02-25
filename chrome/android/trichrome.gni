@@ -82,9 +82,19 @@ template("trichrome_library_apk_tmpl") {
       if (build_apk_secondary_abi) {
         secondary_abi_shared_libraries =
             [ "//chrome/android:monochrome_secondary_abi_lib" ]
+
+        _trampoline = "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline($android_secondary_abi_toolchain)"
+        deps += [ _trampoline ]
+        _secondary_out_dir = get_label_info(_trampoline, "root_out_dir")
+        secondary_abi_loadable_modules =
+            [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
       }
     } else {
       shared_libraries = [ "//chrome/android:monochrome" ]
+      deps += [
+        "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
+      ]
+      loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
     }
 
     if (!is_java_debug) {
