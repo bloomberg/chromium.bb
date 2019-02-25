@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_set.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/remote_command_media_keys_listener_mac.h"
 
 namespace ui {
 
@@ -218,6 +219,17 @@ CGEventRef MediaKeysListenerImpl::EventTapCallback(CGEventTapProxy proxy,
 std::unique_ptr<MediaKeysListener> MediaKeysListener::Create(
     MediaKeysListener::Delegate* delegate,
     MediaKeysListener::Scope scope) {
+  // For Mac OS 10.12.2 or later, we want to use MPRemoteCommandCenter for
+  // getting media keys globally.
+  if (@available(macOS 10.12.2, *)) {
+    if (scope == Scope::kGlobal) {
+      auto listener =
+          std::make_unique<RemoteCommandMediaKeysListenerMac>(delegate);
+      listener->Initialize();
+      return std::move(listener);
+    }
+  }
+
   return std::make_unique<MediaKeysListenerImpl>(delegate, scope);
 }
 

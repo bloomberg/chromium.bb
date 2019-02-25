@@ -2433,6 +2433,7 @@ jumbo_source_set("browser") {
       "//media",
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac",
+      "//ui/base/now_playing",
     ]
     libs += [
       "Carbon.framework",
