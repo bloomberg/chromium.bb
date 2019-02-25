@@ -38,14 +38,15 @@ void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
 
 ScriptPromise MIDIAccessInitializer::Start() {
   ScriptPromise promise = this->Promise();
-  accessor_ = MIDIAccessor::Create(this);
 
   // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  accessor_ = std::make_unique<MIDIAccessor>(this, task_runner);
+
   ConnectToPermissionService(
       GetExecutionContext(),
-      mojo::MakeRequest(
-          &permission_service_,
-          GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      mojo::MakeRequest(&permission_service_, std::move(task_runner)));
 
   Document& doc = To<Document>(*GetExecutionContext());
   permission_service_->RequestPermission(

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -43,30 +44,24 @@ using midi::mojom::blink::Result;
 
 namespace blink {
 
-// Factory method
-std::unique_ptr<MIDIAccessor> MIDIAccessor::Create(MIDIAccessorClient* client) {
-  return base::WrapUnique(new MIDIAccessor(client));
-}
-
-MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client) : client_(client) {
+MIDIAccessor::MIDIAccessor(
+    MIDIAccessorClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : client_(client), task_runner_(std::move(task_runner)) {
   DCHECK(client);
 }
 
-MIDIAccessor::~MIDIAccessor() {
-  if (called_start_session_)
-    MIDIDispatcher::Instance().RemoveAccessor(this);
-}
+MIDIAccessor::~MIDIAccessor() = default;
 
 void MIDIAccessor::StartSession() {
-  MIDIDispatcher::Instance().AddAccessor(this);
-  called_start_session_ = true;
+  dispatcher_ = std::make_unique<MIDIDispatcher>(std::move(task_runner_), this);
 }
 
 void MIDIAccessor::SendMIDIData(unsigned port_index,
                                 const unsigned char* data,
                                 wtf_size_t length,
                                 base::TimeTicks time_stamp) {
-  MIDIDispatcher::Instance().SendMidiData(port_index, data, length, time_stamp);
+  dispatcher_->SendMidiData(port_index, data, length, time_stamp);
 }
 
 void MIDIAccessor::DidAddInputPort(const String& id,

@@ -47,7 +47,8 @@ class MIDIAccessor final {
   USING_FAST_MALLOC(MIDIAccessor);
 
  public:
-  static std::unique_ptr<MIDIAccessor> Create(MIDIAccessorClient*);
+  MIDIAccessor(MIDIAccessorClient* client,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MIDIAccessor();
 
   void StartSession();
@@ -81,10 +82,10 @@ class MIDIAccessor final {
                           base::TimeTicks time_stamp);
 
  private:
-  explicit MIDIAccessor(MIDIAccessorClient*);
 
   MIDIAccessorClient* client_;
-  bool called_start_session_ = false;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::unique_ptr<MIDIDispatcher> dispatcher_;
 };
 
 }  // namespace blink
