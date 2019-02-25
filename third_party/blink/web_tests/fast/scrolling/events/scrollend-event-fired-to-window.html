@@ -30,32 +30,20 @@ var target_div = document.getElementById('targetDiv');
 var rect = target_div.getBoundingClientRect();
 var x = rect.left + rect.width / 2;
 var y = rect.top + rect.height / 2;
-function scrollLeft() {
-  return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "left",
-      SPEED_INSTANT);
-}
 
 function scrollUp() {
   return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "up",
       SPEED_INSTANT);
 }
 
-var horizontal_scrollend_arrived = false;
-var vertical_scrollend_arrived = false;
-function onHorizontalScrollEnd(event) {
+var scrollend_arrived = false;
+function onScrollEnd(event) {
   assert_false(event.cancelable);
-  // scrollend events are bubbled when the target node is document.
+  // scrollend events targetting document are bubbled to the window.
   assert_true(event.bubbles);
-  horizontal_scrollend_arrived = true;
+  scrollend_arrived = true;
 }
-function onVerticalScrollEnd(event) {
-  assert_false(event.cancelable);
-  // scrollend events are bubbled when the target node is document.
-  assert_true(event.bubbles);
-  vertical_scrollend_arrived = true;
-}
-document.addEventListener("scrollend", onHorizontalScrollEnd);
-document.addEventListener("scrollend", onVerticalScrollEnd);
+window.addEventListener("scrollend", onScrollEnd);
 
 promise_test (async (t) => {
   // Make sure that no scrollend event is sent to target_div.
@@ -64,16 +52,10 @@ promise_test (async (t) => {
 
   await waitForCompositorCommit();
 
-  // Scroll left on target div and wait for the doc to get scrollend event.
-  await scrollLeft();
-  await waitFor(() => { return horizontal_scrollend_arrived; },
-      'Document did not receive scrollend event after scroll left on target.');
-  assert_equals(target_div.scrollLeft, 0);
-
   // Scroll up on target div and wait for the doc to get scrollend event.
   await scrollUp();
-  await waitFor(() => { return horizontal_scrollend_arrived; },
-      'Document did not receive scrollend event after scroll up on target.');
+  await waitFor(() => { return scrollend_arrived; },
+      'Window did not receive scrollend event after scroll up on target.');
   assert_equals(target_div.scrollTop, 0);
-}, 'Tests that the document gets scrollend event when no element scrolls.');
+}, 'Tests that the window gets scrollend event when no element scrolls.');
 </script>

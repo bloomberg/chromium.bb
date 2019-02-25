@@ -6,15 +6,17 @@
 
 namespace blink {
 OverscrollEvent::OverscrollEvent(const AtomicString& type,
+                                 bool bubbles,
                                  double delta_x,
                                  double delta_y)
-    : Event(type, Bubbles::kNo, Cancelable::kNo),
+    : Event(type, (bubbles ? Bubbles::kYes : Bubbles::kNo), Cancelable::kNo),
       delta_x_(delta_x),
       delta_y_(delta_y) {}
 
 OverscrollEvent::OverscrollEvent(const AtomicString& type,
+                                 bool bubbles,
                                  const OverscrollEventInit* initializer)
-    : Event(type, Bubbles::kNo, Cancelable::kNo),
+    : Event(type, (bubbles ? Bubbles::kYes : Bubbles::kNo), Cancelable::kNo),
       delta_x_(initializer->deltaX()),
       delta_y_(initializer->deltaY()) {}
 
