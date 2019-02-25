@@ -7,10 +7,19 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,7 +34,10 @@ namespace {
 
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  // Section for all the sync settings.
   SyncDataTypeSectionIdentifier = kSectionIdentifierEnumZero,
+  // Advanced settings.
+  AdvancedSettingsSectionIdentifier,
 };
 
 // List of items. For implementation details in
@@ -35,6 +47,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // on the type.
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncDataTypeSectionIdentifier section.
+  // Sync everything item.
   SyncEverythingItemType = kItemTypeEnumZero,
   // kSyncAutofill.
   AutofillDataTypeItemType,
@@ -50,7 +63,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ReadingListDataTypeItemType,
   // kSyncPreferences.
   SettingsDataTypeItemType,
+  // AdvancedSettingsSectionIdentifier section.
+  // Encryption item.
+  EncryptionItemType,
+  // Google activity controls item.
+  GoogleActivityControlsItemType,
+  // Data from Chrome sync.
+  DataFromChromeSync,
 };
+
+NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 }  // namespace
 
@@ -61,10 +83,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _ignoreSyncStateChanges;
 }
 
+// Sync service.
+@property(nonatomic, assign) syncer::SyncService* syncService;
 // Model item for sync everything.
 @property(nonatomic, strong) SyncSwitchItem* syncEverythingItem;
 // Model item for each data types.
 @property(nonatomic, strong) NSArray<SyncSwitchItem*>* syncSwitchItems;
+// Encryption item.
+@property(nonatomic, strong) TableViewImageItem* encryptionItem;
 // Returns whether the Sync settings should be disabled because of a Sync error.
 @property(nonatomic, assign, readonly) BOOL disabledBecauseOfSyncError;
 
@@ -76,6 +102,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self = [super init];
   if (self) {
     DCHECK(syncService);
+    self.syncService = syncService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
   }
   return self;
@@ -152,6 +179,78 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
+#pragma mark - Loads the advanced settings section
+
+// Loads the advanced settings section.
+- (void)loadAdvancedSettingsSection {
+  TableViewModel* model = self.consumer.tableViewModel;
+  [model addSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+  // EncryptionItemType.
+  self.encryptionItem =
+      [[TableViewImageItem alloc] initWithType:EncryptionItemType];
+  self.encryptionItem.title = GetNSString(IDS_IOS_MANAGE_SYNC_ENCRYPTION);
+  self.encryptionItem.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  [model addItem:self.encryptionItem
+      toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+  [self updateEncryptionItem:NO];
+
+  // GoogleActivityControlsItemType.
+  SettingsMultilineDetailItem* googleActivityControlsItem =
+      [[SettingsMultilineDetailItem alloc]
+          initWithType:GoogleActivityControlsItemType];
+  googleActivityControlsItem.text =
+      GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
+  googleActivityControlsItem.detailText =
+      GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
+  [model addItem:googleActivityControlsItem
+      toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  // AdvancedSettingsSectionIdentifier.
+  SettingsMultilineDetailItem* dataFromChromeSyncItem =
+      [[SettingsMultilineDetailItem alloc] initWithType:DataFromChromeSync];
+  dataFromChromeSyncItem.text =
+      GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
+  dataFromChromeSyncItem.detailText =
+      GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
+  [model addItem:dataFromChromeSyncItem
+      toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+}
+
+// Updates encryption item, and notifies the consumer if |notifyConsumer| is set
+// to YES.
+- (void)updateEncryptionItem:(BOOL)notifyConsumer {
+  BOOL shouldEncryptionItemBeEnabled =
+      self.syncService->IsEngineInitialized() &&
+      self.syncSetupService->IsSyncEnabled() &&
+      !self.disabledBecauseOfSyncError;
+  BOOL needsUpdate =
+      shouldEncryptionItemBeEnabled &&
+      (self.encryptionItem.enabled != shouldEncryptionItemBeEnabled);
+  if (self.syncSetupService->GetSyncServiceState() ==
+      SyncSetupService::kSyncServiceNeedsPassphrase) {
+    needsUpdate = needsUpdate || self.encryptionItem.image == nil;
+    self.encryptionItem.image =
+        [UIImage imageNamed:kGoogleServicesSyncErrorImage];
+    self.encryptionItem.detailText = GetNSString(
+        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+  } else {
+    needsUpdate = needsUpdate || self.encryptionItem.image != nil;
+    self.encryptionItem.image = nil;
+    self.encryptionItem.detailText = nil;
+  }
+  self.encryptionItem.enabled = shouldEncryptionItemBeEnabled;
+  if (shouldEncryptionItemBeEnabled) {
+    self.encryptionItem.textColor = nil;
+  } else {
+    self.encryptionItem.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  }
+  if (needsUpdate && notifyConsumer) {
+    [self.consumer reloadItem:self.self.encryptionItem];
+  }
+}
+
 #pragma mark - Private
 
 // Creates a SyncSwitchItem instance.
@@ -215,6 +314,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (id<ManageSyncSettingsConsumer>)controller {
   DCHECK_EQ(self.consumer, controller);
   [self loadSyncDataTypeSection];
+  [self loadAdvancedSettingsSection];
 }
 
 #pragma mark - SyncObserverModelBridge
@@ -226,6 +326,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
   [self updateSyncDataItemsNotifyConsumer:YES];
+  [self updateEncryptionItem:YES];
 }
 
 #pragma mark - ManageSyncSettingsServiceDelegate
@@ -249,6 +350,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
   [self updateSyncDataItemsNotifyConsumer:YES];
+}
+
+- (void)didSelectItem:(TableViewItem*)item {
+  ItemType itemType = static_cast<ItemType>(item.type);
+  switch (itemType) {
+    case EncryptionItemType:
+      [self.commandHandler openPassphraseDialog];
+      break;
+    case GoogleActivityControlsItemType:
+      [self.commandHandler openWebAppActivityDialog];
+      break;
+    case DataFromChromeSync:
+      [self.commandHandler openDataFromChromeSyncWebPage];
+      break;
+    case SyncEverythingItemType:
+    case AutofillDataTypeItemType:
+    case BookmarksDataTypeItemType:
+    case HistoryDataTypeItemType:
+    case OpenTabsDataTypeItemType:
+    case PasswordsDataTypeItemType:
+    case ReadingListDataTypeItemType:
+    case SettingsDataTypeItemType:
+      // Nothing to do.
+      break;
+  }
 }
 
 @end

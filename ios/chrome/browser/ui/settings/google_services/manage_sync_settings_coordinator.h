@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
 @class ManageSyncSettingsCoordinator;
 
 // Delegate for ManageSyncSettingsCoordinator.
@@ -21,7 +22,10 @@
 // Coordinator for the Manage Sync Settings TableView Controller.
 @interface ManageSyncSettingsCoordinator : ChromeCoordinator
 
+// Delegate.
 @property(nonatomic, weak) id<ManageSyncSettingsCoordinatorDelegate> delegate;
+// Global dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 

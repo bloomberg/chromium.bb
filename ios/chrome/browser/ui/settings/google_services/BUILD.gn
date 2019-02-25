@@ -19,6 +19,7 @@ source_set("google_services") {
     "google_services_settings_view_controller.h",
     "google_services_settings_view_controller.mm",
     "google_services_settings_view_controller_model_delegate.h",
+    "manage_sync_settings_command_handler.h",
     "manage_sync_settings_consumer.h",
     "manage_sync_settings_coordinator.h",
     "manage_sync_settings_coordinator.mm",
@@ -32,6 +33,7 @@ source_set("google_services") {
   deps = [
     "resources:google_services_sync_error",
     "//base",
+    "//components/browser_sync",
     "//components/metrics",
     "//components/prefs",
     "//components/strings",
@@ -57,6 +59,7 @@ source_set("google_services") {
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
