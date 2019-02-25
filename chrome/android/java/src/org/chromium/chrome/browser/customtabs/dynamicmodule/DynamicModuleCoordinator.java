@@ -72,6 +72,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final Lazy<CustomTabTopBarDelegate> mTopBarDelegate;
     private final Lazy<CustomTabBottomBarDelegate> mBottomBarDelegate;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
+    private final Lazy<DynamicModuleToolbarController> mToolbarController;
 
     @Nullable
     private LoadModuleCallback mModuleCallback;
@@ -166,6 +167,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                                     Lazy<CustomTabTopBarDelegate> topBarDelegate,
                                     Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
                                     Lazy<ChromeFullscreenManager> fullscreenManager,
+                                    Lazy<DynamicModuleToolbarController> toolbarController,
                                     CustomTabsConnection connection, ChromeActivity activity,
                                     CustomTabActivityTabController tabController,
                                     DynamicModulePageLoadObserver pageLoadObserver) {
@@ -186,6 +188,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         mTopBarDelegate = topBarDelegate;
         mBottomBarDelegate = bottomBarDelegate;
         mFullscreenManager = fullscreenManager;
+        mToolbarController = toolbarController;
 
         mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
         closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
@@ -337,6 +340,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private class LoadModuleCallback implements Callback<ModuleEntryPoint> {
         @Override
         public void onResult(@Nullable ModuleEntryPoint entryPoint) {
+            mToolbarController.get().releaseAndroidControlsHidingToken();
             mDefaultToolbarVisibility = mActivity.getToolbarManager().getToolbarVisibility();
             mDefaultToolbarShadowVisibility =
                     mActivity.getToolbarManager().getToolbarShadowVisibility();
@@ -466,7 +470,9 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     private void maybeCustomizeCctHeader(String url) {
-        if (!isModuleLoaded() && !isModuleLoading() && !hasModuleFailedToLoad()) return;
+        // Since some of the tool bar default settings are not obtained until module loading is
+        // finished, we do not allow customization until then.
+        if (!isModuleLoaded() && !hasModuleFailedToLoad()) return;
 
         boolean showTopBar = mPageCriteria.matches(url);
         mTopBarDelegate.get().showTopBarIfNecessary(showTopBar);

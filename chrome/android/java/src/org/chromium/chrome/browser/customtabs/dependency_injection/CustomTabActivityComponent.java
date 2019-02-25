@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
@@ -29,6 +30,7 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface CustomTabActivityComponent extends ChromeActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();
+    DynamicModuleToolbarController resolveDynamicModuleToolbarController();
     DynamicModuleCoordinator resolveDynamicModuleCoordinator();
 
     CloseButtonNavigator resolveCloseButtonNavigator();

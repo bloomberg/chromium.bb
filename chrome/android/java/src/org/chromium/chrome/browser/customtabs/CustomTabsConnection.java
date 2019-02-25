@@ -1007,6 +1007,11 @@ public class CustomTabsConnection {
         mClientManager.setCanUseHiddenTab(session, value);
     }
 
+    @VisibleForTesting
+    void setHideCCTTopBarOnModuleManagedUrls(CustomTabsSessionToken session, boolean value) {
+        mClientManager.setHideCCTTopBarOnModuleManagedUrls(session, value);
+    }
+
     /**
      * See {@link ClientManager#setSendNavigationInfoForSession(CustomTabsSessionToken, boolean)}.
      */
