@@ -63,7 +63,7 @@ void SVGAngleTearOff::setValueInSpecifiedUnits(
   CommitChange();
 }
 
-void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unit_type,
+void SVGAngleTearOff::newValueSpecifiedUnits(uint16_t unit_type,
                                              float value_in_specified_units,
                                              ExceptionState& exception_state) {
   if (IsImmutable()) {
@@ -83,7 +83,7 @@ void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unit_type,
   CommitChange();
 }
 
-void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unit_type,
+void SVGAngleTearOff::convertToSpecifiedUnits(uint16_t unit_type,
                                               ExceptionState& exception_state) {
   if (IsImmutable()) {
     ThrowReadOnly(exception_state);

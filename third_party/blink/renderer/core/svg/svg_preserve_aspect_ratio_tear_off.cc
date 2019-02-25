@@ -34,7 +34,7 @@
 
 namespace blink {
 
-void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align,
+void SVGPreserveAspectRatioTearOff::setAlign(uint16_t align,
                                              ExceptionState& exception_state) {
   if (IsImmutable()) {
     ThrowReadOnly(exception_state);
@@ -52,7 +52,7 @@ void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align,
 }
 
 void SVGPreserveAspectRatioTearOff::setMeetOrSlice(
-    unsigned short meet_or_slice,
+    uint16_t meet_or_slice,
     ExceptionState& exception_state) {
   if (IsImmutable()) {
     ThrowReadOnly(exception_state);
