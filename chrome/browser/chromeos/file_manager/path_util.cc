@@ -572,9 +572,10 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
   return result;
 }
 
-bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
-                                 std::string* mount_name,
-                                 std::string* full_path) {
+bool ExtractMountNameFileSystemNameFullPath(const base::FilePath& absolute_path,
+                                            std::string* mount_name,
+                                            std::string* file_system_name,
+                                            std::string* full_path) {
   DCHECK(absolute_path.IsAbsolute());
   DCHECK(mount_name);
   DCHECK(full_path);
@@ -583,14 +584,30 @@ bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
   base::FilePath virtual_path;
   if (!mount_points->GetVirtualPath(absolute_path, &virtual_path))
     return false;
+  // |virtual_path| format is: <mount_name>/<full_path>, and
+  // |file_system_name| == |mount_name|, except for 'removable' and 'archive',
+  // |mount_name| is the first two segments, |file_system_name| is the second.
   const std::string& value = virtual_path.value();
-  size_t pos = value.find(base::FilePath::kSeparators[0]);
-  *mount_name = value.substr(0, pos);
+  size_t fs_start = 0;
+  size_t slash_pos = value.find(base::FilePath::kSeparators[0]);
+  *mount_name = *file_system_name = value.substr(0, slash_pos);
+  if (*mount_name == chromeos::kSystemMountNameRemovable ||
+      *mount_name == chromeos::kSystemMountNameArchive) {
+    if (slash_pos == std::string::npos) {
+      return false;
+    }
+    fs_start = slash_pos + 1;
+    slash_pos = value.find(base::FilePath::kSeparators[0], fs_start);
+    *mount_name = value.substr(0, slash_pos);
+  }
+
   // Set full_path to '/' if |absolute_path| is a root.
-  if (pos == std::string::npos) {
+  if (slash_pos == std::string::npos) {
+    *file_system_name = value.substr(fs_start);
     *full_path = "/";
   } else {
-    *full_path = value.substr(pos);
+    *file_system_name = value.substr(fs_start, slash_pos - fs_start);
+    *full_path = value.substr(slash_pos);
   }
   return true;
 }

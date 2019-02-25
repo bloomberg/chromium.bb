@@ -11,7 +11,7 @@ namespace file_manager {
 TEST(EventRouterTest, PopulateCrostiniSharedPathsChangedEvent) {
   extensions::api::file_manager_private::CrostiniSharedPathsChangedEvent event;
   EventRouter::PopulateCrostiniSharedPathsChangedEvent(
-      event, "extensionid", "mountname", "/full/path");
+      event, "extensionid", "mountname", "filesystemname", "/full/path");
 
   EXPECT_EQ(event.event_type,
             extensions::api::file_manager_private::
@@ -21,7 +21,7 @@ TEST(EventRouterTest, PopulateCrostiniSharedPathsChangedEvent) {
   props.SetString(
       "fileSystemRoot",
       "filesystem:chrome-extension://extensionid/external/mountname/");
-  props.SetString("fileSystemName", "mountname");
+  props.SetString("fileSystemName", "filesystemname");
   props.SetString("fileFullPath", "/full/path");
   props.SetBoolean("fileIsDirectory", true);
   EXPECT_EQ(event.entries[0].additional_properties, props);

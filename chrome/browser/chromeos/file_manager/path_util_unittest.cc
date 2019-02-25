@@ -586,31 +586,72 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   }
 }
 
-TEST_F(FileManagerPathUtilTest, ExtractMountNameAndFullPath) {
+TEST_F(FileManagerPathUtilTest, ExtractMountNameFileSystemNameFullPath) {
   content::TestServiceManagerContext service_manager_context;
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   std::string downloads_mount_name = GetDownloadsMountPointName(profile_.get());
-  base::FilePath downloads_path = GetDownloadsFolderForProfile(profile_.get());
+  base::FilePath downloads = GetDownloadsFolderForProfile(profile_.get());
+  mount_points->RegisterFileSystem(downloads_mount_name,
+                                   storage::kFileSystemTypeNativeLocal,
+                                   storage::FileSystemMountOption(), downloads);
+  base::FilePath removable = base::FilePath(kRemovableMediaPath);
   mount_points->RegisterFileSystem(
-      downloads_mount_name, storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), downloads_path);
-  std::string relative_path = "folder/in/downloads";
+      chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
+  std::string relative_path_1 = "foo";
+  std::string relative_path_2 = "foo/bar";
   std::string mount_name;
+  std::string file_system_name;
   std::string full_path;
 
-  EXPECT_TRUE(ExtractMountNameAndFullPath(downloads_path.Append(relative_path),
-                                          &mount_name, &full_path));
+  // <Downloads>/
+  EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
+      downloads, &mount_name, &file_system_name, &full_path));
   EXPECT_EQ(mount_name, downloads_mount_name);
-  EXPECT_EQ(full_path, "/" + relative_path);
-
-  EXPECT_TRUE(
-      ExtractMountNameAndFullPath(downloads_path, &mount_name, &full_path));
-  EXPECT_EQ(mount_name, downloads_mount_name);
+  EXPECT_EQ(file_system_name, downloads_mount_name);
   EXPECT_EQ(full_path, "/");
 
-  EXPECT_FALSE(ExtractMountNameAndFullPath(base::FilePath("/unknown/path"),
-                                           &mount_name, &full_path));
+  // <Downloads>/foo
+  EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
+      downloads.Append(relative_path_1), &mount_name, &file_system_name,
+      &full_path));
+  EXPECT_EQ(mount_name, downloads_mount_name);
+  EXPECT_EQ(file_system_name, downloads_mount_name);
+  EXPECT_EQ(full_path, "/foo");
+
+  // <Downloads>/foo/bar
+  EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
+      downloads.Append(relative_path_2), &mount_name, &file_system_name,
+      &full_path));
+  EXPECT_EQ(mount_name, downloads_mount_name);
+  EXPECT_EQ(file_system_name, downloads_mount_name);
+  EXPECT_EQ(full_path, "/foo/bar");
+
+  // <removable>/
+  EXPECT_FALSE(ExtractMountNameFileSystemNameFullPath(
+      removable, &mount_name, &file_system_name, &full_path));
+
+  // <removable>/foo/
+  EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
+      removable.Append(relative_path_1), &mount_name, &file_system_name,
+      &full_path));
+  EXPECT_EQ(mount_name, "removable/foo");
+  EXPECT_EQ(file_system_name, "foo");
+  EXPECT_EQ(full_path, "/");
+
+  // <removable>/foo/bar
+  EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
+      removable.Append(relative_path_2), &mount_name, &file_system_name,
+      &full_path));
+  EXPECT_EQ(mount_name, "removable/foo");
+  EXPECT_EQ(file_system_name, "foo");
+  EXPECT_EQ(full_path, "/bar");
+
+  // Unknown.
+  EXPECT_FALSE(ExtractMountNameFileSystemNameFullPath(
+      base::FilePath("/unknown/path"), &mount_name, &file_system_name,
+      &full_path));
 }
 
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(

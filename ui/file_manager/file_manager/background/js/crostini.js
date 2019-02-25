@@ -17,9 +17,8 @@ function CrostiniImpl() {
 
   /**
    * Maintains a list of paths shared with the crostini container.
-   * Keyed by VolumeManagerCommon.RootType, with boolean set values
-   * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
-   * @private @dict {!Object<!Object<boolean>>}
+   * Keyed by entry.toURL().
+   * @private @dict {!Object<boolean>}
    */
   this.shared_paths_ = {};
 }
@@ -91,30 +90,34 @@ CrostiniImpl.prototype.isEnabled = function() {
 };
 
 /**
+ * @param {!Entry} entry
+ * @return {VolumeManagerCommon.RootType}
+ * @private
+ */
+CrostiniImpl.prototype.getRoot_ = function(entry) {
+  const info =
+      this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
+  return info && info.rootType;
+};
+
+/**
  * Registers an entry as a shared path.
  * @param {!Entry} entry
  */
 CrostiniImpl.prototype.registerSharedPath = function(entry) {
-  const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info) {
-    return;
-  }
-  let paths = this.shared_paths_[info.rootType];
-  if (!paths) {
-    paths = {};
-    this.shared_paths_[info.rootType] = paths;
-  }
+  const url = entry.toURL();
   // Remove any existing paths that are children of the new path.
-  for (let path in paths) {
-    if (path.startsWith(entry.fullPath)) {
-      delete paths[path];
+  for (let path in this.shared_paths_) {
+    if (path.startsWith(url)) {
+      delete this.shared_paths_[path];
     }
   }
-  paths[entry.fullPath] = true;
+  this.shared_paths_[url] = true;
 
   // Record UMA.
-  let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
-      CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
+  const root = this.getRoot_(entry);
+  let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
+      CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(root) ||
       CrostiniImpl.UMA_ROOT_TYPE_OTHER;
   metrics.recordSmallCount(
       'CrostiniSharedPaths.Depth.' + suffix,
@@ -126,14 +129,7 @@ CrostiniImpl.prototype.registerSharedPath = function(entry) {
  * @param {!Entry} entry
  */
 CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
-  const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info) {
-    return;
-  }
-  const paths = this.shared_paths_[info.rootType];
-  if (paths) {
-    delete paths[entry.fullPath];
-  }
+  delete this.shared_paths_[entry.toURL()];
 };
 
 /**
@@ -160,20 +156,20 @@ CrostiniImpl.prototype.onChange_ = function(event) {
  *   share or from one of its ancestor directories.
  */
 CrostiniImpl.prototype.isPathShared = function(entry) {
-  const root = this.volumeManager_.getLocationInfo(entry).rootType;
-  const paths = this.shared_paths_[root];
-  if (!paths) {
-    return false;
-  }
   // Check path and all ancestor directories.
-  let path = entry.fullPath;
-  while (path.length > 1) {
-    if (paths[path]) {
+  let path = entry.toURL();
+  let root = path;
+  if (entry && entry.filesystem && entry.filesystem.root) {
+    root = entry.filesystem.root.toURL();
+  }
+
+  while (path.length > root.length) {
+    if (this.shared_paths_[path]) {
       return true;
     }
     path = path.substring(0, path.lastIndexOf('/'));
   }
-  return !!paths['/'];
+  return !!this.shared_paths_[root];
 };
 
 /**
@@ -191,18 +187,17 @@ CrostiniImpl.prototype.canSharePath = function(entry, persist) {
     return false;
   }
 
-  // Allow Downloads, and Drive if DriveFS is enabled.
-  const rootType = this.volumeManager_.getLocationInfo(entry).rootType;
+  const root = this.getRoot_(entry);
 
   // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
   // Disallow Computers Grand Root, and Computer Root.
-  if (rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
-      (rootType === VolumeManagerCommon.RootType.COMPUTER &&
+  if (root === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+      (root === VolumeManagerCommon.RootType.COMPUTER &&
        entry.fullPath.split('/').length <= 3)) {
     return false;
   }
 
-  return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(rootType) ||
+  return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
-       CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(rootType));
+       CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));
 };

@@ -1092,6 +1092,7 @@ void EventRouter::PopulateCrostiniSharedPathsChangedEvent(
     file_manager_private::CrostiniSharedPathsChangedEvent& event,
     const std::string& extension_id,
     const std::string& mount_name,
+    const std::string& file_system_name,
     const std::string& full_path) {
   event.event_type =
       file_manager_private::CROSTINI_SHARED_PATHS_CHANGED_EVENT_TYPE_UNSHARE;
@@ -1101,7 +1102,7 @@ void EventRouter::PopulateCrostiniSharedPathsChangedEvent(
       storage::GetExternalFileSystemRootURIString(
           extensions::Extension::GetBaseURLFromExtensionId(extension_id),
           mount_name));
-  entry.additional_properties.SetString("fileSystemName", mount_name);
+  entry.additional_properties.SetString("fileSystemName", file_system_name);
   entry.additional_properties.SetString("fileFullPath", full_path);
   entry.additional_properties.SetBoolean("fileIsDirectory", true);
   event.entries.emplace_back(std::move(entry));
@@ -1109,8 +1110,10 @@ void EventRouter::PopulateCrostiniSharedPathsChangedEvent(
 
 void EventRouter::OnUnshare(const base::FilePath& path) {
   std::string mount_name;
+  std::string file_system_name;
   std::string full_path;
-  if (!util::ExtractMountNameAndFullPath(path, &mount_name, &full_path))
+  if (!util::ExtractMountNameFileSystemNameFullPath(
+          path, &mount_name, &file_system_name, &full_path))
     return;
 
   for (const auto& extension_id : GetEventListenerExtensionIds(
@@ -1118,7 +1121,7 @@ void EventRouter::OnUnshare(const base::FilePath& path) {
            file_manager_private::OnCrostiniSharedPathsChanged::kEventName)) {
     file_manager_private::CrostiniSharedPathsChangedEvent event;
     PopulateCrostiniSharedPathsChangedEvent(event, extension_id, mount_name,
-                                            full_path);
+                                            file_system_name, full_path);
     DispatchEventToExtension(
         profile_, extension_id,
         extensions::events::

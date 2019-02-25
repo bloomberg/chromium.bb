@@ -209,6 +209,7 @@ class EventRouter : public KeyedService,
           event,
       const std::string& extension_id,
       const std::string& mount_name,
+      const std::string& file_system_name,
       const std::string& full_path);
 
   base::Time last_copy_progress_event_;
