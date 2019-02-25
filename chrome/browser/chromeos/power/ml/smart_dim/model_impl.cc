@@ -415,7 +415,7 @@ void SmartDimModelImpl::LazyInitialize() {
   // completely.
   if (use_ml_service_) {
     if (!ml_service_client_) {
-      ml_service_client_ = std::make_unique<MlServiceClient>();
+      ml_service_client_ = CreateMlServiceClient();
     }
   }
 
