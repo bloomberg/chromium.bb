@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/dom_exception_or_overconstrained_error.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -42,6 +43,8 @@ class OverconstrainedError;
 // information about an error up the stack, but it is up to the higher
 // level code whether it produces a DOMException or a OverconstrainedError.
 class MediaErrorState {
+  STACK_ALLOCATED();
+
  public:
   MediaErrorState();
   void ThrowTypeError(const String& message);
