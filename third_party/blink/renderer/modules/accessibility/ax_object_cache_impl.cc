@@ -102,7 +102,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       document_(document),
       modification_count_(0),
       validation_message_axid_(0),
-      relation_cache_(new AXRelationCache(this)),
+      relation_cache_(std::make_unique<AXRelationCache>(this)),
       notification_post_timer_(
           document.GetTaskRunner(TaskType::kInternalDefault),
           this,
