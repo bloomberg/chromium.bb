@@ -796,7 +796,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
   } else {
     // Find the end of the run of space characters in this item.
     // Other white space characters (e.g., tab) are not included in this item.
-    DCHECK(style.BreakOnlyAfterWhiteSpace());
+    DCHECK(!auto_wrap_ || style.BreakOnlyAfterWhiteSpace());
     unsigned end = offset_;
     while (end < item.EndOffset() && IsBreakableSpace(text[end]))
       end++;
@@ -1256,7 +1256,6 @@ bool NGLineBreaker::ComputeOpenTagResult(
 
 void NGLineBreaker::HandleOpenTag(const NGInlineItem& item) {
   NGInlineItemResult* item_result = AddItem(item);
-  DCHECK(!item_result->can_break_after);
 
   if (ComputeOpenTagResult(item, constraint_space_, item_result)) {
     position_ += item_result->inline_size;
@@ -1269,10 +1268,16 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item) {
       item_result->should_create_line_box = true;
   }
 
+  bool was_auto_wrap = auto_wrap_;
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
   SetCurrentStyle(style);
   MoveToNextOf(item);
+
+  DCHECK(!item_result->can_break_after);
+  if (UNLIKELY(!was_auto_wrap && auto_wrap_ && item_results_->size() >= 2)) {
+    ComputeCanBreakAfter(std::prev(item_result));
+  }
 }
 
 void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
@@ -1292,32 +1297,30 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
   SetCurrentStyle(item.GetLayoutObject()->Parent()->StyleRef());
   MoveToNextOf(item);
 
-  // Prohibit break before a close tag by setting can_break_after to the
-  // previous result.
-  // TODO(kojii): There should be a result before close tag, but there are cases
-  // that doesn't because of the way we handle trailing spaces. This needs to be
-  // revisited.
-  if (item_results_->size() >= 2) {
-    NGInlineItemResult* last = &(*item_results_)[item_results_->size() - 2];
-    if (was_auto_wrap == auto_wrap_) {
+  // If the line can break after the previous item, prohibit it and allow break
+  // after this close tag instead.
+  if (was_auto_wrap) {
+    if (item_results_->size() >= 2) {
+      NGInlineItemResult* last = std::prev(item_result);
       item_result->can_break_after = last->can_break_after;
       last->can_break_after = false;
-      return;
     }
-    last->can_break_after = false;
-    if (!was_auto_wrap) {
-      DCHECK(auto_wrap_);
-      // When auto-wrap starts after no-wrap, the boundary is not allowed to
-      // wrap. However, when space characters follow the boundary, there should
-      // be a break opportunity after the space. The break_iterator cannot
-      // compute this because it considers break opportunities are before a run
-      // of spaces.
-      const String& text = Text();
-      if (offset_ < text.length() && IsBreakableSpace(text[offset_])) {
-        item_result->can_break_after = true;
-        return;
-      }
-    }
+    return;
+  }
+
+  DCHECK(!item_result->can_break_after);
+  if (!auto_wrap_)
+    return;
+
+  // When auto-wrap follows no-wrap, the boundary is determined by the break
+  // iterator. However, when space characters follow the boundary, the break
+  // iterator cannot compute this because it considers break opportunities are
+  // before a run of spaces.
+  const String& text = Text();
+  if (item_result->end_offset < text.length() &&
+      IsBreakableSpace(text[item_result->end_offset])) {
+    item_result->can_break_after = true;
+    return;
   }
   ComputeCanBreakAfter(item_result);
 }
