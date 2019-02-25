@@ -25,6 +25,14 @@ void WaylandConnectionProxy::SetWaylandConnection(
   wc_ptr_info_ = wc_ptr.PassInterface();
 }
 
+void WaylandConnectionProxy::ResetGbmDevice() {
+#if defined(WAYLAND_GBM)
+  gbm_device_.reset();
+#else
+  NOTREACHED();
+#endif
+}
+
 void WaylandConnectionProxy::CreateZwpLinuxDmabuf(
     base::File file,
     gfx::Size size,

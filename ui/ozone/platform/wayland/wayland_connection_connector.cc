@@ -83,6 +83,13 @@ void WaylandConnectionConnector::OnWaylandConnectionPtrBinded(
   auto request = mojo::MakeRequest(&wcp_ptr);
   BindInterfaceInGpuProcess(std::move(request), binder_);
   wcp_ptr->SetWaylandConnection(std::move(wc_ptr));
+
+#if defined(WAYLAND_GBM)
+  if (!connection_->buffer_manager()) {
+    LOG(WARNING) << "zwp_linux_dmabuf is not available.";
+    wcp_ptr->ResetGbmDevice();
+  }
+#endif
 }
 
 void WaylandConnectionConnector::OnTerminateGpuProcess(std::string message) {

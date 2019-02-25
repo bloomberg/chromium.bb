@@ -44,6 +44,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
 
   // WaylandConnectionProxy overrides:
   void SetWaylandConnection(ozone::mojom::WaylandConnectionPtr wc_ptr) override;
+  void ResetGbmDevice() override;
 
   // Methods, which must be used when GPU is hosted on a different process
   // aka gpu process.

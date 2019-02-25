@@ -98,7 +98,7 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
        kExistingBufferId},
   };
 
-  WaylandBufferManager* manager = connection_->buffer_manager_for_tests();
+  WaylandBufferManager* manager = connection_->buffer_manager();
   ASSERT_TRUE(manager);
 
   auto temp_file = MakeTempFile();
@@ -119,7 +119,7 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
 }
 
 TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
-  WaylandBufferManager* manager = connection_->buffer_manager_for_tests();
+  WaylandBufferManager* manager = connection_->buffer_manager();
   ASSERT_TRUE(manager);
 
   const uint32_t kBufferId1 = 1;
