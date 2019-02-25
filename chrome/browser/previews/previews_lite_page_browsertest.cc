@@ -1704,8 +1704,8 @@ class PreviewsLitePageAndPageHintsBrowserTest
         ->previews_opt_guide()
         ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
 
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
+    g_browser_process->optimization_guide_service()
+        ->MaybeUpdateHintsComponentOnUIThread(component_info);
 
     run_loop.Run();
   }
@@ -1720,6 +1720,11 @@ class PreviewsLitePageAndPageHintsBrowserTest
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING, hints_sites,
             resource_patterns));
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PreviewsLitePageServerBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch("optimization-guide-disable-installer");
   }
 
  private:

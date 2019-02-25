@@ -26,6 +26,8 @@ namespace component_updater {
 
 namespace {
 
+const char kDisableInstallerUpdate[] = "optimization-guide-disable-installer";
+
 // The extension id is: lmelglejhemejginpboagddgdfbepgmp
 const uint8_t kOptimizationHintsPublicKeySHA256[32] = {
     0xbc, 0x4b, 0x6b, 0x49, 0x74, 0xc4, 0x96, 0x8d, 0xf1, 0xe0, 0x63,
@@ -89,7 +91,9 @@ void OptimizationHintsComponentInstallerPolicy::ComponentReady(
   }
   optimization_guide::OptimizationGuideService* optimization_guide_service =
       g_browser_process->optimization_guide_service();
-  if (optimization_guide_service) {
+  if (optimization_guide_service &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableInstallerUpdate)) {
     optimization_guide::HintsComponentInfo info(
         version,
         install_dir.Append(optimization_guide::kUnindexedHintsFileName));
