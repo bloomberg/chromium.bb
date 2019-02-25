@@ -162,10 +162,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     controller_->OnWebContentsFocused(nullptr);
   }
 
-  void SimulateProgressChanged(double progress) {
-    controller_->LoadProgressChanged(web_contents(), progress);
-  }
-
   // Sets up the next call to the service for scripts to return |response|.
   void SetNextScriptResponse(const SupportsScriptResponseProto& response) {
     std::string response_str;
@@ -479,23 +475,6 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
   EXPECT_THAT(controller_->GetChips(), SizeIs(0));
-}
-
-TEST_F(ControllerTest, LoadProgressChanged) {
-  Start();
-
-  SetLastCommittedUrl(GURL("http://a.example.com/path"));
-
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _)).Times(0);
-
-  SimulateProgressChanged(0.1);
-  SimulateProgressChanged(0.3);
-  SimulateProgressChanged(0.5);
-
-  EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path")), _, _))
-      .WillOnce(RunOnceCallback<2>(true, ""));
-  SimulateProgressChanged(0.4);
 }
 
 TEST_F(ControllerTest, InitialUrlLoads) {
