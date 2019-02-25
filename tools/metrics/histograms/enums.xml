@@ -15522,6 +15522,7 @@ Called by update_net_error_codes.py.-->
   <int value="529" label="VoiceInteractionHotwordEnabled"/>
   <int value="530" label="BrowserSwitcherChromePath"/>
   <int value="531" label="BrowserSwitcherChromeParameters"/>
+  <int value="532" label="DeviceWilcoDtcAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

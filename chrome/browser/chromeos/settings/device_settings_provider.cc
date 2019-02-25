@@ -83,6 +83,7 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
     kDeviceUnaffiliatedCrostiniAllowed,
+    kDeviceWilcoDtcAllowed,
     kDeviceDisplayResolution,
     kDeviceRebootOnUserSignout,
     kDisplayRotationDefault,
@@ -760,6 +761,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetValue(
           kDeviceRebootOnUserSignout,
           base::Value(container.reboot_on_signout_mode()));
+    }
+  }
+
+  if (policy.has_device_wilco_dtc_allowed()) {
+    const em::DeviceWilcoDtcAllowedProto& container(
+        policy.device_wilco_dtc_allowed());
+    if (container.has_device_wilco_dtc_allowed()) {
+      new_values_cache->SetValue(
+          kDeviceWilcoDtcAllowed,
+          base::Value(container.device_wilco_dtc_allowed()));
     }
   }
 }
