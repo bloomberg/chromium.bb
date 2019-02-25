@@ -97,8 +97,8 @@ struct AX_EXPORT AXNodeData {
   //
   // Setting accessibility attributes.
   //
-  // Replaces an attribute if not present. This is safer than crashing via a
-  // DCHECK or doing nothing, because most likely that's what the caller would
+  // Replaces an attribute if present. This is safer than crashing via a DCHECK
+  // or doing nothing, because most likely replacing is what the caller would
   // have wanted or what existing code already assumes.
   //
 
