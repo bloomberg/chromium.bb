@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -1077,11 +1078,12 @@ inline std::ostream& operator<<(
   return os << info.name << " reason=" << info.reason;
 }
 
-DEFINE_TYPE_CASTS(LocalFrameView,
-                  EmbeddedContentView,
-                  embedded_content_view,
-                  embedded_content_view->IsLocalFrameView(),
-                  embedded_content_view.IsLocalFrameView());
+template <>
+struct DowncastTraits<LocalFrameView> {
+  static bool AllowFrom(const EmbeddedContentView& embedded_content_view) {
+    return embedded_content_view.IsLocalFrameView();
+  }
+};
 
 }  // namespace blink
 
