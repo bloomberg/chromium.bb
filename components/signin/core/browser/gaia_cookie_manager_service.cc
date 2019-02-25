@@ -1171,7 +1171,7 @@ void GaiaCookieManagerService::StartSettingCookies(
           &GaiaCookieManagerService::OnCookieSet,
           weak_ptr_factory_.GetWeakPtr(), cookie.Name(), cookie.Domain());
       cookie_manager->SetCanonicalCookie(
-          cookie, true, true,
+          cookie, "https", true,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
                                                       false));
     } else {

@@ -379,8 +379,7 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
       net::CookieOptions()));
 
   partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cc.get(), true /* secure_source */, true /* modify_http_only */,
-      std::move(callback));
+      *cc.get(), "https", true /* modify_http_only */, std::move(callback));
 }
 
 void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(

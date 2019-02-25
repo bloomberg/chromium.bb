@@ -765,6 +765,14 @@ TEST(GURLTest, SchemeIsCryptographic) {
   EXPECT_FALSE(GURL("ws://foo.bar.com/").SchemeIsCryptographic());
 }
 
+TEST(GURLTest, SchemeIsCryptographicStatic) {
+  EXPECT_TRUE(GURL::SchemeIsCryptographic("https"));
+  EXPECT_TRUE(GURL::SchemeIsCryptographic("wss"));
+  EXPECT_FALSE(GURL::SchemeIsCryptographic("http"));
+  EXPECT_FALSE(GURL::SchemeIsCryptographic("ws"));
+  EXPECT_FALSE(GURL::SchemeIsCryptographic("ftp"));
+}
+
 TEST(GURLTest, SchemeIsBlob) {
   EXPECT_TRUE(GURL("BLOB://BAR/").SchemeIsBlob());
   EXPECT_TRUE(GURL("blob://bar/").SchemeIsBlob());

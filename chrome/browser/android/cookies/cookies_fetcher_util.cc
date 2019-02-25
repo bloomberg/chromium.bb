@@ -111,6 +111,6 @@ static void JNI_CookiesFetcher_RestoreCookies(
   // Assume HTTPS - since the cookies are being restored from another store,
   // they have already gone through the strict secure check.
   GetCookieServiceClient()->SetCanonicalCookie(
-      *cookie, true /* secure_source */, true /* modify_http_only */,
+      *cookie, "https", true /* modify_http_only */,
       network::mojom::CookieManager::SetCanonicalCookieCallback());
 }

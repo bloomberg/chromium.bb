@@ -319,7 +319,7 @@ class CookieStoreManagerTest
     base::RunLoop run_loop;
     bool success = false;
     cookie_manager_->SetCanonicalCookie(
-        cookie, /* secure_source = */ true, /* can_modify_httponly = */ true,
+        cookie, "https", /* can_modify_httponly = */ true,
         base::BindOnce(
             [](base::RunLoop* run_loop, bool* success, bool service_success) {
               *success = success;
