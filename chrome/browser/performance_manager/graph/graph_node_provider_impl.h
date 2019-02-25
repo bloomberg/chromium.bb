@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -23,8 +22,7 @@ namespace performance_manager {
 class GraphNodeProviderImpl
     : public resource_coordinator::mojom::CoordinationUnitProvider {
  public:
-  GraphNodeProviderImpl(service_manager::ServiceKeepalive* service_keepalive,
-                        Graph* coordination_unit_graph);
+  explicit GraphNodeProviderImpl(Graph* coordination_unit_graph);
   ~GraphNodeProviderImpl() override;
 
   void Bind(
@@ -48,8 +46,6 @@ class GraphNodeProviderImpl
       override;
 
  private:
-  service_manager::ServiceKeepalive* const service_keepalive_;
-  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   Graph* coordination_unit_graph_;
   mojo::BindingSet<resource_coordinator::mojom::CoordinationUnitProvider>
       bindings_;

@@ -14,11 +14,9 @@ namespace performance_manager {
 namespace {
 
 ProcessNodeImpl* CreateProcessNode(Graph* graph) {
-  return graph->CreateProcessNode(
-      resource_coordinator::CoordinationUnitID(
-          resource_coordinator::CoordinationUnitType::kProcess,
-          resource_coordinator::CoordinationUnitID::RANDOM_ID),
-      nullptr);
+  return graph->CreateProcessNode(resource_coordinator::CoordinationUnitID(
+      resource_coordinator::CoordinationUnitType::kProcess,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID));
 }
 
 }  // namespace
@@ -33,7 +31,7 @@ TEST(GraphTest, DestructionWhileCUSOutstanding) {
     process->SetPID(i + 100);
   }
 
-  EXPECT_NE(nullptr, graph->FindOrCreateSystemNode(nullptr));
+  EXPECT_NE(nullptr, graph->FindOrCreateSystemNode());
 
   // This should destroy all the CUs without incident.
   graph.reset();
@@ -42,15 +40,15 @@ TEST(GraphTest, DestructionWhileCUSOutstanding) {
 TEST(GraphTest, FindOrCreateSystemNode) {
   Graph graph;
 
-  SystemNodeImpl* system_cu = graph.FindOrCreateSystemNode(nullptr);
+  SystemNodeImpl* system_cu = graph.FindOrCreateSystemNode();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_cu, graph.FindOrCreateSystemNode(nullptr));
+  EXPECT_EQ(system_cu, graph.FindOrCreateSystemNode());
 
   // Destructing the system CU should be allowed.
   system_cu->Destruct();
 
-  system_cu = graph.FindOrCreateSystemNode(nullptr);
+  system_cu = graph.FindOrCreateSystemNode();
   EXPECT_NE(nullptr, system_cu);
 }
 

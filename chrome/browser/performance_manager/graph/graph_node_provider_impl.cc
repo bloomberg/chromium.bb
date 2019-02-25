@@ -17,14 +17,8 @@
 
 namespace performance_manager {
 
-GraphNodeProviderImpl::GraphNodeProviderImpl(
-    service_manager::ServiceKeepalive* service_keepalive,
-    Graph* coordination_unit_graph)
-    : service_keepalive_(service_keepalive),
-      coordination_unit_graph_(coordination_unit_graph) {
-  DCHECK(service_keepalive_);
-  keepalive_ref_ = service_keepalive_->CreateRef();
-}
+GraphNodeProviderImpl::GraphNodeProviderImpl(Graph* coordination_unit_graph)
+    : coordination_unit_graph_(coordination_unit_graph) {}
 
 GraphNodeProviderImpl::~GraphNodeProviderImpl() = default;
 
@@ -35,8 +29,7 @@ void GraphNodeProviderImpl::OnConnectionError(NodeBase* coordination_unit) {
 void GraphNodeProviderImpl::CreateFrameCoordinationUnit(
     resource_coordinator::mojom::FrameCoordinationUnitRequest request,
     const resource_coordinator::CoordinationUnitID& id) {
-  FrameNodeImpl* frame_cu = coordination_unit_graph_->CreateFrameNode(
-      id, service_keepalive_->CreateRef());
+  FrameNodeImpl* frame_cu = coordination_unit_graph_->CreateFrameNode(id);
 
   frame_cu->Bind(std::move(request));
   auto& frame_cu_binding = frame_cu->binding();
@@ -49,8 +42,7 @@ void GraphNodeProviderImpl::CreateFrameCoordinationUnit(
 void GraphNodeProviderImpl::CreatePageCoordinationUnit(
     resource_coordinator::mojom::PageCoordinationUnitRequest request,
     const resource_coordinator::CoordinationUnitID& id) {
-  PageNodeImpl* page_cu = coordination_unit_graph_->CreatePageNode(
-      id, service_keepalive_->CreateRef());
+  PageNodeImpl* page_cu = coordination_unit_graph_->CreatePageNode(id);
 
   page_cu->Bind(std::move(request));
   auto& page_cu_binding = page_cu->binding();
@@ -63,8 +55,7 @@ void GraphNodeProviderImpl::CreatePageCoordinationUnit(
 void GraphNodeProviderImpl::CreateProcessCoordinationUnit(
     resource_coordinator::mojom::ProcessCoordinationUnitRequest request,
     const resource_coordinator::CoordinationUnitID& id) {
-  ProcessNodeImpl* process_cu = coordination_unit_graph_->CreateProcessNode(
-      id, service_keepalive_->CreateRef());
+  ProcessNodeImpl* process_cu = coordination_unit_graph_->CreateProcessNode(id);
 
   process_cu->Bind(std::move(request));
   auto& process_cu_binding = process_cu->binding();
@@ -77,9 +68,8 @@ void GraphNodeProviderImpl::CreateProcessCoordinationUnit(
 void GraphNodeProviderImpl::GetSystemCoordinationUnit(
     resource_coordinator::mojom::SystemCoordinationUnitRequest request) {
   // Simply fetch the existing SystemCU and add an additional binding to it.
-  coordination_unit_graph_
-      ->FindOrCreateSystemNode(service_keepalive_->CreateRef())
-      ->AddBinding(std::move(request));
+  coordination_unit_graph_->FindOrCreateSystemNode()->AddBinding(
+      std::move(request));
 }
 
 void GraphNodeProviderImpl::Bind(

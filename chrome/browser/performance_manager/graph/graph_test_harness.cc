@@ -12,9 +12,7 @@ namespace performance_manager {
 GraphTestHarness::GraphTestHarness()
     : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
                 base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
-      service_keepalive_(static_cast<service_manager::ServiceBinding*>(nullptr),
-                         base::nullopt /* idle_timeout */),
-      provider_(&service_keepalive_, &coordination_unit_graph_) {}
+      provider_(&coordination_unit_graph_) {}
 
 GraphTestHarness::~GraphTestHarness() = default;
 

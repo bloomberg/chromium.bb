@@ -37,10 +37,8 @@ class ProcessNodeImpl
     return resource_coordinator::CoordinationUnitType::kProcess;
   }
 
-  ProcessNodeImpl(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
+  ProcessNodeImpl(const resource_coordinator::CoordinationUnitID& id,
+                  Graph* graph);
   ~ProcessNodeImpl() override;
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation.

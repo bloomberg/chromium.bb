@@ -18,9 +18,8 @@ namespace performance_manager {
 
 SystemNodeImpl::SystemNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
+    Graph* graph)
+    : CoordinationUnitInterface(id, graph) {}
 
 SystemNodeImpl::~SystemNodeImpl() = default;
 
