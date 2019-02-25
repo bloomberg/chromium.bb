@@ -66,16 +66,19 @@ struct NGLayoutAlgorithmParams {
   const NGBlockBreakToken* break_token;
 };
 
+// The entire purpose of this function is to avoid allocating space on the stack
+// for all layout algorithms for each node we lay out. Therefore it must not be
+// inline.
 template <typename Algorithm, typename Callback>
-void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
-                           Callback callback) {
+NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
+                                    const Callback& callback) {
   Algorithm algorithm(params.node, params.space, params.break_token);
   callback(&algorithm);
 }
 
 inline void DetermineAlgorithmAndRun(
     const NGLayoutAlgorithmParams& params,
-    std::function<void(NGLayoutAlgorithmOperations*)> callback) {
+    const std::function<void(NGLayoutAlgorithmOperations*)>& callback) {
   const ComputedStyle& style = params.node.Style();
   const LayoutBox& box = *params.node.GetLayoutBox();
   if (box.IsLayoutNGFlexibleBox()) {
