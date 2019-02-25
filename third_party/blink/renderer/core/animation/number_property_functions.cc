@@ -107,10 +107,10 @@ double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
       return clampTo<short>(round(value), 1);
 
     case CSSPropertyColumnCount:
-      return clampTo<unsigned short>(round(value), 1);
+      return clampTo<uint16_t>(round(value), 1);
 
     case CSSPropertyColumnRuleWidth:
-      return clampTo<unsigned short>(round(value));
+      return clampTo<uint16_t>(round(value));
 
     case CSSPropertyOrder:
     case CSSPropertyZIndex:

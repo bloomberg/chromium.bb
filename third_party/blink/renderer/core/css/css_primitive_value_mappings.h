@@ -63,9 +63,9 @@ inline short CSSPrimitiveValue::ConvertTo() const {
 }
 
 template <>
-inline unsigned short CSSPrimitiveValue::ConvertTo() const {
+inline uint16_t CSSPrimitiveValue::ConvertTo() const {
   DCHECK(IsNumber());
-  return clampTo<unsigned short>(GetDoubleValue());
+  return clampTo<uint16_t>(GetDoubleValue());
 }
 
 template <>
