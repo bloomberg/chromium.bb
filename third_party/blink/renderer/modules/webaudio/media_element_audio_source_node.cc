@@ -79,12 +79,12 @@ HTMLMediaElement* MediaElementAudioSourceHandler::MediaElement() const {
 }
 
 void MediaElementAudioSourceHandler::Dispose() {
-  media_element_->SetAudioSourceNode(nullptr);
   AudioHandler::Dispose();
 }
 
 void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
                                                float source_sample_rate) {
+  DCHECK(MediaElement());
   bool is_tainted = WouldTaintOrigin();
 
   if (is_tainted) {
@@ -136,6 +136,7 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
 }
 
 bool MediaElementAudioSourceHandler::WouldTaintOrigin() {
+  DCHECK(MediaElement());
   return MediaElement()->GetWebMediaPlayer()->WouldTaintOrigin();
 }
 
@@ -207,7 +208,7 @@ void MediaElementAudioSourceHandler::unlock() {
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(
     AudioContext& context,
     HTMLMediaElement& media_element)
-    : AudioNode(context) {
+    : AudioNode(context), media_element_(&media_element) {
   SetHandler(MediaElementAudioSourceHandler::Create(*this, media_element));
 }
 
@@ -251,6 +252,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
 }
 
 void MediaElementAudioSourceNode::Trace(blink::Visitor* visitor) {
+  visitor->Trace(media_element_);
   AudioSourceProviderClient::Trace(visitor);
   AudioNode::Trace(visitor);
 }
@@ -261,7 +263,7 @@ MediaElementAudioSourceNode::GetMediaElementAudioSourceHandler() const {
 }
 
 HTMLMediaElement* MediaElementAudioSourceNode::mediaElement() const {
-  return GetMediaElementAudioSourceHandler().MediaElement();
+  return media_element_;
 }
 
 void MediaElementAudioSourceNode::SetFormat(uint32_t number_of_channels,

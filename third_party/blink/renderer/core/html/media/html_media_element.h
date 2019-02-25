@@ -115,7 +115,6 @@ class CORE_EXPORT HTMLMediaElement
 
   void Trace(Visitor*) override;
 
-  void ClearWeakMembers(Visitor*);
   WebMediaPlayer* GetWebMediaPlayer() const { return web_media_player_.get(); }
 
   // Returns true if the loaded media has a video track.
@@ -686,11 +685,9 @@ class CORE_EXPORT HTMLMediaElement
   HeapVector<Member<ScriptPromiseResolver>> play_promise_reject_list_;
   DOMExceptionCode play_promise_error_code_;
 
-  // This is a weak reference, since audio_source_node_ holds a reference to us.
-  // TODO(Oilpan): Consider making this a strongly traced pointer with oilpan
-  // where strong cycles are not a problem.
-  GC_PLUGIN_IGNORE("http://crbug.com/404577")
-  WeakMember<AudioSourceProviderClient> audio_source_node_;
+  // HTMLMediaElement and its MediaElementAudioSourceNode in case it is provided
+  // die together.
+  Member<AudioSourceProviderClient> audio_source_node_;
 
   // AudioClientImpl wraps an AudioSourceProviderClient.
   // When the audio format is known, Chromium calls setFormat().

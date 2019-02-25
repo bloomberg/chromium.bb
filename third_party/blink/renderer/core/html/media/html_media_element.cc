@@ -529,12 +529,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
 
 HTMLMediaElement::~HTMLMediaElement() {
   DVLOG(1) << "~HTMLMediaElement(" << (void*)this << ")";
-
-  // audio_source_node_ is explicitly cleared by AudioNode::dispose().
-  // Since AudioNode::dispose() is guaranteed to be always called before
-  // the AudioNode is destructed, audio_source_node_ is explicitly cleared
-  // even if the AudioNode and the HTMLMediaElement die together.
-  DCHECK(!audio_source_node_);
 }
 
 void HTMLMediaElement::Dispose() {
@@ -3900,6 +3894,7 @@ bool HTMLMediaElement::IsInteractiveContent() const {
 }
 
 void HTMLMediaElement::Trace(Visitor* visitor) {
+  visitor->Trace(audio_source_node_);
   visitor->Trace(viewport_intersection_observer_);
   visitor->Trace(played_time_ranges_);
   visitor->Trace(async_event_queue_);
@@ -3921,9 +3916,6 @@ void HTMLMediaElement::Trace(Visitor* visitor) {
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
   visitor->Trace(lazy_load_visibility_observer_);
-  visitor->template RegisterWeakMembers<HTMLMediaElement,
-                                        &HTMLMediaElement::ClearWeakMembers>(
-      this);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
   ContextLifecycleStateObserver::Trace(visitor);
@@ -4080,13 +4072,6 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
     return;
 
   PauseInternal();
-}
-
-void HTMLMediaElement::ClearWeakMembers(Visitor* visitor) {
-  if (!ThreadHeap::IsHeapObjectAlive(audio_source_node_)) {
-    GetAudioSourceProvider().SetClient(nullptr);
-    audio_source_node_ = nullptr;
-  }
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
