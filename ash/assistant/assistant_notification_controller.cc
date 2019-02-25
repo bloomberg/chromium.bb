@@ -4,6 +4,9 @@
 
 #include "ash/assistant/assistant_notification_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
@@ -48,7 +51,8 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
           /*delegate=*/nullptr, kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  system_notification->set_priority(message_center::DEFAULT_PRIORITY);
+  if (notification->is_high_priority)
+    system_notification->set_priority(message_center::HIGH_PRIORITY);
 
   return system_notification;
 }

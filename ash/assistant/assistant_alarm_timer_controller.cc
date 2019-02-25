@@ -4,6 +4,10 @@
 
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 
+#include <map>
+#include <string>
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -69,6 +73,9 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   notification->action_url = action_url;
   notification->client_id = alarm_timer.id;
   notification->grouping_key = kTimerNotificationGroupingKey;
+
+  // This notification should be able to wake up the display if it was off.
+  notification->is_high_priority = true;
 
   // "STOP" button.
   notification->buttons.push_back(AssistantNotificationButton::New(

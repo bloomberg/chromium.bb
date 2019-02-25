@@ -261,6 +261,9 @@ struct AssistantNotification {
 
   // Obfuscated Gaia id of the intended recipient of the user.
   string obfuscated_gaia_id;
+
+  // Whether this notification can turn on the display if it was off.
+  bool is_high_priority = false;
 };
 
 // Models status of an app.
