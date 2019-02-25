@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -209,8 +210,9 @@ class UserImageManagerTest : public LoginManagerTest,
     token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
     token_info.token = kRandomTokenStrForTesting;
     token_info.email = test_account_id1_.GetUserEmail();
-    fake_gaia_.IssueOAuthToken(kRandomTokenStrForTesting, token_info);
-    fake_gaia_.MapEmailToGaiaId(
+    fake_gaia_.fake_gaia()->IssueOAuthToken(kRandomTokenStrForTesting,
+                                            token_info);
+    fake_gaia_.fake_gaia()->MapEmailToGaiaId(
         kTestUserEmail1, identity::GetTestGaiaIdForEmail(kTestUserEmail1));
   }
 
@@ -339,12 +341,14 @@ class UserImageManagerTest : public LoginManagerTest,
       kTestUserEmail2,
       identity::GetTestGaiaIdForEmail(kTestUserEmail2));
   const AccountId enterprise_account_id_ = AccountId::FromUserEmailGaiaId(
-      kEnterpriseUser1,
-      identity::GetTestGaiaIdForEmail(kEnterpriseUser1));
+      FakeGaiaMixin::kEnterpriseUser1,
+      identity::GetTestGaiaIdForEmail(FakeGaiaMixin::kEnterpriseUser1));
   const cryptohome::AccountIdentifier cryptohome_id_ =
       cryptohome::CreateAccountIdentifierFromAccountId(enterprise_account_id_);
 
  private:
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);
 };
 

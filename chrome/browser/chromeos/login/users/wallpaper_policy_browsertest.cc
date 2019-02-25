@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -135,17 +136,14 @@ class WallpaperPolicyTest : public LoginManagerTest,
  protected:
   WallpaperPolicyTest()
       : LoginManagerTest(true, true),
-        wallpaper_change_count_(0),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        fake_session_manager_client_(new FakeSessionManagerClient),
-        observer_binding_(this),
-        weak_ptr_factory_(this) {
-    testUsers_.push_back(AccountId::FromUserEmailGaiaId(
-        LoginManagerTest::kEnterpriseUser1,
-        LoginManagerTest::kEnterpriseUser1GaiaId));
-    testUsers_.push_back(AccountId::FromUserEmailGaiaId(
-        LoginManagerTest::kEnterpriseUser2,
-        LoginManagerTest::kEnterpriseUser2GaiaId));
+        fake_session_manager_client_(new FakeSessionManagerClient) {
+    testUsers_.push_back(
+        AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser1,
+                                       FakeGaiaMixin::kEnterpriseUser1GaiaId));
+    testUsers_.push_back(
+        AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser2,
+                                       FakeGaiaMixin::kEnterpriseUser2GaiaId));
   }
 
   std::unique_ptr<policy::UserPolicyBuilder> GetUserPolicyBuilder(
@@ -331,21 +329,23 @@ class WallpaperPolicyTest : public LoginManagerTest,
 
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  int wallpaper_change_count_;
+  int wallpaper_change_count_ = 0;
   std::unique_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   FakeSessionManagerClient* fake_session_manager_client_;
   std::vector<AccountId> testUsers_;
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   // The binding this instance uses to implement ash::mojom::WallpaperObserver.
-  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
+  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_{
+      this};
 
   // The average ARGB color of the current wallpaper.
   base::Optional<SkColor> average_color_;
 
-  base::WeakPtrFactory<WallpaperPolicyTest> weak_ptr_factory_;
+  base::WeakPtrFactory<WallpaperPolicyTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
