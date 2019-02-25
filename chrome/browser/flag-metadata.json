@@ -2070,7 +2070,7 @@
   },
   {
     "name": "fcm-invalidations",
-    // "owners": [ "your-team" ],
+    "owners": [ "melandory", "chrome-sync-dev@google.com" ],
     "expiry_milestone": 76
   },
   {
