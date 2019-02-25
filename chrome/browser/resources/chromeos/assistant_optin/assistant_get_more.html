@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="assistant_get_more.css">
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
-        no-footer-padding no-header>
+        no-footer-padding no-header
+        i18n-values="aria-label:assistantReadyTitle">
       <div slot="footer">
         <div class="container">
-          <img id="logo" src="assistant_logo.png">
+          <img id="logo" src="assistant_logo.png"
+              i18n-values="aria-label:assistantLogo">
           <div class="title" i18n-content="assistantReadyTitle"></div>
           <div class="content" id="intro-text"
               i18n-content="assistantReadyMessage"></div>

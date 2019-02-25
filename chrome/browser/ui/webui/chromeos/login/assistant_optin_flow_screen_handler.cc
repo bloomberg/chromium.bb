@@ -59,6 +59,7 @@ AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
 void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("locale", g_browser_process->GetApplicationLocale());
+  builder->Add("assistantLogo", IDS_VOICE_INTERACTION_LOGO);
   builder->Add("assistantOptinLoading",
                IDS_VOICE_INTERACTION_VALUE_PROP_LOADING);
   builder->Add("assistantOptinLoadErrorTitle",

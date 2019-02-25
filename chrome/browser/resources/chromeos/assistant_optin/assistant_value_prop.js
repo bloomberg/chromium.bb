@@ -241,6 +241,8 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
+    this.$['value-prop-dialog'].setAttribute(
+        'aria-label', data['valuePropTitle']);
     this.$['user-image'].src = data['valuePropUserImage'];
     this.$['title-text'].textContent = data['valuePropTitle'];
     this.$['intro-text'].textContent = data['valuePropIntro'];

@@ -111,6 +111,8 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
+    this.$['third-party-dialog'].setAttribute(
+        'aria-label', data['thirdPartyTitle']);
     this.$['title-text'].textContent = data['thirdPartyTitle'];
     this.$['next-button-text'].textContent = data['thirdPartyContinueButton'];
     this.$['footer-text'].innerHTML =
