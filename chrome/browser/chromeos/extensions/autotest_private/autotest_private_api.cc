@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -181,6 +182,8 @@ std::string SetWhitelistedPref(Profile* profile,
         ash::mojom::AssistantAllowedState::ALLOWED) {
       return "Assistant is not available for the current user";
     }
+  } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
+    DCHECK(value.is_bool());
   } else {
     return "The pref " + pref_name + "is not whitelisted.";
   }
