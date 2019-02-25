@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 
 #include "base/optional.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
 
 namespace blink {
@@ -46,7 +46,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     bool scrolls_outer_viewport = false;
     bool max_scroll_offset_affected_by_page_scale = false;
     MainThreadScrollingReasons main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNotScrollingOnMain;
+        cc::MainThreadScrollingReason::kNotScrollingOnMain;
     // The scrolling element id is stored directly on the scroll node and not
     // on the associated TransformPaintPropertyNode used for scroll offset.
     CompositorElementId compositor_element_id;
@@ -138,13 +138,13 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // Main thread scrolling reason for the threaded scrolling disabled setting.
   bool ThreadedScrollingDisabled() const {
     return state_.main_thread_scrolling_reasons &
-           MainThreadScrollingReason::kThreadedScrollingDisabled;
+           cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
 
   // Main thread scrolling reason for background attachment fixed descendants.
   bool HasBackgroundAttachmentFixedDescendants() const {
     return state_.main_thread_scrolling_reasons &
-           MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+           cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
   const CompositorElementId& GetCompositorElementId() const {

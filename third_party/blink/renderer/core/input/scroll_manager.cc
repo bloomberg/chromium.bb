@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -394,12 +395,12 @@ void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
   ComputeScrollRelatedMetrics(&non_composited_main_thread_scrolling_reasons);
 
   if (non_composited_main_thread_scrolling_reasons) {
-    DCHECK(MainThreadScrollingReason::HasNonCompositedScrollReasons(
+    DCHECK(cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
         non_composited_main_thread_scrolling_reasons));
     uint32_t main_thread_scrolling_reason_enum_max =
-        MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
-    for (uint32_t i = MainThreadScrollingReason::kNonCompositedReasonsFirst;
-         i <= MainThreadScrollingReason::kNonCompositedReasonsLast; ++i) {
+        cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
+    for (uint32_t i = cc::MainThreadScrollingReason::kNonCompositedReasonsFirst;
+         i <= cc::MainThreadScrollingReason::kNonCompositedReasonsLast; ++i) {
       unsigned val = 1 << i;
       if (non_composited_main_thread_scrolling_reasons & val) {
         if (device == kWebGestureDeviceTouchscreen) {

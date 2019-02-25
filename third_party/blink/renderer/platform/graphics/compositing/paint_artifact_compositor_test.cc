@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -300,7 +301,8 @@ class PaintArtifactCompositorTest : public testing::Test,
 
 INSTANTIATE_LAYER_LIST_TEST_SUITE_P(PaintArtifactCompositorTest);
 
-const auto kNotScrollingOnMain = MainThreadScrollingReason::kNotScrollingOnMain;
+const auto kNotScrollingOnMain =
+    cc::MainThreadScrollingReason::kNotScrollingOnMain;
 
 TEST_P(PaintArtifactCompositorTest, EmptyPaintArtifact) {
   Update(PaintArtifact::Empty());
@@ -1005,7 +1007,7 @@ static scoped_refptr<ScrollPaintPropertyNode> CreateScroll(
     const ScrollPaintPropertyNode& parent,
     const ScrollPaintPropertyNode::State& state_arg,
     MainThreadScrollingReasons main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNotScrollingOnMain,
+        cc::MainThreadScrollingReason::kNotScrollingOnMain,
     CompositorElementId scroll_element_id = CompositorElementId()) {
   ScrollPaintPropertyNode::State state = state_arg;
   state.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
@@ -1135,7 +1137,7 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
   CompositorElementId scroll_element_id_a = ScrollElementId(2);
   auto scroll_a = CreateScroll(
       ScrollPaintPropertyNode::Root(), ScrollState1(),
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
+      cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
       scroll_element_id_a);
   auto scroll_translation_a = CreateScrollTranslation(
       t0(), 11, 13, *scroll_a, CompositingReason::kLayerForScrollingContents);

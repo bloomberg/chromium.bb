@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -197,7 +198,7 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     if (MainFrame() &&
         !MainFrame()->GetSettings()->GetThreadedScrollingEnabled()) {
       state.main_thread_scrolling_reasons =
-          MainThreadScrollingReason::kThreadedScrollingDisabled;
+          cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
     }
 
     if (!scroll_node_) {

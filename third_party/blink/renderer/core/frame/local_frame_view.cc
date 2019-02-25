@@ -34,6 +34,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -4167,7 +4168,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
   MainThreadScrollingReasons reasons = parent_reason;
 
   if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+    reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
 
   if (!frame.IsLocalFrame())
     return;
@@ -4190,7 +4191,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
         // Clear all main thread scrolling reasons except the one that's set
         // if there is a running scroll animation.
         platform_layer_for_scrolling->ClearMainThreadScrollingReasons(
-            ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
+            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
       }
     }
   }
@@ -4203,7 +4204,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
 
   if (frame.IsMainFrame())
     main_thread_scrolling_reasons_ = reasons;
-  DCHECK(!MainThreadScrollingReason::HasNonCompositedScrollReasons(
+  DCHECK(!cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
       main_thread_scrolling_reasons_));
 }
 
@@ -4215,8 +4216,10 @@ MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
   if (ShouldThrottleRendering())
     return reasons;
 
-  if (HasBackgroundAttachmentFixedObjects())
-    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  if (HasBackgroundAttachmentFixedObjects()) {
+    reasons |=
+        cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  }
 
   // Force main-thread scrolling if the frame has uncomposited position: fixed
   // elements.  Note: we care about this not only for input-scrollable frames
@@ -4227,7 +4230,7 @@ MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
       GetLayoutView()->StyleRef().VisibleToHitTesting() &&
       HasVisibleSlowRepaintViewportConstrainedObjects()) {
     reasons |=
-        MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+        cc::MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
   }
   return reasons;
 }
@@ -4238,7 +4241,7 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
       static_cast<MainThreadScrollingReasons>(0);
 
   if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+    reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
 
   if (!GetPage()->MainFrame()->IsLocalFrame())
     return reasons;
@@ -4260,7 +4263,8 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
         ToLocalFrame(frame)->View()->MainThreadScrollingReasonsPerFrame();
   }
 
-  DCHECK(!MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
+  DCHECK(
+      !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
   return reasons;
 }
 
@@ -4283,7 +4287,7 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
     }
   }
 
-  return String(MainThreadScrollingReason::AsText(reasons).c_str());
+  return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
 bool LocalFrameView::MapToVisualRectInTopFrameSpace(LayoutRect& rect) {

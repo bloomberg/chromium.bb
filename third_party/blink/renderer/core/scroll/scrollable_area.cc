@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 #include "build/build_config.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;
@@ -590,7 +590,7 @@ bool ScrollableArea::ShouldScrollOnMainThread() const {
     // that doesn't actually cause shouldScrollOnMainThread() to be true.
     // This is confusing and should be cleaned up.
     return !!(reasons &
-              ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
+              ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
   return true;
 }

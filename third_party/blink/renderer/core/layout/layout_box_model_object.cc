@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 
 namespace blink {
@@ -134,7 +134,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
   if (StyleRef().BoxShadow()) {
     if (main_thread_scrolling_reasons) {
       *main_thread_scrolling_reasons |=
-          MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
+          cc::MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
     }
     return kBackgroundPaintInGraphicsLayer;
   }

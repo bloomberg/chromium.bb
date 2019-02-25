@@ -46,6 +46,7 @@
 
 #include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -2285,21 +2286,21 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
       !background_supports_lcd_text) {
     if (layer->CompositesWithOpacity()) {
       non_composited_main_thread_scrolling_reasons_ |=
-          MainThreadScrollingReason::kHasOpacityAndLCDText;
+          cc::MainThreadScrollingReason::kHasOpacityAndLCDText;
     }
     if (layer->CompositesWithTransform()) {
       non_composited_main_thread_scrolling_reasons_ |=
-          MainThreadScrollingReason::kHasTransformAndLCDText;
+          cc::MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->BackgroundIsKnownToBeOpaqueInRect(
             ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
             true)) {
       non_composited_main_thread_scrolling_reasons_ |=
-          MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
+          cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }
     if (!layer->GetLayoutObject().StyleRef().IsStackingContext()) {
       non_composited_main_thread_scrolling_reasons_ |=
-          MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
+          cc::MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
     }
 
     needs_composited_scrolling = false;
@@ -2308,12 +2309,12 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (layer->GetLayoutObject().HasClip() ||
       layer->HasDescendantWithClipPath() || !!layer->ClipPathAncestor()) {
     non_composited_main_thread_scrolling_reasons_ |=
-        MainThreadScrollingReason::kHasClipRelatedProperty;
+        cc::MainThreadScrollingReason::kHasClipRelatedProperty;
     needs_composited_scrolling = false;
   }
 
   DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
-           ~MainThreadScrollingReason::kNonCompositedReasons));
+           ~cc::MainThreadScrollingReason::kNonCompositedReasons));
   return needs_composited_scrolling;
 }
 

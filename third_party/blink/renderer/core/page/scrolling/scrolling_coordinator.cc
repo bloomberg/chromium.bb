@@ -30,6 +30,7 @@
 
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -75,7 +76,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_layer_delegate.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace {
@@ -468,7 +468,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
     if (scrollbar.IsCustomScrollbar()) {
       DetachScrollbarLayer(scrollbar_graphics_layer);
       scrollbar_graphics_layer->CcLayer()->AddMainThreadScrollingReasons(
-          MainThreadScrollingReason::kCustomScrollbarScrolling);
+          cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
       scrollbar_graphics_layer->CcLayer()->SetIsScrollbar(true);
       return;
     }
@@ -476,7 +476,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
     // Invalidate custom scrollbar scrolling reason in case a custom
     // scrollbar becomes a non-custom one.
     scrollbar_graphics_layer->CcLayer()->ClearMainThreadScrollingReasons(
-        MainThreadScrollingReason::kCustomScrollbarScrolling);
+        cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
     ScrollbarLayerGroup* scrollbar_layer_group =
         GetScrollbarLayerGroup(scrollable_area, orientation);
     if (!scrollbar_layer_group) {
@@ -999,7 +999,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
       // if there is a running scroll animation.
       uint32_t main_thread_scrolling_reasons_to_clear = ~0u;
       main_thread_scrolling_reasons_to_clear &=
-          ~MainThreadScrollingReason::kHandlingScrollFromMainThread;
+          ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread;
       scroll_layer->ClearMainThreadScrollingReasons(
           main_thread_scrolling_reasons_to_clear);
       if (visual_viewport_scroll_layer)
