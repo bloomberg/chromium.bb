@@ -1956,7 +1956,6 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StoreRegistration(registration, version));
-
   // Simulate browser shutdown and restart.
   registration = nullptr;
   version = nullptr;
@@ -2005,6 +2004,51 @@ TEST_F(ServiceWorkerStorageTest, AbsentNavigationPreloadState) {
       found_registration->active_version()->navigation_preload_state();
   EXPECT_FALSE(state.enabled);
   EXPECT_EQ("true", state.header);
+}
+
+// Tests storing the script response time for DevTools.
+TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
+  // Make a registration.
+  LazyInitialize();
+  const GURL kScope("https://example.com/scope");
+  const GURL kScript("https://example.com/script.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateLiveRegistrationAndVersion(kScope, kScript);
+  ServiceWorkerVersion* version = registration->waiting_version();
+
+  // Give it a main script response info.
+  net::HttpResponseInfo http_info;
+  http_info.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+  http_info.response_time = base::Time::FromJsTime(19940123);
+  version->SetMainScriptHttpResponseInfo(http_info);
+  EXPECT_TRUE(version->main_script_http_info_);
+  EXPECT_EQ(http_info.response_time,
+            version->script_response_time_for_devtools_);
+  EXPECT_EQ(http_info.response_time, version->GetInfo().script_response_time);
+
+  // Store the registration.
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, version));
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  InitializeTestHelper();
+  LazyInitialize();
+
+  // Read the registration. The main script's response time should be gettable.
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            FindRegistrationForDocument(kScope, &found_registration));
+  ASSERT_TRUE(found_registration);
+  auto* waiting_version = found_registration->waiting_version();
+  ASSERT_TRUE(waiting_version);
+  EXPECT_FALSE(waiting_version->main_script_http_info_);
+  EXPECT_EQ(http_info.response_time,
+            waiting_version->script_response_time_for_devtools_);
+  EXPECT_EQ(http_info.response_time,
+            waiting_version->GetInfo().script_response_time);
 }
 
 TEST_F(ServiceWorkerStorageDiskTest, RegisteredOriginCount) {

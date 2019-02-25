@@ -1518,6 +1518,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     out->script_type = static_cast<blink::mojom::ScriptType>(value);
   }
 
+  if (data.has_script_response_time()) {
+    out->script_response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(data.script_response_time()));
+  }
+
   if (data.has_update_via_cache()) {
     auto value = data.update_via_cache();
     if (!ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType_IsValid(
@@ -1551,6 +1556,9 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   data.set_has_fetch_handler(registration.has_fetch_handler);
   data.set_last_update_check_time(
       registration.last_update_check.ToInternalValue());
+  data.set_script_response_time(
+      registration.script_response_time.ToDeltaSinceWindowsEpoch()
+          .InMicroseconds());
   data.set_resources_total_size_bytes(registration.resources_total_size_bytes);
   if (registration.origin_trial_tokens) {
     ServiceWorkerOriginTrialInfo* info = data.mutable_origin_trial_tokens();

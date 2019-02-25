@@ -94,6 +94,10 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StallInStopping_DetachThenStart);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StartRequestWithNullContext);
 }  // namespace service_worker_version_unittest
 
+namespace service_worker_storage_unittest {
+FORWARD_DECLARE_TEST(ServiceWorkerStorageDiskTest, ScriptResponseTime);
+}  // namespace service_worker_storage_unittest
+
 namespace service_worker_registration_unittest {
 class ServiceWorkerActivationTest;
 }  // namespace service_worker_registration_unittest
@@ -490,6 +494,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return used_features_;
   }
 
+  void set_script_response_time_for_devtools(base::Time response_time) {
+    script_response_time_for_devtools_ = std::move(response_time);
+  }
+
   static bool IsInstalled(ServiceWorkerVersion::Status status);
   static std::string VersionStatusToString(ServiceWorkerVersion::Status status);
 
@@ -603,6 +611,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       MixedRequestTimeouts);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
+      ScriptResponseTime);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
 
@@ -929,6 +940,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::OnceClosure pause_after_download_callback_;
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
+
+  // DevTools requires each service worker's script receive time, even for
+  // the ones that haven't started. However, a ServiceWorkerVersion's field
+  // |main_script_http_info_| is not set until starting up. Rather than
+  // reading HttpResponseInfo for all service workers from disk cache and
+  // populating |main_script_http_info_| just in order to expose that timestamp,
+  // we provide that timestamp here.
+  base::Time script_response_time_for_devtools_;
 
   std::unique_ptr<blink::TrialTokenValidator::FeatureToTokensMap>
       origin_trial_tokens_;

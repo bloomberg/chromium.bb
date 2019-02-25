@@ -78,6 +78,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool is_active;
     bool has_fetch_handler;
     base::Time last_update_check;
+    base::Time script_response_time;
     base::Optional<blink::TrialTokenValidator::FeatureToTokensMap>
         origin_trial_tokens;
     blink::mojom::NavigationPreloadState navigation_preload_state;

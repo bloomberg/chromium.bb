@@ -371,9 +371,16 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
                                 host->web_contents_getter(),
                                 host->provider_type())));
   }
+
+  info.script_response_time = script_response_time_for_devtools_;
   if (!main_script_http_info_)
     return info;
-  info.script_response_time = main_script_http_info_->response_time;
+  // If the service worker hasn't started, then |main_script_http_info_| is not
+  // set, so we use |script_response_time_for_devtools_| to populate |info|. If
+  // the worker has started, this value should match with the timestamp stored
+  // in |main_script_http_info_|.
+  DCHECK_EQ(info.script_response_time, main_script_http_info_->response_time);
+
   if (main_script_http_info_->headers)
     main_script_http_info_->headers->GetLastModifiedValue(
         &info.script_last_modified);
@@ -879,6 +886,7 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
     const net::HttpResponseInfo& http_info) {
+  script_response_time_for_devtools_ = http_info.response_time;
   main_script_http_info_.reset(new net::HttpResponseInfo(http_info));
 
   // Updates |origin_trial_tokens_| if it is not set yet. This happens when:

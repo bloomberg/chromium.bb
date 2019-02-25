@@ -79,6 +79,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.used_features, actual.used_features);
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
+  EXPECT_EQ(expected.script_response_time, actual.script_response_time);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -461,6 +462,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data1.script = URL(origin1, "/script1.js");
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
+  data1.script_response_time = base::Time::FromJsTime(0);
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -483,6 +485,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data2.script = URL(origin2, "/script2.js");
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
+  data2.script_response_time = base::Time::FromJsTime(42);
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -505,6 +508,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data3.script = URL(origin3, "/script3.js");
   data3.version_id = 3000;
   data3.resources_total_size_bytes = 300;
+  data3.script_response_time = base::Time::FromJsTime(420);
   std::vector<Resource> resources3;
   resources3.push_back(CreateResource(3, data3.script, 300));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -518,6 +522,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data4.script = URL(origin3, "/script4.js");
   data4.version_id = 4000;
   data4.resources_total_size_bytes = 400;
+  data4.script_response_time = base::Time::FromJsTime(4200);
   std::vector<Resource> resources4;
   resources4.push_back(CreateResource(4, data4.script, 400));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
