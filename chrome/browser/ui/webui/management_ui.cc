@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -98,6 +100,13 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 }
 
 }  // namespace
+
+// static
+base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+      IDR_MANAGEMENT_FAVICON, scale_factor);
+}
 
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<ManagementUIHandler>());
