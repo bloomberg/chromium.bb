@@ -7,6 +7,11 @@
 
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/base/resource/scale_factor.h"
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace content {
 class WebUI;
@@ -17,6 +22,9 @@ class ManagementUI : public content::WebUIController {
  public:
   explicit ManagementUI(content::WebUI* web_ui);
   ~ManagementUI() override;
+
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagementUI);
