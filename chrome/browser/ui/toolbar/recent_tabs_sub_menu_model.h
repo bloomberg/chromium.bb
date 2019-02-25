@@ -30,10 +30,6 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
-namespace gfx {
-class Image;
-}
-
 namespace sessions {
 struct SessionTab;
 }
@@ -178,8 +174,6 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // Index of the last local entry (recently closed tab or window) in the
   // menumodel.
   int last_local_model_index_ = kHistorySeparatorIndex;
-
-  gfx::Image default_favicon_;
 
   base::CancelableTaskTracker local_tab_cancelable_task_tracker_;
   base::CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;

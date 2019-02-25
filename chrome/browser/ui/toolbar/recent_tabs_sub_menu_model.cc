@@ -42,6 +42,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -122,7 +123,19 @@ int CommandIdToWindowVectorIndex(int command_id) {
 }
 
 gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
-  return gfx::Image(gfx::CreateVectorIcon(icon, 16, gfx::kChromeIconGrey));
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  return gfx::Image(
+      gfx::CreateVectorIcon(icon, 16,
+                            native_theme->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
+}
+
+// TODO(https://crbug.com/935593): Use a centralized method when it's available.
+gfx::Image GetDefaultFavicon() {
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      native_theme->SystemDarkModeEnabled() ? IDR_DEFAULT_FAVICON_DARK
+                                            : IDR_DEFAULT_FAVICON);
 }
 
 }  // namespace
@@ -167,10 +180,7 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
       browser_(browser),
       session_sync_service_(
           SessionSyncServiceFactory::GetInstance()->GetForProfile(
-              browser->profile())),
-      default_favicon_(
-          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-              IDR_DEFAULT_FAVICON)) {
+              browser->profile())) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
   // TabRestoreServiceChanged() will be called after the tabs are loaded.
@@ -580,7 +590,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
 
   // Otherwise, start to fetch the favicon from local history asynchronously.
   // Set default icon first.
-  SetIcon(index_in_menu, default_favicon_);
+  SetIcon(index_in_menu, GetDefaultFavicon());
   // Start request to fetch actual icon if possible.
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(browser_->profile(),
