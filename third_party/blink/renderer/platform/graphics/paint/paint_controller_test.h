@@ -55,18 +55,22 @@ class PaintControllerTestBase : public testing::Test {
 
   PaintController& GetPaintController() { return *paint_controller_; }
 
-  int NumCachedNewItems() const {
+  size_t NumCachedNewItems() const {
     return paint_controller_->num_cached_new_items_;
   }
-
+  size_t NumCachedNewSubsequences() const {
+    return paint_controller_->num_cached_new_subsequences_;
+  }
+  size_t NumIndexedItems() const {
+    return paint_controller_->num_indexed_items_;
+  }
 #if DCHECK_IS_ON()
-  int NumSequentialMatches() const {
+  size_t NumSequentialMatches() const {
     return paint_controller_->num_sequential_matches_;
   }
-  int NumOutOfOrderMatches() const {
+  size_t NumOutOfOrderMatches() const {
     return paint_controller_->num_out_of_order_matches_;
   }
-  int NumIndexedItems() const { return paint_controller_->num_indexed_items_; }
 #endif
 
   void InvalidateAll() { paint_controller_->InvalidateAllForTesting(); }

@@ -58,7 +58,7 @@ TEST_F(DrawingRecorderTest, Cached) {
   DrawNothing(context, client, kBackgroundType);
   DrawRect(context, client, kForegroundType, kBounds);
 
-  EXPECT_EQ(2, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewItems());
 
   CommitAndFinishCycle();
 
