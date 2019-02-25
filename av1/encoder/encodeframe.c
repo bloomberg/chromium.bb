@@ -3783,12 +3783,12 @@ static int is_full_sb(AV1_COMMON *const cm, int mi_row, int mi_col,
          (mi_col + sb_mi_wide) <= cm->mi_cols;
 }
 
-static int use_auto_min_max_partition(AV1_COMP *const cpi, BLOCK_SIZE sb_size,
-                                      int mi_row, int mi_col) {
+static int use_auto_max_partition(AV1_COMP *const cpi, BLOCK_SIZE sb_size,
+                                  int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
 
   return !frame_is_intra_only(cm) &&
-         cpi->sf.auto_min_max_partition_based_on_simple_motion &&
+         cpi->sf.auto_max_partition_based_on_simple_motion &&
          sb_size == BLOCK_128X128 && is_full_sb(cm, mi_row, mi_col, sb_size) &&
          cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
              OVERLAY_UPDATE &&
@@ -5868,7 +5868,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
       start_timing(cpi, rd_pick_partition_time);
 #endif
       BLOCK_SIZE max_sq_size = sb_size;
-      if (use_auto_min_max_partition(cpi, sb_size, mi_row, mi_col)) {
+      if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
         float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
 
         get_max_min_partition_features(cpi, x, mi_row, mi_col, features);

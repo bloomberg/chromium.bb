@@ -399,7 +399,8 @@ typedef struct SPEED_FEATURES {
   // Sets min and max square partition levels for this superblock based on
   // motion vector and prediction error distribution produced from 16x16
   // simple motion search
-  int auto_min_max_partition_based_on_simple_motion;
+  int auto_max_partition_based_on_simple_motion;
+  int auto_min_partition_based_on_simple_motion;
 
   // Ensures the rd based auto partition search will always
   // go down at least to the specified level.
