@@ -151,6 +151,11 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     try:
       temp_path = tempfile.mkdtemp()
 
+      if not fake_modules:
+        # Push empty temp_path to clear folder on device and update the cache.
+        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
+        return
+
       # Device-spec JSON is needed, so create that first.
       device_spec_filename = os.path.join(temp_path, 'device_spec.json')
       get_device_spec_cmd_args = [
@@ -159,9 +164,9 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
       ]
       bundletool.RunBundleTool(get_device_spec_cmd_args)
 
-      # Extract fake modules to temp directory. For now, installation requires
-      # running 'bundletool extract-apks'. Unfortunately, this leads to unneeded
-      # compression of module files.
+      # Extract fake modules to temp directory. For now, installation
+      # requires running 'bundletool extract-apks'. Unfortunately, this leads
+      # to unneeded compression of module files.
       extract_apks_cmd_args = [
           'extract-apks', '--apks=' + bundle_apks,
           '--device-spec=' + device_spec_filename,
@@ -179,23 +184,24 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
           match = re.match(r'%s-([a-z_0-9]+)\.apk' % fake_module, filename)
           local_path = os.path.join(temp_path, filename)
 
-          if match is not None:
-            module_suffix = match.group(1)
-            remote = os.path.join(
-                temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
-            # Check if filename matches a master apk.
-            if 'master' in module_suffix:
-              if found_master:
-                raise Exception('Expect 1 master apk file for %s' % fake_module)
-              else:
-                found_master = True
-                remote = os.path.join(temp_path, '%s.apk' % fake_module)
-            os.rename(local_path, remote)
-          else:
+          if not match:
             # File doesn't match - remove from directory.
             os.remove(local_path)
+            continue
 
-        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
+          module_suffix = match.group(1)
+          remote = os.path.join(
+              temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
+          # Check if filename matches a master apk.
+          if 'master' in module_suffix:
+            if found_master:
+              raise Exception('Expect 1 master apk file for %s' % fake_module)
+            found_master = True
+            remote = os.path.join(temp_path, '%s.apk' % fake_module)
+
+          os.rename(local_path, remote)
+
+      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
 
     finally:
       shutil.rmtree(temp_path, ignore_errors=True)
