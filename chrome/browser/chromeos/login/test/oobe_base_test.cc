@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -33,30 +34,15 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
 namespace chromeos {
 
-namespace {
-
-constexpr char kGAIAHost[] = "accounts.google.com";
-constexpr char kTestAllScopeAccessToken[] = "fake-all-scope-token";
-
-}  // namespace
-
-// static
-const char OobeBaseTest::kFakeUserEmail[] = "fake-email@gmail.com";
-const char OobeBaseTest::kFakeUserPassword[] = "fake-password";
-const char OobeBaseTest::kFakeUserGaiaId[] = "fake-gaiaId";
-const char OobeBaseTest::kEmptyUserServices[] = "[]";
-const char OobeBaseTest::kFakeSIDCookie[] = "fake-SID-cookie";
-const char OobeBaseTest::kFakeLSIDCookie[] = "fake-LSID-cookie";
-
-OobeBaseTest::OobeBaseTest() : fake_gaia_(new FakeGaia()) {
+OobeBaseTest::OobeBaseTest() {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
 }
@@ -66,30 +52,24 @@ OobeBaseTest::~OobeBaseTest() {}
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {}
 
 void OobeBaseTest::SetUp() {
+  mixin_host_.SetUp();
+
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
   RegisterAdditionalRequestHandlers();
 
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&FakeGaia::HandleRequest, base::Unretained(fake_gaia_.get())));
 
   // Don't spin up the IO thread yet since no threads are allowed while
   // spawning sandbox host process. See crbug.com/322732.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
-  // Start https wrapper here so that the URLs can be pointed at it in
-  // SetUpCommandLine().
-  InitHttpsForwarders();
-
-  mixin_host_.SetUp();
   extensions::ExtensionApiTest::SetUp();
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-  mixin_host_.SetUpCommandLine(command_line);
 
   if (ShouldForceWebUiLogin())
     command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
@@ -99,15 +79,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
-  command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kOAuthAccountManagerUrl,
-                                  gaia_url.spec());
-
-  fake_gaia_->Initialize();
-  fake_gaia_->set_issue_oauth_code_cookie(true);
+  mixin_host_.SetUpCommandLine(command_line);
 }
 
 void OobeBaseTest::SetUpDefaultCommandLine(base::CommandLine* command_line) {
@@ -126,11 +98,6 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
-  if (initialize_fake_merge_session()) {
-    fake_gaia_->SetFakeMergeSessionParams(kFakeUserEmail, kFakeSIDCookie,
-                                          kFakeLSIDCookie);
-  }
-
   // Start the accept thread as the sandbox host process has already been
   // spawned.
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -172,11 +139,6 @@ void OobeBaseTest::TearDownInProcessBrowserTestFixture() {
 void OobeBaseTest::TearDown() {
   mixin_host_.TearDown();
   extensions::ExtensionApiTest::TearDown();
-}
-
-void OobeBaseTest::InitHttpsForwarders() {
-  ASSERT_TRUE(gaia_https_forwarder_.Initialize(
-      kGAIAHost, embedded_test_server()->base_url()));
 }
 
 bool OobeBaseTest::ShouldForceWebUiLogin() {
@@ -300,20 +262,6 @@ void OobeBaseTest::SetSignFormField(const std::string& field_id,
   base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
   base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
   ExecuteJsInSigninFrame(js);
-}
-
-void OobeBaseTest::SetupFakeGaiaForLogin(const std::string& user_email,
-                                         const std::string& gaia_id,
-                                         const std::string& refresh_token) {
-  if (!gaia_id.empty())
-    fake_gaia_->MapEmailToGaiaId(user_email, gaia_id);
-
-  FakeGaia::AccessTokenInfo token_info;
-  token_info.token = kTestAllScopeAccessToken;
-  token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-  token_info.email = user_email;
-  token_info.any_scope = true;
-  fake_gaia_->IssueOAuthToken(refresh_token, token_info);
 }
 
 }  // namespace chromeos

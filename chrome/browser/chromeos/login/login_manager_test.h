@@ -9,9 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
-#include "chrome/browser/chromeos/login/test/https_forwarder.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "google_apis/gaia/fake_gaia.h"
 
 class AccountId;
 
@@ -60,23 +57,6 @@ class LoginManagerTest : public MixinBasedInProcessBrowserTest {
 
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
-
-  // For obviously consumer users (that have e.g. @gmail.com e-mail) policy
-  // fetching code is skipped. This code is executed only for users that may be
-  // enterprise users. Thus if you derive from this class and don't need
-  // policies, please use @gmail.com e-mail for login. But if you need policies
-  // for your test, you must use e-mail addresses that a) have a potentially
-  // enterprise domain and b) have been registered with |fake_gaia_|.
-  // For your convenience, the e-mail addresses for users that have been set up
-  // in this way are provided below.
-  static const char kEnterpriseUser1[];
-  static const char kEnterpriseUser1GaiaId[];
-  static const char kEnterpriseUser2[];
-  static const char kEnterpriseUser2GaiaId[];
-
- protected:
-  FakeGaia fake_gaia_;
-  HTTPSForwarder gaia_https_forwarder_;
 
  private:
   const bool should_launch_browser_;
