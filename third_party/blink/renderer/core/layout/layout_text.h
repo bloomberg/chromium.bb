@@ -332,14 +332,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
 
-  void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const override;
-
   virtual InlineTextBox* CreateTextBox(int start,
                                        uint16_t length);  // Subclassed by SVG.
 

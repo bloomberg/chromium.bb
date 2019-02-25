@@ -1794,13 +1794,6 @@ FloatRect LayoutInline::LocalBoundingBoxRectForAccessibility() const {
   return FloatRect(UnionRect(rects));
 }
 
-void LayoutInline::ComputeSelfHitTestRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& layer_offset) const {
-  AbsoluteLayoutRectsGeneratorContext context(rects, layer_offset);
-  GenerateLineBoxRects(context);
-}
-
 void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   // Convert the style regions to absolute coordinates.
   if (StyleRef().Visibility() != EVisibility::kVisible)

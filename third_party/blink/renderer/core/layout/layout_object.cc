@@ -2343,8 +2343,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       registry.DidRemoveEventHandler(*GetNode(),
                                      EventHandlerRegistry::kTouchAction);
     }
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-      MarkEffectiveWhitelistedTouchActionChanged();
+    MarkEffectiveWhitelistedTouchActionChanged();
   }
 }
 
@@ -3027,118 +3026,6 @@ LayoutRect LayoutObject::LocalCaretRect(
     *extra_width_to_end_of_line = LayoutUnit();
 
   return LayoutRect();
-}
-
-void LayoutObject::ComputeLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    TouchAction supported_fast_actions) const {
-  // Figure out what layer our container is in. Any offset (or new layer) for
-  // this layoutObject within it's container will be applied in
-  // addLayerHitTestRects.
-  LayoutPoint layer_offset;
-  const PaintLayer* current_layer = nullptr;
-
-  if (!HasLayer()) {
-    LayoutObject* container = Container();
-    if (container) {
-      current_layer = container->EnclosingLayer();
-      if (current_layer->GetLayoutObject() != container) {
-        layer_offset.Move(container->OffsetFromAncestor(
-            &current_layer->GetLayoutObject()));
-        // If the layer itself is scrolled, we have to undo the subtraction of
-        // its scroll offset since we want the offset relative to the scrolling
-        // content, not the element itself.
-        if (current_layer->GetLayoutObject().HasOverflowClip()) {
-          layer_offset.Move(
-              current_layer->GetLayoutBox()->ScrolledContentOffset());
-        }
-      }
-    }
-  }
-
-  AddLayerHitTestRects(layer_rects, current_layer, layer_offset,
-                       supported_fast_actions, LayoutRect(),
-                       TouchAction::kTouchActionAuto);
-}
-
-void LayoutObject::AddLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
-  DCHECK(current_layer);
-  DCHECK_EQ(current_layer, EnclosingLayer());
-
-  // Compute the rects for this layoutObject only and add them to the results.
-  // Note that we could avoid passing the offset and instead adjust each result,
-  // but this seems slightly simpler.
-  Vector<LayoutRect> own_rects;
-  LayoutRect new_container_rect;
-  TouchAction new_container_whitelisted_touch_action =
-      TouchAction::kTouchActionAuto;
-  ComputeSelfHitTestRects(own_rects, layer_offset);
-
-  // When we get to have a lot of rects on a layer, the performance cost of
-  // tracking those rects outweighs the benefit of doing compositor thread hit
-  // testing.
-  // FIXME: This limit needs to be low due to the O(n^2) algorithm in
-  // ScrollingCoordinator::SetTouchEventTargetRects() - crbug.com/300282.
-  const wtf_size_t kMaxRectsPerLayer = 100;
-
-  LayerHitTestRects::iterator iter = layer_rects.find(current_layer);
-  Vector<HitTestRect>* iter_value;
-  if (iter == layer_rects.end()) {
-    iter_value = &layer_rects.insert(current_layer, Vector<HitTestRect>())
-                      .stored_value->value;
-  } else {
-    iter_value = &iter->value;
-  }
-  TouchAction whitelisted_touch_action =
-      StyleRef().GetEffectiveTouchAction() & supported_fast_actions;
-  for (wtf_size_t i = 0; i < own_rects.size(); i++) {
-    // If we have a different touch action than the container the rect needs to
-    // be reported even if it is contained.
-    if (whitelisted_touch_action != container_whitelisted_touch_action ||
-        !container_rect.Contains(own_rects[i])) {
-      iter_value->push_back(
-          HitTestRect(own_rects[i], whitelisted_touch_action));
-      if (iter_value->size() > kMaxRectsPerLayer) {
-        // Just mark the entire layer instead, and switch to walking the layer
-        // tree instead of the layout tree.
-        layer_rects.erase(current_layer);
-        current_layer->AddLayerHitTestRects(layer_rects,
-                                            supported_fast_actions);
-        return;
-      }
-      if (new_container_rect.IsEmpty()) {
-        new_container_whitelisted_touch_action = whitelisted_touch_action;
-        new_container_rect = own_rects[i];
-      }
-    }
-  }
-  if (new_container_rect.IsEmpty()) {
-    new_container_whitelisted_touch_action = container_whitelisted_touch_action;
-    new_container_rect = container_rect;
-  }
-
-  // If it's possible for children to have rects outside our bounds, then we
-  // need to descend into the children and compute them.
-  // Ideally there would be other cases where we could detect that children
-  // couldn't have rects outside our bounds and prune the tree walk.
-  // Note that we don't use Region here because Union is O(N) - better to just
-  // keep a list of partially redundant rectangles. If we find examples where
-  // this is expensive, then we could rewrite Region to be more efficient. See
-  // https://bugs.webkit.org/show_bug.cgi?id=100814.
-  if (!IsLayoutView()) {
-    for (LayoutObject* curr = SlowFirstChild(); curr;
-         curr = curr->NextSibling()) {
-      curr->AddLayerHitTestRects(layer_rects, current_layer, layer_offset,
-                                 supported_fast_actions, new_container_rect,
-                                 new_container_whitelisted_touch_action);
-    }
-  }
 }
 
 bool LayoutObject::IsRooted() const {

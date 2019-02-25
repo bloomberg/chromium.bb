@@ -81,9 +81,6 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
 bool NGFragmentPainter::ShouldRecordHitTestData(
     const PaintInfo& paint_info,
     const NGPhysicalFragment& fragment) {
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return false;
-
   // Hit test display items are only needed for compositing. This flag is used
   // for for printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)

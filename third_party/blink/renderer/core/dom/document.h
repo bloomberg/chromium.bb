@@ -904,10 +904,6 @@ class CORE_EXPORT Document : public ContainerNode,
                                       ScrollbarMode,
                                       bool is_display_none);
 
-  // Returns true if this document belongs to a frame that the parent document
-  // made invisible (for instance by setting as style display:none).
-  bool IsInInvisibleSubframe() const;
-
   String title() const { return title_; }
   void setTitle(const String&);
 

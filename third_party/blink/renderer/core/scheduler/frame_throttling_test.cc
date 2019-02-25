@@ -817,14 +817,7 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   // throttled or not. Since the layers are associated with the main document
   // which is not throttled, we expect the main document to have one touch
   // handler region.
-  // In the Non-PaintTouchActionRects world, the
-  // AccumulateDocumentTouchEventTargetRects goes through every document and
-  // check whether the document is throttled or not. So we expect no touch
-  // handler region.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    EXPECT_EQ(1u, TouchHandlerRegionSize());
-  else
-    EXPECT_EQ(0u, TouchHandlerRegionSize());
+  EXPECT_EQ(1u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handlers active again. Note that
   // both handlers get combined into the same rectangle in the region, so
@@ -878,14 +871,7 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   // throttled or not. Since the layers are associated with the main document
   // which is not throttled, we expect the main document to have one touch
   // handler region.
-  // In the Non-PaintTouchActionRects world, the
-  // AccumulateDocumentTouchEventTargetRects goes through every document and
-  // check whether the document is throttled or not. So we expect no touch
-  // handler region.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    EXPECT_EQ(1u, TouchHandlerRegionSize());
-  else
-    EXPECT_EQ(0u, TouchHandlerRegionSize());
+  EXPECT_EQ(1u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handler active again.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");

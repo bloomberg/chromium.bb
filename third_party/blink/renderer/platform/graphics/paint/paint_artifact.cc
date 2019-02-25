@@ -40,8 +40,7 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
       }
     }
 
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
-        item.IsHitTest()) {
+    if (item.IsHitTest()) {
       const auto& hit_test = static_cast<const HitTestDisplayItem&>(item);
       if (!chunk.hit_test_data)
         chunk.hit_test_data = std::make_unique<HitTestData>();

@@ -72,7 +72,6 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
       has_accelerated_compositing_(true),
       compositing_(false),
       root_should_always_composite_dirty_(true),
-      in_overlay_fullscreen_video_(false),
       root_layer_attachment_(kRootLayerUnattached) {
   UpdateAcceleratedCompositingSettings();
 }
@@ -341,7 +340,6 @@ GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer() {
 }
 
 void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
-  in_overlay_fullscreen_video_ = false;
   GraphicsLayer* content_parent = ParentForContentLayers();
   if (!content_parent)
     return;
@@ -357,7 +355,6 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
 
   content_parent->RemoveAllChildren();
   content_parent->AddChild(video_layer);
-  in_overlay_fullscreen_video_ = true;
 }
 
 void PaintLayerCompositor::AdjustOverlayFullscreenVideoPosition(

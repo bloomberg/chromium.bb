@@ -673,11 +673,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool IsAffectedByScrollOf(const PaintLayer* ancestor) const;
 
-  void AddLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
-
-  // Compute rects only for this layer
-  void ComputeSelfHitTestRects(LayerHitTestRects&, TouchAction) const;
-
   // FIXME: This should probably return a ScrollableArea but a lot of internal
   // methods are mistakenly exposed.
   PaintLayerScrollableArea* GetScrollableArea() const {

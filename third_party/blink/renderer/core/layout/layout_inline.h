@@ -266,9 +266,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
-                               const LayoutPoint& layer_offset) const override;
-
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
   void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,

@@ -68,7 +68,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/box_reflection_utils.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
@@ -205,10 +204,6 @@ PaintLayer::~PaintLayer() {
             ToReferenceClipPathOperationOrNull(style.ClipPath()))
       reference_clip->RemoveClient(*rare_data_->resource_info);
     rare_data_->resource_info->ClearLayer();
-  }
-  if (GetLayoutObject().GetFrame()) {
-    if (ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator())
-      scrolling_coordinator->WillDestroyLayer(this);
   }
 
   if (GroupedMapping()) {
@@ -3348,55 +3343,6 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
   if (style.HasBoxReflect())
     return true;
   return false;
-}
-
-void PaintLayer::AddLayerHitTestRects(
-    LayerHitTestRects& rects,
-    TouchAction supported_fast_actions) const {
-  ComputeSelfHitTestRects(rects, supported_fast_actions);
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->AddLayerHitTestRects(rects, supported_fast_actions);
-}
-
-void PaintLayer::ComputeSelfHitTestRects(
-    LayerHitTestRects& rects,
-    TouchAction supported_fast_actions) const {
-  if (!Size().IsEmpty()) {
-    Vector<HitTestRect> rect;
-    TouchAction whitelisted_touch_action =
-        GetLayoutObject().StyleRef().GetEffectiveTouchAction() &
-        supported_fast_actions;
-
-    if (GetLayoutBox() && GetLayoutBox()->ScrollsOverflow()) {
-      // For scrolling layers, rects are taken to be in the space of the
-      // contents.  We need to include the bounding box of the layer in the
-      // space of its parent (eg. for border / scroll bars) and if it's
-      // composited then the entire contents as well as they may be on another
-      // composited layer. Skip reporting contents for non-composited layers as
-      // they'll get projected to the same layer as the bounding box.
-      if (GetCompositingState() != kNotComposited && scrollable_area_) {
-        rect.push_back(HitTestRect(scrollable_area_->OverflowRect(),
-                                   whitelisted_touch_action));
-      }
-
-      rects.Set(this, rect);
-      if (const PaintLayer* parent_layer = Parent()) {
-        LayerHitTestRects::iterator iter = rects.find(parent_layer);
-        if (iter == rects.end()) {
-          rects.insert(parent_layer, Vector<HitTestRect>())
-              .stored_value->value.push_back(HitTestRect(
-                  PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
-        } else {
-          iter->value.push_back(HitTestRect(PhysicalBoundingBox(parent_layer),
-                                            whitelisted_touch_action));
-        }
-      }
-    } else {
-      rect.push_back(
-          HitTestRect(LogicalBoundingBox(), whitelisted_touch_action));
-      rects.Set(this, rect);
-    }
-  }
 }
 
 void PaintLayer::SetNeedsRepaint() {

@@ -205,7 +205,7 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
       || (object.HasOverflowClip() &&
           ToLayoutBox(object).GetScrollableArea()->HasOverflowControls())) {
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  } else if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+  } else {
     // Hit testing rects for touch action paint in the background phase.
     if (object.HasEffectiveWhitelistedTouchAction())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();

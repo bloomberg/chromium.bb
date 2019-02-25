@@ -433,16 +433,6 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transform_state.Move(OffsetForFixedPosition());
 }
 
-void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
-                                         const LayoutPoint&) const {
-  // Record the entire size of the contents of the frame. Note that we don't
-  // just use the viewport size (containing block) here because we want to
-  // ensure this includes all children (so we can avoid walking them
-  // explicitly).
-  rects.push_back(
-      LayoutRect(LayoutPoint::Zero(), LayoutSize(GetFrameView()->Size())));
-}
-
 void LayoutView::Paint(const PaintInfo& paint_info) const {
   ViewPainter(*this).Paint(paint_info);
 }

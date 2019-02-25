@@ -1798,16 +1798,6 @@ UChar LayoutText::PreviousCharacter() const {
   return prev;
 }
 
-void LayoutText::AddLayerHitTestRects(
-    LayerHitTestRects&,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
-  // Text nodes aren't event targets, so don't descend any further.
-}
-
 void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   text_ = String(std::move(text));

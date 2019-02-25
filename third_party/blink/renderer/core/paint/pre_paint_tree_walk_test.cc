@@ -310,7 +310,6 @@ class PrePaintTreeWalkMockEventListener final : public NativeEventListener {
 }  // namespace
 
 TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
-  ScopedPaintTouchActionRectsForTest enable_paint_touch_action_rects(true);
   SetBodyInnerHTML(R"HTML(
     <div id='ancestor' style='width: 100px; height: 100px;'>
       <div id='handler' style='width: 100px; height: 100px;'>
@@ -365,7 +364,6 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
 }
 
 TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
-  ScopedPaintTouchActionRectsForTest enable_paint_touch_action_rects(true);
   SetBodyInnerHTML(R"HTML(
     <style> .touchaction { touch-action: none; } </style>
     <div id='ancestor' style='width: 100px; height: 100px;'>
@@ -409,7 +407,6 @@ TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
-  ScopedPaintTouchActionRectsForTest enable_paint_touch_action_rects(true);
   SetBodyInnerHTML(R"HTML(
     <style> #parent { width: 100px; height: 100px; overflow: hidden; } </style>
     <div id='parent'>

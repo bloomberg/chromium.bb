@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
-#include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,7 +44,6 @@ class ScrollbarLayerInterface;
 
 namespace blink {
 class CompositorAnimationTimeline;
-class LayoutBox;
 class LocalFrame;
 class LocalFrameView;
 class GraphicsLayer;
@@ -102,8 +100,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
-  // Called when any layoutBox has transform changed
-  void NotifyTransformChanged(LocalFrame*, const LayoutBox&);
+  // Called when any transform has changed.
+  void NotifyTransformChanged(LocalFrame*);
 
   // Update non-fast scrollable regions, touch event target rects, main thread
   // scrolling reasons, and whether the visual viewport is user scrollable.
@@ -146,7 +144,6 @@ class CORE_EXPORT ScrollingCoordinator final
   void UpdateLayerPositionConstraint(PaintLayer*);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
-  void WillDestroyLayer(PaintLayer*);
 
   void UpdateScrollParentForGraphicsLayer(GraphicsLayer* child,
                                           const PaintLayer* parent);
@@ -195,8 +192,6 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
                                                       LocalFrameView*);
-  void SetTouchEventTargetRects(LocalFrame*, const LayerHitTestRects&);
-  void ComputeTouchEventTargetRects(LocalFrame*, LayerHitTestRects&);
 
   void AddScrollbarLayerGroup(ScrollableArea*,
                               ScrollbarOrientation,

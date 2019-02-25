@@ -315,10 +315,13 @@ AffineTransform LayoutSVGShape::ComputeNonScalingStrokeTransform() const {
   // current approach of applying/painting non-scaling-stroke, that can break in
   // unpleasant ways (see crbug.com/747708 for an example.) Maybe it would be
   // better to apply this effect during rasterization?
-  const LayoutSVGRoot* svg_root = SVGLayoutSupport::FindTreeRootObject(this);
+  const LayoutObject* root = this;
+  while (root && !root->IsSVGRoot())
+    root = root->Parent();
   AffineTransform host_transform;
   host_transform.Scale(1 / StyleRef().EffectiveZoom())
-      .Multiply(LocalToAncestorTransform(svg_root).ToAffineTransform());
+      .Multiply(
+          LocalToAncestorTransform(ToLayoutSVGRoot(root)).ToAffineTransform());
   // Width of non-scaling stroke is independent of translation, so zero it out
   // here.
   host_transform.SetE(0);

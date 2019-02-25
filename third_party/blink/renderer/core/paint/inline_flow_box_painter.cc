@@ -187,8 +187,7 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(paint_info, paint_offset);
+  RecordHitTestData(paint_info, paint_offset);
 
   if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)

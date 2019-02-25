@@ -358,11 +358,8 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   }
 
   if (diff.TransformChanged()) {
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetDocument().GetFrame()->GetPage()->GetScrollingCoordinator()) {
-      if (LocalFrame* frame = GetFrame())
-        scrolling_coordinator->NotifyTransformChanged(frame, *this);
-    }
+    if (auto* coordinator = GetFrame()->GetPage()->GetScrollingCoordinator())
+      coordinator->NotifyTransformChanged(GetFrame());
   }
 
   // Update the script style map, from the new computed style.
@@ -958,25 +955,6 @@ bool LayoutBox::CanResize() const {
   // we want to allow resizing them also.
   return (HasOverflowClip() || IsLayoutIFrame()) &&
          StyleRef().Resize() != EResize::kNone;
-}
-
-void LayoutBox::AddLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
-  LayoutPoint adjusted_layer_offset = layer_offset + LocationOffset();
-  LayoutBoxModelObject::AddLayerHitTestRects(
-      layer_rects, current_layer, adjusted_layer_offset, supported_fast_actions,
-      container_rect, container_whitelisted_touch_action);
-}
-
-void LayoutBox::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
-                                        const LayoutPoint& layer_offset) const {
-  if (!Size().IsEmpty())
-    rects.push_back(LayoutRect(layer_offset, Size()));
 }
 
 int LayoutBox::VerticalScrollbarWidth() const {

@@ -163,13 +163,8 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   }
 }
 
-class ViewPainterTestWithPaintTouchAction
-    : public ViewPainterTest,
-      private ScopedPaintTouchActionRectsForTest {
+class ViewPainterTouchActionRectTest : public ViewPainterTest {
  public:
-  ViewPainterTestWithPaintTouchAction()
-      : ViewPainterTest(), ScopedPaintTouchActionRectsForTest(true) {}
-
   void SetUp() override {
     ViewPainterTest::SetUp();
     Settings* settings = GetDocument().GetFrame()->GetSettings();
@@ -177,9 +172,9 @@ class ViewPainterTestWithPaintTouchAction
   }
 };
 
-INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTestWithPaintTouchAction);
+INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTouchActionRectTest);
 
-TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
+TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -250,8 +245,7 @@ TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
   }
 }
 
-TEST_P(ViewPainterTestWithPaintTouchAction,
-       TouchActionRectNonScrollingContents) {
+TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }

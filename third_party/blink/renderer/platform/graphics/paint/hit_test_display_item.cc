@@ -12,8 +12,6 @@ namespace blink {
 void HitTestDisplayItem::Record(GraphicsContext& context,
                                 const DisplayItemClient& client,
                                 const HitTestRect& hit_test_rect) {
-  DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
-
   auto& paint_controller = context.GetPaintController();
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;

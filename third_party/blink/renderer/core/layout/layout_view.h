@@ -284,8 +284,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void MapAncestorToLocal(const LayoutBoxModelObject*,
                           TransformState&,
                           MapCoordinatesFlags) const override;
-  void ComputeSelfHitTestRects(Vector<LayoutRect>&,
-                               const LayoutPoint& layer_offset) const override;
 
   bool CanHaveChildren() const override;
 

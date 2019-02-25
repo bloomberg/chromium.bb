@@ -642,10 +642,9 @@ update the flags during the pre-painting tree walk to simplify the logics.
 
 ### Hit test painting
 
-Hit testing is done in paint-order. The |PaintTouchActionRects| flag enables a
-mode where hit test display items are emitted in the background phase of
-painting. Hit test display items are produced even if there is no painted
-content.
+Hit testing is done in paint-order. Hit test display items are emitted in the
+background phase of painting. Hit test display items are produced even if there
+is no painted content.
 
 ### PaintNG
 

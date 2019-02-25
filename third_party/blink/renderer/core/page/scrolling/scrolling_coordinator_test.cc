@@ -66,26 +66,12 @@
 
 namespace blink {
 
-// kScrollingCoordinatorTestNoFlags runs with BlinkGenPropertyTrees and
-// PaintTouchActionRects disabled. Using
-// (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-// kScrollingCoordinatorTestPaintTouchActionRects) enables both features.
-enum {
-  kScrollingCoordinatorTestNoFlags = 1 << 0,
-  kScrollingCoordinatorTestBlinkGenPropertyTrees = 1 << 1,
-  kScrollingCoordinatorTestPaintTouchActionRects = 1 << 2,
-};
-
 class ScrollingCoordinatorTest : public testing::Test,
-                                 public testing::WithParamInterface<unsigned>,
-                                 private ScopedBlinkGenPropertyTreesForTest,
-                                 private ScopedPaintTouchActionRectsForTest {
+                                 public testing::WithParamInterface<bool>,
+                                 private ScopedBlinkGenPropertyTreesForTest {
  public:
   ScrollingCoordinatorTest()
-      : ScopedBlinkGenPropertyTreesForTest(
-            GetParam() & kScrollingCoordinatorTestBlinkGenPropertyTrees),
-        ScopedPaintTouchActionRectsForTest(
-            GetParam() & kScrollingCoordinatorTestPaintTouchActionRects),
+      : ScopedBlinkGenPropertyTreesForTest(GetParam()),
         base_url_("http://www.test.com/") {
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
@@ -157,14 +143,7 @@ class ScrollingCoordinatorTest : public testing::Test,
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ScrollingCoordinatorTest,
-    ::testing::Values(kScrollingCoordinatorTestNoFlags,
-                      kScrollingCoordinatorTestBlinkGenPropertyTrees,
-                      kScrollingCoordinatorTestPaintTouchActionRects,
-                      (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-                       kScrollingCoordinatorTestPaintTouchActionRects)));
+INSTANTIATE_TEST_SUITE_P(All, ScrollingCoordinatorTest, testing::Bool());
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
@@ -616,15 +595,8 @@ TEST_P(ScrollingCoordinatorTest, touchAction) {
   ASSERT_TRUE(box->UsesCompositedScrolling());
   ASSERT_EQ(kPaintsIntoOwnBacking, box->Layer()->GetCompositingState());
 
-  CompositedLayerMapping* composited_layer_mapping =
-      box->Layer()->GetCompositedLayerMapping();
-
-  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
-  // https://crbug.com/826746.
-  auto* graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->MainGraphicsLayer();
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+  auto* graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
@@ -643,15 +615,8 @@ TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
   ASSERT_TRUE(box->UsesCompositedScrolling());
   ASSERT_EQ(kPaintsIntoOwnBacking, box->Layer()->GetCompositingState());
 
-  CompositedLayerMapping* composited_layer_mapping =
-      box->Layer()->GetCompositedLayerMapping();
-
-  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
-  // https://crbug.com/826746.
-  auto* graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->MainGraphicsLayer();
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+  auto* graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -701,13 +666,7 @@ TEST_P(ScrollingCoordinatorTest, touchActionNesting) {
   auto* scrollable = GetFrame()->GetDocument()->getElementById("scrollable");
   auto* box = ToLayoutBox(scrollable->GetLayoutObject());
   auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
-
-  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
-  // https://crbug.com/826746.
-  auto* graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->MainGraphicsLayer();
+  auto* graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -747,13 +706,7 @@ TEST_P(ScrollingCoordinatorTest, nestedTouchActionInvalidation) {
   auto* scrollable = GetFrame()->GetDocument()->getElementById("scrollable");
   auto* box = ToLayoutBox(scrollable->GetLayoutObject());
   auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
-
-  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
-  // https://crbug.com/826746.
-  GraphicsLayer* graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->MainGraphicsLayer();
+  auto* graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -859,11 +812,6 @@ TEST_P(ScrollingCoordinatorTest, touchActionOnInline) {
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionWithVerticalRLWritingMode) {
-  // Touch action rects are incorrect with vertical-rl. See: crbug.com/852013.
-  // This is fixed with PaintTouchActionRects.
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return;
-
   RegisterMockedHttpURLLoad("touch-action-with-vertical-rl-writing-mode.html");
   NavigateTo(base_url_ + "touch-action-with-vertical-rl-writing-mode.html");
   LoadAhem();
@@ -890,15 +838,8 @@ TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
   ASSERT_TRUE(box->UsesCompositedScrolling());
   ASSERT_EQ(kPaintsIntoOwnBacking, box->Layer()->GetCompositingState());
 
-  CompositedLayerMapping* composited_layer_mapping =
-      box->Layer()->GetCompositedLayerMapping();
-
-  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
-  // https://crbug.com/826746.
-  auto* graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->MainGraphicsLayer();
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+  auto* graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -937,32 +878,21 @@ TEST_P(ScrollingCoordinatorTest, touchActionOnScrollingElement) {
   LayoutBox* box = ToLayoutBox(scrollable_element->GetLayoutObject());
   auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    // With PaintTouchActionRects the outer layer (not scrollable) will be fully
-    // marked as pan-y (100x100) and the scrollable layer will only have the
-    // contents marked as pan-y (50x150).
-    auto* scrolling_contents_layer =
-        composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
-    cc::Region region =
-        scrolling_contents_layer->touch_action_region().GetRegionForTouchAction(
-            TouchAction::kTouchActionPanY);
-    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 50, 150));
+  // The outer layer (not scrollable) will be fully marked as pan-y (100x100)
+  // and the scrollable layer will only have the contents marked as pan-y
+  // (50x150).
+  auto* scrolling_contents_layer =
+      composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
+  cc::Region region =
+      scrolling_contents_layer->touch_action_region().GetRegionForTouchAction(
+          TouchAction::kTouchActionPanY);
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 50, 150));
 
-    auto* non_scrolling_layer =
-        composited_layer_mapping->MainGraphicsLayer()->CcLayer();
-    region = non_scrolling_layer->touch_action_region().GetRegionForTouchAction(
-        TouchAction::kTouchActionPanY);
-    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 100));
-  } else {
-    // Without PaintTouchActionRects, the main graphics layer gets all touch
-    // action rects.
-    auto* main_graphics_layer =
-        composited_layer_mapping->MainGraphicsLayer()->CcLayer();
-    cc::Region region =
-        main_graphics_layer->touch_action_region().GetRegionForTouchAction(
-            TouchAction::kTouchActionPanY);
-    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 150));
-  }
+  auto* non_scrolling_layer =
+      composited_layer_mapping->MainGraphicsLayer()->CcLayer();
+  region = non_scrolling_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanY);
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 100));
 }
 
 TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
@@ -984,13 +914,8 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
   PaintLayer* paint_layer_child_frame =
       child_frame->GetFrame()->GetDocument()->GetLayoutView()->Layer();
   auto* child_mapping = paint_layer_child_frame->GetCompositedLayerMapping();
-  // With PaintTouchActionRects, touch action regions are stored on the layer
-  // that draws the background whereas without PaintTouchActionRects the main
-  // graphics layer is used.
-  auto* child_graphics_layer =
-      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-          ? child_mapping->ScrollingContentsLayer()
-          : child_mapping->MainGraphicsLayer();
+  // Touch action regions are stored on the layer that draws the background.
+  auto* child_graphics_layer = child_mapping->ScrollingContentsLayer();
 
   cc::Region region_child_frame =
       child_graphics_layer->CcLayer()
@@ -1013,16 +938,11 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
   EXPECT_FALSE(region_child_frame.bounds().IsEmpty());
   // We only check for the content size for verification as the offset is 0x0
   // due to child frame having its own composited layer.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    // Because PaintTouchActionRects is painting the touch action rects on the
-    // scrolling contents layer, the size of the rect should be equal to the
-    // entire scrolling contents area.
-    EXPECT_EQ(child_graphics_layer->Size(),
-              gfx::Size(region_child_frame.bounds().size()));
-  } else {
-    EXPECT_EQ(child_frame->GetFrameView()->Size(),
-              IntSize(region_child_frame.bounds().size()));
-  }
+
+  // Because touch action rects are painted on the scrolling contents layer,
+  // the size of the rect should be equal to the entire scrolling contents area.
+  EXPECT_EQ(child_graphics_layer->Size(),
+            gfx::Size(region_child_frame.bounds().size()));
 }
 
 TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandler) {
@@ -1041,12 +961,8 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandler) {
 
   auto* layout_view = GetFrame()->View()->GetLayoutView();
   auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
-  // With PaintTouchActionRects, touch action regions are stored on the layer
-  // that draws the background whereas without PaintTouchActionRects the main
-  // graphics layer is used.
-  auto* graphics_layer = RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-                             ? mapping->ScrollingContentsLayer()
-                             : mapping->MainGraphicsLayer();
+  // Touch action regions are stored on the layer that draws the background.
+  auto* graphics_layer = mapping->ScrollingContentsLayer();
 
   // The touch action region should include the entire frame, even though the
   // document is smaller than the frame.
@@ -1069,13 +985,8 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
 
   auto* layout_view = GetFrame()->View()->GetLayoutView();
   auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
-  // With PaintTouchActionRects, touch action regions are stored on the layer
-  // that draws the background whereas without PaintTouchActionRects the main
-  // graphics layer is used. Both approaches can implement correct behavior for
-  // window event handlers.
-  auto* graphics_layer = RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
-                             ? mapping->ScrollingContentsLayer()
-                             : mapping->MainGraphicsLayer();
+  // Touch action regions are stored on the layer that draws the background.
+  auto* graphics_layer = mapping->ScrollingContentsLayer();
   auto* cc_layer = graphics_layer->CcLayer();
 
   // Initially there are no touch action regions.
@@ -1426,14 +1337,9 @@ class ScrollingCoordinatorTestWithAcceleratedContext
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ScrollingCoordinatorTestWithAcceleratedContext,
-    ::testing::Values(kScrollingCoordinatorTestNoFlags,
-                      kScrollingCoordinatorTestBlinkGenPropertyTrees,
-                      kScrollingCoordinatorTestPaintTouchActionRects,
-                      (kScrollingCoordinatorTestBlinkGenPropertyTrees |
-                       kScrollingCoordinatorTestPaintTouchActionRects)));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ScrollingCoordinatorTestWithAcceleratedContext,
+                         testing::Bool());
 
 TEST_P(ScrollingCoordinatorTestWithAcceleratedContext, CanvasTouchActionRects) {
   LoadHTML(R"HTML(

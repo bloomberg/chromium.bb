@@ -5344,15 +5344,6 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   }
 }
 
-bool Document::IsInInvisibleSubframe() const {
-  if (!LocalOwner())
-    return false;  // this is a local root element
-
-  // TODO(bokan): This looks like it doesn't work in OOPIF.
-  DCHECK(GetFrame());
-  return !GetFrame()->OwnerLayoutObject();
-}
-
 String Document::cookie(ExceptionState& exception_state) const {
   if (GetSettings() && !GetSettings()->GetCookieEnabled())
     return String();

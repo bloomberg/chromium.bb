@@ -32,9 +32,8 @@ namespace blink {
 // The painting of a layer occurs in 4 phases, Each involves a recursive
 // descent into the layer's layout objects in painting order:
 //  1. Background phase: backgrounds and borders of all blocks are painted.
-//     Inlines are not painted at all.
-//     With |PaintTouchActionRects|, hit testing is "painted" during the
-//     background phase (see: paint/README.md#hit-test-painting).
+//     Inlines are not painted at all. Touch-action hit test rects are also
+//     painted during this phase (see: paint/README.md#hit-test-painting).
 //  2. Float phase: floating objects are painted above block backgrounds but
 //     entirely below inline content that can overlap them.
 //  3. Foreground phase: all inlines are fully painted. Atomic inline elements

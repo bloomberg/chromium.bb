@@ -90,8 +90,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
         paint_rect, *background_client);
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(paint_info, paint_rect, *background_client);
+  RecordHitTestData(paint_info, paint_rect, *background_client);
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {

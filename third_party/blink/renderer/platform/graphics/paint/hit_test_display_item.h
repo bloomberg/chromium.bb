@@ -20,7 +20,6 @@ class PLATFORM_EXPORT HitTestDisplayItem final : public DisplayItem {
                      const HitTestRect& hit_test_rect)
       : DisplayItem(client, kHitTest, sizeof(*this)),
         hit_test_rect_(hit_test_rect) {
-    DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
   }
 
   const HitTestRect& GetHitTestRect() const { return hit_test_rect_; }

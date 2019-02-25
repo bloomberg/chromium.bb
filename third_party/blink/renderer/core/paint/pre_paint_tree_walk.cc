@@ -144,8 +144,6 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 bool PrePaintTreeWalk::NeedsEffectiveWhitelistedTouchActionUpdate(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return false;
   return context.effective_whitelisted_touch_action_changed ||
          object.EffectiveWhitelistedTouchActionChanged() ||
          object.DescendantEffectiveWhitelistedTouchActionChanged();
@@ -187,9 +185,6 @@ bool HasBlockingTouchEventHandler(const LayoutObject& object) {
 void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return;
-
   if (object.EffectiveWhitelistedTouchActionChanged())
     context.effective_whitelisted_touch_action_changed = true;
 
@@ -206,17 +201,12 @@ void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
 bool PrePaintTreeWalk::NeedsHitTestingPaintInvalidation(
     const LayoutObject& object,
     const PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return false;
   return context.effective_whitelisted_touch_action_changed;
 }
 
 void PrePaintTreeWalk::InvalidatePaintForHitTesting(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return;
-
   if (context.effective_whitelisted_touch_action_changed) {
     if (auto* paint_layer = context.paint_invalidator_context.painting_layer)
       paint_layer->SetNeedsRepaint();
