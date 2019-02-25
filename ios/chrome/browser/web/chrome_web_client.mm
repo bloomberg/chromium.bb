@@ -203,12 +203,14 @@ void ChromeWebClient::AllowCertificateError(
                                      overridable, callback);
 }
 
-void ChromeWebClient::PrepareErrorPage(NSError* error,
+void ChromeWebClient::PrepareErrorPage(web::WebState* web_state,
+                                       const GURL& url,
+                                       NSError* error,
                                        bool is_post,
                                        bool is_off_the_record,
                                        NSString** error_html) {
   DCHECK(error);
-  *error_html = GetErrorPage(error, is_post, is_off_the_record);
+  *error_html = GetErrorPage(url, error, is_post, is_off_the_record);
 }
 
 std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(

@@ -26,8 +26,12 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* GetErrorPage(NSError* error, bool is_post, bool is_off_the_record) {
-  NSString* url_spec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
+NSString* GetErrorPage(const GURL& url,
+                       NSError* error,
+                       bool is_post,
+                       bool is_off_the_record) {
+  DCHECK_EQ(url, GURL(base::SysNSStringToUTF8(
+                     error.userInfo[NSURLErrorFailingURLStringErrorKey])));
   NSError* final_error = base::ios::GetFinalUnderlyingErrorFromError(error);
   if (!final_error)
     final_error = error;
@@ -43,8 +47,7 @@ NSString* GetErrorPage(NSError* error, bool is_post, bool is_off_the_record) {
 
   base::DictionaryValue error_strings;
   error_page::LocalizedError::GetStrings(
-      net_error, error_page::Error::kNetErrorDomain,
-      GURL(base::SysNSStringToUTF16(url_spec)), is_post,
+      net_error, error_page::Error::kNetErrorDomain, url, is_post,
       /*stale_copy_in_cache=*/false,
       /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
       error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::

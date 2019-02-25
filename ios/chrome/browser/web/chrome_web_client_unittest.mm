@@ -30,12 +30,17 @@
 #endif
 
 namespace {
+const char kTestUrl[] = "http://chromium.test";
+
 // Error used to test PrepareErrorPage method.
 NSError* CreateTestError() {
   return web::testing::CreateTestNetError([NSError
       errorWithDomain:NSURLErrorDomain
                  code:NSURLErrorNetworkConnectionLost
-             userInfo:nil]);
+             userInfo:@{
+               NSURLErrorFailingURLStringErrorKey :
+                   base::SysUTF8ToNSString(kTestUrl)
+             }]);
 }
 }  // namespace
 
@@ -182,11 +187,12 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/false,
+  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+                              /*is_post=*/false,
                               /*is_off_the_record=*/false, &page);
-  EXPECT_NSEQ(
-      GetErrorPage(error, /*is_post=*/false, /*is_off_the_record=*/false),
-      page);
+  EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
+                           /*is_off_the_record=*/false),
+              page);
 }
 
 // Tests PrepareErrorPage with post, not Off The Record error.
@@ -194,10 +200,12 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/true,
+  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+                              /*is_post=*/true,
                               /*is_off_the_record=*/false, &page);
-  EXPECT_NSEQ(
-      GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/false), page);
+  EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,
+                           /*is_off_the_record=*/false),
+              page);
 }
 
 // Tests PrepareErrorPage with non-post, Off The Record error.
@@ -205,10 +213,12 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/false,
+  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+                              /*is_post=*/false,
                               /*is_off_the_record=*/true, &page);
-  EXPECT_NSEQ(
-      GetErrorPage(error, /*is_post=*/false, /*is_off_the_record=*/true), page);
+  EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
+                           /*is_off_the_record=*/true),
+              page);
 }
 
 // Tests PrepareErrorPage with post, Off The Record error.
@@ -216,8 +226,10 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/true,
+  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+                              /*is_post=*/true,
                               /*is_off_the_record=*/true, &page);
-  EXPECT_NSEQ(GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/true),
+  EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,
+                           /*is_off_the_record=*/true),
               page);
 }
