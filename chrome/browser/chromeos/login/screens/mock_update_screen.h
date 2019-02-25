@@ -14,12 +14,16 @@ namespace chromeos {
 
 class MockUpdateScreen : public UpdateScreen {
  public:
-  MockUpdateScreen(BaseScreenDelegate* base_screen_delegate, UpdateView* view);
+  MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
+                   UpdateView* view,
+                   const ScreenExitCallback& exit_callback);
   virtual ~MockUpdateScreen();
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(StartNetworkCheck, void());
+
+  void RunExit(UpdateScreen::Result result);
 };
 
 class MockUpdateView : public UpdateView {

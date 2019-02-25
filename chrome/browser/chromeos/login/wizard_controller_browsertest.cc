@@ -608,7 +608,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_update_view_ = std::make_unique<MockUpdateView>();
     mock_update_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockUpdateScreen>(
-            wizard_controller, mock_update_view_.get()));
+            wizard_controller, mock_update_view_.get(),
+            base::BindRepeating(&WizardController::OnUpdateScreenExit,
+                                base::Unretained(wizard_controller))));
 
     mock_eula_view_ = std::make_unique<MockEulaView>();
     mock_eula_screen_ =
@@ -766,7 +768,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
     EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-    OnExit(ScreenExitCode::UPDATE_INSTALLED);
+    mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
     CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
@@ -867,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_ERROR_UPDATING);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
@@ -910,43 +912,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(0);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
-  OnExit(ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE);
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-}
-
-// Tests that WizardController goes back to network selection if the user
-// declined to accept update over a cellular network.
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
-                       ControlFlowErrorUpdateRejectedOverCellular) {
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
-  OnExit(ScreenExitCode::WELCOME_CONTINUED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  OnExit(ScreenExitCode::NETWORK_CONNECTED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
-
-  // Let update screen smooth time process (time = 0ms).
-  content::RunAllPendingInMessageLoop();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
-  OnExit(ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_ERROR);
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
 
@@ -1050,13 +1016,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 }
 
 // This parameterized test class extends WizardControllerFlowTest to verify how
-// WizardController behaves if it fails to apply an update after the OOBE is
-// marked complete.
-class WizardControllerErrorUpdateAfterCompletedOobeTest
+// WizardController behaves if it does not find or fails to apply an update
+// after the OOBE is marked complete.
+class WizardControllerUpdateAfterCompletedOobeTest
     : public WizardControllerFlowTest,
-      public testing::WithParamInterface<ScreenExitCode> {
+      public testing::WithParamInterface<UpdateScreen::Result> {
  protected:
-  WizardControllerErrorUpdateAfterCompletedOobeTest() = default;
+  WizardControllerUpdateAfterCompletedOobeTest() = default;
 
   void SetUpOnMainThread() override {
     StartupUtils::MarkOobeCompleted();  // Pretend OOBE was complete.
@@ -1064,15 +1030,13 @@ class WizardControllerErrorUpdateAfterCompletedOobeTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerErrorUpdateAfterCompletedOobeTest);
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerUpdateAfterCompletedOobeTest);
 };
 
-// This test verifies that if WizardController fails to apply an update, either
-// critical or non-critical, after the OOBE is marked complete, it allows the
-// user to proceed to log in.
-IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
+// This test verifies that if WizardController reports any result after the
+// OOBE is marked complete, it allows the user to proceed to log in.
+IN_PROC_BROWSER_TEST_P(WizardControllerUpdateAfterCompletedOobeTest,
                        ControlFlowErrorUpdate) {
-  const ScreenExitCode update_screen_exit_code = GetParam();
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
@@ -1098,7 +1062,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(update_screen_exit_code);
+  mock_update_screen_->RunExit(GetParam());
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
@@ -1109,10 +1073,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    WizardControllerErrorUpdateAfterCompletedOobe,
-    WizardControllerErrorUpdateAfterCompletedOobeTest,
-    testing::Values(ScreenExitCode::UPDATE_ERROR_UPDATING,
-                    ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE));
+    WizardControllerUpdateAfterCompletedOobe,
+    WizardControllerUpdateAfterCompletedOobeTest,
+    testing::Values(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
+                    UpdateScreen::Result::UPDATE_ERROR));
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
@@ -1227,7 +1191,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1272,7 +1236,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
@@ -1370,7 +1334,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
@@ -1468,7 +1432,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1620,7 +1584,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
@@ -1694,7 +1658,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1789,7 +1753,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1833,7 +1797,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1889,7 +1853,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -1945,7 +1909,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -2027,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
@@ -2192,7 +2156,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
@@ -2240,7 +2204,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
@@ -2377,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2504,7 +2468,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2674,7 +2638,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::UPDATE_INSTALLED);
+  mock_update_screen_->RunExit(UpdateScreen::Result::UPDATE_NOT_REQUIRED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());

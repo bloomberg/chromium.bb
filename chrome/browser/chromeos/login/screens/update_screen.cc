@@ -104,10 +104,12 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 }
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-                           UpdateView* view)
+                           UpdateView* view,
+                           const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_UPDATE),
       reboot_check_delay_(kWaitForRebootTimeSec),
       view_(view),
+      exit_callback_(exit_callback),
       histogram_helper_(new ErrorScreensHistogramHelper("Update")),
       weak_factory_(this) {
   if (view_)
@@ -145,17 +147,20 @@ void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
   ignore_idle_status_ = ignore_idle_status;
 }
 
-void UpdateScreen::ExitUpdate(ScreenExitCode exit_code) {
+void UpdateScreen::ExitUpdate(Result result) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
 
-  Finish(exit_code);
+  exit_callback_.Run(result);
 }
 
 void UpdateScreen::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (is_checking_for_update_ &&
-      status.status > UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE) {
+      status.status > UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE &&
+      status.status != UpdateEngineClient::UPDATE_STATUS_ERROR &&
+      status.status !=
+          UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
     is_checking_for_update_ = false;
   }
   if (ignore_idle_status_ &&
@@ -175,7 +180,7 @@ void UpdateScreen::UpdateStatusChanged(
           .SetBoolean(kContextKeyShowEstimatedTimeLeft, false);
       if (!HasCriticalUpdate()) {
         VLOG(1) << "Noncritical update available: " << status.new_version;
-        ExitUpdate(ScreenExitCode::UPDATE_NOUPDATE);
+        ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       } else {
         VLOG(1) << "Critical update available: " << status.new_version;
         GetContextEditor()
@@ -198,7 +203,7 @@ void UpdateScreen::UpdateStatusChanged(
         download_average_speed_ = 0.0;
         if (!HasCriticalUpdate()) {
           VLOG(1) << "Non-critical update available: " << status.new_version;
-          ExitUpdate(ScreenExitCode::UPDATE_NOUPDATE);
+          ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
           VLOG(1) << "Critical update available: " << status.new_version;
           GetContextEditor()
@@ -239,7 +244,7 @@ void UpdateScreen::UpdateStatusChanged(
                             base::TimeDelta::FromSeconds(reboot_check_delay_),
                             this, &UpdateScreen::OnWaitForRebootTimeElapsed);
       } else {
-        ExitUpdate(ScreenExitCode::UPDATE_NOUPDATE);
+        ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       }
       break;
     case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
@@ -263,20 +268,18 @@ void UpdateScreen::UpdateStatusChanged(
       // Otherwise, it's possible that the update request has not yet been
       // started.
       if (!ignore_idle_status_)
-        ExitUpdate(ScreenExitCode::UPDATE_NOUPDATE);
+        ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       break;
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      if (is_checking_for_update_) {
-        ExitUpdate(ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE);
-      } else if (HasCriticalUpdate()) {
-        ExitUpdate(ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE);
+      // Ignore update errors for non-critical updates to prevent blocking the
+      // user from getting to login screen during OOBE if the pending update is
+      // not critical.
+      if (is_checking_for_update_ || !HasCriticalUpdate()) {
+        ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       } else {
-        ExitUpdate(ScreenExitCode::UPDATE_ERROR_UPDATING);
+        ExitUpdate(Result::UPDATE_ERROR);
       }
-      break;
-    default:
-      NOTREACHED();
       break;
   }
 }
@@ -335,7 +338,7 @@ void UpdateScreen::OnPortalDetectionCompleted(
 
 void UpdateScreen::CancelUpdate() {
   VLOG(1) << "Forced update cancel";
-  ExitUpdate(ScreenExitCode::UPDATE_NOUPDATE);
+  ExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
 // TODO(jdufault): This should return a pointer. See crbug.com/672142.
@@ -384,7 +387,7 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
     GetContextEditor()
         .SetBoolean(kContextKeyShowCurtain, true)
         .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
-    ExitUpdate(ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR);
+    ExitUpdate(Result::UPDATE_ERROR);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -402,7 +405,7 @@ void UpdateScreen::RetryUpdateWithUpdateOverCellularPermissionSet(
     GetContextEditor()
         .SetBoolean(kContextKeyShowCurtain, true)
         .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
-    ExitUpdate(ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR);
+    ExitUpdate(Result::UPDATE_ERROR);
   }
 }
 
@@ -574,7 +577,7 @@ void UpdateScreen::OnUpdateCheckStarted(
     UpdateEngineClient::UpdateCheckResult result) {
   VLOG(1) << "Callback from RequestUpdateCheck, result " << result;
   if (result != UpdateEngineClient::UPDATE_RESULT_SUCCESS)
-    ExitUpdate(ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+    ExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
 void UpdateScreen::OnConnectRequested() {
