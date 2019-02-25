@@ -353,6 +353,22 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
+  // Inline children require an inline child layout context to be
+  // passed between siblings. We want to stack-allocate that one, but
+  // only on demand, as it's quite big.
+  if (Node().ChildrenInline())
+    return LayoutWithInlineChildLayoutContext();
+  return Layout(nullptr);
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
+  NGInlineChildLayoutContext context;
+  return Layout(&context);
+}
+
+inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
+    NGInlineChildLayoutContext* inline_child_layout_context) {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   border_padding_ = borders + padding;
@@ -529,9 +545,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                             &previous_inflow_position);
         previous_inline_break_token = nullptr;
       } else {
-        abort =
-            !HandleInflow(child, child_break_token, &previous_inflow_position,
-                          &previous_inline_break_token);
+        abort = !HandleInflow(
+            child, child_break_token, &previous_inflow_position,
+            inline_child_layout_context, &previous_inline_break_token);
       }
 
       if (abort) {
@@ -1218,6 +1234,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token,
     NGPreviousInflowPosition* previous_inflow_position,
+    NGInlineChildLayoutContext* inline_child_layout_context,
     scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
@@ -1261,15 +1278,16 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       has_clearance_past_adjoining_floats, /* is_new_fc */ false);
   NGConstraintSpace child_space =
       CreateConstraintSpaceForChild(child, child_data, child_available_size_);
-  scoped_refptr<const NGLayoutResult> layout_result = child.Layout(
-      child_space, child_break_token, &inline_child_layout_context_);
+  scoped_refptr<const NGLayoutResult> layout_result =
+      child.Layout(child_space, child_break_token, inline_child_layout_context);
 
   // To save space of the stack when we recurse into |NGBlockNode::Layout|
   // above, the rest of this function is continued within |FinishInflow|.
   // However it should be read as one function.
   return FinishInflow(child, child_break_token, child_space,
                       std::move(layout_result), &child_data,
-                      previous_inflow_position, previous_inline_break_token);
+                      previous_inflow_position, inline_child_layout_context,
+                      previous_inline_break_token);
 }
 
 bool NGBlockLayoutAlgorithm::FinishInflow(
@@ -1279,6 +1297,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     scoped_refptr<const NGLayoutResult> layout_result,
     NGInflowChildData* child_data,
     NGPreviousInflowPosition* previous_inflow_position,
+    NGInlineChildLayoutContext* inline_child_layout_context,
     scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token) {
   base::Optional<LayoutUnit> child_bfc_block_offset =
       layout_result->BfcBlockOffset();
@@ -1406,7 +1425,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, *child_data, child_available_size_, child_bfc_block_offset);
     layout_result = child.Layout(new_child_space, child_break_token,
-                                 &inline_child_layout_context_);
+                                 inline_child_layout_context);
 
     if (layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved) {
       // Even a second layout pass may abort, if the BFC block offset initially
@@ -1419,7 +1438,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       new_child_space = CreateConstraintSpaceForChild(
           child, *child_data, child_available_size_, child_bfc_block_offset);
       layout_result = child.Layout(new_child_space, child_break_token,
-                                   &inline_child_layout_context_);
+                                   inline_child_layout_context);
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
