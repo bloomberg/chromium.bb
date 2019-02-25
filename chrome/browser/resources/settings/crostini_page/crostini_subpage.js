@@ -40,9 +40,25 @@ Polymer({
         return loadTimeData.getBoolean('showCrostiniExportImport');
       },
     },
+
+    /**
+     * Whether the uninstall options should be displayed.
+     * @private {boolean}
+     */
+    hideCrostiniUninstall_: {
+      type: Boolean,
+    },
   },
 
   observers: ['onCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
+
+  created: function() {
+    const callback = (status) => {
+      this.hideCrostiniUninstall_ = status;
+    };
+    cr.addWebUIListener('crostini-installer-status-changed', callback);
+    cr.sendWithPromise('requestCrostiniInstallerStatus').then(callback);
+  },
 
   /** @private */
   onCrostiniEnabledChanged_: function(enabled) {

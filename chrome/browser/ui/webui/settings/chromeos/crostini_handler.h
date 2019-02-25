@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CROSTINI_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
@@ -17,7 +18,8 @@ enum class CrostiniResult;
 namespace chromeos {
 namespace settings {
 
-class CrostiniHandler : public ::settings::SettingsPageUIHandler {
+class CrostiniHandler : public ::settings::SettingsPageUIHandler,
+                        public crostini::InstallerViewStatusObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
   ~CrostiniHandler() override;
@@ -40,6 +42,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler {
   void HandleExportCrostiniContainer(const base::ListValue* args);
   // Import the crostini container.
   void HandleImportCrostiniContainer(const base::ListValue* args);
+  // Handle a request for the CrostiniInstallerView status.
+  void HandleCrostiniInstallerStatusRequest(const base::ListValue* args);
+  // Handle the CrostiniInstallerView opening/closing.
+  void OnCrostiniInstallerViewStatusChanged(bool open) override;
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

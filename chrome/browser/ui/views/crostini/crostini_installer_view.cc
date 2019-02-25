@@ -110,6 +110,9 @@ void CrostiniInstallerView::Show(Profile* profile) {
   // set it to the desired value.
   g_crostini_installer_view->SetBigMessageLabel();
   g_crostini_installer_view->GetWidget()->Show();
+
+  crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
+      true);
 }
 
 int CrostiniInstallerView::GetDialogButtons() const {
@@ -470,6 +473,8 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 }
 
 CrostiniInstallerView::~CrostiniInstallerView() {
+  crostini::CrostiniManager::GetForProfile(profile_)->SetInstallerViewStatus(
+      false);
   g_crostini_installer_view = nullptr;
   if (quit_closure_for_testing_) {
     std::move(quit_closure_for_testing_).Run();
