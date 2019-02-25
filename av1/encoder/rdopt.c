@@ -9259,6 +9259,36 @@ int check_identical_obmc_mv_field(const AV1_COMMON *cm, MACROBLOCKD *xd,
   return mv_field_check_ctxt.mv_field_check_result;
 }
 
+static int skip_interintra_based_on_first_pass_stats(const AV1_COMP *const cpi,
+                                                     MACROBLOCK *const x,
+                                                     BLOCK_SIZE bsize,
+                                                     int mi_row, int mi_col) {
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  if (cpi->two_pass_partition_search &&
+      cpi->sf.use_first_partition_pass_interintra_stats &&
+      !x->cb_partition_scan) {
+    const int mi_width = mi_size_wide[bsize];
+    const int mi_height = mi_size_high[bsize];
+    // Search in the stats table to see if obmc motion mode was used in the
+    // first pass of partition search.
+    for (int row = mi_row; row < mi_row + mi_width;
+         row += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+      for (int col = mi_col; col < mi_col + mi_height;
+           col += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+        const int index = av1_first_partition_pass_stats_index(row, col);
+        const FIRST_PARTITION_PASS_STATS *const stats =
+            &x->first_partition_pass_stats[index];
+        if (stats->interintra_motion_mode_count[mbmi->ref_frame[0]]) {
+          return 0;
+        }
+      }
+    }
+    return 1;
+  }
+  return 0;
+}
+
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
 static int64_t motion_mode_rd(
@@ -9279,6 +9309,7 @@ static int64_t motion_mode_rd(
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int rate_mv0 = *rate_mv;
+  int skip_interintra_mode = 0;
   const int interintra_allowed = cm->seq_params.enable_interintra_compound &&
                                  is_interintra_allowed(mbmi) &&
                                  mbmi->compound_idx;
@@ -9459,6 +9490,9 @@ static int64_t motion_mode_rd(
         continue;
       }
     } else if (is_interintra_mode) {
+      skip_interintra_mode = skip_interintra_based_on_first_pass_stats(
+          cpi, x, bsize, mi_row, mi_col);
+      if (skip_interintra_mode) continue;
       const int ret = handle_inter_intra_mode(
           cpi, x, bsize, mi_row, mi_col, mbmi, args, ref_best_rd, &tmp_rate_mv,
           &tmp_rate2, orig_dst);

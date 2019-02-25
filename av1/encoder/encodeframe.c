@@ -5320,11 +5320,14 @@ BEGIN_PARTITION_SEARCH:
 
 // Set all the counters as max.
 static void init_first_partition_pass_stats_tables(
-    FIRST_PARTITION_PASS_STATS *stats) {
+    AV1_COMP *cpi, FIRST_PARTITION_PASS_STATS *stats) {
   for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
     memset(stats[i].ref0_counts, 0xff, sizeof(stats[i].ref0_counts));
     memset(stats[i].ref1_counts, 0xff, sizeof(stats[i].ref1_counts));
     stats[i].sample_counts = INT_MAX;
+    if (cpi->sf.use_first_partition_pass_interintra_stats)
+      memset(stats[i].interintra_motion_mode_count, 0xff,
+             sizeof(stats[i].interintra_motion_mode_count));
   }
 }
 
@@ -5499,6 +5502,9 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
       // If there are not enough samples collected, make all available.
       memset(stat->ref0_counts, 0xff, sizeof(stat->ref0_counts));
       memset(stat->ref1_counts, 0xff, sizeof(stat->ref1_counts));
+      if (cpi->sf.use_first_partition_pass_interintra_stats)
+        memset(stat->interintra_motion_mode_count, 0xff,
+               sizeof(stat->interintra_motion_mode_count));
     } else if (sf->selective_ref_frame < 3) {
       // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the
       // initial partition scan, so we don't eliminate them.
@@ -5506,6 +5512,10 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
       stat->ref1_counts[ALTREF2_FRAME] = 0xff;
       stat->ref0_counts[BWDREF_FRAME] = 0xff;
       stat->ref1_counts[BWDREF_FRAME] = 0xff;
+      if (cpi->sf.use_first_partition_pass_interintra_stats) {
+        stat->interintra_motion_mode_count[ALTREF2_FRAME] = 0xff;
+        stat->interintra_motion_mode_count[BWDREF_FRAME] = 0xff;
+      }
     }
   }
 }
@@ -5864,7 +5874,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
       start_timing(cpi, first_partition_search_pass_time);
 #endif
-      init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
+      init_first_partition_pass_stats_tables(cpi,
+                                             x->first_partition_pass_stats);
       // Do the first pass if we need two pass partition search
       if (cpi->two_pass_partition_search &&
           cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
@@ -6350,7 +6361,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->comp_pred_diff);
   // Two pass partition search can be enabled/disabled for different frames.
   // Reset this data at frame level to avoid any incorrect usage.
-  init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
+  init_first_partition_pass_stats_tables(cpi, x->first_partition_pass_stats);
 
   // Reset the flag.
   cpi->intrabc_used = 0;
@@ -6978,6 +6989,13 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (mbmi->ref_frame[1] >= 0 &&
             stats->ref1_counts[mbmi->ref_frame[1]] < 255)
           ++stats->ref1_counts[mbmi->ref_frame[1]];
+        if (cpi->sf.use_first_partition_pass_interintra_stats) {
+          // Increase the counter for interintra_motion_mode_count
+          if (mbmi->motion_mode == 0 && mbmi->ref_frame[1] == INTRA_FRAME &&
+              stats->interintra_motion_mode_count[mbmi->ref_frame[0]] < 255) {
+            ++stats->interintra_motion_mode_count[mbmi->ref_frame[0]];
+          }
+        }
       }
     }
   }
