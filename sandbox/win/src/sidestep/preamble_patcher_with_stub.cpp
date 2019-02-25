@@ -176,6 +176,6 @@ SideStepError PreamblePatcher::RawPatchWithStub(
   return SIDESTEP_SUCCESS;
 }
 
-};  // namespace sidestep
+}  // namespace sidestep
 
 #undef ASSERT

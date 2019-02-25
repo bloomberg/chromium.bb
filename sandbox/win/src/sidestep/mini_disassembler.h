@@ -148,6 +148,6 @@ class MiniDisassembler {
   bool got_f2_prefix_, got_f3_prefix_, got_66_prefix_;
 };
 
-};  // namespace sidestep
+}  // namespace sidestep
 
 #endif  // SANDBOX_SRC_SIDESTEP_MINI_DISASSEMBLER_H__
