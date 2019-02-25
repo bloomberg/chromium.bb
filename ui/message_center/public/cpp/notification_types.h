@@ -25,6 +25,8 @@ enum NotificationPriority {
   MIN_PRIORITY = -2,
   LOW_PRIORITY = -1,
   DEFAULT_PRIORITY = 0,
+  // Priorities > |DEFAULT_PRIORITY| have the capability to wake the display up
+  // if it was off.
   HIGH_PRIORITY = 1,
   MAX_PRIORITY = 2,
 
