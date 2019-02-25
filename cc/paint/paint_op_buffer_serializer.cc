@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "cc/paint/scoped_raster_flags.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -91,16 +90,6 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
                                            max_texture_size,
                                            max_texture_bytes)) {
   DCHECK(serialize_cb_);
-  if (color_space->isSRGB()) {
-    // Colorspace converting every paint is not free.  Only images have a
-    // non-srgb colorspace and this serializer does not handle images.
-    // Therefore, it's correct to just ignore the conversion for srgb.
-    canvas_ = &text_blob_canvas_;
-  } else {
-    color_canvas_ = SkCreateColorSpaceXformCanvas(
-        &text_blob_canvas_, sk_ref_sp<SkColorSpace>(color_space));
-    canvas_ = color_canvas_.get();
-  }
 }
 
 PaintOpBufferSerializer::~PaintOpBufferSerializer() = default;
@@ -108,16 +97,16 @@ PaintOpBufferSerializer::~PaintOpBufferSerializer() = default;
 void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
                                         const std::vector<size_t>* offsets,
                                         const Preamble& preamble) {
-  DCHECK(canvas_->getTotalMatrix().isIdentity());
+  DCHECK(text_blob_canvas_.getTotalMatrix().isIdentity());
   static const int kInitialSaveCount = 1;
-  DCHECK_EQ(kInitialSaveCount, canvas_->getSaveCount());
+  DCHECK_EQ(kInitialSaveCount, text_blob_canvas_.getSaveCount());
 
   // These SerializeOptions and PlaybackParams use the initial (identity) canvas
   // matrix, as they are only used for serializing the preamble and the initial
   // save / final restore. SerializeBuffer will create its own SerializeOptions
   // and PlaybackParams based on the post-preamble canvas.
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_);
+  PlaybackParams params = MakeParams(&text_blob_canvas_);
 
   Save(options, params);
   SerializePreamble(preamble, options, params);
@@ -126,7 +115,7 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
 }
 
 void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer) {
-  DCHECK(canvas_->getTotalMatrix().isIdentity());
+  DCHECK(text_blob_canvas_.getTotalMatrix().isIdentity());
 
   SerializeBuffer(buffer, nullptr);
 }
@@ -136,10 +125,10 @@ void PaintOpBufferSerializer::Serialize(
     const gfx::Rect& playback_rect,
     const gfx::SizeF& post_scale,
     const SkMatrix& post_matrix_for_analysis) {
-  DCHECK(canvas_->getTotalMatrix().isIdentity());
+  DCHECK(text_blob_canvas_.getTotalMatrix().isIdentity());
 
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_);
+  PlaybackParams params = MakeParams(&text_blob_canvas_);
 
   // TODO(khushalsagar): remove this clip rect if it's not needed.
   if (!playback_rect.IsEmpty()) {
@@ -153,7 +142,7 @@ void PaintOpBufferSerializer::Serialize(
     SerializeOp(&scale_op, options, params);
   }
 
-  canvas_->concat(post_matrix_for_analysis);
+  text_blob_canvas_.concat(post_matrix_for_analysis);
   SerializeBuffer(buffer, nullptr);
 }
 
@@ -281,7 +270,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
     const std::vector<size_t>* offsets) {
   DCHECK(buffer);
   PaintOp::SerializeOptions options = MakeSerializeOptions();
-  PlaybackParams params = MakeParams(canvas_);
+  PlaybackParams params = MakeParams(&text_blob_canvas_);
 
   for (PaintOpBuffer::PlaybackFoldingIterator iter(buffer, offsets); iter;
        ++iter) {
@@ -290,7 +279,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
     // Skip ops outside the current clip if they have images. This saves
     // performing an unnecessary expensive decode.
     const bool skip_op = PaintOp::OpHasDiscardableImages(op) &&
-                         PaintOp::QuickRejectDraw(op, canvas_);
+                         PaintOp::QuickRejectDraw(op, &text_blob_canvas_);
     if (skip_op)
       continue;
 
@@ -308,7 +297,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
       continue;
     }
 
-    int save_count = canvas_->getSaveCount();
+    int save_count = text_blob_canvas_.getSaveCount();
     Save(options, params);
     SerializeBuffer(static_cast<const DrawRecordOp*>(op)->record.get(),
                     nullptr);
@@ -371,9 +360,9 @@ void PaintOpBufferSerializer::PlaybackOnAnalysisCanvas(
 
   if (op->IsPaintOpWithFlags() && options.flags_to_serialize) {
     static_cast<const PaintOpWithFlags*>(op)->RasterWithFlags(
-        canvas_, options.flags_to_serialize, params);
+        &text_blob_canvas_, options.flags_to_serialize, params);
   } else {
-    op->Raster(canvas_, params);
+    op->Raster(&text_blob_canvas_, params);
   }
 }
 
@@ -388,7 +377,7 @@ void PaintOpBufferSerializer::RestoreToCount(
     const PaintOp::SerializeOptions& options,
     const PlaybackParams& params) {
   RestoreOp restore_op;
-  while (canvas_->getSaveCount() > count) {
+  while (text_blob_canvas_.getSaveCount() > count) {
     if (!SerializeOp(&restore_op, options, params))
       return;
   }
@@ -396,9 +385,10 @@ void PaintOpBufferSerializer::RestoreToCount(
 
 PaintOp::SerializeOptions PaintOpBufferSerializer::MakeSerializeOptions() {
   return PaintOp::SerializeOptions(
-      image_provider_, transfer_cache_, paint_cache_, canvas_, strike_server_,
-      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
-      max_texture_size_, max_texture_bytes_, canvas_->getTotalMatrix());
+      image_provider_, transfer_cache_, paint_cache_, &text_blob_canvas_,
+      strike_server_, color_space_, can_use_lcd_text_,
+      context_supports_distance_field_text_, max_texture_size_,
+      max_texture_bytes_, text_blob_canvas_.getTotalMatrix());
 }
 
 SimpleBufferSerializer::SimpleBufferSerializer(

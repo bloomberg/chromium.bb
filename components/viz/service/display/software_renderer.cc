@@ -25,7 +25,6 @@
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -340,12 +339,6 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   TRACE_EVENT0("viz", "SoftwareRenderer::DrawPictureQuad");
 
   SkCanvas* raster_canvas = current_canvas_;
-
-  std::unique_ptr<SkCanvas> color_transform_canvas;
-  // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
-  color_transform_canvas = SkCreateColorSpaceXformCanvas(
-      current_canvas_, gfx::ColorSpace::CreateSRGB().ToSkColorSpace());
-  raster_canvas = color_transform_canvas.get();
 
   base::Optional<skia::OpacityFilterCanvas> opacity_canvas;
   if (needs_transparency || disable_image_filtering) {
