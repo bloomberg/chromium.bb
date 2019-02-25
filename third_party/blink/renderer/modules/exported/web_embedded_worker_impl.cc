@@ -199,7 +199,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   settings->SetAllowRunningOfInsecureContent(false);
 
   // If we were asked to wait for debugger then now is a good time to do that.
-  worker_context_client_->WorkerReadyForInspection();
+  worker_context_client_->WorkerReadyForInspectionOnMainThread();
   if (worker_start_data_.wait_for_debugger_mode ==
       WebEmbeddedWorkerStartData::kWaitForDebugger) {
     waiting_for_debugger_state_ = kWaitingForDebugger;
@@ -215,14 +215,14 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   asked_to_terminate_ = true;
   if (!shadow_page_->WasInitialized()) {
     // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStart();
+    worker_context_client_->WorkerContextFailedToStartOnMainThread();
     return;
   }
   if (main_script_loader_) {
     main_script_loader_->Cancel();
     main_script_loader_ = nullptr;
     // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStart();
+    worker_context_client_->WorkerContextFailedToStartOnMainThread();
     return;
   }
   if (!worker_thread_) {
@@ -232,7 +232,7 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
                WebEmbeddedWorkerStartData::kWaitForDebugger ||
            pause_after_download_state_ == kIsPausedAfterDownload);
     // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStart();
+    worker_context_client_->WorkerContextFailedToStartOnMainThread();
     return;
   }
   worker_thread_->Terminate();
@@ -297,7 +297,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
 
   DCHECK(worker_context_client_);
   shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
-      worker_context_client_->CreateServiceWorkerNetworkProvider());
+      worker_context_client_->CreateServiceWorkerNetworkProviderOnMainThread());
 
   // If this is an installed service worker, we can start the worker thread
   // now. The script will be streamed in by the installed scripts manager in
@@ -354,7 +354,7 @@ void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
     TerminateWorkerContext();
     return;
   }
-  worker_context_client_->WorkerScriptLoaded();
+  worker_context_client_->WorkerScriptLoadedOnMainThread();
 
   if (pause_after_download_state_ == kDoPauseAfterDownload) {
     pause_after_download_state_ = kIsPausedAfterDownload;
@@ -387,7 +387,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   // |web_worker_fetch_context| is null in some unit tests.
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      worker_context_client_->CreateServiceWorkerFetchContext(
+      worker_context_client_->CreateServiceWorkerFetchContextOnMainThread(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
 
   std::unique_ptr<WorkerSettings> worker_settings =

@@ -324,7 +324,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
           mojo::MakeRequest(&subresource_loaders->default_factory_info()));
       network_service_connection_error_handler_holder_
           .set_connection_error_handler(base::BindOnce(
-              &ServiceWorkerContextClient::StopWorker, base::Unretained(this)));
+              &ServiceWorkerContextClient::StopWorkerOnMainThread,
+              base::Unretained(this)));
     }
 
     loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
@@ -353,12 +354,12 @@ ServiceWorkerContextClient::~ServiceWorkerContextClient() {
   }
 }
 
-void ServiceWorkerContextClient::WorkerReadyForInspection() {
+void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnReadyForInspection();
 }
 
-void ServiceWorkerContextClient::WorkerContextFailedToStart() {
+void ServiceWorkerContextClient::WorkerContextFailedToStartOnMainThread() {
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   CHECK(!proxy_);
   RecordDebugLog("WorkerContextFailedToStart");
@@ -366,16 +367,16 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
   (*instance_host_)->OnStopped();
 
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ServiceWorkerContextClient",
-                                  this, "Status", "WorkerContextFailedToStart");
+                                  this, "Status",
+                                  "WorkerContextFailedToStartOnMainThread");
 
   owner_->WorkerContextDestroyed();
 }
 
-void ServiceWorkerContextClient::FailedToLoadInstalledClassicScript() {
+void ServiceWorkerContextClient::FailedToLoadClassicScript() {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
-                                  "Status",
-                                  "FailedToLoadInstalledClassicScript");
+                                  "Status", "FailedToLoadClassicScript");
   // Cleanly send an OnStopped() message instead of just breaking the
   // Mojo connection on termination, for consistency with the other
   // startup failure paths.
@@ -398,14 +399,14 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
   // eventually destroys |this|.
 }
 
-void ServiceWorkerContextClient::WorkerScriptLoaded() {
+void ServiceWorkerContextClient::WorkerScriptLoadedOnMainThread() {
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   CHECK(!is_starting_installed_worker_);
   (*instance_host_)->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
 }
 
-void ServiceWorkerContextClient::InstalledWorkerScriptLoaded() {
+void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   CHECK(is_starting_installed_worker_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
@@ -965,7 +966,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
 }
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
+ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return std::make_unique<ServiceWorkerNetworkProviderForServiceWorker>(
       service_worker_provider_info_->provider_id,
@@ -973,7 +974,7 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
-ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
+ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
     blink::WebServiceWorkerNetworkProvider* provider) {
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   CHECK(preference_watcher_request_.is_pending());
@@ -1603,10 +1604,12 @@ void ServiceWorkerContextClient::DispatchCookieChangeEvent(
 }
 
 void ServiceWorkerContextClient::Ping(PingCallback callback) {
+  CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   std::move(callback).Run();
 }
 
 void ServiceWorkerContextClient::SetIdleTimerDelayToZero() {
+  CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   CHECK(context_);
   CHECK(context_->timeout_timer);
@@ -1658,7 +1661,7 @@ bool ServiceWorkerContextClient::RequestedTermination() const {
   return context_->timeout_timer->did_idle_timeout();
 }
 
-void ServiceWorkerContextClient::StopWorker() {
+void ServiceWorkerContextClient::StopWorkerOnMainThread() {
   RecordDebugLog("StopWorker");
   CHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   owner_->StopWorker();

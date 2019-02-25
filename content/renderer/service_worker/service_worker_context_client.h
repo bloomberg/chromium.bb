@@ -97,12 +97,12 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   ~ServiceWorkerContextClient() override;
 
   // WebServiceWorkerContextClient overrides.
-  void WorkerReadyForInspection() override;
-  void WorkerContextFailedToStart() override;
-  void FailedToLoadInstalledClassicScript() override;
+  void WorkerReadyForInspectionOnMainThread() override;
+  void WorkerContextFailedToStartOnMainThread() override;
+  void FailedToLoadClassicScript() override;
   void FailedToFetchModuleScript() override;
-  void WorkerScriptLoaded() override;
-  void InstalledWorkerScriptLoaded() override;
+  void WorkerScriptLoadedOnMainThread() override;
+  void WorkerScriptLoadedOnWorkerThread() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
   void WillEvaluateScript() override;
@@ -189,8 +189,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       int payment_request_id,
       blink::mojom::ServiceWorkerEventStatus status) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProvider() override;
-  scoped_refptr<blink::WebWorkerFetchContext> CreateServiceWorkerFetchContext(
+  CreateServiceWorkerNetworkProviderOnMainThread() override;
+  scoped_refptr<blink::WebWorkerFetchContext>
+  CreateServiceWorkerFetchContextOnMainThread(
       blink::WebServiceWorkerNetworkProvider*) override;
   int WillStartTask() override;
   void DidEndTask(int task_id) override;
@@ -359,7 +360,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   bool RequestedTermination() const;
 
   // Stops the worker context. Called on the main thread.
-  void StopWorker();
+  void StopWorkerOnMainThread();
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 
@@ -368,8 +369,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   ServiceWorkerTimeoutTimer* GetTimeoutTimerForTesting();
 
   // TODO(crbug.com/907311): Remove after we identified the cause of crash.
-  void RecordDebugLog(const char* message);
-  void CrashWithDebugLog(const std::string& reason);
+  // Guarded by the lock because these are called from both the main thread
+  // and the worker thread.
+  void RecordDebugLog(const char* message) LOCKS_EXCLUDED(debug_log_lock_);
+  void CrashWithDebugLog(const std::string& reason)
+      LOCKS_EXCLUDED(debug_log_lock_);
 
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;

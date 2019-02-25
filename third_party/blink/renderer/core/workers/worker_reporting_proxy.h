@@ -80,11 +80,11 @@ class CORE_EXPORT WorkerReportingProxy {
   // WorkerThread::InitializeOnWorkerThread(). Only invoked when the script was
   // loaded on the worker thread, i.e., via InstalledScriptsManager rather than
   // via ResourceLoader. Called before WillEvaluateClassicScript().
-  virtual void DidLoadInstalledScript() {}
+  virtual void DidLoadClassicScript() {}
 
-  // Invoked when it's failed to load the worker's main script from
-  // InstalledScriptsManager.
-  virtual void DidFailToLoadInstalledClassicScript() {}
+  // Invoked when it's failed to load the worker's main script on the worker
+  // thread.
+  virtual void DidFailToLoadClassicScript() {}
 
   // Invoked on success to fetch the worker's main classic/module script from
   // network. This is not called when the script is loaded from

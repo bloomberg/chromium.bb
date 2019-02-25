@@ -319,7 +319,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
     std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
         installed_scripts_manager->GetScriptData(script_url);
     if (!script_data) {
-      ReportingProxy().DidFailToLoadInstalledClassicScript();
+      ReportingProxy().DidFailToLoadClassicScript();
       // This will eventually initiate worker thread termination. See
       // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
       close();
@@ -345,7 +345,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
         script_data->CreateOriginTrialTokens();
     OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
 
-    ReportingProxy().DidLoadInstalledScript();
+    ReportingProxy().DidLoadClassicScript();
   }
 
   WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,

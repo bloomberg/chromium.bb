@@ -62,17 +62,18 @@ class WebServiceWorkerContextClient {
   virtual ~WebServiceWorkerContextClient() = default;
 
   // ServiceWorker has prepared everything for script loading and is now ready
-  // for DevTools inspection.
-  virtual void WorkerReadyForInspection() {}
+  // for DevTools inspection. Called on the main thread.
+  virtual void WorkerReadyForInspectionOnMainThread() {}
 
   // Starting the worker failed. This could happen when loading the worker
   // script failed, or the worker was asked to terminate before startup
   // completed. Called on the main thread.
-  virtual void WorkerContextFailedToStart() {}
+  virtual void WorkerContextFailedToStartOnMainThread() {}
 
-  // The worker started but it could not execute because loading the
-  // installed classic script failed.
-  virtual void FailedToLoadInstalledClassicScript() {}
+  // The worker started but it could not execute because loading the classic
+  // script failed on the worker thread. This is called only for installed
+  // scripts fetch or off-the-main-thread classic worker script fetch.
+  virtual void FailedToLoadClassicScript() {}
 
   // The worker started but it could not execute because fetching module script
   // failed.
@@ -83,14 +84,13 @@ class WebServiceWorkerContextClient {
   //
   // This is called before WorkerContextStarted(). Script evaluation does not
   // start until WillEvaluateScript().
-  virtual void WorkerScriptLoaded() {}
+  virtual void WorkerScriptLoadedOnMainThread() {}
 
-  // The worker script was successfully read from
-  // WebServiceWorkerInstalledScriptsManager. Called on the worker thread.
+  // The worker script was successfully loaded on the worker thread.
   //
   // This is called after WorkerContextStarted(). Script evaluation does not
   // start until WillEvaluateScript().
-  virtual void InstalledWorkerScriptLoaded() {}
+  virtual void WorkerScriptLoadedOnWorkerThread() {}
 
   // Called when a WorkerGlobalScope was created for the worker thread. This
   // also gives a proxy to the embedder to talk to the newly created
@@ -99,9 +99,10 @@ class WebServiceWorkerContextClient {
   // willDestroyWorkerContext() is called.
   //
   // For new workers (on-main-thread script fetch), this is called after
-  // WorkerScriptLoaded().
+  // WorkerScriptLoadedOnWorkerThread().
   //
-  // For installed workers, this is called before InstalledWorkerScriptLoaded().
+  // For installed workers, this is called before
+  // WorkerScriptLoadedOnMainThread().
   //
   // Script evaluation does not start until WillEvaluateScript().
   virtual void WorkerContextStarted(WebServiceWorkerContextProxy*) {}
@@ -272,12 +273,13 @@ class WebServiceWorkerContextClient {
 
   // Called on the main thread.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProvider() = 0;
+  CreateServiceWorkerNetworkProviderOnMainThread() = 0;
 
   // Creates a WebWorkerFetchContext for a service worker. This is called on the
   // main thread.
   virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateServiceWorkerFetchContext(WebServiceWorkerNetworkProvider*) {
+  CreateServiceWorkerFetchContextOnMainThread(
+      WebServiceWorkerNetworkProvider*) {
     return nullptr;
   }
 
