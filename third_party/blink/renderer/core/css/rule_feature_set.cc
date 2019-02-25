@@ -223,7 +223,7 @@ bool RequiresSubtreeInvalidation(const CSSSelector& selector) {
 // See also InvalidationSet::Combine.
 scoped_refptr<InvalidationSet> CopyInvalidationSet(
     const InvalidationSet& invalidation_set) {
-  if (invalidation_set.GetType() == kInvalidateSiblings) {
+  if (invalidation_set.IsSiblingInvalidationSet()) {
     scoped_refptr<InvalidationSet> copy =
         SiblingInvalidationSet::Create(nullptr);
     copy->Combine(invalidation_set);
@@ -246,7 +246,8 @@ InvalidationSet& RuleFeatureSet::EnsureMutableInvalidationSet(
     InvalidationType type,
     PositionType position) {
   if (invalidation_set && invalidation_set->IsSelfInvalidationSet()) {
-    if (type == kInvalidateDescendants && position == kSubject)
+    if (type == InvalidationType::kInvalidateDescendants &&
+        position == kSubject)
       return *invalidation_set;
     // If we are retrieving the invalidation set for a simple selector in a non-
     // rightmost compound, it means we plan to add features to the set. If so,
@@ -260,7 +261,7 @@ InvalidationSet& RuleFeatureSet::EnsureMutableInvalidationSet(
     DCHECK(invalidation_set->HasOneRef());
   }
   if (!invalidation_set) {
-    if (type == kInvalidateDescendants) {
+    if (type == InvalidationType::kInvalidateDescendants) {
       if (position == kSubject)
         invalidation_set = InvalidationSet::SelfInvalidationSet();
       else
@@ -279,7 +280,7 @@ InvalidationSet& RuleFeatureSet::EnsureMutableInvalidationSet(
   if (invalidation_set->GetType() == type)
     return *invalidation_set;
 
-  if (type == kInvalidateDescendants)
+  if (type == InvalidationType::kInvalidateDescendants)
     return ToSiblingInvalidationSet(*invalidation_set).EnsureDescendants();
 
   scoped_refptr<InvalidationSet> descendants = invalidation_set;
@@ -345,7 +346,7 @@ void ExtractInvalidationSets(InvalidationSet* invalidation_set,
                              DescendantInvalidationSet*& descendants,
                              SiblingInvalidationSet*& siblings) {
   CHECK(invalidation_set->IsAlive());
-  if (invalidation_set->GetType() == kInvalidateDescendants) {
+  if (invalidation_set->IsDescendantInvalidationSet()) {
     descendants = ToDescendantInvalidationSet(invalidation_set);
     siblings = nullptr;
     return;
@@ -698,7 +699,8 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     // Initialize the entry in the invalidation set map for self-
     // invalidation, if supported.
     if (InvalidationSet* invalidation_set = InvalidationSetForSimpleSelector(
-            *simple_selector, kInvalidateDescendants, position)) {
+            *simple_selector, InvalidationType::kInvalidateDescendants,
+            position)) {
       if (invalidation_set == nth_invalidation_set_)
         features.has_nth_pseudo = true;
       else if (position == kSubject)
@@ -802,7 +804,8 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
     InvalidationSetFeatures& descendant_features) {
   if (InvalidationSet* invalidation_set = InvalidationSetForSimpleSelector(
           simple_selector,
-          sibling_features ? kInvalidateSiblings : kInvalidateDescendants,
+          sibling_features ? InvalidationType::kInvalidateSiblings
+                           : InvalidationType::kInvalidateDescendants,
           kAncestor)) {
     if (!sibling_features || invalidation_set == nth_invalidation_set_) {
       AddFeaturesToInvalidationSet(*invalidation_set, descendant_features);
@@ -1053,7 +1056,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForClass(
     return;
 
   InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->GetType() == kInvalidateDescendants)
+  if (invalidation_set->IsDescendantInvalidationSet())
     return;
 
   SiblingInvalidationSet* sibling_set =
@@ -1099,7 +1102,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForId(
     return;
 
   InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->GetType() == kInvalidateDescendants)
+  if (invalidation_set->IsDescendantInvalidationSet())
     return;
 
   SiblingInvalidationSet* sibling_set =
@@ -1148,7 +1151,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForAttribute(
     return;
 
   InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->GetType() == kInvalidateDescendants)
+  if (invalidation_set->IsDescendantInvalidationSet())
     return;
 
   SiblingInvalidationSet* sibling_set =

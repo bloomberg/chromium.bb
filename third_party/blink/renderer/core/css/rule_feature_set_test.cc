@@ -316,7 +316,7 @@ class RuleFeatureSetTest : public testing::Test {
 
       // For SiblingInvalidationSets, we also require that the inner
       // InvalidationSets either don't exist, or have a refcount of 1.
-      if (it->value->GetType() == kInvalidateSiblings) {
+      if (it->value->IsSiblingInvalidationSet()) {
         const SiblingInvalidationSet& sibling_invalidation_set =
             ToSiblingInvalidationSet(*it->value);
         bool sibling_descendants_has_one_ref =
