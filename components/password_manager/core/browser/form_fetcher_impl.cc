@@ -320,9 +320,6 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
 
   const size_t original_count = non_federated_.size();
 
-  non_federated_ =
-      client_->GetStoreResultFilter()->FilterResults(std::move(non_federated_));
-
   filtered_count_ = original_count - non_federated_.size();
 
   weak_non_federated_ = MakeWeakCopies(non_federated_);

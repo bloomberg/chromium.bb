@@ -43,11 +43,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "ProtectSyncCredentialOnReauth",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "SupervisedUserCommittedInterstitials",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2722,11 +2717,6 @@
     "name": "promos-on-local-ntp",
     "owners": [ "kmilka", "ramyan" ],
     "expiry_milestone": 74
-  },
-  {
-    "name": "protect-sync-credential",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "pull-to-refresh",

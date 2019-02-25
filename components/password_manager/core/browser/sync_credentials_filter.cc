@@ -21,24 +21,6 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-namespace {
-
-// Returns true if the last loaded page was for transactional re-auth on a
-// Google property.
-bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
-  if (last_load_url.GetOrigin() !=
-      GaiaUrls::GetInstance()->gaia_url().GetOrigin())
-    return false;
-
-  // TODO(crbug.com/543085): GAIA stops using the "rart" URL param, and instead
-  // includes a hidden form field with name "rart". "rart" is the transactional
-  // reauth paramter.
-  std::string ignored_value;
-  return net::GetValueForKeyInQuery(last_load_url, "rart", &ignored_value);
-}
-
-}  // namespace
-
 SyncCredentialsFilter::SyncCredentialsFilter(
     const PasswordManagerClient* client,
     SyncServiceFactoryFunction sync_service_factory_function,
@@ -48,32 +30,6 @@ SyncCredentialsFilter::SyncCredentialsFilter(
       identity_manager_factory_function_(identity_manager_factory_function) {}
 
 SyncCredentialsFilter::~SyncCredentialsFilter() {}
-
-std::vector<std::unique_ptr<PasswordForm>> SyncCredentialsFilter::FilterResults(
-    std::vector<std::unique_ptr<PasswordForm>> results) const {
-  const AutofillForSyncCredentialsState autofill_sync_state =
-      GetAutofillForSyncCredentialsState();
-
-  if (autofill_sync_state != DISALLOW_SYNC_CREDENTIALS &&
-      (autofill_sync_state != DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH ||
-       !LastLoadWasTransactionalReauthPage(
-           client_->GetLastCommittedEntryURL()))) {
-    return results;
-  }
-
-  auto begin_of_removed =
-      std::partition(results.begin(), results.end(),
-                     [this](const std::unique_ptr<PasswordForm>& form) {
-                       return ShouldSave(*form);
-                     });
-
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
-                        begin_of_removed != results.end());
-
-  results.erase(begin_of_removed, results.end());
-
-  return results;
-}
 
 bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
@@ -116,39 +72,6 @@ void SyncCredentialsFilter::ReportFormLoginSuccess(
     base::RecordAction(base::UserMetricsAction(
         "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
   }
-}
-
-// static
-SyncCredentialsFilter::AutofillForSyncCredentialsState
-SyncCredentialsFilter::GetAutofillForSyncCredentialsState() {
-  bool protect_sync_credential_enabled =
-      base::FeatureList::IsEnabled(features::kProtectSyncCredential);
-  bool protect_sync_credential_on_reauth_enabled =
-      base::FeatureList::IsEnabled(features::kProtectSyncCredentialOnReauth);
-
-  if (protect_sync_credential_enabled) {
-    if (protect_sync_credential_on_reauth_enabled) {
-      // Both the features are enabled, do not ever fill the sync credential.
-      return DISALLOW_SYNC_CREDENTIALS;
-    }
-
-    // Only 'ProtectSyncCredentialOnReauth' feature is kept disabled. This
-    // is "illegal", emit a warning and do not ever fill the sync credential.
-    LOG(WARNING) << "This is illegal! Feature "
-                    "'ProtectSyncCredentialOnReauth' cannot be kept "
-                    "disabled if 'protect-sync-credential' feature is enabled. "
-                    "We shall not ever fill the sync credential is such cases.";
-    return DISALLOW_SYNC_CREDENTIALS;
-  }
-
-  if (protect_sync_credential_on_reauth_enabled) {
-    // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill
-    // the sync credential everywhere but on reauth.
-    return DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
-  }
-
-  // Both the features are disabled, fill the sync credential everywhere.
-  return ALLOW_SYNC_CREDENTIALS;
 }
 
 }  // namespace password_manager

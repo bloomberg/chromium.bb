@@ -75,14 +75,6 @@ class NameFilter : public StubCredentialsFilter {
 
   ~NameFilter() override = default;
 
-  std::vector<std::unique_ptr<PasswordForm>> FilterResults(
-      std::vector<std::unique_ptr<PasswordForm>> results) const override {
-    base::EraseIf(results, [this](const std::unique_ptr<PasswordForm>& form) {
-      return !ShouldSave(*form);
-    });
-    return results;
-  }
-
   bool ShouldSave(const PasswordForm& form) const override {
     return form.username_value != name_;
   }
@@ -381,11 +373,12 @@ TEST_F(FormFetcherImplTest, Filtered) {
   results.push_back(std::make_unique<PasswordForm>(federated));
   results.push_back(std::make_unique<PasswordForm>(non_federated1));
   results.push_back(std::make_unique<PasswordForm>(non_federated2));
-  // Non-federated results should have been filtered: no "user" here.
-  constexpr size_t kNumFiltered = 1u;
+  // Expect that nothing got filtered out, since CredentialsFilter no longer
+  // filters things out:
   EXPECT_CALL(consumer_,
-              ProcessMatches(UnorderedElementsAre(Pointee(non_federated2)),
-                             kNumFiltered));
+              ProcessMatches(UnorderedElementsAre(Pointee(non_federated1),
+                                                  Pointee(non_federated2)),
+                             0U));
   form_fetcher_->OnGetPasswordStoreResults(std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   // However, federated results should not be filtered.

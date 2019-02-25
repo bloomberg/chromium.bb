@@ -36,15 +36,6 @@ const base::Feature kPasswordGenerationRequirementsDomainOverrides = {
     "PasswordGenerationRequirementsDomainOverrides",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Disallow autofilling of the sync credential.
-const base::Feature kProtectSyncCredential = {
-    "protect-sync-credential", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Disallow autofilling of the sync credential only for transactional reauth
-// pages.
-const base::Feature kProtectSyncCredentialOnReauth = {
-    "ProtectSyncCredentialOnReauth", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

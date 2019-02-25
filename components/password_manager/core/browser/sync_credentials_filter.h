@@ -41,9 +41,6 @@ class SyncCredentialsFilter : public CredentialsFilter {
   ~SyncCredentialsFilter() override;
 
   // CredentialsFilter
-  std::vector<std::unique_ptr<autofill::PasswordForm>> FilterResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results)
-      const override;
   bool ShouldSave(const autofill::PasswordForm& form) const override;
   bool ShouldSaveGaiaPasswordHash(
       const autofill::PasswordForm& form) const override;
@@ -54,15 +51,6 @@ class SyncCredentialsFilter : public CredentialsFilter {
   bool IsSyncAccountEmail(const std::string& username) const override;
 
  private:
-  enum AutofillForSyncCredentialsState {
-    ALLOW_SYNC_CREDENTIALS,
-    DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH,
-    DISALLOW_SYNC_CREDENTIALS,
-  };
-
-  // Determines autofill state based on experiment and flag values.
-  static AutofillForSyncCredentialsState GetAutofillForSyncCredentialsState();
-
   const PasswordManagerClient* const client_;
 
   const SyncServiceFactoryFunction sync_service_factory_function_;
