@@ -191,10 +191,14 @@ constexpr int kStackingNotificationCounterRadius = 2;
 constexpr int kStackingNotificationCounterStartX = 18;
 constexpr int kStackingNotificationCounterDistanceX = 10;
 constexpr int kStackingNotificationCounterHeight = 20;
+constexpr int kStackingNotificationCounterWithClearAllHeight = 32;
+constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 constexpr SkColor kStackingNotificationCounterColor =
     SkColorSetRGB(0x5f, 0x63, 0x68);
 constexpr SkColor kStackingNotificationCounterBorderColor =
     SkColorSetRGB(0xe0, 0xe0, 0xe0);
+constexpr SkColor kStackingNotificationCounterLabelColor =
+    SkColorSetRGB(0x5f, 0x64, 0x68);
 
 // Size of an icon drawn inside top shortcut buttons.
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.

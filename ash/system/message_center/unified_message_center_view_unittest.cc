@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -143,12 +144,25 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->scroller_->contents();
   }
 
-  views::View* GetStackingCounter() {
+  StackingNotificationCounterView* GetStackingCounter() {
     return message_center_view()->stacking_counter_;
+  }
+
+  views::View* GetStackingCounterLabel() {
+    return message_center_view()->stacking_counter_->count_label_;
+  }
+
+  views::View* GetStackingCounterClearAllButton() {
+    return message_center_view()->stacking_counter_->clear_all_button_;
   }
 
   TestUnifiedMessageCenterView* message_center_view() {
     return message_center_view_.get();
+  }
+
+  void EnableNotificationStackingBarRedesign() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kNotificationStackingBarRedesign);
   }
 
   int size_changed_count() const { return size_changed_count_; }
@@ -156,6 +170,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   int id_ = 0;
   int size_changed_count_ = 0;
 
@@ -423,6 +438,108 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterRemovedWithNotifications) {
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
     AnimateUntilIdle();
   }
+  EXPECT_FALSE(GetStackingCounter()->visible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, RedesignedStackingCounterLayout) {
+  EnableNotificationStackingBarRedesign();
+
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+
+  // MessageCenterView is maxed out.
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_EQ(0, GetStackingCounter()->bounds().y());
+  EXPECT_EQ(GetStackingCounter()->bounds().bottom(),
+            GetScroller()->bounds().y());
+  EXPECT_TRUE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+
+  // Scroll to the top, making the counter label invisible.
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_FALSE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       RedesignedStackingCounterMessageListScrolled) {
+  EnableNotificationStackingBarRedesign();
+
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+  EXPECT_TRUE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  // Scroll to the top, making the counter label invisible.
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_FALSE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+
+  gfx::Rect previous_bounds = GetMessageViewVisibleBounds(2);
+
+  // Scrolling past a notification should make the counter label visible.
+  const int scroll_amount = GetMessageViewVisibleBounds(0).height() + 1;
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_TRUE(GetStackingCounterLabel()->visible());
+  // The offset change matches with the scroll amount.
+  EXPECT_EQ(previous_bounds - gfx::Vector2d(0, scroll_amount),
+            GetMessageViewVisibleBounds(2));
+
+  // Scrolling back a tiny bit to reveal the notification should make the
+  // counter label invisible again.
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount - 2);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_FALSE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       RedesignedStackingCounterNotificationRemoval) {
+  EnableNotificationStackingBarRedesign();
+
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 6; ++i)
+    ids.push_back(AddNotification());
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  // Dismiss until there are 2 notifications. The bar should still be visible.
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  for (size_t i = 0; i < 4; ++i) {
+    MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
+    AnimateUntilIdle();
+  }
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_FALSE(GetStackingCounterLabel()->visible());
+  EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+
+  // Dismiss until there is only 1 notification left. The bar should be
+  // invisible.
+  MessageCenter::Get()->RemoveNotification(ids[4], true /* by_user */);
+  AnimateUntilIdle();
   EXPECT_FALSE(GetStackingCounter()->visible());
 }
 

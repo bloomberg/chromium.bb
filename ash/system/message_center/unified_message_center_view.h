@@ -8,7 +8,9 @@
 #include "ash/ash_export.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -22,18 +24,29 @@ class MessageCenterScrollBar;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
+// The header shown above the notification list displaying the number of hidden
+// notifications. There are currently two UI implementations toggled by the
+// NotificationStackingBarRedesign feature flag.
 class StackingNotificationCounterView : public views::View {
  public:
-  StackingNotificationCounterView();
+  explicit StackingNotificationCounterView(views::ButtonListener* listener);
   ~StackingNotificationCounterView() override;
 
-  void SetCount(int stacking_count);
+  void SetCount(int total_notification_count, int stacked_notification_count);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  int stacking_count_ = 0;
+  friend class UnifiedMessageCenterViewTest;
+
+  int total_notification_count_ = 0;
+  int stacked_notification_count_ = 0;
+
+  // These UI elements are only created and shown when the
+  // NotificationStackingBarRedesign feature is enabled.
+  views::Label* count_label_ = nullptr;
+  views::Button* clear_all_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
 };

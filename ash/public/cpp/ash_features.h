@@ -80,6 +80,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
+// Enables the notification stacking bar redesigned UI.
+ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
+
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
@@ -103,6 +106,8 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 
 }  // namespace features
 }  // namespace ash
