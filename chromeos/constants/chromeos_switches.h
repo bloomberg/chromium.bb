@@ -166,6 +166,10 @@ CHROMEOS_EXPORT extern const base::Feature kShowPlayInDemoMode;
 // before demo sessions log in.
 CHROMEOS_EXPORT extern const base::Feature kShowSplashScreenInDemoMode;
 
+// Controls whether to support country-level customization in Demo Mode.
+CHROMEOS_EXPORT extern const base::Feature
+    kSupportCountryCustomizationInDemoMode;
+
 // Returns true if the system should wake in response to wifi traffic.
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 

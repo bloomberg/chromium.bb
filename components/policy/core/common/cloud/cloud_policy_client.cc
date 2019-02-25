@@ -258,7 +258,8 @@ void CloudPolicyClient::RegisterWithCertificate(
     const std::string& pem_certificate_chain,
     const std::string& client_id,
     const std::string& requisition,
-    const std::string& current_state_key) {
+    const std::string& current_state_key,
+    const std::string& sub_organization) {
   DCHECK(signing_service_);
   DCHECK(service_);
   DCHECK(!is_registered());
@@ -288,6 +289,12 @@ void CloudPolicyClient::RegisterWithCertificate(
   if (license_type != em::LicenseType::UNDEFINED)
     request->mutable_license_type()->set_license_type(license_type);
   request->set_lifetime(lifetime);
+
+  if (!sub_organization.empty()) {
+    em::DeviceRegisterConfiguration* configuration =
+        data.mutable_device_register_configuration();
+    configuration->set_device_owner(sub_organization);
+  }
 
   signing_service_->SignData(
       data.SerializeAsString(),

@@ -82,6 +82,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   bool IsRemoraRequisition() const;
   bool IsSharkRequisition() const;
 
+  // Gets/Sets the sub organization.
+  std::string GetSubOrganization() const;
+  void SetSubOrganization(const std::string& sub_organization);
+
   // If set, the device will start the enterprise enrollment OOBE.
   void SetDeviceEnrollmentAutoStart();
 

@@ -1642,6 +1642,12 @@ message CertificateBasedDeviceRegisterRequest {
   optional SignedData signed_request = 1;
 }
 
+// Requested configuration to be passed along a registration request.
+message DeviceRegisterConfiguration {
+  // The device owner's email address.
+  optional string device_owner = 1;
+}
+
 message CertificateBasedDeviceRegistrationData {
   enum CertificateType {
     UNKNOWN = 0;
@@ -1659,8 +1665,8 @@ message CertificateBasedDeviceRegistrationData {
   optional bytes device_certificate = 2;
   // regular device registration request
   optional DeviceRegisterRequest device_register_request = 3;
-  // The device owner's email address.
-  optional string device_owner = 4;
+  // Additional configuration to register the device.
+  optional DeviceRegisterConfiguration device_register_configuration = 4;
 }
 
 // Request to enroll a Chrome browser. Fields match identically named fields

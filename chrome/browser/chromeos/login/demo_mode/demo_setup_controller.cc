@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -203,6 +204,24 @@ DemoSetupController::DemoSetupError CreateFromLockStatus(
   NOTREACHED() << "Demo mode setup received unsupported lock status";
   return DemoSetupController::DemoSetupError(
       ErrorCode::kUnexpectedError, RecoveryMethod::kUnknown, debug_message);
+}
+
+// If the current country requires customization, returns an user email that
+// corresponds to the sub organization the device should be enrolled into.
+// Otherwise, returns an empty string.
+std::string GetSubOrganizationEmail() {
+  if (!base::FeatureList::IsEnabled(
+          switches::kSupportCountryCustomizationInDemoMode)) {
+    return std::string();
+  }
+  // TODO(wzang): Get the country code from Local State, which should be set
+  // during demo setup.
+  const std::string country = "fr";
+  const base::flat_set<std::string> kCountriesWithCustomization(
+      {"dk", "fi", "fr", "nl", "no", "se"});
+  if (kCountriesWithCustomization.contains(country))
+    return "admin-" + country + "@" + DemoSetupController::kDemoModeDomain;
+  return std::string();
 }
 
 }  //  namespace
@@ -441,6 +460,10 @@ void DemoSetupController::ClearDemoRequisition(
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager) {
   if (policy_manager->GetDeviceRequisition() == kDemoRequisition) {
     policy_manager->SetDeviceRequisition(std::string());
+    // If device requisition is |kDemoRequisition|, it means the sub
+    // organization was also set by the demo setup controller, so remove it as
+    // well.
+    policy_manager->SetSubOrganization(std::string());
   }
 }
 
@@ -557,6 +580,7 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
           ->GetDeviceCloudPolicyManager();
   DCHECK(policy_manager->GetDeviceRequisition().empty());
   policy_manager->SetDeviceRequisition(kDemoRequisition);
+  policy_manager->SetSubOrganization(GetSubOrganizationEmail());
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
   config.management_domain = DemoSetupController::kDemoModeDomain;
