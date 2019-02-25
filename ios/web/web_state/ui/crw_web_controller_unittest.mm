@@ -156,7 +156,8 @@ class CRWWebControllerTest : public WebTestWithWebController,
   void SetUp() override {
     ProgrammaticTestMixin::SetUp();
     WebTestWithWebController::SetUp();
-    mock_web_view_ = CreateMockWebView();
+    fake_wk_list_ = [[CRWFakeBackForwardList alloc] init];
+    mock_web_view_ = CreateMockWebView(fake_wk_list_);
     scroll_view_ = [[UIScrollView alloc] init];
     SetWebViewURL(@(kTestURLString));
     [[[mock_web_view_ stub] andReturn:scroll_view_] scrollView];
@@ -192,36 +193,37 @@ class CRWWebControllerTest : public WebTestWithWebController,
   }
 
   // Creates WebView mock.
-  UIView* CreateMockWebView() {
+  UIView* CreateMockWebView(CRWFakeBackForwardList* wk_list) {
     id result = [OCMockObject mockForClass:[WKWebView class]];
-    [[result stub] serverTrust];
 
-    mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
-    OCMStub([result backForwardList]).andReturn(mock_wk_list_);
+    OCMStub([result backForwardList]).andReturn(wk_list);
     // This uses |andDo| rather than |andReturn| since the URL it returns needs
     // to change when |test_url_| changes.
     OCMStub([result URL]).andDo(^(NSInvocation* invocation) {
       [invocation setReturnValue:&test_url_];
     });
-    [[result stub] setNavigationDelegate:[OCMArg checkWithBlock:^(id delegate) {
-                     navigation_delegate_ = delegate;
-                     return YES;
-                   }]];
-    [[result stub] setUIDelegate:OCMOCK_ANY];
-    [[result stub] frame];
-    [[result stub] setCustomUserAgent:OCMOCK_ANY];
-    [[result stub] customUserAgent];
-    [static_cast<WKWebView*>([result stub]) loadRequest:OCMOCK_ANY];
-    [[result stub] setFrame:GetExpectedWebViewFrame()];
-    [[result stub] addObserver:web_controller()
-                    forKeyPath:OCMOCK_ANY
-                       options:0
-                       context:nullptr];
-    [[result stub] removeObserver:web_controller() forKeyPath:OCMOCK_ANY];
-    [[result stub] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
-    [[result stub] setAllowsBackForwardNavigationGestures:YES];
-    [[result stub] setAllowsBackForwardNavigationGestures:NO];
-    [[result stub] isLoading];
+    OCMStub(
+        [result setNavigationDelegate:[OCMArg checkWithBlock:^(id delegate) {
+                  navigation_delegate_ = delegate;
+                  return YES;
+                }]]);
+    OCMStub([result serverTrust]);
+    OCMStub([result setUIDelegate:OCMOCK_ANY]);
+    OCMStub([result frame]).andReturn(UIScreen.mainScreen.bounds);
+    OCMStub([result setCustomUserAgent:OCMOCK_ANY]);
+    OCMStub([result customUserAgent]);
+    OCMStub([static_cast<WKWebView*>(result) loadRequest:OCMOCK_ANY]);
+    OCMStub([result setFrame:GetExpectedWebViewFrame()]);
+    OCMStub([result addObserver:web_controller()
+                     forKeyPath:OCMOCK_ANY
+                        options:0
+                        context:nullptr]);
+    OCMStub([result removeObserver:web_controller() forKeyPath:OCMOCK_ANY]);
+    OCMStub([result evaluateJavaScript:OCMOCK_ANY
+                     completionHandler:OCMOCK_ANY]);
+    OCMStub([result setAllowsBackForwardNavigationGestures:NO]);
+    OCMStub([result setAllowsBackForwardNavigationGestures:YES]);
+    OCMStub([result isLoading]);
 
     return result;
   }
@@ -229,7 +231,7 @@ class CRWWebControllerTest : public WebTestWithWebController,
   __weak id<WKNavigationDelegate> navigation_delegate_;
   UIScrollView* scroll_view_;
   id mock_web_view_;
-  CRWFakeBackForwardList* mock_wk_list_;
+  CRWFakeBackForwardList* fake_wk_list_;
   NSURL* test_url_;
 };
 
@@ -743,7 +745,7 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   // Simulate a page load to trigger a URL update.
   [navigation_delegate_ webView:mock_web_view_
       didStartProvisionalNavigation:nil];
-  [mock_wk_list_ setCurrentURL:@"http://chromium.test"];
+  [fake_wk_list_ setCurrentURL:@"http://chromium.test"];
   [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
 
   URLVerificationTrustLevel trust_level = kNone;
