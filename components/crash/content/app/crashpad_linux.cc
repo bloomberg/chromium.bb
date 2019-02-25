@@ -4,6 +4,7 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <dlfcn.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -246,6 +247,33 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
   }
 }
 
+// Constructs paths to a handler trampoline executable and a library exporting
+// the symbol `CrashpadHandlerMain()`. This requires this function to be built
+// into the same object exporting this symbol and the handler trampoline is
+// adjacent to it.
+bool GetHandlerTrampoline(std::string* handler_trampoline,
+                          std::string* handler_library) {
+  Dl_info info;
+  if (dladdr(reinterpret_cast<void*>(&GetHandlerTrampoline), &info) == 0) {
+    return false;
+  }
+
+  std::string local_handler_library(info.dli_fname);
+
+  size_t libdir_end = local_handler_library.rfind('/');
+  if (libdir_end == std::string::npos) {
+    return false;
+  }
+
+  std::string local_handler_trampoline(local_handler_library, 0,
+                                       libdir_end + 1);
+  local_handler_trampoline += "libcrashpad_handler_trampoline.so";
+
+  handler_trampoline->swap(local_handler_trampoline);
+  handler_library->swap(local_handler_library);
+  return true;
+}
+
 #if defined(__arm__) && defined(__ARM_ARCH_7A__)
 #define CURRENT_ABI "armeabi-v7a"
 #elif defined(__arm__)
@@ -281,7 +309,8 @@ void MakePackagePaths(std::string* classpath, std::string* libpath) {
 
 // Copies and extends the current environment with CLASSPATH and LD_LIBRARY_PATH
 // set to library paths in the APK.
-bool BuildEnvironmentWithApk(std::vector<std::string>* result) {
+bool BuildEnvironmentWithApk(bool use_64_bit,
+                             std::vector<std::string>* result) {
   DCHECK(result->empty());
 
   std::string classpath;
@@ -298,6 +327,12 @@ bool BuildEnvironmentWithApk(std::vector<std::string>* result) {
   std::string current_library_path;
   env->GetVar(kLdLibraryPathVar, &current_library_path);
   library_path += ":" + current_library_path;
+
+  static constexpr char kRuntimeRootVar[] = "ANDROID_RUNTIME_ROOT";
+  std::string runtime_root;
+  if (env->GetVar(kRuntimeRootVar, &runtime_root)) {
+    library_path += ":" + runtime_root + (use_64_bit ? "/lib64" : "/lib");
+  }
 
   result->push_back("CLASSPATH=" + classpath);
   result->push_back("LD_LIBRARY_PATH=" + library_path);
@@ -414,6 +449,19 @@ bool SetLdLibraryPath(const base::FilePath& lib_path) {
 }
 
 class HandlerStarter {
+#if defined(OS_ANDROID)
+  // TODO(jperaza): Currently only launching a same-bitness handler is
+  // supported. The logic to build package paths, locate a handler executable,
+  // and the crashpad client interface for launching a Java handler need to be
+  // updated to use a specified bitness before a cross-bitness handler can be
+  // used.
+#if defined(ARCH_CPU_64_BITS)
+  static constexpr bool kUse64Bit = true;
+#else
+  static constexpr bool kUse64Bit = false;
+#endif
+#endif  // OS_ANDROID
+
  public:
   static HandlerStarter* Get() {
     static HandlerStarter* instance = new HandlerStarter();
@@ -443,25 +491,35 @@ class HandlerStarter {
 
 #if defined(OS_ANDROID)
     if (!base::PathExists(handler_path)) {
-      use_java_handler_ = true;
+      // The linker doesn't support loading executables passed on its command
+      // line until Q.
+      if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+        bool found_library =
+            GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
+        DCHECK(found_library);
+      } else {
+        use_java_handler_ = true;
+      }
     }
 
     if (!dump_at_crash) {
       return database_path;
     }
 
-    if (use_java_handler_) {
+    if (use_java_handler_ || !handler_trampoline_.empty()) {
       std::vector<std::string> env;
-      if (!BuildEnvironmentWithApk(&env)) {
+      if (!BuildEnvironmentWithApk(kUse64Bit, &env)) {
         return database_path;
       }
 
-      // TODO(jperaza): The logic for constructing an appropriate
-      // CLASSPATH/LD_LIBRARY_PATH won't work for Android Q+. The handler will
-      // need to be launched by executing the dynamic linker instead.
-      bool result = GetCrashpadClient().StartJavaHandlerAtCrash(
-          kCrashpadJavaMain, &env, database_path, metrics_path, url,
-          process_annotations, arguments);
+      bool result = use_java_handler_
+                        ? GetCrashpadClient().StartJavaHandlerAtCrash(
+                              kCrashpadJavaMain, &env, database_path,
+                              metrics_path, url, process_annotations, arguments)
+                        : GetCrashpadClient().StartHandlerWithLinkerAtCrash(
+                              handler_trampoline_, handler_library_, kUse64Bit,
+                              &env, database_path, metrics_path, url,
+                              process_annotations, arguments);
       DCHECK(result);
       return database_path;
     }
@@ -501,18 +559,21 @@ class HandlerStarter {
     }
 
 #if defined(OS_ANDROID)
-    if (use_java_handler_) {
+    if (use_java_handler_ || !handler_trampoline_.empty()) {
       std::vector<std::string> env;
-      if (!BuildEnvironmentWithApk(&env)) {
+      if (!BuildEnvironmentWithApk(kUse64Bit, &env)) {
         return false;
       }
 
-      // TODO(jperaza): The logic for constructing an appropriate
-      // CLASSPATH/LD_LIBRARY_PATH won't work for Android Q+. The handler will
-      // need to be launched by executing the dynamic linker instead.
-      bool result = GetCrashpadClient().StartJavaHandlerForClient(
-          kCrashpadJavaMain, &env, database_path, metrics_path, url,
-          process_annotations, arguments, fd);
+      bool result =
+          use_java_handler_
+              ? GetCrashpadClient().StartJavaHandlerForClient(
+                    kCrashpadJavaMain, &env, database_path, metrics_path, url,
+                    process_annotations, arguments, fd)
+              : GetCrashpadClient().StartHandlerWithLinkerForClient(
+                    handler_trampoline_, handler_library_, kUse64Bit, &env,
+                    database_path, metrics_path, url, process_annotations,
+                    arguments, fd);
       return result;
     }
 #endif
@@ -532,6 +593,8 @@ class HandlerStarter {
 
   crashpad::SanitizationInformation browser_sanitization_info_;
 #if defined(OS_ANDROID)
+  std::string handler_trampoline_;
+  std::string handler_library_;
   bool use_java_handler_ = false;
 #endif
 
