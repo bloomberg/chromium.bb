@@ -370,8 +370,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // yet.
   bool IsReservedRemote() const;
 
-  int response_status() const { return response_status_; }
-
   void AddRawReceivedBytes(size_t received_bytes);
   void AddRawSentBytes(size_t sent_bytes);
 
@@ -511,10 +509,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   base::Time response_time_;
 
   State io_state_;
-
-  // Since we buffer the response, we also buffer the response status.
-  // Not valid until the stream is closed.
-  int response_status_;
 
   NetLogWithSource net_log_;
 
