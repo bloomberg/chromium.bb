@@ -463,8 +463,7 @@ void OverviewGrid::Shutdown() {
     // Fade out the shield widget. This animation continues past the lifetime
     // of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(std::move(shield_widget_),
-                                     OVERVIEW_ANIMATION_RESTORE_WINDOW,
-                                     /*slide=*/false);
+                                     OVERVIEW_ANIMATION_RESTORE_WINDOW);
   }
 }
 

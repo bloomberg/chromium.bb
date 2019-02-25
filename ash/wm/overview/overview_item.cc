@@ -136,9 +136,7 @@ bool OverviewItem::Contains(const aura::Window* target) const {
 void OverviewItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->ResetListener();
   transform_window_.RestoreWindow(
-      reset_transform,
-      overview_session_->enter_exit_overview_type() ==
-          OverviewSession::EnterExitOverviewType::kWindowsMinimized);
+      reset_transform, overview_session_->enter_exit_overview_type());
 }
 
 void OverviewItem::EnsureVisible() {
