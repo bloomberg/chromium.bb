@@ -84,3 +84,41 @@ TEST_F(WebStateListOrderControllerTest, DetermineInsertionIndex) {
 
   EXPECT_EQ(3, order_controller_.DetermineInsertionIndex(opener));
 }
+
+// Test that the selection of the next tab to show when closing a tab respect
+// the opener-opened relationship (note: the index returned always omit the
+// would be closed WebState, so there is a - 1 offset).
+TEST_F(WebStateListOrderControllerTest, DetermineNewActiveIndex) {
+  InsertNewWebState(0, WebStateOpener());
+
+  // Verify that if closing the last WebState, no WebState is selected.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            order_controller_.DetermineNewActiveIndex(0));
+
+  InsertNewWebState(1, WebStateOpener());
+  InsertNewWebState(2, WebStateOpener());
+  InsertNewWebState(3, WebStateOpener(web_state_list_.GetWebStateAt(0)));
+  InsertNewWebState(4, WebStateOpener(web_state_list_.GetWebStateAt(0)));
+  InsertNewWebState(5, WebStateOpener(web_state_list_.GetWebStateAt(1)));
+  InsertNewWebState(6, WebStateOpener());
+
+  // Verify that if closing a WebState with siblings, the next sibling is
+  // selected.
+  EXPECT_EQ(3, order_controller_.DetermineNewActiveIndex(3));
+
+  // Verify that if closing a WebState with siblings, the opener is selected
+  // if there is no next sibling.
+  EXPECT_EQ(0, order_controller_.DetermineNewActiveIndex(4));
+
+  // Verify that if closing a WebState with no sibling, the opener is selected.
+  EXPECT_EQ(1, order_controller_.DetermineNewActiveIndex(5));
+
+  // Verify that if closing a WebState with children, the first child is
+  // selected.
+  EXPECT_EQ(4, order_controller_.DetermineNewActiveIndex(1));
+
+  // Verify that if closing a WebState with no child, the next WebState is
+  // selected, or the previous one if the last WebState was closed.
+  EXPECT_EQ(2, order_controller_.DetermineNewActiveIndex(2));
+  EXPECT_EQ(5, order_controller_.DetermineNewActiveIndex(6));
+}
