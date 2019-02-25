@@ -403,7 +403,7 @@ void HTMLTableElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   CellBorders borders_before = GetCellBorders();
-  unsigned short old_padding = padding_;
+  uint16_t old_padding = padding_;
 
   if (name == kBorderAttr) {
     // FIXME: This attribute is a mess.
@@ -431,10 +431,13 @@ void HTMLTableElement::ParseAttribute(
     else if (DeprecatedEqualIgnoringCase(params.new_value, "all"))
       rules_attr_ = kAllRules;
   } else if (params.name == kCellpaddingAttr) {
-    if (!params.new_value.IsEmpty())
-      padding_ = std::max(0, params.new_value.ToInt());
-    else
+    if (!params.new_value.IsEmpty()) {
+      padding_ =
+          std::max(0, std::min((int32_t)std::numeric_limits<uint16_t>::max(),
+                               params.new_value.ToInt()));
+    } else {
       padding_ = 1;
+    }
   } else if (params.name == kColsAttr) {
     // ###
   } else {
