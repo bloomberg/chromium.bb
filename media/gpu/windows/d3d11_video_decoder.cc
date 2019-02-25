@@ -766,10 +766,14 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     return {};
   }
 
-  if (gpu_workarounds.disable_dxgi_zero_copy_video) {
-    UMA_HISTOGRAM_ENUMERATION(uma_name,
-                              NotSupportedReason::kZeroCopyVideoRequired);
-    return {};
+  // This workaround accounts for almost half of all startup results, and it's
+  // unclear that it's relevant here.
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+    if (gpu_workarounds.disable_dxgi_zero_copy_video) {
+      UMA_HISTOGRAM_ENUMERATION(uma_name,
+                                NotSupportedReason::kZeroCopyVideoRequired);
+      return {};
+    }
   }
 
   // Remember that this might query the angle device, so this won't work if

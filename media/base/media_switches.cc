@@ -259,6 +259,11 @@ const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Tell D3D11VideoDecoder to ignore workarounds for zero copy.  Requires that
+// kD3D11VideoDecoder is enabled.
+const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
+    "D3D11VideoDecoderIgnoreWorkarounds", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable usage of dav1d for AV1 video decoding.
 const base::Feature kDav1dVideoDecoder{"Dav1dVideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
