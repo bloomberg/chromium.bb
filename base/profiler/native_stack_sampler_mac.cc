@@ -269,7 +269,6 @@ class NativeStackSamplerMac : public NativeStackSampler {
   ~NativeStackSamplerMac() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  void ProfileRecordingStarting() override;
   std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
       ProfileBuilder* profile_builder) override;
@@ -328,9 +327,6 @@ NativeStackSamplerMac::NativeStackSamplerMac(
 }
 
 NativeStackSamplerMac::~NativeStackSamplerMac() {}
-
-void NativeStackSamplerMac::ProfileRecordingStarting() {
-}
 
 std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
     StackBuffer* stack_buffer,

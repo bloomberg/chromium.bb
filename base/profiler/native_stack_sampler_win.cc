@@ -416,7 +416,6 @@ class NativeStackSamplerWin : public NativeStackSampler {
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  void ProfileRecordingStarting() override;
   std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
       ProfileBuilder* profile_builder) override;
@@ -448,9 +447,6 @@ NativeStackSamplerWin::NativeStackSamplerWin(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
 
 NativeStackSamplerWin::~NativeStackSamplerWin() {}
-
-void NativeStackSamplerWin::ProfileRecordingStarting() {
-}
 
 std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
