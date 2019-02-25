@@ -60,8 +60,14 @@ class SmartDimModelImpl : public SmartDimModel {
                           DimDecisionCallback dim_callback) override;
   void CancelPreviousRequest() override;
 
+  // Override MlServiceClient in a unit test environment where there is no real
+  // ML Service daemon to connect to.
+  void SetMlServiceClientForTesting(std::unique_ptr<MlServiceClient> client);
+
  private:
-  friend class SmartDimModelImplTest;
+  FRIEND_TEST_ALL_PREFIXES(SmartDimTfNativeModelTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(SmartDimTfNativeModelTest, OptionalFeaturesMissing);
+
   // Loads the preprocessor config if not already loaded. Also initializes the
   // MlServiceClient object if the ML Service is being used for inference.
   void LazyInitialize();
