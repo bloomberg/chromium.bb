@@ -45,6 +45,7 @@
   self = [super initWithBaseViewController:nil browserState:nil];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;
+    _presented = YES;
   }
   return self;
 }

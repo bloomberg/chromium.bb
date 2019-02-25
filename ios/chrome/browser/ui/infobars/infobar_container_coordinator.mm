@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
-#include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
@@ -33,9 +32,8 @@
 
 @property(nonatomic, assign) TabModel* tabModel;
 
-// UIViewController that contains Infobars.
-@property(nonatomic, strong)
-    InfobarContainerViewController* containerViewController;
+// ViewController of the Infobar currently being presented, can be nil.
+@property(nonatomic, weak) UIViewController* infobarViewController;
 // UIViewController that contains legacy Infobars.
 @property(nonatomic, strong)
     LegacyInfobarContainerViewController* legacyContainerViewController;
@@ -61,11 +59,6 @@
 - (void)start {
   DCHECK(self.positioner);
   DCHECK(self.dispatcher);
-
-  // Creates the InfobarContainerVC.
-  InfobarContainerViewController* container =
-      [[InfobarContainerViewController alloc] init];
-  self.containerViewController = container;
 
   // Creates the LegacyInfobarContainerVC.
   LegacyInfobarContainerViewController* legacyContainer =
@@ -105,7 +98,7 @@
 
 - (void)hideContainer:(BOOL)hidden {
   [self.legacyContainerViewController.view setHidden:hidden];
-  [self.containerViewController.view setHidden:hidden];
+  [self.infobarViewController.view setHidden:hidden];
 }
 
 - (UIView*)legacyContainerView {
@@ -135,27 +128,20 @@
   ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
       static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
 
+  // Present the InfobarCoordinator BannerViewController.
   [infobarCoordinator start];
-
-  // Add the infobarCoordinator bannerVC to the containerVC.
-  InfobarContainerViewController* containerViewController =
-      base::mac::ObjCCastStrict<InfobarContainerViewController>(
-          self.containerViewController);
-  [containerViewController
-      addInfobarViewController:static_cast<UIViewController*>(
-                                   [infobarCoordinator bannerViewController])];
-
-  // Present the containerVC.
-  self.containerViewController.transitioningDelegate = self;
-  [self.containerViewController
+  self.infobarViewController = [infobarCoordinator bannerViewController];
+  [infobarCoordinator bannerViewController].transitioningDelegate = self;
+  [[infobarCoordinator bannerViewController]
       setModalPresentationStyle:UIModalPresentationCustom];
-  [self.baseViewController presentViewController:self.containerViewController
-                                        animated:YES
-                                      completion:nil];
+  [self.baseViewController
+      presentViewController:[infobarCoordinator bannerViewController]
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
-  [self.containerViewController.view setUserInteractionEnabled:enabled];
+  [self.infobarViewController.view setUserInteractionEnabled:enabled];
 }
 
 - (void)updateLayoutAnimated:(BOOL)animated {
