@@ -9,13 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/values.h"
 
 class PrefRegistrySimple;
 class PrefService;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -34,7 +31,7 @@ class NotificationPromo {
   void InitFromVariations();
 
   // Initialize from json/prefs.
-  void InitFromJson(const base::DictionaryValue& json);
+  void InitFromJson(base::Value json);
   void InitFromPrefs();
 
   // Can this promo be shown?
@@ -51,8 +48,9 @@ class NotificationPromo {
   void HandleViewed();
 
   const std::string& promo_text() const { return promo_text_; }
-  const base::DictionaryValue* promo_payload() const {
-    return promo_payload_.get();
+  const base::Value& promo_payload() const {
+    DCHECK(promo_payload_.is_dict());
+    return promo_payload_;
   }
 
   // Register preferences.
@@ -86,7 +84,7 @@ class NotificationPromo {
 
   std::string promo_text_;
 
-  std::unique_ptr<const base::DictionaryValue> promo_payload_;
+  base::Value promo_payload_;
 
   double start_;
   double end_;
