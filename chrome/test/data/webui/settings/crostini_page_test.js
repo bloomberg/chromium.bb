@@ -88,6 +88,7 @@ suite('CrostiniPageTests', function() {
       crostiniPage.$$('#crostini').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-subpage');
+        subpage.hideCrostiniUninstall_ = false;
         assertTrue(!!subpage);
       });
     });

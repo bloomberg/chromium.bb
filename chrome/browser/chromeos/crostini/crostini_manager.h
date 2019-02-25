@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -189,6 +190,12 @@ class ImportContainerProgressObserver {
                                          ImportContainerProgressStatus status,
                                          int progress_percent,
                                          uint64_t progress_speed) = 0;
+};
+
+class InstallerViewStatusObserver : public base::CheckedObserver {
+ public:
+  // Called when the CrostiniInstallerView is opened or closed.
+  virtual void OnCrostiniInstallerViewStatusChanged(bool open) = 0;
 };
 
 // CrostiniManager is a singleton which is used to check arguments for
@@ -625,6 +632,12 @@ class CrostiniManager : public KeyedService,
 
   void SetUsbManagerForTesting(device::mojom::UsbDeviceManagerPtr usb_manager);
 
+  void SetInstallerViewStatus(bool open);
+  bool GetInstallerViewStatus() const;
+  void AddInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
+  void RemoveInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
+  bool HasInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
+
  private:
   class CrostiniRestarter;
 
@@ -906,6 +919,10 @@ class CrostiniManager : public KeyedService,
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient> binding_;
 
   device::mojom::UsbDeviceManagerPtr usb_manager_;
+
+  bool installer_view_status_;
+  base::ObserverList<InstallerViewStatusObserver>
+      installer_view_status_observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

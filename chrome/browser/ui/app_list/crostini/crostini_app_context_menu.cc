@@ -26,8 +26,11 @@ bool CrostiniAppContextMenu::IsUninstallable() const {
   if (!crostini::IsCrostiniEnabled(profile())) {
     return false;
   }
-  if (app_id() == crostini::kCrostiniTerminalId) {
-    return true;  // Crostini can always be uninstalled if enabled.
+  if (app_id() == crostini::kCrostiniTerminalId &&
+      !crostini::CrostiniManager::GetForProfile(profile())
+           ->GetInstallerViewStatus()) {
+    // Crostini should not be uninstalled if the installer is still running.
+    return true;
   }
 
   if (!base::FeatureList::IsEnabled(features::kCrostiniAppUninstallGui)) {

@@ -1351,6 +1351,32 @@ void CrostiniManager::GetContainerSshKeys(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::SetInstallerViewStatus(bool open) {
+  installer_view_status_ = open;
+  for (auto& observer : installer_view_status_observers_) {
+    observer.OnCrostiniInstallerViewStatusChanged(open);
+  }
+}
+
+bool CrostiniManager::GetInstallerViewStatus() const {
+  return installer_view_status_;
+}
+
+void CrostiniManager::AddInstallerViewStatusObserver(
+    InstallerViewStatusObserver* observer) {
+  installer_view_status_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveInstallerViewStatusObserver(
+    InstallerViewStatusObserver* observer) {
+  installer_view_status_observers_.RemoveObserver(observer);
+}
+
+bool CrostiniManager::HasInstallerViewStatusObserver(
+    InstallerViewStatusObserver* observer) {
+  return installer_view_status_observers_.HasObserver(observer);
+}
+
 void CrostiniManager::AttachUsbDevice(const std::string& vm_name,
                                       device::mojom::UsbDeviceInfoPtr device,
                                       AttachUsbDeviceCallback callback) {
