@@ -108,6 +108,13 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
                 //                    Revisit this when we have a Samsung L multi-instance device.
                 return mIncognitoTabModel.getCount() > 0;
             }
+
+            @Override
+            public boolean isCurrentModel(TabModel model) {
+                return DocumentTabModelSelector.this.isCurrentModel(model);
+            }
+
+
         }, mActivityDelegate);
         initializeTabIdCounter();
 

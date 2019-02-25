@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.toolbar;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 
 import java.util.List;
 
@@ -35,11 +36,8 @@ public class TabCountProvider {
     /** The {@link TabModelSelectorObserver} that observes when the tab count may have changed. */
     private TabModelSelectorObserver mTabModelSelectorObserver;
 
-    /**
-     *  The {@link TabModelSelectorTabModelObserver} that observes when the tab count may have
-     *  changed.
-     */
-    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
+    /** The {@link TabModelObserver} that observes when the tab count may have changed. */
+    private TabModelObserver mTabModelFilterObserver;
 
     private int mTabCount;
 
@@ -65,7 +63,9 @@ public class TabCountProvider {
         addObserver(observer);
 
         if (mTabModelSelector != null) {
-            observer.onTabCountChanged(mTabModelSelector.getCurrentModel().getCount(),
+            observer.onTabCountChanged(mTabModelSelector.getTabModelFilterProvider()
+                                               .getCurrentTabModelFilter()
+                                               .getCount(),
                     mTabModelSelector.isIncognitoSelected());
         }
     }
@@ -97,39 +97,40 @@ public class TabCountProvider {
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        mTabModelSelectorTabModelObserver =
-                new TabModelSelectorTabModelObserver(mTabModelSelector) {
-                    @Override
-                    public void didAddTab(Tab tab, @TabLaunchType int type) {
-                        updateTabCount();
-                    }
+        mTabModelFilterObserver = new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                updateTabCount();
+            }
 
-                    @Override
-                    public void tabClosureUndone(Tab tab) {
-                        updateTabCount();
-                    }
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                updateTabCount();
+            }
 
-                    @Override
-                    public void didCloseTab(int tabId, boolean incognito) {
-                        updateTabCount();
-                    }
+            @Override
+            public void didCloseTab(int tabId, boolean incognito) {
+                updateTabCount();
+            }
 
-                    @Override
-                    public void tabPendingClosure(Tab tab) {
-                        updateTabCount();
-                    }
+            @Override
+            public void tabPendingClosure(Tab tab) {
+                updateTabCount();
+            }
 
-                    @Override
-                    public void allTabsPendingClosure(List<Tab> tabs) {
-                        updateTabCount();
-                    }
+            @Override
+            public void allTabsPendingClosure(List<Tab> tabs) {
+                updateTabCount();
+            }
 
-                    @Override
-                    public void tabRemoved(Tab tab) {
-                        updateTabCount();
-                    }
-                };
+            @Override
+            public void tabRemoved(Tab tab) {
+                updateTabCount();
+            }
+        };
 
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
+                mTabModelFilterObserver);
         updateTabCount();
     }
 
@@ -137,19 +138,21 @@ public class TabCountProvider {
      * Clean up any state when the TabCountProvider is destroyed.
      */
     void destroy() {
+        if (mTabModelFilterObserver != null) {
+            mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelFilterObserver);
+        }
+
         if (mTabModelSelector != null) {
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
             mTabModelSelector = null;
-        }
-        if (mTabModelSelectorTabModelObserver != null) {
-            mTabModelSelectorTabModelObserver.destroy();
-            mTabModelSelectorTabModelObserver = null;
         }
         mTabCountObservers.clear();
     }
 
     private void updateTabCount() {
-        final int tabCount = mTabModelSelector.getCurrentModel().getCount();
+        final int tabCount =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().getCount();
         final boolean isIncognito = mTabModelSelector.isIncognitoSelected();
 
         if (mTabCount == tabCount && mIsIncognito == isIncognito) return;
