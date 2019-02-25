@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -66,7 +66,7 @@ bool LocalFileSystemClient::RequestFileSystemAccessSync(
 
 void LocalFileSystemClient::RequestFileSystemAccessAsync(
     ExecutionContext* context,
-    std::unique_ptr<ContentSettingCallbacks> callbacks) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(context);
   auto* document = DynamicTo<Document>(context);
   if (!document) {
@@ -76,9 +76,9 @@ void LocalFileSystemClient::RequestFileSystemAccessAsync(
   }
 
   if (auto* client = document->GetFrame()->GetContentSettingsClient()) {
-    client->RequestFileSystemAccessAsync(std::move(callbacks));
+    client->RequestFileSystemAccessAsync(std::move(callback));
   } else {
-    callbacks->OnAllowed();
+    std::move(callback).Run(true);
   }
 }
 

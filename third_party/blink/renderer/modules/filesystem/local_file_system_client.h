@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_LOCAL_FILE_SYSTEM_CLIENT_H_
 
 #include <memory>
+#include "base/callback.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -45,9 +46,8 @@ class LocalFileSystemClient final : public FileSystemClient {
   ~LocalFileSystemClient() override;
 
   bool RequestFileSystemAccessSync(ExecutionContext*) override;
-  void RequestFileSystemAccessAsync(
-      ExecutionContext*,
-      std::unique_ptr<ContentSettingCallbacks>) override;
+  void RequestFileSystemAccessAsync(ExecutionContext*,
+                                    base::OnceCallback<void(bool)>) override;
 
  private:
   LocalFileSystemClient();

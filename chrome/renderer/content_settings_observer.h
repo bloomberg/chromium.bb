@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
@@ -77,7 +78,7 @@ class ContentSettingsObserver
   // blink::WebContentSettingsClient:
   bool AllowDatabase() override;
   void RequestFileSystemAccessAsync(
-      const blink::WebContentSettingCallbacks& callbacks) override;
+      base::OnceCallback<void(bool)> callback) override;
   bool AllowImage(bool enabled_per_settings,
                   const blink::WebURL& image_url) override;
   bool AllowIndexedDB(const blink::WebSecurityOrigin& origin) override;
@@ -183,7 +184,7 @@ class ContentSettingsObserver
   bool is_interstitial_page_ = false;
 
   int current_request_id_ = 0;
-  base::flat_map<int, blink::WebContentSettingCallbacks> permission_requests_;
+  base::flat_map<int, base::OnceCallback<void(bool)>> permission_requests_;
 
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;

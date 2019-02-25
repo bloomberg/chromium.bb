@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -43,7 +44,6 @@ namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
-class ContentSettingCallbacks;
 class WorkerClients;
 
 class FileSystemClient {
@@ -54,9 +54,8 @@ class FileSystemClient {
   virtual ~FileSystemClient() = default;
 
   virtual bool RequestFileSystemAccessSync(ExecutionContext*) = 0;
-  virtual void RequestFileSystemAccessAsync(
-      ExecutionContext*,
-      std::unique_ptr<ContentSettingCallbacks>) = 0;
+  virtual void RequestFileSystemAccessAsync(ExecutionContext*,
+                                            base::OnceCallback<void(bool)>) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileSystemClient);
