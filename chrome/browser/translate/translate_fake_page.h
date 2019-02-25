@@ -9,10 +9,12 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -47,10 +49,12 @@ class FakePageImpl : public translate::mojom::Page {
   translate::mojom::PagePtr BindToNewPagePtr();
 
   // translate::mojom::Page implementation.
-  void Translate(const std::string& translate_script,
-                 const std::string& source_lang,
-                 const std::string& target_lang,
-                 TranslateCallback callback) override;
+  void Translate(
+      const std::string& translate_script,
+      network::mojom::URLLoaderFactoryPtr loader_factory_for_translate_script,
+      const std::string& source_lang,
+      const std::string& target_lang,
+      TranslateCallback callback) override;
 
   void RevertTranslation() override;
 
