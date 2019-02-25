@@ -44,10 +44,6 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
                                 public TimeToClickRecorder::Delegate,
                                 public TabletModeObserver {
  public:
-  // Return adjusted anchor insets that take into account shelf alignment and
-  // bubble insets.
-  static gfx::Insets GetAdjustedAnchorInsets(UnifiedSystemTray* tray,
-                                             TrayBubbleView* bubble_view);
 
   explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray, bool show_by_click);
   ~UnifiedSystemTrayBubble() override;

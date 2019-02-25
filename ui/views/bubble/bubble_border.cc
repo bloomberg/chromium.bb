@@ -231,6 +231,8 @@ gfx::Insets BubbleBorder::GetInsets() const {
     return gfx::Insets();
   if (shadow_ == NO_SHADOW)
     return gfx::Insets(kBorderThicknessDip);
+  if (insets_.has_value())
+    return insets_.value();
   return GetBorderAndShadowInsets(md_shadow_elevation_);
 }
 

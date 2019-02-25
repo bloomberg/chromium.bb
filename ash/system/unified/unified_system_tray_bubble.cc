@@ -61,24 +61,6 @@ class ContainerView : public views::View {
 
 }  // namespace
 
-// static
-gfx::Insets UnifiedSystemTrayBubble::GetAdjustedAnchorInsets(
-    UnifiedSystemTray* tray,
-    TrayBubbleView* bubble_view) {
-  gfx::Insets anchor_insets =
-      tray->shelf()->GetSystemTrayAnchorView()->GetBubbleAnchorInsets();
-  gfx::Insets bubble_insets = bubble_view->GetBorderInsets();
-  if (tray->shelf()->IsHorizontalAlignment()) {
-    anchor_insets -=
-        gfx::Insets(kUnifiedMenuVerticalPadding - bubble_insets.bottom(), 0, 0,
-                    bubble_insets.right() + anchor_insets.right());
-  } else {
-    anchor_insets -=
-        gfx::Insets(0, 0, bubble_insets.bottom() + anchor_insets.bottom(), 0);
-  }
-  return anchor_insets;
-}
-
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
     : controller_(
@@ -96,6 +78,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
+  init_params.insets = gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding);
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
@@ -111,8 +94,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
-  bubble_view_->set_anchor_view_insets(
-      GetAdjustedAnchorInsets(tray, bubble_view_));
   bubble_view_->set_color(SK_ColorTRANSPARENT);
   bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
@@ -249,7 +230,7 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
                                                        : anchor_bounds.bottom();
   int free_space_height_above_anchor =
       bottom - tray_->shelf()->GetUserWorkAreaBounds().y();
-  return free_space_height_above_anchor - kUnifiedMenuVerticalPadding * 2;
+  return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
 }
 
 void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
