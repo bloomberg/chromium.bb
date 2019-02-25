@@ -118,11 +118,11 @@ void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignalAll)(
 
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensBefore)(
     const char *file, int line, const volatile void *obj)
-{DYNAMIC_ANNOTATIONS_IMPL};
+{DYNAMIC_ANNOTATIONS_IMPL}
 
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensAfter)(
     const char *file, int line, const volatile void *obj)
-{DYNAMIC_ANNOTATIONS_IMPL};
+{DYNAMIC_ANNOTATIONS_IMPL}
 
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePublishMemoryRange)(
     const char *file, int line, const volatile void *address, long size)
