@@ -45,12 +45,13 @@ std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper() {
 
 }  // namespace
 
-SystemMonitor::SystemMonitor(std::unique_ptr<MetricEvaluatorsHelper> helper)
+SystemMonitor::SystemMonitor(
+    std::unique_ptr<MetricEvaluatorsHelper> metric_evaluators_helper)
     : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       metric_evaluators_helper_(
-          helper.release(),
+          metric_evaluators_helper.release(),
           base::OnTaskRunnerDeleter(blocking_task_runner_)),
       metric_evaluators_metadata_(CreateMetricMetadataArray()),
       weak_factory_(this) {
@@ -76,6 +77,11 @@ SystemMonitor* SystemMonitor::Get() {
 
 void SystemMonitor::SystemObserver::OnFreePhysicalMemoryMbSample(
     int free_phys_memory_mb) {
+  NOTREACHED();
+}
+
+void SystemMonitor::SystemObserver::OnDiskIdleTimePercent(
+    float disk_idle_time_percent) {
   NOTREACHED();
 }
 
@@ -138,10 +144,12 @@ SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
         return metric_refresh_frequencies.metric_freq_field;             \
       })
   return {
-      // kFreeMemoryMb:
       CREATE_METRIC_METADATA(kFreeMemoryMb, int, GetFreePhysicalMemoryMb,
                              OnFreePhysicalMemoryMbSample,
                              free_phys_memory_mb_frequency),
+      CREATE_METRIC_METADATA(kDiskIdleTimePercent, float,
+                             GetDiskIdleTimePercent, OnDiskIdleTimePercent,
+                             disk_idle_time_percent_frequency),
   };
 #undef CREATE_METRIC_METADATA
 }  // namespace performance_monitor
