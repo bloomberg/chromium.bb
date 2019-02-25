@@ -22,7 +22,7 @@ class ProfileIdentityProvider : public IdentityProvider,
 
   // IdentityProvider:
   std::string GetActiveAccountId() override;
-  bool IsActiveAccountAvailable() override;
+  bool IsActiveAccountWithRefreshToken() override;
   std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
       const std::string& oauth_consumer_name,
       const identity::ScopeSet& scopes,

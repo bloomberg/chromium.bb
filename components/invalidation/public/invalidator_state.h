@@ -32,7 +32,13 @@ enum InvalidatorState {
   // Invalidator was stopped.
   STOPPED = 5,
 
-  kMaxValue = STOPPED,
+  // Starting was attempted, but failed due to absence of active account.
+  NOT_STARTED_NO_ACTIVE_ACCOUNT = 6,
+
+  // Starting was attempted, but failed due to absence of active account.
+  NOT_STARTED_NO_REFRESH_TOKEN = 7,
+
+  kMaxValue = NOT_STARTED_NO_REFRESH_TOKEN,
 };
 
 INVALIDATION_EXPORT const char* InvalidatorStateToString(

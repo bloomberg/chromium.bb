@@ -22,7 +22,7 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider,
 
   // IdentityProvider:
   std::string GetActiveAccountId() override;
-  bool IsActiveAccountAvailable() override;
+  bool IsActiveAccountWithRefreshToken() override;
   std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
   FetchAccessToken(
       const std::string& oauth_consumer_name,

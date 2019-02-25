@@ -332,7 +332,7 @@ void TiclInvalidationService::OnIncomingInvalidation(
 std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 bool TiclInvalidationService::IsReadyToStart() {
-  if (!identity_provider_->IsActiveAccountAvailable()) {
+  if (!identity_provider_->IsActiveAccountWithRefreshToken()) {
     DVLOG(2) << "Not starting TiclInvalidationService: "
              << "active account is not available";
     return false;

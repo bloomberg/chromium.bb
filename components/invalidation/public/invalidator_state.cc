@@ -22,6 +22,10 @@ const char* InvalidatorStateToString(InvalidatorState state) {
       return "SUBSCRIPTION_FAILURE";
     case STOPPED:
       return "STOPPED";
+    case NOT_STARTED_NO_ACTIVE_ACCOUNT:
+      return "NOT_STARTED_NO_ACTIVE_ACCOUNT";
+    case NOT_STARTED_NO_REFRESH_TOKEN:
+      return "NOT_STARTED_NO_REFRESH_TOKEN";
   }
 }
 
