@@ -25,9 +25,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -188,10 +186,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
-  virtual void OnCookieChangeEvent(
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause,
-      blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
@@ -268,10 +262,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
-  void OnCookieChangeEventStub(
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause,
-      blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
   void OnExtendableMessageEventStub(
       blink::mojom::ExtendableMessageEventPtr event,
       blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
