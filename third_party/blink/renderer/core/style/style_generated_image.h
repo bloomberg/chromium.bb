@@ -53,7 +53,6 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
                       float multiplier,
                       const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override { return !fixed_size_; }
-  bool UsesImageContainerSize() const override { return !fixed_size_; }
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   // The |target_size| is the desired image size

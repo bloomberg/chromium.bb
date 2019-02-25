@@ -106,7 +106,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   static Image* NullImage();
   bool IsNull() const { return Size().IsEmpty(); }
 
-  virtual bool UsesContainerSize() const { return false; }
   virtual bool HasRelativeSize() const { return false; }
 
   virtual IntSize Size() const = 0;

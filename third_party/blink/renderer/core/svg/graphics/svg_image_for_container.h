@@ -71,9 +71,6 @@ class SVGImageForContainer final : public Image {
 
   IntSize Size() const override;
 
-  bool UsesContainerSize() const override {
-    return image_->UsesContainerSize();
-  }
   bool HasRelativeSize() const override { return image_->HasRelativeSize(); }
 
   bool ApplyShader(cc::PaintFlags&, const SkMatrix& local_matrix) override;

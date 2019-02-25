@@ -47,7 +47,6 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
                                     percentage, crossfade_size, size));
   }
 
-  bool UsesContainerSize() const override { return false; }
   bool HasRelativeSize() const override { return false; }
 
   IntSize Size() const override { return FlooredIntSize(crossfade_size_); }

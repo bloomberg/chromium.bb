@@ -115,10 +115,6 @@ bool StyleFetchedImage::ImageHasRelativeSize() const {
   return image_->GetImage()->HasRelativeSize();
 }
 
-bool StyleFetchedImage::UsesImageContainerSize() const {
-  return image_->GetImage()->UsesContainerSize();
-}
-
 void StyleFetchedImage::AddClient(ImageResourceObserver* observer) {
   image_->AddObserver(observer);
 }
