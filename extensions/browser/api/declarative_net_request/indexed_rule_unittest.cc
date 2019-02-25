@@ -269,7 +269,10 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
                                                       L"ase.com")),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
        flat_rule::AnchorType_NONE, "", ParseResult::ERROR_NON_ASCII_URL_FILTER},
-  };
+      // Url pattern starting with the domain anchor followed by a wildcard.
+      {std::make_unique<std::string>("||*xyz"),
+       flat_rule::UrlPatternType_WILDCARDED, flat_rule::AnchorType_SUBDOMAIN,
+       flat_rule::AnchorType_NONE, "", ParseResult::ERROR_INVALID_URL_FILTER}};
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));

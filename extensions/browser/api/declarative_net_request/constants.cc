@@ -31,6 +31,8 @@ const char kErrorPersisting[] = "*: Rules file could not be parsed.";
 const char kErrorListNotPassed[] = "*: Rules file must contain a list.";
 const char kErrorNonAscii[] =
     "*: Rule with id * cannot have non-ascii characters as part of \"*\" key.";
+const char kErrorInvalidUrlFilter[] =
+    "*: Rule with id * has an invalid value for \"*\" key.";
 
 const char kRuleCountExceeded[] =
     "Declarative Net Request: Rule count exceeded. Some rules were ignored.";
