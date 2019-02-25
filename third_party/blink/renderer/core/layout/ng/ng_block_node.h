@@ -69,6 +69,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBlockNode GetRenderedLegend() const;
   NGBlockNode GetFieldsetContent() const;
 
+  bool ChildrenInline() const;
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
 

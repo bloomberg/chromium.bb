@@ -838,6 +838,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
   }
 }
 
+bool NGBlockNode::ChildrenInline() const {
+  if (const auto* block = ToLayoutBlockFlowOrNull(box_))
+    return AreNGBlockFlowChildrenInline(block);
+  return false;
+}
+
 bool NGBlockNode::IsInlineLevel() const {
   return GetLayoutBox()->IsInline();
 }
