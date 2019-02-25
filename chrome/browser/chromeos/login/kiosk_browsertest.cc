@@ -316,6 +316,17 @@ class ScopedCanConfigureNetwork {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanConfigureNetwork);
 };
 
+// Waits for js condition to be fulfilled.
+void WaitForJsCondition(const std::string& js_condition) {
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
+}
+
 class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
   KioskFakeDiskMountManager() {}
@@ -982,10 +993,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
   LaunchApp(kTestKioskApp, true);
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
-  test::OobeJS()
-      .CreateWaiter(new_kiosk_ui ? kCheckDiagnosticModeNewAPI
-                                 : kCheckDiagnosticModeOldAPI)
-      ->Wait();
+  WaitForJsCondition(new_kiosk_ui ? kCheckDiagnosticModeNewAPI
+                                  : kCheckDiagnosticModeOldAPI);
 
   std::string diagnosticMode(new_kiosk_ui ?
       kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI);

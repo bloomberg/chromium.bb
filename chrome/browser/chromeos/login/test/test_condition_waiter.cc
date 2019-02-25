@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 
 #include "base/callback.h"
 
@@ -10,27 +10,27 @@ namespace chromeos {
 namespace test {
 namespace {
 
-const base::TimeDelta kPredicateCheckFrequency =
+const base::TimeDelta kConditionCheckFrequency =
     base::TimeDelta::FromMilliseconds(200);
 
 }  // anonymous namespace
 
-TestPredicateWaiter::TestPredicateWaiter(
+TestConditionWaiter::TestConditionWaiter(
     const base::RepeatingCallback<bool(void)>& is_fulfilled)
     : is_fulfilled_(is_fulfilled) {}
 
-TestPredicateWaiter::~TestPredicateWaiter() = default;
+TestConditionWaiter::~TestConditionWaiter() = default;
 
-void TestPredicateWaiter::Wait() {
+void TestConditionWaiter::Wait() {
   if (is_fulfilled_.Run())
     return;
 
-  timer_.Start(FROM_HERE, kPredicateCheckFrequency, this,
-               &TestPredicateWaiter::CheckPredicate);
+  timer_.Start(FROM_HERE, kConditionCheckFrequency, this,
+               &TestConditionWaiter::CheckCondition);
   run_loop_.Run();
 }
 
-void TestPredicateWaiter::CheckPredicate() {
+void TestConditionWaiter::CheckCondition() {
   if (is_fulfilled_.Run()) {
     run_loop_.Quit();
     timer_.Stop();

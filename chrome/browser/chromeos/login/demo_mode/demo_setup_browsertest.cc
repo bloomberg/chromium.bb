@@ -127,7 +127,13 @@ std::string ScreenToContentQuery(OobeScreen screen) {
 
 // Waits for js condition to be fulfilled.
 void WaitForJsCondition(const std::string& js_condition) {
-  test::OobeJS().CreateWaiter(js_condition)->Wait();
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
 }
 
 }  // namespace
