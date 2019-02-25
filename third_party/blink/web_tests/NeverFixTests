@@ -992,7 +992,6 @@ external/wpt/css/css-backgrounds/background-size/vector/wide--cover--omitted-wid
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-nonpercent-height-viewbox.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-omitted-height-viewbox.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-percent-height-viewbox.html [ WontFix ]
-external/wpt/css/css-backgrounds/border-image-5.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-6.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-repeat-round.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-round-and-stretch.html [ WontFix ]
