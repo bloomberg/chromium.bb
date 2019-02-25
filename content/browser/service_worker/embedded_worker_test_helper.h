@@ -33,10 +33,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
-namespace blink {
-struct PlatformNotificationData;
-}
-
 namespace content {
 
 class EmbeddedWorkerRegistry;
@@ -192,18 +188,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  virtual void OnNotificationClickEvent(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& notification_data,
-      int action_index,
-      const base::Optional<base::string16>& reply,
-      blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
-          callback);
-  virtual void OnNotificationCloseEvent(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& notification_data,
-      blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
-          callback);
   virtual void OnPushEvent(
       base::Optional<std::string> payload,
       blink::mojom::ServiceWorker::DispatchPushEventCallback callback);
@@ -272,18 +256,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  void OnNotificationClickEventStub(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& notification_data,
-      int action_index,
-      const base::Optional<base::string16>& reply,
-      blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
-          callback);
-  void OnNotificationCloseEventStub(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& notification_data,
-      blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
-          callback);
   void OnPushEventStub(
       base::Optional<std::string> payload,
       blink::mojom::ServiceWorker::DispatchPushEventCallback callback);

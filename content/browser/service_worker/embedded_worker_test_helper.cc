@@ -390,24 +390,6 @@ void EmbeddedWorkerTestHelper::OnPushEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
-    const std::string& notification_id,
-    const blink::PlatformNotificationData& notification_data,
-    int action_index,
-    const base::Optional<base::string16>& reply,
-    blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
-    const std::string& notification_id,
-    const blink::PlatformNotificationData& notification_data,
-    blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void EmbeddedWorkerTestHelper::OnAbortPaymentEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback) {
@@ -510,32 +492,6 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
                      embedded_worker_id, std::move(request),
                      std::move(preload_handle), std::move(response_callback),
                      std::move(finish_callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
-    const std::string& notification_id,
-    const blink::PlatformNotificationData& notification_data,
-    int action_index,
-    const base::Optional<base::string16>& reply,
-    blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnNotificationClickEvent,
-                     AsWeakPtr(), notification_id, notification_data,
-                     action_index, reply, std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
-    const std::string& notification_id,
-    const blink::PlatformNotificationData& notification_data,
-    blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnNotificationCloseEvent,
-                     AsWeakPtr(), notification_id, notification_data,
-                     std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(
