@@ -100,9 +100,9 @@ var FilesToast = Polymer({
       {bottom: '16px', opacity: 1, offset: 1}
     ], 100 /* ms */);
 
-    this.enterAnimationPlayer_.addEventListener('finish', function() {
+    this.enterAnimationPlayer_.addEventListener('finish', () => {
       this.enterAnimationPlayer_ = null;
-    }.bind(this));
+    });
 
     // Set timeout.
     setTimeout(this.timeout_.bind(this, this.generationId_), this.duration);
@@ -144,7 +144,7 @@ var FilesToast = Polymer({
     // If it's performing enter animation, wait until it's done and come back
     // later.
     if (this.enterAnimationPlayer_ && !this.enterAnimationPlayer_.finished) {
-      return new Promise(function(resolve) {
+      return new Promise(resolve => {
         // Check that the animation is still playing. Animation can be finished
         // between the above condition check and this function call.
         if (!this.enterAnimationPlayer_ ||
@@ -153,7 +153,7 @@ var FilesToast = Polymer({
         }
 
         this.enterAnimationPlayer_.addEventListener('finish', resolve);
-      }.bind(this)).then(this.hide.bind(this));
+      }).then(this.hide.bind(this));
     }
 
     // Start hide animation if it's not performing now.
@@ -164,12 +164,12 @@ var FilesToast = Polymer({
       ], 100 /* ms */);
     }
 
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
       this.hideAnimationPlayer_.addEventListener('finish', resolve);
-    }.bind(this)).then(function() {
+    }).then(() => {
       this.$.container.hidden = true;
       this.hideAnimationPlayer_ = null;
       this._setVisible(false);
-    }.bind(this));
+    });
   }
 });

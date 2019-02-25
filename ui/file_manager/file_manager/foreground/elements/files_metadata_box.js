@@ -211,11 +211,11 @@ var FilesMetadataBox = Polymer({
       return '';
     }
 
-    const computeCoordinate = function(value) {
+    const computeCoordinate = value => {
       return this.parseRational_(value[0]) +
           this.parseRational_(value[1]) / 60 +
           this.parseRational_(value[2]) / 3600;
-    }.bind(this);
+    };
 
     const latitude =
         computeCoordinate(gps[2].value) * (gps[1].value === 'N\0' ? 1 : -1);

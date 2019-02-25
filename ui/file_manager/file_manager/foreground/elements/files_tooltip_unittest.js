@@ -96,8 +96,8 @@ function setUp() {
 }
 
 function waitForMutation(target) {
-  return new Promise(function(fulfill, reject) {
-    const observer = new MutationObserver(function(mutations) {
+  return new Promise((fulfill, reject) => {
+    const observer = new MutationObserver(mutations => {
       observer.disconnect();
       fulfill();
     });
@@ -109,7 +109,7 @@ function testFocus(callback) {
   chocolateButton.focus();
 
   return reportPromise(
-    waitForMutation(tooltip).then(function() {
+    waitForMutation(tooltip).then(() => {
       assertEquals('Chocolate!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
       assertEquals('4px', tooltip.style.left);
@@ -117,7 +117,7 @@ function testFocus(callback) {
 
       cherriesButton.focus();
       return waitForMutation(tooltip);
-    }).then(function() {
+    }).then(() => {
       assertEquals('Cherries!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
       const expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
@@ -126,7 +126,7 @@ function testFocus(callback) {
 
       otherButton.focus();
       return waitForMutation(tooltip);
-    }).then(function() {
+    }).then(() => {
       assertFalse(!!tooltip.getAttribute('visible'));
     }), callback);
 }
@@ -135,7 +135,7 @@ function testHover(callback) {
   chocolateButton.dispatchEvent(new MouseEvent('mouseover'));
 
   return reportPromise(
-    waitForMutation(tooltip).then(function() {
+    waitForMutation(tooltip).then(() => {
       assertEquals('Chocolate!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
       assertEquals('4px', tooltip.style.left);
@@ -144,7 +144,7 @@ function testHover(callback) {
       chocolateButton.dispatchEvent(new MouseEvent('mouseout'));
       cherriesButton.dispatchEvent(new MouseEvent('mouseover'));
       return waitForMutation(tooltip);
-    }).then(function() {
+    }).then(() => {
       assertEquals('Cherries!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
       const expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
@@ -153,7 +153,7 @@ function testHover(callback) {
 
       cherriesButton.dispatchEvent(new MouseEvent('mouseout'));
       return waitForMutation(tooltip);
-    }).then(function() {
+    }).then(() => {
       assertFalse(!!tooltip.getAttribute('visible'));
     }), callback);
 }
@@ -162,17 +162,17 @@ function testClickHides(callback) {
   chocolateButton.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
 
   return reportPromise(
-    waitForMutation(tooltip).then(function() {
+    waitForMutation(tooltip).then(() => {
       assertEquals('Chocolate!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
 
       // Hiding here is synchronous. Dispatch the event asynchronously, so the
       // mutation observer is started before hiding.
-      setTimeout(function() {
+      setTimeout(() => {
         document.body.dispatchEvent(new MouseEvent('mousedown'));
       });
       return waitForMutation(tooltip);
-    }).then(function() {
+    }).then(() => {
       assertFalse(!!tooltip.getAttribute('visible'));
     }), callback);
 }
