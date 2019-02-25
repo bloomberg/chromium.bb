@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_GET_STATUS_FOR_POLICY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -14,6 +15,8 @@ class MediaKeysPolicy;
 class ScriptState;
 
 class MediaKeysGetStatusForPolicy {
+  STATIC_ONLY(MediaKeysGetStatusForPolicy);
+
  public:
   static ScriptPromise getStatusForPolicy(ScriptState*,
                                           MediaKeys&,
