@@ -21,11 +21,13 @@ import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.download.home.metrics.FilterChangeLogger;
+import org.chromium.chrome.browser.download.home.rename.RenameDialogCoordinator;
 import org.chromium.chrome.browser.download.home.storage.StorageCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.util.List;
 
@@ -78,6 +80,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     private final EmptyCoordinator mEmptyCoordinator;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mListView;
+    private final RenameDialogCoordinator mRenameDialogCoordinator;
     private ViewGroup mMainView;
 
     /**
@@ -96,15 +99,18 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
             OfflineContentProvider provider, DeleteController deleteController,
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
-            DateOrderedListObserver dateOrderedListObserver) {
+            DateOrderedListObserver dateOrderedListObserver,
+            ModalDialogManager modalDialogManager) {
         mContext = context;
 
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mListView =
                 new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
-        mMediator = new DateOrderedListMediator(provider, this ::startShareIntent, deleteController,
-                selectionDelegate, config, dateOrderedListObserver, model);
+        mRenameDialogCoordinator = new RenameDialogCoordinator(context, modalDialogManager);
+
+        mMediator = new DateOrderedListMediator(provider, this::startShareIntent, deleteController,
+                this::startRename, selectionDelegate, config, dateOrderedListObserver, model);
 
         mEmptyCoordinator = new EmptyCoordinator(context, mMediator.getEmptySource());
 
@@ -144,6 +150,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     /** Tears down this coordinator. */
     public void destroy() {
         mMediator.destroy();
+        mRenameDialogCoordinator.destroy();
     }
 
     /** @return The {@link View} representing downloads home. */
@@ -181,5 +188,9 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     private void startShareIntent(Intent intent) {
         mContext.startActivity(Intent.createChooser(
                 intent, mContext.getString(R.string.share_link_chooser_title)));
+    }
+
+    private void startRename(String name, DateOrderedListMediator.RenameCallback callback) {
+        mRenameDialogCoordinator.startRename(name, callback::tryToRename);
     }
 }

@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.glue;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
@@ -13,6 +16,7 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -75,6 +79,13 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         } else {
             mProvider.removeItem(item.id);
         }
+    }
+
+    /** @see OfflineContentProvider#renameItem(ContentId, String, Callback) */
+    public void renameItem(
+            OfflineItem item, String targetName, Callback</*RenameResult*/ Integer> callback) {
+        // TODO(hesen):Implement glue.
+        new Handler(Looper.getMainLooper()).post(() -> callback.onResult(RenameResult.SUCCESS));
     }
 
     /** @see OfflineContentProvider#cancelDownload(ContentId) */

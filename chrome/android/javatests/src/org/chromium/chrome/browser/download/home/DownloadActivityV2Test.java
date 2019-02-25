@@ -35,6 +35,7 @@ import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.HashMap;
@@ -50,6 +51,10 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     private Tracker mTracker;
     @Mock
     private SnackbarManager mSnackbarManager;
+    @Mock
+    private ModalDialogManager.Presenter mAppModalPresenter;
+
+    private ModalDialogManager mModalDialogManager;
 
     private DownloadManagerCoordinator mDownloadCoordinator;
 
@@ -98,8 +103,12 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
                                                  .setUseNewDownloadPath(true)
                                                  .setUseNewDownloadPathThumbnails(true)
                                                  .build();
+
+        mModalDialogManager =
+                new ModalDialogManager(mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
+
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(
-                mProfile, getActivity(), config, mSnackbarManager);
+                mProfile, getActivity(), config, mSnackbarManager, mModalDialogManager);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

@@ -642,6 +642,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/metrics/FilterChangeLogger.java",
   "java/src/org/chromium/chrome/browser/download/home/metrics/OfflineItemStartupLogger.java",
   "java/src/org/chromium/chrome/browser/download/home/metrics/UmaUtils.java",
+  "java/src/org/chromium/chrome/browser/download/home/rename/RenameDialogCoordinator.java",
+  "java/src/org/chromium/chrome/browser/download/home/rename/RenameDialogCustomView.java",
   "java/src/org/chromium/chrome/browser/download/home/snackbars/DeleteUndoCoordinator.java",
   "java/src/org/chromium/chrome/browser/download/home/snackbars/UndoUiUtils.java",
   "java/src/org/chromium/chrome/browser/download/home/storage/StorageCoordinator.java",
