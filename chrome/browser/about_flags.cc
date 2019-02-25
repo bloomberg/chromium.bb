@@ -2562,11 +2562,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSurfaceLayerForVideoName,
      flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
-#if defined(OS_CHROMEOS)
-    {"quick-unlock-pin", flag_descriptions::kQuickUnlockPinName,
-     flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
-#endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"no-credit-card-abort", flag_descriptions::kNoCreditCardAbort,
      flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
@@ -2907,10 +2902,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-monitor-color-space", flag_descriptions::kUseMonitorColorSpaceName,
      flag_descriptions::kUseMonitorColorSpaceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kUseMonitorColorSpace)},
-
-    {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,
-     flag_descriptions::kQuickUnlockPinSigninDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kQuickUnlockPinSignin)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
