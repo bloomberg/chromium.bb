@@ -27,25 +27,6 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-  // High level categories of mime types for resources loaded by the page.
-  enum class ResourceMimeType {
-    kJavascript = 0,
-    kVideo = 1,
-    kImage = 2,
-    kCss = 3,
-    kHtml = 4,
-    kOther = 5,
-    kMaxValue = kOther,
-  };
-
-  // Whether or not the adframe size intervention would have triggered on
-  // this frame.  These values are persisted to logs. Entries should not be
-  // renumbered and numeric values should never be reused.
-  enum class AdFrameSizeInterventionStatus {
-    kNone = 0,
-    kTriggered = 1,
-    kMaxValue = kTriggered,
-  };
 
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
@@ -58,6 +39,8 @@ class AdsPageLoadMetricsObserver
   static bool IsSubframeSameOriginToMainFrame(
       content::RenderFrameHost* sub_host,
       bool use_parent_origin);
+
+  using ResourceMimeType = FrameData::ResourceMimeType;
 
   AdsPageLoadMetricsObserver();
   ~AdsPageLoadMetricsObserver() override;
@@ -119,11 +102,10 @@ class AdsPageLoadMetricsObserver
       FrameTreeNodeId frame_tree_node_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  // Get the mime type of a resource. This only returns a subset of mime types,
-  // grouped at a higher level. For example, all video mime types return the
-  // same value.
-  ResourceMimeType GetResourceMimeType(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+  void AdjustAdBytesForFrame(
+      FrameTreeNodeId frame_tree_node_id,
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
+      int64_t unaccounted_ad_bytes);
 
   // Update all of the per-resource page counters given a new resource data
   // update. Updates |page_resources_| to reflect the new state of the resource.
@@ -178,13 +160,11 @@ class AdsPageLoadMetricsObserver
   // The web contents associated with this page load.
   content::WebContents* web_contents_ = nullptr;
 
-  // Tallies for bytes and counts observed in resource data updates for the
-  // entire page.
-  size_t page_ad_javascript_bytes_ = 0u;
-  size_t page_ad_video_bytes_ = 0u;
-  size_t page_ad_resource_bytes_ = 0u;
-  size_t page_main_frame_ad_resource_bytes_ = 0u;
-  uint32_t total_number_page_resources_ = 0;
+  // Tracks byte counts only for resources loaded in the main frame.
+  std::unique_ptr<FrameData> main_frame_data_;
+
+  // Tracks byte counts for the entire page.
+  std::unique_ptr<FrameData> aggregate_frame_data_;
 
   // Flag denoting that this observer should no longer monitor changes in
   // display state for frames. This prevents us from receiving the updates when
@@ -198,11 +178,8 @@ class AdsPageLoadMetricsObserver
   base::Time time_interactive_;
 
   // Total ad bytes loaded by the page since it was observed to be interactive.
-  size_t page_ad_resource_bytes_since_interactive_ = 0u;
+  size_t page_ad_bytes_at_interactive_ = 0u;
 
-  size_t page_bytes_ = 0u;
-  size_t page_network_bytes_ = 0u;
-  size_t page_same_origin_bytes_ = 0u;
   bool committed_ = false;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
