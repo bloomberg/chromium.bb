@@ -5125,11 +5125,12 @@ bool ChromeContentBrowserClient::IsSafeRedirectTarget(
   return true;
 }
 
-void ChromeContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
+void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
     content::BrowserContext* browser_context,
     blink::mojom::RendererPreferenceWatcherPtr watcher) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefWatcher::Get(profile)->RegisterWatcherForWorkers(std::move(watcher));
+  PrefWatcher::Get(profile)->RegisterRendererPreferenceWatcher(
+      std::move(watcher));
 }
 
 // Static; handles rewriting Web UI URLs.

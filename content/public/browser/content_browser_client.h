@@ -1412,9 +1412,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool IsSafeRedirectTarget(const GURL& url, ResourceContext* context);
 
-  // Registers the watcher to observe updates in RendererPreferences. The
-  // watchers are for shared workers and service workers.
-  virtual void RegisterRendererPreferenceWatcherForWorkers(
+  // Registers the watcher to observe updates in RendererPreferences.
+  virtual void RegisterRendererPreferenceWatcher(
       BrowserContext* browser_context,
       blink::mojom::RendererPreferenceWatcherPtr watcher);
 

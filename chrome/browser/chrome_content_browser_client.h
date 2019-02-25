@@ -534,7 +534,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::PictureInPictureWindowController* controller) override;
   bool IsSafeRedirectTarget(const GURL& url,
                             content::ResourceContext* context) override;
-  void RegisterRendererPreferenceWatcherForWorkers(
+  void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
       blink::mojom::RendererPreferenceWatcherPtr watcher) override;
   base::Optional<std::string> GetOriginPolicyErrorPage(

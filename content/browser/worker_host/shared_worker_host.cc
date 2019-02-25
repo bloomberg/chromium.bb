@@ -224,7 +224,7 @@ void SharedWorkerHost::Start(
   blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
   blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request =
       mojo::MakeRequest(&watcher_ptr);
-  GetContentClient()->browser()->RegisterRendererPreferenceWatcherForWorkers(
+  GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
       std::move(watcher_ptr));
 
