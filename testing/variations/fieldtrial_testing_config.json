@@ -4818,6 +4818,26 @@
             ]
         }
     ],
+    "SyncScryptCustomPassphrase": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUseScryptForNewCustomPassphrases"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncUssBookmarks'": [
         {
             "platforms": [
