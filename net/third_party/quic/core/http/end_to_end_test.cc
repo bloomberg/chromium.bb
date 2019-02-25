@@ -61,7 +61,6 @@
 #include "net/third_party/quic/tools/quic_server.h"
 #include "net/third_party/quic/tools/quic_simple_client_stream.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
-#include "net/tools/epoll_server/epoll_server.h"
 
 using spdy::kV3LowestPriority;
 using spdy::SETTINGS_MAX_HEADER_LIST_SIZE;
@@ -458,8 +457,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
       server_thread_->server()->SetPreSharedKey(pre_shared_key_server_);
     }
     server_thread_->Initialize();
-    server_address_ =
-        QuicSocketAddress(server_address_.host(), server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);

@@ -9,9 +9,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
-#include "base/run_loop.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_connection.h"
@@ -29,10 +27,6 @@
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
 #endif
-
-// TODO(rtenneti): Add support for MMSG_MORE.
-#define MMSG_MORE 0
-using std::string;
 
 namespace quic {
 

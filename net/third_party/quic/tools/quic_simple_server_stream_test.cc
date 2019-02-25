@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
@@ -25,8 +24,6 @@
 #include "net/third_party/quic/tools/quic_backend_response.h"
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -635,7 +632,7 @@ TEST_P(QuicSimpleServerStreamTest,
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // For V99 receiving a RST_STREAM causes a 1-way close; the test requires
     // a full close. A CloseWriteSide closes the other half of the stream.
     // Everything should then work properly.

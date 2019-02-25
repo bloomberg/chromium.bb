@@ -10,6 +10,7 @@
 namespace spdy {
 class SpdyHeaderBlock;
 }  // namespace spdy
+
 namespace quic {
 
 // This interface implements the functionality to fetch a response

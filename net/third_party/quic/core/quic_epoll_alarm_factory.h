@@ -10,13 +10,9 @@
 #include "net/third_party/quic/core/quic_one_block_arena.h"
 #include "net/third_party/quic/platform/api/quic_epoll.h"
 
-namespace quic {}  // namespace quic
-namespace net {
-class EpollServer;
-}  // namespace net
 namespace quic {
 
-// Creates alarms that use the supplied net::EpollServer for timing and firing.
+// Creates alarms that use the supplied EpollServer for timing and firing.
 class QuicEpollAlarmFactory : public QuicAlarmFactory {
  public:
   explicit QuicEpollAlarmFactory(QuicEpollServer* eps);

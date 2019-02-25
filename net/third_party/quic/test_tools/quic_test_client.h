@@ -282,33 +282,6 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
   void set_client(MockableQuicClient* client) { client_.reset(client); }
 
-  // PerStreamState of a stream is updated when it is closed.
-  struct PerStreamState {
-    PerStreamState(const PerStreamState& other);
-    PerStreamState(QuicRstStreamErrorCode stream_error,
-                   bool response_complete,
-                   bool response_headers_complete,
-                   const spdy::SpdyHeaderBlock& response_headers,
-                   const spdy::SpdyHeaderBlock& preliminary_headers,
-                   const QuicString& response,
-                   const spdy::SpdyHeaderBlock& response_trailers,
-                   uint64_t bytes_read,
-                   uint64_t bytes_written,
-                   int64_t response_body_size);
-    ~PerStreamState();
-
-    QuicRstStreamErrorCode stream_error;
-    bool response_complete;
-    bool response_headers_complete;
-    spdy::SpdyHeaderBlock response_headers;
-    spdy::SpdyHeaderBlock preliminary_headers;
-    QuicString response;
-    spdy::SpdyHeaderBlock response_trailers;
-    uint64_t bytes_read;
-    uint64_t bytes_written;
-    int64_t response_body_size;
-  };
-
   // Given |uri|, populates the fields in |headers| for a simple GET
   // request. If |uri| is a relative URL, the QuicServerId will be
   // use to specify the authority.
@@ -345,6 +318,33 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
    protected:
     QuicTestClient* test_client_;
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_;
+  };
+
+  // PerStreamState of a stream is updated when it is closed.
+  struct PerStreamState {
+    PerStreamState(const PerStreamState& other);
+    PerStreamState(QuicRstStreamErrorCode stream_error,
+                   bool response_complete,
+                   bool response_headers_complete,
+                   const spdy::SpdyHeaderBlock& response_headers,
+                   const spdy::SpdyHeaderBlock& preliminary_headers,
+                   const QuicString& response,
+                   const spdy::SpdyHeaderBlock& response_trailers,
+                   uint64_t bytes_read,
+                   uint64_t bytes_written,
+                   int64_t response_body_size);
+    ~PerStreamState();
+
+    QuicRstStreamErrorCode stream_error;
+    bool response_complete;
+    bool response_headers_complete;
+    spdy::SpdyHeaderBlock response_headers;
+    spdy::SpdyHeaderBlock preliminary_headers;
+    QuicString response;
+    spdy::SpdyHeaderBlock response_trailers;
+    uint64_t bytes_read;
+    uint64_t bytes_written;
+    int64_t response_body_size;
   };
 
   bool HaveActiveStream();

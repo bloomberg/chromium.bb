@@ -14,9 +14,7 @@
 #include <set>
 #include <utility>
 
-#include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"

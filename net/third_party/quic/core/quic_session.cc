@@ -231,6 +231,7 @@ bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
       static_cast<quic::QuicRstStreamErrorCode>(frame.application_error_code),
       stream->stream_bytes_written(),
       /*close_write_side_only=*/true);
+
   return true;
 }
 
@@ -659,6 +660,7 @@ void QuicSession::InsertLocallyClosedStreamsHighestOffset(
 
 void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
+
   DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it == dynamic_stream_map_.end()) {
     // When CloseStreamInner has been called recursively (via
@@ -1144,6 +1146,11 @@ QuicSession::StreamHandler QuicSession::GetOrCreateDynamicStreamImpl(
     pending_stream_map_.erase(pending_it);
     return handler;
   }
+
+  // TODO(fkastenholz): If we are creating a new stream and we have
+  // sent a goaway, we should ignore the stream creation. Need to
+  // add code to A) test if goaway was sent ("if (goaway_sent_)") and
+  // B) reject stream creation ("return nullptr")
 
   if (!MaybeIncreaseLargestPeerStreamId(stream_id)) {
     return StreamHandler();

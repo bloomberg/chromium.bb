@@ -1023,6 +1023,7 @@ TEST_P(QuicStreamTest, WriteBufferedData) {
       &iov, 1, session_->connection()->helper()->GetStreamSendBufferAllocator(),
       1024);
   QuicConsumedData consumed = stream_->WriteMemSlices(storage.ToSpan(), false);
+
   // There is no buffered data before, all data should be consumed without
   // respecting buffered data upper limit.
   EXPECT_EQ(data.length(), consumed.bytes_consumed);

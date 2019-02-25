@@ -9,11 +9,7 @@
 #include <ostream>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/macros.h"
-#include "net/base/net_errors.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
@@ -23,6 +19,7 @@
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_error_code_wrappers.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -44,7 +41,6 @@
 #include "net/third_party/quic/test_tools/simple_data_producer.h"
 #include "net/third_party/quic/test_tools/simple_quic_framer.h"
 #include "net/third_party/quic/test_tools/simple_session_notifier.h"
-#include "testing/gmock_mutant.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -335,11 +331,10 @@ class TestPacketWriter : public QuicPacketWriter {
     }
     if (next_packet_too_large_) {
       next_packet_too_large_ = false;
-      return WriteResult(WRITE_STATUS_ERROR, net::ERR_MSG_TOO_BIG);
+      return WriteResult(WRITE_STATUS_ERROR, QUIC_EMSGSIZE);
     }
     if (always_get_packet_too_large_) {
-      LOG(ERROR) << "RETURNING TOO BIG";
-      return WriteResult(WRITE_STATUS_ERROR, net::ERR_MSG_TOO_BIG);
+      return WriteResult(WRITE_STATUS_ERROR, QUIC_EMSGSIZE);
     }
     if (IsWriteBlocked()) {
       return WriteResult(is_write_blocked_data_buffered_

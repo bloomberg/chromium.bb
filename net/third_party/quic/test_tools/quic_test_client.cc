@@ -608,7 +608,7 @@ bool QuicTestClient::HaveActiveStream() {
 }
 
 bool QuicTestClient::WaitUntil(int timeout_ms, std::function<bool()> trigger) {
-  int64_t timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
+  int64_t timeout_us = timeout_ms * kNumMicrosPerMilli;
   int64_t old_timeout_us = epoll_server()->timeout_in_us();
   if (timeout_us > 0) {
     epoll_server()->set_timeout_in_us(timeout_us);

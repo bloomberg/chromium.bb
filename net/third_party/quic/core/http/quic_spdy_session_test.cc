@@ -1009,7 +1009,7 @@ TEST_P(QuicSpdySessionTestServer, RstStreamBeforeHeadersDecompressed) {
   // Create and inject a STOP_SENDING frame. In GOOGLE QUIC, receiving a
   // RST_STREAM frame causes a two-way close. For IETF QUIC, RST_STREAM causes a
   // one-way close.
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // Only needed for version 99/IETF QUIC.
     QuicStopSendingFrame stop_sending(
         kInvalidControlFrameId, GetNthClientInitiatedBidirectionalId(0),
@@ -1241,7 +1241,7 @@ TEST_P(QuicSpdySessionTestServer,
       .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
   if (!IsVersion99()) {
     // For version99 the call to OnStreamReset happens as a result of receiving
-    // the STOP SENDING, so set up the EXPECT there.
+    // the STOP_SENDING, so set up the EXPECT there.
     EXPECT_CALL(*connection_, OnStreamReset(stream->id(), _));
   }
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
@@ -1250,7 +1250,7 @@ TEST_P(QuicSpdySessionTestServer,
   // Create and inject a STOP_SENDING frame. In GOOGLE QUIC, receiving a
   // RST_STREAM frame causes a two-way close. For IETF QUIC, RST_STREAM causes a
   // one-way close.
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // Only needed for version 99/IETF QUIC.
     QuicStopSendingFrame stop_sending(
         kInvalidControlFrameId, stream->id(),
