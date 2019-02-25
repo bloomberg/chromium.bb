@@ -5885,8 +5885,6 @@ crbug.com/935027 http/tests/devtools/animation/animation-transition-setTiming-cr
 crbug.com/935587 [ Mac ] virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure Pass ]
 crbug.com/935595 virtual/video-surface-layer/media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/935638 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Timeout Pass ]
-crbug.com/935688 [ Mac ] external/wpt/FileAPI/url/sandboxed-iframe.html [ Timeout ]
-crbug.com/935688 [ Mac ] external/wpt/FileAPI/url/url-format.any.html [ Timeout ]
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure ]
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric-invalid.html [ Failure ]
 crbug.com/935690 [ Mac ] virtual/video-surface-layer/media/video-played-ranges-1.html [ Failure ]
