@@ -37,9 +37,8 @@ class PermissionSet {
   // inferred from the given host permissions.
   PermissionSet(APIPermissionSet apis,
                 ManifestPermissionSet manifest_permissions,
-                // TODO(devlin): Pass these by value.
-                const URLPatternSet& explicit_hosts,
-                const URLPatternSet& scriptable_hosts);
+                URLPatternSet explicit_hosts,
+                URLPatternSet scriptable_hosts);
   ~PermissionSet();
 
   // Creates a new permission set equal to |set1| - |set2|.

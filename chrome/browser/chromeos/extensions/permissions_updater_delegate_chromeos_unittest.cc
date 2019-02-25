@@ -53,7 +53,8 @@ std::unique_ptr<const PermissionSet> CreatePermissions(
   URLPatternSet scriptable_hosts({
     URLPattern(URLPattern::SCHEME_ALL, "http://www.wikipedia.com/*")});
   auto permissions = std::make_unique<const PermissionSet>(
-      std::move(apis), std::move(manifest), explicit_hosts, scriptable_hosts);
+      std::move(apis), std::move(manifest), std::move(explicit_hosts),
+      std::move(scriptable_hosts));
   return permissions;
 }
 

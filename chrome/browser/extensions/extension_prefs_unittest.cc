@@ -204,8 +204,6 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     AddPattern(&shost_permissions_, "http://somesite.com/*");
     AddPattern(&shost_permissions_, "http://example.com/*");
 
-    URLPatternSet empty_extent;
-
     // Make sure both granted api and host permissions start empty.
     EXPECT_TRUE(prefs()->GetGrantedPermissions(extension_id_)->IsEmpty());
 
@@ -214,7 +212,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       prefs()->AddGrantedPermissions(
           extension_id_,
           PermissionSet(api_perm_set1_.Clone(), ManifestPermissionSet(),
-                        empty_extent, empty_extent));
+                        URLPatternSet(), URLPatternSet()));
       std::unique_ptr<const PermissionSet> granted_permissions =
           prefs()->GetGrantedPermissions(extension_id_);
       EXPECT_TRUE(granted_permissions.get());
@@ -228,7 +226,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       prefs()->AddGrantedPermissions(
           extension_id_,
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        ehost_perm_set1_, empty_extent));
+                        ehost_perm_set1_.Clone(), URLPatternSet()));
       std::unique_ptr<const PermissionSet> granted_permissions =
           prefs()->GetGrantedPermissions(extension_id_);
       EXPECT_FALSE(granted_permissions->IsEmpty());
@@ -242,7 +240,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       prefs()->AddGrantedPermissions(
           extension_id_,
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        empty_extent, shost_perm_set1_));
+                        URLPatternSet(), shost_perm_set1_.Clone()));
       std::unique_ptr<const PermissionSet> granted_permissions =
           prefs()->GetGrantedPermissions(extension_id_);
       EXPECT_FALSE(granted_permissions->IsEmpty());
@@ -261,7 +259,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       prefs()->AddGrantedPermissions(
           extension_id_,
           PermissionSet(api_perm_set2_.Clone(), ManifestPermissionSet(),
-                        ehost_perm_set2_, shost_perm_set2_));
+                        ehost_perm_set2_.Clone(), shost_perm_set2_.Clone()));
 
       std::unique_ptr<const PermissionSet> granted_permissions =
           prefs()->GetGrantedPermissions(extension_id_);
@@ -309,22 +307,25 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   void Initialize() override {
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
-    APIPermissionSet api_perms;
-    api_perms.insert(APIPermission::kTab);
-    api_perms.insert(APIPermission::kBookmark);
-    api_perms.insert(APIPermission::kHistory);
+    {
+      APIPermissionSet api_perms;
+      api_perms.insert(APIPermission::kTab);
+      api_perms.insert(APIPermission::kBookmark);
+      api_perms.insert(APIPermission::kHistory);
 
-    URLPatternSet ehosts;
-    AddPattern(&ehosts, "http://*.google.com/*");
-    AddPattern(&ehosts, "http://example.com/*");
-    AddPattern(&ehosts, "chrome://favicon/*");
+      URLPatternSet ehosts;
+      AddPattern(&ehosts, "http://*.google.com/*");
+      AddPattern(&ehosts, "http://example.com/*");
+      AddPattern(&ehosts, "chrome://favicon/*");
 
-    URLPatternSet shosts;
-    AddPattern(&shosts, "https://*.google.com/*");
-    AddPattern(&shosts, "http://reddit.com/r/test/*");
+      URLPatternSet shosts;
+      AddPattern(&shosts, "https://*.google.com/*");
+      AddPattern(&shosts, "http://reddit.com/r/test/*");
 
-    active_perms_.reset(new PermissionSet(
-        api_perms.Clone(), ManifestPermissionSet(), ehosts, shosts));
+      active_perms_.reset(
+          new PermissionSet(std::move(api_perms), ManifestPermissionSet(),
+                            std::move(ehosts), std::move(shosts)));
+    }
 
     // Make sure the active permissions start empty.
     std::unique_ptr<const PermissionSet> active =
@@ -955,11 +956,12 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     api_perms.insert(APIPermission::kBookmark);
     api_perms.insert(APIPermission::kHistory);
 
-    URLPatternSet ehosts, shosts;
+    URLPatternSet shosts;
     AddPattern(&shosts, "chrome://print/*");
 
-    active_perms_.reset(new PermissionSet(
-        std::move(api_perms), ManifestPermissionSet(), ehosts, shosts));
+    active_perms_.reset(new PermissionSet(std::move(api_perms),
+                                          ManifestPermissionSet(),
+                                          URLPatternSet(), std::move(shosts)));
     // Set the active permissions.
     prefs()->SetActivePermissions(component_extension_->id(), *active_perms_);
     prefs()->SetActivePermissions(no_component_extension_->id(),
@@ -1031,8 +1033,8 @@ class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
       // correctly added.
       URLPatternSet added_urls({example_com, chromium_org});
       PermissionSet added_permissions(APIPermissionSet(),
-                                      ManifestPermissionSet(), added_urls,
-                                      URLPatternSet());
+                                      ManifestPermissionSet(),
+                                      std::move(added_urls), URLPatternSet());
       prefs()->AddRuntimeGrantedPermissions(extension_a_->id(),
                                             added_permissions);
 
@@ -1046,16 +1048,16 @@ class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
       // Remove one of the hosts. The only remaining host should be
       // example.com
       URLPatternSet removed_urls({chromium_org});
-      PermissionSet removed_permissions(APIPermissionSet(),
-                                        ManifestPermissionSet(), removed_urls,
-                                        URLPatternSet());
+      PermissionSet removed_permissions(
+          APIPermissionSet(), ManifestPermissionSet(), std::move(removed_urls),
+          URLPatternSet());
       prefs()->RemoveRuntimeGrantedPermissions(extension_a_->id(),
                                                removed_permissions);
 
       URLPatternSet remaining_urls({example_com});
-      PermissionSet remaining_permissions(APIPermissionSet(),
-                                          ManifestPermissionSet(),
-                                          remaining_urls, URLPatternSet());
+      PermissionSet remaining_permissions(
+          APIPermissionSet(), ManifestPermissionSet(),
+          std::move(remaining_urls), URLPatternSet());
       std::unique_ptr<const PermissionSet> retrieved_permissions =
           prefs()->GetRuntimeGrantedPermissions(extension_a_->id());
       ASSERT_TRUE(retrieved_permissions);
@@ -1073,9 +1075,9 @@ class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
       // permission.
       URLPattern example_com(URLPattern::SCHEME_ALL, "https://example.com/*");
       URLPatternSet remaining_urls({example_com});
-      PermissionSet remaining_permissions(APIPermissionSet(),
-                                          ManifestPermissionSet(),
-                                          remaining_urls, URLPatternSet());
+      PermissionSet remaining_permissions(
+          APIPermissionSet(), ManifestPermissionSet(),
+          std::move(remaining_urls), URLPatternSet());
       std::unique_ptr<const PermissionSet> retrieved_permissions =
           prefs()->GetRuntimeGrantedPermissions(extension_a_->id());
       ASSERT_TRUE(retrieved_permissions);

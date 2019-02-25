@@ -163,7 +163,7 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
 
   PermissionSet permissions(
       std::move(unpack_result->optional_apis), ManifestPermissionSet(),
-      unpack_result->optional_explicit_hosts, URLPatternSet());
+      std::move(unpack_result->optional_explicit_hosts), URLPatternSet());
 
   // Only try and remove those permissions that are active on the extension.
   // For backwards compatability with behavior before this check was added, just
@@ -255,15 +255,15 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   // are "new", i.e. aren't already active on the extension.
   requested_optional_ = std::make_unique<const PermissionSet>(
       std::move(unpack_result->optional_apis), ManifestPermissionSet(),
-      unpack_result->optional_explicit_hosts, URLPatternSet());
+      std::move(unpack_result->optional_explicit_hosts), URLPatternSet());
   requested_optional_ =
       PermissionSet::CreateDifference(*requested_optional_, active_permissions);
 
   // Do the same for withheld permissions.
   requested_withheld_ = std::make_unique<const PermissionSet>(
       APIPermissionSet(), ManifestPermissionSet(),
-      unpack_result->required_explicit_hosts,
-      unpack_result->required_scriptable_hosts);
+      std::move(unpack_result->required_explicit_hosts),
+      std::move(unpack_result->required_scriptable_hosts));
   requested_withheld_ =
       PermissionSet::CreateDifference(*requested_withheld_, active_permissions);
 

@@ -48,9 +48,9 @@ ExtensionMsg_PermissionSetStruct& ExtensionMsg_PermissionSetStruct::operator=(
 std::unique_ptr<const PermissionSet>
 ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
   // TODO(devlin): Make this destructive so we can std::move() the members.
-  return std::make_unique<PermissionSet>(apis.Clone(),
-                                         manifest_permissions.Clone(),
-                                         explicit_hosts, scriptable_hosts);
+  return std::make_unique<PermissionSet>(
+      apis.Clone(), manifest_permissions.Clone(), explicit_hosts.Clone(),
+      scriptable_hosts.Clone());
 }
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()

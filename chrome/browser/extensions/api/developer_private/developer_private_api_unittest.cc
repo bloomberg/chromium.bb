@@ -1644,8 +1644,8 @@ TEST_F(DeveloperPrivateApiUnitTest,
 
   URLPatternSet hosts({URLPattern(Extension::kValidHostPermissionSchemes,
                                   "https://example.com/*")});
-  PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(), hosts,
-                            hosts);
+  PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
+                            hosts.Clone(), hosts.Clone());
   permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
       profile(), *extension, permissions);
 

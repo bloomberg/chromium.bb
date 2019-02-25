@@ -468,8 +468,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
                                    "https://example.com/*"));
     permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
         profile(), *extension,
-        PermissionSet(APIPermissionSet(), ManifestPermissionSet(), patterns,
-                      URLPatternSet()));
+        PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                      std::move(patterns), URLPatternSet()));
   }
 
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
@@ -719,7 +719,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   ExtensionPrefs::Get(profile())->AddRuntimeGrantedPermissions(
       extension->id(),
       PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                    google_com_pattern, google_com_pattern));
+                    google_com_pattern.Clone(), google_com_pattern.Clone()));
 
   const GURL google_com("https://google.com");
   {

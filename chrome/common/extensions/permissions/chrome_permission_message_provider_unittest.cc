@@ -154,9 +154,9 @@ TEST_F(ChromePermissionMessageProviderUnittest,
       URLPattern(URLPattern::SCHEME_ALL, "https://ɡoogle.com/"));
   explicit_hosts.AddPattern(
       URLPattern(URLPattern::SCHEME_ALL, "https://*.ɡoogle.com/"));
-  extensions::PermissionSet permissions(APIPermissionSet(),
-                                        ManifestPermissionSet(), explicit_hosts,
-                                        URLPatternSet());
+  extensions::PermissionSet permissions(
+      APIPermissionSet(), ManifestPermissionSet(), std::move(explicit_hosts),
+      URLPatternSet());
 
   PermissionMessages messages = message_provider()->GetPermissionMessages(
       message_provider()->GetAllPermissionIDs(permissions,
