@@ -33,6 +33,11 @@ class Profile;
 namespace crostini {
 
 // Result types for CrostiniManager::StartTerminaVmCallback etc.
+
+// WARNING: Do not remove or re-order these values, as they are used in user
+// visible error messages and logs. New entries should only be added to the end.
+// This message was added during development of M74, error codes from prior
+// versions may differ from the numbering here.
 enum class CrostiniResult {
   SUCCESS,
   DBUS_ERROR,
