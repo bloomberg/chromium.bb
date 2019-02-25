@@ -95,7 +95,7 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // If we are no longer playing, propogate silence ahead to downstream nodes.
   bool PropagatesSilence() const override;
 
-  void HandleStoppableSourceNode();
+  void HandleStoppableSourceNode() override;
 
  private:
   AudioBufferSourceHandler(AudioNode&,
