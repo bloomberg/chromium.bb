@@ -242,18 +242,18 @@ int32_t AXNode::GetTableRowCount() const {
   return table_info->row_count;
 }
 
-int32_t AXNode::GetTableAriaColCount() const {
+base::Optional<int32_t> AXNode::GetTableAriaColCount() const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
   if (!table_info)
-    return 0;
+    return base::nullopt;
 
   return table_info->aria_col_count;
 }
 
-int32_t AXNode::GetTableAriaRowCount() const {
+base::Optional<int32_t> AXNode::GetTableAriaRowCount() const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
   if (!table_info)
-    return 0;
+    return base::nullopt;
 
   return table_info->aria_row_count;
 }

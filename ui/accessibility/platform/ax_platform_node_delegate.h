@@ -130,8 +130,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool IsTable() const = 0;
   virtual int32_t GetTableColCount() const = 0;
   virtual int32_t GetTableRowCount() const = 0;
-  virtual int32_t GetTableAriaColCount() const = 0;
-  virtual int32_t GetTableAriaRowCount() const = 0;
+  virtual base::Optional<int32_t> GetTableAriaColCount() const = 0;
+  virtual base::Optional<int32_t> GetTableAriaRowCount() const = 0;
   virtual int32_t GetTableCellCount() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds(

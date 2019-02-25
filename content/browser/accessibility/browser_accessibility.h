@@ -361,8 +361,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsTable() const override;
   int32_t GetTableColCount() const override;
   int32_t GetTableRowCount() const override;
-  int32_t GetTableAriaColCount() const override;
-  int32_t GetTableAriaRowCount() const override;
+  base::Optional<int32_t> GetTableAriaColCount() const override;
+  base::Optional<int32_t> GetTableAriaRowCount() const override;
   int32_t GetTableCellCount() const override;
   const std::vector<int32_t> GetColHeaderNodeIds() const override;
   const std::vector<int32_t> GetColHeaderNodeIds(

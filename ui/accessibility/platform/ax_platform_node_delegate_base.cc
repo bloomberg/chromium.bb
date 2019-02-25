@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/no_destructor.h"
+#include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -85,12 +86,22 @@ int AXPlatformNodeDelegateBase::GetTableColCount() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableAriaColCount() const {
-  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount);
+base::Optional<int32_t> AXPlatformNodeDelegateBase::GetTableAriaColCount()
+    const {
+  int32_t aria_column_count =
+      GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount);
+  if (aria_column_count == ax::mojom::kUnknownAriaColumnOrRowCount)
+    return base::nullopt;
+  return aria_column_count;
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableAriaRowCount() const {
-  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount);
+base::Optional<int32_t> AXPlatformNodeDelegateBase::GetTableAriaRowCount()
+    const {
+  int32_t aria_row_count =
+      GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount);
+  if (aria_row_count == ax::mojom::kUnknownAriaColumnOrRowCount)
+    return base::nullopt;
+  return aria_row_count;
 }
 
 int32_t AXPlatformNodeDelegateBase::GetTableCellCount() const {

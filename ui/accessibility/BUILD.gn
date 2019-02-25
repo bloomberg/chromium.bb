@@ -25,6 +25,12 @@ mojom_component("ax_enums_mojo") {
   output_prefix = "ui_accessibility_ax_mojom"
 }
 
+mojom("ax_constants_mojo") {
+  sources = [
+    "ax_constants.mojom",
+  ]
+}
+
 jumbo_component("accessibility") {
   sources = [
     "accessibility_switches.cc",
@@ -114,6 +120,7 @@ jumbo_component("accessibility") {
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
 
   public_deps = [
+    ":ax_constants_mojo",
     ":ax_enums_mojo",
     "//base",
     "//base:i18n",
@@ -238,6 +245,7 @@ test("accessibility_unittests") {
 
   deps = [
     ":accessibility",
+    ":ax_constants_mojo",
     ":ax_enums_mojo",
     ":test_support",
     "//base",

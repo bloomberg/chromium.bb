@@ -1642,13 +1642,23 @@ IFACEMETHODIMP AXPlatformNodeWin::GetItem(int row,
 
 IFACEMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableRowCount();
+
+  base::Optional<int32_t> row_count = GetTableAriaRowCount();
+  if (!row_count)
+    return E_UNEXPECTED;
+
+  *result = *row_count;
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableColumnCount();
+
+  base::Optional<int32_t> column_count = GetTableAriaColumnCount();
+  if (!column_count)
+    return E_UNEXPECTED;
+
+  *result = *column_count;
   return S_OK;
 }
 
@@ -1969,7 +1979,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
 IFACEMETHODIMP AXPlatformNodeWin::get_RowOrColumnMajor(
     RowOrColumnMajor* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
-  return E_NOTIMPL;
+
+  // Tables and ARIA grids are always in row major order
+  // see AXPlatformNodeBase::GetTableCell
+  *result = RowOrColumnMajor_RowMajor;
+  return S_OK;
 }
 
 //

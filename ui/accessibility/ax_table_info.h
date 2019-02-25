@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/optional.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {
@@ -90,8 +91,8 @@ class AX_EXPORT AXTableInfo {
 
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
-  int32_t aria_row_count = 0;
-  int32_t aria_col_count = 0;
+  base::Optional<int32_t> aria_row_count = 0;
+  base::Optional<int32_t> aria_col_count = 0;
 
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);

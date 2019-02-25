@@ -16,6 +16,7 @@
 #include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -731,7 +732,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
   DCHECK(owner_->node());
-  return [NSNumber numberWithInt:owner_->node()->GetTableAriaColCount()];
+  base::Optional<int32_t> aria_col_count =
+      owner_->node()->GetTableAriaColCount();
+  if (!aria_col_count)
+    return nil;
+  return [NSNumber numberWithInt:aria_col_count.value()];
 }
 
 - (NSNumber*)ariaColumnIndex {
@@ -765,7 +770,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
   DCHECK(owner_->node());
-  return [NSNumber numberWithInt:owner_->node()->GetTableAriaRowCount()];
+  base::Optional<int32_t> aria_row_count =
+      owner_->node()->GetTableAriaRowCount();
+  if (!aria_row_count)
+    return nil;
+  return [NSNumber numberWithInt:aria_row_count.value()];
 }
 
 - (NSNumber*)ariaRowIndex {

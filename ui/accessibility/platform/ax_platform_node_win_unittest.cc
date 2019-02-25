@@ -2900,6 +2900,224 @@ TEST_F(AXPlatformNodeWinTest,
   EXPECT_EQ(2, offset);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIGridProviderGetRowCount) {
+  Init(BuildAriaColumnAndRowCountGrids());
+
+  // Empty Grid
+  ComPtr<IGridProvider> grid1_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[0]);
+
+  // Grid with a cell that defines aria-rowindex (4) and aria-colindex (5)
+  ComPtr<IGridProvider> grid2_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[1]);
+
+  // Grid that specifies aria-rowcount (2) and aria-colcount (3)
+  ComPtr<IGridProvider> grid3_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[2]);
+
+  // Grid that specifies aria-rowcount and aria-colcount are both (-1)
+  ComPtr<IGridProvider> grid4_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[3]);
+
+  int row_count;
+
+  EXPECT_HRESULT_SUCCEEDED(grid1_provider->get_RowCount(&row_count));
+  EXPECT_EQ(row_count, 0);
+
+  EXPECT_HRESULT_SUCCEEDED(grid2_provider->get_RowCount(&row_count));
+  EXPECT_EQ(row_count, 4);
+
+  EXPECT_HRESULT_SUCCEEDED(grid3_provider->get_RowCount(&row_count));
+  EXPECT_EQ(row_count, 2);
+
+  EXPECT_EQ(E_UNEXPECTED, grid4_provider->get_RowCount(&row_count));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIGridProviderGetColumnCount) {
+  Init(BuildAriaColumnAndRowCountGrids());
+
+  // Empty Grid
+  ComPtr<IGridProvider> grid1_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[0]);
+
+  // Grid with a cell that defines aria-rowindex (4) and aria-colindex (5)
+  ComPtr<IGridProvider> grid2_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[1]);
+
+  // Grid that specifies aria-rowcount (2) and aria-colcount (3)
+  ComPtr<IGridProvider> grid3_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[2]);
+
+  // Grid that specifies aria-rowcount and aria-colcount are both (-1)
+  ComPtr<IGridProvider> grid4_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()->children()[3]);
+
+  int column_count;
+
+  EXPECT_HRESULT_SUCCEEDED(grid1_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(column_count, 0);
+
+  EXPECT_HRESULT_SUCCEEDED(grid2_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(column_count, 5);
+
+  EXPECT_HRESULT_SUCCEEDED(grid3_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(column_count, 3);
+
+  EXPECT_EQ(E_UNEXPECTED, grid4_provider->get_ColumnCount(&column_count));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIGridProviderGetItem) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kGrid;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount, 1);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount, 1);
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData cell1;
+  cell1.id = 3;
+  cell1.role = ax::mojom::Role::kCell;
+  row1.child_ids.push_back(cell1.id);
+
+  Init(root, row1, cell1);
+
+  ComPtr<IGridProvider> root_igridprovider(
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode()));
+
+  ComPtr<IRawElementProviderSimple> cell1_irawelementprovidersimple(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]->children()[0]));
+
+  IRawElementProviderSimple* grid_item = nullptr;
+  EXPECT_HRESULT_SUCCEEDED(root_igridprovider->GetItem(0, 0, &grid_item));
+  EXPECT_NE(nullptr, grid_item);
+  EXPECT_EQ(cell1_irawelementprovidersimple.Get(), grid_item);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestITableProviderGetColumnHeaders) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData column_header;
+  column_header.id = 3;
+  column_header.role = ax::mojom::Role::kColumnHeader;
+  row1.child_ids.push_back(column_header.id);
+
+  AXNodeData row_header;
+  row_header.id = 4;
+  row_header.role = ax::mojom::Role::kRowHeader;
+  row1.child_ids.push_back(row_header.id);
+
+  Init(root, row1, column_header, row_header);
+
+  ComPtr<ITableProvider> root_itableprovider(
+      QueryInterfaceFromNode<ITableProvider>(GetRootNode()));
+
+  ComPtr<IRawElementProviderSimple> column_header_irawelementprovidersimple(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]->children()[0]));
+
+  SAFEARRAY* safearray = nullptr;
+  EXPECT_HRESULT_SUCCEEDED(root_itableprovider->GetColumnHeaders(&safearray));
+  EXPECT_NE(nullptr, safearray);
+  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray));
+  EXPECT_EQ(sizeof(IRawElementProviderSimple*),
+            ::SafeArrayGetElemsize(safearray));
+
+  long array_lbound;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
+  EXPECT_EQ(0, array_lbound);
+
+  long array_ubound;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
+  EXPECT_EQ(0, array_ubound);
+
+  long index = 0;
+  CComPtr<IRawElementProviderSimple> array_element;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetElement(safearray, &index, &array_element));
+  EXPECT_NE(nullptr, array_element);
+  EXPECT_EQ(array_element, column_header_irawelementprovidersimple.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestITableProviderGetRowHeaders) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData column_header;
+  column_header.id = 3;
+  column_header.role = ax::mojom::Role::kColumnHeader;
+  row1.child_ids.push_back(column_header.id);
+
+  AXNodeData row_header;
+  row_header.id = 4;
+  row_header.role = ax::mojom::Role::kRowHeader;
+  row1.child_ids.push_back(row_header.id);
+
+  Init(root, row1, column_header, row_header);
+
+  ComPtr<ITableProvider> root_itableprovider(
+      QueryInterfaceFromNode<ITableProvider>(GetRootNode()));
+
+  ComPtr<IRawElementProviderSimple> row_header_irawelementprovidersimple(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]->children()[1]));
+
+  SAFEARRAY* safearray = nullptr;
+  EXPECT_HRESULT_SUCCEEDED(root_itableprovider->GetRowHeaders(&safearray));
+  EXPECT_NE(nullptr, safearray);
+  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray));
+  EXPECT_EQ(sizeof(IRawElementProviderSimple*),
+            ::SafeArrayGetElemsize(safearray));
+
+  long array_lbound;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
+  EXPECT_EQ(0, array_lbound);
+
+  long array_ubound;
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
+  EXPECT_EQ(0, array_ubound);
+
+  long index = 0;
+  CComPtr<IRawElementProviderSimple> array_element;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetElement(safearray, &index, &array_element));
+  EXPECT_NE(nullptr, array_element);
+  EXPECT_EQ(array_element, row_header_irawelementprovidersimple.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestITableProviderGetRowOrColumnMajor) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  Init(root);
+
+  ComPtr<ITableProvider> root_itableprovider(
+      QueryInterfaceFromNode<ITableProvider>(GetRootNode()));
+
+  RowOrColumnMajor row_or_column_major;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_itableprovider->get_RowOrColumnMajor(&row_or_column_major));
+  EXPECT_EQ(row_or_column_major, RowOrColumnMajor_RowMajor);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   AXNodeData root;
   root.SetName("fake name");

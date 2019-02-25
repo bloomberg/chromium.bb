@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
+#include "ui/accessibility/ax_constants.mojom.h"
 
 namespace ui {
 
@@ -280,6 +281,69 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   update.nodes.push_back(table_cell_3);        // 11
   update.nodes.push_back(table_cell_4);        // 12
 
+  return update;
+}
+
+AXTreeUpdate AXPlatformNodeTest::BuildAriaColumnAndRowCountGrids() {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  // Empty Grid
+  AXNodeData empty_grid;
+  empty_grid.id = 2;
+  empty_grid.role = ax::mojom::Role::kGrid;
+  root.child_ids.push_back(empty_grid.id);
+
+  // Grid with a cell that defines aria-rowindex (4) and aria-colindex (5)
+  AXNodeData rowcolindex_grid;
+  rowcolindex_grid.id = 3;
+  rowcolindex_grid.role = ax::mojom::Role::kGrid;
+  root.child_ids.push_back(rowcolindex_grid.id);
+
+  AXNodeData rowcolindex_row;
+  rowcolindex_row.id = 4;
+  rowcolindex_row.role = ax::mojom::Role::kRow;
+  rowcolindex_grid.child_ids.push_back(rowcolindex_row.id);
+
+  AXNodeData rowcolindex_cell;
+  rowcolindex_cell.id = 5;
+  rowcolindex_cell.role = ax::mojom::Role::kCell;
+  rowcolindex_cell.AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex, 5);
+  rowcolindex_cell.AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
+                                   4);
+  rowcolindex_row.child_ids.push_back(rowcolindex_cell.id);
+
+  // Grid that specifies aria-rowcount (2) and aria-colcount (3)
+  AXNodeData rowcolcount_grid;
+  rowcolcount_grid.id = 6;
+  rowcolcount_grid.role = ax::mojom::Role::kGrid;
+  rowcolcount_grid.AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount, 2);
+  rowcolcount_grid.AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
+                                   3);
+  root.child_ids.push_back(rowcolcount_grid.id);
+
+  // Grid that specifies aria-rowcount and aria-colcount are (-1)
+  // ax::mojom::kUnknownAriaColumnOrRowCount
+  AXNodeData unknown_grid;
+  unknown_grid.id = 7;
+  unknown_grid.role = ax::mojom::Role::kGrid;
+  unknown_grid.AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
+                               ax::mojom::kUnknownAriaColumnOrRowCount);
+  unknown_grid.AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
+                               ax::mojom::kUnknownAriaColumnOrRowCount);
+  root.child_ids.push_back(unknown_grid.id);
+
+  AXTreeUpdate update;
+  update.root_id = root.id;
+  update.nodes.push_back(root);
+  update.nodes.push_back(empty_grid);
+  update.nodes.push_back(rowcolindex_grid);
+  update.nodes.push_back(rowcolindex_row);
+  update.nodes.push_back(rowcolindex_cell);
+  update.nodes.push_back(rowcolcount_grid);
+  update.nodes.push_back(unknown_grid);
   return update;
 }
 

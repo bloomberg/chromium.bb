@@ -140,6 +140,10 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // otherwise returns 0.
   int GetTableColumnCount() const;
 
+  // If inside a table or ARIA grid, returns the number of ARIA columns,
+  // otherwise returns nullopt.
+  base::Optional<int32_t> GetTableAriaColumnCount() const;
+
   // If inside a table or ARIA grid, returns the number of physical columns that
   // this cell spans. If not a cell, returns 0.
   int GetTableColumnSpan() const;
@@ -153,6 +157,10 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // If inside a table or ARIA grid, returns the number of physical rows,
   // otherwise returns 0.
   int GetTableRowCount() const;
+
+  // If inside a table or ARIA grid, returns the number of ARIA rows,
+  // otherwise returns nullopt.
+  base::Optional<int32_t> GetTableAriaRowCount() const;
 
   // If inside a table or ARIA grid, returns the number of physical rows that
   // this cell spans. If not a cell, returns 0.
