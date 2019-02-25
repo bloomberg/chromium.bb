@@ -32,9 +32,13 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
 
   constexpr char kNameKey[] = "name";
   constexpr char kActionKey[] = "action";
+  constexpr char kMethodKey[] = "method";
+  constexpr char kEnctypeKey[] = "enctype";
   constexpr char kTitleKey[] = "title";
   constexpr char kTextKey[] = "text";
   constexpr char kUrlKey[] = "url";
+  constexpr char kFilesKey[] = "files";
+  constexpr char kAcceptKey[] = "accept";
 
   std::unique_ptr<base::DictionaryValue> origin_dict(new base::DictionaryValue);
 
@@ -47,6 +51,18 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
       kActionKey,
       base::Value(manifest.share_target->action.ReplaceComponents(replacements)
                       .spec()));
+  origin_dict->SetKey(
+      kMethodKey,
+      base::Value(manifest.share_target->method ==
+                          blink::Manifest::ShareTarget::Method::kPost
+                      ? "POST"
+                      : "GET"));
+  origin_dict->SetKey(
+      kEnctypeKey,
+      base::Value(manifest.share_target->enctype ==
+                          blink::Manifest::ShareTarget::Enctype::kMultipart
+                      ? "multipart/form-data"
+                      : "application/x-www-form-urlencoded"));
   if (!manifest.share_target->params.text.is_null()) {
     origin_dict->SetKey(
         kTextKey, base::Value(manifest.share_target->params.text.string()));
@@ -58,6 +74,26 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   if (!manifest.share_target->params.url.is_null()) {
     origin_dict->SetKey(
         kUrlKey, base::Value(manifest.share_target->params.url.string()));
+  }
+
+  if (!manifest.share_target->params.files.empty()) {
+    std::vector<base::Value> files;
+    files.reserve(manifest.share_target->params.files.size());
+    for (const blink::Manifest::ShareTargetFile& share_target_file :
+         manifest.share_target->params.files) {
+      std::vector<base::Value> accept;
+      accept.reserve(share_target_file.accept.size());
+      for (const base::string16& entry : share_target_file.accept) {
+        accept.push_back(base::Value(entry));
+      }
+
+      files.push_back(base::DictionaryValue());
+      base::DictionaryValue& file_dict =
+          static_cast<base::DictionaryValue&>(files.back());
+      file_dict.SetKey(kNameKey, base::Value(share_target_file.name));
+      file_dict.SetKey(kAcceptKey, base::ListValue(std::move(accept)));
+    }
+    origin_dict->SetKey(kFilesKey, base::Value(files));
   }
 
   share_target_dict->SetWithoutPathExpansion(manifest_url.spec(),
