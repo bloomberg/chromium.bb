@@ -3144,6 +3144,119 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetRuntimeId) {
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(runtime_id));
 }
 
+TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderGetIsModalUnset) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IWindowProvider> window_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_WindowPatternId, &window_provider));
+  ASSERT_EQ(nullptr, window_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderGetIsModalFalse) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, false);
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IWindowProvider> window_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_WindowPatternId, &window_provider));
+  ASSERT_NE(nullptr, window_provider.Get());
+
+  BOOL is_modal;
+  EXPECT_HRESULT_SUCCEEDED(window_provider->get_IsModal(&is_modal));
+  ASSERT_FALSE(is_modal);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderGetIsModalTrue) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IWindowProvider> window_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_WindowPatternId, &window_provider));
+  ASSERT_NE(nullptr, window_provider.Get());
+
+  BOOL is_modal;
+  EXPECT_HRESULT_SUCCEEDED(window_provider->get_IsModal(&is_modal));
+  ASSERT_TRUE(is_modal);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderInvalidArgument) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IWindowProvider> window_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_WindowPatternId, &window_provider));
+  ASSERT_NE(nullptr, window_provider.Get());
+
+  ASSERT_EQ(E_INVALIDARG, window_provider->WaitForInputIdle(0, nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_CanMaximize(nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_CanMinimize(nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_IsModal(nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_WindowVisualState(nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_WindowInteractionState(nullptr));
+  ASSERT_EQ(E_INVALIDARG, window_provider->get_IsTopmost(nullptr));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderNotSupported) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IWindowProvider> window_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_WindowPatternId, &window_provider));
+  ASSERT_NE(nullptr, window_provider.Get());
+
+  BOOL bool_result;
+  WindowVisualState window_visual_state_result;
+  WindowInteractionState window_interaction_state_result;
+
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->SetVisualState(
+                WindowVisualState::WindowVisualState_Normal));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), window_provider->Close());
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->WaitForInputIdle(0, &bool_result));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->get_CanMaximize(&bool_result));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->get_CanMinimize(&bool_result));
+  ASSERT_EQ(
+      static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+      window_provider->get_WindowVisualState(&window_visual_state_result));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->get_WindowInteractionState(
+                &window_interaction_state_result));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED),
+            window_provider->get_IsTopmost(&bool_result));
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
   AXNodeData root_data;
   root_data.id = 0;
@@ -3402,6 +3515,8 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
       QueryInterfaceFromNode<IValueProvider>(GetRootNode());
   ComPtr<IRangeValueProvider> range_value_provider =
       QueryInterfaceFromNode<IRangeValueProvider>(GetRootNode());
+  ComPtr<IWindowProvider> window_provider =
+      QueryInterfaceFromNode<IWindowProvider>(GetRootNode());
 
   tree_.reset(new AXTree());
 
@@ -3555,6 +3670,27 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
             toggle_provider->Toggle());
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             toggle_provider->get_ToggleState(&toggle_state));
+
+  // IWindowProvider
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->SetVisualState(
+                WindowVisualState::WindowVisualState_Normal));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->Close());
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->WaitForInputIdle(0, nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_CanMaximize(nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_CanMinimize(nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_IsModal(nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_WindowVisualState(nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_WindowInteractionState(nullptr));
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            window_provider->get_IsTopmost(nullptr));
 }
 
 }  // namespace ui
