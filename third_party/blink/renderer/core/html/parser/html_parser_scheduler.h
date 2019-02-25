@@ -39,14 +39,6 @@ namespace blink {
 
 class HTMLDocumentParser;
 
-class PumpSession : public NestingLevelIncrementer {
-  STACK_ALLOCATED();
-
- public:
-  PumpSession(unsigned& nesting_level);
-  ~PumpSession();
-};
-
 class SpeculationsPumpSession : public NestingLevelIncrementer {
   STACK_ALLOCATED();
 

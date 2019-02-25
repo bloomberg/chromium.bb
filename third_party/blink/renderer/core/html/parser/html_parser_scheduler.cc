@@ -35,11 +35,6 @@
 
 namespace blink {
 
-PumpSession::PumpSession(unsigned& nesting_level)
-    : NestingLevelIncrementer(nesting_level) {}
-
-PumpSession::~PumpSession() = default;
-
 SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nesting_level)
     : NestingLevelIncrementer(nesting_level),
       start_time_(CurrentTime()),
