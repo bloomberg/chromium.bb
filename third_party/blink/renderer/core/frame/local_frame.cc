@@ -543,7 +543,7 @@ LocalWindowProxy* LocalFrame::WindowProxy(DOMWrapperWorld& world) {
 }
 
 LocalDOMWindow* LocalFrame::DomWindow() const {
-  return ToLocalDOMWindow(dom_window_);
+  return To<LocalDOMWindow>(dom_window_.Get());
 }
 
 void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {

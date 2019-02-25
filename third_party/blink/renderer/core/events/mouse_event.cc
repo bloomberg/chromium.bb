@@ -45,9 +45,10 @@ namespace blink {
 namespace {
 
 DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
-  if (!abstract_view || !abstract_view->IsLocalDOMWindow())
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(abstract_view);
+  if (!local_dom_window)
     return DoubleSize();
-  LocalFrame* frame = ToLocalDOMWindow(abstract_view)->GetFrame();
+  LocalFrame* frame = local_dom_window->GetFrame();
   if (!frame)
     return DoubleSize();
   ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
@@ -59,9 +60,10 @@ DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
 }
 
 float PageZoomFactor(const UIEvent* event) {
-  if (!event->view() || !event->view()->IsLocalDOMWindow())
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(event->view());
+  if (!local_dom_window)
     return 1;
-  LocalFrame* frame = ToLocalDOMWindow(event->view())->GetFrame();
+  LocalFrame* frame = local_dom_window->GetFrame();
   if (!frame)
     return 1;
   return frame->PageZoomFactor();
@@ -441,9 +443,8 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
 }
 
 void MouseEvent::ComputePageLocation() {
-  LocalFrame* frame = view() && view()->IsLocalDOMWindow()
-                          ? ToLocalDOMWindow(view())->GetFrame()
-                          : nullptr;
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(view());
+  LocalFrame* frame = local_dom_window ? local_dom_window->GetFrame() : nullptr;
   DoublePoint scaled_page_location =
       page_location_.ScaledBy(PageZoomFactor(this));
   if (frame && frame->View()) {

@@ -48,10 +48,11 @@ void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(
   // and the Window interface is accessible cross origin. The long-term fix is
   // to make the Internals object per-context, so |window| doesn't need to
   // passed as an argument.
-  if (!window->IsLocalDOMWindow())
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(window);
+  if (!local_dom_window)
     return;
   SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(
-      script_state, ToLocalDOMWindow(*window));
+      script_state, *local_dom_window);
   if (!synthesis)
     return;
 

@@ -66,7 +66,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Same-origin attribute getters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
+  LocalDOMWindow* impl = To<LocalDOMWindow>({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
@@ -99,7 +99,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
+  LocalDOMWindow* impl = To<LocalDOMWindow>(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 
@@ -345,7 +345,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   // Same-origin attributes setters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
+  LocalDOMWindow* impl = To<LocalDOMWindow>({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
@@ -364,7 +364,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
+  LocalDOMWindow* impl = To<LocalDOMWindow>(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 

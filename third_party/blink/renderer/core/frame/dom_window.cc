@@ -247,8 +247,9 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
-  KURL target_url = IsLocalDOMWindow()
-                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
+  KURL target_url = local_dom_window
+                        ? local_dom_window->document()->Url()
                         : KURL(NullURL(), target_origin->ToString());
   if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
       accessing_window->document()->IsSandboxed(kSandboxOrigin)) {
@@ -341,8 +342,8 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
     return;
 
   ExecutionContext* execution_context = nullptr;
-  if (IsLocalDOMWindow()) {
-    execution_context = blink::ToLocalDOMWindow(this)->GetExecutionContext();
+  if (auto* local_dom_window = DynamicTo<LocalDOMWindow>(this)) {
+    execution_context = local_dom_window->GetExecutionContext();
   }
   probe::breakableLocation(execution_context, "DOMWindow.close");
 
@@ -457,8 +458,9 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   String source_origin = security_origin->ToString();
 
-  KURL target_url = IsLocalDOMWindow()
-                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
+  KURL target_url = local_dom_window
+                        ? local_dom_window->document()->Url()
                         : KURL(NullURL(), GetFrame()
                                               ->GetSecurityContext()
                                               ->GetSecurityOrigin()

@@ -246,7 +246,7 @@ void Location::reload() {
     return;
   // reload() is not cross-origin accessible, so |dom_window_| will always be
   // local.
-  ToLocalDOMWindow(dom_window_)
+  To<LocalDOMWindow>(dom_window_.Get())
       ->GetFrame()
       ->Reload(WebFrameLoadType::kReload,
                ClientRedirectPolicy::kClientRedirect);
@@ -325,7 +325,7 @@ void Location::SetLocation(const String& url,
 }
 
 Document* Location::GetDocument() const {
-  return ToLocalDOMWindow(dom_window_)->document();
+  return To<LocalDOMWindow>(dom_window_.Get())->document();
 }
 
 bool Location::IsAttached() const {

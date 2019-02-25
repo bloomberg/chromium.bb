@@ -51,9 +51,9 @@ MouseEventInit* GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
   MouseEventInit* initializer = MouseEventInit::Create();
   initializer->setBubbles(true);
   initializer->setCancelable(event.IsCancelable());
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(view);
   MouseEvent::SetCoordinatesFromWebPointerProperties(
-      event.FlattenTransform(),
-      view->IsLocalDOMWindow() ? ToLocalDOMWindow(view) : nullptr, initializer);
+      event.FlattenTransform(), local_dom_window, initializer);
   initializer->setButton(static_cast<short>(event.button));
   initializer->setButtons(
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
@@ -132,9 +132,9 @@ void WheelEvent::preventDefault() {
         "Unable to preventDefault inside passive event listener due to "
         "target being treated as passive. See "
         "https://www.chromestatus.com/features/6662647093133312";
-    if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
-      Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), id,
-                                   message);
+    auto* local_dom_window = DynamicTo<LocalDOMWindow>(view());
+    if (local_dom_window && local_dom_window->GetFrame()) {
+      Intervention::GenerateReport(local_dom_window->GetFrame(), id, message);
     }
   }
 

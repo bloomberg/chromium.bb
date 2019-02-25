@@ -295,10 +295,9 @@ void TouchEvent::preventDefault() {
       break;
   }
 
-  if (!message.IsEmpty() && view() && view()->IsLocalDOMWindow() &&
-      view()->GetFrame()) {
-    Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), id,
-                                 message);
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(view());
+  if (!message.IsEmpty() && local_dom_window && local_dom_window->GetFrame()) {
+    Intervention::GenerateReport(local_dom_window->GetFrame(), id, message);
   }
 
   if ((type() == event_type_names::kTouchstart ||

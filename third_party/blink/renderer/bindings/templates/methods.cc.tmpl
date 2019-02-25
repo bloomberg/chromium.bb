@@ -44,7 +44,7 @@ static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suf
   // Same-origin methods are never exposed via the cross-origin interceptors.
   // Since same-origin access requires a LocalDOMWindow, it is safe to downcast
   // here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(info.Holder()));
+  LocalDOMWindow* impl = To<LocalDOMWindow>({{v8_class}}::ToImpl(info.Holder()));
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
   {% endif %}{# interface_name == 'Window' and not method.is_cross_origin #}
