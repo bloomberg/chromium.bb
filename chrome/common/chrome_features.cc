@@ -619,6 +619,7 @@ const base::Feature kArcCupsApi{"ArcCupsApi",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables pin quick unlock.
+// TODO(https://crbug.com/935613): Remove this & the backing code.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 

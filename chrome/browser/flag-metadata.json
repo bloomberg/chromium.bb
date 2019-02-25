@@ -2744,16 +2744,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "quick-unlock-pin",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "quick-unlock-pin-signin",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "reader-mode-heuristics",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

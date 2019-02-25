@@ -2020,13 +2020,6 @@ extern const char kPhysicalKeyboardAutocorrectDescription[];
 extern const char kPrinterProviderSearchAppName[];
 extern const char kPrinterProviderSearchAppDescription[];
 
-extern const char kQuickUnlockPinName[];
-extern const char kQuickUnlockPinDescription[];
-extern const char kQuickUnlockPinSignin[];
-extern const char kQuickUnlockPinSigninDescription[];
-extern const char kQuickUnlockFingerprint[];
-extern const char kQuickUnlockFingerprintDescription[];
-
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
