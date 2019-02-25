@@ -20,7 +20,6 @@ public class ServicificationStartupUma {
     @IntDef({ServicificationStartup.CHROME_COLD, ServicificationStartup.CHROME_HALF_WARM,
             ServicificationStartup.SERVICE_MANAGER_COLD,
             ServicificationStartup.SERVICE_MANAGER_WARM})
-
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServicificationStartup {
         // Cold start of Chrome as a full browser.
@@ -32,11 +31,11 @@ public class ServicificationStartupUma {
         // Warm start of only ServiceManager when the ServiceManager is already running.
         int SERVICE_MANAGER_WARM = 3;
 
-        int COUNT = 4;
+        int NUM_ENTRIES = 4;
     }
 
     // Caches the pending commits before the native is initialized.
-    private int[] mPendingCommits = new int[ServicificationStartup.COUNT];
+    private int[] mPendingCommits = new int[ServicificationStartup.NUM_ENTRIES];
     private boolean mIsNativeInitialized;
 
     private final static ServicificationStartupUma sInstance = new ServicificationStartupUma();
@@ -93,7 +92,7 @@ public class ServicificationStartupUma {
     public void commit() {
         mIsNativeInitialized = true;
 
-        for (int i = 0; i < ServicificationStartup.COUNT; i++) {
+        for (int i = 0; i < ServicificationStartup.NUM_ENTRIES; i++) {
             if (mPendingCommits[i] > 0) {
                 for (int count = 0; count < mPendingCommits[i]; count++) {
                     recordStartupMode(i);
@@ -109,6 +108,6 @@ public class ServicificationStartupUma {
 
     private void recordStartupMode(@ServicificationStartup int startupMode) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Servicification.Startup", startupMode, ServicificationStartup.COUNT);
+                "Servicification.Startup", startupMode, ServicificationStartup.NUM_ENTRIES);
     }
 }
