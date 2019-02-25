@@ -421,8 +421,8 @@ void ShowWidgetMessageFilter::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
-                 MSG_ROUTING_NONE, params.bounds));
+      base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
+                     MSG_ROUTING_NONE, params.bounds));
 }
 #endif
 

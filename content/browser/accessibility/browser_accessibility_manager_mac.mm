@@ -342,7 +342,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
           [native_node retain]);
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(
+          base::BindOnce(
               [](base::scoped_nsobject<BrowserAccessibilityCocoa> node) {
                 if (node && [node instanceActive]) {
                   NSAccessibilityPostNotification(

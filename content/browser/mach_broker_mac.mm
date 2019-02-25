@@ -36,9 +36,9 @@ void MachBroker::EnsureRunning() {
   // Do not attempt to reinitialize in the event of failure.
   initialized_ = true;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MachBroker::RegisterNotifications, base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&MachBroker::RegisterNotifications,
+                                          base::Unretained(this)));
 
   if (!broker_.Init()) {
     LOG(ERROR) << "Failed to initialize the MachListenerThreadDelegate";

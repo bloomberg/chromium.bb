@@ -101,9 +101,10 @@ TtsPlatformImplLinux::TtsPlatformImplLinux() : utterance_id_(0) {
   if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))
     return;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&TtsPlatformImplLinux::Initialize, base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+                           base::BindOnce(&TtsPlatformImplLinux::Initialize,
+                                          base::Unretained(this)));
 }
 
 void TtsPlatformImplLinux::Initialize() {
@@ -316,9 +317,9 @@ void TtsPlatformImplLinux::NotificationCallback(size_t msg_id,
     current_notification_ = type;
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
-                   base::Unretained(TtsPlatformImplLinux::GetInstance()),
-                   type));
+        base::BindOnce(&TtsPlatformImplLinux::OnSpeechEvent,
+                       base::Unretained(TtsPlatformImplLinux::GetInstance()),
+                       type));
   }
 }
 
@@ -336,9 +337,9 @@ void TtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
     current_notification_ = state;
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
-                   base::Unretained(TtsPlatformImplLinux::GetInstance()),
-                   state));
+        base::BindOnce(&TtsPlatformImplLinux::OnSpeechEvent,
+                       base::Unretained(TtsPlatformImplLinux::GetInstance()),
+                       state));
   }
 }
 

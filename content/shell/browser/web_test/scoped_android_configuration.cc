@@ -117,8 +117,8 @@ void RedirectStream(
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&CreateAndConnectSocket, port,
-                 base::Bind(finish_redirection, &redirected)));
+      base::BindOnce(&CreateAndConnectSocket, port,
+                     base::Bind(finish_redirection, &redirected)));
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   while (!redirected.IsSignaled())
     redirected.Wait();

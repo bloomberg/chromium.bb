@@ -78,7 +78,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // gives us better numbers.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
+      base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 #else
   // On MacOS, UpdateHistograms should be called on the UI thread because it

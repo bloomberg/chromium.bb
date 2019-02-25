@@ -140,7 +140,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
   AddRef();  // Balanced by OnChildProcessStarted.
   base::PostTaskWithTraits(
       FROM_HERE, {client_thread_id_},
-      base::Bind(
+      base::BindOnce(
           &ChildProcessLauncherHelper::set_java_peer_available_on_client_thread,
           this));
 

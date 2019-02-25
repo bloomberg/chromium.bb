@@ -91,9 +91,9 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MediaPlayerRenderer::CreateMediaPlayer,
-                 weak_factory_.GetWeakPtr(),
-                 media_resource->GetMediaUrlParams(), init_cb),
+      base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
+                     weak_factory_.GetWeakPtr(),
+                     media_resource->GetMediaUrlParams(), init_cb),
       creation_delay);
 }
 

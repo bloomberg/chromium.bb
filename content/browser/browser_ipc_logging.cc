@@ -42,7 +42,7 @@ void EnableIPCLogging(bool enable) {
   // processes must be done on the IO thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(EnableIPCLoggingForChildProcesses, enable));
+      base::BindOnce(EnableIPCLoggingForChildProcesses, enable));
 
   // Finally, tell the renderers which don't derive from ChildProcess.
   // Messages to the renderers must be done on the UI (main) thread.

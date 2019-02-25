@@ -323,7 +323,7 @@ void PromiseWriterHelper(const DropData& drop_data,
     // The writer will take care of closing and deletion.
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::Bind(&PromiseWriterHelper, *dropData_, base::Passed(&file)));
+        base::BindOnce(&PromiseWriterHelper, *dropData_, std::move(file)));
   }
 
   // The DragDownloadFile constructor may have altered the value of |filePath|
