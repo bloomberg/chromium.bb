@@ -89,8 +89,8 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsGranted) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
       "kjmkgkdkpedkejedfhmfcenooemhbpbo",
-      PermissionSet(std::move(apis), ManifestPermissionSet(), explicit_hosts,
-                    URLPatternSet()));
+      PermissionSet(std::move(apis), ManifestPermissionSet(),
+                    std::move(explicit_hosts), URLPatternSet()));
 
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   ASSERT_TRUE(StartEmbeddedTestServer());

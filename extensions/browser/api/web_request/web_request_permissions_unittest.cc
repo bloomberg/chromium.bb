@@ -202,7 +202,7 @@ TEST(ExtensionWebRequestPermissions,
   extension->permissions_data()->SetPermissions(
       std::make_unique<PermissionSet>(),  // active permissions.
       std::make_unique<PermissionSet>(
-          APIPermissionSet(), ManifestPermissionSet(), all_urls,
+          APIPermissionSet(), ManifestPermissionSet(), all_urls.Clone(),
           URLPatternSet()) /* withheld permissions */);
 
   scoped_refptr<InfoMap> info_map = base::MakeRefCounted<InfoMap>();
@@ -249,11 +249,11 @@ TEST(ExtensionWebRequestPermissions,
   URLPatternSet chromium_org_patterns({URLPattern(
       Extension::kValidHostPermissionSchemes, "https://chromium.org/*")});
   extension->permissions_data()->SetPermissions(
+      std::make_unique<PermissionSet>(
+          APIPermissionSet(), ManifestPermissionSet(),
+          std::move(chromium_org_patterns), URLPatternSet()),
       std::make_unique<PermissionSet>(APIPermissionSet(),
-                                      ManifestPermissionSet(),
-                                      chromium_org_patterns, URLPatternSet()),
-      std::make_unique<PermissionSet>(APIPermissionSet(),
-                                      ManifestPermissionSet(), all_urls,
+                                      ManifestPermissionSet(), all_urls.Clone(),
                                       URLPatternSet()));
 
   // example.com isn't granted, so without an initiator or with an initiator
@@ -312,11 +312,13 @@ TEST(ExtensionWebRequestPermissions,
 
   extension->permissions_data()->SetPermissions(
       std::make_unique<PermissionSet>(
-          APIPermissionSet(), ManifestPermissionSet(), kActivePatternSet,
-          kActivePatternSet),  // active permissions.
+          APIPermissionSet(), ManifestPermissionSet(),
+          kActivePatternSet.Clone(),
+          kActivePatternSet.Clone()),  // active permissions.
       std::make_unique<PermissionSet>(
-          APIPermissionSet(), ManifestPermissionSet(), kWithheldPatternSet,
-          kWithheldPatternSet) /* withheld permissions */);
+          APIPermissionSet(), ManifestPermissionSet(),
+          kWithheldPatternSet.Clone(),
+          kWithheldPatternSet.Clone()) /* withheld permissions */);
 
   scoped_refptr<InfoMap> info_map = base::MakeRefCounted<InfoMap>();
   info_map->AddExtension(extension.get(), base::Time(), false, false);

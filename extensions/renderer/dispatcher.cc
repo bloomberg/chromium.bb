@@ -1191,7 +1191,7 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
   extension->permissions_data()->UpdateTabSpecificPermissions(
       tab_id, extensions::PermissionSet(extensions::APIPermissionSet(),
                                         extensions::ManifestPermissionSet(),
-                                        new_hosts, new_hosts));
+                                        new_hosts.Clone(), new_hosts.Clone()));
 
   if (update_origin_whitelist)
     UpdateOriginPermissions(*extension);

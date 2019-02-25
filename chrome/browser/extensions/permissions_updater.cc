@@ -360,7 +360,7 @@ void PermissionsUpdater::RevokeRuntimePermissions(
         active_permissions_to_remove->apis().Clone(),
         active_permissions_to_remove->manifest_permissions().Clone(),
         URLPatternSet(removable_explicit_hosts),
-        active_permissions_to_remove->scriptable_hosts());
+        active_permissions_to_remove->scriptable_hosts().Clone());
   }
 
   CHECK(extension.permissions_data()->active_permissions().Contains(
@@ -537,7 +537,8 @@ void PermissionsUpdater::SetPermissions(
   std::unique_ptr<const PermissionSet> new_withheld =
       PermissionSet::CreateDifference(
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        required.explicit_hosts(), required.scriptable_hosts()),
+                        required.explicit_hosts().Clone(),
+                        required.scriptable_hosts().Clone()),
           *new_active);
 
   extension->permissions_data()->SetPermissions(std::move(new_active),

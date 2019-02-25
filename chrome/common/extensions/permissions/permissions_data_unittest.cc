@@ -216,11 +216,13 @@ TEST(PermissionsDataTest, EffectiveHostPermissions) {
 
   // Tab-specific permissions should be included in the effective hosts.
   GURL tab_url("http://www.example.com/");
-  URLPatternSet new_hosts;
-  new_hosts.AddOrigin(URLPattern::SCHEME_ALL, tab_url);
-  extension->permissions_data()->UpdateTabSpecificPermissions(
-      1, PermissionSet(APIPermissionSet(), ManifestPermissionSet(), new_hosts,
-                       URLPatternSet()));
+  {
+    URLPatternSet new_hosts;
+    new_hosts.AddOrigin(URLPattern::SCHEME_ALL, tab_url);
+    extension->permissions_data()->UpdateTabSpecificPermissions(
+        1, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                         std::move(new_hosts), URLPatternSet()));
+  }
   EXPECT_TRUE(
       extension->permissions_data()->GetEffectiveHostPermissions().MatchesURL(
           tab_url));
@@ -694,7 +696,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
 
   {
     PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
-                              allowed_hosts, URLPatternSet());
+                              allowed_hosts.Clone(), URLPatternSet());
     permissions_data->UpdateTabSpecificPermissions(0, permissions);
     EXPECT_EQ(permissions.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(0)
@@ -723,14 +725,14 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
 
   {
     PermissionSet permissions1(APIPermissionSet(), ManifestPermissionSet(),
-                               allowed_hosts, URLPatternSet());
+                               allowed_hosts.Clone(), URLPatternSet());
     permissions_data->UpdateTabSpecificPermissions(0, permissions1);
     EXPECT_EQ(permissions1.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(0)
                   ->explicit_hosts());
 
     PermissionSet permissions2(APIPermissionSet(), ManifestPermissionSet(),
-                               more_allowed_hosts, URLPatternSet());
+                               more_allowed_hosts.Clone(), URLPatternSet());
     permissions_data->UpdateTabSpecificPermissions(1, permissions2);
     EXPECT_EQ(permissions2.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(1)
@@ -778,8 +780,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, CaptureChromeURLs) {
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         settings_url.GetOrigin());
     PermissionSet tab_permissions(std::move(tab_api_permissions),
-                                  ManifestPermissionSet(), tab_hosts,
-                                  tab_hosts);
+                                  ManifestPermissionSet(), tab_hosts.Clone(),
+                                  tab_hosts.Clone());
     active_tab->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
   }
@@ -805,8 +807,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, CaptureFileURLs) {
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         file_url.GetOrigin());
     PermissionSet tab_permissions(std::move(tab_api_permissions),
-                                  ManifestPermissionSet(), tab_hosts,
-                                  tab_hosts);
+                                  ManifestPermissionSet(), tab_hosts.Clone(),
+                                  tab_hosts.Clone());
     active_tab->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
   }
@@ -850,7 +852,7 @@ TEST(PermissionsDataTest, ChromeWebstoreUrl) {
   tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                       GURL("https://chrome.google.com./webstore").GetOrigin());
   PermissionSet tab_permissions(APIPermissionSet(), ManifestPermissionSet(),
-                                tab_hosts, tab_hosts);
+                                tab_hosts.Clone(), tab_hosts.Clone());
   for (const Extension* extension : extensions) {
     // Give the extension activeTab permissions to run on the webstore - it
     // shouldn't make a difference.
@@ -1079,8 +1081,8 @@ class CaptureVisiblePageTest : public testing::Test {
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         url::Origin::Create(url).GetURL());
     PermissionSet tab_permissions(std::move(tab_api_permissions),
-                                  ManifestPermissionSet(), tab_hosts,
-                                  tab_hosts);
+                                  ManifestPermissionSet(), tab_hosts.Clone(),
+                                  tab_hosts.Clone());
     extension.permissions_data()->UpdateTabSpecificPermissions(kTabId,
                                                                tab_permissions);
   }

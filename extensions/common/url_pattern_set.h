@@ -96,6 +96,7 @@ class URLPatternSet {
   const std::set<URLPattern>& patterns() const { return patterns_; }
   const_iterator begin() const { return patterns_.begin(); }
   const_iterator end() const { return patterns_.end(); }
+  iterator erase(iterator iter) { return patterns_.erase(iter); }
 
   // Returns a copy of this URLPatternSet; not instrumented as a copy
   // constructor to avoid accidental/unnecessary copies.

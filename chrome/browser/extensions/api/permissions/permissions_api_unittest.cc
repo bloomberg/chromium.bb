@@ -294,7 +294,7 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
     permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
         profile(), *extension,
         PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                      explicit_hosts, URLPatternSet()));
+                      std::move(explicit_hosts), URLPatternSet()));
     const GURL example_url("https://example.com");
     const PermissionSet& active_permissions =
         extension->permissions_data()->active_permissions();
