@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -108,7 +109,7 @@ struct UsageInfo {
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,
-      public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
+      public base::RefCountedDeleteOnSequence<QuotaManager> {
  public:
   using UsageAndQuotaCallback = base::OnceCallback<
       void(blink::mojom::QuotaStatusCode, int64_t usage, int64_t quota)>;
@@ -265,7 +266,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
  private:
   friend class base::DeleteHelper<QuotaManager>;
-  friend class base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter>;
+  friend class base::RefCountedDeleteOnSequence<QuotaManager>;
   friend class content::QuotaManagerTest;
   friend class content::StorageMonitorTest;
   friend class content::MockQuotaManager;
@@ -485,12 +486,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
-};
-
-struct QuotaManagerDeleter {
-  static void Destruct(const QuotaManager* manager) {
-    manager->DeleteOnCorrectThread();
-  }
 };
 
 }  // namespace storage
