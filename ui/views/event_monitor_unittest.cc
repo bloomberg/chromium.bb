@@ -112,6 +112,18 @@ TEST_F(EventMonitorTest, ShouldOnlyReceiveRequestedEventTypes) {
   monitor.reset();
 }
 
+TEST_F(EventMonitorTest, WindowMonitorTornDownOnWindowClose) {
+  Widget* widget2 = CreateTopLevelNativeWidget();
+  widget2->Show();
+
+  std::unique_ptr<EventMonitor> monitor(EventMonitor::CreateWindowMonitor(
+      &observer_, widget2->GetNativeWindow(), {ui::ET_MOUSE_PRESSED}));
+
+  // Closing the widget before destroying the monitor should not crash.
+  widget2->CloseNow();
+  monitor.reset();
+}
+
 namespace {
 class DeleteOtherOnEventObserver : public ui::EventObserver {
  public:

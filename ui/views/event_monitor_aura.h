@@ -18,6 +18,7 @@ class EventTarget;
 
 namespace views {
 
+// Observes events by installing a pre-target handler on the ui::EventTarget.
 class EventMonitorAura : public EventMonitor {
  public:
   EventMonitorAura(aura::Env* env,
@@ -28,6 +29,10 @@ class EventMonitorAura : public EventMonitor {
 
   // EventMonitor:
   gfx::Point GetLastMouseLocation() override;
+
+ protected:
+  // Removes the pre-target handler. Called by window monitors on window close.
+  void TearDown();
 
  private:
   aura::Env* env_;                     // Weak.
