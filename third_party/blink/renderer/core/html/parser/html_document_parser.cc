@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_scheduler.h"
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
+#include "third_party/blink/renderer/core/html/parser/pump_session.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
