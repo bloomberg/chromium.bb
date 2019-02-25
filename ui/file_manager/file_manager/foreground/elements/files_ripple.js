@@ -32,7 +32,7 @@ var FilesRipple = Polymer({
   },
 
   attached: function() {
-    var node = assert(this.parentElement || this.parentNode.host);
+    const node = assert(this.parentElement || this.parentNode.host);
     // Listen events of parent element.
     this.listen(node, 'down', 'onDown_');
     this.listen(node, 'up', 'onUp_');
@@ -57,7 +57,7 @@ var FilesRipple = Polymer({
    */
   performPressAnimation: function() {
     /** @type {EventTarget} */
-    var animationPlayer = this.ripple_.animate([
+    const animationPlayer = this.ripple_.animate([
       {
         width: '2%',
         height: '2%',
@@ -85,7 +85,7 @@ var FilesRipple = Polymer({
    * Performs burst animation.
    */
   performBurstAnimation: function() {
-    var pressAnimationPromise = this.pressAnimationPromise_ !== null ?
+    const pressAnimationPromise = this.pressAnimationPromise_ !== null ?
         this.pressAnimationPromise_ : Promise.resolve();
     this.pressAnimationPromise_ = null;
 

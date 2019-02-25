@@ -46,7 +46,7 @@ var FilesQuickView = Polymer({
    * @param {!Event} e
    */
   applyTextCss: function(e) {
-    var webview = /** @type {WebView} */ (e.target);
+    const webview = /** @type {WebView} */ (e.target);
     webview.insertCSS(
         {'file': 'foreground/elements/files_safe_text_webview_content.css'});
   },
@@ -124,7 +124,7 @@ var FilesQuickView = Polymer({
    * @private
    */
   onContentPanelTap_: function(event) {
-    var target = event.detail.sourceEvent.target;
+    let target = event.detail.sourceEvent.target;
     while (target) {
       if (target.classList.contains('no-close-on-click')) {
         return;
