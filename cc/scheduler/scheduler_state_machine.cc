@@ -139,8 +139,10 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "Action::INVALIDATE_LAYER_TREE_FRAME_SINK";
     case Action::PERFORM_IMPL_SIDE_INVALIDATION:
       return "Action::PERFORM_IMPL_SIDE_INVALIDATION";
-    case Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
-      return "Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT";
+    case Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
+      return "Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL";
+    case Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON:
+      return "Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON";
   }
   NOTREACHED();
   return "???";
@@ -181,8 +183,10 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("did_draw", did_draw_);
   state->SetBoolean("did_send_begin_main_frame_for_current_frame",
                     did_send_begin_main_frame_for_current_frame_);
-  state->SetBoolean("did_notify_begin_main_frame_not_sent",
-                    did_notify_begin_main_frame_not_sent_);
+  state->SetBoolean("did_notify_begin_main_frame_not_expected_until",
+                    did_notify_begin_main_frame_not_expected_until_);
+  state->SetBoolean("did_notify_begin_main_frame_not_expected_soon",
+                    did_notify_begin_main_frame_not_expected_soon_);
   state->SetBoolean("wants_begin_main_frame_not_expected",
                     wants_begin_main_frame_not_expected_);
   state->SetBoolean("did_commit_during_frame", did_commit_during_frame_);
@@ -387,7 +391,7 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
   return pending_tree_is_ready_for_activation_;
 }
 
-bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
+bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotExpectedUntil() const {
   // This method returns true if most of the conditions for sending a
   // BeginMainFrame are met, but one is not actually requested. This gives the
   // main thread the chance to do something else.
@@ -411,9 +415,16 @@ bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
   if (begin_frame_source_paused_)
     return false;
 
+  // If we've gone idle and have stopped getting BeginFrames, we should send
+  // SendBeginMainFrameNotExpectedSoon instead.
+  if (!BeginFrameNeeded() &&
+      begin_impl_frame_state_ == BeginImplFrameState::IDLE) {
+    return false;
+  }
+
   // Do not notify that no BeginMainFrame was sent too many times in a single
   // frame.
-  if (did_notify_begin_main_frame_not_sent_)
+  if (did_notify_begin_main_frame_not_expected_until_)
     return false;
 
   // Do not notify if a commit happened during this frame as the main thread
@@ -421,6 +432,30 @@ bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
   // actions. (This occurs if the main frame was scheduled but didn't complete
   // before the vsync deadline).
   if (did_commit_during_frame_)
+    return false;
+
+  return true;
+}
+
+bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotExpectedSoon() const {
+  if (!wants_begin_main_frame_not_expected_)
+    return false;
+
+  // Don't notify if a BeginMainFrame has already been requested or is in
+  // progress.
+  if (needs_begin_main_frame_ ||
+      begin_main_frame_state_ != BeginMainFrameState::IDLE) {
+    return false;
+  }
+
+  // Only send this when we've stopped getting BeginFrames and have gone idle.
+  if (BeginFrameNeeded() ||
+      begin_impl_frame_state_ != BeginImplFrameState::IDLE) {
+    return false;
+  }
+
+  // Do not notify that we're not expecting frames more than once per frame.
+  if (did_notify_begin_main_frame_not_expected_soon_)
     return false;
 
   return true;
@@ -606,8 +641,10 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return Action::INVALIDATE_LAYER_TREE_FRAME_SINK;
   if (ShouldBeginLayerTreeFrameSinkCreation())
     return Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION;
-  if (ShouldNotifyBeginMainFrameNotSent())
-    return Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT;
+  if (ShouldNotifyBeginMainFrameNotExpectedUntil())
+    return Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL;
+  if (ShouldNotifyBeginMainFrameNotExpectedSoon())
+    return Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON;
   return Action::NONE;
 }
 
@@ -746,11 +783,20 @@ void SchedulerStateMachine::WillSendBeginMainFrame() {
   last_frame_number_begin_main_frame_sent_ = current_frame_number_;
 }
 
-void SchedulerStateMachine::WillNotifyBeginMainFrameNotSent() {
+void SchedulerStateMachine::WillNotifyBeginMainFrameNotExpectedUntil() {
   DCHECK(visible_);
   DCHECK(!begin_frame_source_paused_);
-  DCHECK(!did_notify_begin_main_frame_not_sent_);
-  did_notify_begin_main_frame_not_sent_ = true;
+  DCHECK(BeginFrameNeeded() ||
+         begin_impl_frame_state_ != BeginImplFrameState::IDLE);
+  DCHECK(!did_notify_begin_main_frame_not_expected_until_);
+  did_notify_begin_main_frame_not_expected_until_ = true;
+}
+
+void SchedulerStateMachine::WillNotifyBeginMainFrameNotExpectedSoon() {
+  DCHECK(!BeginFrameNeeded());
+  DCHECK(begin_impl_frame_state_ == BeginImplFrameState::IDLE);
+  DCHECK(!did_notify_begin_main_frame_not_expected_soon_);
+  did_notify_begin_main_frame_not_expected_soon_ = true;
 }
 
 void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
@@ -1057,7 +1103,8 @@ void SchedulerStateMachine::OnBeginImplFrame(uint64_t source_id,
   did_submit_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 
-  did_notify_begin_main_frame_not_sent_ = false;
+  did_notify_begin_main_frame_not_expected_until_ = false;
+  did_notify_begin_main_frame_not_expected_soon_ = false;
   did_send_begin_main_frame_for_current_frame_ = false;
   did_commit_during_frame_ = false;
   did_invalidate_layer_tree_frame_sink_ = false;
