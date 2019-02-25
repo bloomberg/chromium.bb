@@ -34,6 +34,15 @@ test(function(t)
 
     futureParent.setAttribute("aria-owns", "future_child");
     assert_equals(axFutureParent.childrenCount, 1);
+
+    child.style.visibility = 'hidden';
+    assert_equals(axFutureParent.childrenCount, 0);
+
+    child.style.visibility = 'visible';
+    assert_equals(axFutureParent.childrenCount, 1);
+
+    child.remove();
+    assert_equals(axFutureParent.childrenCount, 0);
 }, "Aria-owns is dynamically recomputed.");
 </script>
 
