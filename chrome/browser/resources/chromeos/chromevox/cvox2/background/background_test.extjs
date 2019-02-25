@@ -1369,7 +1369,14 @@ TEST_F('ChromeVoxBackgroundTest', 'EditableKeyCommand', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'TextSelectionAndLiveRegion', function() {
+// TODO(crbug.com/935678): Test times out flakily in MSAN builds.
+TEST_F_WITH_PREAMBLE(`
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TextSelectionAndLiveRegion DISABLED_TextSelectionAndLiveRegion
+#else
+#define MAYBE_TextSelectionAndLiveRegion TextSelectionAndLiveRegion
+#endif
+`, 'ChromeVoxBackgroundTest', 'MAYBE_TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
