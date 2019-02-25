@@ -1159,54 +1159,6 @@ std::vector<std::vector<SkPoint>> test_point_arrays = {
      SkPoint::Make(9, 9), SkPoint::Make(50, 50), SkPoint::Make(100, 100)},
 };
 
-std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
-    [] { return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault()}; }(),
-    [] {
-      return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault(),
-                                            SkTypeface::MakeDefault()};
-    }(),
-};
-
-std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
-    [] {
-      SkFont font;
-      font.setTypeface(test_typefaces[0][0]);
-
-      SkTextBlobBuilder builder;
-      int glyph_count = 5;
-      const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
-      // allocRun() allocates only the glyph buffer.
-      std::fill(run.glyphs, run.glyphs + glyph_count, 0);
-      return builder.make();
-    }(),
-    [] {
-      SkFont font;
-      font.setTypeface(test_typefaces[1][0]);
-
-      SkTextBlobBuilder builder;
-      int glyph_count = 5;
-      const auto& run1 = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
-      // allocRun() allocates only the glyph buffer.
-      std::fill(run1.glyphs, run1.glyphs + glyph_count, 0);
-
-      glyph_count = 16;
-      const auto& run2 = builder.allocRunPos(font, glyph_count);
-      // allocRun() allocates the glyph buffer, and 2 scalars per glyph for the
-      // pos buffer.
-      std::fill(run2.glyphs, run2.glyphs + glyph_count, 0);
-      std::fill(run2.pos, run2.pos + glyph_count * 2, 0);
-
-      font.setTypeface(test_typefaces[1][1]);
-      glyph_count = 8;
-      const auto& run3 = builder.allocRunPosH(font, glyph_count, 0);
-      // allocRun() allocates the glyph buffer, and 1 scalar per glyph for the
-      // pos buffer.
-      std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
-      std::fill(run3.pos, run3.pos + glyph_count, 0);
-      return builder.make();
-    }(),
-};
-
 // TODO(enne): In practice, probably all paint images need to be uploaded
 // ahead of time and not be bitmaps. These paint images should be fake
 // gpu resource paint images.
@@ -1518,6 +1470,54 @@ void PushDrawSkottieOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
+  static std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
+      [] {
+        return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault()};
+      }(),
+      [] {
+        return std::vector<sk_sp<SkTypeface>>{SkTypeface::MakeDefault(),
+                                              SkTypeface::MakeDefault()};
+      }(),
+  };
+  static std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
+      [] {
+        SkFont font;
+        font.setTypeface(test_typefaces[0][0]);
+
+        SkTextBlobBuilder builder;
+        int glyph_count = 5;
+        const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
+        // allocRun() allocates only the glyph buffer.
+        std::fill(run.glyphs, run.glyphs + glyph_count, 0);
+        return builder.make();
+      }(),
+      [] {
+        SkFont font;
+        font.setTypeface(test_typefaces[1][0]);
+
+        SkTextBlobBuilder builder;
+        int glyph_count = 5;
+        const auto& run1 = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
+        // allocRun() allocates only the glyph buffer.
+        std::fill(run1.glyphs, run1.glyphs + glyph_count, 0);
+
+        glyph_count = 16;
+        const auto& run2 = builder.allocRunPos(font, glyph_count);
+        // allocRun() allocates the glyph buffer, and 2 scalars per glyph for
+        // the pos buffer.
+        std::fill(run2.glyphs, run2.glyphs + glyph_count, 0);
+        std::fill(run2.pos, run2.pos + glyph_count * 2, 0);
+
+        font.setTypeface(test_typefaces[1][1]);
+        glyph_count = 8;
+        const auto& run3 = builder.allocRunPosH(font, glyph_count, 0);
+        // allocRun() allocates the glyph buffer, and 1 scalar per glyph for the
+        // pos buffer.
+        std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
+        std::fill(run3.pos, run3.pos + glyph_count, 0);
+        return builder.make();
+      }(),
+  };
   size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
                         test_floats.size() - 1);
   for (size_t i = 0; i < len; ++i) {

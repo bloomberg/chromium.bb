@@ -377,9 +377,21 @@ if (is_linux) {
       "fontconfig_util_linux.cc",
       "fontconfig_util_linux.h",
     ]
+    data_deps = [
+      ":fonts_conf",
+    ]
     deps = [
       "//base",
       "//third_party/fontconfig",
+    ]
+  }
+
+  copy("fonts_conf") {
+    sources = [
+      "fonts.conf",
+    ]
+    outputs = [
+      "${root_build_dir}/etc/fonts/{{source_file_part}}",
     ]
   }
 
