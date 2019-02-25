@@ -294,9 +294,9 @@ short CSSPrimitiveValue::ComputeLength(
 }
 
 template <>
-unsigned short CSSPrimitiveValue::ComputeLength(
+uint16_t CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {
-  return RoundForImpreciseConversion<unsigned short>(
+  return RoundForImpreciseConversion<uint16_t>(
       ComputeLengthDouble(conversion_data));
 }
 
