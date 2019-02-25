@@ -27,6 +27,7 @@ ProcessNodeImpl::~ProcessNodeImpl() {
 
 void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(inserted);
   if (frame_cu->lifecycle_state() ==
       resource_coordinator::mojom::LifecycleState::kFrozen)
@@ -46,6 +47,7 @@ void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
 }
 
 void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(launch_time_.is_null());
   launch_time_ = launch_time;
 }
@@ -58,6 +60,7 @@ void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
 }
 
 void ProcessNodeImpl::SetPID(base::ProcessId pid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Either this is the initial process associated with this process CU,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
@@ -80,6 +83,7 @@ void ProcessNodeImpl::SetPID(base::ProcessId pid) {
 }
 
 void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   exit_status_ = exit_status;
 }
 
@@ -88,6 +92,7 @@ void ProcessNodeImpl::OnRendererIsBloated() {
 }
 
 const std::set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_coordination_units_;
 }
 
@@ -97,6 +102,7 @@ const std::set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
 // frames.
 std::set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageCoordinationUnits()
     const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<PageNodeImpl*> page_cus;
   for (auto* frame_cu : frame_coordination_units_) {
     if (auto* page_cu = frame_cu->GetPageNode())
@@ -108,6 +114,7 @@ std::set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageCoordinationUnits()
 void ProcessNodeImpl::OnFrameLifecycleStateChanged(
     FrameNodeImpl* frame_cu,
     resource_coordinator::mojom::LifecycleState old_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   DCHECK_NE(old_state, frame_cu->lifecycle_state());
 
@@ -120,6 +127,7 @@ void ProcessNodeImpl::OnFrameLifecycleStateChanged(
 
 void ProcessNodeImpl::OnEventReceived(
     resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
 }
@@ -127,11 +135,13 @@ void ProcessNodeImpl::OnEventReceived(
 void ProcessNodeImpl::OnPropertyChanged(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
 void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   frame_coordination_units_.erase(frame_cu);
 
@@ -141,11 +151,13 @@ void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
 }
 
 void ProcessNodeImpl::DecrementNumFrozenFrames() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   --num_frozen_frames_;
   DCHECK_GE(num_frozen_frames_, 0);
 }
 
 void ProcessNodeImpl::IncrementNumFrozenFrames() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ++num_frozen_frames_;
   DCHECK_LE(num_frozen_frames_,
             static_cast<int>(frame_coordination_units_.size()));

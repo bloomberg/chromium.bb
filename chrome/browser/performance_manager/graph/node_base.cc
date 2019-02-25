@@ -14,30 +14,41 @@ namespace performance_manager {
 
 NodeBase::NodeBase(const resource_coordinator::CoordinationUnitID& id,
                    Graph* graph)
-    : graph_(graph), id_(id.type, id.id) {}
+    : graph_(graph), id_(id.type, id.id) {
+  // TODO(siggi): The constructor needs to detach from the sequence once the
+  //     lifetime changes are done.
+  // DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-NodeBase::~NodeBase() = default;
+NodeBase::~NodeBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void NodeBase::Destruct() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   graph_->DestroyNode(this);
 }
 
 void NodeBase::BeforeDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
     observer.OnBeforeNodeDestroyed(this);
 }
 
 void NodeBase::AddObserver(GraphObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void NodeBase::RemoveObserver(GraphObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 bool NodeBase::GetProperty(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t* result) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto value_it = properties_.find(property_type);
   if (value_it != properties_.end()) {
     *result = value_it->second;
@@ -49,6 +60,7 @@ bool NodeBase::GetProperty(
 int64_t NodeBase::GetPropertyOrDefault(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t default_value) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int64_t value = 0;
   if (GetProperty(property_type, &value))
     return value;
@@ -56,6 +68,7 @@ int64_t NodeBase::GetPropertyOrDefault(
 }
 
 void NodeBase::OnEventReceived(resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnEventReceived(this, event);
 }
@@ -63,17 +76,20 @@ void NodeBase::OnEventReceived(resource_coordinator::mojom::Event event) {
 void NodeBase::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnPropertyChanged(this, property_type, value);
 }
 
 void NodeBase::SendEvent(resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnEventReceived(event);
 }
 
 void NodeBase::SetProperty(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The |GraphObserver| API specification dictates that
   // the property is guaranteed to be set on the |NodeBase|
   // and propagated to the appropriate associated |CoordianationUnitBase|

@@ -40,6 +40,7 @@ PageNodeImpl::~PageNodeImpl() {
 
 void PageNodeImpl::AddFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cu_id.type == resource_coordinator::CoordinationUnitType::kFrame);
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
@@ -50,6 +51,7 @@ void PageNodeImpl::AddFrame(
 
 void PageNodeImpl::RemoveFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cu_id != id());
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
@@ -84,6 +86,7 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
     base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
     const std::string& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   navigation_committed_time_ = navigation_committed_time;
   main_frame_url_ = url;
   navigation_id_ = navigation_id;
@@ -92,6 +95,7 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
 
 std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
     const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<ProcessNodeImpl*> process_cus;
 
   for (auto* frame_cu : frame_coordination_units_) {
@@ -103,6 +107,7 @@ std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
 }
 
 bool PageNodeImpl::IsVisible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int64_t is_visible = 0;
   bool has_property = GetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, &is_visible);
@@ -111,6 +116,7 @@ bool PageNodeImpl::IsVisible() const {
 }
 
 double PageNodeImpl::GetCPUUsage() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   double cpu_usage = 0.0;
 
   for (auto* process_cu : GetAssociatedProcessCoordinationUnits()) {
@@ -130,6 +136,7 @@ double PageNodeImpl::GetCPUUsage() const {
 }
 
 bool PageNodeImpl::GetExpectedTaskQueueingDuration(int64_t* output) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Calculate the EQT for the process of the main frame only because
   // the smoothness of the main frame may affect the users the most.
   FrameNodeImpl* main_frame_cu = GetMainFrameNode();
@@ -144,16 +151,19 @@ bool PageNodeImpl::GetExpectedTaskQueueingDuration(int64_t* output) {
 }
 
 base::TimeDelta PageNodeImpl::TimeSinceLastNavigation() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (navigation_committed_time_.is_null())
     return base::TimeDelta();
   return ResourceCoordinatorClock::NowTicks() - navigation_committed_time_;
 }
 
 base::TimeDelta PageNodeImpl::TimeSinceLastVisibilityChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ResourceCoordinatorClock::NowTicks() - visibility_change_time_;
 }
 
 FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* frame_cu : frame_coordination_units_) {
     if (frame_cu->IsMainFrame())
       return frame_cu;
@@ -164,6 +174,7 @@ FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
 void PageNodeImpl::OnFrameLifecycleStateChanged(
     FrameNodeImpl* frame_cu,
     resource_coordinator::mojom::LifecycleState old_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   DCHECK_NE(old_state, frame_cu->lifecycle_state());
 
@@ -182,6 +193,7 @@ void PageNodeImpl::OnFrameInterventionPolicyChanged(
     resource_coordinator::mojom::PolicyControlledIntervention intervention,
     resource_coordinator::mojom::InterventionPolicy old_policy,
     resource_coordinator::mojom::InterventionPolicy new_policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const size_t kIndex = ToIndex(intervention);
 
   // Invalidate the local policy aggregation for this intervention. It will be
@@ -205,6 +217,7 @@ void PageNodeImpl::OnFrameInterventionPolicyChanged(
 resource_coordinator::mojom::InterventionPolicy
 PageNodeImpl::GetInterventionPolicy(
     resource_coordinator::mojom::PolicyControlledIntervention intervention) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If there are no frames, or they've not all reported, then return kUnknown.
   if (frame_coordination_units_.empty() ||
       intervention_policy_frames_reported_ !=
@@ -226,6 +239,7 @@ PageNodeImpl::GetInterventionPolicy(
 }
 
 void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
 }
@@ -233,6 +247,7 @@ void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
 void PageNodeImpl::OnPropertyChanged(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (property_type == resource_coordinator::mojom::PropertyType::kVisible)
     visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
   for (auto& observer : observers())
@@ -240,6 +255,7 @@ void PageNodeImpl::OnPropertyChanged(
 }
 
 bool PageNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
   if (inserted) {
     OnNumFrozenFramesStateChange(
@@ -253,6 +269,7 @@ bool PageNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
 }
 
 bool PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool removed = frame_coordination_units_.erase(frame_cu) > 0;
   if (removed) {
     OnNumFrozenFramesStateChange(
@@ -267,6 +284,7 @@ bool PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
 }
 
 void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   num_frozen_frames_ += num_frozen_frames_delta;
   DCHECK_LE(num_frozen_frames_, frame_coordination_units_.size());
 
@@ -307,6 +325,7 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
 }
 
 void PageNodeImpl::InvalidateAllInterventionPolicies() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i <= kMaxInterventionIndex; ++i)
     intervention_policy_[i] =
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
@@ -314,6 +333,7 @@ void PageNodeImpl::InvalidateAllInterventionPolicies() {
 
 void PageNodeImpl::MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_cu,
                                                        bool adding_frame) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ensure that the frame was already added or removed as expected.
   DCHECK(adding_frame == frame_coordination_units_.count(frame_cu));
 
@@ -343,6 +363,7 @@ void PageNodeImpl::MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_cu,
 
 void PageNodeImpl::RecomputeInterventionPolicy(
     resource_coordinator::mojom::PolicyControlledIntervention intervention) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const size_t kIndex = ToIndex(intervention);
 
   // This should never be called with an empty frame tree.
