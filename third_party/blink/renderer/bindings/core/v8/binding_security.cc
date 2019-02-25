@@ -98,12 +98,12 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
   // possible for a remote frame and local frame to have the same security
   // origin, depending on the model being used to allocate Frames between
   // processes. See https://crbug.com/601629.
-  if (!(accessing_window && target_window && target_window->IsLocalDOMWindow()))
+  const auto* local_target_window = DynamicTo<LocalDOMWindow>(target_window);
+  if (!(accessing_window && local_target_window))
     return false;
 
   const SecurityOrigin* accessing_origin =
       accessing_window->document()->GetSecurityOrigin();
-  const LocalDOMWindow* local_target_window = ToLocalDOMWindow(target_window);
 
   SecurityOrigin::AccessResultDomainDetail detail;
   bool can_access = accessing_origin->CanAccess(

@@ -630,7 +630,7 @@ DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
 LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return nullptr;
-  return ToLocalDOMWindow(
+  return To<LocalDOMWindow>(
       ToDOMWindow(context->GetIsolate(), context->Global()));
 }
 

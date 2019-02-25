@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 #include <memory>
@@ -381,11 +382,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<TrustedTypePolicyFactory> trusted_types_;
 };
 
-DEFINE_TYPE_CASTS(LocalDOMWindow,
-                  DOMWindow,
-                  x,
-                  x->IsLocalDOMWindow(),
-                  x.IsLocalDOMWindow());
+template <>
+struct DowncastTraits<LocalDOMWindow> {
+  static bool AllowFrom(const DOMWindow& window) {
+    return window.IsLocalDOMWindow();
+  }
+};
 
 inline String LocalDOMWindow::status() const {
   return status_;
