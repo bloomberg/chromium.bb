@@ -422,6 +422,11 @@ cr.define('bookmarks', function() {
      * @param {!Event} e
      */
     onDrop_(e) {
+      // Allow normal DND on text inputs.
+      if (e.path[0].tagName == 'INPUT') {
+        return;
+      }
+
       e.preventDefault();
 
       if (this.dropDestination_) {
@@ -454,16 +459,16 @@ cr.define('bookmarks', function() {
      * @param {Event} e
      */
     onDragOver_(e) {
-      // The default operation is to allow dropping links etc to do
-      // navigation. We never want to do that for the bookmark manager.
-      e.preventDefault();
-
       this.dropDestination_ = null;
 
       // Allow normal DND on text inputs.
       if (e.path[0].tagName == 'INPUT') {
         return;
       }
+
+      // The default operation is to allow dropping links etc to do
+      // navigation. We never want to do that for the bookmark manager.
+      e.preventDefault();
 
       if (!this.dragInfo_.isDragValid()) {
         return;
