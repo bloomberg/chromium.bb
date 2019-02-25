@@ -32,9 +32,6 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (!RegisterMainDexNatives(env)) {
     return -1;
   }
-  if (!android::OnJNIOnLoadRegisterJNI(env)) {
-    return -1;
-  }
   base::android::SetNativeInitializationHook(NativeInit);
   return JNI_VERSION_1_4;
 }
