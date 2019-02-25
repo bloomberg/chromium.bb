@@ -70,7 +70,7 @@ void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
   ResponseValue response = RunWithStorage(storage);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&SettingsFunction::Respond, this, base::Passed(&response)));
+      base::BindOnce(&SettingsFunction::Respond, this, std::move(response)));
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(

@@ -632,7 +632,7 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // singleton is leaked.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(
+      base::BindOnce(
           &ExtensionWebRequestEventRouter::RemoveEventListener,
           base::Unretained(ExtensionWebRequestEventRouter::GetInstance()), id,
           false /* not strict */));
@@ -2170,10 +2170,11 @@ void ExtensionWebRequestEventRouter::SendMessages(
                                GetRequestStageAsString(blocked_request.event));
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(&SendOnMessageEventOnUI, browser_context,
-                     delta.extension_id, blocked_request.request->is_web_view,
-                     blocked_request.request->web_view_instance_id,
-                     base::Passed(&event_details)));
+          base::BindOnce(&SendOnMessageEventOnUI, browser_context,
+                         delta.extension_id,
+                         blocked_request.request->is_web_view,
+                         blocked_request.request->web_view_instance_id,
+                         std::move(event_details)));
     }
   }
 }
@@ -2746,9 +2747,9 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
   WarningSet warnings;
   warnings.insert(
       Warning::CreateRepeatedCacheFlushesWarning(extension_id_safe()));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::Bind(&WarningService::NotifyWarningsOnUI, profile_id(), warnings));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&WarningService::NotifyWarningsOnUI,
+                                          profile_id(), warnings));
 
   // Continue gracefully.
   RunWithValidation()->Execute();

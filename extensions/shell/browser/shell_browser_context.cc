@@ -73,8 +73,8 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       extension_info_map));
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&ShellBrowserContext::InitURLRequestContextOnIOThread,
-                 base::Unretained(this)));
+      base::BindOnce(&ShellBrowserContext::InitURLRequestContextOnIOThread,
+                     base::Unretained(this)));
   return url_request_context_getter();
 }
 

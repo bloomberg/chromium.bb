@@ -127,8 +127,8 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&SocketAsyncApiFunction::OpenFirewallHoleOnUIThread, this,
-                   type, local_address.port(), socket_id));
+        base::BindOnce(&SocketAsyncApiFunction::OpenFirewallHoleOnUIThread,
+                       this, type, local_address.port(), socket_id));
     return;
   }
 #endif
@@ -148,8 +148,8 @@ void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
       manager->Open(type, port, extension_id()).release());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&SocketAsyncApiFunction::OnFirewallHoleOpened, this, socket_id,
-                 base::Passed(&hole)));
+      base::BindOnce(&SocketAsyncApiFunction::OnFirewallHoleOpened, this,
+                     socket_id, std::move(hole)));
 }
 
 void SocketAsyncApiFunction::OnFirewallHoleOpened(
