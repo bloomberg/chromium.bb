@@ -14,10 +14,10 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
-#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/start_animation_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
@@ -64,6 +64,21 @@ ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType(
   }
 
   return ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+}
+
+OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
+    OverviewSession::EnterExitOverviewType type) {
+  // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
+  // Fade out the minimized window without animation if switch from tablet mode
+  // to clamshell mode.
+  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+    return Shell::Get()
+                   ->tablet_mode_controller()
+                   ->IsTabletModeWindowManagerEnabled()
+               ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
+               : OVERVIEW_ANIMATION_NONE;
+  }
+  return OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT;
 }
 
 }  // namespace
@@ -208,8 +223,9 @@ gfx::Transform ScopedOverviewTransformWindow::GetTransformForRect(
   return transform;
 }
 
-void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
-                                                  bool use_slide_animation) {
+void ScopedOverviewTransformWindow::RestoreWindow(
+    bool reset_transform,
+    OverviewSession::EnterExitOverviewType type) {
   // Shadow controller may be null on shutdown.
   if (Shell::Get()->shadow_controller())
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
@@ -218,9 +234,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
     // lifetime of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(
         std::move(minimized_widget_),
-        use_slide_animation ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
-                            : OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
-        use_slide_animation);
+        GetExitOverviewAnimationTypeForMinimizedWindow(type));
     return;
   }
 

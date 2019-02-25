@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -109,7 +110,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // If |reset_transform| equals false, the window's transform will not be reset
   // to identity transform when exiting the overview mode. See
   // OverviewItem::RestoreWindow() for details why we need this.
-  void RestoreWindow(bool reset_transform, bool use_slide_animation);
+  void RestoreWindow(bool reset_transform,
+                     OverviewSession::EnterExitOverviewType type);
 
   // Informs the ScopedOverviewTransformWindow that the window being watched was
   // destroyed. This resets the internal window pointer.
