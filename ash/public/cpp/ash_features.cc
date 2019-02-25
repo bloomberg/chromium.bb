@@ -66,6 +66,9 @@ const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
 const base::Feature kSupervisedUserDeprecationNotice{
     "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNotificationStackingBarRedesign{
+    "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
@@ -116,6 +119,10 @@ bool IsViewsLoginEnabled() {
 
 bool IsSupervisedUserDeprecationNoticeEnabled() {
   return base::FeatureList::IsEnabled(kSupervisedUserDeprecationNotice);
+}
+
+bool IsNotificationStackingBarRedesignEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationStackingBarRedesign);
 }
 
 }  // namespace features
