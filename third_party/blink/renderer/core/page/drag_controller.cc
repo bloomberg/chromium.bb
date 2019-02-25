@@ -995,6 +995,11 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
     // FIXME: For DHTML/draggable element drags, write element markup to
     // clipboard.
   }
+
+  // Observe context related to source to allow dropping drag_state_ when the
+  // Document goes away.
+  SetContext(src->GetDocument());
+
   return true;
 }
 
