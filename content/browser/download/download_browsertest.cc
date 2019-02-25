@@ -3824,7 +3824,16 @@ class MhtmlDownloadTest : public DownloadContentTest {
   ContentBrowserClient* old_client_;
 };
 
-IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest, ForceDownloadMultipartRelatedPage) {
+#if defined(THREAD_SANITIZER)
+// Flaky on TSAN https://crbug.com/932092
+#define MAYBE_ForceDownloadMultipartRelatedPage \
+  DISABLED_ForceDownloadMultipartRelatedPage
+#else
+#define MAYBE_ForceDownloadMultipartRelatedPage \
+  ForceDownloadMultipartRelatedPage
+#endif
+IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest,
+                       MAYBE_ForceDownloadMultipartRelatedPage) {
   NavigateToURLAndWaitForDownload(
       shell(),
       // .mhtml file is mapped to "multipart/related" by the test server.
