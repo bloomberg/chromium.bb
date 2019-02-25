@@ -533,7 +533,7 @@ Node* Internals::parentTreeScope(Node* node) {
   return parent_tree_scope ? &parent_tree_scope->RootNode() : nullptr;
 }
 
-unsigned short Internals::compareTreeScopePosition(
+uint16_t Internals::compareTreeScopePosition(
     const Node* node1,
     const Node* node2,
     ExceptionState& exception_state) const {

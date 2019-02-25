@@ -142,9 +142,9 @@ class Internals final : public ScriptWrappable {
   bool isValidContentSelect(Element* insertion_point, ExceptionState&);
   Node* treeScopeRootNode(Node*);
   Node* parentTreeScope(Node*);
-  unsigned short compareTreeScopePosition(const Node*,
-                                          const Node*,
-                                          ExceptionState&) const;
+  uint16_t compareTreeScopePosition(const Node*,
+                                    const Node*,
+                                    ExceptionState&) const;
 
   Node* nextSiblingInFlatTree(Node*, ExceptionState&);
   Node* firstChildInFlatTree(Node*, ExceptionState&);
