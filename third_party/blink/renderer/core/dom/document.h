@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
@@ -93,6 +94,7 @@ class CSSStyleSheet;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
+class ComputedAccessibleNode;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
@@ -187,6 +189,7 @@ class USVStringOrTrustedURL;
 class V8NodeFilter;
 class ViewportData;
 class VisitedLinkState;
+class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
 struct AnnotatedRegionValue;
@@ -1535,6 +1538,10 @@ class CORE_EXPORT Document : public ContainerNode,
   ColorScheme GetColorScheme() const { return color_scheme_; }
   void SetColorScheme(ColorScheme);
 
+  ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(
+      AXID ax_id,
+      WebComputedAXTree* tree);
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -2000,6 +2007,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Map from isolated world IDs to their ContentSecurityPolicy instances.
   Member<HeapHashMap<int, Member<ContentSecurityPolicy>>>
       isolated_world_csp_map_;
+
+  // Used to keep track of which ComputedAccessibleNodes have already been
+  // instantiated in this document to avoid constructing duplicates.
+  HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

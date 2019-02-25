@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
@@ -101,7 +102,7 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
   AXID ax_id = cache.GetAXID(element_);
 
   ComputedAccessibleNode* accessible_node =
-      local_frame->GetOrCreateComputedAccessibleNode(ax_id, tree);
+      document.GetOrCreateComputedAccessibleNode(ax_id, tree);
   resolver_->Resolve(accessible_node);
 }
 
@@ -109,17 +110,17 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
 
 ComputedAccessibleNode* ComputedAccessibleNode::Create(AXID ax_id,
                                                        WebComputedAXTree* tree,
-                                                       LocalFrame* frame) {
-  return MakeGarbageCollected<ComputedAccessibleNode>(ax_id, tree, frame);
+                                                       Document* document) {
+  return MakeGarbageCollected<ComputedAccessibleNode>(ax_id, tree, document);
 }
 
 ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
                                                WebComputedAXTree* tree,
-                                               LocalFrame* frame)
+                                               Document* document)
     : ax_id_(ax_id),
       tree_(tree),
-      frame_(frame),
-      ax_context_(std::make_unique<AXContext>(*frame->GetDocument())) {}
+      document_(document),
+      ax_context_(std::make_unique<AXContext>(*document)) {}
 
 ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
@@ -129,7 +130,7 @@ bool ComputedAccessibleNode::atomic(bool& is_null) const {
 
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
     ScriptState* script_state) {
-  AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache();
+  AXObjectCache* cache = document_->ExistingAXObjectCache();
   DCHECK(cache);
   Element* element = cache->GetElementFromAXID(ax_id_);
   ComputedAccessibleNodePromiseResolver* resolver =
@@ -271,7 +272,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
   if (!tree_->GetParentIdForAXNode(ax_id_, &parent_ax_id)) {
     return nullptr;
   }
-  return frame_->GetOrCreateComputedAccessibleNode(parent_ax_id, tree_);
+  return document_->GetOrCreateComputedAccessibleNode(parent_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
@@ -279,7 +280,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
   if (!tree_->GetFirstChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return frame_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
+  return document_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
@@ -287,7 +288,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
   if (!tree_->GetLastChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return frame_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
+  return document_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
@@ -295,7 +296,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
   if (!tree_->GetPreviousSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return frame_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
+  return document_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
@@ -303,7 +304,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
   if (!tree_->GetNextSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return frame_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
+  return document_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
 }
 
 bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
@@ -346,7 +347,7 @@ const String ComputedAccessibleNode::GetStringAttribute(
 }
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {
-  visitor->Trace(frame_);
+  visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
 }
 
