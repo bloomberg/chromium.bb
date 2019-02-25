@@ -78,8 +78,8 @@ ALL_DISPLAY_LABEL = {
 
 # These values must be kept in sync with the ChromeOS LUCI builders.
 #
-# https://chrome-internal.git.corp.google.com/chromeos/
-#    manifest-internal/+/infra/config/cr-buildbucket.cfg
+# https://chrome-internal.googlesource.com/chromeos/
+#     infra/config/+/refs/heads/master/luci/cr-buildbucket.cfg
 LUCI_BUILDER_TRY = 'Try'
 LUCI_BUILDER_PRECQ = 'PreCQ'
 LUCI_BUILDER_PROD = 'Prod'

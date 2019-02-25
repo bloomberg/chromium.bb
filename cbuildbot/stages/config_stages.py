@@ -379,11 +379,6 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  # Where is the legacy LUCI Project config defined.
-  LEGACY_PROJECT_URL = os.path.join(constants.INTERNAL_GOB_URL,
-                                    'chromeos/manifest-internal')
-  LEGACY_PROJECT_BRANCH = 'infra/config'
-
   PROJECT_URL = os.path.join(constants.INTERNAL_GOB_URL,
                              'chromeos/infra/config')
   PROJECT_BRANCH = 'master'
@@ -414,20 +409,6 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
     osutils.SafeMakedirs(path)
     return path
 
-  def _CheckoutLegacyLuciProject(self):
-    """Checkout the legacy LUCI project config.
-
-    Raises:
-      BranchNotFoundException if failed to checkout to the branch.
-    """
-    self.legacy_project_dir = self._MakeWorkDir('legacy_luci_config')
-
-    git.Clone(self.legacy_project_dir, self.LEGACY_PROJECT_URL,
-              branch=self.LEGACY_PROJECT_BRANCH)
-
-    logging.info('Checked out legacy luci config %s:%s in %s',
-                 self.PROJECT_URL, self.PROJECT_BRANCH, self.project_dir)
-
   def _CheckoutLuciProject(self):
     """Checkout the LUCI project config.
 
@@ -440,43 +421,6 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
     logging.info('Checked out luci config %s:%s in %s',
                  self.PROJECT_URL, self.PROJECT_BRANCH, self.project_dir)
-
-  def _UpdateLegacyLuciProject(self):
-    """Create and return a diff patch file for config changes."""
-    source_file = os.path.join(constants.CHROMITE_DIR, 'config',
-                               'luci-scheduler.cfg')
-
-    target_file = os.path.join(self.legacy_project_dir, 'luci-scheduler.cfg')
-
-    if osutils.ReadFile(source_file) == osutils.ReadFile(target_file):
-      logging.PrintBuildbotStepText(
-          'legacy luci-scheduler.cfg current: No Update.')
-      return
-
-    chromite_rev = git.RunGit(
-        constants.CHROMITE_DIR,
-        ['rev-parse', 'HEAD:config/luci-scheduler.cfg']).output.rstrip()
-
-    message = textwrap.dedent('''\
-      luci-scheduler.cfg: Chromite %s
-
-      Auto update to match generated file in chromite.
-      ''' % chromite_rev)
-
-    shutil.copyfile(source_file, target_file)
-
-    git.RunGit(self.legacy_project_dir, ['add', '-A'])
-    git.RunGit(self.legacy_project_dir, ['commit', '-m', message])
-
-    push_to = git.RemoteRef('origin', 'infra/config')
-    logging.info('Pushing to branch (%s) with message: %s %s', push_to, message,
-                 ' (dryrun)' if self._run.options.debug else '')
-    git.RunGit(
-        self.legacy_project_dir, ['config', 'push.default', 'tracking'],
-        print_cmd=True)
-    git.PushBranch(self.LEGACY_PROJECT_BRANCH, self.legacy_project_dir,
-                   dryrun=self._run.options.debug)
-    logging.PrintBuildbotStepText('legacy luci-scheduler.cfg: Updated.')
 
   def _UpdateLuciProject(self):
     source_file = os.path.join(constants.CHROMITE_DIR, 'config',
@@ -516,14 +460,9 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     """Perform the DeployLuciSchedulerStage."""
-    logging.info('Update legacy luci_scheduler.cfg at %s:%s.',
-                 self.LEGACY_PROJECT_URL, self.LEGACY_PROJECT_BRANCH)
-
-    self._RunUnitTest()
-    self._CheckoutLegacyLuciProject()
-    self._UpdateLegacyLuciProject()
-
     logging.info('Update luci_scheduler.cfg at %s:%s.',
                  self.PROJECT_URL, self.PROJECT_BRANCH)
+
+    self._RunUnitTest()
     self._CheckoutLuciProject()
     self._UpdateLuciProject()
