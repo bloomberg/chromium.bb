@@ -115,6 +115,8 @@ const _CONTAINER_TYPE_SET = new Set(Object.values(_CONTAINER_TYPES));
 const _CODE_SYMBOL_TYPE = 't';
 /** Type for a dex method symbol */
 const _DEX_METHOD_SYMBOL_TYPE = 'm';
+/** Type for a non-method dex symbol */
+const _DEX_SYMBOL_TYPE = 'x';
 /** Type for an 'other' symbol */
 const _OTHER_SYMBOL_TYPE = 'o';
 
