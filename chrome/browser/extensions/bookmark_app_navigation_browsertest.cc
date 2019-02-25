@@ -177,7 +177,7 @@ void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
   content::SimulateMouseClick(web_contents, modifiers,
                               blink::WebMouseEvent::Button::kLeft);
 
-  observer->WaitForNavigationFinished();
+  observer->Wait();
 }
 
 // static
@@ -306,7 +306,7 @@ Browser* BookmarkAppNavigationBrowserTest::OpenTestBookmarkApp() {
   GURL app_url = https_server_.GetURL(GetAppUrlHost(), GetAppUrlPath());
   auto observer = GetTestNavigationObserver(app_url);
   Browser* app_browser = LaunchAppBrowser(test_bookmark_app_);
-  observer->WaitForNavigationFinished();
+  observer->Wait();
 
   return app_browser;
 }
