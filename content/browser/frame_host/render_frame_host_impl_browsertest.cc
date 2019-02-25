@@ -2054,4 +2054,226 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, VisibilityChildInView) {
             nested_iframe_node->current_frame_host()->visibility());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       OriginOfFreshFrame_Subframe_NavCancelledByDocWrite) {
+  WebContents* web_contents = shell()->web_contents();
+  NavigationController& controller = web_contents->GetController();
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // document.open should cancel the cross-origin navigation to '/hung' and the
+  // subframe should remain on the parent/initiator origin.
+  const char kScriptTemplate[] = R"(
+      const frame = document.createElement('iframe');
+      frame.src = $1;
+      document.body.appendChild(frame);
+
+      const html = '<!DOCTYPE html><html><body>Hello world!</body></html>';
+      const doc = frame.contentDocument;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      frame.contentWindow.origin;
+  )";
+  GURL cross_site_url(embedded_test_server()->GetURL("bar.com", "/hung"));
+  std::string script = JsReplace(kScriptTemplate, cross_site_url);
+  EXPECT_EQ(main_origin.Serialize(), EvalJs(web_contents, script));
+
+  // The subframe navigation should be cancelled and therefore shouldn't
+  // contribute an extra history entry.
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Browser-side origin should match the renderer-side origin.
+  // See also https://crbug.com/932067.
+  ASSERT_EQ(2u, web_contents->GetAllFrames().size());
+  RenderFrameHost* subframe = web_contents->GetAllFrames()[1];
+  EXPECT_EQ(main_origin, subframe->GetLastCommittedOrigin());
+}
+
+class RenderFrameHostCreatedObserver : public WebContentsObserver {
+ public:
+  explicit RenderFrameHostCreatedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  RenderFrameHost* Wait() {
+    if (!new_frame_)
+      run_loop_.Run();
+
+    return new_frame_;
+  }
+
+ private:
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    new_frame_ = render_frame_host;
+    run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+  RenderFrameHost* new_frame_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       OriginOfFreshFrame_SandboxedSubframe) {
+  WebContents* web_contents = shell()->web_contents();
+  NavigationController& controller = web_contents->GetController();
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // Navigate a sandboxed frame to a cross-origin '/hung'.
+  RenderFrameHostCreatedObserver subframe_observer(web_contents);
+  const char kScriptTemplate[] = R"(
+      const frame = document.createElement('iframe');
+      frame.sandbox = 'allow-scripts';
+      frame.src = $1;
+      document.body.appendChild(frame);
+  )";
+  GURL cross_site_url(embedded_test_server()->GetURL("bar.com", "/hung"));
+  std::string script = JsReplace(kScriptTemplate, cross_site_url);
+  EXPECT_TRUE(ExecJs(web_contents, script));
+
+  // Wait for a new subframe, but ignore the frame returned by
+  // |subframe_observer| (it might be the speculative one, not the current one).
+  subframe_observer.Wait();
+  ASSERT_EQ(2u, web_contents->GetAllFrames().size());
+  RenderFrameHost* subframe = web_contents->GetAllFrames()[1];
+
+  // The browser-side origin of the *sandboxed* subframe should be set to an
+  // *opaque* origin (with the parent's origin as the precursor origin).
+  EXPECT_TRUE(subframe->GetLastCommittedOrigin().opaque());
+  EXPECT_EQ(
+      main_origin.GetTupleOrPrecursorTupleIfOpaque(),
+      subframe->GetLastCommittedOrigin().GetTupleOrPrecursorTupleIfOpaque());
+
+  // Note that the test cannot check the renderer-side origin of the frame:
+  // - Scripts cannot be executed before the frame commits,
+  // - The parent cannot document.write into the *sandboxed* frame.
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       OriginOfFreshFrame_Subframe_AboutBlankAndThenDocWrite) {
+  WebContents* web_contents = shell()->web_contents();
+  NavigationController& controller = web_contents->GetController();
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // Create a new about:blank subframe and document.write into it.
+  TestNavigationObserver load_observer(web_contents);
+  RenderFrameHostCreatedObserver subframe_observer(web_contents);
+  const char kScript[] = R"(
+      const frame = document.createElement('iframe');
+      // Don't set |frame.src| - have the frame commit an initial about:blank.
+      document.body.appendChild(frame);
+
+      const html = '<!DOCTYPE html><html><body>Hello world!</body></html>';
+      const doc = frame.contentDocument;
+      doc.open();
+      doc.write(html);
+      doc.close();
+  )";
+  ExecuteScriptAsync(web_contents, kScript);
+
+  // Wait for the new subframe to be created - this will be still before the
+  // commit of about:blank.
+  RenderFrameHost* subframe = subframe_observer.Wait();
+  EXPECT_EQ(main_origin, subframe->GetLastCommittedOrigin());
+
+  // Wait for the about:blank navigation to finish.
+  load_observer.Wait();
+
+  // The subframe commit to about:blank should not contribute an extra history
+  // entry.
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Browser-side origin should match the renderer-side origin.
+  // See also https://crbug.com/932067.
+  ASSERT_EQ(2u, web_contents->GetAllFrames().size());
+  RenderFrameHost* subframe2 = web_contents->GetAllFrames()[1];
+  EXPECT_EQ(subframe, subframe2);  // No swaps are expected.
+  EXPECT_EQ(main_origin, subframe2->GetLastCommittedOrigin());
+  EXPECT_EQ(main_origin.Serialize(), EvalJs(subframe2, "window.origin"));
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       OriginOfFreshFrame_Popup_NavCancelledByDocWrite) {
+  WebContents* web_contents = shell()->web_contents();
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // document.open should cancel the cross-origin navigation to '/hung' and the
+  // popup should remain on the initiator origin.
+  WebContentsAddedObserver popup_observer;
+  const char kScriptTemplate[] = R"(
+      var popup = window.open($1, 'popup');
+
+      const html = '<!DOCTYPE html><html><body>Hello world!</body></html>';
+      const doc = popup.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      popup.origin;
+  )";
+  GURL cross_site_url(embedded_test_server()->GetURL("bar.com", "/hung"));
+  std::string script = JsReplace(kScriptTemplate, cross_site_url);
+  EXPECT_EQ(main_origin.Serialize(), EvalJs(web_contents, script));
+
+  // Browser-side origin should match the renderer-side origin.
+  // See also https://crbug.com/932067.
+  WebContents* popup = popup_observer.GetWebContents();
+  EXPECT_EQ(main_origin, popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // The popup navigation should be cancelled and therefore shouldn't
+  // contribute an extra history entry.
+  EXPECT_EQ(0, popup->GetController().GetEntryCount());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       OriginOfFreshFrame_Popup_AboutBlankAndThenDocWrite) {
+  WebContents* web_contents = shell()->web_contents();
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // Create a new about:blank popup and document.write into it.
+  WebContentsAddedObserver popup_observer;
+  TestNavigationObserver load_observer(web_contents);
+  const char kScript[] = R"(
+      // Empty |url| argument means that the popup will commit an initial
+      // about:blank.
+      var popup = window.open('', 'popup');
+
+      const html = '<!DOCTYPE html><html><body>Hello world!</body></html>';
+      const doc = popup.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+  )";
+  ExecuteScriptAsync(web_contents, kScript);
+
+  // Wait for the new popup to be created (this will be before the popup commits
+  // the initial about:blank page).
+  WebContents* popup = popup_observer.GetWebContents();
+  EXPECT_EQ(main_origin, popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // A round-trip to the renderer process is an indirect way to wait for
+  // DidCommitProvisionalLoad IPC for the initial about:blank page.
+  // WaitForLoadStop cannot be used, because this commit won't raise
+  // NOTIFICATION_LOAD_STOP.
+  EXPECT_EQ(123, EvalJs(popup, "123"));
+  EXPECT_EQ(main_origin, popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // The about:blank navigation shouldn't contribute an extra history entry.
+  EXPECT_EQ(0, popup->GetController().GetEntryCount());
+}
+
 }  // namespace content
