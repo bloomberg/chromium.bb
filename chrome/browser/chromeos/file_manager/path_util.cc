@@ -400,10 +400,25 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
     return true;
   }
 
-  // Convert paths under /special.
-  GURL external_file_url =
-      chromeos::CreateExternalFileURLFromPath(primary_profile, path,
-                                              /* allow_drivefs = */ true);
+  bool force_external = false;
+  // Force external URL for DriveFS and Crostini.
+  drive::DriveIntegrationService* integration_service = nullptr;
+  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+    integration_service =
+        drive::DriveIntegrationServiceFactory::GetForProfile(primary_profile);
+  }
+  if ((integration_service &&
+       integration_service->GetMountPointPath().AppendRelativePath(
+           path, &relative_path)) ||
+      GetCrostiniMountDirectory(primary_profile)
+          .AppendRelativePath(path, &relative_path)) {
+    force_external = true;
+  }
+
+  // Convert paths under /special or other paths forced to use external URL.
+  GURL external_file_url = chromeos::CreateExternalFileURLFromPath(
+      primary_profile, path, force_external);
+
   if (!external_file_url.is_empty()) {
     *arc_url_out = arc::EncodeToChromeContentProviderUrl(external_file_url);
     return true;

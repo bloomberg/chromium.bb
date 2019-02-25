@@ -702,11 +702,20 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     ASSERT_TRUE(fake_file_system_.InitCalled());
 
     // Add a drive mount point for the primary profile.
+    storage::ExternalMountPoints* mount_points =
+        storage::ExternalMountPoints::GetSystemInstance();
     drive_mount_point_ = drive::util::GetDriveMountPointPath(primary_profile);
-    const std::string mount_name = drive_mount_point_.BaseName().AsUTF8Unsafe();
-    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        mount_name, storage::kFileSystemTypeDrive,
-        storage::FileSystemMountOption(), drive_mount_point_);
+    mount_points->RegisterFileSystem(
+        drive_mount_point_.BaseName().AsUTF8Unsafe(),
+        storage::kFileSystemTypeDrive, storage::FileSystemMountOption(),
+        drive_mount_point_);
+
+    // Add a crostini mount point for the primary profile.
+    crostini_mount_point_ = GetCrostiniMountDirectory(primary_profile);
+    mount_points->RegisterFileSystem(GetCrostiniMountPointName(primary_profile),
+                                     storage::kFileSystemTypeNativeLocal,
+                                     storage::FileSystemMountOption(),
+                                     crostini_mount_point_);
   }
 
   void TearDown() override {
@@ -726,6 +735,7 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   base::FilePath drive_mount_point_;
+  base::FilePath crostini_mount_point_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileManagerPathUtilConvertUrlTest);
@@ -785,6 +795,16 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
       chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user2@gmail.com-hash"));
   EXPECT_FALSE(ConvertPathToArcUrl(downloads2.AppendASCII("a/b/c"), &url));
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Crostini) {
+  GURL url;
+  EXPECT_TRUE(
+      ConvertPathToArcUrl(crostini_mount_point_.AppendASCII("a/b/c"), &url));
+  EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
+                 "externalfile%3A"
+                 "crostini_user%40gmail.com-hash_termina_penguin%2Fa%2Fb%2Fc"),
+            url);
 }
 
 TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Special) {

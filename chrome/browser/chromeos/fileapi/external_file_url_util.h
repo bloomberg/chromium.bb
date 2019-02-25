@@ -22,17 +22,16 @@ class FileSystemURL;
 namespace chromeos {
 
 // Returns whether the external file URL is provided for the |type| or not.
-// TODO(b/119597913): Remove |allow_drivefs| from all functions in this file
+// TODO(b/119597913): Remove |force| from all functions in this file
 // once ARC++ can access FUSE-mounted filesystems directly.
-bool IsExternalFileURLType(storage::FileSystemType type,
-                           bool allow_drivefs = false);
+bool IsExternalFileURLType(storage::FileSystemType type, bool force = false);
 
 // Obtains the external file url formatted as "externalfile:<path>" from file
 // path. Returns empty URL if the file system does not provide the external file
 // URL.
 GURL FileSystemURLToExternalFileURL(
     const storage::FileSystemURL& file_system_url,
-    bool allow_drivefs = false);
+    bool force = false);
 
 // Converts a externalfile: URL back to a virtual path of FileSystemURL.
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url);
@@ -45,7 +44,7 @@ GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path);
 // external location (drive, MTP, or FSP). Otherwise, it returns empty URL.
 GURL CreateExternalFileURLFromPath(Profile* profile,
                                    const base::FilePath& path,
-                                   bool allow_drivefs = false);
+                                   bool force = false);
 
 }  // namespace chromeos
 
