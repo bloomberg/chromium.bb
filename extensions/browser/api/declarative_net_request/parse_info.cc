@@ -107,6 +107,11 @@ std::string ParseInfo::GetErrorDescription(
           kErrorNonAscii, json_rules_filename, std::to_string(*rule_id_),
           kExcludedDomainsKey);
       break;
+    case ParseResult::ERROR_INVALID_URL_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidUrlFilter, json_rules_filename,
+          std::to_string(*rule_id_), kUrlFilterKey);
+      break;
   }
   return error;
 }

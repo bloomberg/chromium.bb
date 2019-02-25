@@ -31,6 +31,7 @@ enum class ParseResult {
   ERROR_NON_ASCII_URL_FILTER,
   ERROR_NON_ASCII_DOMAIN,
   ERROR_NON_ASCII_EXCLUDED_DOMAIN,
+  ERROR_INVALID_URL_FILTER,
 };
 
 // Rule parsing errors.
@@ -46,6 +47,7 @@ extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
 extern const char kErrorListNotPassed[];
 extern const char kErrorNonAscii[];
+extern const char kErrorInvalidUrlFilter[];
 
 // Rule indexing install warnings.
 extern const char kRuleCountExceeded[];

@@ -23,6 +23,10 @@ namespace {
 namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = extensions::api::declarative_net_request;
 
+constexpr char kAnchorCharacter = '|';
+constexpr char kSeparatorCharacter = '^';
+constexpr char kWildcardCharacter = '*';
+
 // Returns true if bitmask |sub| is a subset of |super|.
 constexpr bool IsSubset(unsigned sub, unsigned super) {
   return (super | sub) == super;
@@ -107,10 +111,6 @@ class UrlFilterParser {
   bool IsAtAnchor() const {
     return IsAtValidIndex() && url_filter_[index_] == kAnchorCharacter;
   }
-
-  static constexpr char kAnchorCharacter = '|';
-  static constexpr char kSeparatorCharacter = '^';
-  static constexpr char kWildcardCharacter = '*';
 
   const std::string url_filter_;
   const size_t url_filter_len_;
@@ -331,6 +331,14 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   // |url_pattern| fields.
   UrlFilterParser::Parse(std::move(parsed_rule.condition.url_filter),
                          indexed_rule);
+
+  // url_pattern_index doesn't support patterns starting with a domain anchor
+  // followed by a wildcard, e.g. ||*xyz.
+  if (indexed_rule->anchor_left == flat_rule::AnchorType_SUBDOMAIN &&
+      !indexed_rule->url_pattern.empty() &&
+      indexed_rule->url_pattern.front() == kWildcardCharacter) {
+    return ParseResult::ERROR_INVALID_URL_FILTER;
+  }
 
   // Lower-case case-insensitive patterns as required by url pattern index.
   if (indexed_rule->options & flat_rule::OptionFlag_IS_CASE_INSENSITIVE)

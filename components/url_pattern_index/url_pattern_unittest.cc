@@ -186,6 +186,10 @@ TEST(UrlPatternTest, MatchesUrl) {
       {{"abc*^", kAnchorNone, kAnchorNone}, "https://abc.com?q=123", true},
       {{"abc*^", kAnchorNone, kBoundary}, "https://abc.com", true},
       {{"abc*^", kAnchorNone, kBoundary}, "https://abc.com?q=123", true},
+      {{"abc*", kAnchorNone, kBoundary}, "https://a.com/abcxyz", true},
+      {{"*google.com", kBoundary, kAnchorNone}, "https://www.google.com", true},
+      {{"*", kBoundary, kBoundary}, "https://example.com", true},
+      {{"", kBoundary, kBoundary}, "https://example.com", false},
   };
 
   for (const auto& test_case : kTestCases) {

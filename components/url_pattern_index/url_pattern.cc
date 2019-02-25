@@ -33,9 +33,11 @@ namespace url_pattern_index {
 
 namespace {
 
+constexpr char kWildcard = '*';
+
 class IsWildcard {
  public:
-  bool operator()(char c) const { return c == '*'; }
+  bool operator()(char c) const { return c == kWildcard; }
 };
 
 proto::UrlPatternType ConvertUrlPatternType(flat::UrlPatternType type) {
@@ -343,15 +345,30 @@ bool UrlPattern::MatchesUrl(const UrlInfo& url) const {
   DCHECK(base::IsStringASCII(url.spec()));
   DCHECK(base::IsStringASCII(url.GetLowerCaseSpec()));
 
+  // Pre-process patterns to ensure left anchored and right anchored patterns
+  // don't begin and end with a wildcard respectively i.e. change "|*xyz" to
+  // "*xyz" and "xyz*|" to "xyz*".
+  proto::AnchorType anchor_left = anchor_left_;
+  proto::AnchorType anchor_right = anchor_right_;
+  if (!url_pattern_.empty()) {
+    if (url_pattern_.front() == kWildcard) {
+      // Note: We don't handle "||*" and expect clients to disallow it.
+      DCHECK_NE(proto::ANCHOR_TYPE_SUBDOMAIN, anchor_left_);
+      anchor_left = proto::ANCHOR_TYPE_NONE;
+    }
+    if (url_pattern_.back() == kWildcard)
+      anchor_right = proto::ANCHOR_TYPE_NONE;
+  }
+
   if (match_case()) {
-    return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
+    return IsCaseSensitiveMatch(url_pattern_, anchor_left, anchor_right,
                                 url.spec(), url.host());
   }
 
   // Use the lower-cased url for case-insensitive comparison. Case-insensitive
   // patterns should already be lower-cased.
   DCHECK(!HasAnyUpperAscii(url_pattern_));
-  return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
+  return IsCaseSensitiveMatch(url_pattern_, anchor_left, anchor_right,
                               url.GetLowerCaseSpec(), url.host());
 }
 
