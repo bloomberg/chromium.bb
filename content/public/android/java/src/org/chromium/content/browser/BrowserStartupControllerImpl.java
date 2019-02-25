@@ -45,11 +45,12 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     @VisibleForTesting
     static final int STARTUP_FAILURE = 1;
 
-    @IntDef({BROWSER_START_TYPE_FULL_BROWSER, BROWSER_START_TYPE_SERVICE_MANAGER_ONLY})
+    @IntDef({BrowserStartType.FULL_BROWSER, BrowserStartType.SERVICE_MANAGER_ONLY})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface BrowserStartType {}
-    private static final int BROWSER_START_TYPE_FULL_BROWSER = 0;
-    private static final int BROWSER_START_TYPE_SERVICE_MANAGER_ONLY = 1;
+    public @interface BrowserStartType {
+        int FULL_BROWSER = 0;
+        int SERVICE_MANAGER_ONLY = 1;
+    }
 
     private static BrowserStartupControllerImpl sInstance;
 
@@ -114,7 +115,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // once the browser is fully started, or when the ServiceManager is started and there is no
     // outstanding requests to start the full browser.
     @BrowserStartType
-    private int mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
+    private int mCurrentBrowserStartType = BrowserStartType.FULL_BROWSER;
 
     // If the app is only started with the ServiceManager, whether it needs to launch full browser
     // funcionalities now.
@@ -202,7 +203,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         // If the browser process is launched with ServiceManager only, we need to relaunch the full
         // process in serviceManagerStarted() if such a request was received.
         mLaunchFullBrowserAfterServiceManagerStart |=
-                (mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY)
+                (mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY)
                 && !startServiceManagerOnly;
         if (!mHasStartedInitializingBrowserProcess) {
             // This is the first time we have been asked to start the browser process. We set the
@@ -217,8 +218,8 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
                     ThreadUtils.assertOnUiThread();
                     if (mHasCalledContentStart) return;
                     mCurrentBrowserStartType = startServiceManagerOnly
-                            ? BROWSER_START_TYPE_SERVICE_MANAGER_ONLY
-                            : BROWSER_START_TYPE_FULL_BROWSER;
+                            ? BrowserStartType.SERVICE_MANAGER_ONLY
+                            : BrowserStartType.FULL_BROWSER;
                     if (contentStart() > 0) {
                         // Failed. The callbacks may not have run, so run them.
                         enqueueCallbackExecution(STARTUP_FAILURE);
@@ -228,7 +229,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         } else if (mServiceManagerStarted && mLaunchFullBrowserAfterServiceManagerStart) {
             // If we missed the serviceManagerStarted() call, launch the full browser now if needed.
             // Otherwise, serviceManagerStarted() will handle the full browser launch.
-            mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
+            mCurrentBrowserStartType = BrowserStartType.FULL_BROWSER;
             if (contentStart() > 0) enqueueCallbackExecution(STARTUP_FAILURE);
         }
     }
@@ -247,14 +248,14 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
             boolean startedSuccessfully = true;
             if (!mHasCalledContentStart) {
-                mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
+                mCurrentBrowserStartType = BrowserStartType.FULL_BROWSER;
                 if (contentStart() > 0) {
                     // Failed. The callbacks may not have run, so run them.
                     enqueueCallbackExecution(STARTUP_FAILURE);
                     startedSuccessfully = false;
                 }
-            } else if (mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY) {
-                mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
+            } else if (mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY) {
+                mCurrentBrowserStartType = BrowserStartType.FULL_BROWSER;
                 if (contentStart() > 0) {
                     enqueueCallbackExecution(STARTUP_FAILURE);
                     startedSuccessfully = false;
@@ -277,7 +278,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
      */
     int contentStart() {
         boolean startServiceManagerOnly =
-                mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY;
+                mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY;
         int result = contentMainStart(startServiceManagerOnly);
         mHasCalledContentStart = true;
         // No need to launch the full browser again if we are launching full browser now.
@@ -322,12 +323,12 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         if (mLaunchFullBrowserAfterServiceManagerStart) {
             // If startFullBrowser() fails, execute the callbacks right away. Otherwise,
             // callbacks will be deferred until browser startup completes.
-            mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
+            mCurrentBrowserStartType = BrowserStartType.FULL_BROWSER;
             if (contentStart() > 0) enqueueCallbackExecution(STARTUP_FAILURE);
             return;
         }
 
-        if (mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY) {
+        if (mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY) {
             executeServiceManagerCallbacks(STARTUP_SUCCESS);
         }
         recordStartupUma();
