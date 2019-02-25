@@ -6,6 +6,7 @@
 
 #include <time.h>
 
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "dbus/message.h"
@@ -54,7 +55,7 @@ void MetricsEventServiceProvider::EmitSignal(metrics_event::Event_Type type) {
     PLOG(DFATAL) << "clock_gettime";
     return;
   }
-  int64_t now_ms = timespec.tv_sec * 1000 + timespec.tv_nsec / (1000 * 1000);
+  int64_t now_ms = base::TimeDelta::FromTimeSpec(timespec).InMilliseconds();
 
   dbus::MessageWriter writer(&signal);
   payload.set_type(type);

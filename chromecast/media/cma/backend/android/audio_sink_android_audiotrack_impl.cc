@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "jni/AudioSinkAudioTrackImpl_jni.h"
 #include "media/base/audio_bus.h"
@@ -284,12 +285,10 @@ void AudioSinkAndroidAudioTrackImpl::ReformatData() {
 void AudioSinkAndroidAudioTrackImpl::TrackRawMonotonicClockDeviation() {
   timespec now = {0, 0};
   clock_gettime(CLOCK_MONOTONIC, &now);
-  int64_t now_usec =
-      static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
+  int64_t now_usec = base::TimeDelta::FromTimeSpec(now).InMicroseconds();
 
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-  int64_t now_raw_usec =
-      static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
+  int64_t now_raw_usec = base::TimeDelta::FromTimeSpec(now).InMicroseconds();
 
   // TODO(ckuiper): Eventually we want to use this to convert from non-RAW to
   // RAW timestamps to improve accuracy.
