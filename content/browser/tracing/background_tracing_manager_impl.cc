@@ -754,6 +754,11 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
           "loader,loading,navigation,blink.user_timing,"
           "disabled-by-default-network",
           record_mode);
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:
+      return TraceConfig(
+          "benchmark,toplevel,ipc,base,audio,compositor,gpu,media,memory,midi,"
+          "native,omnibox,renderer,skia,task_scheduler,ui,v8,views,webaudio",
+          record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);
 
