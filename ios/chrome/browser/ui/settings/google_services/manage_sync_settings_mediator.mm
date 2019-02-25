@@ -220,13 +220,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Updates encryption item, and notifies the consumer if |notifyConsumer| is set
 // to YES.
 - (void)updateEncryptionItem:(BOOL)notifyConsumer {
-  BOOL shouldEncryptionItemBeEnabled =
-      self.syncService->IsEngineInitialized() &&
-      self.syncSetupService->IsSyncEnabled() &&
-      !self.disabledBecauseOfSyncError;
   BOOL needsUpdate =
-      shouldEncryptionItemBeEnabled &&
-      (self.encryptionItem.enabled != shouldEncryptionItemBeEnabled);
+      self.shouldEncryptionItemBeEnabled &&
+      (self.encryptionItem.enabled != self.shouldEncryptionItemBeEnabled);
   if (self.syncSetupService->GetSyncServiceState() ==
       SyncSetupService::kSyncServiceNeedsPassphrase) {
     needsUpdate = needsUpdate || self.encryptionItem.image == nil;
@@ -239,8 +235,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     self.encryptionItem.image = nil;
     self.encryptionItem.detailText = nil;
   }
-  self.encryptionItem.enabled = shouldEncryptionItemBeEnabled;
-  if (shouldEncryptionItemBeEnabled) {
+  self.encryptionItem.enabled = self.shouldEncryptionItemBeEnabled;
+  if (self.shouldEncryptionItemBeEnabled) {
     self.encryptionItem.textColor = nil;
   } else {
     self.encryptionItem.textColor =
@@ -306,6 +302,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       self.syncSetupService->GetSyncServiceState();
   return state != SyncSetupService::kNoSyncServiceError &&
          state != SyncSetupService::kSyncServiceNeedsPassphrase;
+}
+
+- (BOOL)shouldEncryptionItemBeEnabled {
+  return self.syncService->IsEngineInitialized() &&
+         self.syncSetupService->IsSyncEnabled() &&
+         !self.disabledBecauseOfSyncError;
 }
 
 #pragma mark - ManageSyncSettingsTableViewControllerModelDelegate
