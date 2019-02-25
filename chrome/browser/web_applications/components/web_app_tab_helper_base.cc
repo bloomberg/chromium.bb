@@ -25,7 +25,7 @@ void WebAppTabHelperBase::Init(WebAppAudioFocusIdMap* audio_focus_id_map) {
 
   // Sync app_id with the initial url from WebContents (used in Tab Restore etc)
   const GURL init_url = web_contents()->GetSiteInstance()->GetSiteURL();
-  SetAppId(GetAppId(init_url));
+  SetAppId(FindAppIdInScopeOfUrl(init_url));
 }
 
 void WebAppTabHelperBase::SetAppId(const AppId& app_id) {
@@ -42,7 +42,7 @@ void WebAppTabHelperBase::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 
-  const AppId app_id = GetAppId(navigation_handle->GetURL());
+  const AppId app_id = FindAppIdInScopeOfUrl(navigation_handle->GetURL());
   SetAppId(app_id);
 }
 
@@ -58,7 +58,7 @@ void WebAppTabHelperBase::DidCloneToNewWebContents(
 
 void WebAppTabHelperBase::OnWebAppInstalled(const AppId& installed_app_id) {
   // Check if current web_contents url is in scope for the newly installed app.
-  const web_app::AppId app_id = GetAppId(web_contents()->GetURL());
+  const web_app::AppId app_id = FindAppIdInScopeOfUrl(web_contents()->GetURL());
   if (app_id == installed_app_id)
     SetAppId(app_id);
 }
