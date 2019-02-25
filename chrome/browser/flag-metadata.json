@@ -749,7 +749,7 @@
   },
   {
     "name": "enable-appcontainer",
-    // "owners": [ "your-team" ],
+    "owners": [ "forshaw", "wfh" ],
     "expiry_milestone": 76
   },
   {
@@ -1212,8 +1212,8 @@
   },
   {
     "name": "enable-gpu-appcontainer",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "forshaw", "wfh" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-gpu-rasterization",
