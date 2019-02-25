@@ -20,19 +20,23 @@ namespace policy {
 // |with_device_data| governs if device identity data (e.g.
 // enrollment client ID) and device local accounts policies are included,
 // it is used in logs uploads to the server.
+// |is_pretty_print| govers if JSON policy value is pretty printed.
 base::Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
                                            bool with_user_policies,
                                            bool convert_values,
-                                           bool with_device_data);
+                                           bool with_device_data,
+                                           bool is_pretty_print);
 
 // Returns a JSON with the values of all set policies.
 // |with_user_policies| governs if values with POLICY_SCOPE_USER are included.
 // |with_device_data| governs if device identity data (e.g.
 // enrollment client ID) and device local accounts policies are included,
 // it is used in logs uploads to the server.
+// |is_pretty_print| governs if the output is formatted.
 std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
                                      bool with_user_policies,
-                                     bool with_device_data);
+                                     bool with_device_data,
+                                     bool is_pretty_print);
 
 }  // namespace policy
 
