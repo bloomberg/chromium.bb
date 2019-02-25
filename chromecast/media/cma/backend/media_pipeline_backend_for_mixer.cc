@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
@@ -235,7 +236,7 @@ int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
 #else
   clock_gettime(CLOCK_MONOTONIC, &now);
 #endif // MEDIA_CLOCK_MONOTONIC_RAW
-  return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
+  return base::TimeDelta::FromTimeSpec(now).InMicroseconds();
 }
 #elif defined(OS_FUCHSIA)
 int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
