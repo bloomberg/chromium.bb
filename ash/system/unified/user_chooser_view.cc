@@ -77,8 +77,6 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   auto* icon = new views::ImageView;
   icon->SetImage(
       gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kUnifiedMenuIconColor));
-  icon->set_tooltip_text(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   AddChildView(icon);
 
   auto* label = new views::Label(
