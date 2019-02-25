@@ -177,6 +177,21 @@ TEST(PreflightControllerCreatePreflightRequestTest, Tainted) {
   EXPECT_EQ(header, "null");
 }
 
+TEST(PreflightControllerCreatePreflightRequestTest, FetchWindowId) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.request_initiator = url::Origin();
+  request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                            "application/octet-stream");
+  request.fetch_window_id = base::UnguessableToken::Create();
+
+  std::unique_ptr<ResourceRequest> preflight =
+      PreflightController::CreatePreflightRequestForTesting(request);
+
+  EXPECT_EQ(request.fetch_window_id, preflight->fetch_window_id);
+}
+
 class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
