@@ -5,10 +5,15 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_service_client.h"
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "mojo/public/cpp/bindings/map.h"
 
 using ::chromeos::machine_learning::mojom::CreateGraphExecutorResult;
@@ -35,20 +40,64 @@ void LogPowerMLSmartDimModelResult(SmartDimModelResult result) {
   UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimModel.Result", result);
 }
 
-}  // namespace
+// Real impl of MlServiceClient.
+class MlServiceClientImpl : public MlServiceClient {
+ public:
+  MlServiceClientImpl();
+  ~MlServiceClientImpl() override {}
 
-MlServiceClient::MlServiceClient() : weak_factory_(this) {}
+  // MlServiceClient:
+  void DoInference(
+      const std::vector<float>& features,
+      base::RepeatingCallback<UserActivityEvent::ModelPrediction(float)>
+          get_prediction_callback,
+      SmartDimModel::DimDecisionCallback decision_callback) override;
 
-MlServiceClient::~MlServiceClient() {}
+ private:
+  // Various callbacks that get invoked by the Mojo framework.
+  void LoadModelCallback(
+      ::chromeos::machine_learning::mojom::LoadModelResult result);
+  void CreateGraphExecutorCallback(
+      ::chromeos::machine_learning::mojom::CreateGraphExecutorResult result);
 
-void MlServiceClient::LoadModelCallback(LoadModelResult result) {
+  // Callback executed by ML Service when an Execute call is complete.
+  //
+  // The |get_prediction_callback| and the |decision_callback| are bound
+  // to the ExecuteCallback during while calling the Execute() function
+  // on the Mojo API.
+  void ExecuteCallback(
+      base::RepeatingCallback<UserActivityEvent::ModelPrediction(float)>
+          get_prediction_callback,
+      SmartDimModel::DimDecisionCallback decision_callback,
+      ::chromeos::machine_learning::mojom::ExecuteResult result,
+      base::Optional<
+          std::vector<::chromeos::machine_learning::mojom::TensorPtr>> outputs);
+  // Initializes the various handles to the ML service if they're not already
+  // available.
+  void InitMlServiceHandlesIfNeeded();
+
+  void OnConnectionError();
+
+  // Pointers used to execute functions in the ML service server end.
+  ::chromeos::machine_learning::mojom::ModelPtr model_;
+  ::chromeos::machine_learning::mojom::GraphExecutorPtr executor_;
+
+  base::WeakPtrFactory<MlServiceClientImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MlServiceClientImpl);
+};
+
+MlServiceClientImpl::MlServiceClientImpl()
+    : MlServiceClient(), weak_factory_(this) {}
+
+void MlServiceClientImpl::LoadModelCallback(LoadModelResult result) {
   if (result != LoadModelResult::OK) {
     // TODO(crbug.com/893425): Log to UMA.
     LOG(ERROR) << "Failed to load Smart Dim model.";
   }
 }
 
-void MlServiceClient::CreateGraphExecutorCallback(
+void MlServiceClientImpl::CreateGraphExecutorCallback(
     CreateGraphExecutorResult result) {
   if (result != CreateGraphExecutorResult::OK) {
     // TODO(crbug.com/893425): Log to UMA.
@@ -56,7 +105,7 @@ void MlServiceClient::CreateGraphExecutorCallback(
   }
 }
 
-void MlServiceClient::ExecuteCallback(
+void MlServiceClientImpl::ExecuteCallback(
     base::Callback<UserActivityEvent::ModelPrediction(float)>
         get_prediction_callback,
     SmartDimModel::DimDecisionCallback decision_callback,
@@ -78,13 +127,13 @@ void MlServiceClient::ExecuteCallback(
   std::move(decision_callback).Run(prediction);
 }
 
-void MlServiceClient::InitMlServiceHandlesIfNeeded() {
+void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!model_) {
     // Load the model.
     ModelSpecPtr spec = ModelSpec::New(ModelId::SMART_DIM);
     chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
         std::move(spec), mojo::MakeRequest(&model_),
-        base::BindOnce(&MlServiceClient::LoadModelCallback,
+        base::BindOnce(&MlServiceClientImpl::LoadModelCallback,
                        weak_factory_.GetWeakPtr()));
   }
 
@@ -92,21 +141,21 @@ void MlServiceClient::InitMlServiceHandlesIfNeeded() {
     // Get the graph executor.
     model_->CreateGraphExecutor(
         mojo::MakeRequest(&executor_),
-        base::BindOnce(&MlServiceClient::CreateGraphExecutorCallback,
+        base::BindOnce(&MlServiceClientImpl::CreateGraphExecutorCallback,
                        weak_factory_.GetWeakPtr()));
     executor_.set_connection_error_handler(base::BindOnce(
-        &MlServiceClient::OnConnectionError, weak_factory_.GetWeakPtr()));
+        &MlServiceClientImpl::OnConnectionError, weak_factory_.GetWeakPtr()));
   }
 }
 
-void MlServiceClient::OnConnectionError() {
+void MlServiceClientImpl::OnConnectionError() {
   // TODO(crbug.com/893425): Log to UMA.
   LOG(WARNING) << "Mojo connection for ML service closed.";
   executor_.reset();
   model_.reset();
 }
 
-void MlServiceClient::DoInference(
+void MlServiceClientImpl::DoInference(
     const std::vector<float>& features,
     base::Callback<UserActivityEvent::ModelPrediction(float)>
         get_prediction_callback,
@@ -128,9 +177,15 @@ void MlServiceClient::DoInference(
 
   executor_->Execute(
       mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
-      base::BindOnce(&MlServiceClient::ExecuteCallback,
+      base::BindOnce(&MlServiceClientImpl::ExecuteCallback,
                      weak_factory_.GetWeakPtr(), get_prediction_callback,
                      std::move(decision_callback)));
+}
+
+}  // namespace
+
+std::unique_ptr<MlServiceClient> CreateMlServiceClient() {
+  return std::make_unique<MlServiceClientImpl>();
 }
 
 }  // namespace ml
