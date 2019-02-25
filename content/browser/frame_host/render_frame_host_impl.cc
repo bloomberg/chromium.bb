@@ -1953,6 +1953,24 @@ void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
   SetLastCommittedOrigin(origin);
 }
 
+void RenderFrameHostImpl::SetOriginOfNewFrame(
+    const url::Origin& new_frame_creator) {
+  // This method should only be called for *new* frames, that haven't committed
+  // a navigation yet.
+  DCHECK(!has_committed_any_navigation_);
+  DCHECK(GetLastCommittedOrigin().opaque());
+
+  // Calculate and set |new_frame_origin|.
+  bool new_frame_should_be_sandboxed =
+      blink::WebSandboxFlags::kOrigin ==
+      (frame_tree_node()->active_sandbox_flags() &
+       blink::WebSandboxFlags::kOrigin);
+  url::Origin new_frame_origin = new_frame_should_be_sandboxed
+                                     ? new_frame_creator.DeriveNewOpaqueOrigin()
+                                     : new_frame_creator;
+  SetLastCommittedOrigin(new_frame_origin);
+}
+
 FrameTreeNode* RenderFrameHostImpl::AddChild(
     std::unique_ptr<FrameTreeNode> child,
     int process_id,
@@ -1973,8 +1991,12 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // in a frame tree should have the same set of proxies.
   frame_tree_node_->render_manager()->CreateProxiesForChildFrame(child.get());
 
-  children_.push_back(std::move(child));
+  // When the child is added, it hasn't committed any navigation yet - its
+  // initial empty document should inherit the origin of its parent (the origin
+  // may change after the first commit).  See also https://crbug.com/932067.
+  child->current_frame_host()->SetOriginOfNewFrame(GetLastCommittedOrigin());
 
+  children_.push_back(std::move(child));
   return children_.back().get();
 }
 
@@ -3718,6 +3740,16 @@ void RenderFrameHostImpl::CreateNewWindow(
   RenderFrameHostImpl* rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_route_id);
   DCHECK(rfh);
+
+  // When the popup is created, it hasn't committed any navigation yet - its
+  // initial empty document should inherit the origin of its opener (the origin
+  // may change after the first commit).  See also https://crbug.com/932067.
+  //
+  // Note that that origin of the new frame might depend on sandbox flags.
+  // Checking sandbox flags of the new frame should be safe at this point,
+  // because the flags should be already inherited by the CreateNewWindow call
+  // above.
+  rfh->SetOriginOfNewFrame(GetLastCommittedOrigin());
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       rfh->waiting_for_init_) {

@@ -1377,6 +1377,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
 
+  // Set the |last_committed_origin_| of |this| frame, inheriting the origin
+  // from |new_frame_creator| as appropriate (e.g. depending on whether |this|
+  // frame should be sandboxed / should have an opaque origin instead).
+  void SetOriginOfNewFrame(const url::Origin& new_frame_creator);
+
   // Called when a navigation commits succesfully to |url|. This will update
   // |last_committed_site_url_| with the site URL corresponding to |url|.
   // Note that this will recompute the site URL from |url| rather than using
