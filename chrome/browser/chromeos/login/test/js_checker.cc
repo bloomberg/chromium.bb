@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +17,11 @@ namespace {
 
 std::string WrapSend(const std::string& expression) {
   return "window.domAutomationController.send(" + expression + ")";
+}
+
+bool CheckConditionIfOobeExists(const std::string& js_condition) {
+  return !chromeos::LoginDisplayHost::default_host() ||
+         chromeos::test::OobeJS().GetBool(js_condition);
 }
 
 }  // namespace
@@ -92,6 +98,13 @@ void JSChecker::ExpectNE(const std::string& expression, bool result) {
   EXPECT_NE(GetBool(expression), result) << expression;
 }
 
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
+    const std::string& js_condition) {
+  TestPredicateWaiter::PredicateCheck predicate = base::BindRepeating(
+      &JSChecker::GetBool, base::Unretained(this), js_condition);
+  return std::make_unique<TestPredicateWaiter>(predicate);
+}
+
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -123,6 +136,13 @@ void ExecuteOobeJS(const std::string& script) {
 void ExecuteOobeJSAsync(const std::string& script) {
   content::ExecuteScriptAsync(
       LoginDisplayHost::default_host()->GetOobeWebContents(), script);
+}
+
+std::unique_ptr<TestConditionWaiter> CreatePredicateOrOobeDestroyedWaiter(
+    const std::string& js_condition) {
+  TestPredicateWaiter::PredicateCheck predicate =
+      base::BindRepeating(&CheckConditionIfOobeExists, js_condition);
+  return std::make_unique<TestPredicateWaiter>(predicate);
 }
 
 }  // namespace test
