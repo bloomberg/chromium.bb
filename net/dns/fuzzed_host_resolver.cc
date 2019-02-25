@@ -30,6 +30,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/mdns_client.h"
+#include "net/dns/public/util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
 #include "net/socket/fuzzed_datagram_client_socket.h"
@@ -291,6 +292,10 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
     for (int i = 0; i < num_socket_pairs; ++i) {
       auto send_socket =
           std::make_unique<FuzzedDatagramClientSocket>(data_provider_);
+      AddressFamily address_family = data_provider_->ConsumeBool()
+                                         ? ADDRESS_FAMILY_IPV4
+                                         : ADDRESS_FAMILY_IPV6;
+      send_socket->Connect(dns_util::GetMdnsGroupEndPoint(address_family));
       auto recv_socket = std::make_unique<FuzzedMdnsSocket>(data_provider_);
       socket_pairs->push_back(
           std::make_pair(std::move(send_socket), std::move(recv_socket)));
