@@ -31,24 +31,24 @@
 namespace syncer {
 
 struct ModelTypeInfo {
-  ModelType model_type;
+  const ModelType model_type;
   // Model Type notification string.
   // This needs to match the corresponding proto message name in sync.proto. It
   // is also used to identify the model type in the SyncModelType
   // histogram_suffix in histograms.xml. Must always be kept in sync.
-  const char* notification_type;
+  const char* const notification_type;
   // Root tag for Model Type
   // This should be the same as the model type but all lowercase.
-  const char* root_tag;
+  const char* const root_tag;
   // String value for Model Type
   // This should be the same as the model type but space separated and the
   // first letter of every word capitalized.
-  const char* model_type_string;
+  const char* const model_type_string;
   // Field number of the model type specifics in EntitySpecifics.
-  int specifics_field_number;
+  const int specifics_field_number;
   // Model type value from SyncModelTypes enum in enums.xml. Must always be in
   // sync with the enum.
-  int model_type_histogram_val;
+  const int model_type_histogram_val;
 };
 
 // Below struct entries are in the same order as their definition in the
