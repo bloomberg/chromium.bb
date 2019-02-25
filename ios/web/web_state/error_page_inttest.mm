@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
@@ -30,16 +32,31 @@ using web::test::ElementSelector;
 namespace web {
 
 namespace {
+
+// Builds the text for the error page in TestWebClient.
+std::string GetErrorText(WebState* web_state,
+                         const GURL& url,
+                         const std::string& error_domain,
+                         long error_code,
+                         bool is_post,
+                         bool is_off_the_record) {
+  return base::StringPrintf(
+      "web_state: %p url: %s domain: %s code: %ld post: %d otr: %d", web_state,
+      url.spec().c_str(), error_domain.c_str(), error_code, is_post,
+      is_off_the_record);
+}
+
 // Overrides PrepareErrorPage to render all important arguments.
 class TestWebClient : public WebClient {
-  void PrepareErrorPage(NSError* error,
+  void PrepareErrorPage(WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
                         bool is_post,
                         bool is_off_the_record,
                         NSString** error_html) override {
-    *error_html =
-        [NSString stringWithFormat:@"domain: %@ code: %ld post: %d otr: %d",
-                                   error.domain, static_cast<long>(error.code),
-                                   is_post, is_off_the_record];
+    *error_html = base::SysUTF8ToNSString(
+        GetErrorText(web_state, url, base::SysNSStringToUTF8(error.domain),
+                     error.code, is_post, is_off_the_record));
   }
 };
 }  // namespace
@@ -99,7 +116,9 @@ TEST_P(ErrorPageTest, ReloadErrorPage) {
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 
   // Reload the page, which should load without errors.
   server_responds_with_content_ = true;
@@ -120,7 +139,9 @@ TEST_P(ErrorPageTest, ReloadPageAfterServerIsDown) {
   web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
                                               /*check_for_repost=*/false);
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -151,7 +172,9 @@ TEST_P(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
   web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
                                               /*check_for_repost=*/false);
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -166,7 +189,9 @@ TEST_P(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   // Second page fails to load.
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 
   // Going back should sucessfully load the first page.
   web_state()->GetNavigationManager()->GoBack();
@@ -175,7 +200,9 @@ TEST_P(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   // Going forward fails the load.
   web_state()->GetNavigationManager()->GoForward();
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 }
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
@@ -195,7 +222,9 @@ TEST_P(ErrorPageTest,
   // Second page fails to load.
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 
   // Going back should sucessfully load the first page.
   ExecuteJavaScript(@"window.history.back();");
@@ -204,7 +233,9 @@ TEST_P(ErrorPageTest,
   // Going forward fails the load.
   ExecuteJavaScript(@"window.history.forward();");
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 }
 
 // Loads the URL which redirects to unresponsive server.
@@ -212,8 +243,11 @@ TEST_P(ErrorPageTest, RedirectToFailingURL) {
   // No response leads to -1005 error code.
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/server-redirect?echo-query"));
+  // Error is displayed after the resdirection to /echo-query.
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ false, /*is_otr*/ false)));
 }
 
 // Loads the page with iframe, and that iframe fails to load. There should be no
@@ -241,7 +275,10 @@ TEST_P(ErrorPageTest, OtrError) {
   // loading the page. TODO(crbug.com/705819): Remove this call.
   web_state->GetNavigationManager()->LoadIfNecessary();
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state.get(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state.get(),
+      GetErrorText(web_state.get(), server_.GetURL("/echo-query?foo"),
+                   "NSURLErrorDomain", /*error_code*/ -1005,
+                   /*is_post*/ false, /*is_otr*/ true)));
 }
 
 // Loads the URL with form which fails to submit.
@@ -253,8 +290,11 @@ TEST_P(ErrorPageTest, FormSubmissionError) {
   // Submit the form using JavaScript.
   ExecuteJavaScript(@"document.getElementById('form').submit();");
 
+  // Error is displayed after the form submission navigation.
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 1 otr: 0"));
+      web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
+                                "NSURLErrorDomain", /*error_code*/ -1005,
+                                /*is_post*/ true, /*is_otr*/ false)));
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticErrorPageTest,

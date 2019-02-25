@@ -51,7 +51,9 @@ class ChromeWebClient : public web::WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback) override;
-  void PrepareErrorPage(NSError* error,
+  void PrepareErrorPage(web::WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
                         bool is_post,
                         bool is_off_the_record,
                         NSString** error_html) override;

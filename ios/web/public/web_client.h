@@ -178,7 +178,9 @@ class WebClient {
   // |error| and |error_html| are always valid pointers. Embedder may set
   // |error_html| to an HTML page containing the details of the error and maybe
   // links to more info.
-  virtual void PrepareErrorPage(NSError* error,
+  virtual void PrepareErrorPage(WebState* web_state,
+                                const GURL& url,
+                                NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
                                 NSString** error_html);

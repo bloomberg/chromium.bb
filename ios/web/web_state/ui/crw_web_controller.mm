@@ -1805,11 +1805,12 @@ GURL URLEscapedForHistory(const GURL& url) {
   } else {
     error = web::NetErrorFromError(error);
   }
-
+  NSString* failing_url = error.userInfo[NSURLErrorFailingURLStringErrorKey];
   NSString* errorHTML = nil;
   web::GetWebClient()->PrepareErrorPage(
-      error, context->IsPost(),
-      _webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
+      _webStateImpl, GURL(base::SysNSStringToUTF8(failing_url)), error,
+      context->IsPost(), _webStateImpl->GetBrowserState()->IsOffTheRecord(),
+      &errorHTML);
 
   WKNavigation* navigation =
       [_webView loadHTMLString:errorHTML
