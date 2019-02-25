@@ -1083,7 +1083,7 @@
   },
   {
     "name": "enable-drive-search-in-app-launcher",
-    // "owners": [ "your-team" ],
+    "owners": [ "slangley", "adanilo" ],
     "expiry_milestone": 76
   },
   {
@@ -2073,7 +2073,7 @@
   },
   {
     "name": "file-manager-touch-mode",
-    // "owners": [ "your-team" ],
+    "owners": [ "slangley", "adanilo" ],
     "expiry_milestone": 76
   },
   {
