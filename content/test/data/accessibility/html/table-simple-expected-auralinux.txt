@@ -1,5 +1,5 @@
 [document web] name='Table example'
-++[table]
+++[table] cols=2 headers=('Pair', 'Single'); rows=3 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++[table row]
 ++++++[column header] name='Pair'
 ++++++++[text] name='Pair'

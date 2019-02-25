@@ -17,6 +17,8 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -1366,6 +1368,199 @@ static const GInterfaceInfo SelectionInfo = {
     nullptr};
 
 //
+// AtkTable interface.
+//
+
+static AtkObject* AXPlatformNodeAuraLinuxRefAt(AtkTable* table,
+                                               gint row,
+                                               gint column) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (AXPlatformNodeBase* cell = obj->GetTableCell(row, column)) {
+      if (AtkObject* atk_cell = cell->GetNativeViewAccessible()) {
+        g_object_ref(atk_cell);
+        return atk_cell;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+static gint AXPlatformNodeAuraLinuxGetIndexAt(AtkTable* table,
+                                              gint row,
+                                              gint column) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* cell = obj->GetTableCell(row, column))
+      return cell->GetTableCellIndex();
+  }
+
+  return -1;
+}
+
+static gint AXPlatformNodeAuraLinuxGetColumnAtIndex(AtkTable* table,
+                                                    gint index) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* cell = obj->GetTableCell(index))
+      return cell->GetTableColumn();
+  }
+
+  return -1;
+}
+
+static gint AXPlatformNodeAuraLinuxGetRowAtIndex(AtkTable* table, gint index) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* cell = obj->GetTableCell(index))
+      return cell->GetTableRow();
+  }
+
+  return -1;
+}
+
+static gint AXPlatformNodeAuraLinuxGetNColumns(AtkTable* table) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table)))
+    return obj->GetTableColumnCount();
+
+  return 0;
+}
+
+static gint AXPlatformNodeAuraLinuxGetNRows(AtkTable* table) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table)))
+    return obj->GetTableRowCount();
+
+  return 0;
+}
+
+static gint AXPlatformNodeAuraLinuxGetColumnExtentAt(AtkTable* table,
+                                                     gint row,
+                                                     gint column) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* cell = obj->GetTableCell(row, column))
+      return cell->GetTableColumnSpan();
+  }
+
+  return 0;
+}
+
+static gint AXPlatformNodeAuraLinuxGetRowExtentAt(AtkTable* table,
+                                                  gint row,
+                                                  gint column) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* cell = obj->GetTableCell(row, column))
+      return cell->GetTableRowSpan();
+  }
+
+  return 0;
+}
+
+static AtkObject* AXPlatformNodeAuraLinuxGetColumnHeader(AtkTable* table,
+                                                         gint column) {
+  auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table));
+  if (!obj)
+    return nullptr;
+
+  // AtkTable supports only one column header object. So return the first one
+  // we find. In the case of multiple headers, ATs can fall back on the column
+  // description.
+  std::vector<int32_t> ids = obj->GetDelegate()->GetColHeaderNodeIds(column);
+  for (const auto& node_id : ids) {
+    if (AXPlatformNode* header = obj->GetDelegate()->GetFromNodeID(node_id)) {
+      if (AtkObject* atk_header = header->GetNativeViewAccessible()) {
+        g_object_ref(atk_header);
+        return atk_header;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+static AtkObject* AXPlatformNodeAuraLinuxGetRowHeader(AtkTable* table,
+                                                      gint row) {
+  auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table));
+  if (!obj)
+    return nullptr;
+
+  // AtkTable supports only one row header object. So return the first one
+  // we find. In the case of multiple headers, ATs can fall back on the row
+  // description.
+  std::vector<int32_t> ids = obj->GetDelegate()->GetRowHeaderNodeIds(row);
+  for (const auto& node_id : ids) {
+    if (AXPlatformNode* header = obj->GetDelegate()->GetFromNodeID(node_id)) {
+      if (AtkObject* atk_header = header->GetNativeViewAccessible()) {
+        g_object_ref(atk_header);
+        return atk_header;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+static AtkObject* AXPlatformNodeAuraLinuxGetCaption(AtkTable* table) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    if (auto* caption = obj->GetTableCaption())
+      return caption->GetNativeViewAccessible();
+  }
+
+  return nullptr;
+}
+
+static const gchar* BuildDescriptionFromHeaders(
+    AXPlatformNodeDelegate* delegate,
+    std::vector<int32_t>& ids) {
+  std::vector<std::string> names;
+  for (const auto& node_id : ids) {
+    if (AXPlatformNode* header = delegate->GetFromNodeID(node_id)) {
+      if (AtkObject* atk_header = header->GetNativeViewAccessible())
+        names.push_back(atk_object_get_name(atk_header));
+    }
+  }
+
+  std::string result = base::JoinString(names, " ");
+  return g_strdup(result.c_str());
+}
+
+static const gchar* AXPlatformNodeAuraLinuxGetColumnDescription(AtkTable* table,
+                                                                gint column) {
+  auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table));
+  if (!obj)
+    return nullptr;
+
+  std::vector<int32_t> ids = obj->GetDelegate()->GetColHeaderNodeIds(column);
+  return BuildDescriptionFromHeaders(obj->GetDelegate(), ids);
+}
+
+static const gchar* AXPlatformNodeAuraLinuxGetRowDescription(AtkTable* table,
+                                                             gint row) {
+  auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table));
+  if (!obj)
+    return nullptr;
+
+  std::vector<int32_t> ids = obj->GetDelegate()->GetRowHeaderNodeIds(row);
+  return BuildDescriptionFromHeaders(obj->GetDelegate(), ids);
+}
+
+static void AXTableInterfaceBaseInit(AtkTableIface* iface) {
+  iface->ref_at = AXPlatformNodeAuraLinuxRefAt;
+  iface->get_index_at = AXPlatformNodeAuraLinuxGetIndexAt;
+  iface->get_column_at_index = AXPlatformNodeAuraLinuxGetColumnAtIndex;
+  iface->get_row_at_index = AXPlatformNodeAuraLinuxGetRowAtIndex;
+  iface->get_n_columns = AXPlatformNodeAuraLinuxGetNColumns;
+  iface->get_n_rows = AXPlatformNodeAuraLinuxGetNRows;
+  iface->get_column_extent_at = AXPlatformNodeAuraLinuxGetColumnExtentAt;
+  iface->get_row_extent_at = AXPlatformNodeAuraLinuxGetRowExtentAt;
+  iface->get_column_header = AXPlatformNodeAuraLinuxGetColumnHeader;
+  iface->get_row_header = AXPlatformNodeAuraLinuxGetRowHeader;
+  iface->get_caption = AXPlatformNodeAuraLinuxGetCaption;
+  iface->get_column_description = AXPlatformNodeAuraLinuxGetColumnDescription;
+  iface->get_row_description = AXPlatformNodeAuraLinuxGetRowDescription;
+}
+
+static const GInterfaceInfo TableInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(AXTableInterfaceBaseInit), nullptr,
+    nullptr};
+
+//
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
@@ -1490,6 +1685,9 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (IsContainerWithSelectableChildren(GetData().role))
     interface_mask |= 1 << ATK_SELECTION_INTERFACE;
 
+  if (role == ATK_ROLE_TABLE)
+    interface_mask |= 1 << ATK_TABLE_INTERFACE;
+
   return interface_mask;
 }
 
@@ -1535,6 +1733,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_WINDOW, &WindowInfo);
   if (interface_mask_ & (1 << ATK_SELECTION_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_SELECTION, &SelectionInfo);
+  if (interface_mask_ & (1 << ATK_TABLE_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_TABLE, &TableInfo);
 
   return type;
 }
@@ -2260,6 +2460,73 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
     dict->SetString(attribute->name, attribute->value);
   }
   atk_attribute_set_free(attributes);
+
+  // Properties obtained via AtkTable.
+  auto table_properties = std::make_unique<base::ListValue>();
+  if (ATK_IS_TABLE(atk_object_)) {
+    AtkTable* table = ATK_TABLE(atk_object_);
+
+    // Column details.
+    int n_cols = atk_table_get_n_columns(table);
+    table_properties->AppendString(base::StringPrintf("cols=%i", n_cols));
+
+    std::vector<std::string> col_headers;
+    for (int i = 0; i < n_cols; i++) {
+      std::string header = atk_table_get_column_description(table, i);
+      if (!header.empty())
+        col_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+    }
+
+    if (!col_headers.size())
+      col_headers.push_back("NONE");
+
+    table_properties->AppendString(base::StringPrintf(
+        "headers=(%s);", base::JoinString(col_headers, ", ").c_str()));
+
+    // Row details.
+    int n_rows = atk_table_get_n_rows(table);
+    table_properties->AppendString(base::StringPrintf("rows=%i", n_rows));
+
+    std::vector<std::string> row_headers;
+    for (int i = 0; i < n_rows; i++) {
+      std::string header = atk_table_get_row_description(table, i);
+      if (!header.empty())
+        row_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+    }
+
+    if (!row_headers.size())
+      row_headers.push_back("NONE");
+
+    table_properties->AppendString(base::StringPrintf(
+        "headers=(%s);", base::JoinString(row_headers, ", ").c_str()));
+
+    // Caption details.
+    AtkObject* caption = atk_table_get_caption(table);
+    table_properties->AppendString(
+        base::StringPrintf("caption=%s;", caption ? "true" : "false"));
+
+    // Summarize information about the cells from the table's perspective here.
+    // TODO(jdiggs): When AtkTableCell is implemented, we will use it to output
+    // specifics on a per-cell basis.
+    std::vector<std::string> span_info;
+    for (int r = 0; r < n_rows; r++) {
+      for (int c = 0; c < n_cols; c++) {
+        int row_span = atk_table_get_row_extent_at(table, r, c);
+        int col_span = atk_table_get_column_extent_at(table, r, c);
+        if (row_span != 1 || col_span != 1) {
+          span_info.push_back(base::StringPrintf("cell at %i,%i: %ix%i", r, c,
+                                                 row_span, col_span));
+        }
+      }
+    }
+    if (!span_info.size())
+      span_info.push_back("all: 1x1");
+
+    table_properties->AppendString(base::StringPrintf(
+        "spans=(%s)", base::JoinString(span_info, ", ").c_str()));
+  }
+
+  dict->Set("table", std::move(table_properties));
 }
 
 gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {

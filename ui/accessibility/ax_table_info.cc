@@ -41,20 +41,22 @@ void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
 // We only recursively check for the following roles in between a table and
 // its rows: generic containers like <div>, any nodes that are ignored, and
 // table sections (which have Role::kGroup).
-void FindRowsAndThenCells(
-    AXNode* node,
-    std::vector<AXNode*>* row_nodes,
-    std::vector<std::vector<AXNode*>>* cell_nodes_per_row) {
+void FindRowsAndThenCells(AXNode* node,
+                          std::vector<AXNode*>* row_nodes,
+                          std::vector<std::vector<AXNode*>>* cell_nodes_per_row,
+                          int32_t& caption_node_id) {
   for (AXNode* child : node->children()) {
     if (child->data().HasState(ax::mojom::State::kIgnored) ||
         child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kGroup) {
-      FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row);
+      FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row,
+                           caption_node_id);
     } else if (child->data().role == ax::mojom::Role::kRow) {
       row_nodes->push_back(child);
       cell_nodes_per_row->push_back(std::vector<AXNode*>());
       FindCellsInRow(child, &cell_nodes_per_row->back());
-    }
+    } else if (child->data().role == ax::mojom::Role::kCaption)
+      caption_node_id = child->id();
   }
 }
 
@@ -92,7 +94,9 @@ bool AXTableInfo::Update() {
 
   std::vector<AXNode*> row_nodes;
   std::vector<std::vector<AXNode*>> cell_nodes_per_row;
-  FindRowsAndThenCells(table_node_, &row_nodes, &cell_nodes_per_row);
+  caption_id = 0;
+  FindRowsAndThenCells(table_node_, &row_nodes, &cell_nodes_per_row,
+                       caption_id);
   DCHECK_EQ(cell_nodes_per_row.size(), row_nodes.size());
 
   // Get the optional row and column count from the table. If we encounter

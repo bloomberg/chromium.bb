@@ -427,6 +427,18 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
   return table;
 }
 
+AXPlatformNodeBase* AXPlatformNodeBase::GetTableCaption() const {
+  if (!delegate_)
+    return nullptr;
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return nullptr;
+
+  DCHECK(table->delegate_);
+  return static_cast<AXPlatformNodeBase*>(table->delegate_->GetTableCaption());
+}
+
 AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
   if (!delegate_)
     return nullptr;

@@ -139,6 +139,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const = 0;
+  virtual AXPlatformNode* GetTableCaption() = 0;
 
   // Table row-like nodes.
   virtual bool IsTableRow() const = 0;

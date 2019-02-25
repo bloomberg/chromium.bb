@@ -370,6 +370,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   const std::vector<int32_t> GetRowHeaderNodeIds() const override;
   const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const override;
+  ui::AXPlatformNode* GetTableCaption() override;
 
   bool IsTableRow() const override;
   int32_t GetTableRowRowIndex() const override;

@@ -278,6 +278,14 @@ AXNode* AXNode::GetTableCellFromIndex(int32_t index) const {
   return tree_->GetFromId(table_info->unique_cell_ids[index]);
 }
 
+AXNode* AXNode::GetTableCaption() const {
+  AXTableInfo* table_info = tree_->GetTableInfo(this);
+  if (!table_info)
+    return nullptr;
+
+  return tree_->GetFromId(table_info->caption_id);
+}
+
 AXNode* AXNode::GetTableCellFromCoords(int32_t row_index,
                                        int32_t col_index) const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
