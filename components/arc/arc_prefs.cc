@@ -111,7 +111,8 @@ const char kEngagementTimeOsVersion[] =
 const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
 // A preference that indicates the user has allowed voice interaction services
 // to access the "context" (text and graphic content that is currently on
-// screen).
+// screen). This preference can be overridden by the
+// VoiceInteractionContextEnabled administrator policy.
 const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
 // A preference that indicates the user has enabled voice interaction services.
@@ -121,7 +122,8 @@ const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 const char kVoiceInteractionHotwordAlwaysOn[] =
     "settings.voice_interaction.hotword.always_on";
 // A preference that indicates the user has allowed voice interaction services
-// to use hotword listening.
+// to use hotword listening. This preference can be overridden by the
+// VoiceInteractionHotwordEnabled administrator policy.
 const char kVoiceInteractionHotwordEnabled[] =
     "settings.voice_interaction.hotword.enabled";
 // A preference that indicates whether microphone should be open when the voice
