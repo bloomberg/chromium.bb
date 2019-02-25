@@ -18,8 +18,6 @@ NativeStackSamplerAndroid::NativeStackSamplerAndroid(base::PlatformThreadId tid)
 
 NativeStackSamplerAndroid::~NativeStackSamplerAndroid() = default;
 
-void NativeStackSamplerAndroid::ProfileRecordingStarting() {}
-
 std::vector<base::StackSamplingProfiler::Frame>
 NativeStackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,

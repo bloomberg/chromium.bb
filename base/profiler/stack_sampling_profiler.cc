@@ -523,7 +523,6 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   if (collection->sample_count == 0) {
     collection->profile_start_time = Time::Now();
     collection->next_sample_time = Time::Now();
-    collection->native_sampler->ProfileRecordingStarting();
   }
 
   // Record a single sample.
