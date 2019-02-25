@@ -70,8 +70,12 @@ class CustomTabBarView : public views::AccessiblePaneView,
   base::string16 title_for_testing() const { return last_title_; }
   base::string16 location_for_testing() const { return last_location_; }
   views::Button* close_button_for_testing() const { return close_button_; }
+  void GoBackToAppForTesting();
 
  private:
+  // Takes the web contents for the custom tab bar back to the app scope.
+  void GoBackToApp();
+
   SkColor title_bar_color_;
 
   base::string16 last_title_;

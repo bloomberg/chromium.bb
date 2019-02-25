@@ -73,34 +73,6 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
   return close_button;
 }
 
-void GoBackToApp(content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  GURL launch_url = browser->hosted_app_controller()->GetAppLaunchURL();
-  content::NavigationController& controller = web_contents->GetController();
-  content::BrowserContext* context = web_contents->GetBrowserContext();
-
-  content::NavigationEntry* entry = nullptr;
-  int offset = 0;
-
-  // Go back until we find an in scope url, or run out of urls.
-  while ((entry = controller.GetEntryAtOffset(offset)) &&
-         !extensions::IsSameScope(entry->GetURL(), launch_url, context)) {
-    offset--;
-  }
-
-  // If there are no in scope urls, push the app's launch url and clear
-  // the history.
-  if (!entry) {
-    content::NavigationController::LoadURLParams load(launch_url);
-    load.should_clear_history_list = true;
-    controller.LoadURLWithParams(load);
-    return;
-  }
-
-  // Otherwise, go back to the first in scope url.
-  controller.GoToOffset(offset);
-}
-
 }  // namespace
 
 // Container view for laying out and rendering the title/origin of the current
@@ -318,5 +290,38 @@ const LocationBarModel* CustomTabBarView::GetLocationBarModel() const {
 
 void CustomTabBarView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  GoBackToApp(GetWebContents());
+  GoBackToApp();
+}
+
+void CustomTabBarView::GoBackToAppForTesting() {
+  GoBackToApp();
+}
+
+void CustomTabBarView::GoBackToApp() {
+  content::WebContents* web_contents = GetWebContents();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  GURL launch_url = browser->hosted_app_controller()->GetAppLaunchURL();
+  content::NavigationController& controller = web_contents->GetController();
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+
+  content::NavigationEntry* entry = nullptr;
+  int offset = 0;
+
+  // Go back until we find an in scope url, or run out of urls.
+  while ((entry = controller.GetEntryAtOffset(offset)) &&
+         !extensions::IsSameScope(launch_url, entry->GetURL(), context)) {
+    offset--;
+  }
+
+  // If there are no in scope urls, push the app's launch url and clear
+  // the history.
+  if (!entry) {
+    content::NavigationController::LoadURLParams load(launch_url);
+    load.should_clear_history_list = true;
+    controller.LoadURLWithParams(load);
+    return;
+  }
+
+  // Otherwise, go back to the first in scope url.
+  controller.GoToOffset(offset);
 }
