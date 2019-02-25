@@ -36,10 +36,6 @@ interface IdentityManager {
   GetAccountInfoFromGaiaId(string gaia_id) => (AccountInfo? account_info,
                                                AccountState account_state);
 
-  // Returns a list of all known accounts. The primary account (if any exists)
-  // will be first, after which the order is undefined.
-  GetAccounts() => (array<Account> accounts);
-
   // Returns an access token with the requested scopes for the given
   // |account_id|, or null if it is not possible to obtain such a token (e.g.,
   // because the user is not signed in with that account). |expiration_time|

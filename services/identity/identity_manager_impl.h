@@ -75,7 +75,6 @@ class IdentityManagerImpl : public mojom::IdentityManager,
   void GetAccountInfoFromGaiaId(
       const std::string& gaia_id,
       GetAccountInfoFromGaiaIdCallback callback) override;
-  void GetAccounts(GetAccountsCallback callback) override;
   void GetAccessToken(const std::string& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
