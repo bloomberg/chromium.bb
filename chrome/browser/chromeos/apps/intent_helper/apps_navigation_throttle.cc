@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -168,7 +168,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
     content::WebContents* web_contents,
     IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url) {
-  arc::ArcNavigationThrottle::GetArcAppsForPicker(
+  arc::ArcIntentPickerAppFetcher::GetArcAppsForPicker(
       web_contents, url,
       base::BindOnce(
           &AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps,
@@ -199,7 +199,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       }
       break;
     case apps::mojom::AppType::kArc:
-      if (arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
+      if (arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
               url, launch_name, should_launch_app, should_persist)) {
         CloseOrGoBack(web_contents);
       } else {
@@ -212,7 +212,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       // since chrome browser is neither a PWA or ARC app.
       if (close_reason == chromeos::IntentPickerCloseReason::STAY_IN_CHROME &&
           should_persist) {
-        arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
+        arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
             url, launch_name, /*should_launch_app=*/false,
             /*should_persist=*/true);
       }
@@ -535,15 +535,16 @@ AppsNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::PROCEED;
 
   if (arc_enabled_ &&
-      arc::ArcNavigationThrottle::WillGetArcAppsForNavigation(
+      arc::ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
           handle,
           base::BindOnce(&AppsNavigationThrottle::OnDeferredNavigationProcessed,
                          weak_factory_.GetWeakPtr()))) {
-    // Handling is now deferred to ArcNavigationThrottle, which asynchronously
-    // queries ARC for apps, and runs OnDeferredNavigationProcessed() with an
-    // action based on whether an acceptable app was found and user consent to
-    // open received. We assume the UI is shown or a preferred app was found;
-    // reset to false if we resume the navigation.
+    // Handling is now deferred to ArcIntentPickerAppFetcher, which
+    // asynchronously queries ARC for apps, and runs
+    // OnDeferredNavigationProcessed() with an action based on whether an
+    // acceptable app was found and user consent to open received. We assume the
+    // UI is shown or a preferred app was found; reset to false if we resume the
+    // navigation.
     ui_displayed_ = true;
     return content::NavigationThrottle::DEFER;
   }

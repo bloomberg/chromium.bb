@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/web_contents.h"

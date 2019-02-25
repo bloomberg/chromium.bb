@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_NAVIGATION_THROTTLE_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_NAVIGATION_THROTTLE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_INTENT_PICKER_APP_FETCHER_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_INTENT_PICKER_APP_FETCHER_H_
 
 #include <memory>
 #include <string>
@@ -26,7 +26,7 @@ namespace arc {
 
 // A class that allow us to retrieve installed ARC apps which can handle
 // a particular URL.
-class ArcNavigationThrottle : content::WebContentsObserver {
+class ArcIntentPickerAppFetcher : content::WebContentsObserver {
  public:
   // Retrieves ARC apps which can handle |url| for |web_contents|, and runs
   // |callback| when complete. Does not attempt to open preferred apps.
@@ -70,10 +70,10 @@ class ArcNavigationThrottle : content::WebContentsObserver {
   static size_t FindPreferredAppForTesting(
       const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
 
-  ~ArcNavigationThrottle() override;
+  ~ArcIntentPickerAppFetcher() override;
 
  private:
-  explicit ArcNavigationThrottle(content::WebContents* web_contents);
+  explicit ArcIntentPickerAppFetcher(content::WebContents* web_contents);
 
   // Asychronously queries ARC for apps which can handle |url|. Runs |callback|
   // with RESUME/CANCEL for the deferred navigation and (if applicable) the list
@@ -130,11 +130,11 @@ class ArcNavigationThrottle : content::WebContentsObserver {
   void WebContentsDestroyed() override;
 
   // This has to be the last member of the class.
-  base::WeakPtrFactory<ArcNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcIntentPickerAppFetcher> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcNavigationThrottle);
+  DISALLOW_COPY_AND_ASSIGN(ArcIntentPickerAppFetcher);
 };
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_NAVIGATION_THROTTLE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_INTENT_PICKER_APP_FETCHER_H_
