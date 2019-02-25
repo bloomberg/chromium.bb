@@ -117,7 +117,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     }
     mapped_ = true;
     return true;
-  };
+  }
 
   void* memory(size_t plane) override {
     if (!mapped_) {

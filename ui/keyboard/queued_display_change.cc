@@ -11,8 +11,8 @@ namespace keyboard {
 
 QueuedDisplayChange::QueuedDisplayChange(const display::Display& display,
                                          const gfx::Rect& new_bounds_in_local)
-    : new_display_(display), new_bounds_in_local_(new_bounds_in_local){};
+    : new_display_(display), new_bounds_in_local_(new_bounds_in_local) {}
 
-QueuedDisplayChange::~QueuedDisplayChange(){};
+QueuedDisplayChange::~QueuedDisplayChange() {}
 
 }  // namespace keyboard

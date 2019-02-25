@@ -79,11 +79,11 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
    public:
     void AddObserver(Observer* observer) override {
       observers_.AddObserver(observer);
-    };
+    }
 
     void RemoveObserver(Observer* observer) override {
       observers_.RemoveObserver(observer);
-    };
+    }
 
     ArcNotificationSurface* GetArcSurface(
         const std::string& notification_key) const override {

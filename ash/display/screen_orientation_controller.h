@@ -76,7 +76,7 @@ class ASH_EXPORT ScreenOrientationController
 
   OrientationLockType natural_orientation() const {
     return natural_orientation_;
-  };
+  }
 
   // Add/Remove observers.
   void AddObserver(Observer* observer);

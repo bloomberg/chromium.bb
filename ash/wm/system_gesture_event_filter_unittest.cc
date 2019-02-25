@@ -60,12 +60,12 @@ class MaxSizeNCFV : public views::NonClientFrameView {
 
  private:
   gfx::Size GetMaximumSize() const override { return gfx::Size(200, 200); }
-  gfx::Rect GetBoundsForClientView() const override { return gfx::Rect(); };
+  gfx::Rect GetBoundsForClientView() const override { return gfx::Rect(); }
 
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
     return gfx::Rect();
-  };
+  }
 
   // This function must ask the ClientView to do a hittest.  We don't do this in
   // the parent NonClientView because that makes it more difficult to calculate

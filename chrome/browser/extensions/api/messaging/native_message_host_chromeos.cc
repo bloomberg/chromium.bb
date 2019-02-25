@@ -63,11 +63,11 @@ class EchoHost : public NativeMessageHost {
     } else {
       ProcessEcho(*request);
     }
-  };
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override {
     return base::ThreadTaskRunnerHandle::Get();
-  };
+  }
 
  private:
   void ProcessEcho(const base::DictionaryValue& request) {

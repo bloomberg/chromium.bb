@@ -104,7 +104,7 @@ bool IsAllowedStateTransition(KeyboardControllerState from,
           {KeyboardControllerState::HIDDEN, KeyboardControllerState::INITIAL},
       };
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
-};
+}
 
 void SetTouchEventLogging(bool enable) {
   // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for

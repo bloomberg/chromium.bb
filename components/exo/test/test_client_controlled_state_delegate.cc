@@ -84,7 +84,7 @@ void TestClientControlledStateDelegate::InstallFactory() {
         return base::WrapUnique<ash::wm::ClientControlledState::Delegate>(
             new TestClientControlledStateDelegate());
       }));
-};
+}
 
 // static
 void TestClientControlledStateDelegate::UninstallFactory() {

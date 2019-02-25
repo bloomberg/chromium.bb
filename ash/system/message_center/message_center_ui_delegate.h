@@ -12,7 +12,7 @@ namespace ash {
 // Implementations are platform specific.
 class MessageCenterUiDelegate {
  public:
-  virtual ~MessageCenterUiDelegate(){};
+  virtual ~MessageCenterUiDelegate() {}
 
   // Called whenever a change to the visible UI has occurred.
   virtual void OnMessageCenterContentsChanged() = 0;

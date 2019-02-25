@@ -1710,7 +1710,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   ASSERT_NO_FATAL_FAILURE(CloseLogoutConfirmationDialog());
 
   app_window_registry->RemoveObserver(this);
-};
+}
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleNoSwitch) {
   UploadAndInstallDeviceLocalAccountPolicy();

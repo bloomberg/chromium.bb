@@ -59,7 +59,7 @@ class CryptAuthEnrollmentResult {
 
   const base::Optional<cryptauthv2::ClientDirective>& client_directive() const {
     return client_directive_;
-  };
+  }
 
   bool IsSuccess() const;
 

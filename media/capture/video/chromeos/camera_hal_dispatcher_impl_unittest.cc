@@ -174,7 +174,7 @@ TEST_F(CameraHalDispatcherImplTest, ServerConnectionError) {
 
   // Wait until the clients gets the newly established Mojo channel.
   DoLoop();
-};
+}
 
 // Test that the CameraHalDisptcherImpl correctly re-establishes a Mojo channel
 // for the client when the client reconnects after crash.
@@ -223,6 +223,6 @@ TEST_F(CameraHalDispatcherImplTest, ClientConnectionError) {
 
   // Wait until the clients gets the newly established Mojo channel.
   DoLoop();
-};
+}
 
 }  // namespace media

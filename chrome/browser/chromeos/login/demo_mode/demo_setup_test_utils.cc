@@ -62,7 +62,7 @@ void SetupMockDemoModeOnlineEnrollmentHelper(DemoModeSetupResult result) {
         }
       }));
   EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
-};
+}
 
 void SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult result) {
   std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
@@ -91,7 +91,7 @@ void SetupMockDemoModeOfflineEnrollmentHelper(DemoModeSetupResult result) {
         }
       }));
   EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
-};
+}
 
 bool SetupDummyOfflinePolicyDir(const std::string& account_id,
                                 base::ScopedTempDir* temp_dir) {

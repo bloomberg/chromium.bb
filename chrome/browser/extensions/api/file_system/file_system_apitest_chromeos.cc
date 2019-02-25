@@ -159,7 +159,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
-  };
+  }
 
   base::FilePath GetDriveMountPoint() {
     if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {

@@ -36,7 +36,7 @@ class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
   }
   void OnPreeditEnd() override {}
   void OnPreeditStart() override {}
-  void OnDeleteSurroundingText(int32_t index, uint32_t length) override{};
+  void OnDeleteSurroundingText(int32_t index, uint32_t length) override {}
 
   bool was_on_commit_called() { return was_on_commit_called_; }
 

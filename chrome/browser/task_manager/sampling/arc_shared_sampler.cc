@@ -23,7 +23,7 @@ enum MemoryDumpType {
 constexpr base::TimeDelta kAppThrottleLimit = base::TimeDelta::FromSeconds(2);
 constexpr base::TimeDelta kSystemThrottleLimit =
     base::TimeDelta::FromSeconds(3);
-};  // namespace
+}  // namespace
 
 ArcSharedSampler::ArcSharedSampler() : weak_ptr_factory_(this) {}
 

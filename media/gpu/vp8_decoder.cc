@@ -9,7 +9,7 @@ namespace media {
 
 namespace {
 constexpr size_t kVP8NumFramesActive = 4;
-};
+}
 
 VP8Decoder::VP8Accelerator::VP8Accelerator() {}
 

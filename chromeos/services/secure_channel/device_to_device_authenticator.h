@@ -18,7 +18,7 @@
 
 namespace base {
 class OneShotTimer;
-};
+}
 
 namespace chromeos {
 

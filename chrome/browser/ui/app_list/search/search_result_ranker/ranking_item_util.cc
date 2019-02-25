@@ -93,4 +93,4 @@ RankingItemType RankingItemTypeFromChromeAppListItem(
   return RankingItemType::kApp;
 }
 
-};  // namespace app_list
+}  // namespace app_list
