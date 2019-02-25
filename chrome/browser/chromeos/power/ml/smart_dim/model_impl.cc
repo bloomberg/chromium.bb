@@ -410,6 +410,12 @@ void SmartDimModelImpl::CancelPreviousRequest() {
   cancelable_callback_.Cancel();
 }
 
+void SmartDimModelImpl::SetMlServiceClientForTesting(
+    std::unique_ptr<MlServiceClient> client) {
+  DCHECK(!ml_service_client_);
+  ml_service_client_ = std::move(client);
+}
+
 void SmartDimModelImpl::LazyInitialize() {
   // TODO(crbug.com/893425): Remove the flag check once we shift to ML service
   // completely.
