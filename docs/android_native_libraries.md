@@ -12,6 +12,35 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
  * Android N+ (MonochromePublic.apk):
    * `libmonochrome.so` is stored uncompressed (AndroidManifest.xml attribute disables extraction) and loaded directly from the apk (functionality now supported by the system linker).
 
+## Crashpad Packaging
+ * Crashpad is a native library providing out-of-process crash dumping. When a
+   dump is requested (e.g. after a crash), a Crashpad handler process is started
+   to produce a dump.
+ * Chrome and ChromeModern (Android J through M):
+   * libcrashpad_handler.so is a standalone executable containing all of the
+     crash dumping code. It is stored compressed and extracted automatically by
+     the system, allowing it to be directly executed to produce a crash dump.
+ * Monochrome (N through P), Trichrome (P), and SystemWebView (P-):
+    * All of the Crashpad code is linked into the package's main native library
+      (e.g. libmonochrome.so). When a dump is requested, /system/bin/app_process
+      is executed, loading CrashpadMain.java which in turn uses JNI to call into
+      the native crash dumping code. This approach requires building CLASSPATH
+      and LD_LIBRARY_PATH variables to ensure app_process can locate
+      CrashpadMain.java and any native libraries (e.g. system libraries, shared
+      libraries, split apks, etc.) the package's main native library depends on.
+ * Monochrome, Trichrome, and SystemWebView (Q+):
+    * All of the Crashpad handler code is linked into the package's native
+      library. libcrashpad_handler_trampoline.so is a minimal executable
+      packaged with the main native library, stored uncompressed and left
+      unextracted. When a dump is requested, /system/bin/linker is executed to
+      load the trampoline from the APK, which in turn `dlopen()`s the main
+      native library to load the remaining Crashpad handler code. A trampoline
+      is used to de-duplicate shared code between Crashpad and the main native
+      library packaged with it. This approach isn't used for P- because the
+      linker doesn't support loading executables on its command line until Q.
+      This approach also requires building a suitable LD_LIBRARY_PATH to locate
+      any shared libraries Chrome/WebView depends on.
+
 ## Debug Information
 **What is it?**
  * Sections of an ELF that provide debugging and symbolization information (e.g. ability convert addresses to function & line numbers).
