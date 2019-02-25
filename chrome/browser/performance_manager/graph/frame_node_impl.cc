@@ -35,6 +35,7 @@ FrameNodeImpl::~FrameNodeImpl() {
 
 void FrameNodeImpl::SetProcess(
     const resource_coordinator::CoordinationUnitID& cu_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ProcessNodeImpl* process_cu = ProcessNodeImpl::GetNodeByID(graph_, cu_id);
   if (!process_cu)
     return;
@@ -45,6 +46,7 @@ void FrameNodeImpl::SetProcess(
 
 void FrameNodeImpl::AddChildFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cu_id != id());
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
@@ -61,6 +63,7 @@ void FrameNodeImpl::AddChildFrame(
 
 void FrameNodeImpl::RemoveChildFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cu_id != id());
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
@@ -77,6 +80,7 @@ void FrameNodeImpl::SetNetworkAlmostIdle(bool idle) {
 
 void FrameNodeImpl::SetLifecycleState(
     resource_coordinator::mojom::LifecycleState state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state == lifecycle_state_)
     return;
 
@@ -91,12 +95,14 @@ void FrameNodeImpl::SetLifecycleState(
 }
 
 void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
 void FrameNodeImpl::SetInterventionPolicy(
     resource_coordinator::mojom::PolicyControlledIntervention intervention,
     resource_coordinator::mojom::InterventionPolicy policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   size_t i = static_cast<size_t>(intervention);
   DCHECK_LT(i, base::size(intervention_policy_));
 
@@ -128,22 +134,27 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
 }
 
 FrameNodeImpl* FrameNodeImpl::GetParentFrameNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return parent_frame_coordination_unit_;
 }
 
 PageNodeImpl* FrameNodeImpl::GetPageNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_coordination_unit_;
 }
 
 ProcessNodeImpl* FrameNodeImpl::GetProcessNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_coordination_unit_;
 }
 
 bool FrameNodeImpl::IsMainFrame() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !parent_frame_coordination_unit_;
 }
 
 bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The convention is that policies are first set en masse, in order. So if
   // the last policy is set then they are all considered to be set. Check this
   // in DEBUG builds.
@@ -169,6 +180,7 @@ bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
 
 void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
     resource_coordinator::mojom::InterventionPolicy policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
     SetInterventionPolicy(
         static_cast<resource_coordinator::mojom::PolicyControlledIntervention>(
@@ -178,6 +190,7 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
 }
 
 void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnFrameEventReceived(this, event);
 }
@@ -185,11 +198,13 @@ void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
 void FrameNodeImpl::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnFramePropertyChanged(this, property_type, value);
 }
 
 bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_cu) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (parent_frame_coordination_unit_ == frame_cu ||
       (parent_frame_coordination_unit_ &&
        parent_frame_coordination_unit_->HasFrameNodeInAncestors(frame_cu))) {
@@ -199,6 +214,7 @@ bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_cu) const {
 }
 
 bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_cu) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (FrameNodeImpl* child : child_frame_coordination_units_) {
     if (child == frame_cu || child->HasFrameNodeInDescendants(frame_cu)) {
       return true;
@@ -208,36 +224,43 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_cu) const {
 }
 
 void FrameNodeImpl::AddParentFrame(FrameNodeImpl* parent_frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   parent_frame_coordination_unit_ = parent_frame_cu;
 }
 
 bool FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_coordination_units_.count(child_frame_cu)
              ? false
              : child_frame_coordination_units_.insert(child_frame_cu).second;
 }
 
 void FrameNodeImpl::RemoveParentFrame(FrameNodeImpl* parent_frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(parent_frame_coordination_unit_ == parent_frame_cu);
   parent_frame_coordination_unit_ = nullptr;
 }
 
 bool FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_cu) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_coordination_units_.erase(child_frame_cu) > 0;
 }
 
 void FrameNodeImpl::AddPageNode(PageNodeImpl* page_coordination_unit) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!page_coordination_unit_);
   page_coordination_unit_ = page_coordination_unit;
 }
 
 void FrameNodeImpl::RemovePageNode(PageNodeImpl* page_coordination_unit) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(page_coordination_unit == page_coordination_unit_);
   page_coordination_unit_ = nullptr;
 }
 
 void FrameNodeImpl::RemoveProcessNode(
     ProcessNodeImpl* process_coordination_unit) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(process_coordination_unit == process_coordination_unit_);
   process_coordination_unit_ = nullptr;
 }

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -74,6 +75,8 @@ class NodeBase {
 
   Graph* const graph_;
   const resource_coordinator::CoordinationUnitID id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   base::ObserverList<GraphObserver>::Unchecked observers_;

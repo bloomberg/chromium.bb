@@ -30,6 +30,7 @@ void SystemNodeImpl::OnProcessCPUUsageReady() {
 void SystemNodeImpl::DistributeMeasurementBatch(
     resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
         measurement_batch) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeDelta time_since_last_measurement;
   if (!last_measurement_end_time_.is_null()) {
     // Use the end of the measurement batch as a proxy for when every
@@ -156,6 +157,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 }
 
 void SystemNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnSystemEventReceived(this, event);
 }
@@ -163,6 +165,7 @@ void SystemNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
 void SystemNodeImpl::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnSystemPropertyChanged(this, property_type, value);
 }
