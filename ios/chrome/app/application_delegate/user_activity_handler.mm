@@ -255,6 +255,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     if ([tabOpener shouldCompletePaymentRequestOnCurrentTab:startupInformation])
       return;
 
+    // TODO(crbug.com/935019): Exacly the same copy of this code is present in
+    // +[URLOpener
+    // openURL:applicationActive:options:tabOpener:startupInformation:]
+
     // The app is already active so the applicationDidBecomeActive: method
     // will never be called. Open the requested URL after all modal UIs have
     // been dismissed. |_startupParameters| must be retained until all deferred

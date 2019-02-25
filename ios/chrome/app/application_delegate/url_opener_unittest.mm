@@ -6,11 +6,13 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
@@ -25,6 +27,13 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+// URLOpenerTest is parameterized on this enum to test with
+// enabled and disabled kExternalFilesLoadedInWebState feature flag.
+enum class ExternalFilesLoadedInWebStateFeature {
+  Disabled = 0,
+  Enabled,
+};
 
 @interface StubStartupInformation : NSObject <StartupInformation>
 @end
@@ -55,17 +64,26 @@
 
 @end
 
-class URLOpenerTest : public PlatformTest {
+class URLOpenerTest
+    : public PlatformTest,
+      public testing::WithParamInterface<ExternalFilesLoadedInWebStateFeature> {
  protected:
-  void TearDown() override {
-    PlatformTest::TearDown();
+  URLOpenerTest() {
+    if (GetParam() == ExternalFilesLoadedInWebStateFeature::Enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          experimental_flags::kExternalFilesLoadedInWebState);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          experimental_flags::kExternalFilesLoadedInWebState);
+    }
   }
 
  private:
   web::TestWebThreadBundle thread_bundle_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(URLOpenerTest, HandleOpenURL) {
+TEST_P(URLOpenerTest, HandleOpenURL) {
   // A set of tests for robustness of
   // application:openURL:options:tabOpener:startupInformation:
   // It verifies that the function handles correctly different URLs parsed by
@@ -168,7 +186,21 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
             else
               EXPECT_EQ(nil, startupInformation.startupParameters);
           } else if (result) {
-            EXPECT_EQ([params externalURL], [tabOpener url]);
+            if (GetParam() == ExternalFilesLoadedInWebStateFeature::Enabled) {
+              if ([params completeURL].SchemeIsFile()) {
+                // External file:// URL will be loaded by WebState, which
+                // expects complete // file:// URL. chrome:// URL is expected to
+                // be displayed in the omnibox, and omnibox shows virtual URL.
+                EXPECT_EQ([params completeURL], [tabOpener url]);
+                EXPECT_EQ([params externalURL], [tabOpener virtualURL]);
+              } else {
+                // External chromium-x-callback:// URL will be loaded by
+                // WebState, which expects externalURL URL.
+                EXPECT_EQ([params externalURL], [tabOpener url]);
+              }
+            } else {
+              EXPECT_EQ([params externalURL], [tabOpener url]);
+            }
             tabOpener.completionBlock();
             EXPECT_EQ(nil, startupInformation.startupParameters);
           }
@@ -179,7 +211,7 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
 }
 
 // Tests that -handleApplication set startup parameters as expected.
-TEST_F(URLOpenerTest, VerifyLaunchOptions) {
+TEST_P(URLOpenerTest, VerifyLaunchOptions) {
   // Setup.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
   NSDictionary* launchOptions = @{
@@ -230,7 +262,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
 
 // Tests that -handleApplication set startup parameters as expected with options
 // as nil.
-TEST_F(URLOpenerTest, VerifyLaunchOptionsNil) {
+TEST_P(URLOpenerTest, VerifyLaunchOptionsNil) {
   // Creates a mock with no stub. This test will pass only if we don't use these
   // objects.
   id startupInformationMock =
@@ -247,7 +279,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsNil) {
 
 // Tests that -handleApplication set startup parameters as expected with no
 // source application.
-TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
+TEST_P(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
   // Setup.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
   NSDictionary* launchOptions = @{
@@ -269,7 +301,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
 }
 
 // Tests that -handleApplication set startup parameters as expected with no url.
-TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
+TEST_P(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
   // Setup.
   NSDictionary* launchOptions = @{
     UIApplicationLaunchOptionsSourceApplicationKey : @"com.apple.mobilesafari"
@@ -291,7 +323,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
 
 // Tests that -handleApplication set startup parameters as expected with a bad
 // url.
-TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
+TEST_P(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
   // Setup.
   NSURL* url = [NSURL URLWithString:@"chromium.www.google.com"];
   NSDictionary* launchOptions = @{
@@ -339,3 +371,9 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
   EXPECT_TRUE(hasBeenCalled);
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ProgrammaticURLOpenerTest,
+    URLOpenerTest,
+    ::testing::Values(ExternalFilesLoadedInWebStateFeature::Enabled,
+                      ExternalFilesLoadedInWebStateFeature::Disabled));
