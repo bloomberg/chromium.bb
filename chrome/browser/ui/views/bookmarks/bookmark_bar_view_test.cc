@@ -527,14 +527,7 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_WIN)
-// Disable this test on Win10: http://crbug.com/828063
-#define MAYBE_HideOnDesktopClick DISABLED_HideOnDesktopClick
-#else
-#define MAYBE_HideOnDesktopClick HideOnDesktopClick
-#endif
-
-VIEW_TEST(BookmarkBarViewTest2, MAYBE_HideOnDesktopClick)
+VIEW_TEST(BookmarkBarViewTest2, HideOnDesktopClick)
 
 // Brings up menu. Moves over child to make sure submenu appears, moves over
 // another child and make sure next menu appears.
@@ -1088,14 +1081,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   views::MenuItemView* first_menu_;
 };
 
-// Fails on official cros bot. crbug.com/431427.
-#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
-#define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
-#else
-#define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
-#endif
-
-VIEW_TEST(BookmarkBarViewTest9, MAYBE_ScrollButtonScrolls)
+VIEW_TEST(BookmarkBarViewTest9, ScrollButtonScrolls)
 
 // Tests up/down/left/enter key messages.
 class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
@@ -1296,8 +1282,6 @@ VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
  protected:
   void DoTestOnMessageLoop() override {
-    base::RunLoop().RunUntilIdle();
-
     // Open up the other folder.
     views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
@@ -1699,8 +1683,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   std::unique_ptr<BookmarkContextMenuNotificationObserver> observer_;
 };
 
-// Flaky. See http://crbug.com/820435.
-VIEW_TEST(BookmarkBarViewTest17, DISABLED_ContextMenus3)
+VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
@@ -2230,7 +2213,6 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(
         button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest25::Step2));
-    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -2273,7 +2255,6 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(
         button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest26::Step2));
-    base::RunLoop().RunUntilIdle();
   }
 
  private:

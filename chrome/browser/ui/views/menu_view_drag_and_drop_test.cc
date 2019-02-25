@@ -487,10 +487,4 @@ void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {
 
 // Test that if a menu is opened for a drop handled entirely by menu code, the
 // menu will try to close if it does not receive any drag updates.
-// Disabled for being flaky. Tracked in http://crbug.com/863296.
-#if defined(OS_MACOSX)
-#define MAYBE_MenuViewCancelsForOwnDrag DISABLED_MenuViewCancelsForOwnDrag
-#else
-#define MAYBE_MenuViewCancelsForOwnDrag MenuViewCancelsForOwnDrag
-#endif
-VIEW_TEST(MenuViewDragAndDropForDropCancel, MAYBE_MenuViewCancelsForOwnDrag)
+VIEW_TEST(MenuViewDragAndDropForDropCancel, MenuViewCancelsForOwnDrag)
