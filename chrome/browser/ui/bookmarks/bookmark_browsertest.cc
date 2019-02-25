@@ -140,7 +140,14 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_Persist) {
                                 base::ASCIIToUTF16(kPersistBookmarkTitle));
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, Persist) {
+#if defined(OS_WIN)
+// TODO(crbug.com/935607): The test fails on Windows.
+#define MAYBE_Persist DISABLED_Persist
+#else
+#define MAYBE_Persist Persist
+#endif
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_Persist) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
 
   std::vector<UrlAndTitle> urls;
