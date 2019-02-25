@@ -25,7 +25,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     private static final List<Tab> sEmptyRelatedTabList =
             Collections.unmodifiableList(new ArrayList<Tab>());
     private TabModel mTabModel;
-    protected ObserverList<TabModelFilterObserver> mFilteredObservers = new ObserverList<>();
+    protected ObserverList<TabModelObserver> mFilteredObservers = new ObserverList<>();
 
     public TabModelFilter(TabModel tabModel) {
         mTabModel = tabModel;
@@ -33,19 +33,31 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     /**
-     * Adds a {@link TabModelFilterObserver} to be notified on {@link TabModelFilter} changes.
-     * @param observer The {@link TabModelFilterObserver} to add.
+     * Adds a {@link TabModelObserver} to be notified on {@link TabModelFilter} changes.
+     * @param observer The {@link TabModelObserver} to add.
      */
-    public void addObserver(TabModelFilterObserver observer) {
+    public void addObserver(TabModelObserver observer) {
         mFilteredObservers.addObserver(observer);
     }
 
     /**
-     * Removes a {@link TabModelFilterObserver}.
-     * @param observer The {@link TabModelFilterObserver} to remove.
+     * Removes a {@link TabModelObserver}.
+     * @param observer The {@link TabModelObserver} to remove.
      */
-    public void removeObserver(TabModelFilterObserver observer) {
+    public void removeObserver(TabModelObserver observer) {
         mFilteredObservers.removeObserver(observer);
+    }
+
+    public boolean isCurrentlySelectedFilter() {
+        return mTabModel.isCurrentModel();
+    }
+
+    /**
+     * To be called when this filter should be destroyed. This filter should no longer be used after
+     * this.
+     */
+    public void destroy() {
+        mFilteredObservers.clear();
     }
 
     /**
@@ -88,38 +100,92 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      */
     protected abstract void selectTab(Tab tab);
 
-    // TabModelObserver implementation
-    // TODO(meiliang): All these implementations should notify each individual listener, after they
-    // had added to TabModelFilterObserver.
+    // TabModelObserver implementation.
     @Override
     public void didSelectTab(Tab tab, int type, int lastId) {
         selectTab(tab);
-        for (TabModelFilterObserver observer : mFilteredObservers) {
-            observer.update();
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.didSelectTab(tab, type, lastId);
         }
     }
 
     @Override
     public void willCloseTab(Tab tab, boolean animate) {
         closeTab(tab);
-        for (TabModelFilterObserver observer : mFilteredObservers) {
-            observer.update();
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.willCloseTab(tab, animate);
+        }
+    }
+
+    @Override
+    public void didCloseTab(int tabId, boolean incognito) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.didCloseTab(tabId, incognito);
+        }
+    }
+
+    @Override
+    public void willAddTab(Tab tab, int type) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.willAddTab(tab, type);
         }
     }
 
     @Override
     public void didAddTab(Tab tab, int type) {
         addTab(tab);
-        for (TabModelFilterObserver observer : mFilteredObservers) {
-            observer.update();
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.didAddTab(tab, type);
+        }
+    }
+
+    @Override
+    public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.didMoveTab(tab, newIndex, curIndex);
+        }
+    }
+
+    @Override
+    public void tabPendingClosure(Tab tab) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.tabPendingClosure(tab);
         }
     }
 
     @Override
     public void tabClosureUndone(Tab tab) {
         addTab(tab);
-        for (TabModelFilterObserver observer : mFilteredObservers) {
-            observer.update();
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.tabClosureUndone(tab);
+        }
+    }
+
+    @Override
+    public void tabClosureCommitted(Tab tab) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.tabClosureCommitted(tab);
+        }
+    }
+
+    @Override
+    public void allTabsPendingClosure(List<Tab> tabs) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.allTabsPendingClosure(tabs);
+        }
+    }
+
+    @Override
+    public void allTabsClosureCommitted() {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.allTabsClosureCommitted();
+        }
+    }
+
+    @Override
+    public void tabRemoved(Tab tab) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.tabRemoved(tab);
         }
     }
 }

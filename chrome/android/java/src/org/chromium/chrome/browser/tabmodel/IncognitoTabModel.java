@@ -30,6 +30,13 @@ public class IncognitoTabModel implements TabModel {
 
         /** @return Whether Incognito Tabs exist. */
         boolean doIncognitoTabsExist();
+
+        /**
+         * @param model {@link TabModel} to act on.
+         * @return Whether the provided {@link TabModel} is currently selected in the corresponding
+         * {@link IncognitoTabModelDelegate}.
+         */
+        boolean isCurrentModel(TabModel model);
     }
 
     private final IncognitoTabModelDelegate mDelegate;
@@ -166,7 +173,7 @@ public class IncognitoTabModel implements TabModel {
 
     @Override
     public boolean isCurrentModel() {
-        return mDelegateModel.isCurrentModel();
+        return mDelegate.isCurrentModel(this);
     }
 
     @Override

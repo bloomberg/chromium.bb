@@ -107,16 +107,18 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
+        super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
+                dynamicResourceLoader);
+
         // TODO: TitleCache should be a part of the ResourceManager.
         mTitleCache = mHost.getTitleCache();
 
         // Initialize Layouts
         mToolbarSwipeLayout.setTabModelSelector(selector, content);
         mOverviewListLayout.setTabModelSelector(selector, content);
-        if (mOverviewLayout != null) mOverviewLayout.setTabModelSelector(selector, content);
-
-        super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
-                dynamicResourceLoader);
+        if (mOverviewLayout != null) {
+            mOverviewLayout.setTabModelSelector(selector, content);
+        }
     }
 
     /**

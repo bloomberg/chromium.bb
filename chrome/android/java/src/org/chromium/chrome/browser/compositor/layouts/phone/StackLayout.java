@@ -53,8 +53,8 @@ public class StackLayout extends StackLayoutBase {
     public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
         super.setTabModelSelector(modelSelector, manager);
         ArrayList<TabList> tabLists = new ArrayList<TabList>();
-        tabLists.add(modelSelector.getModel(false));
-        tabLists.add(modelSelector.getModel(true));
+        tabLists.add(modelSelector.getTabModelFilterProvider().getTabModelFilter(false));
+        tabLists.add(modelSelector.getTabModelFilterProvider().getTabModelFilter(true));
         setTabLists(tabLists);
     }
 

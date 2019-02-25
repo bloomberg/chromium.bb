@@ -49,11 +49,11 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
-        // Initialize Layouts
-        mSimpleAnimationLayout.setTabModelSelector(selector, content);
-
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
                 dynamicResourceLoader);
+
+        // Initialize Layouts
+        mSimpleAnimationLayout.setTabModelSelector(selector, content);
     }
 
     @Override

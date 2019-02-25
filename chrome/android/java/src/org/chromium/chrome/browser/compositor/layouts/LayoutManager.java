@@ -90,9 +90,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     // External Dependencies
     private TabModelSelector mTabModelSelector;
 
-    private TabModelObserver mTabModelObserver;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+
+    // An observer for watching TabModelFilters changes events.
+    private TabModelObserver mTabModelFilterObserver;
+
     private ViewGroup mContentContainer;
 
     // External Observers
@@ -442,8 +445,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         selector.addObserver(mTabModelSelectorObserver);
         selector.setCloseAllTabsDelegate(this);
 
-        mTabModelObserver = createTabModelObserver();
-        for (TabModel model : selector.getModels()) model.addObserver(mTabModelObserver);
+        mTabModelFilterObserver = createTabModelObserver();
+        getTabModelSelector().getTabModelFilterProvider().addTabModelFilterObserver(
+                mTabModelFilterObserver);
     }
 
     /**
@@ -458,10 +462,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (mTabModelSelectorObserver != null) {
             getTabModelSelector().removeObserver(mTabModelSelectorObserver);
         }
-        if (mTabModelObserver != null) {
-            for (TabModel model : getTabModelSelector().getModels()) {
-                model.removeObserver(mTabModelObserver);
-            }
+        if (mTabModelFilterObserver != null) {
+            getTabModelSelector().getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelFilterObserver);
         }
     }
 
