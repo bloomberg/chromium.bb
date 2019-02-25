@@ -549,8 +549,10 @@
   },
   {
     "name": "enable-explicit-dma-fences",
-    "owners": [ "chromeos-gfx" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-gfx@google.com" ],
+    // This flag is used for QA & debugging on ChromeOS, which has no way to
+    // customize switches.
+    "expiry_milestone": -1
   },
   {
     "name": "disable-hosted-app-shim-creation",
@@ -2641,8 +2643,10 @@
   },
   {
     "name": "overlay-strategies",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-gfx@google.com" ],
+    // This flag is used for QA & debugging on ChromeOS, which has no way to
+    // customize switches.
+    "expiry_milestone": -1
   },
   {
     "name": "overscroll-history-navigation",
@@ -2984,8 +2988,10 @@
   },
   {
     "name": "tint-gl-composited-content",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-gfx@google.com" ],
+    // This flag is used for QA & development on ChromeOS, which has no way to
+    // customize switches.
+    "expiry_milestone": -1
   },
   {
     "name": "top-chrome-touch-ui",
