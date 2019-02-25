@@ -52,13 +52,19 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = 1000 / 60 * 4;
 
     /** State of the Overlay Panel. */
-    public static enum PanelState {
+    @IntDef({PanelState.UNDEFINED, PanelState.CLOSED, PanelState.PEEKED, PanelState.EXPANDED,
+            PanelState.MAXIMIZED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PanelState {
+        // Values can't have gaps and should be numerated from 0.
+        // Values CLOSED - MAXIMIZED are sorted and show next states.
         // TODO(pedrosimonetti): consider removing the UNDEFINED state
-        UNDEFINED,
-        CLOSED,
-        PEEKED,
-        EXPANDED,
-        MAXIMIZED
+        int UNDEFINED = 0;
+        int CLOSED = 1;
+        int PEEKED = 2;
+        int EXPANDED = 3;
+        int MAXIMIZED = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**

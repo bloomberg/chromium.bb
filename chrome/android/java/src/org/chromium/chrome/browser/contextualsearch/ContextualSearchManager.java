@@ -469,7 +469,8 @@ public class ContextualSearchManager
 
         // If the user is jumping from one unseen search to another search, remove the last search
         // from history.
-        PanelState state = mSearchPanel.getPanelState();
+        @PanelState
+        int state = mSearchPanel.getPanelState();
         if (!mWereSearchResultsSeen && mLoadedSearchUrlTimeMs != 0L
                 && state != PanelState.UNDEFINED && state != PanelState.CLOSED) {
             removeLastSearchVisit();
