@@ -4357,8 +4357,9 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
 #endif
   );
 
-  const bool should_background_changed =
+  const bool background_state_changed =
       priority_.is_background() != priority.is_background();
+  const bool visibility_state_changed = priority_.visible != priority.visible;
   if (priority_ == priority)
     return;
 
@@ -4367,6 +4368,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
                "has_pending_views", priority.boost_for_pending_views);
   priority_ = priority;
 
+  bool allow_background_change = true;
 #if defined(OS_WIN)
   // The cbstext.dll loads as a global GetMessage hook in the browser process
   // and intercepts/unintercepts the kernel32 API SetPriorityClass in a
@@ -4375,7 +4377,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // which causes random crashes in the browser process. Our hack for now
   // is to not invoke the SetPriorityClass API if the dll is loaded.
   if (GetModuleHandle(L"cbstext.dll"))
-    return;
+    allow_background_change = false;
 #endif  // OS_WIN
 
   // Control the background state from the browser process, otherwise the task
@@ -4383,7 +4385,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // tasks executing at lowered priority ahead of it or simply by not being
   // swiftly scheduled by the OS per the low process priority
   // (http://crbug.com/398103).
-  if (!run_renderer_in_process()) {
+  if (!run_renderer_in_process() && allow_background_change) {
     DCHECK(child_process_launcher_.get());
     DCHECK(!child_process_launcher_->IsStarting());
     // Make sure to keep the pid in the trace so we can tell which process is
@@ -4396,10 +4398,22 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     child_process_launcher_->SetProcessPriority(priority_);
   }
 
-  // Notify the child process of background state.
-  if (should_background_changed) {
-    GetRendererInterface()->SetProcessBackgrounded(priority_.is_background());
+  // Notify the child process of the change in state.
+  if ((background_state_changed && allow_background_change) ||
+      visibility_state_changed) {
+    SendProcessStateToRenderer();
   }
+}
+
+void RenderProcessHostImpl::SendProcessStateToRenderer() {
+  mojom::RenderProcessState process_state;
+  if (priority_.is_background())
+    process_state = mojom::RenderProcessState::kBackgrounded;
+  else if (priority_.visible)
+    process_state = mojom::RenderProcessState::kVisible;
+  else
+    process_state = mojom::RenderProcessState::kHidden;
+  GetRendererInterface()->SetProcessState(process_state);
 }
 
 void RenderProcessHostImpl::OnProcessLaunched() {

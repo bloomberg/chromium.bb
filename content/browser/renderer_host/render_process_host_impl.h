@@ -588,6 +588,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // change.
   void UpdateProcessPriority();
 
+  // Called if the backgrounded or visibility state of the process changes.
+  void SendProcessStateToRenderer();
+
   // Creates a PersistentMemoryAllocator and shares it with the renderer
   // process for it to store histograms from that process. The allocator is
   // available for extraction by a SubprocesMetricsProvider in order to

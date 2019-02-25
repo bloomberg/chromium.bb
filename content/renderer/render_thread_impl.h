@@ -458,15 +458,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return &histogram_customizer_;
   }
 
-  // Called by a RenderWidget when it is created or destroyed. This
-  // allows the process to know when there are no visible widgets.
-  void WidgetCreated();
-  // Note: A widget must not be hidden when it is destroyed - ensure that
-  // WidgetRestored is called before WidgetDestroyed for any hidden widget.
-  void WidgetDestroyed();
-  void WidgetHidden();
-  void WidgetRestored();
-
   void RegisterPendingFrameCreate(
       const service_manager::BindSourceInfo& source_info,
       int routing_id,
@@ -504,6 +495,8 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
  private:
+  friend class RenderThreadImplBrowserTest;
+
   void OnProcessFinalRelease() override;
   // IPC::Listener
   void OnChannelError() override;
@@ -555,7 +548,7 @@ class CONTENT_EXPORT RenderThreadImpl
                              const std::string& highlight_text_color,
                              const std::string& highlight_color) override;
   void PurgePluginListCache(bool reload_pages) override;
-  void SetProcessBackgrounded(bool backgrounded) override;
+  void SetProcessState(mojom::RenderProcessState process_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   void ProcessPurgeAndSuspend() override;
   void SetIsLockedToSite() override;
@@ -567,6 +560,10 @@ class CONTENT_EXPORT RenderThreadImpl
   bool RendererIsHidden() const;
   void OnRendererHidden();
   void OnRendererVisible();
+
+  bool RendererIsBackgrounded() const;
+  void OnRendererBackgrounded();
+  void OnRendererForegrounded();
 
   void RecordMemoryUsageAfterBackgrounded(const char* suffix,
                                           int foregrounded_count);
@@ -621,14 +618,10 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
-  // Used to keep track of the renderer's backgrounded state.
-  bool is_backgrounded_;
-
-  // The count of RenderWidgets running through this thread.
-  int widget_count_;
-
-  // The count of hidden RenderWidgets running through this thread.
-  int hidden_widget_count_;
+  // Used to keep track of the renderer's backgrounded and visibility state.
+  // Updated via an IPC from the browser process. If nullopt, the browser
+  // process has yet to send an update and the state is unknown.
+  base::Optional<mojom::RenderProcessState> process_state_;
 
   blink::WebString user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;

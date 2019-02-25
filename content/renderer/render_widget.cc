@@ -581,11 +581,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive WidgetMsg_Close.
   AddRef();
-  if (RenderThreadImpl::current()) {
-    RenderThreadImpl::current()->WidgetCreated();
-    if (is_hidden_)
-      RenderThreadImpl::current()->WidgetHidden();
-  }
 }
 
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
@@ -721,15 +716,6 @@ void RenderWidget::OnClose() {
   if (routing_id_ != MSG_ROUTING_NONE) {
     RenderThread::Get()->RemoveRoute(routing_id_);
     g_routing_id_widget_map.Get().erase(routing_id_);
-    if (RenderThreadImpl::current()) {
-      // RenderWidgets may be hidden when they are closed. If we were previously
-      // hidden, we are being counted as such in RenderThreadImpl. Thus we
-      // remove that count here by calling WidgetRestored() even though we're
-      // clearly not becoming visible here.
-      if (is_hidden_)
-        RenderThreadImpl::current()->WidgetRestored();
-      RenderThreadImpl::current()->WidgetDestroyed();
-    }
   }
 
   // Stop handling main thread input events immediately so we don't have them
@@ -2486,14 +2472,8 @@ void RenderWidget::SetHidden(bool hidden) {
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
 #endif
 
-  // RenderThreadImpl::current() could be null in tests.
-  if (RenderThreadImpl::current()) {
-    if (is_hidden_) {
-      RenderThreadImpl::current()->WidgetHidden();
-      first_update_visual_state_after_hidden_ = true;
-    } else {
-      RenderThreadImpl::current()->WidgetRestored();
-    }
+  if (is_hidden_) {
+    first_update_visual_state_after_hidden_ = true;
   }
 
   if (render_widget_scheduling_state_)
