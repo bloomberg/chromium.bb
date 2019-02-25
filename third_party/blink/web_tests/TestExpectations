@@ -6022,6 +6022,9 @@ crbug.com/934818 [ Mac Debug ] virtual/threaded/http/tests/devtools/tracing/deco
 crbug.com/934866 [ Mac ] virtual/outofblink-cors-ns/http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/935027 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Crash Pass ]
 
+# Sheriff 2019-02-25
+crbug.com/935587 [ Mac ] virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure Pass ]
+
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/secure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
