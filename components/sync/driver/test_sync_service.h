@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/test_sync_user_settings.h"
@@ -45,6 +46,8 @@ class TestSyncService : public SyncService {
   void SetPassphraseRequired(bool required);
   void SetPassphraseRequiredForDecryption(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);
+
+  void FireStateChanged();
 
   // SyncService implementation.
   syncer::SyncUserSettings* GetUserSettings() override;
@@ -120,6 +123,8 @@ class TestSyncService : public SyncService {
   SyncStatus detailed_sync_status_;
 
   SyncCycleSnapshot last_cycle_snapshot_;
+
+  base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 
   GURL sync_service_url_;
 

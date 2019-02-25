@@ -113,6 +113,11 @@ void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
   user_settings_.SetIsUsingSecondaryPassphrase(enabled);
 }
 
+void TestSyncService::FireStateChanged() {
+  for (auto& observer : observers_)
+    observer.OnStateChanged(this);
+}
+
 SyncUserSettings* TestSyncService::GetUserSettings() {
   return &user_settings_;
 }
@@ -180,12 +185,16 @@ void TestSyncService::ReenableDatatype(ModelType type) {}
 
 void TestSyncService::ReadyForStartChanged(ModelType type) {}
 
-void TestSyncService::AddObserver(SyncServiceObserver* observer) {}
+void TestSyncService::AddObserver(SyncServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
 
-void TestSyncService::RemoveObserver(SyncServiceObserver* observer) {}
+void TestSyncService::RemoveObserver(SyncServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
-  return false;
+  return observers_.HasObserver(observer);
 }
 
 void TestSyncService::AddPreferenceProvider(
