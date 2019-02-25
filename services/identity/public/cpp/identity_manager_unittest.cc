@@ -44,7 +44,7 @@ namespace identity {
 namespace {
 
 #if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
+using SigninManagerForTest = SigninManagerBase;
 #else
 using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
@@ -390,7 +390,7 @@ class IdentityManagerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
-    signin_manager_ = std::make_unique<FakeSigninManagerBase>(
+    signin_manager_ = std::make_unique<SigninManagerBase>(
         &signin_client_, &token_service_, &account_tracker_);
 #else
     signin_manager_ = std::make_unique<FakeSigninManager>(

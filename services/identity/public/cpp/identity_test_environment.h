@@ -13,7 +13,6 @@
 class AccountTrackerService;
 class FakeAccountFetcherService;
 class FakeProfileOAuth2TokenService;
-class FakeSigninManagerBase;
 class FakeSigninManager;
 class GaiaCookieManagerService;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
@@ -33,7 +32,7 @@ namespace identity {
 
 namespace {
 #if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
+using SigninManagerForTest = SigninManagerBase;
 #else
 using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS

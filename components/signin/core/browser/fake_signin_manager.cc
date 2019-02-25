@@ -12,18 +12,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
-FakeSigninManagerBase::FakeSigninManagerBase(
-    SigninClient* client,
-    ProfileOAuth2TokenService* token_service,
-    AccountTrackerService* account_tracker_service)
-    : SigninManagerBase(client, token_service, account_tracker_service) {}
-
-FakeSigninManagerBase::~FakeSigninManagerBase() {}
-
-void FakeSigninManagerBase::SignIn(const std::string& account_id) {
-  SetAuthenticatedAccountId(account_id);
-}
-
 #if !defined(OS_CHROMEOS)
 
 FakeSigninManager::FakeSigninManager(
