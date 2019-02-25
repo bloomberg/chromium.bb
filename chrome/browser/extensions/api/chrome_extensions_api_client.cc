@@ -36,6 +36,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -119,10 +120,9 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
     const WebRequestInfo& request) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // TODO(crbug.com/890006): Determine if the code here can be cleaned up
-  // since browser initiated non-navigation requests are now hidden from
-  // extensions.
-
+  // Note: browser initiated non-navigation requests are hidden from extensions.
+  // But we do still need to protect some sensitive sub-frame navigation
+  // requests.
   // Exclude main frame navigation requests.
   bool is_browser_request = request.render_process_id == -1 &&
                             request.type != content::RESOURCE_TYPE_MAIN_FRAME;
@@ -136,6 +136,12 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
       (is_browser_request &&
        request.initiator ==
            url::Origin::Create(GURL(chrome::kChromeUINewTabURL)));
+
+  // Hide requests made by the browser on behalf of the local NTP.
+  is_sensitive_request |=
+      (is_browser_request &&
+       request.initiator ==
+           url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl)));
 
   // Hide requests made by the NTP Instant renderer.
   is_sensitive_request |= InstantIOContext::IsInstantProcess(

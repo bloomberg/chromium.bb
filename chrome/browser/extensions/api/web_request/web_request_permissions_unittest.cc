@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -121,6 +122,37 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
       create_request("https://www.gstatic.com/chrome/extensions/blacklist");
   EXPECT_TRUE(
       WebRequestPermissions::HideRequest(extension_info_map_.get(), request));
+}
+
+// Ensure requests made by the local NTP are hidden from extensions. Regression
+// test for crbug.com/931013.
+TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, LocalNTPRequests) {
+  const GURL example_com("http://example.com");
+
+  WebRequestInfo info;
+  info.url = example_com;
+  info.initiator = url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl));
+  info.render_process_id = -1;
+
+  // Sub-resource browser initiated requests are hidden from extensions.
+  info.type = content::RESOURCE_TYPE_SUB_RESOURCE;
+  info.web_request_type = extensions::WebRequestResourceType::OTHER;
+  info.is_browser_side_navigation = false;
+  EXPECT_TRUE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
+
+  // Sub-frame navigations initiated from the local ntp should be hidden.
+  info.type = content::RESOURCE_TYPE_SUB_FRAME;
+  info.web_request_type = extensions::WebRequestResourceType::SUB_FRAME;
+  info.is_browser_side_navigation = true;
+  EXPECT_TRUE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
+
+  // Sub-frame navigations initiated from a non-sensitive domain should not be
+  // hidden.
+  info.initiator = url::Origin::Create(example_com);
+  EXPECT_FALSE(
+      WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
 }
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
