@@ -46,9 +46,9 @@ class ASH_EXPORT LoginBaseBubbleView : public views::View,
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override{};
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
   void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override{};
+      ui::LayerAnimationSequence* sequence) override {}
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

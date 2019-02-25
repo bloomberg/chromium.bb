@@ -69,7 +69,7 @@ class TestNetworkPolicyObserver : public NetworkPolicyObserver {
 
   void PoliciesApplied(const std::string& userhash) override {
     policies_applied_count_++;
-  };
+  }
 
   int GetPoliciesAppliedCountAndReset() {
     int count = policies_applied_count_;

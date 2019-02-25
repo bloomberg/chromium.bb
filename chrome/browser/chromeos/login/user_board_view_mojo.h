@@ -36,8 +36,8 @@ class UserBoardViewMojo : public UserBoardView {
   void SetAuthType(const AccountId& account_id,
                    proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
-  void Bind(UserSelectionScreen* screen) override{};
-  void Unbind() override{};
+  void Bind(UserSelectionScreen* screen) override {}
+  void Unbind() override {}
   base::WeakPtr<UserBoardView> GetWeakPtr() override;
 
  private:

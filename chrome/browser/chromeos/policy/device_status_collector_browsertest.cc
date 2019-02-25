@@ -433,7 +433,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         chromeos::kReportDeviceNetworkInterfaces, false);
   }
 
-  void TearDown() override { status_collector_.reset(); };
+  void TearDown() override { status_collector_.reset(); }
 
  protected:
   // States tracked to calculate a child's active time.

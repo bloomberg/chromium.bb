@@ -156,7 +156,7 @@ class FakeSmartDimModel : public SmartDimModel {
   }
 
   // TODO(crbug.com/893425): Add unit tests that test this API.
-  void CancelPreviousRequest() override { cancelable_callback_.Cancel(); };
+  void CancelPreviousRequest() override { cancelable_callback_.Cancel(); }
 
  private:
   int inactivity_score_ = -1;

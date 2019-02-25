@@ -43,4 +43,4 @@ void CrosSettingsProvider::SetNotifyObserversCallback(
   notify_cb_ = notify_cb;
 }
 
-};  // namespace chromeos
+}  // namespace chromeos

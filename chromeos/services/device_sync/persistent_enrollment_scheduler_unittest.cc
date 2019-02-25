@@ -66,7 +66,7 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
     fake_client_directive_.set_retry_period_millis(
         kFakeRetryPeriod.InMilliseconds());
     fake_client_directive_.set_retry_attempts(kFakeMaxImmediateRetries);
-  };
+  }
 
   ~DeviceSyncPersistentEnrollmentSchedulerTest() override = default;
 

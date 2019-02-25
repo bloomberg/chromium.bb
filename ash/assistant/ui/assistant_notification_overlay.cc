@@ -89,4 +89,4 @@ void AssistantNotificationOverlay::InitLayout() {
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-};  // namespace ash
+}  // namespace ash

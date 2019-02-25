@@ -440,7 +440,7 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
     ASSERT_NE(nullptr, primary_shelf_widget_);
     secondary_shelf_widget_ = Shelf::ForWindow(root_windows[1])->shelf_widget();
     ASSERT_NE(nullptr, secondary_shelf_widget_);
-  };
+  }
 
   void ExpectVisible(session_manager::SessionState state,
                      ShelfVisibility primary_shelf_visibility,

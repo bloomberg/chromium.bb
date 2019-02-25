@@ -81,7 +81,7 @@ class AutoclickTest : public AshTestBase {
     scoped_task_environment_ =
         std::make_unique<base::test::ScopedTaskEnvironment>(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
-  };
+  }
   ~AutoclickTest() override = default;
 
   void SetUp() override {

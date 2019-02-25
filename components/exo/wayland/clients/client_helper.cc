@@ -54,7 +54,7 @@ DEFAULT_DELETER(zwp_linux_buffer_release_v1,
                 zwp_linux_buffer_release_v1_destroy)
 DEFAULT_DELETER(zwp_fullscreen_shell_v1, zwp_fullscreen_shell_v1_destroy)
 DEFAULT_DELETER(zwp_input_timestamps_manager_v1,
-                zwp_input_timestamps_manager_v1_destroy);
+                zwp_input_timestamps_manager_v1_destroy)
 DEFAULT_DELETER(zwp_input_timestamps_v1, zwp_input_timestamps_v1_destroy)
 DEFAULT_DELETER(zwp_linux_buffer_params_v1, zwp_linux_buffer_params_v1_destroy)
 DEFAULT_DELETER(zwp_linux_dmabuf_v1, zwp_linux_dmabuf_v1_destroy)

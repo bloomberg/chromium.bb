@@ -37,6 +37,6 @@ RankingItemType RankingItemTypeFromSearchResult(
 RankingItemType RankingItemTypeFromChromeAppListItem(
     const ChromeAppListItem& item);
 
-};  // namespace app_list
+}  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RANKING_ITEM_UTIL_H_

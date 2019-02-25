@@ -101,7 +101,7 @@ MATCHER_P5(MatchQuery, source, text, title, shared, offline, "") {
       return false;
   }
   return arg.shared_with_me == shared && arg.available_offline == offline;
-};
+}
 
 TEST_F(DriveFsSearchTest, Search) {
   DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),

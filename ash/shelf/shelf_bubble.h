@@ -34,7 +34,7 @@ class ASH_EXPORT ShelfBubble : public views::BubbleDialogDelegateView {
   virtual bool ShouldCloseOnMouseExit() = 0;
 
  protected:
-  void set_border_radius(int radius) { border_radius_ = radius; };
+  void set_border_radius(int radius) { border_radius_ = radius; }
 
   // Performs the actual bubble creation.
   void CreateBubble();

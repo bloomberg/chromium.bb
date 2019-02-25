@@ -32,7 +32,7 @@ class AccessibilityLayerDelegate {
   virtual void OnAnimationStep(base::TimeTicks timestamp) = 0;
 
  protected:
-  virtual ~AccessibilityLayerDelegate(){};
+  virtual ~AccessibilityLayerDelegate() {}
 };
 
 // AccessibilityLayer manages a global always-on-top layer used to

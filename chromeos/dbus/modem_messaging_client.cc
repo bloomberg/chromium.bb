@@ -163,7 +163,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClientImpl
   }
 
  protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; };
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   using ProxyMap = std::map<std::pair<std::string, std::string>,

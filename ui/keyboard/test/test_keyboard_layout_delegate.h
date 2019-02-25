@@ -10,7 +10,7 @@
 
 namespace aura {
 class Window;
-};
+}
 
 namespace keyboard {
 

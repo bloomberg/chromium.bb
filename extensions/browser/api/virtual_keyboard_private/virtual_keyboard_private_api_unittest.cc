@@ -121,7 +121,7 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithNoBounds) {
                           .GetDelegateForBrowserContext(browser_context())
                           ->GetOccludedBounds();
   EXPECT_EQ(0U, bounds.size());
-};
+}
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithOneBound) {
   RunFunction(new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
@@ -132,7 +132,7 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithOneBound) {
                           ->GetOccludedBounds();
   ASSERT_EQ(1U, bounds.size());
   EXPECT_EQ(gfx::Rect(0, 10, 20, 30), bounds[0]);
-};
+}
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithTwoBounds) {
   RunFunction(new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
@@ -145,7 +145,7 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithTwoBounds) {
   ASSERT_EQ(2U, bounds.size());
   EXPECT_EQ(gfx::Rect(0, 10, 20, 30), bounds[0]);
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), bounds[1]);
-};
+}
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithNoBounds) {
   RunFunction(new VirtualKeyboardPrivateSetHitTestBoundsFunction(), "[[]]");
@@ -154,7 +154,7 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithNoBounds) {
                           .GetDelegateForBrowserContext(browser_context())
                           ->GetHitTestBounds();
   EXPECT_EQ(0U, bounds.size());
-};
+}
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithMultipleBounds) {
   RunFunction(new VirtualKeyboardPrivateSetHitTestBoundsFunction(),
@@ -167,6 +167,6 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithMultipleBounds) {
   ASSERT_EQ(2U, bounds.size());
   EXPECT_EQ(gfx::Rect(0, 10, 20, 30), bounds[0]);
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), bounds[1]);
-};
+}
 
 }  // namespace extensions

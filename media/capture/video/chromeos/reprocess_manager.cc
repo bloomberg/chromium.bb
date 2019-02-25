@@ -49,7 +49,7 @@ ReprocessManager::ReprocessManager()
 
 ReprocessManager::~ReprocessManager() {
   sequenced_task_runner_->DeleteSoon(FROM_HERE, std::move(impl));
-};
+}
 
 void ReprocessManager::SetReprocessOption(
     cros::mojom::Effect effect,

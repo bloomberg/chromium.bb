@@ -66,7 +66,7 @@ ACTION_TEMPLATE(SaveTimestamp,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = testing::get<k>(args).timestamp();
-};
+}
 
 int64_t GetCurrentTimestamp() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();

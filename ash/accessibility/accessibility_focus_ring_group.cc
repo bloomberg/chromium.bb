@@ -52,7 +52,7 @@ AccessibilityFocusRingGroup::AccessibilityFocusRingGroup() {
       base::TimeDelta::FromMilliseconds(kFocusFadeOutTimeMilliseconds);
 }
 
-AccessibilityFocusRingGroup::~AccessibilityFocusRingGroup(){};
+AccessibilityFocusRingGroup::~AccessibilityFocusRingGroup() {}
 
 void AccessibilityFocusRingGroup::SetColor(
     SkColor color,

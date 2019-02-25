@@ -15,12 +15,12 @@ QueuedContainerType::QueuedContainerType(
     : controller_(controller),
       container_type_(container_type),
       bounds_(bounds),
-      callback_(std::move(callback)){};
+      callback_(std::move(callback)) {}
 
 QueuedContainerType::~QueuedContainerType() {
   bool change_successful =
       controller_->GetActiveContainerType() == container_type_;
   std::move(callback_).Run(change_successful);
-};
+}
 
 }  // namespace keyboard

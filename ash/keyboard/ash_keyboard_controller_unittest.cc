@@ -161,7 +161,7 @@ class TestClient {
 
 class TestContainerBehavior : public keyboard::ContainerBehavior {
  public:
-  TestContainerBehavior() : keyboard::ContainerBehavior(nullptr){};
+  TestContainerBehavior() : keyboard::ContainerBehavior(nullptr) {}
   ~TestContainerBehavior() override = default;
 
   // keyboard::ContainerBehavior

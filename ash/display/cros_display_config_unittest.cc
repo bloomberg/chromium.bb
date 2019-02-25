@@ -72,7 +72,7 @@ class TestObserver : public mojom::CrosDisplayConfigObserver {
 class CrosDisplayConfigTest : public AshTestBase {
  public:
   CrosDisplayConfigTest() {}
-  ~CrosDisplayConfigTest() override{};
+  ~CrosDisplayConfigTest() override {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(

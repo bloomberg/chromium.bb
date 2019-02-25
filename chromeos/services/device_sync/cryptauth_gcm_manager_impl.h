@@ -17,7 +17,7 @@ class PrefService;
 
 namespace gcm {
 class GCMDriver;
-};
+}
 
 namespace chromeos {
 

@@ -114,7 +114,7 @@ int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
     minimum_width = is_landscape ? minimum_size.width() : minimum_size.height();
   }
   return minimum_width;
-};
+}
 
 // Returns true if |window| is currently snapped.
 bool IsSnapped(aura::Window* window) {

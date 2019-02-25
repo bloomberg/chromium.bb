@@ -58,7 +58,7 @@ class ASH_PUBLIC_EXPORT DefaultFrameHeader : public FrameHeader {
     ~ColorAnimator();
 
     void SetTargetColor(SkColor target);
-    SkColor target_color() const { return target_color_; };
+    SkColor target_color() const { return target_color_; }
     SkColor GetCurrentColor();
     float get_value() const { return animation_.GetCurrentValue(); }
 

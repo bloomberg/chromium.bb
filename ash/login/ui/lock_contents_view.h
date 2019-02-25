@@ -193,7 +193,7 @@ class ASH_EXPORT LockContentsView
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
-                              int event_flags) override{};
+                              int event_flags) override {}
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
