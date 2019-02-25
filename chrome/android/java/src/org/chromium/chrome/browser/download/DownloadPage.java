@@ -47,7 +47,8 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
                                                  .setIsSeparateActivity(false)
                                                  .build();
         mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(activity, config,
-                ((SnackbarManageable) activity).getSnackbarManager(), activity.getComponentName());
+                ((SnackbarManageable) activity).getSnackbarManager(), activity.getComponentName(),
+                activity.getModalDialogManager());
 
         mDownloadCoordinator.addObserver(this);
         mTitle = activity.getString(R.string.menu_downloads);

@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.io.Closeable;
 
@@ -52,14 +53,15 @@ class DownloadManagerCoordinatorImpl
 
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
     public DownloadManagerCoordinatorImpl(Profile profile, Activity activity,
-            DownloadManagerUiConfig config, SnackbarManager snackbarManager) {
+            DownloadManagerUiConfig config, SnackbarManager snackbarManager,
+            ModalDialogManager modalDialogManager) {
         mActivity = activity;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
         mSelectionDelegate = new SelectionDelegate<ListItem>();
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
                 OfflineContentAggregatorFactory.forProfile(profile),
-                mDeleteCoordinator::showSnackbar, mSelectionDelegate, this ::notifyFilterChanged,
-                createDateOrderedListObserver());
+                mDeleteCoordinator::showSnackbar, mSelectionDelegate, this::notifyFilterChanged,
+                createDateOrderedListObserver(), modalDialogManager);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
                 mSelectionDelegate, config.isSeparateActivity, profile);
 

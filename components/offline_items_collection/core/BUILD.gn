@@ -21,6 +21,7 @@ static_library("core") {
     "offline_item_filter.h",
     "offline_item_state.h",
     "pending_state.h",
+    "rename_result.h",
     "throttled_offline_content_provider.cc",
     "throttled_offline_content_provider.h",
   ]
@@ -118,6 +119,7 @@ if (is_android) {
       "offline_item_filter.h",
       "offline_item_state.h",
       "pending_state.h",
+      "rename_result.h",
     ]
   }
 }

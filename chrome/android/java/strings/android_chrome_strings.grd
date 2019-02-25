@@ -1459,6 +1459,18 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_DOWNLOAD_SETTINGS_ENABLE_PREFETCH_DESCRIPTION" desc="Description for preference that describes that prefetching of articles only happens when connected to Wi-Fi.">
         Download occurs only on Wi-Fi
       </message>
+      <message name="IDS_RENAME" desc="Label for the option to rename items.">
+        Rename
+      </message>
+      <message name="IDS_RENAME_FAILURE_NAME_CONFLICT" desc="Subtitle for rename dialog in the case that rename attempt failed because the target name already exists.">
+       Name already exists
+      </message>
+      <message name="IDS_RENAME_FAILURE_NAME_TOO_LONG" desc="Subtitle for rename dialog in the case that rename attempt failed because the target name is too long.">
+       Name is too long
+      </message>
+      <message name="IDS_RENAME_FAILURE_NAME_UNAVAILABLE" desc="Subtitle for rename dialog in the case that rename attempt failed because the target name is unavailable.">
+       Name is unavailable
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">

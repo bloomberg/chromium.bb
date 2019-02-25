@@ -37,6 +37,10 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     // Persisted 'More' button properties.
     private Runnable mShareCallback;
     private Runnable mDeleteCallback;
+    private Runnable mRenameCallback;
+
+    // flag to hide rename list menu option for offline pages
+    private boolean mCanRename;
 
     /**
      * Creates a new instance of a {@link MoreButtonViewHolder}.
@@ -76,7 +80,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                     () -> properties.get(ListProperties.CALLBACK_SHARE).onResult(offlineItem);
             mDeleteCallback =
                     () -> properties.get(ListProperties.CALLBACK_REMOVE).onResult(offlineItem);
-
+            mRenameCallback =
+                    () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
             mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
         }
 
@@ -97,6 +102,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                         });
             }, offlineItem.id);
         }
+        // TODO(hesen): Add a new property in OfflineItem, set false for now.
     }
 
     @Override
@@ -123,9 +129,16 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     // ListMenuButton.Delegate implementation.
     @Override
     public ListMenuButton.Item[] getItems() {
-        return new ListMenuButton.Item[] {
-                new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        if (mCanRename) {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.rename, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        } else {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        }
     }
 
     @Override
@@ -134,6 +147,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
             if (mShareCallback != null) mShareCallback.run();
         } else if (item.getTextId() == R.string.delete) {
             if (mDeleteCallback != null) mDeleteCallback.run();
+        } else if (item.getTextId() == R.string.rename) {
+            if (mRenameCallback != null) mRenameCallback.run();
         }
     }
 
