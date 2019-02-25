@@ -62,7 +62,8 @@ class DnsProbeRunner {
  private:
   void OnTransactionComplete(net::DnsTransaction* transaction,
                              int net_error,
-                             const net::DnsResponse* response);
+                             const net::DnsResponse* response,
+                             bool secure);
   void CallCallback();
 
   std::unique_ptr<net::DnsClient> client_;

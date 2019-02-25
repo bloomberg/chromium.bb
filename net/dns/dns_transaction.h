@@ -55,10 +55,12 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
  public:
   // Called with the response or NULL if no matching response was received.
   // Note that the |GetDottedName()| of the response may be different than the
-  // original |hostname| as a result of suffix search.
+  // original |hostname| as a result of suffix search. |secure| is true if the
+  // response was obtained using secure DNS.
   typedef base::OnceCallback<void(DnsTransaction* transaction,
                                   int neterror,
-                                  const DnsResponse* response)>
+                                  const DnsResponse* response,
+                                  bool secure)>
       CallbackType;
 
   virtual ~DnsTransactionFactory() {}

@@ -1498,9 +1498,10 @@ TEST_F(NetworkContextTest, ClearHostCache) {
     for (size_t i = 0; i < base::size(kDomains); ++i) {
       bool expect_domain_cached =
           ((test_case.expected_cached_domains & (1 << i)) != 0);
-      EXPECT_EQ(expect_domain_cached,
-                host_cache->HasEntry(kDomains[i], nullptr /* source_out */,
-                                     nullptr /* stale_out */));
+      EXPECT_EQ(
+          expect_domain_cached,
+          (host_cache->GetMatchingKey(kDomains[i], nullptr /* source_out */,
+                                      nullptr /* stale_out */) != nullptr));
     }
   }
 }
@@ -3101,11 +3102,11 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeA,
                      net::MockDnsClientRule::Result(
                          net::BuildTestDnsResponse(kQueryHostname, result)),
-                     false);
+                     false /* delay */);
   rules.emplace_back(
       kQueryHostname, net::dns_protocol::kTypeAAAA,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
-      false);
+      false /* delay */);
   auto mock_dns_client =
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
   auto* mock_dns_client_ptr = mock_dns_client.get();

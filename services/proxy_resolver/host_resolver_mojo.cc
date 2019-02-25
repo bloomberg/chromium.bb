@@ -109,13 +109,13 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
     DCHECK(host_cache_);
 
     net::HostCache::Key key = CacheKeyForRequest(hostname_, operation_);
-    const net::HostCache::Entry* entry =
-        host_cache_->Lookup(key, base::TimeTicks::Now());
-    if (!entry)
+    const std::pair<const net::HostCache::Key, net::HostCache::Entry>*
+        cache_result = host_cache_->Lookup(key, base::TimeTicks::Now());
+    if (!cache_result)
       return net::ERR_DNS_CACHE_MISS;
 
-    results_ = AddressListToAddresses(entry->addresses().value());
-    return entry->error();
+    results_ = AddressListToAddresses(cache_result->second.addresses().value());
+    return cache_result->second.error();
   }
 
   void OnConnectionError() { ReportResult(net::ERR_FAILED, {} /* result */); }

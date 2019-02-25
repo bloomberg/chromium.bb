@@ -928,7 +928,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   class Delegate {
    public:
     virtual void OnDnsTaskComplete(base::TimeTicks start_time,
-                                   const HostCache::Entry& results) = 0;
+                                   const HostCache::Entry& results,
+                                   bool secure) = 0;
 
     // Called when the first of two jobs succeeds.  If the first completed
     // transaction fails, this is not called.  Also not called when the DnsTask
@@ -1016,11 +1017,12 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                              DnsQueryType dns_query_type,
                              DnsTransaction* transaction,
                              int net_error,
-                             const DnsResponse* response) {
+                             const DnsResponse* response,
+                             bool secure) {
     DCHECK(transaction);
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
-      OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
+      OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt, secure);
       return;
     }
 
@@ -1048,11 +1050,13 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
     if (results.error() != OK && results.error() != ERR_NAME_NOT_RESOLVED) {
-      OnFailure(results.error(), parse_result, results.GetOptionalTtl());
+      OnFailure(results.error(), parse_result, results.GetOptionalTtl(),
+                secure);
       return;
     }
 
     // Merge results with saved results from previous transactions.
+    DCHECK_EQ(saved_results_.has_value(), saved_secure_.has_value());
     if (saved_results_) {
       DCHECK(needs_two_transactions());
       DCHECK_GE(1u, num_completed_transactions_);
@@ -1074,6 +1078,10 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           // Only expect address query types with multiple transactions.
           NOTREACHED();
       }
+      // If the earlier result was retrieved insecurely, the merged result
+      // should be stored accordingly.
+      if (!saved_secure_.value())
+        secure = false;
     }
 
     // If not all transactions are complete, the task cannot yet be completed
@@ -1081,6 +1089,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     ++num_completed_transactions_;
     if (needs_two_transactions() && num_completed_transactions_ == 1) {
       saved_results_ = std::move(results);
+      saved_secure_ = secure;
       // No need to repeat the suffix search.
       key_.hostname = transaction->GetHostname();
       delegate_->OnFirstDnsTransactionComplete();
@@ -1096,11 +1105,11 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       client_->GetAddressSorter()->Sort(
           results.addresses().value(),
           base::BindOnce(&DnsTask::OnSortComplete, AsWeakPtr(),
-                         tick_clock_->NowTicks(), std::move(results)));
+                         tick_clock_->NowTicks(), std::move(results), secure));
       return;
     }
 
-    OnSuccess(results);
+    OnSuccess(results, secure);
   }
 
   DnsResponse::Result ParseAddressDnsResponse(const DnsResponse* response,
@@ -1304,13 +1313,14 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   void OnSortComplete(base::TimeTicks sort_start_time,
                       HostCache::Entry results,
+                      bool secure,
                       bool success,
                       const AddressList& addr_list) {
     results.set_addresses(addr_list);
 
     if (!success) {
       OnFailure(ERR_DNS_SORT_ERROR, DnsResponse::DNS_PARSE_OK,
-                results.GetOptionalTtl());
+                results.GetOptionalTtl(), secure);
       return;
     }
 
@@ -1320,16 +1330,17 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         results.hostnames().value_or(std::vector<HostPortPair>()).empty()) {
       LOG(WARNING) << "Address list empty after RFC3484 sort";
       OnFailure(ERR_NAME_NOT_RESOLVED, DnsResponse::DNS_PARSE_OK,
-                results.GetOptionalTtl());
+                results.GetOptionalTtl(), secure);
       return;
     }
 
-    OnSuccess(results);
+    OnSuccess(results, secure);
   }
 
   void OnFailure(int net_error,
                  DnsResponse::Result parse_result,
-                 base::Optional<base::TimeDelta> ttl) {
+                 base::Optional<base::TimeDelta> ttl,
+                 bool secure) {
     DCHECK_NE(OK, net_error);
 
     HostCache::Entry results(net_error, HostCache::Entry::SOURCE_UNKNOWN);
@@ -1339,6 +1350,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                                  parse_result, results.CreateNetLogCallback()));
 
     // If we have a TTL from a previously completed transaction, use it.
+    DCHECK_EQ(saved_results_.has_value(), saved_secure_.has_value());
     base::TimeDelta previous_transaction_ttl;
     if (saved_results_ && saved_results_.value().has_ttl() &&
         saved_results_.value().ttl() <
@@ -1352,14 +1364,18 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     } else if (ttl) {
       results.set_ttl(ttl.value());
     }
+    // If the earlier result was retrieved insecurely, any entry stored in the
+    // cache for this transaction should be stored with an insecure key.
+    if (saved_secure_ && !saved_secure_.value())
+      secure = false;
 
-    delegate_->OnDnsTaskComplete(task_start_time_, results);
+    delegate_->OnDnsTaskComplete(task_start_time_, results, secure);
   }
 
-  void OnSuccess(const HostCache::Entry& results) {
+  void OnSuccess(const HostCache::Entry& results, bool secure) {
     net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
                       results.CreateNetLogCallback());
-    delegate_->OnDnsTaskComplete(task_start_time_, results);
+    delegate_->OnDnsTaskComplete(task_start_time_, results, secure);
   }
 
   DnsClient* client_;
@@ -1381,6 +1397,10 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   // Result from previously completed transactions. Only set if a transaction
   // has completed while others are still in progress.
   base::Optional<HostCache::Entry> saved_results_;
+  // Whether the result from the previously completed transaction was retrieved
+  // securely. Only set if a transaction has completed while others are still
+  // in progress.
+  base::Optional<bool> saved_secure_;
 
   const base::TickClock* tick_clock_;
   base::TimeTicks task_start_time_;
@@ -1580,7 +1600,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (results) {
       // This will destroy the Job.
       CompleteRequests(results.value(), base::TimeDelta(),
-                       true /* allow_cache */);
+                       true /* allow_cache */, true /* secure */);
       return true;
     }
     return false;
@@ -1731,7 +1751,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                              ? AddressList::CopyWithPort(addr_list, 0)
                              : AddressList(),
                          HostCache::Entry::SOURCE_UNKNOWN),
-        ttl, true /* allow_cache */);
+        ttl, true /* allow_cache */, false /* secure */);
   }
 
   void StartDnsTask(bool allow_fallback_resolution) {
@@ -1762,7 +1782,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
           base::BindOnce(
               &Job::OnDnsTaskFailure, weak_ptr_factory_.GetWeakPtr(),
               dns_task_->AsWeakPtr(), base::TimeDelta(),
-              HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN)));
+              HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN),
+              false /* secure */));
     }
   }
 
@@ -1776,7 +1797,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // so we use it as indicator whether Job is still valid.
   void OnDnsTaskFailure(const base::WeakPtr<DnsTask>& dns_task,
                         base::TimeDelta duration,
-                        const HostCache::Entry& failure_results) {
+                        const HostCache::Entry& failure_results,
+                        bool secure) {
     DCHECK_NE(OK, failure_results.error());
 
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.FailureTime", duration);
@@ -1806,19 +1828,20 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       base::TimeDelta ttl = failure_results.has_ttl()
                                 ? failure_results.ttl()
                                 : base::TimeDelta::FromSeconds(0);
-      CompleteRequests(failure_results, ttl, true /* allow_cache */);
+      CompleteRequests(failure_results, ttl, true /* allow_cache */, secure);
     }
   }
 
   // HostResolverImpl::DnsTask::Delegate implementation:
 
   void OnDnsTaskComplete(base::TimeTicks start_time,
-                         const HostCache::Entry& results) override {
+                         const HostCache::Entry& results,
+                         bool secure) override {
     DCHECK(is_dns_running());
 
     base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (results.error() != OK) {
-      OnDnsTaskFailure(dns_task_->AsWeakPtr(), duration, results);
+      OnDnsTaskFailure(dns_task_->AsWeakPtr(), duration, results, secure);
       return;
     }
 
@@ -1835,7 +1858,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       return;
     }
 
-    CompleteRequests(results, bounded_ttl, true /* allow_cache */);
+    CompleteRequests(results, bounded_ttl, true /* allow_cache */, secure);
   }
 
   void OnFirstDnsTransactionComplete() override {
@@ -1976,10 +1999,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // Performs Job's last rites. Completes all Requests. Deletes this.
   //
   // If not |allow_cache|, result will not be stored in the host cache, even if
-  // result would otherwise allow doing so.
+  // result would otherwise allow doing so. Update the key to reflect |secure|,
+  // which indicates whether or not the result was obtained securely.
   void CompleteRequests(const HostCache::Entry& results,
                         base::TimeDelta ttl,
-                        bool allow_cache) {
+                        bool allow_cache,
+                        bool secure) {
     CHECK(resolver_.get());
 
     // This job must be removed from resolver's |jobs_| now to make room for a
@@ -2014,8 +2039,11 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     bool did_complete = (results.error() != ERR_NETWORK_CHANGED) &&
                         (results.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    if (did_complete && allow_cache)
-      resolver_->CacheResult(key_, results, ttl);
+    if (did_complete && allow_cache) {
+      Key effective_key = key_;
+      effective_key.secure = secure;
+      resolver_->CacheResult(effective_key, results, ttl);
+    }
 
     RecordJobHistograms(results.error());
 
@@ -2047,7 +2075,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   void CompleteRequestsWithoutCache(const HostCache::Entry& results) {
-    CompleteRequests(results, base::TimeDelta(), false /* allow_cache */);
+    CompleteRequests(results, base::TimeDelta(), false /* allow_cache */,
+                     false /* secure */);
   }
 
   // Convenience wrapper for CompleteRequests in case of failure.
@@ -2055,7 +2084,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DCHECK_NE(OK, net_error);
     CompleteRequests(
         HostCache::Entry(net_error, HostCache::Entry::SOURCE_UNKNOWN),
-        base::TimeDelta(), true /* allow_cache */);
+        base::TimeDelta(), true /* allow_cache */, false /* secure */);
   }
 
   RequestPriority priority() const override {
@@ -2350,7 +2379,7 @@ bool HostResolverImpl::HasCached(base::StringPiece hostname,
   if (!cache_)
     return false;
 
-  return cache_->HasEntry(hostname, source_out, stale_out);
+  return !!cache_->GetMatchingKey(hostname, source_out, stale_out);
 }
 
 std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
@@ -2524,7 +2553,9 @@ HostCache::Entry HostResolverImpl::ResolveLocally(
   }
 
   // Build a key that identifies the request in the cache and in the
-  // outstanding jobs map.
+  // outstanding jobs map. If this key is used in the future to store an entry
+  // in the cache, it will be modified first to indicate whether the result was
+  // obtained securely or not.
   *out_key = GetEffectiveKeyForRequest(hostname, dns_query_type, source, flags,
                                        ip_address_ptr, source_net_log);
 
@@ -2642,20 +2673,21 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeFromCache(
   if (effective_key.host_resolver_source == HostResolverSource::LOCAL_ONLY)
     effective_key.host_resolver_source = HostResolverSource::ANY;
 
-  const HostCache::Entry* cache_entry;
+  const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
   HostCache::EntryStaleness staleness;
   if (allow_stale) {
-    cache_entry =
-        cache_->LookupStale(effective_key, tick_clock_->NowTicks(), &staleness);
+    cache_result = cache_->LookupStale(effective_key, tick_clock_->NowTicks(),
+                                       &staleness, true /* ignore_secure */);
   } else {
-    cache_entry = cache_->Lookup(effective_key, tick_clock_->NowTicks());
+    cache_result = cache_->Lookup(effective_key, tick_clock_->NowTicks(),
+                                  true /* ignore_secure */);
     staleness = HostCache::kNotStale;
   }
-  if (!cache_entry)
+  if (!cache_result)
     return base::nullopt;
 
   *out_stale_info = std::move(staleness);
-  return *cache_entry;
+  return cache_result->second;
 }
 
 base::Optional<HostCache::Entry> HostResolverImpl::ServeFromHosts(

@@ -349,7 +349,7 @@ bool MockHostResolverBase::HasCached(
   if (!cache_)
     return false;
 
-  return cache_->HasEntry(hostname, source_out, stale_out);
+  return !!cache_->GetMatchingKey(hostname, source_out, stale_out);
 }
 
 int MockHostResolverBase::LoadIntoCache(
@@ -590,19 +590,21 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
         source == HostResolverSource::LOCAL_ONLY ? HostResolverSource::ANY
                                                  : source;
     HostCache::Key key(host.host(), dns_query_type, flags, effective_source);
-    const HostCache::Entry* entry;
+    const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
     HostCache::EntryStaleness stale_info = HostCache::kNotStale;
     if (cache_usage ==
         HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
-      entry = cache_->LookupStale(key, tick_clock_->NowTicks(), &stale_info);
+      cache_result = cache_->LookupStale(key, tick_clock_->NowTicks(),
+                                         &stale_info, true /* ignore_secure */);
     } else {
-      entry = cache_->Lookup(key, tick_clock_->NowTicks());
+      cache_result = cache_->Lookup(key, tick_clock_->NowTicks(),
+                                    true /* ignore_secure */);
     }
-    if (entry) {
-      rv = entry->error();
+    if (cache_result) {
+      rv = cache_result->second.error();
       if (rv == OK) {
-        *addresses =
-            AddressList::CopyWithPort(entry->addresses().value(), host.port());
+        *addresses = AddressList::CopyWithPort(
+            cache_result->second.addresses().value(), host.port());
         *out_stale_info = std::move(stale_info);
       }
 
@@ -611,7 +613,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
         DCHECK_LE(1, cache_invalidation_iterator->second);
         cache_invalidation_iterator->second--;
         if (cache_invalidation_iterator->second == 0) {
-          HostCache::Entry new_entry(*entry);
+          HostCache::Entry new_entry(cache_result->second);
           cache_->Set(key, new_entry, tick_clock_->NowTicks(),
                       base::TimeDelta());
           cache_invalidation_nums_.erase(cache_invalidation_iterator);

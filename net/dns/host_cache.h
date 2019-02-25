@@ -53,21 +53,33 @@ class NET_EXPORT HostCache {
         HostResolverFlags host_resolver_flags);
     Key();
 
+    // This is a helper used in comparing keys. The order of comparisons of
+    // |Key| fields is arbitrary, but the tuple is constructed with
+    // |dns_query_type| and |host_resolver_flags| before |hostname| under the
+    // assumption that integer comparisons are faster than string comparisons.
+    std::tuple<DnsQueryType,
+               HostResolverFlags,
+               const std::string&,
+               HostResolverSource,
+               bool>
+    GetTuple(const Key* key) const {
+      return std::tie(key->dns_query_type, key->host_resolver_flags,
+                      key->hostname, key->host_resolver_source, key->secure);
+    }
+
+    bool operator==(const Key& other) const {
+      return GetTuple(this) == GetTuple(&other);
+    }
+
     bool operator<(const Key& other) const {
-      // The order of comparisons of |Key| fields is arbitrary, thus
-      // |dns_query_type| and |host_resolver_flags| are compared before
-      // |hostname| under assumption that integer comparisons are faster than
-      // string comparisons.
-      return std::tie(dns_query_type, host_resolver_flags, hostname,
-                      host_resolver_source) <
-             std::tie(other.dns_query_type, other.host_resolver_flags,
-                      other.hostname, other.host_resolver_source);
+      return GetTuple(this) < GetTuple(&other);
     }
 
     std::string hostname;
     DnsQueryType dns_query_type;
     HostResolverFlags host_resolver_flags;
     HostResolverSource host_resolver_source;
+    bool secure;
   };
 
   struct NET_EXPORT EntryStaleness {
@@ -246,16 +258,21 @@ class NET_EXPORT HostCache {
 
   ~HostCache();
 
-  // Returns a pointer to the entry for |key|, which is valid at time
-  // |now|. If there is no such entry, returns NULL.
-  const Entry* Lookup(const Key& key, base::TimeTicks now);
+  // Returns a pointer to the matching (key, entry) pair, which is valid at time
+  // |now|. If |ignore_secure| is true, ignores the secure field in |key| when
+  // looking for a match. If there is no matching entry, returns NULL.
+  const std::pair<const Key, Entry>* Lookup(const Key& key,
+                                            base::TimeTicks now,
+                                            bool ignore_secure = false);
 
-  // Returns a pointer to the entry for |key|, whether it is valid or stale at
-  // time |now|. Fills in |stale_out| with information about how stale it is.
-  // If there is no entry for |key| at all, returns NULL.
-  const Entry* LookupStale(const Key& key,
-                           base::TimeTicks now,
-                           EntryStaleness* stale_out);
+  // Returns a pointer to the matching (key, entry) pair, whether it is valid or
+  // stale at time |now|. Fills in |stale_out| with information about how stale
+  // it is. If |ignore_secure| is true, ignores the secure field in |key| when
+  // looking for a match. If there is no matching entry, returns NULL.
+  const std::pair<const Key, Entry>* LookupStale(const Key& key,
+                                                 base::TimeTicks now,
+                                                 EntryStaleness* stale_out,
+                                                 bool ignore_secure = false);
 
   // Overwrites or creates an entry for |key|.
   // |entry| is the value to set, |now| is the current time
@@ -266,14 +283,15 @@ class NET_EXPORT HostCache {
            base::TimeDelta ttl);
 
   // Checks whether an entry exists for |hostname|.
-  // If so, returns true and writes the source (e.g. DNS, HOSTS file, etc.) to
-  // |source_out| and the staleness to |stale_out| (if they are not null).
-  // It tries using two common address_family and host_resolver_flag
+  // If so, returns the matching key and writes the source (e.g. DNS, HOSTS
+  // file, etc.) to |source_out| and the staleness to |stale_out| (if they are
+  // not null). It tries using two common address_family and host_resolver_flag
   // combinations when performing lookups in the cache; this means false
-  // negatives are possible, but unlikely.
-  bool HasEntry(base::StringPiece hostname,
-                HostCache::Entry::Source* source_out,
-                HostCache::EntryStaleness* stale_out);
+  // negatives are possible, but unlikely. It also ignores the secure field
+  // while searching for matches. If no entry exists, returns nullptr.
+  const HostCache::Key* GetMatchingKey(base::StringPiece hostname,
+                                       HostCache::Entry::Source* source_out,
+                                       HostCache::EntryStaleness* stale_out);
 
   // Marks all entries as stale on account of a network change.
   void OnNetworkChange();
@@ -322,7 +340,26 @@ class NET_EXPORT HostCache {
   enum LookupOutcome : int;
   enum EraseReason : int;
 
-  Entry* LookupInternal(const Key& key);
+  // Returns the result that is least stale, based on the number of network
+  // changes since the result was cached. If the results are equally stale,
+  // prefers a securely retrieved result. Returns nullptr if both results are
+  // nullptr.
+  static std::pair<const HostCache::Key, HostCache::Entry>*
+  GetLessStaleMoreSecureResult(
+      base::TimeTicks now,
+      std::pair<const HostCache::Key, HostCache::Entry>* result1,
+      std::pair<const HostCache::Key, HostCache::Entry>* result2);
+
+  // Returns matching key and entry from cache and nullptr if no match. Ignores
+  // the secure field in |initial_key| if |ignore_secure| is true.
+  std::pair<const Key, Entry>* LookupInternalIgnoringFields(
+      const Key& initial_key,
+      base::TimeTicks now,
+      bool ignore_secure);
+
+  // Returns matching key and entry from cache and nullptr if no match. An exact
+  // match for |key| is required.
+  std::pair<const Key, Entry>* LookupInternal(const Key& key);
 
   // Returns true if this HostCache can contain no entries.
   bool caching_is_disabled() const { return max_entries_ == 0; }

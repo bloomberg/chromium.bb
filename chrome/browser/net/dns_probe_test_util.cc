@@ -29,7 +29,8 @@ std::unique_ptr<DnsClient> CreateMockDnsClientForProbes(
   const uint16_t kTypeA = net::dns_protocol::kTypeA;
   MockDnsClientRuleList rules;
   rules.push_back(MockDnsClientRule(DnsProbeRunner::kKnownGoodHostname, kTypeA,
-                                    MockDnsClientRule::Result(result), false));
+                                    MockDnsClientRule::Result(result),
+                                    false /* delay */));
 
   return std::unique_ptr<DnsClient>(
       new net::MockDnsClient(config, std::move(rules)));

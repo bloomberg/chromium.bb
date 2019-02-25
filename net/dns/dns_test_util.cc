@@ -191,6 +191,7 @@ class MockTransaction : public DnsTransaction,
         hostname_(hostname),
         qtype_(qtype),
         callback_(std::move(callback)),
+        secure_(false),
         started_(false),
         delayed_(false) {
     // Find the relevant rule which matches |qtype| and prefix of |hostname|.
@@ -200,6 +201,7 @@ class MockTransaction : public DnsTransaction,
           (hostname.compare(0, prefix.size(), prefix) == 0)) {
         const MockDnsClientRule::Result* result = &rules[i].result;
         result_ = MockDnsClientRule::Result(result->type);
+        secure_ = result->secure;
         delayed_ = rules[i].delay;
 
         // Generate a DnsResponse when not provided with the rule.
@@ -285,15 +287,15 @@ class MockTransaction : public DnsTransaction,
       case MockDnsClientRule::NODOMAIN:
       case MockDnsClientRule::FAIL:
         std::move(callback_).Run(this, ERR_NAME_NOT_RESOLVED,
-                                 result_.response.get());
+                                 result_.response.get(), secure_);
         break;
       case MockDnsClientRule::EMPTY:
       case MockDnsClientRule::OK:
       case MockDnsClientRule::MALFORMED:
-        std::move(callback_).Run(this, OK, result_.response.get());
+        std::move(callback_).Run(this, OK, result_.response.get(), secure_);
         break;
       case MockDnsClientRule::TIMEOUT:
-        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr);
+        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr, secure_);
         break;
     }
   }
@@ -305,6 +307,7 @@ class MockTransaction : public DnsTransaction,
   const std::string hostname_;
   const uint16_t qtype_;
   DnsTransactionFactory::CallbackType callback_;
+  bool secure_;
   bool started_;
   bool delayed_;
 };

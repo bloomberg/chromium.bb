@@ -38,6 +38,7 @@ const char kAddressFamilyKey[] = "address_family";
 const char kDnsQueryTypeKey[] = "dns_query_type";
 const char kFlagsKey[] = "flags";
 const char kHostResolverSourceKey[] = "host_resolver_source";
+const char kSecureKey[] = "secure";
 const char kExpirationKey[] = "expiration";
 const char kTtlKey[] = "ttl";
 const char kNetworkChangesKey[] = "network_changes";
@@ -111,7 +112,8 @@ HostCache::Key::Key(const std::string& hostname,
     : hostname(hostname),
       dns_query_type(dns_query_type),
       host_resolver_flags(host_resolver_flags),
-      host_resolver_source(host_resolver_source) {}
+      host_resolver_source(host_resolver_source),
+      secure(false) {}
 
 HostCache::Key::Key(const std::string& hostname,
                     AddressFamily address_family,
@@ -366,44 +368,106 @@ HostCache::~HostCache() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-const HostCache::Entry* HostCache::Lookup(const Key& key, base::TimeTicks now) {
+const std::pair<const HostCache::Key, HostCache::Entry>*
+HostCache::Lookup(const Key& key, base::TimeTicks now, bool ignore_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (caching_is_disabled())
     return nullptr;
 
-  HostCache::Entry* entry = LookupInternal(key);
-  if (!entry)
+  auto* result = LookupInternalIgnoringFields(key, now, ignore_secure);
+  if (!result)
     return nullptr;
+
+  auto* entry = &result->second;
   if (entry->IsStale(now, network_changes_))
     return nullptr;
 
   entry->CountHit(/* hit_is_stale= */ false);
-  return entry;
+  return result;
 }
 
-const HostCache::Entry* HostCache::LookupStale(
+const std::pair<const HostCache::Key, HostCache::Entry>* HostCache::LookupStale(
     const Key& key,
     base::TimeTicks now,
-    HostCache::EntryStaleness* stale_out) {
+    HostCache::EntryStaleness* stale_out,
+    bool ignore_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (caching_is_disabled())
     return nullptr;
 
-  HostCache::Entry* entry = LookupInternal(key);
-  if (!entry)
+  auto* result = LookupInternalIgnoringFields(key, now, ignore_secure);
+  if (!result)
     return nullptr;
 
+  auto* entry = &result->second;
   bool is_stale = entry->IsStale(now, network_changes_);
   entry->CountHit(/* hit_is_stale= */ is_stale);
 
   if (stale_out)
     entry->GetStaleness(now, network_changes_, stale_out);
-  return entry;
+  return result;
 }
 
-HostCache::Entry* HostCache::LookupInternal(const Key& key) {
+// static
+std::pair<const HostCache::Key, HostCache::Entry>*
+HostCache::GetLessStaleMoreSecureResult(
+    base::TimeTicks now,
+    std::pair<const HostCache::Key, HostCache::Entry>* result1,
+    std::pair<const HostCache::Key, HostCache::Entry>* result2) {
+  // Prefer a non-null result if possible.
+  if (!result1 && !result2)
+    return nullptr;
+  if (result1 && !result2)
+    return result1;
+  if (!result1 && result2)
+    return result2;
+
+  // Both result1 are result2 are non-null.
+  EntryStaleness staleness1, staleness2;
+  result1->second.GetStaleness(now, 0, &staleness1);
+  result2->second.GetStaleness(now, 0, &staleness2);
+  if (staleness1.network_changes == staleness2.network_changes) {
+    // Exactly one of the results should be secure.
+    DCHECK(result1->first.secure != result2->first.secure);
+    // If the results have the same number of network changes, prefer a
+    // non-expired result.
+    if (staleness1.expired_by < base::TimeDelta() &&
+        staleness2.expired_by >= base::TimeDelta()) {
+      return result1;
+    }
+    if (staleness1.expired_by >= base::TimeDelta() &&
+        staleness2.expired_by < base::TimeDelta()) {
+      return result2;
+    }
+    // Both results are equally stale, so prefer a secure result.
+    return (result1->first.secure) ? result1 : result2;
+  }
+  // Prefer the result with the fewest network changes.
+  return (staleness1.network_changes < staleness2.network_changes) ? result1
+                                                                   : result2;
+}
+
+std::pair<const HostCache::Key, HostCache::Entry>*
+HostCache::LookupInternalIgnoringFields(const Key& initial_key,
+                                        base::TimeTicks now,
+                                        bool ignore_secure) {
+  std::pair<const HostCache::Key, HostCache::Entry>* preferred_result =
+      LookupInternal(initial_key);
+
+  if (ignore_secure) {
+    Key effective_key = initial_key;
+    effective_key.secure = !initial_key.secure;
+    preferred_result = GetLessStaleMoreSecureResult(
+        now, preferred_result, LookupInternal(effective_key));
+  }
+
+  return preferred_result;
+}
+
+std::pair<const HostCache::Key, HostCache::Entry>* HostCache::LookupInternal(
+    const Key& key) {
   auto it = entries_.find(key);
-  return (it != entries_.end()) ? &it->second : nullptr;
+  return (it != entries_.end()) ? &*it : nullptr;
 }
 
 void HostCache::Set(const Key& key,
@@ -479,7 +543,7 @@ void HostCache::Set(const Key& key,
       EvictOneEntry(now);
   }
 
-  AddEntry(Key(key), Entry(entry, now, ttl, network_changes_));
+  AddEntry(key, Entry(entry, now, ttl, network_changes_));
 
   if (delegate_ && result_changed)
     delegate_->ScheduleWrite();
@@ -558,6 +622,7 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     entry_dict->SetInteger(kFlagsKey, key.host_resolver_flags);
     entry_dict->SetInteger(kHostResolverSourceKey,
                            static_cast<int>(key.host_resolver_source));
+    entry_dict->SetBoolean(kSecureKey, static_cast<bool>(key.secure));
 
     entry_list->Append(std::move(entry_dict));
   }
@@ -609,6 +674,11 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     if (!entry_dict->GetInteger(kHostResolverSourceKey,
                                 &host_resolver_source)) {
       host_resolver_source = static_cast<int>(HostResolverSource::ANY);
+    }
+
+    bool secure;
+    if (!entry_dict->GetBoolean(kSecureKey, &secure)) {
+      secure = false;
     }
 
     int error = OK;
@@ -680,6 +750,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
 
     Key key(hostname, dns_query_type, flags,
             static_cast<HostResolverSource>(host_resolver_source));
+    key.secure = secure;
 
     // If the key is already in the cache, assume it's more recent and don't
     // replace the entry.
@@ -729,15 +800,17 @@ void HostCache::EvictOneEntry(base::TimeTicks now) {
   entries_.erase(oldest_it);
 }
 
-bool HostCache::HasEntry(base::StringPiece hostname,
-                         HostCache::Entry::Source* source_out,
-                         HostCache::EntryStaleness* stale_out) {
+const HostCache::Key* HostCache::GetMatchingKey(
+    base::StringPiece hostname,
+    HostCache::Entry::Source* source_out,
+    HostCache::EntryStaleness* stale_out) {
   net::HostCache::Key cache_key;
   hostname.CopyToString(&cache_key.hostname);
 
-  const HostCache::Entry* entry =
-      LookupStale(cache_key, tick_clock_->NowTicks(), stale_out);
-  if (!entry && IsAddressType(cache_key.dns_query_type)) {
+  const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
+      LookupStale(cache_key, tick_clock_->NowTicks(), stale_out,
+                  true /* ignore_secure */);
+  if (!cache_result && IsAddressType(cache_key.dns_query_type)) {
     // Might not have found the cache entry because the address_family or
     // host_resolver_flags in cache_key do not match those used for the
     // original DNS lookup. Try another common combination of address_family
@@ -745,15 +818,16 @@ bool HostCache::HasEntry(base::StringPiece hostname,
     cache_key.dns_query_type = DnsQueryType::A;
     cache_key.host_resolver_flags =
         net::HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-    entry = LookupStale(cache_key, tick_clock_->NowTicks(), stale_out);
-    if (!entry)
-      return false;
+    cache_result = LookupStale(cache_key, tick_clock_->NowTicks(), stale_out,
+                               true /* ignore_secure */);
+    if (!cache_result)
+      return nullptr;
   }
 
   if (source_out != nullptr)
-    *source_out = entry->source();
+    *source_out = cache_result->second.source();
 
-  return true;
+  return &cache_result->first;
 }
 
 }  // namespace net

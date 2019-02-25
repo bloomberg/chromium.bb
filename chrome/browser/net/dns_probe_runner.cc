@@ -119,10 +119,10 @@ bool DnsProbeRunner::IsRunning() const {
   return !callback_.is_null();
 }
 
-void DnsProbeRunner::OnTransactionComplete(
-    DnsTransaction* transaction,
-    int net_error,
-    const DnsResponse* response) {
+void DnsProbeRunner::OnTransactionComplete(DnsTransaction* transaction,
+                                           int net_error,
+                                           const DnsResponse* response,
+                                           bool secure) {
   DCHECK(!callback_.is_null());
   DCHECK(transaction_.get());
   DCHECK_EQ(transaction_.get(), transaction);
