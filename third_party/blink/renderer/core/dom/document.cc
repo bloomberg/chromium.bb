@@ -5148,7 +5148,11 @@ void Document::EnqueueScrollEventForNode(Node* target) {
 }
 
 void Document::EnqueueScrollEndEventForNode(Node* target) {
-  Event* scroll_end_event = Event::Create(event_type_names::kScrollend);
+  // Mimic bubbling behavior of scroll event for consistency.
+  Event* scroll_end_event =
+      target->IsDocumentNode()
+          ? Event::CreateBubble(event_type_names::kScrollend)
+          : Event::Create(event_type_names::kScrollend);
   scroll_end_event->SetTarget(target);
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_end_event);
 }
@@ -5156,8 +5160,10 @@ void Document::EnqueueScrollEndEventForNode(Node* target) {
 void Document::EnqueueOverscrollEventForNode(Node* target,
                                              double delta_x,
                                              double delta_y) {
-  Event* overscroll_event =
-      OverscrollEvent::Create(event_type_names::kOverscroll, delta_x, delta_y);
+  // Mimic bubbling behavior of scroll event for consistency.
+  bool bubbles = target->IsDocumentNode();
+  Event* overscroll_event = OverscrollEvent::Create(
+      event_type_names::kOverscroll, bubbles, delta_x, delta_y);
   overscroll_event->SetTarget(target);
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(overscroll_event);
 }

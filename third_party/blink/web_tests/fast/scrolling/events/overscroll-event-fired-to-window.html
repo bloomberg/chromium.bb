@@ -30,24 +30,19 @@ var target_div = document.getElementById('targetDiv');
 var rect = target_div.getBoundingClientRect();
 var x = rect.left + rect.width / 2;
 var y = rect.top + rect.height / 2;
-function scrollLeft() {
-  return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "left");
-}
 
 function scrollUp() {
   return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "up");
 }
 
-var overscrolled_x_delta = 0;
-var overscrolled_y_delta = 0;
+var window_received_autoscroll = false;
 function onOverscroll(event) {
   assert_false(event.cancelable);
-  // overscroll events are bubbled when the target node is document.
+  // overscroll events targetting document are bubbled to the window.
   assert_true(event.bubbles);
-  overscrolled_x_delta = event.deltaX;
-  overscrolled_y_delta = event.deltaY;
+  window_received_autoscroll = true;
 }
-document.addEventListener("overscroll", onOverscroll);
+window.addEventListener("overscroll", onOverscroll);
 
 promise_test (async (t) => {
   // Make sure that no overscroll event is sent to target_div.
@@ -56,19 +51,9 @@ promise_test (async (t) => {
 
   await waitForCompositorCommit();
 
-  // Scroll left on target div and wait for the doc to get overscroll event.
-  await scrollLeft();
-  await waitFor(() => { return overscrolled_x_delta < 0; },
-      'Document did not receive overscroll event after scroll left on target.');
-  assert_equals(target_div.scrollLeft, 0);
-
-  overscrolled_x_delta = 0;
-  overscrolled_y_delta = 0;
-
-  // Scroll up on target div and wait for the doc to get overscroll event.
+  // Scroll up on target div and wait for the window to get overscroll event.
   await scrollUp();
-  await waitFor(() => { return overscrolled_y_delta < 0; },
-      'Document did not receive overscroll event after scroll up on target.');
-  assert_equals(target_div.scrollTop, 0);
-}, 'Tests that the document gets overscroll event when no element scrolls.');
+  await waitFor(() => { return window_received_autoscroll; },
+      'Window did not receive overscroll event after scroll up on target.');
+}, 'Tests that the window gets overscroll event when no element scrolls.');
 </script>
