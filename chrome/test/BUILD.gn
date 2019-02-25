@@ -3217,6 +3217,7 @@ test("unit_tests") {
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
       "//chrome/services/media_gallery_util:unit_tests",
+      "//components/download/internal/common:internal_java",
       "//components/favicon/core/test:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
