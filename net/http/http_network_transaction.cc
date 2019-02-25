@@ -128,9 +128,14 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
 #if BUILDFLAG(ENABLE_REPORTING)
-  // If no error or success report has been generated yet at this point, then
-  // this network transaction was prematurely cancelled.
-  GenerateNetworkErrorLoggingReport(ERR_ABORTED);
+  // Report a success if we have not already done so. Errors would have been
+  // reported from DoCallback(), DoReadBodyComplete(), HandleIOError(), or
+  // DoReadHeadersComplete().
+  // Note: This may incorrectly report an error as a success, e.g. if the
+  // request is cancelled after successfully receiving headers but would
+  // otherwise have encountered an error on reading the body.
+  if (headers_valid_ && next_state_ == STATE_NONE)
+    GenerateNetworkErrorLoggingReport(OK);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   if (stream_.get()) {
     // TODO(mbelshe): The stream_ should be able to compute whether or not the
@@ -1250,15 +1255,12 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   ProcessNetworkErrorLoggingHeader();
 
   // Generate NEL report here if we have to report an HTTP error (4xx or 5xx
-  // code), or if the response body will not be read, or on a redirect.
-  // Note: This will report a success for a redirect even if an error is
-  // encountered later while draining the body.
+  // code), or if the response body will not be read.
   int response_code = response_.headers->response_code();
   if ((response_code >= 400 && response_code < 600) ||
       response_code == HTTP_NO_CONTENT || response_code == HTTP_RESET_CONTENT ||
       response_code == HTTP_NOT_MODIFIED || request_->method == "HEAD" ||
-      response_.headers->GetContentLength() == 0 ||
-      response_.headers->IsRedirect(nullptr /* location */)) {
+      response_.headers->GetContentLength() == 0) {
     GenerateNetworkErrorLoggingReport(OK);
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
