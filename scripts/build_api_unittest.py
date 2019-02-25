@@ -7,10 +7,10 @@
 
 from __future__ import print_function
 
-from chromite.api import build_api
 from chromite.api.gen import build_api_test_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.scripts import build_api
 
 
 class RouterTest(cros_test_lib.MockTestCase):

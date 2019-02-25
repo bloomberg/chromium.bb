@@ -588,31 +588,27 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           packages,
           extra_env=self._portage_extra_env)
 
-  def RecordPackagesUnderTest(self, packages_to_build):
+  def RecordPackagesUnderTest(self):
     """Records all packages that may affect the board to BuilderRun."""
-    deps = dict()
-    # Include packages that are built in chroot because they can
-    # affect any board.
-    packages = ['virtual/target-sdk']
-    # Include chromite because we are running cbuildbot.
-    packages += ['chromeos-base/chromite']
+    packages = set()
     try:
-      deps.update(commands.ExtractDependencies(self._build_root, packages))
+      deps = commands.ExtractBuildDepsGraph(
+          self._build_root, self._current_board)
+      for package_dep in deps['packageDeps']:
+        info = package_dep['packageInfo']
+        packages.add('%s/%s-%s' % (
+            info['category'], info['packageName'], info['version']))
 
-      # Include packages that will be built as part of the board.
-      deps.update(
-          commands.ExtractDependencies(
-              self._build_root, packages_to_build, board=self._current_board))
-    except Exception as e:
+    except Exception:
       # Dependency extraction may fail due to bad ebuild changes. Let
       # the build continues because we have logic to triage build
       # packages failures separately. Note that we only categorize CLs
       # on the package-level if dependencies are extracted
       # successfully, so it is safe to ignore the exception.
-      logging.warning('Unable to gather packages under test: %s', e)
+      logging.exception('Unable to gather packages under test')
     else:
       logging.info('Recording packages under test')
-      self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
+      self.board_runattrs.SetParallel('packages_under_test', packages)
 
   def _ShouldEnableGoma(self):
     # Enable goma if 1) chrome actually needs to be built, or we want to use
@@ -662,7 +658,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     packages = self.GetListOfPackagesToBuild()
     self.VerifyChromeBinpkg(packages)
-    self.RecordPackagesUnderTest(packages)
+    self.RecordPackagesUnderTest()
 
     try:
       event_filename = 'build-events.json'

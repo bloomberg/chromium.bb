@@ -2062,6 +2062,34 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
     return json.loads(f.read())
 
 
+def ExtractBuildDepsGraph(buildroot, board):
+  """Extrace the build deps graph for |board| using build_api proto service.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+  """
+  cmd = ['build_api', 'chromite.api.DependencyService/GetBuildDependencyGraph']
+  chroot_tmp = path_util.FromChrootPath('/tmp')
+  with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
+    input_proto_file = os.path.join(tmpdir, 'input.json')
+    output_proto_file = os.path.join(tmpdir, 'output.json')
+    depgraph_file = os.path.join(tmpdir, 'depgraph.json')
+    with open(input_proto_file, 'w') as f:
+      input_proto = {
+          'build_target': {
+              'name': board,
+          },
+          'output_path': path_util.ToChrootPath(depgraph_file),
+      }
+      json.dump(input_proto, f)
+    cmd += ['--input-json', path_util.ToChrootPath(input_proto_file),
+            '--output-json', path_util.ToChrootPath(output_proto_file)]
+    RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+                   redirect_stdout=True)
+    return json.loads(osutils.ReadFile(depgraph_file))
+
+
 def GenerateCPEExport(buildroot, board, useflags=None):
   """Generate CPE export.
 
