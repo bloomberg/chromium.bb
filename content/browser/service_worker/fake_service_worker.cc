@@ -120,17 +120,14 @@ void FakeServiceWorker::DispatchNotificationClickEvent(
     int action_index,
     const base::Optional<base::string16>& reply,
     DispatchNotificationClickEventCallback callback) {
-  helper_->OnNotificationClickEventStub(notification_id, notification_data,
-                                        action_index, reply,
-                                        std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchNotificationCloseEvent(
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
     DispatchNotificationCloseEventCallback callback) {
-  helper_->OnNotificationCloseEventStub(notification_id, notification_data,
-                                        std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchPushEvent(
