@@ -731,8 +731,8 @@
   },
   {
     "name": "enable-app-list-search-autocomplete",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "newcomer" ],
+    "expiry_milestone": 75
   },
   {
     "name": "enable-app-notification-status-messaging",
