@@ -177,6 +177,7 @@
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
+  self.manageSyncSettingsCoordinator.dispatcher = self.dispatcher;
   self.manageSyncSettingsCoordinator.navigationController =
       self.navigationController;
   self.manageSyncSettingsCoordinator.delegate = self;

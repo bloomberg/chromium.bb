@@ -14,6 +14,9 @@
 // Called when the UISwitch from the SyncSwitchItem is toggled.
 - (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value;
 
+// Called when the cell is tapped.
+- (void)didSelectItem:(TableViewItem*)item;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_SERVICE_DELEGATE_H_

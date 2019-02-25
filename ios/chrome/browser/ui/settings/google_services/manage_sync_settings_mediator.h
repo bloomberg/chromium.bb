@@ -7,10 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_view_controller_model_delegate.h"
 
+@protocol ManageSyncSettingsCommandHandler;
+@protocol ManageSyncSettingsConsumer;
 class SyncSetupService;
 namespace syncer {
 class SyncService;
@@ -25,6 +26,8 @@ class SyncService;
 @property(nonatomic, weak) id<ManageSyncSettingsConsumer> consumer;
 // Sync setup service.
 @property(nonatomic, assign) SyncSetupService* syncSetupService;
+// Command handler.
+@property(nonatomic, weak) id<ManageSyncSettingsCommandHandler> commandHandler;
 
 // Designated initializer.
 // |syncService|: Sync service. Should not be null.

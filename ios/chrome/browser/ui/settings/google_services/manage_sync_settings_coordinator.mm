@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 
@@ -15,6 +16,7 @@
 #endif
 
 @interface ManageSyncSettingsCoordinator () <
+    ManageSyncSettingsCommandHandler,
     ManageSyncSettingsTableViewControllerPresentationDelegate>
 
 // View controller.
@@ -34,6 +36,7 @@
       [[ManageSyncSettingsMediator alloc] initWithSyncService:syncService];
   self.mediator.syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.commandHandler = self;
   self.viewController = [[ManageSyncSettingsTableViewController alloc]
       initWithTableViewStyle:UITableViewStyleGrouped
                  appBarStyle:ChromeTableViewControllerStyleNoAppBar];
@@ -52,6 +55,17 @@
     (ManageSyncSettingsTableViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
+}
+
+#pragma mark - ManageSyncSettingsCommandHandler
+
+- (void)openPassphraseDialog {
+}
+
+- (void)openWebAppActivityDialog {
+}
+
+- (void)openDataFromChromeSyncWebPage {
 }
 
 @end
