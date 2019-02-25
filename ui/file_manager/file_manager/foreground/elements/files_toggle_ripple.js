@@ -54,7 +54,7 @@ var FilesToggleRipple = Polymer({
    * @private
    */
   performActivateAnimation_: function() {
-    var borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
+    const borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
 
     this.$.ripple.animate([
       {opacity: 0, offset: 0, easing: 'linear'},
@@ -102,7 +102,7 @@ var FilesToggleRipple = Polymer({
    * @private
    */
   performDeactivateAnimation_: function() {
-    var borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
+    const borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
 
     this.$.ripple.animate([
       {opacity: 0.2, offset: 0, easing: 'linear'},

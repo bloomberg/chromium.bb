@@ -41,22 +41,22 @@ const testPage = [
 ];
 
 /** @type {Element} */
-var chocolateButton;
+let chocolateButton;
 
 /** @type {Element} */
-var cherriesButton;
+let cherriesButton;
 
 /** @type {Element} */
-var otherButton;
+let otherButton;
 
 /** @type {FilesTooltip|Element} */
-var tooltip;
+let tooltip;
 
 function setUpPage() {
   console.log('setUpPage');
 
   const importElements = (src) => {
-    var link = document.createElement('link');
+    const link = document.createElement('link');
     link.rel = 'import';
     link.onload = onLinkLoaded;
     document.head.appendChild(link);
@@ -97,7 +97,7 @@ function setUp() {
 
 function waitForMutation(target) {
   return new Promise(function(fulfill, reject) {
-    var observer = new MutationObserver(function(mutations) {
+    const observer = new MutationObserver(function(mutations) {
       observer.disconnect();
       fulfill();
     });
@@ -120,7 +120,7 @@ function testFocus(callback) {
     }).then(function() {
       assertEquals('Cherries!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
-      var expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
+      const expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
       assertEquals(expectedLeft, tooltip.style.left);
       assertEquals('70px', tooltip.style.top);
 
@@ -147,7 +147,7 @@ function testHover(callback) {
     }).then(function() {
       assertEquals('Cherries!', tooltip.textContent.trim());
       assertTrue(!!tooltip.getAttribute('visible'));
-      var expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
+      const expectedLeft = document.body.offsetWidth - tooltip.offsetWidth + 'px';
       assertEquals(expectedLeft, tooltip.style.left);
       assertEquals('70px', tooltip.style.top);
 

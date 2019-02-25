@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+const FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
 /**
  * Polymer element to render a media securely inside webview.
@@ -54,7 +54,7 @@ var FilesSafeMedia = Polymer({
       this.webview_ = null;
     } else if (this.src && !this.webview_) {
       // Create webview node only if src exists to save resources.
-      var webview =
+      const webview =
           /** @type {!HTMLElement} */ (document.createElement('webview'));
       this.webview_ = webview;
       webview.partition = 'trusted';
@@ -64,7 +64,7 @@ var FilesSafeMedia = Polymer({
           'contentload', this.onSrcChange_.bind(this));
       webview.src = this.sourceFile_();
     } else if (this.src && this.webview_.contentWindow) {
-      var data = {};
+      const data = {};
       data.type = this.type;
       data.src = this.src;
       window.setTimeout(function() {

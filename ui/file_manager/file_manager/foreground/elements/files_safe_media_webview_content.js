@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 window.onload = function() {
-  var FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
-  var messageSource;
+  const FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+  let messageSource;
 
-  var content = document.querySelector('#content');
+  const content = document.querySelector('#content');
 
   window.addEventListener('message', function(event) {
     if (event.origin !== FILES_APP_ORIGIN) {
