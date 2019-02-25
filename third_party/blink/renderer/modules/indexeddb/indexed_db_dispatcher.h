@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
@@ -22,6 +23,8 @@ class WebIDBCursorImpl;
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
 class MODULES_EXPORT IndexedDBDispatcher {
+  DISALLOW_NEW();
+
  public:
   static void RegisterCursor(WebIDBCursorImpl* cursor);
   static void UnregisterCursor(WebIDBCursorImpl* cursor);
