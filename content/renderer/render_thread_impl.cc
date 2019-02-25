@@ -1307,6 +1307,11 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       EstablishGpuChannelSync();
   if (!gpu_channel_host)
     return nullptr;
+  // Currently, VideoResourceUpdater can't convert hardware resources to
+  // software resources in software compositing mode.  So, fall back to software
+  // video decoding if gpu compositing is off.
+  if (is_gpu_compositing_disabled_)
+    return nullptr;
   // This context is only used to create textures and mailbox them, so
   // use lower limits than the default.
   gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
