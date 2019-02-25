@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -10,7 +11,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -18,12 +18,12 @@
 #define EXPECT_WHEEL_BUCKET(reason, count)     \
   histogram_tester.ExpectBucketCount(          \
       "Renderer4.MainThreadWheelScrollReason", \
-      GetBucketIndex(MainThreadScrollingReason::reason), count);
+      GetBucketIndex(cc::MainThreadScrollingReason::reason), count);
 
 #define EXPECT_TOUCH_BUCKET(reason, count)       \
   histogram_tester.ExpectBucketCount(            \
       "Renderer4.MainThreadGestureScrollReason", \
-      GetBucketIndex(MainThreadScrollingReason::reason), count);
+      GetBucketIndex(cc::MainThreadScrollingReason::reason), count);
 
 #define EXPECT_WHEEL_TOTAL(count)                                            \
   histogram_tester.ExpectTotalCount("Renderer4.MainThreadWheelScrollReason", \

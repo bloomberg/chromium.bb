@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 
 #include <memory>
+
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
@@ -1605,24 +1607,24 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
   if (auto* scrollable_area = ToLayoutBox(object).GetScrollableArea()) {
     if (scrollable_area->HorizontalScrollbar() &&
         scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) {
-      reasons |= MainThreadScrollingReason::kCustomScrollbarScrolling;
+      reasons |= cc::MainThreadScrollingReason::kCustomScrollbarScrolling;
     } else if (scrollable_area->VerticalScrollbar() &&
                scrollable_area->VerticalScrollbar()->IsCustomScrollbar()) {
-      reasons |= MainThreadScrollingReason::kCustomScrollbarScrolling;
+      reasons |= cc::MainThreadScrollingReason::kCustomScrollbarScrolling;
     }
   }
 
   if (object.IsLayoutView()) {
     if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects()) {
       reasons |=
-          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+          cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
     }
 
     // TODO(pdr): This should apply to all scrollable areas, not just the
     // viewport. This is not a user-visible bug because the threaded scrolling
     // setting is only for testing.
     if (!object.GetFrame()->GetSettings()->GetThreadedScrollingEnabled())
-      reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+      reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
 
     // LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects depends
     // on compositing (LayoutBoxModelObject::IsSlowRepaintConstrainedObject
@@ -1640,8 +1642,8 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
           object.StyleRef().VisibleToHitTesting() &&
           object.GetFrameView()
               ->HasVisibleSlowRepaintViewportConstrainedObjects()) {
-        reasons |=
-            MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+        reasons |= cc::MainThreadScrollingReason::
+            kHasNonLayerViewportConstrainedObjects;
       }
     } else {
       // TODO(pdr): CompositeAfterPaint should use an approach like

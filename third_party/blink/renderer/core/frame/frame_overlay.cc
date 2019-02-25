@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 namespace blink {
 
@@ -96,7 +96,7 @@ void FrameOverlay::Update() {
       // state.
       cc::Layer* cc_layer = layer_->CcLayer();
       cc_layer->AddMainThreadScrollingReasons(
-          MainThreadScrollingReason::kFrameOverlay);
+          cc::MainThreadScrollingReason::kFrameOverlay);
     }
 
     layer_->SetLayerState(PropertyTreeState::Root(), IntPoint());
