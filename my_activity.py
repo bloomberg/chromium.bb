@@ -700,7 +700,7 @@ class MyActivity(object):
     if self.changes:
       self.print_heading('Changes')
       for change in self.changes:
-          self.print_change(change)
+        self.print_change(change)
 
   def print_access_errors(self):
     if self.access_errors:
@@ -1039,6 +1039,12 @@ def main():
     else:
       end = datetime.today()
   options.begin, options.end = begin, end
+  if begin >= end:
+    # The queries fail in peculiar ways when the begin date is in the future.
+    # Give a descriptive error message instead.
+    logging.error('Start date (%s) is the same or later than end date (%s)' %
+                  (begin, end))
+    return 1
 
   if options.markdown:
     options.output_format_heading = '### {heading}\n'
