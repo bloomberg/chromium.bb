@@ -103,6 +103,28 @@ class HttpsPreviews(IntegrationTest):
       t.LoadURL('https://mobilespeed-test.appspot.com/static/litepagetests/simple.html')
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
+  # Verifies that a Lite Page pageload sends a DRP pingback.
+  # TODO(robertogden): Set this to M73 once merged.
+  @ChromeVersionEqualOrAfterM(74)
+  def testPingbackSent(self):
+    with TestDriver() as t:
+      enableLitePageServerPreviews(t)
+      t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
+
+      # Navigate twice so that the first page sends a pingback. The second page
+      # can be anything since only the first pageload will send a pingback in
+      # this test.
+      t.LoadURL('https://mobilespeed-test.appspot.com/static/litepagetests/simple.html')
+      self._AssertShowingLitePage(t, 'Hello world', 1)
+      t.LoadURL('https://www.google.com')
+
+      t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Succeeded")
+      # Verify one pingback attempt that was successful.
+      attempted = t.GetHistogram('DataReductionProxy.Pingback.Attempted')
+      self.assertEqual(1, attempted['count'])
+      succeeded = t.GetHistogram('DataReductionProxy.Pingback.Succeeded')
+      self.assertEqual(1, succeeded['count'])
+
   # Verifies that a Lite Page is served when the main frame response is a
   # redirect to a URL that is not blacklisted.
   @ChromeVersionEqualOrAfterM(72)
@@ -165,7 +187,8 @@ class HttpsPreviews(IntegrationTest):
       self.assertEqual(1, lite_page_responses)
 
       # Wait for intervention report to be attempted.
-      t.SleepUntilHistogramHasEntry("Net.Reporting.ReportDeliveredAttempts", 120)
+      t.SleepUntilHistogramHasEntry("Net.Reporting.ReportDeliveredAttempts",
+        120)
       events = t.StopAndGetNetLog()["events"]
 
       # Collect IDs of expected reporting requests.
@@ -173,8 +196,11 @@ class HttpsPreviews(IntegrationTest):
       for event in events:
         if not "params" in event or not "headers" in event["params"]:
           continue
+
         header = event["params"]["headers"]
-        if ":path: /webreports?u=%s"%(urllib.quote_plus("https://mobilespeed-test.appspot.com/web-reports")) in header and "content-type: application/reports+json" in header:
+        quoted_report_url = urllib.quote_plus("https://mobilespeed-test.appspot.com/web-reports")
+        if ((":path: /webreports?u=%s" % quoted_report_url) in header
+            and "content-type: application/reports+json" in header):
           report_request_id.append(event["source"]["id"])
       self.assertNotEqual(0, len(report_request_id))
 
@@ -182,8 +208,11 @@ class HttpsPreviews(IntegrationTest):
       ok_responses = 0
       for id in report_request_id:
         for event in events:
-          if event["source"]["id"] != id or not "params" in event or not "headers" in event["params"]:
+          if (event["source"]["id"] != id
+              or not "params" in event
+              or not "headers" in event["params"]):
             continue
+
           for value in event["params"]["headers"]:
             if ":status: 200" in value:
               ok_responses += 1
