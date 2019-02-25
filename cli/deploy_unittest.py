@@ -298,6 +298,8 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
         deploy, '_GetPackagesByCPV', side_effect=self.FakeGetPackagesByCPV)
     self.emerge = self.PatchObject(deploy, '_Emerge', return_value=None)
     self.unmerge = self.PatchObject(deploy, '_Unmerge', return_value=None)
+    self.selinux = self.PatchObject(
+        deploy, '_SetSELinuxPermissive', return_value=None)
 
   def testDeployEmerge(self):
     """Test that deploy._Emerge is called for each package."""
@@ -319,6 +321,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     # Check that deploy._Emerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, len(packages))
     self.assertEqual(self.unmerge.call_count, 0)
+    self.assertEqual(self.selinux.call_count, 1)
 
   def testDeployUnmerge(self):
     """Test that deploy._Unmerge is called for each package."""
@@ -331,6 +334,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     # Check that deploy._Unmerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, 0)
     self.assertEqual(self.unmerge.call_count, len(packages))
+    self.assertEqual(self.selinux.call_count, 1)
 
   def testDeployMergeWithProgressBar(self):
     """Test that BrilloDeployOperation.Run() is called for merge."""

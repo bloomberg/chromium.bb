@@ -797,6 +797,29 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     logging.notice('%s has been installed.', pkg_name)
 
 
+def _SetSELinuxPermissive(device):
+  """Set SELinux to permissive on target device.
+
+  Args:
+    device: A ChromiumOSDevice object.
+  """
+  try:
+    enforce = device.CatFile('/sys/fs/selinux/enforce', max_size=None)
+    # See if SELinux is already disabled.
+    if enforce.strip() == '0':
+      return
+  except remote_access.CatFileError:
+    # Assume SELinux is not enabled.
+    return
+  device.RunCommand(['setenforce', '0'], remote_sudo=True)
+  device.RunCommand(['sed', '-i', 's/SELINUX=.*/SELINUX=permissive/',
+                     '/etc/selinux/config'], remote_sudo=True)
+  logging.notice('SELinux is set to permissive(crbug.com/932156). '
+                 'Use build_image to test whether the change works '
+                 'with current SELinux policy, or to test SELinux-'
+                 'related changes.')
+
+
 def _GetPackagesByCPV(cpvs, strip, sysroot):
   """Returns paths to binary packages corresponding to |cpvs|.
 
@@ -1002,6 +1025,8 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
         op.Run(func, log_level=logging.DEBUG)
       else:
         func()
+
+      _SetSELinuxPermissive(device)
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')
