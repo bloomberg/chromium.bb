@@ -895,6 +895,16 @@ bool ProfileImpl::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
+bool ProfileImpl::AllowsBrowserWindows() const {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(this) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
+    return false;
+  }
+#endif
+  return !IsSystemProfile();
+}
+
 ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get()) {

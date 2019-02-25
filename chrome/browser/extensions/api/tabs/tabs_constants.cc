@@ -116,6 +116,7 @@ const char kMissingLockWindowFullscreenPrivatePermission[] =
 const char kJavaScriptUrlsNotAllowedInTabsUpdate[] =
     "JavaScript URLs are not allowed in chrome.tabs.update. Use "
     "chrome.tabs.executeScript instead.";
+const char kBrowserWindowNotAllowed[] = "Browser windows not allowed.";
 
 }  // namespace tabs_constants
 }  // namespace extensions

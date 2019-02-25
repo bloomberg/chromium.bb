@@ -171,6 +171,10 @@ class Profile : public content::BrowserContext {
   // Returns whether the profile is a legacy supervised user profile.
   virtual bool IsLegacySupervised() const = 0;
 
+  // Returns whether opening browser windows is allowed in this profile. For
+  // example, browser windows are not allowed in Sign-in profile on Chrome OS.
+  virtual bool AllowsBrowserWindows() const = 0;
+
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;

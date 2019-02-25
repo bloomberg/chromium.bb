@@ -249,6 +249,7 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
       testing_prefs_(nullptr),
       original_profile_(nullptr),
       guest_session_(false),
+      allows_browser_windows_(true),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       browser_context_dependency_manager_(
@@ -279,6 +280,7 @@ TestingProfile::TestingProfile(
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingProfile* parent,
     bool guest_session,
+    bool allows_browser_windows,
     base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
     std::unique_ptr<policy::PolicyService> policy_service,
@@ -289,6 +291,7 @@ TestingProfile::TestingProfile(
       testing_prefs_(nullptr),
       original_profile_(parent),
       guest_session_(guest_session),
+      allows_browser_windows_(allows_browser_windows),
       is_new_profile_(std::move(is_new_profile)),
       supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
@@ -730,6 +733,10 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
+bool TestingProfile::AllowsBrowserWindows() const {
+  return allows_browser_windows_;
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
@@ -1049,6 +1056,7 @@ TestingProfile::Builder::Builder()
     : build_called_(false),
       delegate_(nullptr),
       guest_session_(false),
+      allows_browser_windows_(true),
       profile_name_(kTestingProfile) {}
 
 TestingProfile::Builder::~Builder() {
@@ -1076,6 +1084,10 @@ void TestingProfile::Builder::SetPrefService(
 
 void TestingProfile::Builder::SetGuestSession() {
   guest_session_ = true;
+}
+
+void TestingProfile::Builder::DisallowBrowserWindows() {
+  allows_browser_windows_ = false;
 }
 
 void TestingProfile::Builder::OverrideIsNewProfile(bool is_new_profile) {
@@ -1112,8 +1124,8 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
                          extension_policy_,
 #endif
                          std::move(pref_service_), nullptr, guest_session_,
-                         std::move(is_new_profile_), supervised_user_id_,
-                         std::move(policy_service_),
+                         allows_browser_windows_, std::move(is_new_profile_),
+                         supervised_user_id_, std::move(policy_service_),
                          std::move(testing_factories_), profile_name_));
 }
 
@@ -1124,12 +1136,12 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
   build_called_ = true;
 
   // Note: Owned by |original_profile|.
-  return new TestingProfile(path_, delegate_,
+  return new TestingProfile(
+      path_, delegate_,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                            extension_policy_,
+      extension_policy_,
 #endif
-                            std::move(pref_service_), original_profile,
-                            guest_session_, std::move(is_new_profile_),
-                            supervised_user_id_, std::move(policy_service_),
-                            std::move(testing_factories_), profile_name_);
+      std::move(pref_service_), original_profile, guest_session_,
+      allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
+      std::move(policy_service_), std::move(testing_factories_), profile_name_);
 }

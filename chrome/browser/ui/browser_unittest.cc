@@ -6,10 +6,12 @@
 
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
@@ -152,6 +154,118 @@ TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ZOOM_MINUS));
   EXPECT_FALSE(chrome::CanZoomIn(raw_contents));
   EXPECT_FALSE(chrome::CanZoomOut(raw_contents));
+}
+
+// Tests that Browser::Create creates a guest session browser for OTR profile
+// only.
+TEST_F(BrowserUnitTest, CreateGuestSessionBrowser) {
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetGuestSession();
+  std::unique_ptr<TestingProfile> test_profile = profile_builder.Build();
+  TestingProfile::Builder otr_profile_builder;
+  otr_profile_builder.SetGuestSession();
+  otr_profile_builder.BuildIncognito(test_profile.get());
+
+  // Try creating a browser in original guest profile - it should fail.
+  std::unique_ptr<Browser> browser(
+      Browser::Create(Browser::CreateParams(test_profile.get(), false)));
+  EXPECT_FALSE(browser);
+
+  // Creating a browser in OTR guest profile should succeed.
+  Browser::CreateParams off_the_record_create_params(
+      test_profile->GetOffTheRecordProfile(), false);
+  std::unique_ptr<BrowserWindow> test_window(CreateBrowserWindow());
+  off_the_record_create_params.window = test_window.get();
+  std::unique_ptr<Browser> otr_browser(
+      Browser::Create(off_the_record_create_params));
+  EXPECT_TRUE(otr_browser);
+}
+
+TEST_F(BrowserUnitTest, CreateBrowserFailsIfProfileDisallowsBrowserWindows) {
+  TestingProfile::Builder profile_builder;
+  profile_builder.DisallowBrowserWindows();
+  std::unique_ptr<TestingProfile> test_profile = profile_builder.Build();
+  TestingProfile::Builder otr_profile_builder;
+  otr_profile_builder.DisallowBrowserWindows();
+  otr_profile_builder.BuildIncognito(test_profile.get());
+
+  // Verify creating browser fails in both original and OTR version of the
+  // profile.
+  std::unique_ptr<Browser> browser(
+      Browser::Create(Browser::CreateParams(test_profile.get(), false)));
+  EXPECT_FALSE(browser);
+  std::unique_ptr<Browser> otr_browser(Browser::Create(
+      Browser::CreateParams(test_profile->GetOffTheRecordProfile(), false)));
+  EXPECT_FALSE(otr_browser);
+}
+
+// Tests BrowserCreate() when Incognito mode is disabled.
+TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeDisabled) {
+  TestingProfile::Builder profile_builder;
+  std::unique_ptr<TestingProfile> test_profile = profile_builder.Build();
+  IncognitoModePrefs::SetAvailability(test_profile->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+
+  // Creating a browser window in OTR profile should fail if incognito is
+  // disabled.
+  std::unique_ptr<Browser> otr_browser(Browser::Create(
+      Browser::CreateParams(test_profile->GetOffTheRecordProfile(), false)));
+  EXPECT_FALSE(otr_browser);
+
+  // Verify creating a browser in the original profile succeeds.
+  Browser::CreateParams create_params(test_profile.get(), false);
+  std::unique_ptr<BrowserWindow> test_window(CreateBrowserWindow());
+  create_params.window = test_window.get();
+  std::unique_ptr<Browser> test_browser(Browser::Create(create_params));
+  EXPECT_TRUE(test_browser);
+}
+
+// Tests BrowserCreate() when Incognito mode is forced.
+TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeForced) {
+  TestingProfile::Builder profile_builder;
+  std::unique_ptr<TestingProfile> test_profile = profile_builder.Build();
+  IncognitoModePrefs::SetAvailability(test_profile->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+
+  // Creating a browser window in the original profile should fail if incognito
+  // is forced.
+  std::unique_ptr<Browser> browser(
+      Browser::Create(Browser::CreateParams(test_profile.get(), false)));
+  EXPECT_FALSE(browser);
+
+  // Creating a browser in OTR test profile should succeed.
+  Browser::CreateParams off_the_record_create_params(
+      test_profile->GetOffTheRecordProfile(), false);
+  std::unique_ptr<BrowserWindow> test_window(CreateBrowserWindow());
+  off_the_record_create_params.window = test_window.get();
+  std::unique_ptr<Browser> otr_browser(
+      Browser::Create(off_the_record_create_params));
+  EXPECT_TRUE(otr_browser);
+}
+
+// Tests BrowserCreate() with not restrictions on incognito mode.
+TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeEnabled) {
+  TestingProfile::Builder profile_builder;
+  std::unique_ptr<TestingProfile> test_profile = profile_builder.Build();
+
+  ASSERT_EQ(IncognitoModePrefs::ENABLED,
+            IncognitoModePrefs::GetAvailability(test_profile->GetPrefs()));
+
+  // Creating a browser in the original test profile should succeed.
+  Browser::CreateParams create_params(test_profile.get(), false);
+  std::unique_ptr<BrowserWindow> test_window(CreateBrowserWindow());
+  create_params.window = test_window.get();
+  std::unique_ptr<Browser> test_browser(Browser::Create(create_params));
+  EXPECT_TRUE(test_browser);
+
+  // Creating a browser in OTR test profile should succeed.
+  Browser::CreateParams off_the_record_create_params(
+      test_profile->GetOffTheRecordProfile(), false);
+  std::unique_ptr<BrowserWindow> otr_test_window(CreateBrowserWindow());
+  off_the_record_create_params.window = otr_test_window.get();
+  std::unique_ptr<Browser> otr_browser(
+      Browser::Create(off_the_record_create_params));
+  EXPECT_TRUE(otr_browser);
 }
 
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {

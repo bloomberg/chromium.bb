@@ -306,6 +306,13 @@ void UnmuteIfMutedByExtension(content::WebContents* contents,
   }
 }
 
+// Returns whether a browser window can be created for the specified profile.
+bool CanCreateBrowserForProfile(Profile* profile) {
+  return IncognitoModePrefs::CanOpenBrowser(profile) &&
+         (!profile->IsGuestSession() || profile->IsOffTheRecord()) &&
+         profile->AllowsBrowserWindows();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +389,13 @@ class Browser::InterstitialObserver : public content::WebContentsObserver {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
+
+// static
+Browser* Browser::Create(const CreateParams& params) {
+  if (!CanCreateBrowserForProfile(params.profile))
+    return nullptr;
+  return new Browser(params);
+}
 
 Browser::Browser(const CreateParams& params)
     : extension_registry_observer_(this),
