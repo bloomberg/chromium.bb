@@ -18,8 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment '\u7B2C\u4E00\u6BB5\u843D paragraph 1'",
-          "rect": [549, 191, 21, 36],
+          "object": "LayoutImage IMG",
+          "rect": [100, 300, 50, 51],
           "reason": "selection"
         }
       ]
