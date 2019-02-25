@@ -80,7 +80,6 @@ class FakeIdentityManager : identity::mojom::IdentityManager {
   void GetAccountInfoFromGaiaId(
       const std::string& gaia_id,
       GetAccountInfoFromGaiaIdCallback callback) override {}
-  void GetAccounts(GetAccountsCallback callback) override {}
   void GetAccessToken(const std::string& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,

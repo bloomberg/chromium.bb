@@ -128,26 +128,6 @@ void IdentityManagerImpl::GetAccountInfoFromGaiaId(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityManagerImpl::GetAccounts(GetAccountsCallback callback) {
-  std::vector<mojom::AccountPtr> accounts;
-
-  for (const std::string& account_id : token_service_->GetAccounts()) {
-    AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
-    AccountState account_state = GetStateOfAccount(account_info);
-
-    mojom::AccountPtr account =
-        mojom::Account::New(account_info, account_state);
-
-    if (account->state.is_primary_account) {
-      accounts.insert(accounts.begin(), std::move(account));
-    } else {
-      accounts.push_back(std::move(account));
-    }
-  }
-
-  std::move(callback).Run(std::move(accounts));
-}
-
 void IdentityManagerImpl::GetAccessToken(const std::string& account_id,
                                          const ScopeSet& scopes,
                                          const std::string& consumer_id,
