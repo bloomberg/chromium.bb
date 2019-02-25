@@ -38,6 +38,7 @@ const char kConfigCategoryBenchmarkExecutionMetric[] =
 const char kConfigCategoryBenchmarkNavigation[] = "BENCHMARK_NAVIGATION";
 const char kConfigCategoryBenchmarkRenderers[] = "BENCHMARK_RENDERERS";
 const char kConfigCategoryBenchmarkServiceworker[] = "BENCHMARK_SERVICEWORKER";
+const char kConfigCategoryBenchmarkPower[] = "BENCHMARK_POWER";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
 
 }  // namespace
@@ -76,6 +77,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkRenderers;
     case BackgroundTracingConfigImpl::BENCHMARK_SERVICEWORKER:
       return kConfigCategoryBenchmarkServiceworker;
+    case BackgroundTracingConfigImpl::BENCHMARK_POWER:
+      return kConfigCategoryBenchmarkPower;
     case BackgroundTracingConfigImpl::BLINK_STYLE:
       return kConfigCategoryBlinkStyle;
     case BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET:
@@ -145,6 +148,11 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
 
   if (category_preset_string == kConfigCategoryBenchmarkServiceworker) {
     *category_preset = BackgroundTracingConfigImpl::BENCHMARK_SERVICEWORKER;
+    return true;
+  }
+
+  if (category_preset_string == kConfigCategoryBenchmarkPower) {
+    *category_preset = BackgroundTracingConfigImpl::BENCHMARK_POWER;
     return true;
   }
 
