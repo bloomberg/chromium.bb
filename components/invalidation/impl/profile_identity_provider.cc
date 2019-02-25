@@ -72,7 +72,7 @@ std::string ProfileIdentityProvider::GetActiveAccountId() {
   return active_account_id_;
 }
 
-bool ProfileIdentityProvider::IsActiveAccountAvailable() {
+bool ProfileIdentityProvider::IsActiveAccountWithRefreshToken() {
   if (GetActiveAccountId().empty() || !identity_manager_ ||
       !identity_manager_->HasAccountWithRefreshToken(GetActiveAccountId()))
     return false;

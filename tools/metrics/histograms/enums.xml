@@ -28657,6 +28657,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Shutting Down"/>
   <int value="4" label="Subscription Failure"/>
   <int value="5" label="Stopped"/>
+  <int value="6" label="Not started - No Account"/>
+  <int value="7" label="Not started - No refresh token"/>
 </enum>
 
 <enum name="IOSExternalURLRequestStatus">

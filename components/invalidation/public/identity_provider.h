@@ -68,7 +68,7 @@ class IdentityProvider {
 
   // Returns true iff (1) there is an active account and (2) that account has
   // a refresh token.
-  virtual bool IsActiveAccountAvailable() = 0;
+  virtual bool IsActiveAccountWithRefreshToken() = 0;
 
   // Starts an access token request for |oauth_consumer_name| and |scopes|. When
   // the request completes, |callback| will be invoked with the access token
