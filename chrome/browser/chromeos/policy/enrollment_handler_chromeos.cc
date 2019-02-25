@@ -171,6 +171,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     std::unique_ptr<DMAuth> dm_auth,
     const std::string& client_id,
     const std::string& requisition,
+    const std::string& sub_organization,
     const EnrollmentCallback& completion_callback)
     : store_(store),
       install_attributes_(install_attributes),
@@ -182,6 +183,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       enrollment_config_(enrollment_config),
       client_id_(client_id),
       requisition_(requisition),
+      sub_organization_(sub_organization),
       completion_callback_(completion_callback),
       enrollment_step_(STEP_PENDING),
       weak_ptr_factory_(this) {
@@ -461,7 +463,7 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
         dm_auth_->Clone(), pem_certificate_chain, client_id_, requisition_,
-        current_state_key_);
+        current_state_key_, sub_organization_);
   } else {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));

@@ -118,7 +118,7 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
       std::move(dm_auth), install_attributes_->GetDeviceId(),
-      manager_->GetDeviceRequisition(),
+      manager_->GetDeviceRequisition(), manager_->GetSubOrganization(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
 }

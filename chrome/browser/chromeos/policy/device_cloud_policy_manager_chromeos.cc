@@ -191,6 +191,28 @@ bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
   return GetDeviceRequisition() == kSharkRequisition;
 }
 
+std::string DeviceCloudPolicyManagerChromeOS::GetSubOrganization() const {
+  if (!local_state_)
+    return std::string();
+  std::string sub_organization;
+  const PrefService::Preference* pref =
+      local_state_->FindPreference(prefs::kDeviceEnrollmentSubOrganization);
+  if (!pref->IsDefaultValue())
+    pref->GetValue()->GetAsString(&sub_organization);
+  return sub_organization;
+}
+
+void DeviceCloudPolicyManagerChromeOS::SetSubOrganization(
+    const std::string& sub_organization) {
+  if (!local_state_)
+    return;
+  if (sub_organization.empty())
+    local_state_->ClearPref(prefs::kDeviceEnrollmentSubOrganization);
+  else
+    local_state_->SetString(prefs::kDeviceEnrollmentSubOrganization,
+                            sub_organization);
+}
+
 void DeviceCloudPolicyManagerChromeOS::SetDeviceEnrollmentAutoStart() {
   if (local_state_) {
     local_state_->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
@@ -212,6 +234,8 @@ void DeviceCloudPolicyManagerChromeOS::Shutdown() {
 void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDeviceEnrollmentRequisition,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDeviceEnrollmentSubOrganization,
                                std::string());
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentAutoStart, false);
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentCanExit, true);

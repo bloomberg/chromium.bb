@@ -1846,6 +1846,9 @@ const char kDeviceRobotAnyApiRefreshToken[] =
 // Device requisition for enterprise enrollment.
 const char kDeviceEnrollmentRequisition[] = "enrollment.device_requisition";
 
+// Sub organization for enterprise enrollment.
+const char kDeviceEnrollmentSubOrganization[] = "enrollment.sub_organization";
+
 // Whether to automatically start the enterprise enrollment step during OOBE.
 const char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
 
