@@ -579,12 +579,9 @@ TEST_F(RlzLibTest, SendFinancialPing) {
 #endif
 
   network::TestURLLoaderFactory test_url_loader_factory;
-  scoped_refptr<network::SharedURLLoaderFactory>
-      test_shared_url_loader_factory =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory);
 
-  URLLoaderFactoryRAII set_factory(test_shared_url_loader_factory.get());
+  URLLoaderFactoryRAII set_factory(
+      test_url_loader_factory.GetSafeWeakWrapper().get());
 #endif
 
   MachineDealCodeHelper::Clear();
@@ -639,11 +636,8 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
   network::TestURLLoaderFactory test_url_loader_factory;
-  scoped_refptr<network::SharedURLLoaderFactory>
-      test_shared_url_loader_factory =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory);
-  URLLoaderFactoryRAII set_factory(test_shared_url_loader_factory.get());
+  URLLoaderFactoryRAII set_factory(
+      test_url_loader_factory.GetSafeWeakWrapper().get());
 
   rlz_lib::AccessPoint points[] =
     {rlz_lib::IETB_SEARCH_BOX, rlz_lib::NO_ACCESS_POINT,
