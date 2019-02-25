@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -109,6 +110,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     // If not provided, the bg color will be derived from the NativeTheme.
     base::Optional<SkColor> bg_color;
     base::Optional<int> corner_radius;
+    base::Optional<gfx::Insets> insets;
     bool has_shadow = true;
   };
 

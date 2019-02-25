@@ -236,6 +236,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   if (init_params.anchor_mode == AnchorMode::kRect) {
     SetAnchorView(nullptr);
     SetAnchorRect(init_params.anchor_rect);
+    if (init_params.insets.has_value())
+      bubble_border_->set_insets(init_params.insets.value());
   }
 }
 

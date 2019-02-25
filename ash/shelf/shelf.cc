@@ -304,19 +304,16 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
 }
 
 gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
-  gfx::Rect workspace_bounds = GetUserWorkAreaBounds();
+  gfx::Rect work_area = GetUserWorkAreaBounds();
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return gfx::Rect(base::i18n::IsRTL() ? workspace_bounds.x()
-                                           : (workspace_bounds.right() - 1),
-                       workspace_bounds.bottom() - 1, 0, 0);
+      return gfx::Rect(base::i18n::IsRTL() ? work_area.x() : work_area.right(),
+                       work_area.bottom(), 0, 0);
     case SHELF_ALIGNMENT_LEFT:
-      return gfx::Rect(workspace_bounds.x(), workspace_bounds.bottom() - 1, 0,
-                       0);
+      return gfx::Rect(work_area.x(), work_area.bottom(), 0, 0);
     case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Rect(workspace_bounds.right() - 1,
-                       workspace_bounds.bottom() - 1, 0, 0);
+      return gfx::Rect(work_area.right(), work_area.bottom(), 0, 0);
   }
   NOTREACHED();
   return gfx::Rect();

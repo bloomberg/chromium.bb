@@ -84,8 +84,7 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
 }
 
 int AshPopupAlignmentDelegate::GetBaseline() const {
-  return work_area_.bottom() - kUnifiedMenuVerticalPadding -
-         tray_bubble_height_;
+  return work_area_.bottom() - kUnifiedMenuPadding - tray_bubble_height_;
 }
 
 gfx::Rect AshPopupAlignmentDelegate::GetWorkArea() const {
