@@ -35,8 +35,14 @@ interface WaylandConnection {
           gfx.mojom.PresentationFeedback feedback);
 };
 
-// Used by the browser process to provide the GPU process with a mojo ptr to a
-// WaylandConnection, which lives on the browser process.
+
 interface WaylandConnectionClient {
+  // Used by the browser process to provide the GPU process with a mojo ptr to a
+  // WaylandConnection, which lives on the browser process.
   SetWaylandConnection(WaylandConnection wc_ptr);
+
+  // The browser process may request the client to reset gbm device instance to
+  // avoid using zwp_linux_dmabuf protocol, which means using wl_egl_surface in
+  // a single process mode, and software rendering in a multiple process mode.
+  ResetGbmDevice();
 };

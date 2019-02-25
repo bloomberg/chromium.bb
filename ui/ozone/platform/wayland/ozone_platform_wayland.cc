@@ -169,6 +169,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   void InitializeGPU(const InitParams& args) override {
     proxy_.reset(new WaylandConnectionProxy(connection_.get()));
+    surface_factory_.reset(new WaylandSurfaceFactory(proxy_.get()));
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {
@@ -185,7 +186,6 @@ class OzonePlatformWayland : public OzonePlatform {
       }
     }
 #endif
-    surface_factory_.reset(new WaylandSurfaceFactory(proxy_.get()));
   }
 
   const PlatformProperties& GetPlatformProperties() override {

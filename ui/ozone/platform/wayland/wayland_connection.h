@@ -82,9 +82,6 @@ class WaylandConnection : public PlatformEventSource,
   zwp_text_input_manager_v1* text_input_manager_v1() {
     return text_input_manager_v1_.get();
   }
-  WaylandBufferManager* buffer_manager_for_tests() {
-    return buffer_manager_.get();
-  }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
   WaylandWindow* GetWindowWithLargestBounds();
@@ -114,6 +111,8 @@ class WaylandConnection : public PlatformEventSource,
   WaylandCursorPosition* wayland_cursor_position() {
     return wayland_cursor_position_.get();
   }
+
+  WaylandBufferManager* buffer_manager() const { return buffer_manager_.get(); }
 
   // Clipboard implementation.
   PlatformClipboard* GetPlatformClipboard();

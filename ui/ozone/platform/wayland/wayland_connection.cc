@@ -195,6 +195,8 @@ void WaylandConnection::CreateZwpLinuxDmabuf(
     uint32_t planes_count,
     uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+
+  DCHECK(buffer_manager_);
   if (!buffer_manager_->CreateBuffer(std::move(file), width, height, strides,
                                      offsets, format, modifiers, planes_count,
                                      buffer_id)) {
@@ -204,6 +206,8 @@ void WaylandConnection::CreateZwpLinuxDmabuf(
 
 void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+
+  DCHECK(buffer_manager_);
   if (!buffer_manager_->DestroyBuffer(buffer_id)) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
@@ -215,6 +219,8 @@ void WaylandConnection::ScheduleBufferSwap(
     const gfx::Rect& damage_region,
     ScheduleBufferSwapCallback callback) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+
+  CHECK(buffer_manager_);
   if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region,
                                            std::move(callback))) {
     TerminateGpuProcess(buffer_manager_->error_message());
