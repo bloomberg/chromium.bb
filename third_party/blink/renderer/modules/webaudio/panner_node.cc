@@ -705,12 +705,13 @@ PannerNode::PannerNode(BaseAudioContext& context)
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
-      orientation_z_(AudioParam::Create(
-          context,
-          kParamTypePannerOrientationZ,
-          0.0,
-          AudioParamHandler::AutomationRate::kAudio,
-          AudioParamHandler::AutomationRateMode::kVariable)) {
+      orientation_z_(
+          AudioParam::Create(context,
+                             kParamTypePannerOrientationZ,
+                             0.0,
+                             AudioParamHandler::AutomationRate::kAudio,
+                             AudioParamHandler::AutomationRateMode::kVariable)),
+      listener_(context.listener()) {
   SetHandler(PannerHandler::Create(
       *this, context.sampleRate(), position_x_->Handler(),
       position_y_->Handler(), position_z_->Handler(), orientation_x_->Handler(),
@@ -875,11 +876,10 @@ void PannerNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_x_);
   visitor->Trace(position_y_);
   visitor->Trace(position_z_);
-
   visitor->Trace(orientation_x_);
   visitor->Trace(orientation_y_);
   visitor->Trace(orientation_z_);
-
+  visitor->Trace(listener_);
   AudioNode::Trace(visitor);
 }
 
