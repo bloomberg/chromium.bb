@@ -512,7 +512,7 @@ function testOpenInstallLinuxPackageDialog(callback) {
             null,
             [
               {
-                taskId: 'test-extension-id|file|install-linux-package',
+                taskId: 'test-extension-id|app|install-linux-package',
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: '__MSG_INSTALL_LINUX_PACKAGE__',

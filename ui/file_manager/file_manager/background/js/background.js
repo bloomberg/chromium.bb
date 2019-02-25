@@ -11,6 +11,7 @@
  */
 function FileBrowserBackgroundImpl() {
   BackgroundBase.call(this);
+  this.setLaunchHandler(this.launch_);
 
   /**
    * Progress center of the background page.
@@ -94,8 +95,7 @@ function FileBrowserBackgroundImpl() {
    */
   this.launcherSearch_ = new LauncherSearch();
 
-  // Initialize handlers.
-  chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
+  // Initialize listeners.
   chrome.runtime.onMessageExternal.addListener(
       this.onExternalMessageReceived_.bind(this));
   chrome.contextMenus.onClicked.addListener(
@@ -332,42 +332,28 @@ function registerDialog(dialogWindow) {
 }
 
 /**
- * Executes a file browser task.
- *
- * @param {string} action Task id.
- * @param {Object} details Details object.
+ * Launches the app.
  * @private
+ * @override
  */
-FileBrowserBackgroundImpl.prototype.onExecute_ = (action, details) => {
-  const appState = {
-    params: {action: action},
-    // It is not allowed to call getParent() here, since there may be
-    // no permissions to access it at this stage. Therefore we are passing
-    // the selectionURL only, and the currentDirectory will be resolved
-    // later.
-    selectionURL: details.entries[0].toURL()
-  };
-
-  // Every other action opens a Files app window.
-  // For mounted devices just focus any Files app window. The mounted
-  // volume will appear on the navigation list.
-  launcher.launchFileManager(
-      appState,
-      /* App ID */ undefined,
-      LaunchType.FOCUS_SAME_OR_CREATE);
+FileBrowserBackgroundImpl.prototype.onLaunched_ = function(launchData) {
+  metrics.startInterval('Load.BackgroundLaunch');
+  if (!launchData || !launchData.items || launchData.items.length == 0) {
+    this.launch_(undefined);
+    return;
+  }
+  BackgroundBase.prototype.onLaunched_.apply(this, [launchData]);
 };
 
 /**
  * Launches the app.
  * @private
- * @override
+ * @param {!Array<string>|undefined} urls
  */
-FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
-  metrics.startInterval('Load.BackgroundLaunch');
-  this.initializationPromise_.then(() => {
+FileBrowserBackgroundImpl.prototype.launch_ = function(urls) {
+  return this.initializationPromise_.then(() => {
     if (nextFileManagerWindowID == 0) {
-      // The app just launched. Remove window state records that are not needed
-      // any more.
+      // The app just launched. Remove unneeded window state records.
       chrome.storage.local.get(items => {
         for (const key in items) {
           if (items.hasOwnProperty(key)) {
@@ -378,10 +364,15 @@ FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
         }
       });
     }
-    launcher.launchFileManager(
-        null, undefined, LaunchType.FOCUS_ANY_OR_CREATE, () => {
-          metrics.recordInterval('Load.BackgroundLaunch');
-        });
+    let appState = {};
+    let launchType = LaunchType.FOCUS_ANY_OR_CREATE;
+    if (urls) {
+      appState.selectionURL = urls[0];
+      launchType = LaunchType.FOCUS_SAME_OR_CREATE;
+    }
+    launcher.launchFileManager(appState, undefined, launchType, () => {
+      metrics.recordInterval('Load.BackgroundLaunch');
+    });
   });
 };
 
