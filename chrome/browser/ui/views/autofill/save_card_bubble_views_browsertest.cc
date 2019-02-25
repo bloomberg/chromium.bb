@@ -296,9 +296,15 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void SetAccountFullName(const std::string& full_name) {
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    AccountInfo info = identity_manager->GetPrimaryAccountInfo();
-    info.full_name = full_name;
-    identity::UpdateAccountInfoForAccount(identity_manager, info);
+    CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo();
+    AccountInfo account_info;
+    account_info.account_id = core_info.account_id;
+    account_info.gaia = core_info.gaia;
+    account_info.email = core_info.email;
+    account_info.is_under_advanced_protection =
+        core_info.is_under_advanced_protection;
+    account_info.full_name = full_name;
+    identity::UpdateAccountInfoForAccount(identity_manager, account_info);
   }
 
   void SubmitForm() {
