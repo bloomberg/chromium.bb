@@ -292,8 +292,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // Used to drop the pending begin frame before we go idle.
   void CancelPendingBeginFrameTask();
 
-  void BeginImplFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
+  void BeginMainFrameNotExpectedSoon();
   void DrawIfPossible();
   void DrawForced();
   void ProcessScheduledActions();

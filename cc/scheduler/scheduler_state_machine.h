@@ -131,7 +131,8 @@ class CC_EXPORT SchedulerStateMachine {
     BEGIN_LAYER_TREE_FRAME_SINK_CREATION,
     PREPARE_TILES,
     INVALIDATE_LAYER_TREE_FRAME_SINK,
-    NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT,
+    NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL,
+    NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON,
   };
   static const char* ActionToString(Action action);
 
@@ -140,7 +141,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   Action NextAction() const;
   void WillSendBeginMainFrame();
-  void WillNotifyBeginMainFrameNotSent();
+  void WillNotifyBeginMainFrameNotExpectedUntil();
+  void WillNotifyBeginMainFrameNotExpectedSoon();
   void WillCommit(bool commit_had_no_updates);
   void WillActivate();
   void WillDraw();
@@ -360,7 +362,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldCommit() const;
   bool ShouldPrepareTiles() const;
   bool ShouldInvalidateLayerTreeFrameSink() const;
-  bool ShouldNotifyBeginMainFrameNotSent() const;
+  bool ShouldNotifyBeginMainFrameNotExpectedUntil() const;
+  bool ShouldNotifyBeginMainFrameNotExpectedSoon() const;
 
   void WillDrawInternal();
   void WillPerformImplSideInvalidationInternal();
@@ -396,9 +399,12 @@ class CC_EXPORT SchedulerStateMachine {
   // deadline, etc.
   bool did_draw_ = false;
   bool did_send_begin_main_frame_for_current_frame_ = true;
+
   // Initialized to true to prevent begin main frame before begin frames have
   // started. Reset to true when we stop asking for begin frames.
-  bool did_notify_begin_main_frame_not_sent_ = true;
+  bool did_notify_begin_main_frame_not_expected_until_ = true;
+  bool did_notify_begin_main_frame_not_expected_soon_ = true;
+
   bool did_commit_during_frame_ = false;
   bool did_invalidate_layer_tree_frame_sink_ = false;
   bool did_perform_impl_side_invalidation_ = false;

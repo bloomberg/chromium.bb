@@ -228,17 +228,12 @@ void Scheduler::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   client_->ScheduledActionBeginMainFrameNotExpectedUntil(time);
 }
 
-void Scheduler::BeginImplFrameNotExpectedSoon() {
-  compositor_timing_history_->BeginImplFrameNotExpectedSoon();
+void Scheduler::BeginMainFrameNotExpectedSoon() {
+  TRACE_EVENT0("cc", "Scheduler::BeginMainFrameNotExpectedSoon");
 
-  // Tying this to SendBeginMainFrameNotExpectedSoon will have some
-  // false negatives, but we want to avoid running long idle tasks when
-  // we are actually active.
-  if (state_machine_.wants_begin_main_frame_not_expected_messages()) {
-    DCHECK(!inside_scheduled_action_);
-    base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
-    client_->SendBeginMainFrameNotExpectedSoon();
-  }
+  DCHECK(!inside_scheduled_action_);
+  base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
+  client_->SendBeginMainFrameNotExpectedSoon();
 }
 
 void Scheduler::StartOrStopBeginFrames() {
@@ -262,7 +257,7 @@ void Scheduler::StartOrStopBeginFrames() {
       begin_frame_source_->RemoveObserver(this);
     // We're going idle so drop pending begin frame.
     CancelPendingBeginFrameTask();
-    BeginImplFrameNotExpectedSoon();
+    compositor_timing_history_->BeginImplFrameNotExpectedSoon();
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
     client_->WillNotReceiveBeginFrame();
@@ -789,17 +784,16 @@ void Scheduler::ProcessScheduledActions() {
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
-      case SchedulerStateMachine::Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
-        state_machine_.WillNotifyBeginMainFrameNotSent();
-        // If SendBeginMainFrameNotExpectedSoon was not previously sent by
-        // BeginImplFrameNotExpectedSoon (because the messages were not required
-        // at that time), then send it now.
-        if (!observing_begin_frame_source_) {
-          client_->SendBeginMainFrameNotExpectedSoon();
-        } else {
-          BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
-                                         begin_main_frame_args_.interval);
-        }
+      case SchedulerStateMachine::Action::
+          NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
+        state_machine_.WillNotifyBeginMainFrameNotExpectedUntil();
+        BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
+                                       begin_main_frame_args_.interval);
+        break;
+      case SchedulerStateMachine::Action::
+          NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON:
+        state_machine_.WillNotifyBeginMainFrameNotExpectedSoon();
+        BeginMainFrameNotExpectedSoon();
         break;
       case SchedulerStateMachine::Action::COMMIT: {
         bool commit_has_no_updates = false;
