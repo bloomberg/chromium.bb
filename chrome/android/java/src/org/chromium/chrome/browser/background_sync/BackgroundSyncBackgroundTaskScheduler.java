@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.background_sync;
 
 import android.os.Bundle;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -12,8 +13,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * The {@link BackgroundSyncBackgroundTaskScheduler} singleton is responsible
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class BackgroundSyncBackgroundTaskScheduler {
     // Keep in sync with the default min_sync_recovery_time of
     // BackgroundSyncParameters.
-    private static final long MIN_SYNC_RECOVERY_TIME = TimeUnit.MINUTES.toMillis(6);
+    private static final long MIN_SYNC_RECOVERY_TIME = DateUtils.MINUTE_IN_MILLIS * 6;
 
     // Bundle key for the timestamp of the soonest wakeup time expected for
     // this task.
