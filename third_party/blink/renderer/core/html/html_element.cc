@@ -1460,6 +1460,12 @@ void HTMLElement::OnXMLLangAttrChanged(
 
 ElementInternals* HTMLElement::attachInternals(
     ExceptionState& exception_state) {
+  if (IsValue()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Unable to attach ElementInternals to a customized built-in element.");
+    return nullptr;
+  }
   CustomElementRegistry* registry = CustomElement::Registry(*this);
   auto* definition =
       registry ? registry->DefinitionForName(localName()) : nullptr;
@@ -1469,15 +1475,9 @@ ElementInternals* HTMLElement::attachInternals(
         "Unable to attach ElementInternals to non-custom elements.");
     return nullptr;
   }
-  if (!definition->Descriptor().IsAutonomous()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Unable to attach ElementInternals to a customized built-in element.");
-    return nullptr;
-  }
   if (definition->DisableInternals()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "ElementInternals is disabled by disabledFeature static field.");
     return nullptr;
   }
