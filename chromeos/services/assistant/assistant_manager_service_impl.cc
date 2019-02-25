@@ -125,7 +125,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
                            &ash_message_center_controller_);
 }
 
-AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
+AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
+  background_thread_.Stop();
+}
 
 void AssistantManagerServiceImpl::Start(const std::string& access_token,
                                         bool enable_hotword,
@@ -140,28 +142,15 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
 
   EnableHotword(enable_hotword);
 
-  using AssistantManagerPtr =
-      std::unique_ptr<assistant_client::AssistantManager>;
-  // This is a tempory holder of the |assistant_client::AssistantManager| that
-  // is going to be created on the background thread. It is owned by the
-  // background task callback closure.
-  auto* new_assistant_manager = new AssistantManagerPtr();
-
   // LibAssistant creation will make file IO and sync wait. Post the creation to
   // background thread to avoid DCHECK.
   background_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(
-          [](AssistantManagerPtr* result,
-             base::OnceCallback<AssistantManagerPtr()> task) {
-            *result = std::move(task).Run();
-          },
-          new_assistant_manager,
-          base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                         base::Unretained(this), access_token)),
+      base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
+                     base::Unretained(this), access_token),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
-                     base::Unretained(this), std::move(post_init_callback),
-                     base::Owned(new_assistant_manager)));
+                     weak_factory_.GetWeakPtr(),
+                     std::move(post_init_callback)));
 }
 
 void AssistantManagerServiceImpl::Stop() {
@@ -750,16 +739,15 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
           weak_factory_.GetWeakPtr(), error_code));
 }
 
-std::unique_ptr<assistant_client::AssistantManager>
-AssistantManagerServiceImpl::StartAssistantInternal(
+void AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
-  std::unique_ptr<assistant_client::AssistantManager> assistant_manager;
-  assistant_manager.reset(assistant_client::AssistantManager::Create(
+  base::AutoLock lock(new_assistant_manager_lock_);
+  new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
       platform_api_.get(), CreateLibAssistantConfig()));
   auto* assistant_manager_internal =
-      UnwrapAssistantManagerInternal(assistant_manager.get());
+      UnwrapAssistantManagerInternal(new_assistant_manager_.get());
 
   UpdateInternalOptions(assistant_manager_internal);
 
@@ -768,8 +756,8 @@ AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_manager_internal->SetAssistantManagerDelegate(this);
   assistant_manager_internal->GetFuchsiaApiHelperOrDie()->SetFuchsiaApiDelegate(
       &chromium_api_delegate_);
-  assistant_manager->AddConversationStateListener(this);
-  assistant_manager->AddDeviceStateListener(this);
+  new_assistant_manager_->AddConversationStateListener(this);
+  new_assistant_manager_->AddDeviceStateListener(this);
 
   std::vector<std::string> server_experiment_ids;
   FillServerExperimentIds(&server_experiment_ids);
@@ -777,20 +765,32 @@ AssistantManagerServiceImpl::StartAssistantInternal(
   if (server_experiment_ids.size() > 0)
     assistant_manager_internal->AddExtraExperimentIds(server_experiment_ids);
 
-  assistant_manager->SetAuthTokens(
+  new_assistant_manager_->SetAuthTokens(
       {std::pair<std::string, std::string>(kUserID, access_token)});
-  assistant_manager->Start();
-
-  return assistant_manager;
+  new_assistant_manager_->Start();
 }
 
 void AssistantManagerServiceImpl::PostInitAssistant(
-    base::OnceClosure post_init_callback,
-    std::unique_ptr<assistant_client::AssistantManager>* assistant_manager) {
+    base::OnceClosure post_init_callback) {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::STARTED);
 
-  assistant_manager_ = std::move(*assistant_manager);
+  {
+    base::AutoLock lock(new_assistant_manager_lock_);
+
+    // It is possible that multiple |StartAssistantInternal| finished on
+    // background thread, before any of the matching |PostInitAssistant| had
+    // run. Because we only hold the last created instance in
+    // |new_assistant_manager_|, it is possible that |new_assistant_manager_| be
+    // null if we moved it in previous |PostInitAssistant| runs.
+    if (!new_assistant_manager_) {
+      std::move(post_init_callback).Run();
+      return;
+    }
+
+    assistant_manager_ = std::move(new_assistant_manager_);
+  }
+
   assistant_manager_internal_ =
       UnwrapAssistantManagerInternal(assistant_manager_.get());
   state_ = State::RUNNING;
