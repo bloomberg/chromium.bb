@@ -112,6 +112,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsShowingInOverviewKey;
 
+// A property key to store the window state the window had before entering PIP.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    mojom::WindowStateType>* const kPrePipWindowStateTypeKey;
+
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kRenderTitleAreaProperty;
