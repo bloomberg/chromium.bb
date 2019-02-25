@@ -15,7 +15,7 @@
 <dom-module id="files-quick-view">
   <link rel="import" type="css" href="files_quick_view.css">
   <template>
-    <dialog id="dialog">
+    <dialog id="dialog" on-close="onDialogClose_">
       <div id="toolbar">
         <div class="buttons-group">
            <paper-button on-tap="close" aria-label="$i18n{QUICK_VIEW_CLOSE_BUTTON_LABEL}" tabindex="0" has-tooltip>

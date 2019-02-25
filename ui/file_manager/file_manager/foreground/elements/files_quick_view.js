@@ -36,7 +36,6 @@ var FilesQuickView = Polymer({
   },
 
   listeners: {
-    'close': 'clear',
     'files-safe-media-tap-outside': 'close',
   },
 
@@ -197,4 +196,18 @@ var FilesQuickView = Polymer({
         !this.isAudio_(type) && !this.isHtml_(type, subtype) && !browsable;
   },
 
+  /** @private */
+  onDialogClose_: function(e) {
+    assert(e.target === this.$.dialog);
+
+    this.clear();
+
+    // TODO(dpapad): This is necessary to make the code work both for Polymer 1
+    // and Polymer 2. Remove once migration to Polymer 2 is completed.
+    e.stopPropagation();
+
+    // Catch and re-fire the 'close' event such that it bubbles across Shadow
+    // DOM v1.
+    this.fire('close');
+  }
 });
