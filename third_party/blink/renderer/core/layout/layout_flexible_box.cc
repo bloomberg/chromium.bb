@@ -525,7 +525,8 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
     MinMaxSize sizes{child.MinPreferredLogicalWidth(),
                      child.MaxPreferredLogicalWidth()};
-    return sizes.ShrinkToFit(ContentLogicalWidth());
+    return sizes.ShrinkToFit(ContentLogicalWidth() -
+                             child.MarginLogicalWidth());
   }
 
   return child.LogicalWidth();
