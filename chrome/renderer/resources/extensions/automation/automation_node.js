@@ -1567,7 +1567,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'restriction',
         'state',
         'location',
-        'imageAnnotationStatus',
+        'imageAnnotation',
         'indexInParent',
         'lineStartOffsets',
         'root',
