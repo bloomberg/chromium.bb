@@ -83,7 +83,7 @@ void DirectoryLister::Start() {
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&Core::Start, core_));
+      base::BindOnce(&Core::Start, core_));
 }
 
 void DirectoryLister::Cancel() {

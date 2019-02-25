@@ -96,7 +96,7 @@ class PollingProxyConfigService::Core
     base::PostTaskWithTraits(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&Core::PollAsync, this, get_config_func_));
+        base::BindOnce(&Core::PollAsync, this, get_config_func_));
   }
 
  private:
