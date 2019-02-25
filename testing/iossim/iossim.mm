@@ -273,11 +273,8 @@ int RunApplication(NSString* app_path,
 
   if (xctest_path) {
     [testTargetName setValue:xctest_path forKey:@"TestBundlePath"];
-    NSString* inject =
-        @"__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/"
-        @"PrivateFrameworks/IDEBundleInjection.framework/"
-        @"IDEBundleInjection:__PLATFORMS__/iPhoneSimulator.platform/Developer/"
-        @"usr/lib/libXCTestBundleInject.dylib";
+    NSString* inject = @"__PLATFORMS__/iPhoneSimulator.platform/Developer/"
+                       @"usr/lib/libXCTestBundleInject.dylib";
     [testingEnvironmentVariables setValue:inject
                                    forKey:@"DYLD_INSERT_LIBRARIES"];
     [testingEnvironmentVariables

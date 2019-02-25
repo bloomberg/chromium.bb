@@ -1453,9 +1453,6 @@ class DeviceTestRunner(TestRunner):
       xcode_info = get_current_xcode_info()
       xcode_version = float(xcode_info['version'])
       inject_path = 'usr/lib/libXCTestBundleInject.dylib'
-      # This can be removed once xcode versions < 10 are deprecated.
-      if 10 > xcode_version:
-        inject_path = 'Library/PrivateFrameworks/IDEBundleInjection.framework/'
       self.xctestrun_file = tempfile.mkstemp()[1]
       self.xctestrun_data = {
         'TestTargetName': {
