@@ -74,12 +74,9 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
     if (!content_view)
       return nullptr;
 
-    if (!content_view->IsLocalFrameView())
+    auto* frame_view = DynamicTo<LocalFrameView>(content_view);
+    if (!frame_view)
       return nullptr;
-
-    LocalFrameView* frame_view = ToLocalFrameView(content_view);
-
-    DCHECK(frame_view);
 
     return frame_view->LayoutViewport();
   }
@@ -345,7 +342,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
 
   if (frame_owner->ContentFrame()->IsLocalFrame()) {
     LocalFrameView* frame_view =
-        ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
+        To<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
 
     bool is_root_scroller = &EffectiveRootScroller() == &node;
 
@@ -367,7 +364,7 @@ void RootScrollerController::UpdateIFrameGeometryAndLayoutSize(
   DCHECK(document_->GetFrame()->View());
 
   LocalFrameView* child_view =
-      ToLocalFrameView(frame_owner.OwnedEmbeddedContentView());
+      To<LocalFrameView>(frame_owner.OwnedEmbeddedContentView());
 
   if (!child_view)
     return;

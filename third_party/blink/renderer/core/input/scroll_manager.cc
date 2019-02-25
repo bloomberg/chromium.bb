@@ -787,11 +787,14 @@ WebInputEventResult ScrollManager::PassScrollGestureEvent(
   FrameView* frame_view =
       ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
 
-  if (!frame_view || !frame_view->IsLocalFrameView())
+  if (!frame_view)
     return WebInputEventResult::kNotHandled;
 
-  return ToLocalFrameView(frame_view)
-      ->GetFrame()
+  auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view);
+  if (!local_frame_view)
+    return WebInputEventResult::kNotHandled;
+
+  return local_frame_view->GetFrame()
       .GetEventHandler()
       .HandleGestureScrollEvent(gesture_event);
 }

@@ -97,10 +97,8 @@ Document* GetEmbeddedDocument(PaintLayer* layer) {
   if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
     FrameView* frame_view =
         ToLayoutEmbeddedContent(layer->GetLayoutObject()).ChildFrameView();
-    if (frame_view && frame_view->IsLocalFrameView()) {
-      LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
+    if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view))
       return local_frame_view->GetFrame().GetDocument();
-    }
   }
   return nullptr;
 }

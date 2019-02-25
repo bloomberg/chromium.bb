@@ -177,7 +177,7 @@ TEST_P(MainThreadScrollingReasonsTest,
   ASSERT_TRUE(layout_embedded_content);
 
   LocalFrameView* inner_frame_view =
-      ToLocalFrameView(layout_embedded_content->ChildFrameView());
+      To<LocalFrameView>(layout_embedded_content->ChildFrameView());
   ASSERT_TRUE(inner_frame_view);
 
   auto* inner_layout_view = inner_frame_view->GetLayoutView();

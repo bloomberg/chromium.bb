@@ -136,13 +136,14 @@ LocalFrame* SubframeForTargetNode(Node* node, bool* is_remote_frame) {
       ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
   if (!frame_view)
     return nullptr;
-  if (!frame_view->IsLocalFrameView()) {
+  auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view);
+  if (!local_frame_view) {
     if (is_remote_frame)
       *is_remote_frame = true;
     return nullptr;
   }
 
-  return &ToLocalFrameView(frame_view)->GetFrame();
+  return &local_frame_view->GetFrame();
 }
 
 LocalFrame* GetTargetSubframe(

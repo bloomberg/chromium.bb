@@ -3444,8 +3444,8 @@ void LocalFrameView::FrameRectsChanged() {
     SetLayoutSizeInternal(Size());
 
   ForAllChildViewsAndPlugins([](EmbeddedContentView& embedded_content_view) {
-    if (!embedded_content_view.IsLocalFrameView() ||
-        !ToLocalFrameView(embedded_content_view).ShouldThrottleRendering())
+    auto* local_frame_view = DynamicTo<LocalFrameView>(embedded_content_view);
+    if (!local_frame_view || !local_frame_view->ShouldThrottleRendering())
       embedded_content_view.FrameRectsChanged();
   });
 

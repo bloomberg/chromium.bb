@@ -164,15 +164,13 @@ bool LayoutEmbeddedContent::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  FrameView* frame_view = ChildFrameView();
+  auto* local_frame_view = DynamicTo<LocalFrameView>(ChildFrameView());
   bool skip_contents = (result.GetHitTestRequest().GetStopNode() == this ||
                         !result.GetHitTestRequest().AllowsChildFrameContent());
-  if (!frame_view || !frame_view->IsLocalFrameView() || skip_contents) {
+  if (!local_frame_view || skip_contents) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
-
-  LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
@@ -377,9 +375,8 @@ void LayoutEmbeddedContent::UpdateGeometry(
 }
 
 bool LayoutEmbeddedContent::IsThrottledFrameView() const {
-  FrameView* frame_view = ChildFrameView();
-  if (frame_view && frame_view->IsLocalFrameView())
-    return ToLocalFrameView(frame_view)->ShouldThrottleRendering();
+  if (auto* local_frame_view = DynamicTo<LocalFrameView>(ChildFrameView()))
+    return local_frame_view->ShouldThrottleRendering();
   return false;
 }
 
