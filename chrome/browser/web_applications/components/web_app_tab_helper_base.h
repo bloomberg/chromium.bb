@@ -69,8 +69,7 @@ class WebAppTabHelperBase
   virtual WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const = 0;
 
-  // Gets AppId of app whose scope includes |url|.
-  virtual AppId GetAppId(const GURL& url) = 0;
+  virtual AppId FindAppIdInScopeOfUrl(const GURL& url) = 0;
 
   // Returns whether the associated web contents belongs to an app window.
   virtual bool IsInAppWindow() const = 0;

@@ -29,7 +29,7 @@ WebAppTabHelperBase* WebAppTabHelper::CloneForWebContents(
   return new_tab_helper;
 }
 
-AppId WebAppTabHelper::GetAppId(const GURL& url) {
+AppId WebAppTabHelper::FindAppIdInScopeOfUrl(const GURL& url) {
   // TODO(loyso): Implement it.
   return AppId();
 }

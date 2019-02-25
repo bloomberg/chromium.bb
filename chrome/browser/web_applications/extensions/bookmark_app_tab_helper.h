@@ -35,7 +35,7 @@ class BookmarkAppTabHelper : public web_app::WebAppTabHelperBase,
   // WebAppTabHelperBase:
   web_app::WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
-  web_app::AppId GetAppId(const GURL& url) override;
+  web_app::AppId FindAppIdInScopeOfUrl(const GURL& url) override;
   bool IsInAppWindow() const override;
   bool IsUserInstalled() const override;
   bool IsFromInstallButton() const override;

@@ -41,7 +41,7 @@ web_app::WebAppTabHelperBase* BookmarkAppTabHelper::CloneForWebContents(
   return new_tab_helper;
 }
 
-web_app::AppId BookmarkAppTabHelper::GetAppId(const GURL& url) {
+web_app::AppId BookmarkAppTabHelper::FindAppIdInScopeOfUrl(const GURL& url) {
   content::BrowserContext* browser_context =
       web_contents()->GetBrowserContext();
 
