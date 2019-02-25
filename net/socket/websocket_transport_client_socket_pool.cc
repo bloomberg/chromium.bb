@@ -114,6 +114,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
     RespectLimits respect_limits,
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
+    const ProxyAuthCallback& proxy_auth_callback,
     const NetLogWithSource& request_net_log) {
   DCHECK(params);
   CHECK(!callback.is_null());
@@ -130,7 +131,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
       respect_limits == ClientSocketPool::RespectLimits::ENABLED) {
     request_net_log.AddEvent(NetLogEventType::SOCKET_POOL_STALLED_MAX_SOCKETS);
     stalled_request_queue_.emplace_back(casted_params, priority, handle,
-                                        std::move(callback), request_net_log);
+                                        std::move(callback),
+                                        proxy_auth_callback, request_net_log);
     auto iterator = stalled_request_queue_.end();
     --iterator;
     DCHECK_EQ(handle, iterator->handle);
@@ -469,7 +471,7 @@ void WebSocketTransportClientSocketPool::ActivateStalledRequest() {
                       // Stalled requests can't have |respect_limits|
                       // DISABLED.
                       RespectLimits::ENABLED, request.handle, copyable_callback,
-                      request.net_log);
+                      request.proxy_auth_callback, request.net_log);
 
     // ActivateStalledRequest() never returns synchronously, so it is never
     // called re-entrantly.
@@ -525,11 +527,13 @@ WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(
     RequestPriority priority,
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
+    const ProxyAuthCallback& proxy_auth_callback,
     const NetLogWithSource& net_log)
     : params(params),
       priority(priority),
       handle(handle),
       callback(std::move(callback)),
+      proxy_auth_callback(proxy_auth_callback),
       net_log(net_log) {}
 
 WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(

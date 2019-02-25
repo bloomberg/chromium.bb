@@ -63,7 +63,6 @@ class ProcessMemoryDump;
 
 namespace net {
 
-class ClientSocketHandle;
 struct NetLogSource;
 
 namespace internal {
@@ -89,6 +88,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
    public:
     Request(ClientSocketHandle* handle,
             CompletionOnceCallback callback,
+            const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
             RequestPriority priority,
             const SocketTag& socket_tag,
             ClientSocketPool::RespectLimits respect_limits,
@@ -100,6 +100,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     ClientSocketHandle* handle() const { return handle_; }
     bool has_callback() const { return static_cast<bool>(callback_); }
     CompletionOnceCallback release_callback() { return std::move(callback_); }
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback() const {
+      return proxy_auth_callback_;
+    }
     RequestPriority priority() const { return priority_; }
     void set_priority(RequestPriority priority) { priority_ = priority; }
     ClientSocketPool::RespectLimits respect_limits() const {
@@ -130,6 +133,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
     ClientSocketHandle* const handle_;
     CompletionOnceCallback callback_;
+    const ClientSocketPool::ProxyAuthCallback proxy_auth_callback_;
     RequestPriority priority_;
     const ClientSocketPool::RespectLimits respect_limits_;
     const Flags flags_;
@@ -679,6 +683,7 @@ class ClientSocketPoolBase {
    public:
     Request(ClientSocketHandle* handle,
             CompletionOnceCallback callback,
+            const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
             RequestPriority priority,
             const SocketTag& socket_tag,
             ClientSocketPool::RespectLimits respect_limits,
@@ -687,6 +692,7 @@ class ClientSocketPoolBase {
             const NetLogWithSource& net_log)
         : internal::ClientSocketPoolBaseHelper::Request(handle,
                                                         std::move(callback),
+                                                        proxy_auth_callback,
                                                         priority,
                                                         socket_tag,
                                                         respect_limits,
@@ -750,17 +756,20 @@ class ClientSocketPoolBase {
 
   // RequestSocket bundles up the parameters into a Request and then forwards to
   // ClientSocketPoolBaseHelper::RequestSocket().
-  int RequestSocket(const std::string& group_name,
-                    const scoped_refptr<SocketParams>& params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    ClientSocketPool::RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const NetLogWithSource& net_log) {
-    std::unique_ptr<Request> request(new Request(
-        handle, std::move(callback), priority, socket_tag, respect_limits,
-        internal::ClientSocketPoolBaseHelper::NORMAL, params, net_log));
+  int RequestSocket(
+      const std::string& group_name,
+      const scoped_refptr<SocketParams>& params,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      ClientSocketPool::RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+      const NetLogWithSource& net_log) {
+    std::unique_ptr<Request> request = std::make_unique<Request>(
+        handle, std::move(callback), proxy_auth_callback, priority, socket_tag,
+        respect_limits, internal::ClientSocketPoolBaseHelper::NORMAL, params,
+        net_log);
     return helper_.RequestSocket(group_name, std::move(request));
   }
 
@@ -771,10 +780,11 @@ class ClientSocketPoolBase {
                       const scoped_refptr<SocketParams>& params,
                       int num_sockets,
                       const NetLogWithSource& net_log) {
-    const Request request(
-        nullptr /* no handle */, CompletionOnceCallback(), IDLE, SocketTag(),
-        ClientSocketPool::RespectLimits::ENABLED,
-        internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS, params, net_log);
+    const Request request(nullptr /* no handle */, CompletionOnceCallback(),
+                          ClientSocketPool::ProxyAuthCallback(), IDLE,
+                          SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                          internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS,
+                          params, net_log);
     helper_.RequestSockets(group_name, request, num_sockets);
   }
 

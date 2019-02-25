@@ -258,9 +258,10 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
 
   Initialize(reads, writes, spdy_reads, spdy_writes);
 
-  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback_.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -299,9 +300,10 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
   Initialize(reads, writes, base::span<MockRead>(), base::span<MockWrite>());
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback_.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
@@ -334,9 +336,10 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
   Initialize(reads, writes, spdy_reads, spdy_writes);
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback_.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -361,9 +364,10 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
   }
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
-  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback_.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -420,9 +424,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   Initialize(reads, writes, spdy_reads, spdy_writes);
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback_.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -472,10 +477,10 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   SocketTag tag2(getuid(), 0x87654321);
 
   // Verify requested socket is tagged properly.
-  int rv =
-      handle_.Init("a", CreateNoTunnelParams(), LOW, tag1,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateNoTunnelParams(), LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
@@ -487,9 +492,10 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   // Verify reused socket is retagged properly.
   StreamSocket* socket = handle_.socket();
   handle_.Reset();
-  rv = handle_.Init("a", CreateNoTunnelParams(), LOW, tag2,
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  rv = handle_.Init(
+      "a", CreateNoTunnelParams(), LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
@@ -523,10 +529,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TagWithProxy) {
   SocketTag tag2(getuid(), 0x87654321);
 
   // Verify requested socket is tagged properly.
-  int rv =
-      handle_.Init("a", CreateTunnelParams(), LOW, tag1,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  int rv = handle_.Init(
+      "a", CreateTunnelParams(), LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
@@ -538,9 +544,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TagWithProxy) {
   // Verify reused socket is retagged properly.
   StreamSocket* socket = handle_.socket();
   handle_.Reset();
-  rv = handle_.Init("a", CreateNoTunnelParams(), LOW, tag2,
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  rv = handle_.Init(
+      "a", CreateNoTunnelParams(), LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());

@@ -80,6 +80,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     CompletionOnceCallback callback,
+                    const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
   void RequestSockets(const std::string& group_name,
                       const void* params,
@@ -149,6 +150,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                    RequestPriority priority,
                    ClientSocketHandle* handle,
                    CompletionOnceCallback callback,
+                   const ProxyAuthCallback& proxy_auth_callback,
                    const NetLogWithSource& net_log);
     StalledRequest(StalledRequest&& other);
     ~StalledRequest();
@@ -157,6 +159,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     const RequestPriority priority;
     ClientSocketHandle* const handle;
     CompletionOnceCallback callback;
+    ProxyAuthCallback proxy_auth_callback;
     const NetLogWithSource net_log;
   };
 

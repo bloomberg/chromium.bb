@@ -132,6 +132,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     CompletionOnceCallback callback,
+                    const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
   void RequestSockets(const std::string& group_name,
                       const void* params,

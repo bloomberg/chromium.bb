@@ -43,6 +43,7 @@ namespace internal {
 ClientSocketPoolBaseHelper::Request::Request(
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
     RequestPriority priority,
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
@@ -50,6 +51,7 @@ ClientSocketPoolBaseHelper::Request::Request(
     const NetLogWithSource& net_log)
     : handle_(handle),
       callback_(std::move(callback)),
+      proxy_auth_callback_(proxy_auth_callback),
       priority_(priority),
       respect_limits_(respect_limits),
       flags_(flags),

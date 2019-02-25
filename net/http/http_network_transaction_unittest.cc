@@ -646,14 +646,16 @@ class CaptureGroupNameSocketPool : public ParentPool {
 
   bool socket_requested() const { return socket_requested_; }
 
-  int RequestSocket(const std::string& group_name,
-                    const void* socket_params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    ClientSocketPool::RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const NetLogWithSource& net_log) override {
+  int RequestSocket(
+      const std::string& group_name,
+      const void* socket_params,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      ClientSocketPool::RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+      const NetLogWithSource& net_log) override {
     last_group_name_ = group_name;
     socket_requested_ = true;
     return ERR_IO_PENDING;

@@ -25,6 +25,8 @@ class DictionaryValue;
 namespace net {
 
 class ClientSocketHandle;
+class HttpAuthController;
+class HttpResponseInfo;
 class NetLogWithSource;
 class StreamSocket;
 
@@ -70,6 +72,17 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // SocketPool's global and per-group socket limits.
   enum class RespectLimits { DISABLED, ENABLED };
 
+  // ProxyAuthCallback is invoked when there is an auth challenge while
+  // connecting to a tunnel. When |restart_with_auth_callback| is invoked, the
+  // corresponding socket request is guaranteed not to be completed
+  // synchronously, nor will the ProxyAuthCallback be invoked against
+  // synchronously.
+  typedef base::RepeatingCallback<void(
+      const HttpResponseInfo& response,
+      HttpAuthController* auth_controller,
+      base::OnceClosure restart_with_auth_callback)>
+      ProxyAuthCallback;
+
   // Requests a connected socket for a group_name.
   //
   // There are five possible results from calling this function:
@@ -101,6 +114,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
   // If |respect_limits| is DISABLED, priority must be HIGHEST.
+  //
+  // |on_proxy_auth_challenge_callback| currently has no effect, but will be
+  // hooked up in another CL.
   virtual int RequestSocket(const std::string& group_name,
                             const void* params,
                             RequestPriority priority,
@@ -108,6 +124,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                             RespectLimits respect_limits,
                             ClientSocketHandle* handle,
                             CompletionOnceCallback callback,
+                            const ProxyAuthCallback& proxy_auth_challenge,
                             const NetLogWithSource& net_log) = 0;
 
   // RequestSockets is used to request that |num_sockets| be connected in the

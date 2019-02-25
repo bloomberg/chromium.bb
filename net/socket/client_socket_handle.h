@@ -86,6 +86,7 @@ class NET_EXPORT ClientSocketHandle {
            const SocketTag& socket_tag,
            ClientSocketPool::RespectLimits respect_limits,
            CompletionOnceCallback callback,
+           const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
            PoolType* pool,
            const NetLogWithSource& net_log);
 
@@ -99,12 +100,13 @@ class NET_EXPORT ClientSocketHandle {
            const SocketTag& socket_tag,
            bool respect_limits,
            CompletionOnceCallback callback,
+           const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
            PoolType* pool,
            const NetLogWithSource& net_log) {
     return Init(group_name, socket_params, priority, socket_tag,
                 respect_limits ? ClientSocketPool::RespectLimits::ENABLED
                                : ClientSocketPool::RespectLimits::DISABLED,
-                std::move(callback), pool, net_log);
+                std::move(callback), proxy_auth_callback, pool, net_log);
   }
 
   // Changes the priority of the ClientSocketHandle to the passed value.
@@ -265,6 +267,7 @@ int ClientSocketHandle::Init(
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
     PoolType* pool,
     const NetLogWithSource& net_log) {
   requesting_source_ = net_log.source();
@@ -276,9 +279,9 @@ int ClientSocketHandle::Init(
   group_name_ = group_name;
   CompletionOnceCallback io_complete_callback =
       base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
-  int rv = pool_->RequestSocket(group_name, &socket_params, priority,
-                                socket_tag, respect_limits, this,
-                                std::move(io_complete_callback), net_log);
+  int rv = pool_->RequestSocket(
+      group_name, &socket_params, priority, socket_tag, respect_limits, this,
+      std::move(io_complete_callback), proxy_auth_callback, net_log);
   if (rv == ERR_IO_PENDING) {
     callback_ = std::move(callback);
   } else {

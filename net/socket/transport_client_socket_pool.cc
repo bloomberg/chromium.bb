@@ -220,14 +220,16 @@ TransportClientSocketPool::~TransportClientSocketPool() {
     ssl_config_service_->RemoveObserver(this);
 }
 
-int TransportClientSocketPool::RequestSocket(const std::string& group_name,
-                                             const void* params,
-                                             RequestPriority priority,
-                                             const SocketTag& socket_tag,
-                                             RespectLimits respect_limits,
-                                             ClientSocketHandle* handle,
-                                             CompletionOnceCallback callback,
-                                             const NetLogWithSource& net_log) {
+int TransportClientSocketPool::RequestSocket(
+    const std::string& group_name,
+    const void* params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    RespectLimits respect_limits,
+    ClientSocketHandle* handle,
+    CompletionOnceCallback callback,
+    const ProxyAuthCallback& proxy_auth_callback,
+    const NetLogWithSource& net_log) {
   const scoped_refptr<SocketParams>* casted_params =
       static_cast<const scoped_refptr<SocketParams>*>(params);
 
@@ -235,7 +237,7 @@ int TransportClientSocketPool::RequestSocket(const std::string& group_name,
 
   return base_.RequestSocket(group_name, *casted_params, priority, socket_tag,
                              respect_limits, handle, std::move(callback),
-                             net_log);
+                             proxy_auth_callback, net_log);
 }
 
 void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(

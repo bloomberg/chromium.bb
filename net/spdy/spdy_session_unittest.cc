@@ -3556,7 +3556,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
                                   CreateFromTransportSocketParams(params2),
                               DEFAULT_PRIORITY, SocketTag(),
                               ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(), pool, NetLogWithSource()));
+                              callback2.callback(),
+                              ClientSocketPool::ProxyAuthCallback(), pool,
+                              NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3638,7 +3640,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
                                   CreateFromTransportSocketParams(params3),
                               DEFAULT_PRIORITY, SocketTag(),
                               ClientSocketPool::RespectLimits::ENABLED,
-                              callback3.callback(), pool, NetLogWithSource()));
+                              callback3.callback(),
+                              ClientSocketPool::ProxyAuthCallback(), pool,
+                              NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3718,7 +3722,9 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
                                   CreateFromTransportSocketParams(params2),
                               DEFAULT_PRIORITY, SocketTag(),
                               ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(), pool, NetLogWithSource()));
+                              callback2.callback(),
+                              ClientSocketPool::ProxyAuthCallback(), pool,
+                              NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY
