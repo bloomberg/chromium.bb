@@ -16,7 +16,7 @@ class Profile;
 class PrefsTabHelper;
 
 // Watches updates in WebKitPreferences and blink::mojom::RendererPreferences,
-// and notifies tab helpers and watchers for workers of those updates.
+// and notifies tab helpers and registered watchers of those updates.
 class PrefWatcher : public KeyedService {
  public:
   explicit PrefWatcher(Profile* profile);
@@ -26,8 +26,8 @@ class PrefWatcher : public KeyedService {
 
   void RegisterHelper(PrefsTabHelper* helper);
   void UnregisterHelper(PrefsTabHelper* helper);
-  void RegisterWatcherForWorkers(
-      blink::mojom::RendererPreferenceWatcherPtr worker_watcher);
+  void RegisterRendererPreferenceWatcher(
+      blink::mojom::RendererPreferenceWatcherPtr watcher);
 
  private:
   // KeyedService overrides:
@@ -43,9 +43,11 @@ class PrefWatcher : public KeyedService {
   // blink::mojom::RendererPreferences.
   std::set<PrefsTabHelper*> tab_helpers_;
 
-  // |worker_watchers_| observe changes in blink::mojom::RendererPreferences.
+  // |renderer_preference_watchers_| observe changes in
+  // blink::mojom::RendererPreferences. If the consumer also wants to WebKit
+  // preference changes, use |tab_helpers_|.
   mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
-      worker_watchers_;
+      renderer_preference_watchers_;
 };
 
 class PrefWatcherFactory : public BrowserContextKeyedServiceFactory {

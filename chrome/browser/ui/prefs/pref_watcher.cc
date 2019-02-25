@@ -93,9 +93,9 @@ void PrefWatcher::UnregisterHelper(PrefsTabHelper* helper) {
   tab_helpers_.erase(helper);
 }
 
-void PrefWatcher::RegisterWatcherForWorkers(
-    blink::mojom::RendererPreferenceWatcherPtr worker_watcher) {
-  worker_watchers_.AddPtr(std::move(worker_watcher));
+void PrefWatcher::RegisterRendererPreferenceWatcher(
+    blink::mojom::RendererPreferenceWatcherPtr watcher) {
+  renderer_preference_watchers_.AddPtr(std::move(watcher));
 }
 
 void PrefWatcher::Shutdown() {
@@ -108,7 +108,7 @@ void PrefWatcher::UpdateRendererPreferences() {
 
   blink::mojom::RendererPreferences prefs;
   renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile_);
-  worker_watchers_.ForAllPtrs(
+  renderer_preference_watchers_.ForAllPtrs(
       [&prefs](blink::mojom::RendererPreferenceWatcher* watcher) {
         watcher->NotifyUpdate(prefs.Clone());
       });

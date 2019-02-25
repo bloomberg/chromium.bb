@@ -295,7 +295,7 @@ void SetupOnUIThread(int embedded_worker_id,
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
   params->preference_watcher_request = mojo::MakeRequest(&watcher_ptr);
-  GetContentClient()->browser()->RegisterRendererPreferenceWatcherForWorkers(
+  GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       process_manager->browser_context(), std::move(watcher_ptr));
 
   // Continue to OnSetupCompleted on the IO thread.
