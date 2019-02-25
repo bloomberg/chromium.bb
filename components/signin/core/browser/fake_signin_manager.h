@@ -38,19 +38,12 @@ class FakeSigninManager : public SigninManager {
 
   void ForceSignOut();
 
-  void FailSignin(const GoogleServiceAuthError& error);
-
  protected:
   void OnSignoutDecisionReached(
       signin_metrics::ProfileSignout signout_source_metric,
       signin_metrics::SignoutDelete signout_delete_metric,
       RemoveAccountsOption remove_option,
       SigninClient::SignoutDecision signout_decision) override;
-
-  // Username specified in StartSignInWithRefreshToken() call.
-  std::string username_;
-
-  ProfileOAuth2TokenService* token_service_;
 };
 
 #endif  // !defined (OS_CHROMEOS)

@@ -35,8 +35,7 @@ FakeSigninManager::FakeSigninManager(
                     token_service,
                     account_tracker_service,
                     cookie_manager_service,
-                    account_consistency),
-      token_service_(token_service) {}
+                    account_consistency) {}
 
 FakeSigninManager::~FakeSigninManager() {}
 
@@ -53,11 +52,6 @@ void FakeSigninManager::ForceSignOut() {
   // |FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TESTS|.
   SignOut(signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
-void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
-  for (auto& observer : observer_list_)
-    observer.GoogleSigninFailed(error);
 }
 
 void FakeSigninManager::OnSignoutDecisionReached(
@@ -80,12 +74,12 @@ void FakeSigninManager::OnSignoutDecisionReached(
   authenticated_account_id_.clear();
   switch (remove_option) {
     case RemoveAccountsOption::kRemoveAllAccounts:
-      if (token_service_)
-        token_service_->RevokeAllCredentials();
+      if (token_service())
+        token_service()->RevokeAllCredentials();
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service_ && token_service_->RefreshTokenHasError(account_id))
-        token_service_->RevokeCredentials(account_id);
+      if (token_service() && token_service()->RefreshTokenHasError(account_id))
+        token_service()->RevokeCredentials(account_id);
       break;
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.
