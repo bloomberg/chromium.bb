@@ -244,8 +244,8 @@ void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
   // Clean up web request event listeners for the WebView.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&RemoveWebViewEventListenersOnIOThread, browser_context,
-                 embedder_process_id, view_instance_id));
+      base::BindOnce(&RemoveWebViewEventListenersOnIOThread, browser_context,
+                     embedder_process_id, view_instance_id));
 
   // Clean up content scripts for the WebView.
   auto* csm = WebViewContentScriptManager::Get(browser_context);

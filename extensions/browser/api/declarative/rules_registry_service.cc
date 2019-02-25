@@ -76,10 +76,10 @@ void RulesRegistryService::Shutdown() {
   rule_registries_.clear();
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-                 browser_context_,
-                 RulesRegistryService::kDefaultRulesRegistryID,
-                 scoped_refptr<WebRequestRulesRegistry>(NULL)));
+      base::BindOnce(&RegisterToExtensionWebRequestEventRouterOnIO,
+                     browser_context_,
+                     RulesRegistryService::kDefaultRulesRegistryID,
+                     scoped_refptr<WebRequestRulesRegistry>(NULL)));
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService>>::
@@ -200,9 +200,9 @@ RulesRegistryService::RegisterWebRequestRulesRegistry(
   RegisterRulesRegistry(web_request_rules_registry);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-                 browser_context_, rules_registry_id,
-                 web_request_rules_registry));
+      base::BindOnce(&RegisterToExtensionWebRequestEventRouterOnIO,
+                     browser_context_, rules_registry_id,
+                     web_request_rules_registry));
   return web_request_rules_registry;
 }
 
@@ -250,10 +250,10 @@ void RulesRegistryService::NotifyRegistriesHelper(
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
       (registry.get()->*notification_callback)(extension);
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {registry->owner_thread()},
-          base::Bind(&NotifyWithExtensionSafe, base::WrapRefCounted(extension),
-                     notification_callback, registry));
+      base::PostTaskWithTraits(FROM_HERE, {registry->owner_thread()},
+                               base::BindOnce(&NotifyWithExtensionSafe,
+                                              base::WrapRefCounted(extension),
+                                              notification_callback, registry));
     }
   }
 }

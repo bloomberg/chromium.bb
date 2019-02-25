@@ -1236,7 +1236,7 @@ void ClearCacheOnNavigation() {
     ClearCacheOnNavigationOnUI();
   } else {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::Bind(&ClearCacheOnNavigationOnUI));
+                             base::BindOnce(&ClearCacheOnNavigationOnUI));
   }
 }
 

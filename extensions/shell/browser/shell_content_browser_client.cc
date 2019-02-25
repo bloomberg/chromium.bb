@@ -177,10 +177,10 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&InfoMap::RegisterExtensionProcess,
-                 browser_main_parts_->extension_system()->info_map(),
-                 extension->id(), site_instance->GetProcess()->GetID(),
-                 site_instance->GetId()));
+      base::BindOnce(&InfoMap::RegisterExtensionProcess,
+                     browser_main_parts_->extension_system()->info_map(),
+                     extension->id(), site_instance->GetProcess()->GetID(),
+                     site_instance->GetId()));
 }
 
 void ShellContentBrowserClient::SiteInstanceDeleting(
@@ -201,10 +201,10 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&InfoMap::UnregisterExtensionProcess,
-                 browser_main_parts_->extension_system()->info_map(),
-                 extension->id(), site_instance->GetProcess()->GetID(),
-                 site_instance->GetId()));
+      base::BindOnce(&InfoMap::UnregisterExtensionProcess,
+                     browser_main_parts_->extension_system()->info_map(),
+                     extension->id(), site_instance->GetProcess()->GetID(),
+                     site_instance->GetId()));
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

@@ -515,9 +515,8 @@ void CastChannelAPI::CastMessageHandler::OnError(
       OnError::Create(channel_info, error_info);
   std::unique_ptr<Event> event(new Event(
       events::CAST_CHANNEL_ON_ERROR, OnError::kEventName, std::move(results)));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(ui_dispatch_cb_, std::move(event)));
 }
 
 void CastChannelAPI::CastMessageHandler::OnMessage(
@@ -537,9 +536,8 @@ void CastChannelAPI::CastMessageHandler::OnMessage(
   std::unique_ptr<Event> event(new Event(events::CAST_CHANNEL_ON_MESSAGE,
                                          OnMessage::kEventName,
                                          std::move(results)));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(ui_dispatch_cb_, std::move(event)));
 }
 
 }  // namespace extensions

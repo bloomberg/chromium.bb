@@ -1219,8 +1219,8 @@ void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
-                 base::Unretained(this), base::Passed(&guid_list)));
+      base::BindOnce(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
+                     base::Unretained(this), std::move(guid_list)));
 }
 
 void NetworkingPrivateLinux::OnNetworksChangedEventTask(

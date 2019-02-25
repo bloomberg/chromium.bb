@@ -252,9 +252,9 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&ShellExtensionsBrowserClient::BroadcastEventToRenderers,
-                   base::Unretained(this), histogram_value, event_name,
-                   base::Passed(&args)));
+        base::BindOnce(&ShellExtensionsBrowserClient::BroadcastEventToRenderers,
+                       base::Unretained(this), histogram_value, event_name,
+                       std::move(args)));
     return;
   }
 
