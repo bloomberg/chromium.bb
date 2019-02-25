@@ -927,7 +927,8 @@ public class VrShell extends GvrLayout
 
     public boolean isDisplayingUrlForTesting() {
         assert mNativeVrShell != 0;
-        return nativeIsDisplayingUrlForTesting(mNativeVrShell);
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return nativeIsDisplayingUrlForTesting(mNativeVrShell); });
     }
 
     @VisibleForTesting
