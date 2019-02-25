@@ -879,12 +879,13 @@ QuotaManager::QuotaManager(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread,
     scoped_refptr<SpecialStoragePolicy> special_storage_policy,
     const GetQuotaSettingsFunc& get_settings_function)
-    : is_incognito_(is_incognito),
+    : RefCountedDeleteOnSequence<QuotaManager>(io_thread),
+      is_incognito_(is_incognito),
       profile_path_(profile_path),
       proxy_(new QuotaManagerProxy(this, io_thread)),
       db_disabled_(false),
       eviction_disabled_(false),
-      io_thread_(std::move(io_thread)),
+      io_thread_(io_thread),
       db_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
@@ -1794,14 +1795,6 @@ void QuotaManager::DidGetStorageCapacity(
 void QuotaManager::DidDatabaseWork(bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   db_disabled_ = !success;
-}
-
-void QuotaManager::DeleteOnCorrectThread() const {
-  if (!io_thread_->BelongsToCurrentThread() &&
-      io_thread_->DeleteSoon(FROM_HERE, this)) {
-    return;
-  }
-  delete this;
 }
 
 void QuotaManager::PostTaskAndReplyWithResultForDBThread(
