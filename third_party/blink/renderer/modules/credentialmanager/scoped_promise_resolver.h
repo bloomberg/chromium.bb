@@ -7,11 +7,14 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 // Off-heap wrapper that holds a strong reference to a ScriptPromiseResolver.
 class ScopedPromiseResolver {
+  USING_FAST_MALLOC(ScopedPromiseResolver);
+
  public:
   explicit ScopedPromiseResolver(ScriptPromiseResolver* resolver);
 
