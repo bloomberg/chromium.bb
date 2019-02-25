@@ -105,11 +105,11 @@ cca.views.Camera = function(model) {
   this.started_ = null;
 
   /**
-   * Timeout for a take of photo or recording.
-   * @type {?number}
+   * Promise for play sound delay.
+   * @type {?Promise}
    * @private
    */
-  this.takeTimeout_ = null;
+  this.deferred_capture_ = null;
 
   /**
    * Promise for the current take of photo or recording.
@@ -231,23 +231,24 @@ cca.views.Camera.prototype.beginTake_ = function() {
   cca.views.camera.timertick.start().then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
-    var delay =
-        (this.recordMode && cca.sound.play('#sound-rec-start')) ? 250 : 0;
-    this.takeTimeout_ = setTimeout(() => {
-      if (this.recordMode) {
-        // Take of recording will be ended by another shutter click.
-        this.take_ = this.createRecordingBlob_().catch((error) => {
-          cca.toast.show('error_msg_empty_recording');
-          throw error;
-        });
-      } else {
-        this.take_ = this.createPhotoBlob_().catch((error) => {
-          cca.toast.show('error_msg_take_photo_failed');
-          throw error;
-        });
-        this.endTake_();
-      }
-    }, delay);
+    this.deferred_capture_ =
+        this.recordMode ? cca.sound.play('#sound-rec-start') : null;
+    return this.deferred_capture_ &&
+        this.deferred_capture_.finally(() => this.deferred_capture_ = null);
+  }).then(() => {
+    if (this.recordMode) {
+      // Take of recording will be ended by another shutter click.
+      this.take_ = this.createRecordingBlob_().catch((error) => {
+        cca.toast.show('error_msg_empty_recording');
+        throw error;
+      });
+    } else {
+      this.take_ = this.createPhotoBlob_().catch((error) => {
+        cca.toast.show('error_msg_take_photo_failed');
+        throw error;
+      });
+      this.endTake_();
+    }
   }).catch(() => {});
 };
 
@@ -258,9 +259,8 @@ cca.views.Camera.prototype.beginTake_ = function() {
  */
 cca.views.Camera.prototype.endTake_ = function() {
   cca.views.camera.timertick.cancel();
-  if (this.takeTimeout_) {
-    clearTimeout(this.takeTimeout_);
-    this.takeTimeout_ = null;
+  if (this.deferred_capture_ && this.deferred_capture_.cancel) {
+    this.deferred_capture_.cancel();
   }
   if (this.mediaRecorder_ && this.mediaRecorder_.state == 'recording') {
     this.mediaRecorder_.stop();

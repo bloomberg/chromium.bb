@@ -17,12 +17,24 @@ cca.sound = cca.sound || {};
 /**
  * Plays a sound.
  * @param {string} selector Selector of the sound.
- * @return {boolean} Whether the sound should be played.
+ * @return {Promise} Promise for waiting finishing playing or canceling wait.
  */
 cca.sound.play = function(selector) {
+  // Use a timeout to wait for sound finishing playing instead of end-event
+  // as it might not be played at all (crbug.com/135780).
   // TODO(yuli): Don't play sounds if the speaker settings is muted.
-  var element = document.querySelector(selector);
-  element.currentTime = 0;
-  element.play();
-  return true;
+  var cancel;
+  var p = new Promise((resolve, reject) => {
+    var element = document.querySelector(selector);
+    var timeout =
+        setTimeout(resolve, parseInt(element.dataset.timeout || 0), 10);
+    cancel = () => {
+      clearTimeout(timeout);
+      reject();
+    };
+    element.currentTime = 0;
+    element.play();
+  });
+  p.cancel = cancel;
+  return p;
 };
