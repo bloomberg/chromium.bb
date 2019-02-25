@@ -106,7 +106,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       request_time_(base::Time::Now()),
       response_state_(READY_FOR_HEADERS),
       io_state_(STATE_IDLE),
-      response_status_(OK),
       net_log_(net_log),
       raw_received_bytes_(0),
       raw_sent_bytes_(0),
@@ -686,7 +685,6 @@ void SpdyStream::OnClose(int status) {
       status = OK;
     }
   }
-  response_status_ = status;
   Delegate* delegate = delegate_;
   delegate_ = NULL;
   if (delegate)
