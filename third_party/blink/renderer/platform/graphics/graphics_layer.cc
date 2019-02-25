@@ -385,6 +385,7 @@ bool GraphicsLayer::PaintWithoutCommit(
       !client_.NeedsRepaint(*this) &&
       !GetPaintController().CacheIsAllInvalid() &&
       previous_interest_rect_ == *interest_rect) {
+    GetPaintController().UpdateUMACountsOnFullyCached();
     return false;
   }
 

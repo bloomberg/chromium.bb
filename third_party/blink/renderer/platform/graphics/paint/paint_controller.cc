@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -131,6 +132,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
   }
 
   num_cached_new_items_ += markers->end - markers->start;
+  ++num_cached_new_subsequences_;
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     DCHECK(!IsCheckingUnderInvalidation());
@@ -369,9 +371,7 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
       return i;
     }
     if (item.IsCacheable()) {
-#if DCHECK_IS_ON()
       ++num_indexed_items_;
-#endif
       AddToIndicesByClientMap(item.Client(), i, out_of_order_item_indices_);
       next_item_to_index_ = i + 1;
     }
@@ -474,7 +474,11 @@ void PaintController::CommitNewDisplayItems() {
                "num_non_cached_new_items",
                (int)new_display_item_list_.size() - num_cached_new_items_);
 
+  if (usage_ == kMultiplePaints)
+    UpdateUMACounts();
+
   num_cached_new_items_ = 0;
+  num_cached_new_subsequences_ = 0;
 #if DCHECK_IS_ON()
   new_display_item_indices_by_client_.clear();
   new_paint_chunk_indices_by_client_.clear();
@@ -499,10 +503,10 @@ void PaintController::CommitNewDisplayItems() {
   // We'll allocate the initial buffer when we start the next paint.
   new_display_item_list_ = DisplayItemList(0);
 
+  num_indexed_items_ = 0;
 #if DCHECK_IS_ON()
   num_sequential_matches_ = 0;
   num_out_of_order_matches_ = 0;
-  num_indexed_items_ = 0;
 #endif
 }
 
@@ -738,5 +742,53 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
   }
 }
 #endif
+
+size_t PaintController::sum_num_items_ = 0;
+size_t PaintController::sum_num_cached_items_ = 0;
+size_t PaintController::sum_num_indexed_items_ = 0;
+size_t PaintController::sum_num_subsequences_ = 0;
+size_t PaintController::sum_num_cached_subsequences_ = 0;
+
+void PaintController::UpdateUMACounts() {
+  DCHECK_EQ(usage_, kMultiplePaints);
+  sum_num_items_ += new_display_item_list_.size();
+  sum_num_cached_items_ += num_cached_new_items_;
+  sum_num_indexed_items_ += num_indexed_items_;
+  sum_num_subsequences_ += new_cached_subsequences_.size();
+  sum_num_cached_subsequences_ += num_cached_new_subsequences_;
+}
+
+void PaintController::UpdateUMACountsOnFullyCached() {
+  DCHECK_EQ(usage_, kMultiplePaints);
+  int num_items = GetDisplayItemList().size();
+  sum_num_items_ += num_items;
+  sum_num_cached_items_ += num_items;
+  // Don't change sum_num_indexed_items_.
+
+  int num_subsequences = current_cached_subsequences_.size();
+  sum_num_subsequences_ += num_subsequences;
+  sum_num_cached_subsequences_ += num_subsequences;
+}
+
+void PaintController::ReportUMACounts() {
+  static const int kReportThreshold = 1000;
+  if (sum_num_items_ < kReportThreshold)
+    return;
+
+  UMA_HISTOGRAM_PERCENTAGE("Blink.Paint.CachedItemPercentage",
+                           sum_num_cached_items_ * 100 / sum_num_items_);
+  UMA_HISTOGRAM_PERCENTAGE("Blink.Paint.IndexedItemPercentage",
+                           sum_num_indexed_items_ * 100 / sum_num_items_);
+  if (sum_num_subsequences_) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Blink.Paint.CachedSubsequencePercentage",
+        sum_num_cached_subsequences_ * 100 / sum_num_subsequences_);
+  }
+  sum_num_items_ = 0;
+  sum_num_cached_items_ = 0;
+  sum_num_indexed_items_ = 0;
+  sum_num_subsequences_ = 0;
+  sum_num_cached_subsequences_ = 0;
+}
 
 }  // namespace blink

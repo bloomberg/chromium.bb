@@ -2601,7 +2601,9 @@ void LocalFrameView::PaintTree() {
     auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
     bool has_dev_tools_overlays =
         web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays();
-    if (GetLayoutView()->Layer()->NeedsRepaint() || has_dev_tools_overlays) {
+    if (!GetLayoutView()->Layer()->NeedsRepaint() && !has_dev_tools_overlays) {
+      paint_controller_->UpdateUMACountsOnFullyCached();
+    } else {
       GraphicsContext graphics_context(*paint_controller_);
       if (RuntimeEnabledFeatures::PrintBrowserEnabled())
         graphics_context.SetPrinting(true);
@@ -2689,6 +2691,8 @@ void LocalFrameView::PaintTree() {
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
     GetPaintTimingDetector().NotifyPaintFinished();
+
+  PaintController::ReportUMACounts();
 }
 
 const cc::Layer* LocalFrameView::RootCcLayer() const {

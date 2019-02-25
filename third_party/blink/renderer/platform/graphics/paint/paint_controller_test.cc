@@ -63,7 +63,8 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
 
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
 
   CommitAndFinishCycle();
 
@@ -77,11 +78,12 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
 
-  EXPECT_EQ(2, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(1u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(1, NumIndexedItems());
+  EXPECT_EQ(2u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -123,11 +125,13 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
   DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
   DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
-  EXPECT_EQ(6, NumCachedNewItems());
+  EXPECT_EQ(6u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(2u, NumIndexedItems());  // first
 #if DCHECK_IS_ON()
-  EXPECT_EQ(5, NumSequentialMatches());  // second, first foreground, unaffected
-  EXPECT_EQ(1, NumOutOfOrderMatches());  // first
-  EXPECT_EQ(2, NumIndexedItems());       // first
+  EXPECT_EQ(5u,
+            NumSequentialMatches());  // second, first foreground, unaffected
+  EXPECT_EQ(1u, NumOutOfOrderMatches());  // first
 #endif
 
   CommitAndFinishCycle();
@@ -174,11 +178,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
   DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
   DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
-  EXPECT_EQ(4, NumCachedNewItems());
+  EXPECT_EQ(4u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(4, NumSequentialMatches());  // second, unaffected
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(2, NumIndexedItems());
+  EXPECT_EQ(4u, NumSequentialMatches());  // second, unaffected
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -214,11 +219,12 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
   DrawRect(context, third, kBackgroundType, FloatRect(125, 100, 200, 50));
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
 
-  EXPECT_EQ(2, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());  // first, second
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(2u, NumSequentialMatches());  // first, second
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -263,11 +269,12 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, third, kForegroundType, FloatRect(300, 100, 50, 50));
 
-  EXPECT_EQ(4, NumCachedNewItems());
+  EXPECT_EQ(4u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(4, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(2, NumIndexedItems());
+  EXPECT_EQ(4u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -305,7 +312,8 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
   DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   CommitAndFinishCycle();
 
   EXPECT_THAT(GetPaintController().GetDisplayItemList(),
@@ -319,11 +327,12 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
   DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
 
-  EXPECT_EQ(2, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(2, NumIndexedItems());
+  EXPECT_EQ(2u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -357,7 +366,8 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   DrawRect(context, first, kForegroundType, FloatRect(150, 150, 100, 100));
   DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
   DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   CommitAndFinishCycle();
 
   EXPECT_THAT(GetPaintController().GetDisplayItemList(),
@@ -373,7 +383,8 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   second.Invalidate();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   CommitAndFinishCycle();
 
   EXPECT_THAT(GetPaintController().GetDisplayItemList(),
@@ -723,11 +734,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
         context, container1));
   }
 
-  EXPECT_EQ(8, NumCachedNewItems());
+  EXPECT_EQ(8u, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(0, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(0u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -825,11 +837,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
                                                             kForegroundType));
   }
 
-  EXPECT_EQ(6, NumCachedNewItems());
+  EXPECT_EQ(6u, NumCachedNewItems());
+  EXPECT_EQ(1u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(2u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -965,11 +978,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
                                                          container2_properties);
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
 
-  EXPECT_EQ(4, NumCachedNewItems());
+  EXPECT_EQ(4u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(1u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(3, NumSequentialMatches());
-  EXPECT_EQ(1, NumOutOfOrderMatches());
-  EXPECT_EQ(1, NumIndexedItems());
+  EXPECT_EQ(3u, NumSequentialMatches());
+  EXPECT_EQ(1u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -1171,11 +1185,12 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
              FloatRect(100, 100, 100, 100));
   }
 
-  EXPECT_EQ(2, NumCachedNewItems());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(1u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(0, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(0u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -1252,11 +1267,12 @@ TEST_P(PaintControllerTest, SkipCache) {
   DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
 
-  EXPECT_EQ(1, NumCachedNewItems());
+  EXPECT_EQ(1u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(1, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(1u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -1349,11 +1365,12 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
   GetPaintController().EndSkippingCache();
   DrawRect(context, content, kForegroundType, rect3);
 
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
+  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
-  EXPECT_EQ(0, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(0, NumIndexedItems());
+  EXPECT_EQ(0u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -1494,7 +1511,8 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
   DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
 
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   CommitAndFinishCycle();
   EXPECT_THAT(GetPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&first, kBackgroundType),
@@ -1512,12 +1530,13 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
   DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
 
-  EXPECT_EQ(2, NumCachedNewItems());
-#if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   // We indexed "first" and "second" when finding the cached item for "third".
-  EXPECT_EQ(2, NumIndexedItems());
+  EXPECT_EQ(2u, NumIndexedItems());
+#if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();
@@ -1536,12 +1555,13 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
   DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
 
-  EXPECT_EQ(2, NumCachedNewItems());
-#if DCHECK_IS_ON()
-  EXPECT_EQ(2, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
+  EXPECT_EQ(2u, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewSubsequences());
   // We indexed "third" and "fourth" when finding the cached item for "first".
-  EXPECT_EQ(2, NumIndexedItems());
+  EXPECT_EQ(2u, NumIndexedItems());
+#if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumSequentialMatches());
+  EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
 
   CommitAndFinishCycle();

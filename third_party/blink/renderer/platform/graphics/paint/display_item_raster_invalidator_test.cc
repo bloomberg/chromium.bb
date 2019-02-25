@@ -287,7 +287,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
   DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
-  EXPECT_EQ(0, NumCachedNewItems());
+  EXPECT_EQ(0u, NumCachedNewItems());
 
   EXPECT_THAT(
       GenerateRasterInvalidations(),

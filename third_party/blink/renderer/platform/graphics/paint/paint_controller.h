@@ -70,7 +70,7 @@ class PLATFORM_EXPORT PaintController {
 
   ~PaintController();
 
-  // For SPv1 only.
+  // For pre-PaintAfterPaint only.
   void InvalidateAll();
   bool CacheIsAllInvalid() const;
 
@@ -244,6 +244,13 @@ class PLATFORM_EXPORT PaintController {
   unsigned CurrentFragment() const { return current_fragment_; }
   void SetCurrentFragment(unsigned fragment) { current_fragment_ = fragment; }
 
+  // The client may skip a paint when nothing changed. In the case, the client
+  // calls this method to update UMA counts as a fully cached paint.
+  void UpdateUMACountsOnFullyCached();
+  // Reports the accumulated counts as UMA metrics, and reset them, if we have
+  // enough data to report.
+  static void ReportUMACounts();
+
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
@@ -341,6 +348,8 @@ class PLATFORM_EXPORT PaintController {
   void ShowDebugDataInternal(DisplayItemList::JsonFlags) const;
 #endif
 
+  void UpdateUMACounts();
+
   Usage usage_;
 
   // The last paint artifact after CommitNewDisplayItems().
@@ -360,9 +369,10 @@ class PLATFORM_EXPORT PaintController {
   // A stack recording current frames' first paints.
   Vector<FrameFirstPaint> frame_first_paints_;
 
-  int skipping_cache_count_ = 0;
+  unsigned skipping_cache_count_ = 0;
 
-  int num_cached_new_items_ = 0;
+  size_t num_cached_new_items_ = 0;
+  size_t num_cached_new_subsequences_ = 0;
 
   // Stores indices to valid cacheable display items in
   // current_paint_artifact_.GetDisplayItemList() that have not been matched by
@@ -382,10 +392,10 @@ class PLATFORM_EXPORT PaintController {
   // requests.
   size_t next_item_to_index_ = 0;
 
+  size_t num_indexed_items_ = 0;
 #if DCHECK_IS_ON()
-  int num_sequential_matches_ = 0;
-  int num_out_of_order_matches_ = 0;
-  int num_indexed_items_ = 0;
+  size_t num_sequential_matches_ = 0;
+  size_t num_out_of_order_matches_ = 0;
 
   // This is used to check duplicated ids during CreateAndAppend().
   IndicesByClientMap new_display_item_indices_by_client_;
@@ -411,6 +421,18 @@ class PLATFORM_EXPORT PaintController {
   size_t last_cached_subsequence_end_ = 0;
 
   unsigned current_fragment_ = 0;
+
+  // Accumulated counts for UMA metrics. Updated by UpdateUMACounts() and
+  // UpdateUMACountsOnFullyCached(), and reported as UMA metrics and reset by
+  // ReportUMACounts(). The accumulation is mainly for pre-CompositeAfterPaint
+  // to weigh big and small GraphicsLayers properly when calculating the
+  // percentage UMA data. Also avoid reporting too frequently, to make the
+  // metrics more meaningful.
+  static size_t sum_num_items_;
+  static size_t sum_num_cached_items_;
+  static size_t sum_num_indexed_items_;
+  static size_t sum_num_subsequences_;
+  static size_t sum_num_cached_subsequences_;
 
   class DisplayItemListAsJSON;
 
