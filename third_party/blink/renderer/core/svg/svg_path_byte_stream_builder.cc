@@ -48,15 +48,13 @@ class CoalescingBuffer {
     WriteType<float>(point.X());
     WriteType<float>(point.Y());
   }
-  void WriteSegmentType(unsigned short value) {
-    WriteType<unsigned short>(value);
-  }
+  void WriteSegmentType(uint16_t value) { WriteType<uint16_t>(value); }
 
  private:
   // Adjust size to fit the largest command (in serialized/byte-stream format).
   // Currently a cubic segment.
   wtf_size_t current_offset_;
-  unsigned char bytes_[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
+  unsigned char bytes_[sizeof(uint16_t) + sizeof(FloatPoint) * 3];
   SVGPathByteStream& byte_stream_;
 };
 

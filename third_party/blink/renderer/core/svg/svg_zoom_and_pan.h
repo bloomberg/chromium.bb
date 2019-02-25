@@ -48,7 +48,7 @@ class SVGZoomAndPan {
 
   static bool IsKnownAttribute(const QualifiedName&);
 
-  static SVGZoomAndPanType ParseFromNumber(unsigned short number) {
+  static SVGZoomAndPanType ParseFromNumber(uint16_t number) {
     if (!number || number > kSVGZoomAndPanMagnify)
       return kSVGZoomAndPanUnknown;
     return static_cast<SVGZoomAndPanType>(number);
@@ -61,10 +61,10 @@ class SVGZoomAndPan {
 
   // JS API
   SVGZoomAndPanType zoomAndPan() const { return zoom_and_pan_; }
-  virtual void setZoomAndPan(unsigned short value) {
+  virtual void setZoomAndPan(uint16_t value) {
     zoom_and_pan_ = ParseFromNumber(value);
   }
-  virtual void setZoomAndPan(unsigned short value, ExceptionState&) {
+  virtual void setZoomAndPan(uint16_t value, ExceptionState&) {
     setZoomAndPan(value);
   }
 

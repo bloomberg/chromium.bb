@@ -46,7 +46,7 @@ class SVGAnimatedEnumerationBase
  public:
   ~SVGAnimatedEnumerationBase() override;
 
-  void setBaseVal(unsigned short, ExceptionState&);
+  void setBaseVal(uint16_t, ExceptionState&);
 
   void Trace(blink::Visitor* visitor) override {
     SVGAnimatedProperty<SVGEnumerationBase>::Trace(visitor);

@@ -68,8 +68,8 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
                       PropertyIsAnimValType);
   ~SVGTransformTearOff() override;
 
-  unsigned short transformType() {
-    return static_cast<unsigned short>(Target()->TransformType());
+  uint16_t transformType() {
+    return static_cast<uint16_t>(Target()->TransformType());
   }
   SVGMatrixTearOff* matrix();
   float angle() { return Target()->Angle(); }
