@@ -105,13 +105,13 @@ class RestrictedCookieManagerTest : public testing::Test {
 
   // Set a canonical cookie directly into the store.
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          bool secure_source,
+                          std::string source_scheme,
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
         callback;
     cookie_monster_.SetCanonicalCookieAsync(
-        std::make_unique<net::CanonicalCookie>(cookie), secure_source,
-        can_modify_httponly,
+        std::make_unique<net::CanonicalCookie>(cookie),
+        std::move(source_scheme), can_modify_httponly,
         base::BindOnce(&net::ResultSavingCookieCallback<
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
@@ -134,7 +134,7 @@ class RestrictedCookieManagerTest : public testing::Test {
                              /* httponly = */ false,
                              net::CookieSameSite::NO_RESTRICTION,
                              net::COOKIE_PRIORITY_DEFAULT),
-        /* secure_source = */ true, /* can_modify_httponly = */ true));
+        "https", /* can_modify_httponly = */ true));
   }
 
   void ExpectBadMessage() { expecting_bad_message_ = true; }

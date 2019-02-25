@@ -379,13 +379,13 @@ void CookieManager::SetCookieHelper(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
-    GetCookieManagerWrapper()->SetCanonicalCookie(
-        *cc.get(), new_host.SchemeIsCryptographic(),
-        !options.exclude_httponly(), std::move(callback));
+    GetCookieManagerWrapper()->SetCanonicalCookie(*cc.get(), new_host.scheme(),
+                                                  !options.exclude_httponly(),
+                                                  std::move(callback));
   } else {
-    GetCookieStore()->SetCanonicalCookieAsync(
-        std::move(cc), new_host.SchemeIsCryptographic(),
-        !options.exclude_httponly(), StatusToBool(callback));
+    GetCookieStore()->SetCanonicalCookieAsync(std::move(cc), new_host.scheme(),
+                                              !options.exclude_httponly(),
+                                              StatusToBool(callback));
   }
 }
 

@@ -43,7 +43,7 @@ class AwCookieManagerWrapper {
                      GetCookieListCallback callback);
 
   void SetCanonicalCookie(const net::CanonicalCookie& cc,
-                          bool secure_source,
+                          std::string source_scheme,
                           bool modify_http_only,
                           SetCanonicalCookieCallback);
 
