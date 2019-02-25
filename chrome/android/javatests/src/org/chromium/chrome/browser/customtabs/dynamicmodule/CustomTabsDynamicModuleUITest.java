@@ -532,6 +532,54 @@ public class CustomTabsDynamicModuleUITest {
         runOnUiThreadBlocking(() -> Assert.assertTrue(canChangeProgressBarTopMargin()));
     }
 
+    @Test
+    @SmallTest
+    public void testToolbarController_doesNotHideCctTopBar_doesNotAcquiredToken() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(), mTestPage);
+        CustomTabsTestUtils.setHideCctTopBarOnModuleManagedUrls(intent, false);
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThreadBlocking(() -> {
+            DynamicModuleToolbarController toolbarController =
+                    getActivity().getComponent().resolveDynamicModuleToolbarController();
+            Assert.assertFalse(toolbarController.hasAcquiredToken());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testToolbarController_moduleDisabled_acquiredThenReleasedToken() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(), mTestPage);
+        CustomTabsTestUtils.setHideCctTopBarOnModuleManagedUrls(intent, true);
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThreadBlocking(() -> {
+            DynamicModuleToolbarController toolbarController =
+                    getActivity().getComponent().resolveDynamicModuleToolbarController();
+            Assert.assertTrue(toolbarController.hasAcquiredToken());
+            Assert.assertTrue(toolbarController.hasReleasedToken());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testToolbarController_hideCctTopBar_acquiredThenReleasedToken() throws Exception {
+        Intent intent = new IntentBuilder(mModuleManagedPage).build();
+        CustomTabsTestUtils.setHideCctTopBarOnModuleManagedUrls(intent, true);
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThreadBlocking(() -> {
+            DynamicModuleToolbarController toolbarController =
+                    getActivity().getComponent().resolveDynamicModuleToolbarController();
+            Assert.assertTrue(toolbarController.hasAcquiredToken());
+            Assert.assertTrue(toolbarController.hasReleasedToken());
+        });
+    }
+
     private void assertNoTopBar() {
         runOnUiThreadBlocking(() -> {
             ViewGroup topBar = getActivity().findViewById(R.id.topbar);

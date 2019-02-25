@@ -1085,6 +1085,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();
         }
+        if (mConnection.shouldHideTopBarOnModuleManagedUrlsForSession(
+                    mIntentDataProvider.getSession())) {
+            component.resolveDynamicModuleToolbarController();
+        }
 
         return component;
     }

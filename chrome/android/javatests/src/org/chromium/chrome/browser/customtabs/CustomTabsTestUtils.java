@@ -15,6 +15,7 @@ import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
@@ -105,5 +106,13 @@ public class CustomTabsTestUtils {
 
         CriteriaHelper.pollUiThread(
                 activity.getAppMenuHandler()::isAppMenuShowing, "App menu was not shown");
+    }
+
+    public static void setHideCctTopBarOnModuleManagedUrls(Intent intent, boolean hideCctTopBar)
+            throws InterruptedException, TimeoutException {
+        CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        connection.newSession(token);
+        connection.setHideCCTTopBarOnModuleManagedUrls(token, hideCctTopBar);
     }
 }
