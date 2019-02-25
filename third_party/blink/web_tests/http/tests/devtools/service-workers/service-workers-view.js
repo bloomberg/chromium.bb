@@ -28,12 +28,12 @@
       } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
         ++step;
         TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView());
-        TestRunner.addResult('Unegister ServiceWorker for scope1');
+        TestRunner.addResult('Unregister ServiceWorker for scope1');
         ApplicationTestRunner.unregisterServiceWorker(scope1);
       } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
         ++step;
         TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView());
-        TestRunner.addResult('Unegister ServiceWorker for scope1');
+        TestRunner.addResult('Unregister ServiceWorker for scope2');
         ApplicationTestRunner.unregisterServiceWorker(scope2);
       } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
         ++step;
