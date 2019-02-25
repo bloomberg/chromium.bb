@@ -263,6 +263,10 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
 void ModulatorImplBase::ProduceCacheModuleTreeTopLevel(
     ModuleScript* module_script) {
   DCHECK(module_script);
+  // Since we run this asynchronously, context might be gone already,
+  // for example because the frame was detached.
+  if (!script_state_->ContextIsValid())
+    return;
   HeapHashSet<Member<const ModuleScript>> discovered_set;
   ProduceCacheModuleTree(module_script, &discovered_set);
 }
