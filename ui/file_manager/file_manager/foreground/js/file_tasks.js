@@ -205,7 +205,7 @@ FileTasks.create = function(
           var taskType = taskParts[1];
           var actionId = taskParts[2];
           return !(
-              appId === chrome.runtime.id && taskType === 'file' &&
+              appId === chrome.runtime.id && taskType === 'app' &&
               actionId === 'install-linux-package');
         });
       }
@@ -474,7 +474,7 @@ FileTasks.isInternalTask_ = function(taskId) {
   var taskType = taskParts[1];
   var actionId = taskParts[2];
   return (
-      appId === chrome.runtime.id && taskType === 'file' &&
+      appId === chrome.runtime.id && taskType === 'app' &&
       (actionId === 'mount-archive' || actionId === 'install-linux-package'));
 };
 
@@ -514,15 +514,11 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
     }
 
     // Tweak images, titles of internal tasks.
-    if (taskParts[0] === id && taskParts[1] === 'file') {
-      if (taskParts[2] === 'play') {
-        // TODO(serya): This hack needed until task.iconUrl is working
-        //             (see GetFileTasksFileBrowserFunction::RunImpl).
-        task.iconType = 'audio';
-        task.title = loadTimeData.getString('TASK_LISTEN');
-      } else if (taskParts[2] === 'mount-archive') {
+    if (taskParts[0] === id && taskParts[1] === 'app') {
+      if (taskParts[2] === 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
+        task.verb = undefined;
       } else if (taskParts[2] === 'open-hosted-generic') {
         if (entries.length > 1) {
           task.iconType = 'generic';
@@ -530,18 +526,23 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
           task.iconType = FileType.getIcon(entries[0]);
         }
         task.title = loadTimeData.getString('TASK_OPEN');
+        task.verb = undefined;
       } else if (taskParts[2] === 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
         task.title = loadTimeData.getString('TASK_OPEN_GDOC');
+        task.verb = undefined;
       } else if (taskParts[2] === 'open-hosted-gsheet') {
         task.iconType = 'gsheet';
         task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
+        task.verb = undefined;
       } else if (taskParts[2] === 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
+        task.verb = undefined;
       } else if (taskParts[2] === 'install-linux-package') {
         task.iconType = 'crostini';
         task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
+        task.verb = undefined;
       } else if (taskParts[2] === 'view-swf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED')) {
@@ -549,6 +550,7 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
         }
         task.iconType = 'generic';
         task.title = loadTimeData.getString('TASK_VIEW');
+        task.verb = undefined;
       } else if (taskParts[2] === 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED')) {
@@ -556,9 +558,11 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
         }
         task.iconType = 'pdf';
         task.title = loadTimeData.getString('TASK_VIEW');
+        task.verb = undefined;
       } else if (taskParts[2] === 'view-in-browser') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('TASK_VIEW');
+        task.verb = undefined;
       }
     }
     if (!task.iconType && taskParts[1] === 'web-intent') {

@@ -115,13 +115,13 @@ crostiniTasks.testErrorLoadingLinuxPackageInfo = (done) => {
   // the internal linux package install handler
   let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
   chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
-    setTimeout(callback, 0, [{
-                 taskId: test.FILE_MANAGER_EXTENSION_ID +
-                     '|file|install-linux-package',
-                 title: 'Install with Linux (Beta)',
-                 verb: 'open_with',
-                 isDefault: true,
-               }]);
+    setTimeout(
+        callback, 0, [{
+          taskId: `${test.FILE_MANAGER_EXTENSION_ID}|app|install-linux-package`,
+          title: 'Install with Linux (Beta)',
+          verb: 'open_with',
+          isDefault: true,
+        }]);
   };
 
   // Save old fmp.getLinuxPackageInfo and replace with version that saves the

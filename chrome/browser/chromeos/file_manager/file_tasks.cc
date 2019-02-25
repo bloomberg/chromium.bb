@@ -23,6 +23,8 @@
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
+#include "chrome/browser/chromeos/file_manager/open_with_browser.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -117,10 +119,14 @@ void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
 
 // Returns true if the given task is a handler by built-in apps like the Files
 // app itself or QuickOffice etc. They are used as the initial default app.
-bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
-  if (task.task_type != file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
-      task.task_type != file_tasks::TASK_TYPE_FILE_HANDLER)
+bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
+  if ((task.task_descriptor().task_type !=
+           file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
+       task.task_descriptor().task_type !=
+           file_tasks::TASK_TYPE_FILE_HANDLER) ||
+      task.is_generic_file_handler()) {
     return false;
+  }
 
   const char* const kBuiltInApps[] = {
       kFileManagerAppId,
@@ -133,8 +139,9 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
       extension_misc::kQuickOfficeExtensionId};
 
   for (size_t i = 0; i < base::size(kBuiltInApps); ++i) {
-    if (task.app_id == kBuiltInApps[i])
+    if (task.task_descriptor().app_id == kBuiltInApps[i]) {
       return true;
+    }
   }
   return false;
 }
@@ -177,6 +184,34 @@ void PostProcessFoundTasks(
     KeepOnlyFileManagerInternalTasks(result_list.get());
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
+}
+
+// Returns true if |extension_id| and |action_id| indicate that the file
+// currently being handled should be opened with the browser. This function
+// is used to handle certain action IDs of the file manager.
+bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
+                               const std::string& action_id) {
+  return extension_id == kFileManagerAppId &&
+         (action_id == "view-pdf" || action_id == "view-swf" ||
+          action_id == "view-in-browser" ||
+          action_id == "open-hosted-generic" ||
+          action_id == "open-hosted-gdoc" ||
+          action_id == "open-hosted-gsheet" ||
+          action_id == "open-hosted-gslides");
+}
+
+// Opens the files specified by |file_urls| with the browser for |profile|.
+// Returns true on success. It's a failure if no files are opened.
+bool OpenFilesWithBrowser(Profile* profile,
+                          const std::vector<FileSystemURL>& file_urls) {
+  int num_opened = 0;
+  for (size_t i = 0; i < file_urls.size(); ++i) {
+    const FileSystemURL& file_url = file_urls[i];
+    if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
+      num_opened += util::OpenFileWithBrowser(profile, file_url) ? 1 : 0;
+    }
+  }
+  return num_opened > 0;
 }
 
 }  // namespace
@@ -334,6 +369,17 @@ bool ExecuteFileTask(Profile* profile,
     DCHECK_EQ(kCrostiniAppActionID, task.action_id);
     ExecuteCrostiniTask(profile, task, file_urls, std::move(done));
     return true;
+  }
+
+  // Some action IDs of the file manager's file browser handlers require the
+  // files to be directly opened with the browser.
+  if (ShouldBeOpenedWithBrowser(task.app_id, task.action_id)) {
+    const bool result = OpenFilesWithBrowser(profile, file_urls);
+    if (result && done) {
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_OPENED);
+    }
+    return result;
   }
 
   // Get the extension.
@@ -581,10 +627,10 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   // No default tasks found. If there is any fallback file browser handler,
   // make it as default task, so it's selected by default.
   for (size_t i = 0; i < tasks->size(); ++i) {
-    FullTaskDescriptor* task = &tasks->at(i);
-    DCHECK(!task->is_default());
-    if (IsFallbackFileHandler(task->task_descriptor())) {
-      task->set_is_default(true);
+    FullTaskDescriptor& task = (*tasks)[i];
+    DCHECK(!task.is_default());
+    if (IsFallbackFileHandler(task)) {
+      task.set_is_default(true);
       return;
     }
   }

@@ -73,9 +73,8 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
     return;
   base::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
-  file_tasks::TaskDescriptor task(kFileManagerAppId,
-                                  file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-                                  action_id);
+  file_tasks::TaskDescriptor task(
+      kFileManagerAppId, file_tasks::TASK_TYPE_FILE_HANDLER, action_id);
   ExecuteFileTaskForUrl(profile, task, url);
 }
 

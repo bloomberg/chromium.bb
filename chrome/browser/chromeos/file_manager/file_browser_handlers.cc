@@ -416,35 +416,6 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
-// Returns true if |extension_id| and |action_id| indicate that the file
-// currently being handled should be opened with the browser. This function
-// is used to handle certain action IDs of the file manager.
-bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
-                               const std::string& action_id) {
-  return (extension_id == kFileManagerAppId &&
-          (action_id == "view-pdf" ||
-           action_id == "view-swf" ||
-           action_id == "view-in-browser" ||
-           action_id == "open-hosted-generic" ||
-           action_id == "open-hosted-gdoc" ||
-           action_id == "open-hosted-gsheet" ||
-           action_id == "open-hosted-gslides"));
-}
-
-// Opens the files specified by |file_urls| with the browser for |profile|.
-// Returns true on success. It's a failure if no files are opened.
-bool OpenFilesWithBrowser(Profile* profile,
-                          const std::vector<FileSystemURL>& file_urls) {
-  int num_opened = 0;
-  for (size_t i = 0; i < file_urls.size(); ++i) {
-    const FileSystemURL& file_url = file_urls[i];
-    if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
-      num_opened += util::OpenFileWithBrowser(profile, file_url) ? 1 : 0;
-    }
-  }
-  return num_opened > 0;
-}
-
 }  // namespace
 
 bool ExecuteFileBrowserHandler(Profile* profile,
@@ -455,16 +426,6 @@ bool ExecuteFileBrowserHandler(Profile* profile,
   // Forbid calling undeclared handlers.
   if (!FindFileBrowserHandlerForActionId(extension, action_id))
     return false;
-
-  // Some action IDs of the file manager's file browser handlers require the
-  // files to be directly opened with the browser.
-  if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
-    const bool result = OpenFilesWithBrowser(profile, file_urls);
-    if (result && !done.is_null())
-      std::move(done).Run(
-          extensions::api::file_manager_private::TASK_RESULT_OPENED);
-    return result;
-  }
 
   // The executor object will be self deleted on completion.
   (new FileBrowserHandlerExecutor(profile, extension, action_id))
