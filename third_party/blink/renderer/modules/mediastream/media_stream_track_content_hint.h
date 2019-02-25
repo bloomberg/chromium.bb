@@ -6,10 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_CONTENT_HINT_H_
 
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class MediaStreamTrackContentHint final {
+  STATIC_ONLY(MediaStreamTrackContentHint);
+
  public:
   static String contentHint(const MediaStreamTrack& track) {
     return track.ContentHint();

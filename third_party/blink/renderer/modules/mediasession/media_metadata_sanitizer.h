@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_METADATA_SANITIZER_H_
 
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -13,6 +14,8 @@ class ExecutionContext;
 class MediaMetadata;
 
 class MediaMetadataSanitizer {
+  STATIC_ONLY(MediaMetadataSanitizer);
+
  public:
   // Produce the sanitized metadata, which will later be sent to the
   // MediaSession mojo service.
