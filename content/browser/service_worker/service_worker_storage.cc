@@ -444,6 +444,7 @@ void ServiceWorkerStorage::StoreRegistration(
   if (version->origin_trial_tokens())
     data.origin_trial_tokens = *version->origin_trial_tokens();
   data.navigation_preload_state = registration->navigation_preload_state();
+  data.script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
     data.used_features.insert(static_cast<uint32_t>(feature));
 
@@ -1433,6 +1434,8 @@ void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
       info.active_version.script_url = registration_data.script;
       info.active_version.version_id = registration_data.version_id;
       info.active_version.registration_id = registration_data.registration_id;
+      info.active_version.script_response_time =
+          registration_data.script_response_time;
       info.active_version.fetch_handler_existence =
           registration_data.has_fetch_handler
               ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
@@ -1442,6 +1445,8 @@ void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
       info.waiting_version.script_url = registration_data.script;
       info.waiting_version.version_id = registration_data.version_id;
       info.waiting_version.registration_id = registration_data.registration_id;
+      info.waiting_version.script_response_time =
+          registration_data.script_response_time;
       info.waiting_version.fetch_handler_existence =
           registration_data.has_fetch_handler
               ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
@@ -1652,6 +1657,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     }
     version->set_used_features(std::move(used_features));
   }
+  version->set_script_response_time_for_devtools(data.script_response_time);
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)
     registration->SetActiveVersion(version);
