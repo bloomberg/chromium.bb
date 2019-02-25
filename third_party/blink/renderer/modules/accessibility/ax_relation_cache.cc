@@ -19,8 +19,13 @@ bool AXRelationCache::IsAriaOwned(const AXObject* child) const {
 }
 
 AXObject* AXRelationCache::GetAriaOwnedParent(const AXObject* child) const {
-  return ObjectFromAXID(
-      aria_owned_child_to_owner_mapping_.at(child->AXObjectID()));
+  // Child IDs may still be present in owning parents whose list of children
+  // have been marked as requiring an update, but have not been updated yet.
+  HashMap<AXID, AXID>::const_iterator iter =
+      aria_owned_child_to_owner_mapping_.find(child->AXObjectID());
+  if (iter == aria_owned_child_to_owner_mapping_.end())
+    return nullptr;
+  return ObjectFromAXID(iter->value);
 }
 
 // Update reverse relation map, where relation_source is related to target_ids.
@@ -42,7 +47,6 @@ static bool ContainsCycle(AXObject* owner, AXObject* child) {
   for (AXObject* parent = owner; parent; parent = parent->ParentObject()) {
     if (parent == child)
       return true;
-    ;
   }
   return false;
 }
@@ -228,8 +232,7 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
 void AXRelationCache::RemoveAXID(AXID obj_id) {
   if (aria_owner_to_children_mapping_.Contains(obj_id)) {
     Vector<AXID> child_axids = aria_owner_to_children_mapping_.at(obj_id);
-    for (AXID child_axid : child_axids)
-      aria_owned_child_to_owner_mapping_.erase(child_axid);
+    aria_owned_child_to_owner_mapping_.RemoveAll(child_axids);
     aria_owner_to_children_mapping_.erase(obj_id);
   }
   aria_owned_child_to_owner_mapping_.erase(obj_id);
