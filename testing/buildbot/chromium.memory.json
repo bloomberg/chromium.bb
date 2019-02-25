@@ -3061,17 +3061,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3809,16 +3798,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -7271,23 +7250,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -8333,17 +8295,6 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -9090,17 +9041,6 @@
         "args": [
           "--test-launcher-print-test-stdio=always"
         ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10072,21 +10012,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
