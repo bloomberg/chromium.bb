@@ -25,7 +25,7 @@ std::unique_ptr<KeyedService> BuildFakeSigninManagerForTesting(
   Profile* profile = static_cast<Profile*>(context);
   std::unique_ptr<SigninManagerBase> manager =
 #if defined(OS_CHROMEOS)
-      std::make_unique<FakeSigninManagerBase>(
+      std::make_unique<SigninManagerBase>(
           ChromeSigninClientFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           AccountTrackerServiceFactory::GetForProfile(profile));
@@ -150,8 +150,7 @@ IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
           static_cast<FakeProfileOAuth2TokenService*>(
               ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
 #if defined(OS_CHROMEOS)
-          static_cast<FakeSigninManagerBase*>(
-              SigninManagerFactory::GetForProfile(profile)),
+          SigninManagerFactory::GetForProfile(profile),
 #else
           static_cast<FakeSigninManager*>(
               SigninManagerFactory::GetForProfile(profile)),
