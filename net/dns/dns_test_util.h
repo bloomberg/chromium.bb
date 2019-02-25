@@ -211,6 +211,8 @@ struct MockDnsClientRule {
 
     ResultType type;
     std::unique_ptr<DnsResponse> response;
+    // Whether the mock result was obtained securely or not.
+    bool secure = false;
   };
 
   // If |delay| is true, matching transactions will be delayed until triggered

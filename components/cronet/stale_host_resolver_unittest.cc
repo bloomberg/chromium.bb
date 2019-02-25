@@ -234,10 +234,8 @@ class StaleHostResolverTest : public testing::Test {
 
     net::HostCache::Key key(kHostname, net::ADDRESS_FAMILY_IPV4, 0);
     base::TimeTicks now = tick_clock_.NowTicks();
-    const net::HostCache::Entry* entry;
     net::HostCache::EntryStaleness stale;
-    entry = resolver_->GetHostCache()->LookupStale(key, now, &stale);
-    EXPECT_TRUE(entry);
+    EXPECT_TRUE(resolver_->GetHostCache()->LookupStale(key, now, &stale));
     EXPECT_TRUE(stale.is_stale());
   }
 

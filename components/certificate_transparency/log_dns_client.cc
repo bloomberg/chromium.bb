@@ -198,7 +198,8 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   // is kept alive in |current_dns_transaction_|.
   void OnDnsTransactionComplete(net::DnsTransaction* transaction,
                                 int net_error,
-                                const net::DnsResponse* response);
+                                const net::DnsResponse* response,
+                                bool secure);
 
   // Requests the leaf index for the CT log entry with |leaf_hash_|.
   net::Error RequestLeafIndex();
@@ -356,7 +357,8 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
 void AuditProofQueryImpl::OnDnsTransactionComplete(
     net::DnsTransaction* transaction,
     int net_error,
-    const net::DnsResponse* response) {
+    const net::DnsResponse* response,
+    bool secure) {
   DCHECK_EQ(current_dns_transaction_.get(), transaction);
   last_dns_response_ = response;
   net::Error result = DoLoop(static_cast<net::Error>(net_error));

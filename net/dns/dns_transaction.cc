@@ -142,6 +142,10 @@ class DnsAttempt {
   // Returns the net log bound to the source of the socket.
   virtual const NetLogWithSource& GetSocketNetLog() const = 0;
 
+  // Returns true if a secure transport was used for the attempt. This method
+  // should be overridden for subclasses using a secure transport.
+  virtual bool secure() const { return false; }
+
   // Returns the index of the destination server within DnsConfig::nameservers.
   unsigned server_index() const { return server_index_; }
 
@@ -417,6 +421,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     return (resp != NULL && resp->IsValid()) ? resp : NULL;
   }
   const NetLogWithSource& GetSocketNetLog() const override { return net_log_; }
+  bool secure() const override { return true; }
 
   // URLRequest::Delegate overrides
 
@@ -934,12 +939,14 @@ class DnsTransactionImpl : public DnsTransaction,
         result.attempt ? result.attempt->GetResponse() : NULL;
     CHECK(result.rv != OK || response != NULL);
 
+    bool secure = result.attempt ? result.attempt->secure() : false;
+
     timer_.Stop();
 
     net_log_.EndEventWithNetErrorCode(NetLogEventType::DNS_TRANSACTION,
                                       result.rv);
 
-    std::move(callback_).Run(this, result.rv, response);
+    std::move(callback_).Run(this, result.rv, response, secure);
   }
 
   AttemptResult MakeAttempt() {
