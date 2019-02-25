@@ -673,26 +673,6 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
 }
 
-bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
-    blink::WebMediaStream* stream) {
-  DCHECK(stream);
-  return AddVideoTrackToMediaStream(std::make_unique<MockVideoCapturerSource>(),
-                                    false,  // is_remote
-                                    stream);
-}
-
-bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
-    blink::WebMediaStream* stream) {
-  DCHECK(stream);
-  return AddAudioTrackToMediaStream(
-      base::MakeRefCounted<MockAudioCapturerSource>(),
-      48000,  // sample rate
-      media::CHANNEL_LAYOUT_STEREO,
-      480,    // sample frames per buffer
-      false,  // is_remote
-      stream);
-}
-
 // RenderViewObserver  --------------------------------------------------------
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

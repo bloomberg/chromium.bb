@@ -28,7 +28,6 @@ namespace blink {
 struct Manifest;
 class WebInputEvent;
 class WebLocalFrame;
-class WebMediaStream;
 class WebPlugin;
 struct WebPluginParams;
 struct WebSize;
@@ -228,12 +227,6 @@ class WebTestDelegate {
 
   // Clear all the permissions set via SetPermission().
   virtual void ResetPermissions() = 0;
-
-  // Add content MediaStream classes to the Blink MediaStream ones.
-  virtual bool AddMediaStreamVideoSourceAndTrack(
-      blink::WebMediaStream* stream) = 0;
-  virtual bool AddMediaStreamAudioSourceAndTrack(
-      blink::WebMediaStream* stream) = 0;
 
   // Causes the beforeinstallprompt event to be sent to the renderer.
   // |event_platforms| are the platforms to be sent with the event. Once the

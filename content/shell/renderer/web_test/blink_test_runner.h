@@ -133,10 +133,6 @@ class BlinkTestRunner : public RenderViewObserver,
                      const GURL& origin,
                      const GURL& embedding_origin) override;
   void ResetPermissions() override;
-  bool AddMediaStreamVideoSourceAndTrack(
-      blink::WebMediaStream* stream) override;
-  bool AddMediaStreamAudioSourceAndTrack(
-      blink::WebMediaStream* stream) override;
   void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
       base::OnceCallback<void(bool)> callback) override;

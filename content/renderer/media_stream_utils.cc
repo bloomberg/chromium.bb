@@ -58,59 +58,6 @@ bool AddVideoTrackToMediaStream(
   return true;
 }
 
-bool AddAudioTrackToMediaStream(
-    scoped_refptr<media::AudioCapturerSource> audio_source,
-    int sample_rate,
-    media::ChannelLayout channel_layout,
-    int frames_per_buffer,
-    bool is_remote,
-    blink::WebMediaStream* web_media_stream) {
-  DCHECK(audio_source.get());
-  if (!web_media_stream || web_media_stream->IsNull()) {
-    DLOG(ERROR) << "WebMediaStream is null";
-    return false;
-  }
-
-  const media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, frames_per_buffer);
-  if (!params.IsValid()) {
-    DLOG(ERROR) << "Invalid audio parameters.";
-    return false;
-  }
-
-  blink::WebMediaStreamSource web_media_stream_source;
-  const blink::WebString track_id =
-      blink::WebString::FromUTF8(base::GenerateGUID());
-  web_media_stream_source.Initialize(
-      track_id, blink::WebMediaStreamSource::kTypeAudio, track_id, is_remote);
-  blink::MediaStreamAudioSource* const media_stream_source =
-      new ExternalMediaStreamAudioSource(std::move(audio_source), sample_rate,
-                                         channel_layout, frames_per_buffer,
-                                         is_remote);
-  // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetPlatformSource(
-      base::WrapUnique(media_stream_source));
-
-  blink::WebMediaStreamSource::Capabilities capabilities;
-  capabilities.device_id = track_id;
-  capabilities.echo_cancellation = std::vector<bool>({false});
-  capabilities.auto_gain_control = std::vector<bool>({false});
-  capabilities.noise_suppression = std::vector<bool>({false});
-  capabilities.sample_size = {
-      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
-      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
-  };
-  web_media_stream_source.SetCapabilities(capabilities);
-
-  blink::WebMediaStreamTrack web_media_stream_track;
-  web_media_stream_track.Initialize(web_media_stream_source);
-  if (!media_stream_source->ConnectToTrack(web_media_stream_track))
-    return false;
-  web_media_stream->AddTrack(web_media_stream_track);
-  return true;
-}
-
 void RequestRefreshFrameFromVideoTrack(
     const blink::WebMediaStreamTrack& video_track) {
   if (video_track.IsNull())
