@@ -232,7 +232,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void SignOutAndSimulateGaiaCookieManagerServiceLogout() {
-    signin_manager_->ForceSignOut();
+    identity::ClearPrimaryAccount(identity_test_env_->identity_manager(),
+                                  identity::ClearPrimaryAccountPolicy::DEFAULT);
     SimulateGaiaCookieManagerServiceLogout(true);
   }
 
