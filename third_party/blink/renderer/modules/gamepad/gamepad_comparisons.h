@@ -10,11 +10,14 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 // Stores the result of a comparison between two GamepadLists.
 class MODULES_EXPORT GamepadStateCompareResult {
+  STACK_ALLOCATED();
+
  public:
   GamepadStateCompareResult(GamepadList* old_gamepads,
                             GamepadList* new_gamepads,
@@ -64,6 +67,8 @@ class MODULES_EXPORT GamepadStateCompareResult {
 };
 
 class MODULES_EXPORT GamepadComparisons {
+  STATIC_ONLY(GamepadComparisons);
+
  public:
   // Inspect the gamepad state in |gamepads| and return true if any gamepads
   // have a user activation gesture.
