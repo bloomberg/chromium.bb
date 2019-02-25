@@ -12,7 +12,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,23 +66,19 @@ class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogUploaderTest);
 };
 
 TEST_F(LogUploaderTest, Success) {
-  TestLogUploader uploader(test_shared_loader_factory_);
+  TestLogUploader uploader(test_url_loader_factory_.GetSafeWeakWrapper());
   test_url_loader_factory_.AddResponse(kTestServerURL, "");
 
   uploader.QueueLog("log1");
@@ -93,7 +88,7 @@ TEST_F(LogUploaderTest, Success) {
 }
 
 TEST_F(LogUploaderTest, Rejection) {
-  TestLogUploader uploader(test_shared_loader_factory_);
+  TestLogUploader uploader(test_url_loader_factory_.GetSafeWeakWrapper());
 
   network::ResourceResponseHead response_head;
   std::string headers("HTTP/1.1 400 Bad Request\nContent-type: text/html\n\n");
@@ -110,7 +105,7 @@ TEST_F(LogUploaderTest, Rejection) {
 }
 
 TEST_F(LogUploaderTest, Failure) {
-  TestLogUploader uploader(test_shared_loader_factory_);
+  TestLogUploader uploader(test_url_loader_factory_.GetSafeWeakWrapper());
 
   network::ResourceResponseHead response_head;
   std::string headers(
