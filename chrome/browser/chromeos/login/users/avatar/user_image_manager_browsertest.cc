@@ -276,7 +276,13 @@ class UserImageManagerTest : public LoginManagerTest,
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     identity::SetRefreshTokenForPrimaryAccount(identity_manager,
                                                kRandomTokenStrForTesting);
-    auto account_info = identity_manager->GetPrimaryAccountInfo();
+    CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo();
+    AccountInfo account_info;
+    account_info.email = core_info.email;
+    account_info.gaia = core_info.gaia;
+    account_info.account_id = core_info.account_id;
+    account_info.is_under_advanced_protection =
+        core_info.is_under_advanced_protection;
     account_info.full_name = account_info.email;
     account_info.given_name = account_info.email;
     account_info.hosted_domain = kNoHostedDomainFound;
