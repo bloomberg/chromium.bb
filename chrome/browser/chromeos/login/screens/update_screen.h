@@ -27,13 +27,46 @@ class ScreenManager;
 class UpdateView;
 
 // Controller for the update screen.
+//
+// The screen will request an update availability check from the update engine,
+// and track the update engine progress. When the UpdateScreen finishes, it will
+// run the |exit_callback| with the screen result.
+//
+// If the update engine reports no updates are found, or the available
+// update is not critical, UpdateScreen will report UPDATE_NOT_REQUIRED result.
+//
+// If the update engine reports an error while performing a critical update,
+// UpdateScreen will report UPDATE_ERROR result.
+//
+// If the update engine reports that update is blocked because it would be
+// performed over a metered network, UpdateScreen will request user consent
+// before proceeding with the update. If the user rejects, UpdateScreen will
+// exit and report UPDATE_ERROR result.
+//
+// If update engine finds a critical update, UpdateScreen will wait for the
+// update engine to apply the update, and then request a reboot (if reboot
+// request times out, a message requesting manual reboot will be shown to the
+// user).
+//
+// Before update check request is made, the screen will ensure that the device
+// has network connectivity - if the current network is not online (e.g. behind
+// a protal), it will request an ErrorScreen to be shown. Update check will be
+// delayed until the Internet connectivity is established.
 class UpdateScreen : public BaseScreen,
                      public UpdateEngineClient::Observer,
                      public NetworkPortalDetector::Observer {
  public:
   static UpdateScreen* Get(ScreenManager* manager);
 
-  UpdateScreen(BaseScreenDelegate* base_screen_delegate, UpdateView* view);
+  enum class Result {
+    UPDATE_NOT_REQUIRED,
+    UPDATE_ERROR,
+  };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+  UpdateScreen(BaseScreenDelegate* base_screen_delegate,
+               UpdateView* view,
+               const ScreenExitCallback& exit_callback);
   ~UpdateScreen() override;
 
   // Called when the being destroyed. This should call Unbind() on the
@@ -44,9 +77,6 @@ class UpdateScreen : public BaseScreen,
   virtual void StartNetworkCheck();
 
   void SetIgnoreIdleStatus(bool ignore_idle_status);
-
-  // Reports update results to the BaseScreenDelegate.
-  void ExitUpdate(ScreenExitCode exit_code);
 
   // UpdateEngineClient::Observer implementation:
   void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
@@ -60,6 +90,14 @@ class UpdateScreen : public BaseScreen,
   void CancelUpdate();
 
   base::OneShotTimer& GetErrorMessageTimerForTesting();
+
+  void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
+    exit_callback_ = callback;
+  }
+
+ protected:
+  // Reports update results.
+  void ExitUpdate(Result result);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
@@ -144,6 +182,7 @@ class UpdateScreen : public BaseScreen,
   bool ignore_idle_status_ = true;
 
   UpdateView* view_ = nullptr;
+  ScreenExitCallback exit_callback_;
 
   // Time of the first notification from the downloading stage.
   base::Time download_start_time_;

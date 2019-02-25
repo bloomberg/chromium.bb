@@ -16,13 +16,13 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "HID_DETECTION_COMPLETED";
     case ScreenExitCode::CONNECTION_FAILED:
       return "CONNECTION_FAILED";
-    case ScreenExitCode::UPDATE_INSTALLED:
+    case ScreenExitCode::DEPRECATED_UPDATE_INSTALLED:
       return "UPDATE_INSTALLED";
-    case ScreenExitCode::UPDATE_NOUPDATE:
+    case ScreenExitCode::DEPRECATED_UPDATE_NOUPDATE:
       return "UPDATE_NOUPDATE";
-    case ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE:
+    case ScreenExitCode::DEPRECATED_UPDATE_ERROR_CHECKING_FOR_UPDATE:
       return "UPDATE_ERROR_CHECKING_FOR_UPDATE";
-    case ScreenExitCode::UPDATE_ERROR_UPDATING:
+    case ScreenExitCode::DEPRECATED_UPDATE_ERROR_UPDATING:
       return "UPDATE_ERROR_UPDATING";
     case ScreenExitCode::USER_IMAGE_SELECTED:
       return "USER_IMAGE_SELECTED";
@@ -58,7 +58,7 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "ARC_TERMS_OF_SERVICE_SKIPPED";
     case ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED:
       return "ARC_TERMS_OF_SERVICE_ACCEPTED";
-    case ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
+    case ScreenExitCode::DEPRECATED_UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
       return "UPDATE_ERROR_UPDATING_CRITICAL_UPDATE";
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       return "SYNC_CONSENT_FINISHED";

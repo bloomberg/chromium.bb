@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 
@@ -190,19 +191,20 @@ class WizardController : public BaseScreenDelegate,
   // Shows previous screen. Should only be called if previous screen exists.
   void ShowPreviousScreen();
 
+  // Shared actions to be performed on a screen exit.
+  void OnScreenExit(OobeScreen screen);
+
   // Exit handlers:
+  void OnUpdateScreenExit(UpdateScreen::Result result);
+  void OnUpdateCompleted();
   void OnHIDDetectionCompleted();
   void OnWelcomeContinued();
   void OnNetworkBack();
   void OnNetworkConnected();
   void OnOfflineDemoModeSetup();
   void OnConnectionFailed();
-  void OnUpdateCompleted();
-  void OnUpdateOverCellularRejected();
   void OnEulaAccepted();
   void OnEulaBack();
-  void OnUpdateErrorCheckingForUpdate();
-  void OnUpdateErrorUpdating(bool is_critical_update);
   void OnUserImageSelected();
   void OnEnrollmentDone();
   void OnDeviceModificationCanceled();
@@ -429,7 +431,7 @@ class WizardController : public BaseScreenDelegate,
   std::unique_ptr<DemoSetupController> demo_setup_controller_;
 
   // Maps screen names to last time of their shows.
-  std::map<std::string, base::Time> screen_show_times_;
+  std::map<OobeScreen, base::Time> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;

@@ -373,7 +373,10 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
     return std::make_unique<NetworkScreen>(this,
                                            oobe_ui->GetNetworkScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
-    return std::make_unique<UpdateScreen>(this, oobe_ui->GetUpdateView());
+    return std::make_unique<UpdateScreen>(
+        this, oobe_ui->GetUpdateView(),
+        base::BindRepeating(&WizardController::OnUpdateScreenExit,
+                            weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
     return std::make_unique<UserImageScreen>(this, oobe_ui->GetUserImageView());
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
@@ -707,8 +710,41 @@ void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
 
+void WizardController::OnScreenExit(OobeScreen screen) {
+  DCHECK_EQ(screen, current_screen_->screen_id());
+
+  if (IsOOBEStepToTrack(screen)) {
+    RecordUMAHistogramForOOBEStepCompletionTime(
+        screen, base::Time::Now() - screen_show_times_[screen]);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
+void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
+  VLOG(1) << "Update screen exit: " << static_cast<int>(result);
+  OnScreenExit(OobeScreen::SCREEN_OOBE_UPDATE);
+
+  switch (result) {
+    case UpdateScreen::Result::UPDATE_NOT_REQUIRED:
+      OnUpdateCompleted();
+      break;
+    case UpdateScreen::Result::UPDATE_ERROR:
+      // Ignore update errors if the OOBE flow has already completed - this
+      // prevents the user getting blocked from getting to the login screen.
+      if (is_out_of_box_) {
+        ShowNetworkScreen();
+      } else {
+        OnUpdateCompleted();
+      }
+      break;
+  }
+}
+
+void WizardController::OnUpdateCompleted() {
+  ShowAutoEnrollmentCheckScreen();
+}
+
 void WizardController::OnHIDDetectionCompleted() {
   // Check for tests configuration.
   if (!StartupUtils::IsOobeCompleted())
@@ -776,14 +812,6 @@ void WizardController::OnConnectionFailed() {
   ShowLoginScreen(LoginScreenContext());
 }
 
-void WizardController::OnUpdateCompleted() {
-  ShowAutoEnrollmentCheckScreen();
-}
-
-void WizardController::OnUpdateOverCellularRejected() {
-  ShowNetworkScreen();
-}
-
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   StartupUtils::MarkEulaAccepted();
@@ -821,26 +849,6 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
-}
-
-void WizardController::OnUpdateErrorCheckingForUpdate() {
-  // TODO(nkostylev): Update should be required during OOBE.
-  // We do not want to block users from being able to proceed to the login
-  // screen if there is any error checking for an update.
-  // They could use "browse without sign-in" feature to set up the network to be
-  // able to perform the update later.
-  OnUpdateCompleted();
-}
-
-void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
-  // If there was an error while getting or applying the update, return to
-  // network selection screen if the OOBE isn't complete and the update is
-  // deemed critical. Otherwise, similar to OnUpdateErrorCheckingForUpdate(), we
-  // do not want to block users from being able to proceed to the login screen.
-  if (is_out_of_box_ && is_critical_update)
-    ShowNetworkScreen();
-  else
-    OnUpdateCompleted();
 }
 
 void WizardController::OnUserImageSelected() {
@@ -1204,7 +1212,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   const OobeScreen screen = new_current->screen_id();
   if (IsOOBEStepToTrack(screen))
-    screen_show_times_[GetOobeScreenName(screen)] = base::Time::Now();
+    screen_show_times_[screen] = base::Time::Now();
 
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
@@ -1371,13 +1379,8 @@ void WizardController::SimulateDemoModeSetupForTesting(
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::OnExit(ScreenExitCode exit_code) {
   VLOG(1) << "Wizard screen exit code: " << ExitCodeToString(exit_code);
-  const OobeScreen previous_screen = current_screen_->screen_id();
-  if (IsOOBEStepToTrack(previous_screen)) {
-    RecordUMAHistogramForOOBEStepCompletionTime(
-        previous_screen,
-        base::Time::Now() -
-            screen_show_times_[GetOobeScreenName(previous_screen)]);
-  }
+  OnScreenExit(current_screen_->screen_id());
+
   switch (exit_code) {
     case ScreenExitCode::HID_DETECTION_COMPLETED:
       OnHIDDetectionCompleted();
@@ -1396,22 +1399,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::CONNECTION_FAILED:
       OnConnectionFailed();
-      break;
-    case ScreenExitCode::UPDATE_INSTALLED:
-    case ScreenExitCode::UPDATE_NOUPDATE:
-      OnUpdateCompleted();
-      break;
-    case ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR:
-      OnUpdateOverCellularRejected();
-      return;
-    case ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE:
-      OnUpdateErrorCheckingForUpdate();
-      break;
-    case ScreenExitCode::UPDATE_ERROR_UPDATING:
-      OnUpdateErrorUpdating(false /* is_critical_update */);
-      break;
-    case ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
-      OnUpdateErrorUpdating(true /* is_critical_update */);
       break;
     case ScreenExitCode::USER_IMAGE_SELECTED:
       OnUserImageSelected();
