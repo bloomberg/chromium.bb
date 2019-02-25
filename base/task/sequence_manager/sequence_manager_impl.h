@@ -204,14 +204,6 @@ class BASE_EXPORT SequenceManagerImpl
     kSequenceManagerDeleted,
   };
 
-  struct AnyThread {
-    AnyThread();
-    ~AnyThread();
-
-    // Task queues with newly available work on the incoming queue.
-    internal::EmptyQueuesToReloadList* empty_queues_to_reload_list = nullptr;
-  };
-
   // SequenceManager maintains a queue of non-nestable tasks since they're
   // uncommon and allocating an extra deque per TaskQueue will waste the memory.
   using NonNestableTaskDeque =
@@ -269,12 +261,6 @@ class BASE_EXPORT SequenceManagerImpl
     //   internal scheduling code does not expect queues to be pulled
     //   from underneath.
 
-    // Scratch space used to store the contents of
-    // any_thread().empty_queues_to_reload_list for use by
-    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
-    // memory allocations. This should have the same size as |active_queues|.
-    // DO NOT RELY ON THE VALIDITY OF THE POINTERS WITHIN!
-    std::vector<internal::TaskQueueImpl*> queues_to_reload;
     std::set<internal::TaskQueueImpl*> active_queues;
 
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
@@ -323,24 +309,12 @@ class BASE_EXPORT SequenceManagerImpl
   AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
                             bool force_verbose) const;
 
-  // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
-  // |schedule_work| is true it makes sure a DoWork is posted.
-  // Can be called from any thread.
-  void OnEmptyQueueHasIncomingImmediateWork(
-      internal::TaskQueueImpl* queue,
-      internal::EnqueueOrder enqueue_order,
-      bool schedule_work);
+  AtomicFlagSet::AtomicFlag GetFlagToRequestReloadForEmptyQueue(
+      TaskQueueImpl* task_queue);
 
-  // Returns true if |task_queue| was added to the list, or false if it was
-  // already in the list.  If |task_queue| was inserted, the |order| is set
-  // with |enqueue_order|.
-  bool AddToEmptyQueuesToReloadList(internal::TaskQueueImpl* task_queue,
-                                    internal::EnqueueOrder enqueue_order);
-  void RemoveFromEmptyQueuesToReloadList(internal::TaskQueueImpl* task_queue);
-
-  // Calls |TakeImmediateIncomingQueueTasks| on all queues in
-  // |main_thread_only().queues_to_reload|.
-  void ReloadEmptyWorkQueues();
+  // Calls |TakeImmediateIncomingQueueTasks| on all queues with their reload
+  // flag set in |empty_queues_to_reload_|.
+  void ReloadEmptyWorkQueues() const;
 
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) override;
@@ -369,22 +343,12 @@ class BASE_EXPORT SequenceManagerImpl
   const std::unique_ptr<internal::ThreadController> controller_;
   const MessageLoop::Type type_;
 
-  mutable Lock any_thread_lock_;
-  AnyThread any_thread_;
-
-  struct AnyThread& any_thread() {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
-  const struct AnyThread& any_thread() const {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
-
   const MetricRecordingSettings metric_recording_settings_;
 
   // Whether to add the queue time to tasks.
   base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
+
+  AtomicFlagSet empty_queues_to_reload_;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940

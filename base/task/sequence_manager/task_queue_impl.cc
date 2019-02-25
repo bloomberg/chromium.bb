@@ -97,6 +97,10 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
       task_poster_(MakeRefCounted<GuardedTaskPoster>(this)),
       any_thread_(time_domain),
       main_thread_only_(this, time_domain),
+      empty_queues_to_reload_handle_(
+          sequence_manager
+              ? sequence_manager->GetFlagToRequestReloadForEmptyQueue(this)
+              : AtomicFlagSet::AtomicFlag()),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
       delayed_fence_allowed_(spec.delayed_fence_allowed) {
@@ -170,6 +174,8 @@ void TaskQueueImpl::UnregisterTaskQueue() {
     main_thread_only().on_next_wake_up_changed_callback =
         OnNextWakeUpChangedCallback();
     immediate_incoming_queue.swap(immediate_incoming_queue_);
+
+    empty_queues_to_reload_handle_.ReleaseAtomicFlag();
   }
 
   // It is possible for a task to hold a scoped_refptr to this, which
@@ -248,8 +254,9 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // TaskQueueSelector which can only be done from the main thread. In
     // addition it may need to schedule a DoWork if this queue isn't blocked.
     if (was_immediate_incoming_queue_empty && immediate_work_queue_empty_) {
-      sequence_manager_->OnEmptyQueueHasIncomingImmediateWork(
-          this, sequence_number, post_immediate_task_should_schedule_work_);
+      empty_queues_to_reload_handle_.SetActive(true);
+      if (post_immediate_task_should_schedule_work_)
+        sequence_manager_->ScheduleWork();
     }
   }
 
@@ -883,12 +890,12 @@ void TaskQueueImpl::RequeueDeferredNonNestableTask(
         std::move(task.task));
   } else {
     // We're about to push |task| onto an empty |immediate_work_queue|. This
-    // may mean we'd be violating the contract of EmptyQueuesToReloadList, it's
+    // may mean we'd be violating the contract of AtomicFlagSet, it's
     // only supposed to contain queues where |immediate_incoming_queue_| is
     // non empty but |immediate_work_queue| is empty. We remedy that by removing
     // ourselves from that list (a NOP if we're not in the list).
     if (main_thread_only().immediate_work_queue->Empty()) {
-      sequence_manager_->RemoveFromEmptyQueuesToReloadList(this);
+      empty_queues_to_reload_handle_.SetActive(false);
 
       {
         AutoLock lock(immediate_incoming_queue_lock_);
@@ -1009,7 +1016,7 @@ void TaskQueueImpl::DeletePendingTasks() {
   // TODO(altimin): Add clear() method to DelayedIncomingQueue.
   DelayedIncomingQueue queue_to_delete;
   main_thread_only().delayed_incoming_queue.swap(&queue_to_delete);
-  sequence_manager_->RemoveFromEmptyQueuesToReloadList(this);
+  empty_queues_to_reload_handle_.SetActive(false);
 
   TaskDeque deque;
   {

@@ -19,6 +19,7 @@
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
+#include "base/task/sequence_manager/atomic_flag_set.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
@@ -38,15 +39,6 @@ namespace internal {
 class SequenceManagerImpl;
 class WorkQueue;
 class WorkQueueSets;
-
-// The SequenceManagerImpl maintains a list of TaskQueueImpl's with empty
-// |immediate_incoming_queue_| and non-empty immediate_work_queue| which it
-// should reload before task selection. This struct backs that list.
-struct EmptyQueuesToReloadList {
-  EmptyQueuesToReloadList* next = nullptr;
-  TaskQueueImpl* queue = nullptr;
-  internal::EnqueueOrder order;
-};
 
 // TaskQueueImpl has four main queues:
 //
@@ -173,11 +165,6 @@ class BASE_EXPORT TaskQueueImpl {
 
   const WorkQueue* immediate_work_queue() const {
     return main_thread_only().immediate_work_queue.get();
-  }
-
-  // Protected by SequenceManagerImpl's AnyThread lock.
-  EmptyQueuesToReloadList* empty_queues_to_reload_list_storage() {
-    return &empty_queues_to_reload_list_storage_;
   }
 
   // Enqueues any delayed tasks which should be run now on the
@@ -462,12 +449,9 @@ class BASE_EXPORT TaskQueueImpl {
   bool post_immediate_task_should_schedule_work_
       GUARDED_BY(immediate_incoming_queue_lock_) = true;
 
-  // Protected by SequenceManagerImpl's AnyThread lock.
-  // Pre-allocated struct used by
-  // SequenceManagerImpl::AddToEmptyQueuesToReloadList to reduce overhead of
-  // new & delete when posting immediate tasks. Queues added to this list will
-  // be reloaded before task selection.
-  EmptyQueuesToReloadList empty_queues_to_reload_list_storage_;
+  // Handle to our entry within the SequenceManagers |empty_queues_to_reload_|
+  // atomic flag set. Used to signal that this queue needs to be reloaded.
+  AtomicFlagSet::AtomicFlag empty_queues_to_reload_handle_;
 
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;
