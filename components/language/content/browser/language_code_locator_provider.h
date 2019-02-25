@@ -7,11 +7,13 @@
 
 #include <memory>
 
+class PrefService;
+
 namespace language {
 
 class LanguageCodeLocator;
 
-std::unique_ptr<LanguageCodeLocator> GetLanguageCodeLocator();
+std::unique_ptr<LanguageCodeLocator> GetLanguageCodeLocator(PrefService* prefs);
 
 }  // namespace language
 

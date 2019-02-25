@@ -51,6 +51,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/language/content/browser/regional_language_code_locator:unit_tests",
+    "//components/language/content/browser/ulp_language_code_locator:ulp_language_code_locator",
     "//components/language/content/browser/ulp_language_code_locator:unit_tests",
     "//components/language/core/common",
     "//components/prefs:test_support",

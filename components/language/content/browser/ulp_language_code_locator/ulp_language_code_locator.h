@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "components/language/content/browser/language_code_locator.h"
 
+class PrefRegistrySimple;
+class PrefService;
 class SerializedLanguageTree;
 
 namespace language {
@@ -21,9 +23,14 @@ namespace language {
 // constructor.
 class UlpLanguageCodeLocator : public LanguageCodeLocator {
  public:
+  static const char kCachedGeoLanguagesPref[];
+
   UlpLanguageCodeLocator(std::vector<std::unique_ptr<SerializedLanguageTree>>&&
-                             serialized_langtrees);
+                             serialized_langtrees,
+                         PrefService* prefs);
   ~UlpLanguageCodeLocator() override;
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // LanguageCodeLocator implementation.
   std::vector<std::string> GetLanguageCodes(double latitude,
@@ -31,8 +38,8 @@ class UlpLanguageCodeLocator : public LanguageCodeLocator {
 
  private:
   std::vector<std::unique_ptr<SerializedLanguageTree>> serialized_langtrees_;
-  struct CellLanguagePair;
-  mutable std::vector<CellLanguagePair> cache_;
+  PrefService* prefs_;
+
   DISALLOW_COPY_AND_ASSIGN(UlpLanguageCodeLocator);
 };
 }  // namespace language
