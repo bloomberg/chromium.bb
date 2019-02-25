@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
-#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"

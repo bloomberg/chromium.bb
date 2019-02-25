@@ -75,6 +75,7 @@ blink_platform_sources("heap") {
     "stack_frame_depth.h",
     "thread_state.cc",
     "thread_state.h",
+    "thread_state_scopes.h",
     "threading_traits.h",
     "trace_traits.h",
     "unified_heap_controller.cc",
