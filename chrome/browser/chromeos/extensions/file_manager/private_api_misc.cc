@@ -747,9 +747,10 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;
+    std::string file_system_name;
     std::string full_path;
-    if (!file_manager::util::ExtractMountNameAndFullPath(path, &mount_name,
-                                                         &full_path)) {
+    if (!file_manager::util::ExtractMountNameFileSystemNameFullPath(
+            path, &mount_name, &file_system_name, &full_path)) {
       LOG(ERROR) << "Error extracting mount name and path from "
                  << path.value();
       continue;
@@ -760,7 +761,7 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
         storage::GetExternalFileSystemRootURIString(
             extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
             mount_name));
-    entry->SetString("fileSystemName", mount_name);
+    entry->SetString("fileSystemName", file_system_name);
     entry->SetString("fileFullPath", full_path);
     // All shared paths should be directories.  Even if this is not true,
     // it is fine for foreground/js/crostini.js class to think so. We
