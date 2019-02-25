@@ -35,7 +35,7 @@ namespace web {
 
 // Calls FindInPage Javascript handlers and checks that return values are
 // correct.
-class FindInPageWebJsTest : public WebTestWithWebState {
+class FindInPageJsTest : public WebTestWithWebState {
  protected:
   // Returns WebFramesManager instance.
   WebFramesManager* frames_manager() {
@@ -47,7 +47,7 @@ class FindInPageWebJsTest : public WebTestWithWebState {
 
 // Tests that FindInPage searches in main frame containing a match and responds
 // with 1 match.
-TEST_F(FindInPageWebJsTest, FindText) {
+TEST_F(FindInPageJsTest, FindText) {
   ASSERT_TRUE(LoadHtml("<span>foo</span>"));
   WaitForCondition(^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -74,7 +74,7 @@ TEST_F(FindInPageWebJsTest, FindText) {
 
 // Tests that FindInPage searches in main frame for text that exists but is
 // hidden and responds with 0 matches.
-TEST_F(FindInPageWebJsTest, FindTextNoResults) {
+TEST_F(FindInPageJsTest, FindTextNoResults) {
   ASSERT_TRUE(LoadHtml("<span style='display:none'>foo</span>"));
   WaitForCondition(^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -99,7 +99,7 @@ TEST_F(FindInPageWebJsTest, FindTextNoResults) {
 
 // Tests that FindInPage searches in child iframe and asserts that a result was
 // found.
-TEST_F(FindInPageWebJsTest, FindIFrameText) {
+TEST_F(FindInPageJsTest, FindIFrameText) {
   // TODO(crbug.com/872818): Remove if check after deprecate iOS 10.
   // WebFrame will not have a key on iOS 10, so function cannot be called.
   if (@available(iOS 11.0, *)) {
@@ -138,7 +138,7 @@ TEST_F(FindInPageWebJsTest, FindIFrameText) {
 }
 
 // Tests that FindInPage works when searching for white space.
-TEST_F(FindInPageWebJsTest, FindWhiteSpace) {
+TEST_F(FindInPageJsTest, FindWhiteSpace) {
   ASSERT_TRUE(LoadHtml("<span> </span>"));
   WaitForCondition(^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -162,7 +162,7 @@ TEST_F(FindInPageWebJsTest, FindWhiteSpace) {
 }
 
 // Tests that FindInPage works when match results cover multiple HTML Nodes.
-TEST_F(FindInPageWebJsTest, FindAcrossMultipleNodes) {
+TEST_F(FindInPageJsTest, FindAcrossMultipleNodes) {
   ASSERT_TRUE(
       LoadHtml("<p>xx1<span>2</span>3<a>4512345xxx12</a>34<a>5xxx12345xx</p>"));
   WaitForCondition(^{
