@@ -1001,7 +1001,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         request_info_.load_flags, priority_, session_, proxy_info_,
         websocket_server_ssl_config, proxy_ssl_config_,
         request_info_.privacy_mode, net_log_, connection_.get(),
-        resolution_callback, io_callback_);
+        resolution_callback, io_callback_,
+        ClientSocketPool::ProxyAuthCallback());
   }
 
   return InitSocketHandleForHttpRequest(
@@ -1009,7 +1010,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       request_info_.load_flags, priority_, session_, proxy_info_, quic_version_,
       server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
       request_info_.socket_tag, net_log_, connection_.get(),
-      resolution_callback, io_callback_);
+      resolution_callback, io_callback_, ClientSocketPool::ProxyAuthCallback());
 }
 
 void HttpStreamFactory::Job::OnQuicHostResolution(int result) {

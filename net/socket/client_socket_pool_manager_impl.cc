@@ -200,7 +200,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
       ssl_socket_pools_for_proxies_.insert(std::make_pair(
           proxy_server,
           std::make_unique<TransportClientSocketPool>(
-
               sockets_per_proxy_server, sockets_per_group,
               unused_idle_socket_timeout(pool_type_), socket_factory_,
               host_resolver_, proxy_delegate_, cert_verifier_,

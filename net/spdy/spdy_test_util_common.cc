@@ -503,7 +503,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           ssl_params),
       MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(),
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(),
       http_session->GetTransportSocketPool(
           HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);

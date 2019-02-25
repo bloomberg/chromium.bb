@@ -202,7 +202,8 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), pool_.get(), NetLogWithSource());
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -240,7 +241,8 @@ TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), pool_.get(), NetLogWithSource());
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());

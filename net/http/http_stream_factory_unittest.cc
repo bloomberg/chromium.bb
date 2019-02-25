@@ -409,14 +409,16 @@ class CapturePreconnectsSocketPool : public ParentPool {
     last_group_name_.clear();
   }
 
-  int RequestSocket(const std::string& group_name,
-                    const void* socket_params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    ClientSocketPool::RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const NetLogWithSource& net_log) override {
+  int RequestSocket(
+      const std::string& group_name,
+      const void* socket_params,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      ClientSocketPool::RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+      const NetLogWithSource& net_log) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
@@ -2132,7 +2134,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
         TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
             ssl_params),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-        callback.callback(),
+        callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
         NetLogWithSource());
     rv = callback.GetResult(rv);

@@ -299,14 +299,16 @@ int ProxyResolvingClientSocket::DoInitConnection() {
         proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
         net_log_, socket_handle_.get(),
         base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+        net::ClientSocketPool::ProxyAuthCallback());
   }
   return net::InitSocketHandleForRawConnect(
       host_port_pair, network_session_, request_load_flags, request_priority,
       proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
       net_log_, socket_handle_.get(),
       base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+      net::ClientSocketPool::ProxyAuthCallback());
 }
 
 int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {

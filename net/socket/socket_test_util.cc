@@ -2178,6 +2178,7 @@ int MockTransportClientSocketPool::RequestSocket(
     RespectLimits respect_limits,
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
+    const ProxyAuthCallback& on_auth_callback,
     const NetLogWithSource& net_log) {
   last_request_priority_ = priority;
   std::unique_ptr<StreamSocket> socket =

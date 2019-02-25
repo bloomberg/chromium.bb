@@ -68,9 +68,10 @@ class MockClientSocketHandleFactory {
       const std::string& return_to_read) {
     socket_factory_maker_.SetExpectations(expect_written, return_to_read);
     auto socket_handle = std::make_unique<ClientSocketHandle>();
-    socket_handle->Init("a", scoped_refptr<MockTransportSocketParams>(), MEDIUM,
-                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                        CompletionOnceCallback(), &pool_, NetLogWithSource());
+    socket_handle->Init(
+        "a", scoped_refptr<MockTransportSocketParams>(), MEDIUM, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+        ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return socket_handle;
   }
 

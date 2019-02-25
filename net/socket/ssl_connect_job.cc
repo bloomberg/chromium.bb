@@ -306,8 +306,8 @@ int SSLConnectJob::DoTunnelConnect() {
       group_name(),
       TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           http_proxy_params),
-      priority(), socket_tag(), respect_limits(), callback_, http_proxy_pool_,
-      net_log());
+      priority(), socket_tag(), respect_limits(), callback_,
+      ClientSocketPool::ProxyAuthCallback(), http_proxy_pool_, net_log());
 }
 
 int SSLConnectJob::DoTunnelConnectComplete(int result) {

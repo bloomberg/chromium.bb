@@ -1146,7 +1146,8 @@ class ClientSocketPoolTest {
     requests_.push_back(base::WrapUnique(request));
     int rv = request->handle()->Init(
         group_name, socket_params, priority, SocketTag(), respect_limits,
-        request->callback(), socket_pool, NetLogWithSource());
+        request->callback(), ClientSocketPool::ProxyAuthCallback(), socket_pool,
+        NetLogWithSource());
     if (rv != ERR_IO_PENDING)
       request_order_.push_back(request);
     return rv;
@@ -1250,6 +1251,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     CompletionOnceCallback callback,
+                    const ProxyAuthCallback& on_auth_callback,
                     const NetLogWithSource& net_log) override;
   void SetPriority(const std::string& group_name,
                    ClientSocketHandle* handle,

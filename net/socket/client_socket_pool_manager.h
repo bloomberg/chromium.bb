@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
+#include "net/socket/client_socket_pool.h"
 
 namespace base {
 class Value;
@@ -130,7 +131,8 @@ int InitSocketHandleForHttpRequest(
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
-    CompletionOnceCallback callback);
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
 // A helper method that uses the passed in proxy information to initialize a
 // ClientSocketHandle with the relevant socket pool. Use this method for
@@ -155,7 +157,8 @@ int InitSocketHandleForWebSocketRequest(
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
-    CompletionOnceCallback callback);
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
 // Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
@@ -173,7 +176,8 @@ NET_EXPORT int InitSocketHandleForRawConnect(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback);
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
 // Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
@@ -191,7 +195,8 @@ NET_EXPORT int InitSocketHandleForTlsConnect(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    CompletionOnceCallback callback);
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
 // Similar to InitSocketHandleForHttpRequest except that it initiates the
 // desired number of preconnect streams from the relevant socket pool.

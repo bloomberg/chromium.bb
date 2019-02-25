@@ -123,10 +123,10 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
 
     auto transport_socket = std::make_unique<ClientSocketHandle>();
     scoped_refptr<MockTransportSocketParams> params;
-    transport_socket->Init("a", params, MEDIUM, SocketTag(),
-                           ClientSocketPool::RespectLimits::ENABLED,
-                           CompletionOnceCallback(), &pool_,
-                           NetLogWithSource());
+    transport_socket->Init(
+        "a", params, MEDIUM, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+        ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return transport_socket;
   }
 

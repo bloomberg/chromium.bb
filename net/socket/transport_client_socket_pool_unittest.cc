@@ -195,9 +195,10 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
 TEST_F(TransportClientSocketPoolTest, Basic) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -216,10 +217,12 @@ TEST_F(TransportClientSocketPoolTest, SetResolvePriorityOnInit) {
     RequestPriority priority = static_cast<RequestPriority>(i);
     TestCompletionCallback callback;
     ClientSocketHandle handle;
-    EXPECT_EQ(ERR_IO_PENDING,
-              handle.Init("a", params_, priority, SocketTag(),
-                          ClientSocketPool::RespectLimits::ENABLED,
-                          callback.callback(), &pool_, NetLogWithSource()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        handle.Init("a", params_, priority, SocketTag(),
+                    ClientSocketPool::RespectLimits::ENABLED,
+                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                    &pool_, NetLogWithSource()));
     EXPECT_EQ(priority, host_resolver_->last_request_priority());
   }
 }
@@ -229,44 +232,50 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 
   TestCompletionCallback callback1;
   ClientSocketHandle handle1;
-  int rv1 = handle1.Init("a", params_, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback1.callback(), &pool_, NetLogWithSource());
+  int rv1 = handle1.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback1.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv1, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback2;
   ClientSocketHandle handle2;
-  int rv2 = handle2.Init("a", params_, HIGHEST, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback2.callback(), &pool_, NetLogWithSource());
+  int rv2 = handle2.Init(
+      "a", params_, HIGHEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv2, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback3;
   ClientSocketHandle handle3;
-  int rv3 = handle3.Init("a", params_, LOWEST, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback3.callback(), &pool_, NetLogWithSource());
+  int rv3 = handle3.Init(
+      "a", params_, LOWEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv3, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback4;
   ClientSocketHandle handle4;
-  int rv4 = handle4.Init("a", params_, MEDIUM, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback4.callback(), &pool_, NetLogWithSource());
+  int rv4 = handle4.Init(
+      "a", params_, MEDIUM, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback4.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv4, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback5;
   ClientSocketHandle handle5;
-  int rv5 = handle5.Init("a", params_, HIGHEST, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback5.callback(), &pool_, NetLogWithSource());
+  int rv5 = handle5.Init(
+      "a", params_, HIGHEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback5.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv5, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback6;
   ClientSocketHandle handle6;
-  int rv6 = handle6.Init("a", params_, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback6.callback(), &pool_, NetLogWithSource());
+  int rv6 = handle6.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback6.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv6, IsError(ERR_IO_PENDING));
 
   // New jobs are created for each of the first 6 requests with the
@@ -292,9 +301,10 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
   // priority request and reprioritizes it to match the new request.
   TestCompletionCallback callback7;
   ClientSocketHandle handle7;
-  int rv7 = handle7.Init("a", params_, HIGHEST, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback7.callback(), &pool_, NetLogWithSource());
+  int rv7 = handle7.Init(
+      "a", params_, HIGHEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback7.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv7, IsError(ERR_IO_PENDING));
   // Request  Job  Priority
   // =======  ===  ========
@@ -314,9 +324,10 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 
   TestCompletionCallback callback8;
   ClientSocketHandle handle8;
-  int rv8 = handle8.Init("a", params_, HIGHEST, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback8.callback(), &pool_, NetLogWithSource());
+  int rv8 = handle8.Init(
+      "a", params_, HIGHEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback8.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv8, IsError(ERR_IO_PENDING));
   // Request  Job  Priority
   // =======  ===  ========
@@ -465,18 +476,20 @@ TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
   // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY
   TestCompletionCallback callback1;
   ClientSocketHandle handle1;
-  int rv1 = handle1.Init("a", params_, MAXIMUM_PRIORITY, SocketTag(),
-                         ClientSocketPool::RespectLimits::DISABLED,
-                         callback1.callback(), &pool, NetLogWithSource());
+  int rv1 = handle1.Init(
+      "a", params_, MAXIMUM_PRIORITY, SocketTag(),
+      ClientSocketPool::RespectLimits::DISABLED, callback1.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
   EXPECT_THAT(rv1, IsError(ERR_IO_PENDING));
 
   EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_->request_priority(1));
 
   TestCompletionCallback callback2;
   ClientSocketHandle handle2;
-  int rv2 = handle2.Init("a", params_, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback2.callback(), &pool, NetLogWithSource());
+  int rv2 = handle2.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback2.callback(), ClientSocketPool::ProxyAuthCallback(), &pool,
+      NetLogWithSource());
   EXPECT_THAT(rv2, IsError(ERR_IO_PENDING));
 
   // handle2 gets assigned the job, but it is not changed to match the request
@@ -494,10 +507,12 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
               host_port_pair, false, OnHostResolutionCallback())));
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", dest, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", dest, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_TRUE(handle.connection_attempts()[0].endpoint.address().empty());
@@ -510,10 +525,12 @@ TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
       MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_EQ("127.0.0.1:80",
@@ -523,10 +540,12 @@ TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
-  EXPECT_EQ(ERR_CONNECTION_FAILED,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_CONNECTION_FAILED,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_EQ("127.0.0.1:80",
             handle.connection_attempts()[0].endpoint.ToString());
@@ -636,10 +655,12 @@ TEST_F(TransportClientSocketPoolTest, PendingRequests_NoKeepAlive) {
 TEST_F(TransportClientSocketPoolTest, CancelRequestClearGroup) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
   handle.Reset();
 }
 
@@ -649,14 +670,18 @@ TEST_F(TransportClientSocketPoolTest, TwoRequestsCancelOne) {
   ClientSocketHandle handle2;
   TestCompletionCallback callback2;
 
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle2.Init("a", params_, kDefaultPriority, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback2.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle2.Init("a", params_, kDefaultPriority, SocketTag(),
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool_, NetLogWithSource()));
 
   handle.Reset();
 
@@ -669,18 +694,22 @@ TEST_F(TransportClientSocketPoolTest, ConnectCancelConnect) {
       MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()));
 
   handle.Reset();
 
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", params_, kDefaultPriority, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        callback2.callback(), &pool_, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED,
+                  callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                  &pool_, NetLogWithSource()));
 
   host_resolver_->set_synchronous_mode(true);
   // At this point, handle has two ConnectingSockets out for it.  Due to the
@@ -790,7 +819,8 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
                       OnHostResolutionCallback())));
       int rv = handle_->Init("a", dest, LOWEST, SocketTag(),
                              ClientSocketPool::RespectLimits::ENABLED,
-                             callback(), pool_, NetLogWithSource());
+                             callback(), ClientSocketPool::ProxyAuthCallback(),
+                             pool_, NetLogWithSource());
       EXPECT_THAT(rv, IsOk());
     }
   }
@@ -810,9 +840,10 @@ TEST_F(TransportClientSocketPoolTest, RequestTwice) {
           base::MakeRefCounted<TransportSocketParams>(
               HostPortPair("www.google.com", 80), false,
               OnHostResolutionCallback())));
-  int rv = handle.Init("a", dest, LOWEST, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "a", dest, LOWEST, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // The callback is going to request "www.google.com". We want it to complete
@@ -875,9 +906,10 @@ TEST_F(TransportClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
 TEST_F(TransportClientSocketPoolTest, IdleSocketLoadTiming) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -896,7 +928,8 @@ TEST_F(TransportClientSocketPoolTest, IdleSocketLoadTiming) {
 
   rv = handle.Init("a", params_, LOW, SocketTag(),
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool_, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool_, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_EQ(0, pool_.IdleSocketCount());
   TestLoadTimingInfoConnectedReused(handle);
@@ -905,9 +938,10 @@ TEST_F(TransportClientSocketPoolTest, IdleSocketLoadTiming) {
 TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnIPAddressChange) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -934,9 +968,10 @@ TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnIPAddressChange) {
 TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnSSLConfigChange) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "a", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -991,9 +1026,10 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
 
     TestCompletionCallback callback;
     ClientSocketHandle handle;
-    int rv = handle.Init("b", params_, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback.callback(), &pool_, NetLogWithSource());
+    int rv = handle.Init(
+        "b", params_, LOW, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_FALSE(handle.is_initialized());
     EXPECT_FALSE(handle.socket());
@@ -1034,9 +1070,10 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketCancel) {
 
     TestCompletionCallback callback;
     ClientSocketHandle handle;
-    int rv = handle.Init("c", params_, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback.callback(), &pool_, NetLogWithSource());
+    int rv = handle.Init(
+        "c", params_, LOW, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_FALSE(handle.is_initialized());
     EXPECT_FALSE(handle.socket());
@@ -1081,9 +1118,10 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterStall) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("b", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "b", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -1130,9 +1168,10 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("b", params_, LOW, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool_, NetLogWithSource());
+  int rv = handle.Init(
+      "b", params_, LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -1191,9 +1230,10 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
     socket_factory.AddSocketDataProvider(data.data_provider());
     ClientSocketHandle handle;
     TestCompletionCallback callback;
-    int rv = handle.Init("a", socks_params, LOW, SocketTag(),
-                         ClientSocketPool::RespectLimits::ENABLED,
-                         callback.callback(), &pool, NetLogWithSource());
+    int rv = handle.Init(
+        "a", socks_params, LOW, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(handle.is_initialized());
     EXPECT_TRUE(handle.socket());
@@ -1240,9 +1280,10 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
           base::MakeRefCounted<TransportSocketParams>(
               test_server.host_port_pair(), false, OnHostResolutionCallback()));
   TestCompletionCallback callback;
-  int rv = handle.Init("a", params, LOW, tag1,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool, NetLogWithSource());
+  int rv = handle.Init(
+      "a", params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(), &pool,
+      NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1254,7 +1295,8 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   old_traffic = GetTaggedBytes(tag_val2);
   rv = handle.Init("a", params, LOW, tag2,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1276,13 +1318,15 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   TestCompletionCallback callback2;
   rv = handle.Init("a", params, LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback2.callback(), &pool, NetLogWithSource());
+                   callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_TRUE(rv == OK || rv == ERR_IO_PENDING) << "Result: " << rv;
   // Abort and request socket with |tag2|.
   handle.Reset();
   rv = handle.Init("a", params, LOW, tag2,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1300,7 +1344,8 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   // TODO(pauljensen): remove when crbug.com/800731 fixed.
   rv = handle.Init("a", params, LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   // Disconnect socket to prevent reuse.
   handle.socket()->Disconnect();
@@ -1312,11 +1357,13 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   TestCompletionCallback callback_high_pri;
   rv = handle.Init("a", params, LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_TRUE(rv == OK || rv == ERR_IO_PENDING) << "Result: " << rv;
   int rv_high_pri = handle_high_pri.Init(
       "a", params, HIGHEST, tag2, ClientSocketPool::RespectLimits::ENABLED,
-      callback_high_pri.callback(), &pool, NetLogWithSource());
+      callback_high_pri.callback(), ClientSocketPool::ProxyAuthCallback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(callback_high_pri.GetResult(rv_high_pri), IsOk());
   EXPECT_TRUE(handle_high_pri.socket());
   EXPECT_TRUE(handle_high_pri.socket()->IsConnected());
@@ -1370,9 +1417,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   data_sync.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_factory.AddSocketDataProvider(data_sync.data_provider());
   ClientSocketHandle handle;
-  int rv = handle.Init("a", socks_params, LOW, tag1,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionOnceCallback(), &pool, NetLogWithSource());
+  int rv = handle.Init(
+      "a", socks_params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
+      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(), &pool,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -1383,9 +1431,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   // Test socket is tagged when reused synchronously.
   StreamSocket* socket = handle.socket();
   handle.Reset();
-  rv = handle.Init("a", socks_params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(), &pool, NetLogWithSource());
+  rv = handle.Init(
+      "a", socks_params, LOW, tag2, ClientSocketPool::RespectLimits::ENABLED,
+      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(), &pool,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1400,7 +1449,8 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   TestCompletionCallback callback;
   rv = handle.Init("a", socks_params, LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
@@ -1412,9 +1462,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   // Test socket is tagged when reused after being created asynchronously.
   socket = handle.socket();
   handle.Reset();
-  rv = handle.Init("a", socks_params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(), &pool, NetLogWithSource());
+  rv = handle.Init(
+      "a", socks_params, LOW, tag2, ClientSocketPool::RespectLimits::ENABLED,
+      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(), &pool,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1463,7 +1514,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1479,7 +1531,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1537,7 +1590,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_TRUE(rv == OK || rv == ERR_IO_PENDING) << "Result: " << rv;
   // Abort and request socket with |tag2|.
   handle.Reset();
@@ -1547,7 +1601,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_THAT(callback2.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1606,8 +1661,9 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
                          TransportClientSocketPool::SocketParams::
                              CreateFromTransportSocketParams(tcp_params),
                          LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-                         callback.callback(), &pool_for_real_sockets_,
-                         NetLogWithSource());
+                         callback.callback(),
+                         ClientSocketPool::ProxyAuthCallback(),
+                         &pool_for_real_sockets_, NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(tcp_handle.socket());
     EXPECT_TRUE(tcp_handle.socket()->IsConnected());
@@ -1619,14 +1675,16 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = handle.Init(
       kGroupName,
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           params),
       LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      &pool_for_real_sockets_, NetLogWithSource());
+      ClientSocketPool::ProxyAuthCallback(), &pool_for_real_sockets_,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Cancel first request.
   handle_to_be_canceled.Reset();
