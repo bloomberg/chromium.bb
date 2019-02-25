@@ -188,9 +188,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  virtual void OnPushEvent(
-      base::Optional<std::string> payload,
-      blink::mojom::ServiceWorker::DispatchPushEventCallback callback);
   virtual void OnAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
@@ -256,9 +253,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  void OnPushEventStub(
-      base::Optional<std::string> payload,
-      blink::mojom::ServiceWorker::DispatchPushEventCallback callback);
   void OnAbortPaymentEventStub(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);

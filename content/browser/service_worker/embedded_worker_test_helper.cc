@@ -384,12 +384,6 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
   OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
 }
 
-void EmbeddedWorkerTestHelper::OnPushEvent(
-    base::Optional<std::string> payload,
-    blink::mojom::ServiceWorker::DispatchPushEventCallback callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void EmbeddedWorkerTestHelper::OnAbortPaymentEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback) {
@@ -492,15 +486,6 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
                      embedded_worker_id, std::move(request),
                      std::move(preload_handle), std::move(response_callback),
                      std::move(finish_callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnPushEventStub(
-    base::Optional<std::string> payload,
-    blink::mojom::ServiceWorker::DispatchPushEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
-                     std::move(payload), std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(

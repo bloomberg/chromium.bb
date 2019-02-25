@@ -133,7 +133,7 @@ void FakeServiceWorker::DispatchNotificationCloseEvent(
 void FakeServiceWorker::DispatchPushEvent(
     const base::Optional<std::string>& payload,
     DispatchPushEventCallback callback) {
-  helper_->OnPushEventStub(payload, std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchSyncEvent(const std::string& tag,
