@@ -40,8 +40,7 @@ class ControllerTest;
 class Controller : public ScriptExecutorDelegate,
                    public UiDelegate,
                    public ScriptTracker::Listener,
-                   private content::WebContentsObserver,
-                   private content::WebContentsDelegate {
+                   private content::WebContentsObserver {
  public:
   // |web_contents| and |client| must remain valid for the lifetime of the
   // instance.
@@ -165,9 +164,6 @@ class Controller : public ScriptExecutorDelegate,
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
 
-  // Overrides content::WebContentsDelegate:
-  void LoadProgressChanged(content::WebContents* source,
-                           double progress) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas);
 
   ElementArea* touchable_element_area();
@@ -197,10 +193,6 @@ class Controller : public ScriptExecutorDelegate,
   // Number of remaining periodic checks.
   int periodic_script_check_count_ = 0;
   int total_script_check_count_ = 0;
-
-  // Whether to clear the web_contents delegate when the controller is
-  // destroyed.
-  bool clear_web_contents_delegate_ = false;
 
   // Whether we should hide the overlay and show an error message after a first
   // unsuccessful round of preconditions checking.
