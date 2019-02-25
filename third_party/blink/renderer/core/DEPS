@@ -23,6 +23,7 @@ include_rules = [
     "+cc/input/scroll_snap_data.h",
     "+cc/input/scroll_state.h",
     "+cc/input/snap_fling_controller.h",
+    "+cc/input/snap_selection_strategy.h",
     "+cc/layers/content_layer_client.h",
     "+cc/layers/layer.h",
     "+cc/layers/layer_position_constraint.h",

@@ -46,7 +46,7 @@
 
 #include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/input/scroll_snap_data.h"
+#include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"

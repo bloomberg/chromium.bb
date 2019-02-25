@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -39,7 +38,7 @@ class WebGestureEvent;
 // classes and they call into this class for doing the work.
 class CORE_EXPORT ScrollManager
     : public GarbageCollectedFinalized<ScrollManager>,
-      public SnapFlingClient {
+      public cc::SnapFlingClient {
  public:
   explicit ScrollManager(LocalFrame&);
   virtual ~ScrollManager() = default;
