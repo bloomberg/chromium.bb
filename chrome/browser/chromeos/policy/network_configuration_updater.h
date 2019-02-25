@@ -108,6 +108,23 @@ class NetworkConfigurationUpdater : public chromeos::PolicyCertificateProvider,
   // Apply the observed policy, i.e. both networks and certificates.
   void ApplyPolicy();
 
+  // Marks IP Address config fields as "Recommended" for Ethernet network
+  // configs without authentication. The reason is that Chrome OS used to treat
+  // Ethernet networks without authentication as unmanaged, so users were able
+  // to edit the IP address even if there was a policy for Ethernet. This
+  // behavior should be preserved for now to not break existing use cases.
+  // TODO(https://crbug.com/931412): Remove this when the server sets
+  // "Recommended".
+  void MarkFieldsAsRecommendedForBackwardsCompatibility(
+      base::Value* network_configs_onc);
+
+  // Sets the "Recommended" list of recommended field names in |onc_value|,
+  // which must be a dictionary, to |recommended_field_names|. If a
+  // "Recommended" list already existed in |onc_value|, it's replaced.
+  void SetRecommended(
+      base::Value* onc_value,
+      std::initializer_list<base::StringPiece> recommended_field_names);
+
   std::string LogHeader() const;
 
   // Imports the certificates part of the policy.
