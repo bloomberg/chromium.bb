@@ -4,9 +4,8 @@
 
 #include "third_party/blink/renderer/core/input/scroll_manager.h"
 
-#include <memory>
+#include <utility>
 
-#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -36,22 +35,22 @@
 namespace blink {
 namespace {
 
-SnapFlingController::GestureScrollType ToGestureScrollType(
+cc::SnapFlingController::GestureScrollType ToGestureScrollType(
     WebInputEvent::Type web_event_type) {
   switch (web_event_type) {
     case WebInputEvent::kGestureScrollBegin:
-      return SnapFlingController::GestureScrollType::kBegin;
+      return cc::SnapFlingController::GestureScrollType::kBegin;
     case WebInputEvent::kGestureScrollUpdate:
-      return SnapFlingController::GestureScrollType::kUpdate;
+      return cc::SnapFlingController::GestureScrollType::kUpdate;
     case WebInputEvent::kGestureScrollEnd:
-      return SnapFlingController::GestureScrollType::kEnd;
+      return cc::SnapFlingController::GestureScrollType::kEnd;
     default:
       NOTREACHED();
-      return SnapFlingController::GestureScrollType::kBegin;
+      return cc::SnapFlingController::GestureScrollType::kBegin;
   }
 }
 
-SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
+cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
     const WebGestureEvent& event) {
   return {.delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
                                   -event.data.scroll_update.delta_y),

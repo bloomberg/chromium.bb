@@ -240,6 +240,7 @@ _CONFIG = [
             'cc::SnapAreaData',
             'cc::SnapAxis',
             'cc::SnapContainerData',
+            'cc::SnapFlingController',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
             'gfx::RectToSkRect',
