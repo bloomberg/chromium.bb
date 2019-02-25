@@ -3994,12 +3994,6 @@
       'cronet_tests': {},
       'cronet_unittests': {},
       'headless_browsertests': {},
-      'network_service_headless_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'test': 'headless_browsertests',
-      },
       'headless_unittests': {},
     },
 

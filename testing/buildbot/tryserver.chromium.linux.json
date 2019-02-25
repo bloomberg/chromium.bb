@@ -315,17 +315,6 @@
         "test": "headless_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "isolate_coverage_data": true,
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
         "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true

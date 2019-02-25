@@ -645,16 +645,6 @@
         "test": "headless_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2671,16 +2661,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -6126,16 +6106,6 @@
         "test": "headless_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6874,17 +6844,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "isolate_coverage_data": true,
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10219,16 +10178,6 @@
         "test": "headless_browsertests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11306,23 +11255,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.14"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
