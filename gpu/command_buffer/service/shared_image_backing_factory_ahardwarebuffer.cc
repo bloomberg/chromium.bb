@@ -219,8 +219,8 @@ class SharedImageRepresentationSkiaGLAHB
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
         gr_context, promise_texture_->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
-        &surface_props);
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+        backing()->color_space().ToSkColorSpace(), &surface_props);
     write_surface_ = surface.get();
     return surface;
   }

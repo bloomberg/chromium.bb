@@ -70,6 +70,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   sk_sp<SkSurface> GetSkSurface(int final_msaa_count,
                                 SkColorType color_type,
+                                sk_sp<SkColorSpace> color_space,
                                 const SkSurfaceProps& surface_props) {
     if (context_state_->context_lost())
       return nullptr;
@@ -79,7 +80,7 @@ class WrappedSkImage : public SharedImageBacking {
     DCHECK(gr_texture.isValid());
     return SkSurface::MakeFromBackendTextureAsRenderTarget(
         context_state_->gr_context(), gr_texture, kTopLeft_GrSurfaceOrigin,
-        final_msaa_count, color_type, /*colorSpace=*/nullptr, &surface_props);
+        final_msaa_count, color_type, color_space, &surface_props);
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
@@ -194,7 +195,8 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
         /*gpu_compositing=*/true, format());
 
     auto surface = wrapped_sk_image()->GetSkSurface(
-        final_msaa_count, sk_color_type, surface_props);
+        final_msaa_count, sk_color_type,
+        backing()->color_space().ToSkColorSpace(), surface_props);
     write_surface_ = surface.get();
     return surface;
   }

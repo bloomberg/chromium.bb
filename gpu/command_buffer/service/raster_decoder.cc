@@ -60,7 +60,6 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
@@ -577,7 +576,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
-  std::unique_ptr<SkCanvas> raster_canvas_;
+  SkCanvas* raster_canvas_ = nullptr;  // ptr into recorder_ or sk_surface_
   uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
 
@@ -1379,9 +1378,10 @@ ServiceTransferCache* RasterDecoderImpl::GetTransferCacheForTest() {
 void RasterDecoderImpl::SetUpForRasterCHROMIUMForTest() {
   // Some tests use mock GL which doesn't work with skia. Just use a bitmap
   // backed surface for OOP raster commands.
-  sk_surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(10, 10));
-  raster_canvas_ = SkCreateColorSpaceXformCanvas(sk_surface_->getCanvas(),
-                                                 SkColorSpace::MakeSRGB());
+  auto info = SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType,
+                                   SkColorSpace::MakeSRGB());
+  sk_surface_ = SkSurface::MakeRaster(info);
+  raster_canvas_ = sk_surface_->getCanvas();
 }
 
 void RasterDecoderImpl::SetOOMErrorForTest() {
@@ -2078,25 +2078,21 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to find valid color space");
-    shared_image_->EndWriteAccess(std::move(sk_surface_));
     shared_image_.reset();
     return;
   }
 
-  SkCanvas* canvas = nullptr;
   if (use_ddl_) {
     SkSurfaceCharacterization characterization;
     bool result = sk_surface_->characterize(&characterization);
     DCHECK(result) << "Failed to characterize raster SkSurface.";
     recorder_ =
         std::make_unique<SkDeferredDisplayListRecorder>(characterization);
-    canvas = recorder_->getCanvas();
+    raster_canvas_ = recorder_->getCanvas();
   } else {
-    canvas = sk_surface_->getCanvas();
+    raster_canvas_ = sk_surface_->getCanvas();
   }
 
-  raster_canvas_ = SkCreateColorSpaceXformCanvas(
-      canvas, color_space_entry->color_space().ToSkColorSpace());
   raster_color_space_id_ = color_space_transfer_cache_id;
 
   // All or nothing clearing, as no way to validate the client's input on what
@@ -2164,7 +2160,6 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   alignas(
       cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
 
-  SkCanvas* canvas = raster_canvas_.get();
   cc::PlaybackParams playback_params(nullptr, SkMatrix::I());
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(
@@ -2186,7 +2181,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       return;
     }
 
-    deserialized_op->Raster(canvas, playback_params);
+    deserialized_op->Raster(raster_canvas_, playback_params);
     deserialized_op->DestroyThis();
 
     paint_buffer_size -= skip;
@@ -2204,7 +2199,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
 
   shared_context_state_->set_need_context_state_reset(true);
 
-  raster_canvas_.reset();
+  raster_canvas_ = nullptr;
 
   if (use_ddl_) {
     auto ddl = recorder_->detach();
