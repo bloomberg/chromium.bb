@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -377,7 +377,7 @@ void OnIntentPickerClosed(int render_process_host_id,
   // If the user selected an app to continue the navigation, confirm that the
   // |package_name| matches a valid option and return the index.
   const size_t selected_app_index =
-      ArcNavigationThrottle::GetAppIndex(handlers, selected_app_package);
+      ArcIntentPickerAppFetcher::GetAppIndex(handlers, selected_app_package);
 
   // Make sure that the instance at least supports HandleUrl.
   auto* arc_service_manager = ArcServiceManager::Get();

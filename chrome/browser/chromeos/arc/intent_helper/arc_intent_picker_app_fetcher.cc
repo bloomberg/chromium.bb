@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 
 #include <utility>
 
@@ -49,7 +49,7 @@ size_t FindPreferredApp(
 }  // namespace
 
 // static
-void ArcNavigationThrottle::GetArcAppsForPicker(
+void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
     content::WebContents* web_contents,
     const GURL& url,
     chromeos::GetAppsCallback callback) {
@@ -69,13 +69,14 @@ void ArcNavigationThrottle::GetArcAppsForPicker(
     return;
   }
 
-  // |throttle| will delete itself when it is finished.
-  ArcNavigationThrottle* throttle = new ArcNavigationThrottle(web_contents);
-  throttle->GetArcAppsForPicker(instance, url, std::move(callback));
+  // |app_fetcher| will delete itself when it is finished.
+  ArcIntentPickerAppFetcher* app_fetcher =
+      new ArcIntentPickerAppFetcher(web_contents);
+  app_fetcher->GetArcAppsForPicker(instance, url, std::move(callback));
 }
 
 // static
-bool ArcNavigationThrottle::WillGetArcAppsForNavigation(
+bool ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
     content::NavigationHandle* handle,
     chromeos::AppsNavigationCallback callback) {
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
@@ -101,8 +102,9 @@ bool ArcNavigationThrottle::WillGetArcAppsForNavigation(
   if (!instance)
     return false;
 
-  // |throttle| will delete itself when it is finished.
-  ArcNavigationThrottle* throttle = new ArcNavigationThrottle(web_contents);
+  // |app_fetcher| will delete itself when it is finished.
+  ArcIntentPickerAppFetcher* app_fetcher =
+      new ArcIntentPickerAppFetcher(web_contents);
 
   // Return true to defer the navigation until we asynchronously hear back from
   // ARC whether a preferred app should be launched. This makes it safe to bind
@@ -111,12 +113,12 @@ bool ArcNavigationThrottle::WillGetArcAppsForNavigation(
   // prior to this asynchronous method finishing, it is safe to not run
   // |callback| since it will not matter what we do with the deferred navigation
   // for a now-closed tab.
-  throttle->GetArcAppsForNavigation(instance, url, std::move(callback));
+  app_fetcher->GetArcAppsForNavigation(instance, url, std::move(callback));
   return true;
 }
 
 // static
-bool ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
+bool ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
     const GURL& url,
     const std::string& package_name,
     bool should_launch,
@@ -151,7 +153,7 @@ bool ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
 }
 
 // static
-size_t ArcNavigationThrottle::GetAppIndex(
+size_t ArcIntentPickerAppFetcher::GetAppIndex(
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates,
     const std::string& selected_app_package) {
   for (size_t i = 0; i < app_candidates.size(); ++i) {
@@ -162,7 +164,7 @@ size_t ArcNavigationThrottle::GetAppIndex(
 }
 
 // static
-bool ArcNavigationThrottle::IsAppAvailable(
+bool ArcIntentPickerAppFetcher::IsAppAvailable(
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
   return app_candidates.size() > 1 ||
          (app_candidates.size() == 1 &&
@@ -171,23 +173,24 @@ bool ArcNavigationThrottle::IsAppAvailable(
 }
 
 // static
-bool ArcNavigationThrottle::IsAppAvailableForTesting(
+bool ArcIntentPickerAppFetcher::IsAppAvailableForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
   return IsAppAvailable(app_candidates);
 }
 
 // static
-size_t ArcNavigationThrottle::FindPreferredAppForTesting(
+size_t ArcIntentPickerAppFetcher::FindPreferredAppForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
   return FindPreferredApp(app_candidates, GURL());
 }
 
-ArcNavigationThrottle::~ArcNavigationThrottle() = default;
+ArcIntentPickerAppFetcher::~ArcIntentPickerAppFetcher() = default;
 
-ArcNavigationThrottle::ArcNavigationThrottle(content::WebContents* web_contents)
+ArcIntentPickerAppFetcher::ArcIntentPickerAppFetcher(
+    content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
 
-void ArcNavigationThrottle::GetArcAppsForNavigation(
+void ArcIntentPickerAppFetcher::GetArcAppsForNavigation(
     mojom::IntentHelperInstance* instance,
     const GURL& url,
     chromeos::AppsNavigationCallback callback) {
@@ -196,11 +199,11 @@ void ArcNavigationThrottle::GetArcAppsForNavigation(
   instance->RequestUrlHandlerList(
       url.spec(),
       base::BindOnce(
-          &ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation,
+          &ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation,
           weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
 }
 
-void ArcNavigationThrottle::GetArcAppsForPicker(
+void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
     mojom::IntentHelperInstance* instance,
     const GURL& url,
     chromeos::GetAppsCallback callback) {
@@ -208,20 +211,21 @@ void ArcNavigationThrottle::GetArcAppsForPicker(
 
   instance->RequestUrlHandlerList(
       url.spec(),
-      base::BindOnce(&ArcNavigationThrottle::OnAppCandidatesReceivedForPicker,
-                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+      base::BindOnce(
+          &ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForPicker,
+          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
 }
 
-void ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation(
+void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     const GURL& url,
     chromeos::AppsNavigationCallback callback,
     std::vector<mojom::IntentHandlerInfoPtr> app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
   if (!IsAppAvailable(app_candidates)) {
-    // This scenario shouldn't be accessed as ArcNavigationThrottle is created
-    // iff there are ARC apps which can actually handle the given URL.
+    // This scenario shouldn't be accessed as ArcIntentPickerAppFetcher is
+    // created iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     chromeos::AppsNavigationThrottle::RecordUma(
         std::string(), apps::mojom::AppType::kUnknown,
@@ -257,13 +261,13 @@ void ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation(
                                 chromeos::AppsNavigationAction::RESUME));
 }
 
-void ArcNavigationThrottle::OnAppCandidatesReceivedForPicker(
+void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForPicker(
     const GURL& url,
     chromeos::GetAppsCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
   if (!IsAppAvailable(app_candidates)) {
     DVLOG(1) << "There are no app candidates for this URL";
     std::move(callback).Run({});
@@ -274,7 +278,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceivedForPicker(
   GetArcAppIcons(url, std::move(app_candidates), std::move(callback));
 }
 
-chromeos::PreferredPlatform ArcNavigationThrottle::DidLaunchPreferredArcApp(
+chromeos::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
     const GURL& url,
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -316,11 +320,11 @@ chromeos::PreferredPlatform ArcNavigationThrottle::DidLaunchPreferredArcApp(
   return preferred_platform;
 }
 
-void ArcNavigationThrottle::GetArcAppIcons(
+void ArcIntentPickerAppFetcher::GetArcAppIcons(
     const GURL& url,
     std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
     chromeos::GetAppsCallback callback) {
-  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
@@ -340,19 +344,19 @@ void ArcNavigationThrottle::GetArcAppIcons(
   deleter.release();
   intent_helper_bridge->GetActivityIcons(
       activities,
-      base::BindOnce(&ArcNavigationThrottle::OnAppIconsReceived,
+      base::BindOnce(&ArcIntentPickerAppFetcher::OnAppIconsReceived,
                      weak_ptr_factory_.GetWeakPtr(), url,
                      std::move(app_candidates), std::move(callback)));
 }
 
-void ArcNavigationThrottle::OnAppIconsReceived(
+void ArcIntentPickerAppFetcher::OnAppIconsReceived(
     const GURL& url,
     std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
     chromeos::GetAppsCallback callback,
     std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
   std::vector<chromeos::IntentPickerAppInfo> app_info;
 
   for (const auto& candidate : app_candidates) {
@@ -371,7 +375,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
   std::move(callback).Run(std::move(app_info));
 }
 
-void ArcNavigationThrottle::WebContentsDestroyed() {
+void ArcIntentPickerAppFetcher::WebContentsDestroyed() {
   delete this;
 }
 
