@@ -44,6 +44,7 @@ struct DomainRule {
 9guacu.br, 0
 a.bg, 0
 a.prod.fastly.net, 4
+a.run.app, 4
 a.se, 0
 a.ssl.fastly.net, 4
 aa.no, 0
@@ -129,7 +130,6 @@ achi.nagano.jp, 0
 aco, 0
 act.au, 0
 act.edu.au, 0
-active, 0
 actor, 0
 ad, 0
 ad.jp, 0
@@ -337,6 +337,7 @@ ap.it, 0
 ap.leg.br, 4
 aparecida.br, 0
 apartments, 0
+api.stdlib.com, 4
 apigee.io, 4
 app, 0
 app.lmpm.com, 4
@@ -344,6 +345,7 @@ app.os.fedoraproject.org, 4
 app.os.stg.fedoraproject.org, 4
 appchizi.com, 4
 apple, 0
+applicationcloud.io, 4
 applinzi.com, 4
 apps.fbsbx.com, 4
 apps.lair.io, 4
@@ -732,7 +734,6 @@ bl.it, 0
 black, 0
 blackbaudcdn.net, 4
 blackfriday, 0
-blanco, 0
 blockbuster, 0
 blog, 0
 blog.bo, 0
@@ -910,6 +911,7 @@ bryne.no, 0
 bs, 0
 bs.it, 0
 bsb.br, 0
+bss.design, 4
 bt, 0
 bt.it, 0
 bu.no, 0
@@ -936,7 +938,6 @@ buyshouses.net, 4
 buzen.fukuoka.jp, 0
 buzz, 0
 bv, 0
-bv.nl, 0
 bw, 0
 by, 0
 bydgoszcz.pl, 0
@@ -947,6 +948,7 @@ bytom.pl, 0
 bz, 0
 bz.it, 0
 bzh, 0
+bzz.dapps.earth, 6
 c.bg, 0
 c.cdn77.org, 4
 c.la, 4
@@ -1275,6 +1277,7 @@ co.ao, 0
 co.at, 0
 co.bb, 0
 co.bi, 0
+co.business, 4
 co.bw, 0
 co.ca, 4
 co.ci, 0
@@ -1284,6 +1287,9 @@ co.com, 4
 co.cr, 0
 co.cz, 4
 co.dk, 4
+co.education, 4
+co.events, 4
+co.financial, 4
 co.gg, 0
 co.gl, 0
 co.gy, 0
@@ -1308,18 +1314,21 @@ co.mu, 0
 co.mw, 0
 co.mz, 0
 co.na, 0
+co.network, 4
 co.ni, 0
 co.nl, 4
 co.no, 4
 co.nz, 0
 co.om, 0
 co.pl, 4
+co.place, 4
 co.pn, 0
 co.pw, 0
 co.rs, 0
 co.rw, 0
 co.st, 0
 co.sz, 0
+co.technology, 4
 co.th, 0
 co.tj, 0
 co.tm, 0
@@ -1625,6 +1634,7 @@ dallas.museum, 0
 damnserver.com, 4
 dance, 0
 daplie.me, 4
+dapps.earth, 6
 data, 0
 database.museum, 0
 date, 0
@@ -1801,6 +1811,7 @@ dvr, 0
 dvrcam.info, 4
 dvrdns.org, 4
 dy.fi, 4
+dyn-berlin.de, 4
 dyn-ip24.de, 4
 dyn-o-saur.com, 4
 dyn-vpn.de, 4
@@ -2061,7 +2072,6 @@ entomology.museum, 0
 environment.museum, 0
 environmentalconservation.museum, 0
 epilepsy.museum, 0
-epost, 0
 epson, 0
 equipment, 0
 equipment.aero, 0
@@ -2156,6 +2166,7 @@ farmstead.museum, 0
 farsund.no, 0
 fashion, 0
 fast, 0
+fastly-terrarium.com, 4
 fastlylb.net, 4
 fastpanel.direct, 4
 fastvps-server.com, 4
@@ -2196,6 +2207,12 @@ fie.ee, 0
 field.museum, 0
 figueres.museum, 0
 filatelia.museum, 0
+filegear-au.me, 4
+filegear-de.me, 4
+filegear-gb.me, 4
+filegear-ie.me, 4
+filegear-jp.me, 4
+filegear-sg.me, 4
 filegear.me, 4
 film, 0
 film.hu, 0
@@ -3268,7 +3285,16 @@ immobilien, 0
 imperia.it, 0
 in, 0
 in-addr.arpa, 0
+in-berlin.de, 4
+in-brb.de, 4
+in-butter.de, 4
+in-dsl.de, 4
+in-dsl.net, 4
+in-dsl.org, 4
 in-the-band.net, 4
+in-vpn.de, 4
+in-vpn.net, 4
+in-vpn.org, 4
 in.eu.org, 4
 in.futurecms.at, 6
 in.na, 0
@@ -4153,6 +4179,7 @@ lc.it, 0
 lcube-server.de, 4
 lds, 0
 le.it, 0
+leadpages.co, 4
 leangaviika.no, 0
 lease, 0
 leasing.aero, 0
@@ -4322,8 +4349,10 @@ louvre.museum, 0
 love, 0
 lowicz.pl, 0
 loyalist.museum, 0
+lpages.co, 4
 lpl, 0
 lplfinancial, 0
+lpusercontent.com, 4
 lr, 0
 ls, 0
 lt, 0
@@ -6378,6 +6407,7 @@ ru.net, 4
 rugby, 0
 ruhr, 0
 run, 0
+run.app, 4
 ruovat.no, 0
 russia.museum, 0
 rv.ua, 0
@@ -6587,6 +6617,7 @@ sc.tz, 0
 sc.ug, 0
 sc.us, 0
 sca, 0
+scapp.io, 4
 scb, 0
 sch.ae, 0
 sch.id, 0
@@ -6979,7 +7010,6 @@ spdns.de, 4
 spdns.eu, 4
 spdns.org, 4
 spectrum.myjino.ru, 6
-spiegel, 0
 spjelkavik.no, 0
 sport, 0
 sport.hu, 0
@@ -7267,6 +7297,9 @@ tecnologia.bo, 0
 tel, 0
 tel.tr, 0
 tele.amune.org, 4
+telebit.app, 4
+telebit.io, 4
+telebit.xyz, 6
 telefonica, 0
 telekommunikation.museum, 0
 television.museum, 0
@@ -8636,7 +8669,6 @@ zgorzelec.pl, 0
 zhitomir.ua, 0
 zhytomyr.ua, 0
 zip, 0
-zippo, 0
 zj.cn, 0
 zlg.br, 0
 zm, 0
