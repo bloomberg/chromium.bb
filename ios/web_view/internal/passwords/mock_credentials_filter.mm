@@ -14,13 +14,6 @@ MockCredentialsFilter::MockCredentialsFilter() = default;
 
 MockCredentialsFilter::~MockCredentialsFilter() = default;
 
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-MockCredentialsFilter::FilterResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) const {
-  FilterResultsPtr(&results);
-  return results;
-}
-
 bool MockCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
   return true;
@@ -43,8 +36,5 @@ bool MockCredentialsFilter::IsSyncAccountEmail(
     const std::string& username) const {
   return false;
 }
-
-void MockCredentialsFilter::FilterResultsPtr(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* results) const {}
 
 }  // namespace ios_web_view

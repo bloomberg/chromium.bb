@@ -2415,14 +2415,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesCTSuppressNotificationsFeature)},
 #endif  // OS_ANDROID
-    {"protect-sync-credential", flag_descriptions::kProtectSyncCredentialName,
-     flag_descriptions::kProtectSyncCredentialDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kProtectSyncCredential)},
-    {"ProtectSyncCredentialOnReauth",
-     flag_descriptions::kProtectSyncCredentialOnReauthName,
-     flag_descriptions::kProtectSyncCredentialOnReauthDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kProtectSyncCredentialOnReauth)},
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},

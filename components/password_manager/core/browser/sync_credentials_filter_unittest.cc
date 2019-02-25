@@ -15,9 +15,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -30,7 +28,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -49,19 +46,6 @@ const char kFilledAndLoginActionName[] =
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 const char kEnterpriseURL[] = "https://enterprise.test/";
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
-
-void DisallowSyncOnReauth(base::test::ScopedFeatureList* feature_list) {
-  feature_list->InitFromCommandLine(
-      features::kProtectSyncCredentialOnReauth.name,
-      features::kProtectSyncCredential.name);
-}
-
-void DisallowSync(base::test::ScopedFeatureList* feature_list) {
-  feature_list->InitFromCommandLine(
-      features::kProtectSyncCredential.name + std::string(",") +
-          features::kProtectSyncCredentialOnReauth.name,
-      std::string());
-}
 
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
@@ -114,25 +98,10 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
 };
 
-bool IsFormFiltered(const CredentialsFilter* filter, const PasswordForm& form) {
-  std::vector<std::unique_ptr<PasswordForm>> vector;
-  vector.push_back(std::make_unique<PasswordForm>(form));
-  vector = filter->FilterResults(std::move(vector));
-  return vector.empty();
-}
-
 }  // namespace
 
 class CredentialsFilterTest : public SyncUsernameTestBase {
  public:
-  struct TestCase {
-    enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
-    PasswordForm form;
-    const char* const last_committed_entry_url;
-    enum { FORM_FILTERED, FORM_NOT_FILTERED } is_form_filtered;
-    enum { NO_HISTOGRAM, HISTOGRAM_REPORTED } histogram_reported;
-  };
-
   // Flag for creating a PasswordFormManager, deciding its IsNewLogin() value.
   enum class LoginState { NEW, EXISTING };
 
@@ -152,24 +121,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
                                     base::Unretained(this))) {
     form_manager_.Init(nullptr);
     fetcher_.Fetch();
-  }
-
-  void CheckFilterResultsTestCase(const TestCase& test_case) {
-    DCHECK(identity_manager()->HasPrimaryAccount());
-
-    SetSyncingPasswords(test_case.password_sync == TestCase::SYNCING_PASSWORDS);
-    client_.set_last_committed_entry_url(test_case.last_committed_entry_url);
-    base::HistogramTester tester;
-    const bool expected_is_form_filtered =
-        test_case.is_form_filtered == TestCase::FORM_FILTERED;
-    EXPECT_EQ(expected_is_form_filtered,
-              IsFormFiltered(&filter_, test_case.form));
-    if (test_case.histogram_reported == TestCase::HISTOGRAM_REPORTED) {
-      tester.ExpectUniqueSample("PasswordManager.SyncCredentialFiltered",
-                                expected_is_form_filtered, 1);
-    } else {
-      tester.ExpectTotalCount("PasswordManager.SyncCredentialFiltered", 0);
-    }
   }
 
   // Makes |form_manager_| provisionally save |pending_|. Depending on
@@ -195,149 +146,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
 
   SyncCredentialsFilter filter_;
 };
-
-TEST_F(CredentialsFilterTest, FilterResults_AllowAll_NonSyncingAccount) {
-  FakeSigninAs("another_user@example.org");
-
-  CheckFilterResultsTestCase(
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM});
-}
-
-TEST_F(CredentialsFilterTest, FilterResults_AllowAll_SyncingAccount) {
-  FakeSigninAs("user@example.org");
-
-  // By default, sync username is not filtered at all.
-  const TestCase kTestCases[] = {
-      // Reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
-
-      // Slightly invalid reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
-
-      // Non-reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?param=123",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
-
-      // Non-GAIA "reauth" URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
-       TestCase::NO_HISTOGRAM},
-  };
-
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "i=" << i);
-    CheckFilterResultsTestCase(kTestCases[i]);
-  }
-}
-
-TEST_F(CredentialsFilterTest,
-       FilterResults_DisallowSyncOnReauth_NonSyncingAccount) {
-  FakeSigninAs("another_user@example.org");
-
-  // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill the
-  // sync credential everywhere but on reauth.
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisallowSyncOnReauth(&scoped_feature_list);
-
-  CheckFilterResultsTestCase(
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED});
-}
-
-TEST_F(CredentialsFilterTest,
-       FilterResults_DisallowSyncOnReauth_SyncingAccount) {
-  FakeSigninAs("user@example.org");
-
-  // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill the
-  // sync credential everywhere but on reauth.
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisallowSyncOnReauth(&scoped_feature_list);
-
-  const TestCase kTestCases[] = {
-      // Reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Slightly invalid reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
-       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Non-reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?param=123",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
-
-      // Non-GAIA "reauth" URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
-       TestCase::NO_HISTOGRAM},
-  };
-
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "i=" << i);
-    CheckFilterResultsTestCase(kTestCases[i]);
-  }
-}
-
-TEST_F(CredentialsFilterTest, FilterResults_DisallowSync_NonSyncingAccount) {
-  FakeSigninAs("another_user@example.org");
-
-  // Both features are kept enabled, should cause sync credential to be
-  // filtered.
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisallowSync(&scoped_feature_list);
-
-  CheckFilterResultsTestCase(
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED});
-}
-
-TEST_F(CredentialsFilterTest, FilterResults_DisallowSync_SyncingAccount) {
-  FakeSigninAs("user@example.org");
-
-  // Both features are kept enabled, should cause sync credential to be
-  // filtered.
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisallowSync(&scoped_feature_list);
-
-  const TestCase kTestCases[] = {
-      // Reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Slightly invalid reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
-       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Non-reauth URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "https://accounts.google.com/login?param=123", TestCase::FORM_FILTERED,
-       TestCase::HISTOGRAM_REPORTED},
-
-      // Non-GAIA "reauth" URL.
-      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
-       TestCase::HISTOGRAM_REPORTED},
-  };
-
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "i=" << i);
-    CheckFilterResultsTestCase(kTestCases[i]);
-  }
-}
 
 TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
   FakeSigninAs("user@gmail.com");
@@ -423,26 +231,6 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
   FakeSigninAs("user@example.org");
   SetSyncingPasswords(false);
   EXPECT_TRUE(filter_.ShouldSave(form));
-}
-
-TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
-  // Both features are kept enabled, should cause sync credential to be
-  // filtered.
-  base::test::ScopedFeatureList scoped_feature_list;
-  DisallowSync(&scoped_feature_list);
-
-  std::vector<std::unique_ptr<PasswordForm>> results;
-  results.push_back(
-      std::make_unique<PasswordForm>(SimpleGaiaForm("test1@gmail.com")));
-  results.push_back(
-      std::make_unique<PasswordForm>(SimpleGaiaForm("test2@gmail.com")));
-
-  FakeSigninAs("test1@gmail.com");
-
-  results = filter_.FilterResults(std::move(results));
-
-  ASSERT_EQ(1u, results.size());
-  EXPECT_EQ(SimpleGaiaForm("test2@gmail.com"), *results[0]);
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

@@ -1581,16 +1581,6 @@ const char kPrintPreviewRegisterPromosName[] =
 const char kPrintPreviewRegisterPromosDescription[] =
     "Enable registering unregistered cloud printers from print preview.";
 
-const char kProtectSyncCredentialName[] = "Autofill sync credential";
-const char kProtectSyncCredentialDescription[] =
-    "How the password manager handles autofill for the sync credential.";
-
-const char kProtectSyncCredentialOnReauthName[] =
-    "Autofill sync credential only for transactional reauth pages";
-const char kProtectSyncCredentialOnReauthDescription[] =
-    "How the password manager handles autofill for the sync credential only "
-    "for transactional reauth pages.";
-
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";

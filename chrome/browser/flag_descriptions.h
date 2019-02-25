@@ -946,12 +946,6 @@ extern const char kPrintPdfAsImageDescription[];
 extern const char kPrintPreviewRegisterPromosName[];
 extern const char kPrintPreviewRegisterPromosDescription[];
 
-extern const char kProtectSyncCredentialName[];
-extern const char kProtectSyncCredentialDescription[];
-
-extern const char kProtectSyncCredentialOnReauthName[];
-extern const char kProtectSyncCredentialOnReauthDescription[];
-
 extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
