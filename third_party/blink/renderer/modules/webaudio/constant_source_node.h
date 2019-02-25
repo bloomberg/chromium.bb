@@ -29,6 +29,8 @@ class ConstantSourceHandler final : public AudioScheduledSourceHandler {
   // AudioHandler
   void Process(uint32_t frames_to_process) override;
 
+  void HandleStoppableSourceNode() override;
+
  private:
   ConstantSourceHandler(AudioNode&,
                         float sample_rate,
@@ -55,9 +57,9 @@ class ConstantSourceNode final : public AudioScheduledSourceNode {
 
   AudioParam* offset();
 
- private:
   ConstantSourceHandler& GetConstantSourceHandler() const;
 
+ private:
   Member<AudioParam> offset_;
 };
 

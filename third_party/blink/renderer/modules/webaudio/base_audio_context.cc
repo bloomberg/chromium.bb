@@ -674,12 +674,22 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
       GetDeferredTaskHandler().GetActiveSourceHandlers();
 
   if (active_source_handlers->size()) {
-    // Find AudioBufferSourceNodes to see if we can stop playing them.
+    // Find source handlers to see if we can stop playing them.  Note: this
+    // check doesn't have to be done every render quantum, if this checking
+    // becomes to expensive.  It's ok to do this on a less frequency basis as
+    // long as the active nodes eventually get stopped if they're done.
     for (auto handler : *active_source_handlers) {
-      if (handler->GetNodeType() == AudioHandler::kNodeTypeAudioBufferSource) {
-        AudioBufferSourceHandler* source_handler =
-            static_cast<AudioBufferSourceHandler*>(handler.get());
-        source_handler->HandleStoppableSourceNode();
+      switch (handler->GetNodeType()) {
+        case AudioHandler::kNodeTypeAudioBufferSource:
+        case AudioHandler::kNodeTypeOscillator:
+        case AudioHandler::kNodeTypeConstantSource: {
+          AudioScheduledSourceHandler* source_handler =
+              static_cast<AudioScheduledSourceHandler*>(handler.get());
+          source_handler->HandleStoppableSourceNode();
+          break;
+        }
+        default:
+          break;
       }
     }
   }
