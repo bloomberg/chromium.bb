@@ -6,7 +6,6 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
@@ -67,7 +66,8 @@ class RemotePlaybackTest : public testing::Test,
     remote_playback.PromptCancelled();
   }
 
-  void SetState(RemotePlayback& remote_playback, WebRemotePlaybackState state) {
+  void SetState(RemotePlayback& remote_playback,
+                mojom::blink::PresentationConnectionState state) {
     remote_playback.StateChanged(state);
   }
 
@@ -122,7 +122,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
   EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(testing::_)).Times(1);
 
-  SetState(remote_playback, WebRemotePlaybackState::kConnected);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTED);
 
   std::unique_ptr<UserGestureIndicator> indicator =
       LocalFrame::NotifyUserActivation(&page_holder->GetFrame(),
@@ -155,7 +156,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
   EXPECT_CALL(*resolve, Call(testing::_)).Times(1);
   EXPECT_CALL(*reject, Call(testing::_)).Times(0);
 
-  SetState(remote_playback, WebRemotePlaybackState::kConnected);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTED);
 
   std::unique_ptr<UserGestureIndicator> indicator =
       LocalFrame::NotifyUserActivation(&page_holder->GetFrame(),
@@ -163,7 +165,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
   remote_playback.prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
 
-  SetState(remote_playback, WebRemotePlaybackState::kDisconnected);
+  SetState(remote_playback, mojom::blink::PresentationConnectionState::CLOSED);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -200,12 +202,16 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   EXPECT_CALL(*connect_handler, Invoke(testing::_, testing::_)).Times(1);
   EXPECT_CALL(*disconnect_handler, Invoke(testing::_, testing::_)).Times(1);
 
-  SetState(remote_playback, WebRemotePlaybackState::kConnecting);
-  SetState(remote_playback, WebRemotePlaybackState::kConnecting);
-  SetState(remote_playback, WebRemotePlaybackState::kConnected);
-  SetState(remote_playback, WebRemotePlaybackState::kConnected);
-  SetState(remote_playback, WebRemotePlaybackState::kDisconnected);
-  SetState(remote_playback, WebRemotePlaybackState::kDisconnected);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTING);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTING);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTED);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTED);
+  SetState(remote_playback, mojom::blink::PresentationConnectionState::CLOSED);
+  SetState(remote_playback, mojom::blink::PresentationConnectionState::CLOSED);
 
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.

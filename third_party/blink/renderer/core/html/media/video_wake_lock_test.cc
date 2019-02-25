@@ -193,36 +193,36 @@ TEST_F(VideoWakeLockTest, ShowingPageDoNotRequestsLockIfPaused) {
 TEST_F(VideoWakeLockTest, RemotePlaybackDisconnectedDoesNotCancelLock) {
   SimulatePlaying();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kDisconnected);
+      mojom::blink::PresentationConnectionState::CLOSED);
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, RemotePlaybackConnectingDoesNotCancelLock) {
   SimulatePlaying();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kConnecting);
+      mojom::blink::PresentationConnectionState::CONNECTING);
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, ActiveRemotePlaybackCancelsLock) {
   SimulatePlaying();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kDisconnected);
+      mojom::blink::PresentationConnectionState::CLOSED);
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kConnected);
+      mojom::blink::PresentationConnectionState::CONNECTED);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, LeavingRemotePlaybackResumesLock) {
   SimulatePlaying();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kConnected);
+      mojom::blink::PresentationConnectionState::CONNECTED);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kDisconnected);
+      mojom::blink::PresentationConnectionState::CLOSED);
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 }
 
@@ -287,7 +287,7 @@ TEST_F(VideoWakeLockTest, RemotingVideoInPictureInPictureDoesNotRequestLock) {
   SimulatePlaying();
   SimulateEnterPictureInPicture();
   GetVideoWakeLock()->OnRemotePlaybackStateChanged(
-      WebRemotePlaybackState::kConnected);
+      mojom::blink::PresentationConnectionState::CONNECTED);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 

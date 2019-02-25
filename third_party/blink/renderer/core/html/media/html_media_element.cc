@@ -34,7 +34,6 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/logging_override_if_enabled.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"

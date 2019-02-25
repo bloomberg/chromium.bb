@@ -1087,7 +1087,7 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   }
 
   if (RemotePlayback::From(MediaElement()).GetState() !=
-      WebRemotePlaybackState::kDisconnected) {
+      mojom::blink::PresentationConnectionState::CLOSED) {
     return false;
   }
 

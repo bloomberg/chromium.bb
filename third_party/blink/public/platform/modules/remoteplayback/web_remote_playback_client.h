@@ -7,7 +7,6 @@
 
 namespace blink {
 
-enum class WebRemotePlaybackState;
 class WebURL;
 class WebString;
 
@@ -31,4 +30,4 @@ class WebRemotePlaybackClient {
 
 }  // namespace blink
 
-#endif  // WebRemotePlaybackState_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_REMOTEPLAYBACK_WEB_REMOTE_PLAYBACK_CLIENT_H_

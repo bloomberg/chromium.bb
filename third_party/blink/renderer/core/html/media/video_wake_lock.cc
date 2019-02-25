@@ -55,7 +55,8 @@ void VideoWakeLock::Invoke(ExecutionContext*, Event* event) {
   Update();
 }
 
-void VideoWakeLock::OnRemotePlaybackStateChanged(WebRemotePlaybackState state) {
+void VideoWakeLock::OnRemotePlaybackStateChanged(
+    mojom::blink::PresentationConnectionState state) {
   remote_playback_state_ = state;
   Update();
 }
@@ -74,7 +75,8 @@ bool VideoWakeLock::ShouldBeActive() const {
   bool in_picture_in_picture =
       PictureInPictureController::IsElementInPictureInPicture(&VideoElement());
   return playing_ && (page_visible || in_picture_in_picture) &&
-         remote_playback_state_ != WebRemotePlaybackState::kConnected;
+         remote_playback_state_ !=
+             mojom::blink::PresentationConnectionState::CONNECTED;
 }
 
 void VideoWakeLock::EnsureWakeLockService() {
