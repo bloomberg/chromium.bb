@@ -15,5 +15,6 @@ PASS Returns animations based on dynamic changes to individual animations' durat
 PASS Returns animations based on dynamic changes to individual animations' end delay
 PASS Returns animations based on dynamic changes to individual animations' iteration count
 PASS Returns animations based on dynamic changes to individual animations' current time
+PASS Triggers a style change event
 Harness: the test ran to completion.
 

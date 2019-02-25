@@ -5560,7 +5560,6 @@ crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autosc
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
 
 # Failures on 32-bit Android when using GPU instead of software rendering
-crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
 crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
 
 # Does not set correct realm as scope in current implementation
