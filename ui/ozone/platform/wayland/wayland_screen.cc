@@ -100,7 +100,9 @@ display::Display WaylandScreen::GetPrimaryDisplay() const {
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
   auto* wayland_window = connection_->GetWindow(widget);
-  DCHECK(wayland_window);
+  // A window might be destroyed by this time on shutting down the browser.
+  if (!wayland_window)
+    return GetPrimaryDisplay();
 
   const std::set<uint32_t> entered_outputs_ids =
       wayland_window->GetEnteredOutputsIds();
