@@ -213,9 +213,6 @@ class DesktopSessionAgent
   // Used to apply client-requested changes in screen resolution.
   std::unique_ptr<ScreenControls> screen_controls_;
 
-  // Contains the most recently gathered into about the desktop displays.
-  std::unique_ptr<DesktopDisplayInfo> desktop_display_info_;
-
   // IPC channel connecting the desktop process with the network process.
   std::unique_ptr<IPC::ChannelProxy> network_channel_;
 
