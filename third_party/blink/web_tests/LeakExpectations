@@ -95,6 +95,8 @@ crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-fl
 
 #Sheriff 2019-02-25
 crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_word_09_rtl_multi_line.html [ Failure Leak ]
+crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_09_ltr_multi_line.html [ Failure Leak ]
+crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_09_rtl_multi_line.html [ Failure Leak ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
