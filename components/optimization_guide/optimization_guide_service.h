@@ -40,13 +40,13 @@ class OptimizationGuideService {
   // Virtual so it can be mocked out in tests.
   virtual void MaybeUpdateHintsComponent(const HintsComponentInfo& info);
 
- private:
   // If the hints component version in |info| is greater than that in
   // |hints_component_info_|, updates |hints_component_info_| and dispatches it
   // to all observers. In the case where the version is not greater, it does
   // nothing.
   void MaybeUpdateHintsComponentOnUIThread(const HintsComponentInfo& info);
 
+ private:
   // Runner for indexing tasks.
   SEQUENCE_CHECKER(sequence_checker_);
 
