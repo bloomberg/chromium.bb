@@ -3176,8 +3176,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // item associated with navigationContext.
 
   if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)]) {
-    if (error.code == web::kWebKitErrorPlugInLoadFailed ||
-        error.code == web::kWebKitErrorCannotShowUrl) {
+    if (error.code == web::kWebKitErrorPlugInLoadFailed) {
       // In cases where a Plug-in handles the load do not take any further
       // action.
       return;
