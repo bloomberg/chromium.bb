@@ -2008,6 +2008,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         certificate_report_sender_.get());
   }
 
+#if defined(OS_ANDROID)
+  result.url_request_context->set_check_cleartext_permitted(
+      params_->check_clear_text_permitted);
+#endif  // defined(OS_ANDROID)
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enable_expect_ct_reporting) {
     LazyCreateExpectCTReporter(result.url_request_context.get());

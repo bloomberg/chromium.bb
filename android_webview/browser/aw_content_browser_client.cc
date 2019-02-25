@@ -111,6 +111,16 @@ namespace android_webview {
 namespace {
 static bool g_should_create_task_scheduler = true;
 
+#if DCHECK_IS_ON()
+// A boolean value to determine if the NetworkContext has been created yet. This
+// exists only to check correctness: g_check_cleartext_permitted may only be set
+// before the NetworkContext has been created (otherwise,
+// g_check_cleartext_permitted won't have any effect).
+bool g_created_network_context_params = false;
+#endif
+// On apps targeting API level O or later, check cleartext is enforced.
+bool g_check_cleartext_permitted = false;
+
 // TODO(sgurun) move this to its own file.
 // This class filters out incoming aw_contents related IPC messages for the
 // renderer process on the IPC thread.
@@ -267,6 +277,14 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
   return AwBrowserContext::GetDefault();
 }
 
+// static
+void AwContentBrowserClient::set_check_cleartext_permitted(bool permitted) {
+#if DCHECK_IS_ON()
+  DCHECK(!g_created_network_context_params);
+#endif
+  g_check_cleartext_permitted = permitted;
+}
+
 AwContentBrowserClient::AwContentBrowserClient(
     AwFeatureListCreator* aw_feature_list_creator)
     : net_log_(new net::NetLog()),
@@ -343,6 +361,11 @@ AwContentBrowserClient::GetNetworkContextParams() {
 
   // WebView does not support ftp yet.
   context_params->enable_ftp_url_support = false;
+
+#if DCHECK_IS_ON()
+  g_created_network_context_params = true;
+#endif
+  context_params->check_clear_text_permitted = g_check_cleartext_permitted;
   return context_params;
 }
 

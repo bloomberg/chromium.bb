@@ -45,6 +45,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // Deprecated: use AwBrowserContext::GetDefault() instead.
   static AwBrowserContext* GetAwBrowserContext();
 
+  // Sets whether the net stack should check the cleartext policy from the
+  // platform. For details, see
+  // https://developer.android.com/reference/android/security/NetworkSecurityPolicy.html#isCleartextTrafficPermitted().
+  static void set_check_cleartext_permitted(bool permitted);
+
   // |aw_feature_list_creator| should not be null.
   explicit AwContentBrowserClient(
       AwFeatureListCreator* aw_feature_list_creator);
