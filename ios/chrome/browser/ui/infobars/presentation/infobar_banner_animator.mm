@@ -15,6 +15,7 @@
   return 1;
 }
 
+// TODO(crbug.com/911864): PLACEHOLDER animation to present the InfobarBanner.
 - (void)animateTransition:
     (id<UIViewControllerContextTransitioning>)transitionContext {
   // Set up the keys for the "base" view/VC and the "presented" view/VC. These
@@ -69,6 +70,11 @@
 
         // If presentation failed, remove the view.
         if (self.presenting && !success) {
+          [presentedView removeFromSuperview];
+        }
+
+        // If dismiss was successful, remove the view.
+        if (!self.presenting && success) {
           [presentedView removeFromSuperview];
         }
 

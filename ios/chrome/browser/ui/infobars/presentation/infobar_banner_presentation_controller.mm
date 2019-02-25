@@ -26,28 +26,26 @@ const CGFloat kContainerTopPadding = 80;
 
 @implementation InfobarBannerPresentationController
 
-- (CGRect)frameOfPresentedViewInContainerView {
-  return self.viewForPresentedView.bounds;
-}
-
 - (void)presentationTransitionWillBegin {
   self.containerView.frame = self.viewForPresentedView.frame;
 }
 
 - (void)containerViewWillLayoutSubviews {
-  self.presentedView.frame = [self frameOfPresentedViewInContainerView];
+  self.containerView.frame = self.viewForPresentedView.frame;
+  self.presentedView.frame = self.viewForPresentedView.bounds;
 }
 
+// TODO(crbug.com/911864): PLACEHOLDER position and size for the banner
+// presented view.
 - (UIView*)viewForPresentedView {
-  if (!_viewForPresentedView) {
-    CGFloat safeAreaWidth =
-        CGRectGetWidth(self.containerView.safeAreaLayoutGuide.layoutFrame);
-    CGFloat maxAvailableWidth = safeAreaWidth - 2 * kContainerHorizontalPadding;
-    _viewForPresentedView = [[UIView alloc]
-        initWithFrame:CGRectMake(kContainerHorizontalPadding,
-                                 kContainerTopPadding, maxAvailableWidth,
-                                 kContainerHeight)];
-  }
+  UIWindow* window = UIApplication.sharedApplication.keyWindow;
+  CGFloat safeAreaWidth = CGRectGetWidth(window.bounds);
+  CGFloat maxAvailableWidth = safeAreaWidth - 2 * kContainerHorizontalPadding;
+  _viewForPresentedView = [[UIView alloc]
+      initWithFrame:CGRectMake(kContainerHorizontalPadding,
+                               kContainerTopPadding, maxAvailableWidth,
+                               kContainerHeight)];
+
   return _viewForPresentedView;
 }
 

@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/1372916): PLACEHOLDER Work in Progress class for the new
-// InfobarUI.
+// Animator used to present an InfobarBanner dropping from the top of the
+// screen.
 @interface InfobarBannerAnimator
     : NSObject <UIViewControllerAnimatedTransitioning>
 
