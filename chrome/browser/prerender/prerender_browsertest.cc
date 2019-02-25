@@ -217,20 +217,6 @@ class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
   DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWatcher);
 };
 
-class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
- public:
-  ConnectionType GetCurrentConnectionType() const override {
-    return NetworkChangeNotifier::CONNECTION_WIFI;
-  }
-};
-
-class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
- public:
-  ConnectionType GetCurrentConnectionType() const override {
-    return NetworkChangeNotifier::CONNECTION_4G;
-  }
-};
-
 // Constants used in the test HTML files.
 const char* kReadyTitle = "READY";
 const char* kPassTitle = "PASS";
