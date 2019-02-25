@@ -31,6 +31,10 @@
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif
+
 namespace download {
 
 namespace {
@@ -103,6 +107,21 @@ bool IsPathReserved(const base::FilePath& path) {
   return false;
 }
 
+// Returns true if the given file name is in use by any path reservation or the
+// file system. Called on the task runner returned by
+// DownloadPathReservationTracker::GetTaskRunner().
+bool IsFileNameInUse(const base::FilePath& path) {
+#if defined(OS_ANDROID)
+  // If there is a reservation, then the path is in use.
+  if (IsPathReserved(path.BaseName()))
+    return true;
+
+  if (DownloadCollectionBridge::FileNameExists(path.BaseName()))
+    return true;
+#endif
+  return false;
+}
+
 // Returns true if the given path is in use by any path reservation or the
 // file system. Called on the task runner returned by
 // DownloadPathReservationTracker::GetTaskRunner().
@@ -120,10 +139,12 @@ bool IsPathInUse(const base::FilePath& path) {
 
 // Create a unique filename by appending a uniquifier. Modifies |path| in place
 // if successful and returns true. Otherwise |path| is left unmodified and
-// returns false.
+// returns false. If |check_file_name_only| is true, this method will only check
+// the name of the file to guarantee that it is unique.
 bool CreateUniqueFilename(int max_path_component_length,
                           const base::Time& download_start_time,
-                          base::FilePath* path) {
+                          base::FilePath* path,
+                          bool check_file_name_only) {
   // Try every numeric uniquifier. Then make one attempt with the timestamp.
   for (int uniquifier = 1;
        uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles + 1;
@@ -164,11 +185,13 @@ bool CreateUniqueFilename(int max_path_component_length,
     }
     path_to_check = path_to_check.InsertBeforeExtensionASCII(suffix);
 
-    if (!IsPathInUse(path_to_check)) {
+    if ((check_file_name_only && !IsFileNameInUse(path_to_check)) ||
+        (!check_file_name_only && !IsPathInUse(path_to_check))) {
       *path = path_to_check;
       return true;
     }
   }
+
   return false;
 }
 
@@ -196,6 +219,32 @@ bool IsPathWritable(const CreateReservationInfo& info,
   // http://crbug.com/383765.
   return !info.temporary_path.empty() &&
          info.temporary_path.DirName() == target_path.DirName();
+}
+
+// Called when reservation conflicts happen. Returns the result on whether the
+// conflict can be resolved, and uniquifying the file name if necessary. If
+// |check_file_name_only| is true, this method will only check the name of the
+// file to guarantee that it is unique.
+PathValidationResult ResolveReservationConflicts(
+    const CreateReservationInfo& info,
+    int max_path_component_length,
+    base::FilePath* target_path,
+    bool check_file_name_only) {
+  switch (info.conflict_action) {
+    case DownloadPathReservationTracker::UNIQUIFY:
+      return CreateUniqueFilename(max_path_component_length, info.start_time,
+                                  target_path, check_file_name_only)
+                 ? PathValidationResult::SUCCESS
+                 : PathValidationResult::CONFLICT;
+
+    case DownloadPathReservationTracker::OVERWRITE:
+      return PathValidationResult::SUCCESS;
+
+    case DownloadPathReservationTracker::PROMPT:
+      return PathValidationResult::CONFLICT;
+  }
+  NOTREACHED();
+  return PathValidationResult::SUCCESS;
 }
 
 // Verify that |target_path| can be written to and also resolve any conflicts if
@@ -239,21 +288,8 @@ PathValidationResult ValidatePathAndResolveConflicts(
   if (!IsPathInUse(*target_path))
     return PathValidationResult::SUCCESS;
 
-  switch (info.conflict_action) {
-    case DownloadPathReservationTracker::UNIQUIFY:
-      return CreateUniqueFilename(max_path_component_length, info.start_time,
-                                  target_path)
-                 ? PathValidationResult::SUCCESS
-                 : PathValidationResult::CONFLICT;
-
-    case DownloadPathReservationTracker::OVERWRITE:
-      return PathValidationResult::SUCCESS;
-
-    case DownloadPathReservationTracker::PROMPT:
-      return PathValidationResult::CONFLICT;
-  }
-  NOTREACHED();
-  return PathValidationResult::SUCCESS;
+  return ResolveReservationConflicts(info, max_path_component_length,
+                                     target_path, false);
 }
 
 // Called on the task runner returned by
@@ -288,6 +324,22 @@ PathValidationResult CreateReservation(const CreateReservationInfo& info,
   base::FilePath target_dir = target_path.DirName();
   base::FilePath filename = target_path.BaseName();
 
+#if defined(OS_ANDROID)
+  if (DownloadCollectionBridge::ShouldPublishDownload(target_path)) {
+    // If the download is written to a content URI, put file name in the
+    // reservation map as content URIs will always be different.
+    PathValidationResult result = PathValidationResult::SUCCESS;
+    if (IsFileNameInUse(filename)) {
+      int max_path_component_length =
+          base::GetMaximumPathComponentLength(target_path.DirName());
+      result = ResolveReservationConflicts(info, max_path_component_length,
+                                           &target_path, true);
+    }
+    (*g_reservation_map)[info.key] = target_path.BaseName();
+    *reserved_path = target_path;
+    return result;
+  }
+#endif
   // Create target_dir if necessary and appropriate. target_dir may be the last
   // directory that the user selected in a FilePicker; if that directory has
   // since been removed, do NOT automatically re-create it. Only automatically
@@ -342,9 +394,19 @@ void RunGetReservedPathCallback(
   callback.Run(result, *reserved_path);
 }
 
+// Gets the path reserved in the global |g_reservation_map|. For content Uri,
+// file name instead of file path is used.
+base::FilePath GetReservationPath(DownloadItem* download_item) {
+#if defined(OS_ANDROID)
+  if (download_item->GetTargetFilePath().IsContentUri())
+    return download_item->GetFileNameToReportUser();
+#endif
+  return download_item->GetTargetFilePath();
+}
+
 DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
     : download_item_(download_item),
-      last_target_path_(download_item->GetTargetFilePath()) {
+      last_target_path_(GetReservationPath(download_item)) {
   download_item_->AddObserver(this);
   download_item_->SetUserData(&kUserDataKey, base::WrapUnique(this));
 }
@@ -360,7 +422,7 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
   switch (download->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       // Update the reservation.
-      base::FilePath new_target_path = download->GetTargetFilePath();
+      base::FilePath new_target_path = GetReservationPath(download);
       if (new_target_path != last_target_path_) {
         DownloadPathReservationTracker::GetTaskRunner()->PostTask(
             FROM_HERE,

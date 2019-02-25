@@ -108,4 +108,11 @@ base::File DownloadCollectionBridge::OpenIntermediateUri(
   return base::File(fd);
 }
 
+// static
+bool DownloadCollectionBridge::FileNameExists(const base::FilePath& file_name) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jfile_name =
+      ConvertUTF8ToJavaString(env, file_name.value());
+  return Java_DownloadCollectionBridge_fileNameExists(env, jfile_name);
+}
 }  // namespace download

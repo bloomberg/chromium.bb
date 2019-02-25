@@ -10,7 +10,6 @@ import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -22,14 +21,17 @@ public class DownloadCollectionBridge {
     // Singleton instance that allows embedders to replace their implementation.
     private static DownloadCollectionBridge sDownloadCollectionBridge;
     private static final String TAG = "DownloadCollection";
+    // Guards access to sDownloadCollectionBridge.
+    private static final Object sLock = new Object();
 
     /**
      * Return getDownloadCollectionBridge singleton.
      */
     public static DownloadCollectionBridge getDownloadCollectionBridge() {
-        ThreadUtils.assertOnUiThread();
-        if (sDownloadCollectionBridge == null) {
-            sDownloadCollectionBridge = new DownloadCollectionBridge();
+        synchronized (sLock) {
+            if (sDownloadCollectionBridge == null) {
+                sDownloadCollectionBridge = new DownloadCollectionBridge();
+            }
         }
         return sDownloadCollectionBridge;
     }
@@ -38,8 +40,9 @@ public class DownloadCollectionBridge {
      * Sets the singlton object to use later.
      */
     public static void setDownloadCollectionBridge(DownloadCollectionBridge bridge) {
-        ThreadUtils.assertOnUiThread();
-        sDownloadCollectionBridge = bridge;
+        synchronized (sLock) {
+            sDownloadCollectionBridge = bridge;
+        }
     }
 
     /**
@@ -87,6 +90,13 @@ public class DownloadCollectionBridge {
      */
     protected Uri publishCompletedDownload(final String pendingUri) {
         return null;
+    }
+
+    /**
+     * @return whether a download with the file name exists.
+     */
+    protected boolean checkFileNameExists(final String fileName) {
+        return false;
     }
 
     /**
@@ -163,5 +173,13 @@ public class DownloadCollectionBridge {
             Log.e(TAG, "Cannot open intermediate Uri.", e);
         }
         return -1;
+    }
+
+    /**
+     * @return whether a download with the file name exists.
+     */
+    @CalledByNative
+    private static boolean fileNameExists(final String fileName) {
+        return getDownloadCollectionBridge().checkFileNameExists(fileName);
     }
 }

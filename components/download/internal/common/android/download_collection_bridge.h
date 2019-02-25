@@ -43,6 +43,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   // Opens the intermediate Uri for writing.
   static base::File OpenIntermediateUri(const base::FilePath& intermediate_uri);
 
+  // Checks whether a file name exists.
+  static bool FileNameExists(const base::FilePath& file_name);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCollectionBridge);
 };
