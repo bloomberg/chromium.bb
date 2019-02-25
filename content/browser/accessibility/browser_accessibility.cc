@@ -1157,6 +1157,13 @@ const std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
   return result;
 }
 
+ui::AXPlatformNode* BrowserAccessibility::GetTableCaption() {
+  if (ui::AXNode* caption = node()->GetTableCaption())
+    return GetFromNodeID(caption->id());
+
+  return nullptr;
+}
+
 bool BrowserAccessibility::IsTableRow() const {
   return node()->IsTableRow();
 }

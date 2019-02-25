@@ -117,6 +117,10 @@ const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
   return {};
 }
 
+AXPlatformNode* AXPlatformNodeDelegateBase::GetTableCaption() {
+  return nullptr;
+}
+
 bool AXPlatformNodeDelegateBase::IsTableRow() const {
   return ui::IsTableRow(GetData().role);
 }

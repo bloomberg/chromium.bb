@@ -117,6 +117,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   const std::vector<int32_t> GetRowHeaderNodeIds() const override;
   const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const override;
+  AXPlatformNode* GetTableCaption() override;
 
   // Table row-like nodes.
   bool IsTableRow() const override;

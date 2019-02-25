@@ -112,6 +112,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns the table or ARIA grid if inside one.
   AXPlatformNodeBase* GetTable() const;
 
+  // If inside an HTML or ARIA table, returns the object containing the caption.
+  AXPlatformNodeBase* GetTableCaption() const;
+
   // If inside a table or ARIA grid, returns the cell found at the given index.
   // Indices are in row major order and each cell is counted once regardless of
   // its span.

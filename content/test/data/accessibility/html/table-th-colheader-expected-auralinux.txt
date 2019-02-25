@@ -1,5 +1,5 @@
 [document web]
-++[table]
+++[table] cols=2 headers=('Firstname', 'Lastname'); rows=2 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++[table row]
 ++++++[column header] name='Firstname' table-cell-index:0
 ++++++++[text] name='Firstname'

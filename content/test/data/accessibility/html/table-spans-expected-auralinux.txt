@@ -1,5 +1,5 @@
 [document web] name='Table example with rowspan and colspan'
-++[table]
+++[table] cols=2 headers=(NONE); rows=2 headers=(NONE); caption=false; spans=(cell at 0,0: 2x1, cell at 1,0: 2x1)
 ++++[table row]
 ++++++[table cell] name='AD'
 ++++++++[text] name='AD'
@@ -8,7 +8,7 @@
 ++++[table row]
 ++++++[table cell] name='EF'
 ++++++++[text] name='EF'
-++[table]
+++[table] cols=3 headers=(NONE); rows=2 headers=(NONE); caption=false; spans=(cell at 0,0: 2x1, cell at 0,1: 1x2, cell at 0,2: 1x2, cell at 1,0: 2x1)
 ++++[table row]
 ++++++[table cell] name='AD'
 ++++++++[text] name='AD'

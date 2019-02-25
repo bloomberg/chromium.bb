@@ -9,7 +9,7 @@
 ++++++[text] name=' and a ' editable
 ++++++[push button] name='Button' editable
 ++++++[text] name='.' editable
-++++[table] editable
+++++[table] editable cols=1 headers=(NONE); rows=1 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++++[table row] editable
 ++++++++[table cell] name='Always expose editable tables as tables.' editable
 ++++++++++[text] name='Always expose editable tables as tables.' editable

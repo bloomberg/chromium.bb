@@ -62,6 +62,9 @@ class AX_EXPORT AXTableInfo {
   // All header cells.
   std::vector<int32_t> all_headers;
 
+  // The id of the element with the caption tag or ARIA role.
+  int32_t caption_id;
+
   // 2-D array of [row][column] -> cell node ID.
   // This may contain duplicates if there is a rowspan or
   // colspan. The entry is empty (zero) only if the cell
