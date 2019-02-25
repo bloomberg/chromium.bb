@@ -86,6 +86,7 @@ EXTRA_DIST =					\
 	Pl-Pl-g1_backward.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sk-g1_harness.yaml			\
+	sl-g1.yaml				\
 	spaces.yaml				\
 	spaces.dis				\
 	sr-g1_harness.yaml			\
