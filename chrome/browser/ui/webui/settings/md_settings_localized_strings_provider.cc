@@ -446,7 +446,6 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
-      {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
       {"crostiniSharedPaths", IDS_SETTINGS_CROSTINI_SHARED_PATHS},
       {"crostiniSharedPathsListHeading",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_HEADING},
@@ -471,8 +470,11 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddString(
       "crostiniSubtext",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_CROSTINI_SUBTEXT,
+          IDS_SETTINGS_CROSTINI_SUBTEXT, ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
+  html_source->AddString("crostiniRemove", l10n_util::GetStringFUTF16(
+                                               IDS_SETTINGS_CROSTINI_REMOVE,
+                                               ui::GetChromeOSDeviceName()));
   html_source->AddString(
       "crostiniSharedPathsInstructionsLocate",
       l10n_util::GetStringFUTF16(
