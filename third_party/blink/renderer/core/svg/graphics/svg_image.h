@@ -141,7 +141,6 @@ class CORE_EXPORT SVGImage final : public Image {
   String FilenameExtension() const override;
 
   IntSize ContainerSize() const;
-  bool UsesContainerSize() const override { return true; }
 
   SizeAvailability DataChanged(bool all_data_received) override;
 

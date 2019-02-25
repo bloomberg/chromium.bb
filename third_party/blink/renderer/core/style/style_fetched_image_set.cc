@@ -114,10 +114,6 @@ bool StyleFetchedImageSet::ImageHasRelativeSize() const {
   return best_fit_image_->GetImage()->HasRelativeSize();
 }
 
-bool StyleFetchedImageSet::UsesImageContainerSize() const {
-  return best_fit_image_->GetImage()->UsesContainerSize();
-}
-
 void StyleFetchedImageSet::AddClient(ImageResourceObserver* observer) {
   best_fit_image_->AddObserver(observer);
 }

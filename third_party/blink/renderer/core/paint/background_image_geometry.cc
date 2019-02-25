@@ -810,19 +810,6 @@ void BackgroundImageGeometry::CalculateFillTileSize(
       tile_size_.ClampNegativeToZero();
       return;
     }
-    case EFillSizeType::kSizeNone: {
-      // If both values are 'auto' then the intrinsic width and/or height of the
-      // image should be used, if any.
-      if (!image_intrinsic_size.IsEmpty()) {
-        tile_size_ = image_intrinsic_size;
-        return;
-      }
-
-      // If the image has neither an intrinsic width nor an intrinsic height,
-      // its size is determined as for 'contain'.
-      type = EFillSizeType::kContain;
-      FALLTHROUGH;
-    }
     case EFillSizeType::kContain:
     case EFillSizeType::kCover: {
       // Always use the snapped positioning area size for this computation,
@@ -871,6 +858,9 @@ void BackgroundImageGeometry::CalculateFillTileSize(
       }
       return;
     }
+    case EFillSizeType::kSizeNone:
+      // This value should only be used while resolving style.
+      NOTREACHED();
   }
 
   NOTREACHED();

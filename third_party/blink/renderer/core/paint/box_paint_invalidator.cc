@@ -51,16 +51,15 @@ static bool ShouldFullyInvalidateFillLayersOnWidthChange(
       size_type == EFillSizeType::kCover)
     return true;
 
-  if (size_type == EFillSizeType::kSizeLength) {
-    // TODO(alancutter): Make this work correctly for calc lengths.
-    if (layer.SizeLength().Width().IsPercentOrCalc() &&
-        !layer.SizeLength().Width().IsZero())
-      return true;
-    if (img->IsGeneratedImage() && layer.SizeLength().Width().IsAuto())
-      return true;
-  } else if (img->UsesImageContainerSize()) {
+  DCHECK_EQ(size_type, EFillSizeType::kSizeLength);
+
+  // TODO(alancutter): Make this work correctly for calc lengths.
+  const Length& width = layer.SizeLength().Width();
+  if (width.IsPercentOrCalc() && !width.IsZero())
     return true;
-  }
+
+  if (width.IsAuto() && img->IsGeneratedImage())
+    return true;
 
   return false;
 }
@@ -94,16 +93,15 @@ static bool ShouldFullyInvalidateFillLayersOnHeightChange(
       size_type == EFillSizeType::kCover)
     return true;
 
-  if (size_type == EFillSizeType::kSizeLength) {
-    // TODO(alancutter): Make this work correctly for calc lengths.
-    if (layer.SizeLength().Height().IsPercentOrCalc() &&
-        !layer.SizeLength().Height().IsZero())
-      return true;
-    if (img->IsGeneratedImage() && layer.SizeLength().Height().IsAuto())
-      return true;
-  } else if (img->UsesImageContainerSize()) {
+  DCHECK_EQ(size_type, EFillSizeType::kSizeLength);
+
+  // TODO(alancutter): Make this work correctly for calc lengths.
+  const Length& height = layer.SizeLength().Height();
+  if (height.IsPercentOrCalc() && !height.IsZero())
     return true;
-  }
+
+  if (height.IsAuto() && img->IsGeneratedImage())
+    return true;
 
   return false;
 }

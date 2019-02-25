@@ -92,10 +92,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // The <image> does not have any intrinsic dimensions.
   virtual bool ImageHasRelativeSize() const = 0;
 
-  // The <image> may depend on dimensions from the context the image is used in
-  // (the "container".)
-  virtual bool UsesImageContainerSize() const = 0;
-
   virtual void AddClient(ImageResourceObserver*) = 0;
   virtual void RemoveClient(ImageResourceObserver*) = 0;
 

@@ -75,7 +75,6 @@ class StyleFetchedImageSet final : public StyleImage,
                       float multiplier,
                       const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override;
-  bool UsesImageContainerSize() const override;
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
